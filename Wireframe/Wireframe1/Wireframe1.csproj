@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\About\" />
+    <Folder Include="Views\Enroll\" />
+    <Folder Include="Views\Me\" />
+    <Folder Include="Views\Training\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="Views\About\CookieNotice.cshtml" />
+    <Content Remove="Views\About\MandatoryNotice.cshtml" />
+    <Content Remove="Views\About\PrivacyPolicy.cshtml" />
+    <Content Remove="Views\About\TermsofService.cshtml" />
+    <Content Remove="Views\Home\Blog.cshtml" />
+    <Content Remove="Views\Home\Login.cshtml" />
+    <Content Remove="Views\Home\SignUp.cshtml" />
+    <Content Remove="Views\Me\Index.cshtml" />
+    <Content Remove="Views\Training\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Views\About\CookieNotice.cshtml" />
+    <None Include="Views\About\MandatoryNotice.cshtml" />
+    <None Include="Views\About\PrivacyPolicy.cshtml" />
+    <None Include="Views\About\TermsofService.cshtml" />
+    <None Include="Views\Home\Blog.cshtml" />
+    <None Include="Views\Home\Login.cshtml" />
+    <None Include="Views\Home\SignUp.cshtml" />
+    <None Include="Views\Me\Index.cshtml" />
+    <None Include="Views\Training\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Views\Enroll.cs" />
+  </ItemGroup>
+</Project>
