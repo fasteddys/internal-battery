@@ -8,4 +8,10 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Test.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Test.html" />
+  </ItemGroup>
 </Project>
