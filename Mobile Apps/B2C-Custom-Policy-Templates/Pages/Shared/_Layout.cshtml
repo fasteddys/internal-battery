@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>@ViewData["Title"] - Wireframe1</title>
+        <title>@ViewData["Title"] - B2C_Custom_Policy_Templates</title>
 
         <environment include="Development">
             <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
@@ -26,19 +26,13 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Wireframe1</a>
+                    <a asp-page="/Index" class="navbar-brand">B2C_Custom_Policy_Templates</a>
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-                        <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
-                        <li><a asp-area="" asp-controller="Home" asp-action="Blog">Blog</a></li>
-                        <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
-                        <li><a asp-area="" asp-controller="Me" asp-action="Index">My Portal</a></li>
-                        <li><a asp-area="" asp-controller="Training" asp-action="Index">Training</a></li>
-
-                        <li><a asp-area="" asp-controller="Home" asp-action="Login">Login</a></li>
-                        <li><a asp-area="" asp-controller="Home" asp-action="SignUp">Sign Up</a></li>
+                        <li><a asp-page="/Index">Home</a></li>
+                        <li><a asp-page="/About">About</a></li>
+                        <li><a asp-page="/Contact">Contact</a></li>
                     </ul>
                 </div>
             </div>
@@ -49,13 +43,9 @@
         <div class="container body-content">
             @RenderBody()
             <hr />
-            <p>
-                &copy; 2018 - Our Working Title...
-                <a asp-area="" asp-controller="About" asp-action="PrivacyPolicy">Privacy Policy</a> |
-                <a asp-area="" asp-controller="About" asp-action="TermsofService">Terms of Service</a> |
-                <a asp-area="" asp-controller="About" asp-action="CookieNotice">Cookie Notice</a> |
-                <a asp-area="" asp-controller="About" asp-action="MandatoryNotice">Mandatory Notice</a>
-            </p>
+            <footer>
+                <p>&copy; 2018 - B2C_Custom_Policy_Templates</p>
+            </footer>
         </div>
 
         <environment include="Development">
