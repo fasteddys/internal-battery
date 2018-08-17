@@ -12,25 +12,40 @@ using System.Net.Http;
 using System.Net;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Localization;
+using Microsoft.AspNetCore.Localization;
 
 namespace WebApp_OpenIDConnect_DotNet.Controllers
 {
     public class HomeController : Controller
     {
         AzureAdB2COptions AzureAdB2COptions;
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions)
+        private readonly IStringLocalizer<HomeController> _localizer;
+   
+        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer)
         {
+            _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
         }
 
         public IActionResult Index()
         {
+
+         
+
             return View();
         }
 
         [Authorize]
         public IActionResult About()
         {
+            var rqf = Request.HttpContext.Features.Get<IRequestCultureFeature>();
+            // Culture contains the information of the requested culture
+            var culture = rqf.RequestCulture.Culture;
+
+            var test = _localizer["Hello!"];
+           
+ 
             ViewData["Message"] = String.Format("Claims available for the user {0}", (User.FindFirst("name")?.Value));
             return View();
         }
@@ -89,6 +104,19 @@ namespace WebApp_OpenIDConnect_DotNet.Controllers
         {
             ViewBag.Message = message;
             return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult SetLanguage(string culture, string returnUrl)
+        {
+            Response.Cookies.Append(
+                CookieRequestCultureProvider.DefaultCookieName,
+                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+            );
+
+            return LocalRedirect(returnUrl);
         }
     }
 }

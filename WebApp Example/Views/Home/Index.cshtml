@@ -1,7 +1,9 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer L
 
+@{
+    ViewData["Title"] = L["Home Page"];
+}
 <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="6000">
     <ol class="carousel-indicators">
         <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
@@ -14,7 +16,7 @@
             <img src="~/images/banner1.svg" alt="ASP.NET" class="img-responsive" />
             <div class="carousel-caption" role="option">
                 <p>
-                    Learn how to build ASP.NET apps that can run anywhere.
+                    @L["Home Page"]
                     <a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkID=525028&clcid=0x409">
                         Learn More
                     </a>
@@ -64,10 +66,9 @@
         <span class="sr-only">Next</span>
     </a>
 </div>
-
 <div class="row">
     <div class="col-md-3">
-        <h2>Application uses</h2>
+        <h2>Application uses     @L["Home"]</h2>
         <ul>
             <li>Sample pages using ASP.NET Core MVC</li>
             <li><a href="https://go.microsoft.com/fwlink/?LinkId=518004">Bower</a> for managing client-side libraries</li>

@@ -1,17 +1,18 @@
-﻿@{
+﻿ 
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
     ViewData["Title"] = "About";
 }
 <h2>@ViewData["Title"].</h2>
 <h3>@ViewData["Message"]</h3>
-
 @using System.Security.Claims
-
 <table class="table-hover table-condensed table-striped">
     <tr>
-        <th>Claim Type</th>
+        <th>Claim Type @Localizer["About"] </th>
         <th>Claim Value</th>
     </tr>
-
     @foreach (Claim claim in User.Claims)
     {
         <tr>

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-
+ 
 namespace WebApp_OpenIDConnect_DotNet
 {
     public class Program
