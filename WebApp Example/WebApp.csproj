@@ -72,6 +72,7 @@
     <Content Remove="wwwroot\Resources\.DS_Store" />
     <Content Remove="wwwroot\Resources\AppResources.en.Designer.cs" />
     <Content Remove="wwwroot\Resources\AppResources.en.resx" />
+    <Content Remove="wwwroot\images\clouds.jpg" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Resources\Views.resx">
