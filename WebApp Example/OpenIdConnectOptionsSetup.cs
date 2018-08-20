@@ -76,6 +76,10 @@ namespace WebApp_OpenIDConnect_DotNet
                     context.ProtocolMessage.Scope += $" offline_access {AzureAdB2COptions.ApiScopes}";
                     context.ProtocolMessage.ResponseType = OpenIdConnectResponseType.CodeIdToken;
                 }
+                // Set Language for identity provider screens 
+                if ( ! string.IsNullOrEmpty(AzureAdB2COptions.UiLocales) )
+                    context.ProtocolMessage.SetParameter("ui_locales", AzureAdB2COptions.UiLocales);
+
                 return Task.FromResult(0);
             }
 

@@ -15,11 +15,14 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using UserDetailsClient.Core;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace WebApp_OpenIDConnect_DotNet
 {
     public class Startup
     {
+
+     
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -41,21 +44,18 @@ namespace WebApp_OpenIDConnect_DotNet
             {
                 sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-            })
-            .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
+
+            })                    
+                    .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
             .AddCookie();
-
-
-            #region snippet1
+           
+            #region AddLocalizationß
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
             services.AddMvc()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
                 .AddDataAnnotationsLocalization();
             #endregion
-
-
-
 
             // Configure supported cultures and localization options
             services.Configure<RequestLocalizationOptions>(options =>
@@ -76,6 +76,14 @@ namespace WebApp_OpenIDConnect_DotNet
 
                 // These are the cultures the app supports for UI strings (that we have localized resources for).
                 options.SupportedUICultures = supportedCultures;
+
+       
+
+
+
+            //    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+               //options.RequestCultureProviders.Insert(0, new CookieRequestCultureProvider());
+
 
                 // You can change which providers are configured to determine the culture for requests, or even add a custom
                 // provider with your own logic. The providers will be asked in order to provide a culture for each request,
@@ -109,6 +117,7 @@ namespace WebApp_OpenIDConnect_DotNet
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+           
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
@@ -157,5 +166,12 @@ namespace WebApp_OpenIDConnect_DotNet
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
+
+
+
+       
+
+
+
     }
 }

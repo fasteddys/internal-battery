@@ -26,26 +26,20 @@ namespace WebApp_OpenIDConnect_DotNet.Controllers
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
+
+
         }
 
         public IActionResult Index()
         {
 
-         
-
+        
             return View();
         }
 
         [Authorize]
         public IActionResult About()
         {
-            var rqf = Request.HttpContext.Features.Get<IRequestCultureFeature>();
-            // Culture contains the information of the requested culture
-            var culture = rqf.RequestCulture.Culture;
-
-            var test = _localizer["Hello!"];
-           
- 
             ViewData["Message"] = String.Format("Claims available for the user {0}", (User.FindFirst("name")?.Value));
             return View();
         }
@@ -115,7 +109,6 @@ namespace WebApp_OpenIDConnect_DotNet.Controllers
                 CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
                 new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
             );
-
             return LocalRedirect(returnUrl);
         }
     }
