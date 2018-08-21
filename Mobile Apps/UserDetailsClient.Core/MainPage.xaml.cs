@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -24,7 +25,14 @@ namespace UserDetailsClient.Core
 
         protected override async void OnAppearing()
         {
+        
             UpdateSignInState(false);
+  
+            if (App.Current.Properties.ContainsKey("AppResources.Culture"))
+                btnTest.Text = $"Found!{DateTime.Now.Ticks.ToString()}";
+            else
+                btnTest.Text = $"Not Found!{DateTime.Now.Ticks.ToString()}";
+                
 
             // Check to see if we have a User
             // in the cache already.
@@ -51,7 +59,14 @@ namespace UserDetailsClient.Core
                 string SignInLabel = Culture.Translate("btnSignInSignOut_SignIn");
                 if (btnSignInSignOut.Text == SignInLabel )
                 {
-                    AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, GetUserByPolicy(App.PCA.Users, App.PolicySignUpSignIn), App.UiParent);
+                    //AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, GetUserByPolicy(App.PCA.Users, App.PolicySignUpSignIn), App.UiParent);
+                    AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes,
+                                                                              GetUserByPolicy(App.PCA.Users, App.PolicySignUpSignIn),
+                                                                              UIBehavior.ForceLogin,
+                                                                              Culture.UiLocalesQueryParameter(),
+                                                                              App.UiParent
+                                                                             );
+
                     UpdateUserInfo(ar);
                     UpdateSignInState(true);
                 }
@@ -118,6 +133,9 @@ namespace UserDetailsClient.Core
             {
                 lblApi.Text = $"Calling API {App.ApiEndpoint}";
                 AuthenticationResult ar = await App.PCA.AcquireTokenSilentAsync(App.Scopes, GetUserByPolicy(App.PCA.Users, App.PolicySignUpSignIn), App.Authority, false);
+   
+
+
                 string token  = ar.AccessToken;
 
                 // Get data from API
@@ -170,7 +188,26 @@ namespace UserDetailsClient.Core
         {
             try
             {
-                AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, (IUser)null, UIBehavior.SelectAccount, string.Empty, null, App.AuthorityPasswordReset, App.UiParent);
+                //AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, (IUser)null, UIBehavior.SelectAccount, string.Empty, null, App.AuthorityPasswordReset, App.UiParent);
+                AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, 
+                                                                          (IUser)null, 
+                                                                          UIBehavior.SelectAccount, 
+                                                                          Culture.UiLocalesQueryParameter(), 
+                                                                          null, 
+                                                                          App.AuthorityPasswordReset, 
+                                                                          App.UiParent);
+
+
+
+                // Demo
+                //AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes,
+                                                         // GetUserByPolicy(App.PCA.Users, App.PolicySignUpSignIn),
+                                                         // UIBehavior.ForceLogin,
+                                                         // Culture.UiLocalesQueryParameter(),
+                                                         // App.UiParent
+                                                         //);
+
+
                 UpdateUserInfo(ar);
             }
             catch (Exception ex)
@@ -181,11 +218,13 @@ namespace UserDetailsClient.Core
             }
         }
 
+   
+
         void UpdateSignInState(bool isSignedIn)
         { 
             btnSignInSignOut.Text = isSignedIn ? Culture.Translate("btnSignInSignOut_SignOut") : Culture.Translate("btnSignInSignOut_SignIn");
 
-            btnChangeCulture.IsVisible = isSignedIn;
+ 
             btnEditProfile.IsVisible = isSignedIn;
             btnCallApi.IsVisible = isSignedIn;
             slUser.IsVisible = isSignedIn;

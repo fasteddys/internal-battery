@@ -25,8 +25,11 @@
                     <Label Text="API Payload " FontAttributes="Bold" />
                     <Label x:Name="lblApi" />
                 </StackLayout>
+           
+                
             </StackLayout>
             <BoxView Color="Transparent" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" />
+            <Button x:Name="btnTest" Text="{i18n:Translate btnEditProfileText}" Clicked="OnEditProfile"  VerticalOptions="End" HorizontalOptions="FillAndExpand"/>                
             <Button x:Name="btnEditProfile" Text="{i18n:Translate btnEditProfileText}" Clicked="OnEditProfile"  VerticalOptions="End" HorizontalOptions="FillAndExpand"/>
             <Button x:Name="btnCallApi" Text="{i18n:Translate btnCallApiText}" Clicked="OnCallApi" VerticalOptions="End" HorizontalOptions="FillAndExpand"/>
             <Button x:Name="btnSignInSignOut" Text="{i18n:Translate btnSignInSignOut_SignIn}" Clicked="OnSignInSignOut" VerticalOptions="End" HorizontalOptions="FillAndExpand"/>
