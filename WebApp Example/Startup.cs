@@ -46,7 +46,7 @@ namespace WebApp_OpenIDConnect_DotNet
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
 
             })                    
-                    .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
+            .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
             .AddCookie();
            
             #region AddLocalizationß

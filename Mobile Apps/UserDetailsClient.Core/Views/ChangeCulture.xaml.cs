@@ -25,20 +25,14 @@ namespace UserDetailsClient.Core.Views
             AppResources.Culture = CrossMultilingual.Current.CurrentCultureInfo;
             App.Current.MainPage = new NavigationPage(new MainPage());
             // Cache culture info
-            var CultureJson = JsonConvert.SerializeObject(AppResources.Culture);
             if (App.Current.Properties.ContainsKey("AppResources.Culture"))
-                App.Current.Properties["AppResources.Culture"] = CultureJson;
+                App.Current.Properties["AppResources.Culture"] = AppResources.Culture.Name;
             else 
-                App.Current.Properties.Add("AppResources.Culture",CultureJson);
+                App.Current.Properties.Add("AppResources.Culture",AppResources.Culture.Name);
             // Save properties 
             App.Current.SavePropertiesAsync();
 
-
-
-
         }
  
-
-
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Threading;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using Plugin.Multilingual;
@@ -37,12 +38,14 @@ namespace UserDetailsClient.Core
             PCA = new PublicClientApplication(ClientID, Authority);
             PCA.RedirectUri = $"msal{ClientID}://auth";
 
-            //  AppResources.Culture = CrossMultilingual.Current.DeviceCultureInfo; 
             if (App.Current.Properties.ContainsKey("AppResources.Culture"))
             {
-               // var CultureJson = (string)App.Current.Properties["AppResources.Culture"];
-                //var Culture = (CultureInfo) JsonConvert.DeserializeObject(CultureJson);
-                AppResources.Culture = new CultureInfo("fr",true);
+                // Create CultureInfo from cached culture name 
+                var CultureName = (string)App.Current.Properties["AppResources.Culture"];
+                CultureInfo AppCulture = new CultureInfo(CultureName, true);
+                // Assign CultureInfo to App
+                CrossMultilingual.Current.CurrentCultureInfo = AppCulture;           
+                AppResources.Culture = AppCulture;
             }                    
             else
                 AppResources.Culture = CrossMultilingual.Current.DeviceCultureInfo;
