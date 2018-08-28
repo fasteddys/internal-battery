@@ -52,6 +52,7 @@
     <Compile Remove="Resources\Views.Home.Index.Designer.cs" />
     <Compile Remove="Resources\Views\Test\Contact.fr.Designer.cs" />
     <Compile Remove="Resources\Views.book.Hello.fr.Designer.cs" />
+    <Compile Remove="Resources\Resources.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="wwwroot\Resources\AppResources.resx" />
@@ -99,6 +100,14 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Controllers.HomeController.fr-FR.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Views.Home.Terms.fr.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Views.Home.Terms.en-US.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Mobile Apps\UserDetailsClient.Core\UserDetailsClient.Core.csproj" />
@@ -109,6 +118,12 @@
     </Compile>
     <Compile Update="Resources\Resources.Designer.cs">
       <DependentUpon>Controllers.HomeController.fr-FR.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\Views.Home.Terms.en-US.Designer.cs">
+      <DependentUpon>Views.Home.Terms.en-US.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\Views.Home.Terms.fr.Designer.cs">
+      <DependentUpon>Views.Home.Terms.fr.resx</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

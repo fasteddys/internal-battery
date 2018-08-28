@@ -37,6 +37,14 @@ namespace WebApp_OpenIDConnect_DotNet.Controllers
             return View();
         }
 
+        public IActionResult Terms()
+        {
+
+
+            return View();
+        }
+
+
         [Authorize]
         public IActionResult About()
         {
