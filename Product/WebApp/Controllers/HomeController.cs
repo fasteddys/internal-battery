@@ -44,13 +44,45 @@ namespace UpDiddy.Controllers
             return View();
         }
 
-
-        [Authorize]
-        public IActionResult About()
+        public IActionResult News()
         {
-            ViewData["Message"] = String.Format("Claims available for the user {0}", (User.FindFirst("name")?.Value));
+
             return View();
         }
+
+
+        public IActionResult AboutUs()
+        {
+ 
+            return View();
+        }
+
+ 
+        public IActionResult Privacy()
+        {
+ 
+            return View();
+        }
+
+
+        public IActionResult WhatWeAreAbout()
+        {
+
+            return View();
+        }
+
+        public IActionResult About()
+        {
+    
+            return View();
+        }
+
+        public IActionResult ContactUs()
+        {
+
+            return View();
+        }
+
 
         [Authorize]
         public async Task<IActionResult> Api()
