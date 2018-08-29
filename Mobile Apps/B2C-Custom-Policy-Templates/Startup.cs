@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Configuration;
@@ -34,8 +36,18 @@ namespace B2C_Custom_Policy_Templates
             });
 
             // Original Working Code  services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+ 
+
+
+
             #region AddLocalization
             services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+
+
+
+
 
             services.AddMvc()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)

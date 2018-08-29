@@ -42,7 +42,8 @@
                         </div>
                         <div id="api"></div>
                         <div id="tos">
-                            <a href="http://www.ebay.com">@Localizer["Terms Of Service"]</a>
+                            <a href="http://www.ebay.com">Localizer->@Localizer["Terms Of Service"]</a> <br />
+                            <a href="http://www.ebay.com">Custom Implementation ->@Model.TermsLabel </a>
                             QueryParams->@Request.QueryString.ToString()
                             <br>
                             Culture.Name=>@culture.Name

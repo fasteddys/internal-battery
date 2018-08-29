@@ -1,0 +1,15 @@
+﻿@model UpDiddy.ViewModels.CourseViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer L
+@{
+    ViewData["Title"] = L["Course Details"];
+}
+<h1> @L[@Model.CourseName]</h1>
+<div>
+    <ul>
+        Course Details for @Model.CourseName
+
+
+        <li><a asp-area="" asp-controller="Course" asp-action="Checkout" asp-route-username='@Model.CourseName'>Buy Now</a></li>
+    </ul>
+</div>

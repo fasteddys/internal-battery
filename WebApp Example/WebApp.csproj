@@ -110,9 +110,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Mobile Apps\UserDetailsClient.Core\UserDetailsClient.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Update="Resources\Controllers.Designer.cs">
       <DependentUpon>Controllers.resx</DependentUpon>
     </Compile>

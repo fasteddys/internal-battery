@@ -14,10 +14,9 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc.Razor;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
-using UserDetailsClient.Core;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace WebApp_OpenIDConnect_DotNet
+namespace UpDiddy
 {
     public class Startup
     {
