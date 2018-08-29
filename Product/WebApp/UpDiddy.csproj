@@ -21,6 +21,7 @@
     <Folder Include="Views\User\" />
     <Folder Include="ViewModels\" />
     <Folder Include="Views\Course\" />
+    <Folder Include="wwwroot\lib\font-awesome\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Remove="Resources\AppResources.es.resx" />
