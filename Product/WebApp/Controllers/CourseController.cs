@@ -16,7 +16,7 @@ namespace UpDiddy.Controllers
         {
             return View();
         }
-
+ 
         // GET: /<controller>/
         [Route("Course/ByTopic/{Topic}")]
         public IActionResult ByTopic(string Topic)
