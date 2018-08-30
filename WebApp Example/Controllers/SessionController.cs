@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Localization;
 
-namespace UpDiddy.Controllers
+namespace WebApp_OpenIDConnect_DotNet.Controllers
 {
     public class SessionController : Controller
     {

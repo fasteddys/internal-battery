@@ -9,11 +9,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Identity.Client;
-using UpDiddy.Models;
+using WebApp_OpenIDConnect_DotNet.Models;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace UpDiddy
+namespace WebApp_OpenIDConnect_DotNet
 {
     public static class AzureAdB2CAuthenticationBuilderExtensions
     {

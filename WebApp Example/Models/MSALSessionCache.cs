@@ -1,9 +1,9 @@
-using Microsoft.Identity.Client;
+﻿using Microsoft.Identity.Client;
 
 using System.Threading;
 using Microsoft.AspNetCore.Http;
 
-namespace UpDiddy.Models
+namespace WebApp_OpenIDConnect_DotNet.Models
 {
     public class MSALSessionCache
     {

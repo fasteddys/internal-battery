@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace UpDiddy.Resources {
+namespace WebApp_OpenIDConnect_DotNet.Resources {
     using System;
     using System.Reflection;
     
@@ -30,7 +30,7 @@ namespace UpDiddy.Resources {
         internal static System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.Equals(null, resourceMan)) {
-                    System.Resources.ResourceManager temp = new System.Resources.ResourceManager("UpDiddy.Resources.Views.Home.Terms.en-US", typeof(Views_Home_Terms_en_US).Assembly);
+                    System.Resources.ResourceManager temp = new System.Resources.ResourceManager("WebApp_OpenIDConnect_DotNet.Resources.Views.Home.Terms.en-US", typeof(Views_Home_Terms_en_US).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

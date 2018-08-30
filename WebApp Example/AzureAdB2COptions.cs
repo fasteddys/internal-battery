@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace UpDiddy
+namespace WebApp_OpenIDConnect_DotNet
 {
     public class AzureAdB2COptions
     {

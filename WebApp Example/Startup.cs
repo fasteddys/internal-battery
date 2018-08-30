@@ -16,7 +16,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace UpDiddy
+namespace WebApp_OpenIDConnect_DotNet
 {
     public class Startup
     {

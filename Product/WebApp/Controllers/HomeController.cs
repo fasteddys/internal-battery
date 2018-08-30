@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Localization;
+using UpDiddy.Helpers;
 
 namespace UpDiddy.Controllers
 {
@@ -33,7 +34,10 @@ namespace UpDiddy.Controllers
         public IActionResult Index()
         {
 
-        
+            APIHelper API = new APIHelper(AzureAdB2COptions, this.HttpContext);
+            Task<string> x = API.HelloTest();
+            var xx = x.Result;
+
             return View();
         }
 

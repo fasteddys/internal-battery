@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Client;
 using System.Security.Claims;
-using UpDiddy.Models;
+using WebApp_OpenIDConnect_DotNet.Models;
 using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Net;
@@ -14,8 +14,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Localization;
+ 
 
-namespace UpDiddy.Controllers
+namespace WebApp_OpenIDConnect_DotNet.Controllers
 {
     public class HomeController : Controller
     {
@@ -58,6 +59,8 @@ namespace UpDiddy.Controllers
             string responseString = "";
             try
             {
+
+   
                 // Retrieve the token with the specified scopes
                 var scope = AzureAdB2COptions.ApiScopes.Split(' ');
                 string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
