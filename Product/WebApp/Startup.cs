@@ -22,7 +22,8 @@ namespace UpDiddy
     public class Startup
     {
 
-     
+
+
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -45,7 +46,7 @@ namespace UpDiddy
                 sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
 
-            })                    
+            })      
             .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
             .AddCookie();
            
@@ -56,6 +57,11 @@ namespace UpDiddy
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
                 .AddDataAnnotationsLocalization();
             #endregion
+
+            // Add Dependency Injection for the configuration object
+            services.AddSingleton<IConfiguration>(Configuration);
+
+
 
             // Configure supported cultures and localization options
             services.Configure<RequestLocalizationOptions>(options =>
@@ -77,12 +83,11 @@ namespace UpDiddy
                 // These are the cultures the app supports for UI strings (that we have localized resources for).
                 options.SupportedUICultures = supportedCultures;
 
-       
 
 
 
-            //    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
-               //options.RequestCultureProviders.Insert(0, new CookieRequestCultureProvider());
+                //    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+                //options.RequestCultureProviders.Insert(0, new CookieRequestCultureProvider());
 
 
                 // You can change which providers are configured to determine the culture for requests, or even add a custom
@@ -111,7 +116,9 @@ namespace UpDiddy
                 // options.CookieHttpOnly = true;
                 options.Cookie.HttpOnly = true;
             });
-                       
+
+ 
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

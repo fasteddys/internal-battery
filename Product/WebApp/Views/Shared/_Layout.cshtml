@@ -33,8 +33,8 @@
                 <ul class="nav navbar-nav">
                     <li><a asp-area="" asp-controller="Topic" asp-action="Index">@Localizer["Topics"]</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="About">@Localizer["News"]</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="About">@Localizer["Contact"]</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="News">@Localizer["News"]</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="ContactUs">@Localizer["Contact"]</a></li>
 
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")

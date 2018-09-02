@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Localization;
 using UpDiddy.Helpers;
+using Microsoft.Extensions.Configuration;
 
 namespace UpDiddy.Controllers
 {
@@ -22,21 +23,27 @@ namespace UpDiddy.Controllers
     {
         AzureAdB2COptions AzureAdB2COptions;
         private readonly IStringLocalizer<HomeController> _localizer;
+        private readonly IConfiguration _configuration;
    
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer)
+        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
+            _configuration = configuration;
 
 
         }
 
         public IActionResult Index()
         {
+            var xxx = _configuration["Api:ApiUrl"];
+            // TODO remove test code 
+            ApiHelperMsal API = new ApiHelperMsal(AzureAdB2COptions, this.HttpContext, _configuration);
+        
+            var x = API.GetAsString("hello");
 
-            APIHelper API = new APIHelper(AzureAdB2COptions, this.HttpContext);
-            Task<string> x = API.HelloTest();
-            var xx = x.Result;
+            string xx = API.Get<string>("hello");
+
 
             return View();
         }
@@ -94,12 +101,16 @@ namespace UpDiddy.Controllers
             string responseString = "";
             try
             {
+
+          
+
                 // Retrieve the token with the specified scopes
                 var scope = AzureAdB2COptions.ApiScopes.Split(' ');
                 string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
                 TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
                 ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureAdB2COptions.ClientId, AzureAdB2COptions.Authority, AzureAdB2COptions.RedirectUri, new ClientCredential(AzureAdB2COptions.ClientSecret), userTokenCache, null);
-
+                // TODO remove debug var
+                var x = cca.Users.FirstOrDefault();
                 AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureAdB2COptions.Authority, false);
 
                 HttpClient client = new HttpClient();
@@ -107,8 +118,6 @@ namespace UpDiddy.Controllers
 
                 // Add token to the Authorization header and make the request
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-
-
                 HttpResponseMessage response = await client.SendAsync(request);
 
                 // Handle the response

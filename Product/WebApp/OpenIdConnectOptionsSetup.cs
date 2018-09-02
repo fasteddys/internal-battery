@@ -116,8 +116,6 @@ namespace UpDiddy
                 try
                 {
                     AuthenticationResult result = await cca.AcquireTokenByAuthorizationCodeAsync(code, AzureAdB2COptions.ApiScopes.Split(' '));
-
-
                     context.HandleCodeRedemption(result.AccessToken, result.IdToken);
                 }
                 catch (Exception ex)
