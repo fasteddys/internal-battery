@@ -30,8 +30,6 @@ namespace UpDiddy.Controllers
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
             _configuration = configuration;
-
-
         }
 
         public IActionResult Index()
@@ -39,11 +37,8 @@ namespace UpDiddy.Controllers
             var xxx = _configuration["Api:ApiUrl"];
             // TODO remove test code 
             ApiHelperMsal API = new ApiHelperMsal(AzureAdB2COptions, this.HttpContext, _configuration);
-        
             var x = API.GetAsString("hello");
-
             string xx = API.Get<string>("hello");
-
 
             return View();
         }
