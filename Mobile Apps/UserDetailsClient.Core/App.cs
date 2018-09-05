@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Globalization;
+using System.Threading;
 using Microsoft.Identity.Client;
+using Newtonsoft.Json;
 using Plugin.Multilingual;
 using Xamarin.Forms;
 
@@ -30,17 +32,28 @@ namespace UserDetailsClient.Core
 
 
         public App()
-        {
-                
+        {               
+            
             // default redirectURI; each platform specific project will have to override it with its own
             PCA = new PublicClientApplication(ClientID, Authority);
             PCA.RedirectUri = $"msal{ClientID}://auth";
 
-            MainPage = new NavigationPage(new MainPage());
+            if (App.Current.Properties.ContainsKey("AppResources.Culture"))
+            {
+                // Create CultureInfo from cached culture name 
+                var CultureName = (string)App.Current.Properties["AppResources.Culture"];
+                CultureInfo AppCulture = new CultureInfo(CultureName, true);
+                // Assign CultureInfo to App
+                CrossMultilingual.Current.CurrentCultureInfo = AppCulture;           
+                AppResources.Culture = AppCulture;
+            }                    
+            else
+                AppResources.Culture = CrossMultilingual.Current.DeviceCultureInfo;
 
-            AppResources.Culture = CrossMultilingual.Current.DeviceCultureInfo;
+           MainPage = new NavigationPage(new MainPage());
 
- 
+
+      
         }
 
         protected override void OnStart()

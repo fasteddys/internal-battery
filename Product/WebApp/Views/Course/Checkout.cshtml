@@ -1,0 +1,12 @@
+﻿@model UpDiddy.ViewModels.CourseViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer L
+@{
+    ViewData["Title"] = L["Home Page"];
+}
+<h1> @L[@Model.CourseName]</h1>
+<div>
+    <ul>
+        This is the course checkout page CHA-CHING!
+    </ul>
+</div>

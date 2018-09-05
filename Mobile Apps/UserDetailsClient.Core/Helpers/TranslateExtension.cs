@@ -62,5 +62,11 @@ namespace UserDetailsClient.Helpers
             }
             return translation;
         }
+
+        public string UiLocalesQueryParameter()
+        {
+            var ci = CrossMultilingual.Current.CurrentCultureInfo;
+            return $"ui_locales={ci.Name}";
+        }
     }
 }

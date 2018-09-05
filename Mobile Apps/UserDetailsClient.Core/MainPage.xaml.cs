@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -24,8 +25,9 @@ namespace UserDetailsClient.Core
 
         protected override async void OnAppearing()
         {
+        
             UpdateSignInState(false);
-
+ 
             // Check to see if we have a User
             // in the cache already.
             try
@@ -51,7 +53,14 @@ namespace UserDetailsClient.Core
                 string SignInLabel = Culture.Translate("btnSignInSignOut_SignIn");
                 if (btnSignInSignOut.Text == SignInLabel )
                 {
-                    AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, GetUserByPolicy(App.PCA.Users, App.PolicySignUpSignIn), App.UiParent);
+                    //AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, GetUserByPolicy(App.PCA.Users, App.PolicySignUpSignIn), App.UiParent);
+                    AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes,
+                                                                              GetUserByPolicy(App.PCA.Users, App.PolicySignUpSignIn),
+                                                                              UIBehavior.ForceLogin,
+                                                                              Culture.UiLocalesQueryParameter(),
+                                                                              App.UiParent
+                                                                             );
+
                     UpdateUserInfo(ar);
                     UpdateSignInState(true);
                 }
@@ -118,6 +127,7 @@ namespace UserDetailsClient.Core
             {
                 lblApi.Text = $"Calling API {App.ApiEndpoint}";
                 AuthenticationResult ar = await App.PCA.AcquireTokenSilentAsync(App.Scopes, GetUserByPolicy(App.PCA.Users, App.PolicySignUpSignIn), App.Authority, false);
+   
                 string token  = ar.AccessToken;
 
                 // Get data from API
@@ -155,13 +165,21 @@ namespace UserDetailsClient.Core
                 // KNOWN ISSUE:
                 // User will get prompted 
                 // to pick an IdP again.
-                AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, GetUserByPolicy(App.PCA.Users, App.PolicyEditProfile), UIBehavior.SelectAccount, string.Empty, null, App.AuthorityEditProfile, App.UiParent);
+                AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, 
+                                                                          GetUserByPolicy(App.PCA.Users, App.PolicyEditProfile), 
+                                                                          UIBehavior.SelectAccount,
+                                                                          Culture.UiLocalesQueryParameter(),
+                                                                          null, 
+                                                                          App.AuthorityEditProfile, 
+                                                                          App.UiParent);
                 UpdateUserInfo(ar);
             }
             catch (Exception ex)
             {
                 // Alert if any exception excludig user cancelling sign-in dialog
-                if (((ex as MsalException)?.ErrorCode != "authentication_canceled"))
+                if (((ex as MsalException)?.ErrorCode != "authentication_canceled") &&
+                    ((ex as MsalException)?.ErrorCode != "access_denied") 
+                   )
                     await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
             }
         }
@@ -169,23 +187,32 @@ namespace UserDetailsClient.Core
         async void OnPasswordReset()
         {
             try
-            {
-                AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, (IUser)null, UIBehavior.SelectAccount, string.Empty, null, App.AuthorityPasswordReset, App.UiParent);
+            {               
+                AuthenticationResult ar = await App.PCA.AcquireTokenAsync(App.Scopes, 
+                                                                          (IUser)null, 
+                                                                          UIBehavior.SelectAccount, 
+                                                                          Culture.UiLocalesQueryParameter(), 
+                                                                          null, 
+                                                                          App.AuthorityPasswordReset, 
+                                                                          App.UiParent);
+ 
                 UpdateUserInfo(ar);
             }
             catch (Exception ex)
             {
+                //"AADB2C90091: The user has cancelled entering self-asserted information.\r\nCorrelation ID: 5c130e8f-0484-4d79-9bab-4c18ea165a4e\r\nTimestamp: 2018-08-22 11:03:30Z"
                 // Alert if any exception excludig user cancelling sign-in dialog
-                if (((ex as MsalException)?.ErrorCode != "authentication_canceled"))
+                if (((ex as MsalException)?.ErrorCode != "access_denied"))
                     await DisplayAlert($"Exception:", ex.ToString(), "Dismiss");
             }
         }
+
+   
 
         void UpdateSignInState(bool isSignedIn)
         { 
             btnSignInSignOut.Text = isSignedIn ? Culture.Translate("btnSignInSignOut_SignOut") : Culture.Translate("btnSignInSignOut_SignIn");
 
-            btnChangeCulture.IsVisible = isSignedIn;
             btnEditProfile.IsVisible = isSignedIn;
             btnCallApi.IsVisible = isSignedIn;
             slUser.IsVisible = isSignedIn;

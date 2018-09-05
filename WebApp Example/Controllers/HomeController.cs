@@ -12,21 +12,39 @@ using System.Net.Http;
 using System.Net;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Localization;
+using Microsoft.AspNetCore.Localization;
+ 
 
 namespace WebApp_OpenIDConnect_DotNet.Controllers
 {
     public class HomeController : Controller
     {
         AzureAdB2COptions AzureAdB2COptions;
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions)
+        private readonly IStringLocalizer<HomeController> _localizer;
+   
+        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer)
         {
+            _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
+
+
         }
 
         public IActionResult Index()
         {
+
+        
             return View();
         }
+
+        public IActionResult Terms()
+        {
+
+
+            return View();
+        }
+
 
         [Authorize]
         public IActionResult About()
@@ -41,12 +59,14 @@ namespace WebApp_OpenIDConnect_DotNet.Controllers
             string responseString = "";
             try
             {
+
+   
                 // Retrieve the token with the specified scopes
                 var scope = AzureAdB2COptions.ApiScopes.Split(' ');
                 string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
                 TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
                 ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureAdB2COptions.ClientId, AzureAdB2COptions.Authority, AzureAdB2COptions.RedirectUri, new ClientCredential(AzureAdB2COptions.ClientSecret), userTokenCache, null);
-
+                
                 AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureAdB2COptions.Authority, false);
 
                 HttpClient client = new HttpClient();
@@ -89,6 +109,18 @@ namespace WebApp_OpenIDConnect_DotNet.Controllers
         {
             ViewBag.Message = message;
             return View();
+        }
+
+
+        [HttpPost]
+        public IActionResult SetLanguage(string culture, string returnUrl)
+        {
+            Response.Cookies.Append(
+                CookieRequestCultureProvider.DefaultCookieName,
+                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+            );
+            return LocalRedirect(returnUrl);
         }
     }
 }

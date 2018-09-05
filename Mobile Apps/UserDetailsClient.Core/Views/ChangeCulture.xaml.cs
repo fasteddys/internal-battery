@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using Plugin.Multilingual;
 using Xamarin.Forms;
 
@@ -19,12 +20,19 @@ namespace UserDetailsClient.Core.Views
         }
 
         void OnUpdateLangugeClicked(object sender, System.EventArgs e)
-        {
+        {                             
             CrossMultilingual.Current.CurrentCultureInfo = CrossMultilingual.Current.NeutralCultureInfoList.ToList().First(element => element.EnglishName.Contains(picker.SelectedItem.ToString()));
             AppResources.Culture = CrossMultilingual.Current.CurrentCultureInfo;
             App.Current.MainPage = new NavigationPage(new MainPage());
+            // Cache culture info
+            if (App.Current.Properties.ContainsKey("AppResources.Culture"))
+                App.Current.Properties["AppResources.Culture"] = AppResources.Culture.Name;
+            else 
+                App.Current.Properties.Add("AppResources.Culture",AppResources.Culture.Name);
+            // Save properties 
+            App.Current.SavePropertiesAsync();
+
         }
-
-
+ 
     }
 }

@@ -1,0 +1,18 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer L
+@{
+    ViewData["Title"] = L["Home Page"];
+}
+
+<h1> @L["Topics"]</h1>
+<div>
+    This is the topics page  
+
+    <ul>
+        <li><a asp-area="" asp-controller="Course" asp-action="ByTopic" asp-route-topic="Topic 1">Topic 1</a></li>
+        <li><a asp-area="" asp-controller="Course" asp-action="ByTopic" asp-route-topic="Topic 2">Topic 2</a></li>
+        <li><a asp-area="" asp-controller="Course" asp-action="ByTopic" asp-route-topic="Topic 3">Topic 3</a></li>
+        <li><a asp-area="" asp-controller="Course" asp-action="ByTopic" asp-route-topic="Topic 4">Topic 4</a></li>
+    </ul>
+
+</div>

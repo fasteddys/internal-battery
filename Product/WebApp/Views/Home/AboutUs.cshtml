@@ -1,0 +1,11 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = @Localizer["Terms"];
+}
+<h2>About Us</h2>
+ 
+@using System.Security.Claims
+<p>
+     We are CareerCircle formerly CareerCloud formerly UpDiddy!
+</p>
