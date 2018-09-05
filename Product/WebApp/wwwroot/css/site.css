@@ -45,43 +45,5 @@ textarea {
     color: #547eff;
 }
 
-/* Footer Styles */
-footer {
-    background-image: linear-gradient(#000032, #000024);
-    color: #cbcbcb;
-    padding: 20px 0;
-}
 
-footer a {
-    color: #fff;
-    cursor: pointer;
-}
-
-footer a:hover {
-    color: #547eff;
-    text-decoration: none;
-}
-
-footer .link-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-footer .link-list.social li {
-    display: inline;
-    margin-right: 10px;
-}
-
-footer .link-list.social li:last-child {
-    margin-right: 0;
-}
-
-footer .subheading {
-    margin: 0 0 20px 0;
-}
-
-footer #FooterSubscribeForm input {
-    width: 100px;
-}
  
