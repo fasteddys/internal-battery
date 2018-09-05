@@ -18,7 +18,7 @@ namespace B2CWebApi.Controllers
             var scopes = HttpContext.User.FindFirst("http://schemas.microsoft.com/identity/claims/scope")?.Value;
             if (!string.IsNullOrEmpty(Startup.ScopeRead) && scopes != null
                     && scopes.Split(' ').Any(s => s.Equals(Startup.ScopeRead)))
-                return Ok(new string[] { "value1", "value2" });
+                return Ok(new string[] { "value1", "Hi Jim" });
             else
                 return Unauthorized();
         }
