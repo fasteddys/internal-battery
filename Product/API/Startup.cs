@@ -62,9 +62,7 @@ namespace B2CWebApi
 
             ScopeRead = Configuration["AzureAdB2C:ScopeRead"];
             ScopeWrite = Configuration["AzureAdB2C:ScopeWrite"];
-
-
-
+            
             app.UseAuthentication();
 
             app.UseMvc(routes =>

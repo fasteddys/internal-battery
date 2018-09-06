@@ -15,25 +15,14 @@ namespace UpDiddy.Helpers
     public class ApiHelperMsal
     {
 
-        private IConfiguration _configuration { get; set; }
-        private string _ApiBaseUri = String.Empty;
+        protected IConfiguration _configuration { get; set; }
+        protected string _ApiBaseUri = String.Empty;
         public AzureAdB2COptions AzureOptions { get; set; }
         public HttpContext HttpContext { get; set; }
-        public ApiHelperMsal(AzureAdB2COptions Options, HttpContext Context, IConfiguration conifguration)
-        {
-
-            AzureOptions = Options;
-            HttpContext = Context;
-            _configuration = conifguration;
-            // Set the base URI for API calls 
-            _ApiBaseUri = _configuration["Api:ApiUrl"];
-
-        }
-
-
+  
         public T Get<T>(string ApiAction, bool Authorized = false)
         {
-            Task<string> Response = _GetAync(ApiAction, Authorized);
+            Task<string> Response = _GetAsync(ApiAction, Authorized);
             try
             {
                 return (T)Convert.ChangeType(Response.Result, typeof(T));
@@ -47,7 +36,7 @@ namespace UpDiddy.Helpers
 
         public string GetAsString(string ApiAction, bool Authorized = false)
         {
-            Task<string> Response = _GetAync(ApiAction, Authorized);
+            Task<string> Response = _GetAsync(ApiAction, Authorized);
             return Response.Result;
         }
 
@@ -66,7 +55,7 @@ namespace UpDiddy.Helpers
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
         }
 
-        private async Task<string> _GetAync(string ApiAction, bool Authorized = true)
+        private async Task<string> _GetAsync(string ApiAction, bool Authorized = true)
         {
             string responseString = "";
             try
@@ -109,52 +98,6 @@ namespace UpDiddy.Helpers
         }
 
 
-        public async Task<string> HelloTest()
-        {
-            string responseString = "";
-            try
-            {
-                // Retrieve the token with the specified scopes
-                var scope = AzureOptions.ApiScopes.Split(' ');
-                string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-                ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureOptions.ClientId, AzureOptions.Authority, AzureOptions.RedirectUri, new ClientCredential(AzureOptions.ClientSecret), userTokenCache, null);
-
-                AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureOptions.Authority, false);
-
-                HttpClient client = new HttpClient();
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, AzureOptions.ApiUrl);
-
-                // Add token to the Authorization header and make the request
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-                HttpResponseMessage response = await client.SendAsync(request);
-
-                // Handle the response
-                switch (response.StatusCode)
-                {
-                    case HttpStatusCode.OK:
-                        responseString = await response.Content.ReadAsStringAsync();
-                        break;
-                    case HttpStatusCode.Unauthorized:
-                        responseString = $"Please sign in again. {response.ReasonPhrase}";
-                        break;
-                    default:
-                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
-                        break;
-                }
-            }
-            catch (MsalUiRequiredException ex)
-            {
-                responseString = $"Session has expired. Please sign in again. {ex.Message}";
-            }
-            catch (Exception ex)
-            {
-                responseString = $"Error calling API: {ex.Message}";
-            }
-
-            return responseString;
-
-        }
 #endregion
 
     }

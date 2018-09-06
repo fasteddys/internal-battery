@@ -12,6 +12,8 @@ using Microsoft.Identity.Client;
 using UpDiddy.Models;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
+ 
+
 
 namespace UpDiddy
 {
@@ -24,8 +26,9 @@ namespace UpDiddy
 
         public static AuthenticationBuilder AddAzureAdB2C(this AuthenticationBuilder builder, Action<AzureAdB2COptions> configureOptions)
         {
+             
             builder.Services.Configure(configureOptions);
-            builder.Services.AddSingleton<IConfigureOptions<OpenIdConnectOptions>, OpenIdConnectOptionsSetup>();
+            builder.Services.AddSingleton<IConfigureOptions<OpenIdConnectOptions>, AzureAdB2CAuthenticationBuilderExtensions.OpenIdConnectOptionsSetup>();
             builder.AddOpenIdConnect();
             return builder;
         }

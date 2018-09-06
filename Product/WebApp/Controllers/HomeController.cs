@@ -16,6 +16,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Localization;
 using UpDiddy.Helpers;
 using Microsoft.Extensions.Configuration;
+using UpDiddy.Api;
 
 namespace UpDiddy.Controllers
 {
@@ -36,9 +37,10 @@ namespace UpDiddy.Controllers
         {
             var xxx = _configuration["Api:ApiUrl"];
             // TODO remove test code 
-            ApiHelperMsal API = new ApiHelperMsal(AzureAdB2COptions, this.HttpContext, _configuration);
-            var x = API.GetAsString("hello");
-            string xx = API.Get<string>("hello");
+            ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
+            var x = API.GetAsString("Values", true);
+            var xx = API.Get<string>("Values", true);
+ 
 
             return View();
         }
