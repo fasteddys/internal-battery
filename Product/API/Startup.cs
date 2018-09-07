@@ -6,8 +6,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using UpDiddyApi.Models;
+using Microsoft.EntityFrameworkCore;
+ 
 
-namespace B2CWebApi
+namespace UpDiddyApi
 {
     public class Startup
     {
@@ -50,6 +53,10 @@ namespace B2CWebApi
                   };
                 });
 
+                // Register DBContext with Dependency Injection
+                services.AddDbContext<UpDiddyDbContext>(options =>               
+                    options.UseSqlServer(Configuration.GetConnectionString("CareerCircleDB")));
+ 
             // Add framework services.
             services.AddMvc();
         }
