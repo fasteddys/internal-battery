@@ -14,7 +14,7 @@ namespace UpDiddyApi.Models
         public UpDiddyDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<UpDiddyDbContext>();
-            //TODO Make Secret
+            //TODO Make Secret with Azure Key Vault
             optionsBuilder.UseSqlServer("Server=tcp:careercircle.database.windows.net,1433;Initial Catalog=careercircledb;Persist Security Info=False;User ID=CareerCircleSa;Password=T4454dSDUcKqc@dt1qu9jp&YA#o#iu!#pY@!LF&535252;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
             return new UpDiddyDbContext(optionsBuilder.Options);
