@@ -27,14 +27,17 @@ namespace UpDiddyApi
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+                
+            builder.AddEnvironmentVariables();
+
 
             if (env.IsDevelopment())
             {
-                // For more details on using the user secret store see https://go.microsoft.com/fwlink/?LinkID=532709
                 builder.AddUserSecrets<Startup>();
             }
 
-            builder.AddEnvironmentVariables();
+
+
             Configuration = builder.Build();
         }
 
@@ -59,6 +62,7 @@ namespace UpDiddyApi
 
             //// register dbcontext with dependency injection  
             // TODO Make Secret 
+            var SecretConnectionString = Configuration ["MySecret"];
             services.AddDbContext<UpDiddyDbContext>(options =>               
                 options.UseSqlServer("Server=tcp:careercircle.database.windows.net,1433;Initial Catalog=careercircledb;Persist Security Info=False;User ID=CareerCircleSa;Password=T4454dSDUcKqc@dt1qu9jp&YA#o#iu!#pY@!LF&535252;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"));
             // Add framework services.

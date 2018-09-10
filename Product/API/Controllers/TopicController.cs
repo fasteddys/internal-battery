@@ -6,6 +6,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 
@@ -19,10 +20,12 @@ namespace UpDiddyApi.Controllers
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
-        public TopicController(UpDiddyDbContext db, IMapper mapper)
+        public TopicController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration)
         {
             _db = db;
-            _mapper = mapper;            
+            _mapper = mapper;
+            // TODO remove test code 
+            var SecretConnectionString = configuration["MySecret"];
         }
 
         // GET: api/topics
