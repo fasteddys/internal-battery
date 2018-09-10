@@ -18,10 +18,20 @@
     "B2C-WebApi": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "http://localhost:6000/api/topic/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:50335/"
+      "applicationUrl": "http://localhost:6000/"
+    },
+    "UpDiddyApi": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5001/api/topic/",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:5001/"
     }
   }
 }

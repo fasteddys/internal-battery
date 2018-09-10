@@ -9,12 +9,13 @@ using System.Linq;
 using UpDiddy.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft;
+using Newtonsoft.Json;
 
 namespace UpDiddy.Helpers
 {
     public class ApiHelperMsal
     {
-
         protected IConfiguration _configuration { get; set; }
         protected string _ApiBaseUri = String.Empty;
         public AzureAdB2COptions AzureOptions { get; set; }
@@ -24,11 +25,14 @@ namespace UpDiddy.Helpers
         {
             Task<string> Response = _GetAsync(ApiAction, Authorized);
             try
-            {
-                return (T)Convert.ChangeType(Response.Result, typeof(T));
+            {                
+                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
+                return rval;             
             }
-            catch
+            catch ( Exception ex )
             {
+                // TODO instrument with json string and requested type 
+                var msg = ex.Message;
                 return (T)Convert.ChangeType(null, typeof(T)); ;
             }
         }
@@ -55,12 +59,11 @@ namespace UpDiddy.Helpers
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
         }
 
-        private async Task<string> _GetAsync(string ApiAction, bool Authorized = true)
+        private async Task<string> _GetAsync(string ApiAction, bool Authorized = false)
         {
             string responseString = "";
             try
-            {
-               
+            {               
                 HttpClient client = new HttpClient();
                 string ApiUrl = _ApiBaseUri + ApiAction;
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);

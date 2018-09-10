@@ -8,10 +8,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using Microsoft.EntityFrameworkCore;
- 
+using AutoMapper;
+using UpDiddyLib.Dto;
+using UpDiddyApi.Helpers;
 
 namespace UpDiddyApi
 {
+ 
+
     public class Startup
     {
         public static string ScopeRead;
@@ -53,12 +57,16 @@ namespace UpDiddyApi
                   };
                 });
 
-                // Register DBContext with Dependency Injection
-                services.AddDbContext<UpDiddyDbContext>(options =>               
-                    options.UseSqlServer(Configuration.GetConnectionString("CareerCircleDB")));
- 
+            //// register dbcontext with dependency injection  
+            // TODO Make Secret 
+            services.AddDbContext<UpDiddyDbContext>(options =>               
+                options.UseSqlServer("Server=tcp:careercircle.database.windows.net,1433;Initial Catalog=careercircledb;Persist Security Info=False;User ID=CareerCircleSa;Password=T4454dSDUcKqc@dt1qu9jp&YA#o#iu!#pY@!LF&535252;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"));
             // Add framework services.
             services.AddMvc();
+            // Add AutoMapper 
+            AutoMapperConfiguration.Init();
+            services.AddAutoMapper(typeof(Startup));
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

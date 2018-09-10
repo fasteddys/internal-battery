@@ -19,6 +19,23 @@
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "http://localhost:5000"
+    },
+    "WebApp-Development": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "WebApp-DevelopmentLocalApi": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5000",
+      "environmentVariables": {
+        "Key": "Value",
+        "ASPNETCORE_ENVIRONMENT": "DevelopmentLocalApi"
+      }
     }
   }
 }
