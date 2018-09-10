@@ -141,7 +141,4 @@
       <DependentUpon>Views.Home.Terms.fr.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  <Target Name="GulpCompile" BeforeTargets="Build">
-   <Exec Command="gulp scss-compile" />
-  </Target>
 </Project>
