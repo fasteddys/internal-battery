@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+ 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace UpDiddyApi.Models
 {
@@ -11,12 +14,30 @@ namespace UpDiddyApi.Models
 
     public class UpDiddyDbContextFactory : IDesignTimeDbContextFactory<UpDiddyDbContext>
     {
+       
         public UpDiddyDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<UpDiddyDbContext>();
-            //TODO Make Secret with Azure Key Vault
-            optionsBuilder.UseSqlServer("Server=tcp:careercircle.database.windows.net,1433;Initial Catalog=careercircledb;Persist Security Info=False;User ID=CareerCircleSa;Password=T4454dSDUcKqc@dt1qu9jp&YA#o#iu!#pY@!LF&535252;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+            var CurrentDir = System.IO.Directory.GetCurrentDirectory();
+            IConfigurationBuilder configBuilder = new ConfigurationBuilder()
+                   .SetBasePath(CurrentDir)
+                   .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
+            IConfiguration config = configBuilder.Build();   
+
+            var VaultUrl = config["Vault"];
+            var VaultClientId = config["Clientid"];
+            var VaultSecret = config["ClientSecret"];
+
+            configBuilder.AddAzureKeyVault(
+                 VaultUrl,
+                 VaultClientId,
+                 VaultSecret);
+
+            config = configBuilder.Build();
+            // Get the connection string from the Azure secret vault
+            var SqlConnectionString = config["CareerCircleSqlConnection"];
+            optionsBuilder.UseSqlServer(SqlConnectionString);
             return new UpDiddyDbContext(optionsBuilder.Options);
         }
     }
@@ -29,6 +50,7 @@ namespace UpDiddyApi.Models
         public DbSet<Vendor> Vendor { get; set; }
         public DbSet<Subscriber> Subscriber { get; set; }
         public DbSet<Enrollment> Enrollment { get; set; }
+        public DbSet<Course> Course { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
        //     modelBuilder.Entity<Topic>().ToTable("Topic");         

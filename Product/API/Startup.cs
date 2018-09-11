@@ -20,9 +20,10 @@ namespace UpDiddyApi
     {
         public static string ScopeRead;
         public static string ScopeWrite;
-
-        public Startup(IHostingEnvironment env)
+        private IConfiguration _vaultConfig;
+        public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
+            _vaultConfig = configuration;
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -30,18 +31,15 @@ namespace UpDiddyApi
                 
             builder.AddEnvironmentVariables();
 
-
             if (env.IsDevelopment())
             {
                 builder.AddUserSecrets<Startup>();
             }
-
-
-
+            
             Configuration = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public IConfigurationRoot Configuration { get; set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -60,17 +58,15 @@ namespace UpDiddyApi
                   };
                 });
 
-            //// register dbcontext with dependency injection  
-            // TODO Make Secret 
-            var SecretConnectionString = Configuration ["MySecret"];
+            // Get the connection string from the Azure secret vault
+            var SqlConnection = _vaultConfig["CareerCircleSqlConnection"];         
             services.AddDbContext<UpDiddyDbContext>(options =>               
-                options.UseSqlServer("Server=tcp:careercircle.database.windows.net,1433;Initial Catalog=careercircledb;Persist Security Info=False;User ID=CareerCircleSa;Password=T4454dSDUcKqc@dt1qu9jp&YA#o#iu!#pY@!LF&535252;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"));
+                options.UseSqlServer(SqlConnection));
             // Add framework services.
             services.AddMvc();
             // Add AutoMapper 
             AutoMapperConfiguration.Init();
-            services.AddAutoMapper(typeof(Startup));
-            
+            services.AddAutoMapper(typeof(Startup));            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -90,6 +86,9 @@ namespace UpDiddyApi
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            var SqlConnection = _vaultConfig["ConnectionString"];
+            var SecretConnectionString = Configuration["MySecret"];
         }
 
         private Task AuthenticationFailed(AuthenticationFailedContext arg)

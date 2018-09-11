@@ -22,6 +22,8 @@ namespace UpDiddyApi.Models
 
         public int CourseSchedule { get; set; }
 
+        public Decimal  PurchasePrice6{ get; set; }
+
         public int IsDeleted { get; set; }
     }
 }
