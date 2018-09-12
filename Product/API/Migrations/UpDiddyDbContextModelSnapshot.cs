@@ -19,26 +19,377 @@ namespace UpDiddyApi.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("UpDiddyApi.Models.Badge", b =>
+                {
+                    b.Property<int>("BadgeId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid?>("BadgeGuid");
+
+                    b.Property<string>("BadgeName")
+                        .IsRequired();
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Description");
+
+                    b.Property<DateTime?>("EndDate");
+
+                    b.Property<bool?>("Hidden");
+
+                    b.Property<string>("Icon");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int?>("Points");
+
+                    b.Property<string>("Slug");
+
+                    b.Property<string>("SortOrder");
+
+                    b.Property<DateTime?>("StartDate");
+
+                    b.HasKey("BadgeId");
+
+                    b.ToTable("Badge");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.BadgeCourse", b =>
+                {
+                    b.Property<int>("BadgeCourseId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid?>("BadgeCourseGuid");
+
+                    b.Property<string>("CourseId")
+                        .IsRequired();
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Notes");
+
+                    b.Property<int?>("SortOrder");
+
+                    b.HasKey("BadgeCourseId");
+
+                    b.ToTable("BadgeCourse");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.BadgeEarned", b =>
+                {
+                    b.Property<int>("BadgeEarnedId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid?>("BadgeEarnedGuid");
+
+                    b.Property<string>("BadgeId")
+                        .IsRequired();
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<DateTime>("DateEarned");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("PointValue");
+
+                    b.Property<string>("SubscriberId")
+                        .IsRequired();
+
+                    b.HasKey("BadgeEarnedId");
+
+                    b.ToTable("BadgeEarned");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.BadgeSet", b =>
+                {
+                    b.Property<int>("BadgeSetId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("BadgeId");
+
+                    b.Property<string>("BadgeSetDescription");
+
+                    b.Property<Guid?>("BadgeSetGuid");
+
+                    b.Property<string>("BadgeSetName")
+                        .IsRequired();
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<bool?>("Hidden");
+
+                    b.Property<string>("Icon");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Slug");
+
+                    b.Property<int?>("SortOrder");
+
+                    b.HasKey("BadgeSetId");
+
+                    b.ToTable("BadgeSet");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CommunicationSubscription", b =>
+                {
+                    b.Property<int>("CommunicationSubscriptionId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid?>("CommunicationSubscriptionGuid");
+
+                    b.Property<int>("CommunicationTypeId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<DateTime>("SubscribeDate");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("CommunicationSubscriptionId");
+
+                    b.ToTable("CommunicationSubscription");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CommunicationTemplate", b =>
+                {
+                    b.Property<int>("CommunicationTemplateId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid?>("CommunicationTemplateGuid");
+
+                    b.Property<int>("CommunicationTypeId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("HtmlTemplate");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<string>("TextTemplate");
+
+                    b.HasKey("CommunicationTemplateId");
+
+                    b.ToTable("CommunicationTemplate");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CommunicationType", b =>
+                {
+                    b.Property<int>("CommunicationTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("CommuncationDescription");
+
+                    b.Property<Guid?>("CommunciationTypeGuid");
+
+                    b.Property<string>("CommunicationName")
+                        .IsRequired();
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("FrequencyInDays");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.HasKey("CommunicationTypeId");
+
+                    b.ToTable("CommunicationType");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Course", b =>
                 {
                     b.Property<int>("CourseId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("CourseCode")
+                    b.Property<string>("CourseCode");
+
+                    b.Property<int?>("CourseDeliveryId");
+
+                    b.Property<string>("CourseDescription");
+
+                    b.Property<Guid?>("CourseGuid");
+
+                    b.Property<string>("CourseName")
                         .IsRequired();
 
-                    b.Property<int>("CourseSchedule");
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("DesktopImage");
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<decimal>("PurchasePrice6");
+                    b.Property<string>("MobileImage");
 
-                    b.Property<int>("VendorId");
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<decimal?>("Price");
+
+                    b.Property<int?>("SortOrder");
+
+                    b.Property<string>("TabletImage");
+
+                    b.Property<int?>("TopicId");
+
+                    b.Property<int?>("VendorId");
 
                     b.HasKey("CourseId");
 
                     b.ToTable("Course");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CourseDelivery", b =>
+                {
+                    b.Property<int>("CourseDeliveryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid?>("CourseDeliveryGuid");
+
+                    b.Property<int>("CourseId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("DeliveryDescription");
+
+                    b.Property<string>("DeliveryMethod")
+                        .IsRequired();
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.HasKey("CourseDeliveryId");
+
+                    b.ToTable("CourseDelivery");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CourseReview", b =>
+                {
+                    b.Property<int>("CourseReviewId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("ApprovedById");
+
+                    b.Property<int?>("ApprovedToPublish");
+
+                    b.Property<int>("CourseId");
+
+                    b.Property<Guid?>("CourseReviewGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("Rating");
+
+                    b.Property<string>("Review");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.Property<int>("VerifiedAttended");
+
+                    b.HasKey("CourseReviewId");
+
+                    b.ToTable("CourseReview");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.EducationLevel", b =>
+                {
+                    b.Property<int>("EducationLevelId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<Guid?>("EducationLevelGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<string>("Level")
+                        .IsRequired();
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.HasKey("EducationLevelId");
+
+                    b.ToTable("EducationLevel");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Enrollment", b =>
@@ -47,13 +398,31 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime?>("CompletionDate");
+
                     b.Property<int>("CourseId");
 
-                    b.Property<DateTime>("EnrollDate");
+                    b.Property<DateTime>("CreateDate");
 
-                    b.Property<decimal>("EnrollmentFee");
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<DateTime?>("DroppedDate");
+
+                    b.Property<DateTime>("EnrollmentDate");
+
+                    b.Property<Guid?>("EnrollmentGuid");
 
                     b.Property<int>("IsDeleted");
+
+                    b.Property<int?>("IsRetake");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("PercentComplete");
+
+                    b.Property<decimal>("PricePaid");
 
                     b.Property<int>("SubscriberId");
 
@@ -62,20 +431,217 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("Enrollment");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.Gender", b =>
+                {
+                    b.Property<int>("GenderId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<Guid?>("GenderGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("SexualIdentification")
+                        .IsRequired();
+
+                    b.HasKey("GenderId");
+
+                    b.ToTable("Gender");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.News", b =>
+                {
+                    b.Property<int>("NewsId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Body");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<DateTime>("DateActive");
+
+                    b.Property<string>("ExternalLink");
+
+                    b.Property<string>("Headline")
+                        .IsRequired();
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<Guid?>("NewsGuid");
+
+                    b.Property<int>("NewsTypeId");
+
+                    b.Property<int?>("SortOrder");
+
+                    b.Property<string>("SubText")
+                        .IsRequired();
+
+                    b.HasKey("NewsId");
+
+                    b.ToTable("News");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.NewsType", b =>
+                {
+                    b.Property<int>("NewsTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("NewsClassification")
+                        .IsRequired();
+
+                    b.Property<Guid?>("NewsTypeGuid");
+
+                    b.HasKey("NewsTypeId");
+
+                    b.ToTable("NewsType");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Subscriber", b =>
                 {
                     b.Property<int>("SubscriberId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("Address");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<DateTime?>("DateOfBirth");
+
+                    b.Property<int?>("EducationLevelId");
+
+                    b.Property<string>("Email")
+                        .IsRequired();
+
+                    b.Property<string>("FirstName")
+                        .IsRequired();
+
+                    b.Property<int?>("GenderId");
+
                     b.Property<int>("IsDeleted");
 
-                    b.Property<string>("MsalObjectId")
+                    b.Property<string>("LastName")
                         .IsRequired();
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("PhoneNumber");
+
+                    b.Property<Guid?>("SubscriberGuid");
 
                     b.HasKey("SubscriberId");
 
                     b.ToTable("Subscriber");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.Tag", b =>
+                {
+                    b.Property<int>("TagId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<Guid?>("TagGuid");
+
+                    b.Property<string>("TagName")
+                        .IsRequired();
+
+                    b.HasKey("TagId");
+
+                    b.ToTable("Tag");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.TagCourse", b =>
+                {
+                    b.Property<int>("TagCourseId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CourseId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<Guid?>("TagCourseGuid");
+
+                    b.Property<int>("TagId");
+
+                    b.HasKey("TagCourseId");
+
+                    b.ToTable("TagCourse");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.TagTopic", b =>
+                {
+                    b.Property<int>("TagTopicId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("TagId");
+
+                    b.Property<Guid?>("TagTopicGuid");
+
+                    b.Property<int>("TopicId");
+
+                    b.HasKey("TagTopicId");
+
+                    b.ToTable("TagTopic");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Topic", b =>
@@ -84,11 +650,30 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Code");
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("DesktopImage");
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("MobileImage");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int?>("SortOrder");
+
+                    b.Property<string>("TabletImage");
+
+                    b.Property<Guid?>("TopicGuid");
+
+                    b.Property<string>("TopicName")
+                        .IsRequired();
 
                     b.HasKey("TopicId");
 
@@ -101,14 +686,54 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
                     b.Property<int>("IsDeleted");
 
-                    b.Property<string>("Name")
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<Guid?>("VendorGuid");
+
+                    b.Property<string>("VendorName")
                         .IsRequired();
 
                     b.HasKey("VendorId");
 
                     b.ToTable("Vendor");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.VendorTermsOfService", b =>
+                {
+                    b.Property<int>("VendorTermsOfServiceId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<DateTime>("DateEffective");
+
+                    b.Property<string>("Description")
+                        .IsRequired();
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("VendorId");
+
+                    b.Property<Guid?>("VendorTermsOfServiceGuid");
+
+                    b.HasKey("VendorTermsOfServiceId");
+
+                    b.ToTable("VendorTermsOfService");
                 });
 #pragma warning restore 612, 618
         }

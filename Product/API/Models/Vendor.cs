@@ -6,13 +6,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddyApi.Models
 {
-    public class Vendor
+    public class Vendor : BaseModel
     {
         public int VendorId { get; set; } 
-  
+        public Guid? VendorGuid { get; set; }
         [Required]
-        public string Name { get; set; }
-
-        public int IsDeleted { get; set; }
+        public string VendorName { get; set; }
     }
 }

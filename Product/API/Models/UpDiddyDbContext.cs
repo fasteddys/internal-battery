@@ -51,6 +51,23 @@ namespace UpDiddyApi.Models
         public DbSet<Subscriber> Subscriber { get; set; }
         public DbSet<Enrollment> Enrollment { get; set; }
         public DbSet<Course> Course { get; set; }
+        public DbSet<Badge> Badge { get; set; }
+        public DbSet<BadgeCourse> BadgeCourse { get; set; }
+        public DbSet<BadgeEarned> BadgeEarned { get; set; }
+        public DbSet<BadgeSet> BadgeSet { get; set; }
+        public DbSet<EducationLevel> EducationLevel { get; set; }
+        public DbSet<Gender> Gender { get; set; }
+        public DbSet<VendorTermsOfService> VendorTermsOfService { get; set; }
+        public DbSet<News> News { get; set; }
+        public DbSet<NewsType> NewsType { get; set; }
+        public DbSet<Tag> Tag { get; set; }
+        public DbSet<CourseDelivery> CourseDelivery { get; set; }
+        public DbSet<TagCourse> TagCourse { get; set; }
+        public DbSet<TagTopic> TagTopic { get; set; }
+        public DbSet<CourseReview> CourseReview { get; set; }
+        public DbSet<CommunicationType> CommunicationType { get; set; }
+        public DbSet<CommunicationTemplate> CommunicationTemplate { get; set; }
+        public DbSet<CommunicationSubscription> CommunicationSubscription { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
        //     modelBuilder.Entity<Topic>().ToTable("Topic");         

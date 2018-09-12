@@ -6,12 +6,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddyApi.Models
 {
-    public class Subscriber
+    public class Subscriber : BaseModel
     {
         public int SubscriberId { get; set; }         
-        // Azure ADB2C id for the user 
+        public Guid? SubscriberGuid { get; set; }
         [Required]
-        public string MsalObjectId { get; set; }        
-        public int IsDeleted { get; set; }
+        public string FirstName { get; set; }
+        [Required]
+        public string LastName { get; set; }
+        [Required]
+        public string Email { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Address { get; set; }
+        public int? GenderId { get; set; }
+        public int? EducationLevelId { get; set; }
     }
 }

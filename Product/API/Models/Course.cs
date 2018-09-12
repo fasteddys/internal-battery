@@ -3,27 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UpDiddyApi.Models
 {
     public enum CourseSchedules { OnDemand = 0 , InstrunctorLed};
 
-    public class Course
-    {
+    public class Course : BaseModel
+    { 
         public int CourseId { get; set; } 
-        
-        // ID of the vendor of provides the course 
+        public Guid? CourseGuid { get; set; }
         [Required]
-        public int VendorId { get; set; }
-
-        // Vendor specific code for the couse 
-        [Required]
+        public string CourseName { get; set; }
+        public string CourseDescription { get; set; }
         public string CourseCode { get; set; }
-
-        public int CourseSchedule { get; set; }
-
-        public Decimal  PurchasePrice6{ get; set; }
-
-        public int IsDeleted { get; set; }
+        public Decimal? Price { get; set; }
+        public int? TopicId { get; set; }
+        public string DesktopImage { get; set; }
+        public string TabletImage { get; set; }
+        public string MobileImage { get; set; }
+        public int? VendorId { get; set; }
+        public int? SortOrder { get; set; }
+        public int? CourseDeliveryId { get; set; }
+        
     }
 }

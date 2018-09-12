@@ -6,18 +6,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddyApi.Models
 {
-    public class Enrollment
+    public class Enrollment : BaseModel
     {
-        public int EnrollmentId { get; set; }         
-        // Azure ADB2C id for the user 
-        [Required]
+        public int EnrollmentId { get; set; }   
+        public Guid? EnrollmentGuid { get; set; }
         public int CourseId { get; set; }
-
         public int SubscriberId { get; set; }
-
-        public DateTime EnrollDate { get; set; }
-        public Decimal  EnrollmentFee { get; set; }
-
-        public int IsDeleted { get; set; }
+        public DateTime EnrollmentDate { get; set; }
+        public Decimal PricePaid { get; set; }
+        public int PercentComplete { get; set; }
+        public int? IsRetake { get; set; }
+        public DateTime? CompletionDate { get; set; }
+        public DateTime? DroppedDate { get; set; }
     }
 }
