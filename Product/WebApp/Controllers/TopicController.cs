@@ -33,7 +33,7 @@ namespace UpDiddy.Controllers
         public IActionResult Index()
         {
             
-            // TODO remove test code 
+            // Create Interface and use DI to inject 
             ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
             IList<TopicDto> model = API.Topics();            
             return View(model);

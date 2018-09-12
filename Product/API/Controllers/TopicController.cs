@@ -24,8 +24,7 @@ namespace UpDiddyApi.Controllers
         {
             _db = db;
             _mapper = mapper;
-            // TODO remove test code 
-            var SecretConnectionString = configuration["MySecret"];
+         
         }
 
         // GET: api/topics
