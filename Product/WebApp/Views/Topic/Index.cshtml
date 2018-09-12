@@ -1,4 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddyLib.Dto
+
+@model IList<TopicDto>
 @inject IViewLocalizer L
 @{
     ViewData["Title"] = L["Home Page"];
@@ -9,10 +12,11 @@
     This is the topics page  
 
     <ul>
-        <li><a asp-area="" asp-controller="Course" asp-action="ByTopic" asp-route-topic="Topic 1">Topic 1</a></li>
-        <li><a asp-area="" asp-controller="Course" asp-action="ByTopic" asp-route-topic="Topic 2">Topic 2</a></li>
-        <li><a asp-area="" asp-controller="Course" asp-action="ByTopic" asp-route-topic="Topic 3">Topic 3</a></li>
-        <li><a asp-area="" asp-controller="Course" asp-action="ByTopic" asp-route-topic="Topic 4">Topic 4</a></li>
+        @foreach (TopicDto topic in Model)
+        {            
+            <li><a asp-area="" asp-controller="Course" asp-action="ByTopic" asp-route-topic="@topic.Code">@topic.Name</a></li>
+        }
+
     </ul>
 
 </div>

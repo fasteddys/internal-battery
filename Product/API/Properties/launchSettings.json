@@ -10,18 +10,36 @@
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
-      "launchBrowser": true,
+      "launchBrowser": true, 
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONENABLED": "true",
+        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT": "https://CareerCircleDev.vault.azure.net"
       }
     },
     "B2C-WebApi": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "http://localhost:6000/api/topic/",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONENABLED": "true",
+        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT": "https://CareerCircleDev.vault.azure.net"
       },
-      "applicationUrl": "http://localhost:50335/"
+      "applicationUrl": "http://localhost:6000/"
+    },
+    "UpDiddyApi": {
+
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5001/api/topic/",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__URL": "https://brentkvtest.vault.azure.net/",
+        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CLIENTID": "d1ae267f-fa88-4d6c-ad50-6035466a00c9",
+        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__SECRET": "sXt4MWtW/EcnHLMIyf11JNIwcURi/ZS46jhnudvurSQ="
+      },
+      "applicationUrl": "http://localhost:5001/"
     }
   }
 }

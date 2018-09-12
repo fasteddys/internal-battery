@@ -91,6 +91,9 @@
     <Content Remove="wwwroot\images\clouds.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\UpDiddyLib\UpDiddyLib.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Update="Resources\Views.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Views.Home.Index.Designer.cs</LastGenOutput>
@@ -138,7 +141,4 @@
       <DependentUpon>Views.Home.Terms.fr.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  <Target Name="GulpCompile" BeforeTargets="Build">
-   <Exec Command="gulp scss-compile" />
-  </Target>
 </Project>

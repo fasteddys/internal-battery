@@ -16,7 +16,9 @@
       }
     },
     "WebApp-OpenIDConnect-DotNet": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5000"
     }
   }
 }
