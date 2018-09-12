@@ -14,9 +14,9 @@ namespace UpDiddyApi.Models
         public int CourseId { get; set; } 
         public Guid? CourseGuid { get; set; }
         [Required]
-        public string CourseName { get; set; }
-        public string CourseDescription { get; set; }
-        public string CourseCode { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Code { get; set; }
         public Decimal? Price { get; set; }
         public int? TopicId { get; set; }
         public string DesktopImage { get; set; }

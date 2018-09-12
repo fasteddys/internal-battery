@@ -12,7 +12,7 @@ namespace UpDiddyApi.Models
         public Guid? EnrollmentGuid { get; set; }
         public int CourseId { get; set; }
         public int SubscriberId { get; set; }
-        public DateTime EnrollmentDate { get; set; }
+        public DateTime DateEnrolled { get; set; }
         public Decimal PricePaid { get; set; }
         public int PercentComplete { get; set; }
         public int? IsRetake { get; set; }

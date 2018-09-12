@@ -12,8 +12,8 @@ namespace UpDiddyApi.Models
         public Guid? BadgeSetGuid { get; set; }
         public int BadgeId { get; set; }
         [Required]
-        public string BadgeSetName { get; set; }
-        public string BadgeSetDescription { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
         public bool? Hidden { get; set; }
         public int? SortOrder { get; set; }
         public string Icon { get; set; }

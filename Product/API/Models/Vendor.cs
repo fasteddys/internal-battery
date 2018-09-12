@@ -11,6 +11,6 @@ namespace UpDiddyApi.Models
         public int VendorId { get; set; } 
         public Guid? VendorGuid { get; set; }
         [Required]
-        public string VendorName { get; set; }
+        public string Name { get; set; }
     }
 }
