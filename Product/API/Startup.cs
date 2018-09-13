@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using UpDiddyLib.Dto;
 using UpDiddyApi.Helpers;
+using Microsoft.AspNetCore.Mvc;
 
 namespace UpDiddyApi
 {
@@ -62,6 +63,7 @@ namespace UpDiddyApi
             var SqlConnection = _vaultConfig["CareerCircleSqlConnection"];         
             services.AddDbContext<UpDiddyDbContext>(options =>               
                 options.UseSqlServer(SqlConnection));
+
             // Add framework services.
             services.AddMvc();
             // Add AutoMapper 
@@ -86,9 +88,7 @@ namespace UpDiddyApi
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-
-            var SqlConnection = _vaultConfig["ConnectionString"];
-            var SecretConnectionString = Configuration["MySecret"];
+ 
         }
 
         private Task AuthenticationFailed(AuthenticationFailedContext arg)
