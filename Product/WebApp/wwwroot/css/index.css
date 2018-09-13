@@ -1,11 +1,10 @@
 body {
-  padding-bottom: 20px; }
+  background-color: #000; }
 
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
-  padding-left: 15px;
-  padding-right: 15px; }
+  padding: 25px 15px; }
 
 /* Set widths on the form inputs since otherwise they're 100% wide */
 input,
@@ -22,17 +21,24 @@ textarea {
 .carousel-inner .item img[src$=".svg"] {
   width: 100%; }
 
+h1 {
+  color: #fff; }
+
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
   /* Hide captions */
   .carousel-caption {
     display: none; } }
-
 .font-light-gray {
   color: #cbcbcb; }
 
 .font-blue {
   color: #547eff; }
+
+/* Card Styles */
+.card-column {
+  padding-top: 10px;
+  padding-bottom: 10px; }
 
 /* Footer Styles */
 footer {
@@ -58,3 +64,5 @@ footer {
     margin: 0 0 20px 0; }
   footer #FooterSubscribeForm input {
     width: 100px; }
+
+/*# sourceMappingURL=index.css.map */

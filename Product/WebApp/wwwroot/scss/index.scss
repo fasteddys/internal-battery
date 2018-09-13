@@ -1,12 +1,10 @@
 ﻿body {
-    padding-bottom: 20px;
+    background-color: #000;
 }
-
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
-    padding-left: 15px;
-    padding-right: 15px;
+    padding: 25px 15px;
 }
 
 /* Set widths on the form inputs since otherwise they're 100% wide */
@@ -27,6 +25,10 @@ textarea {
     width: 100%;
 }
 
+h1{
+    color: #fff;
+}
+
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
     /* Hide captions */
@@ -42,6 +44,12 @@ textarea {
 
 .font-blue {
     color: #547eff;
+}
+
+/* Card Styles */
+.card-column{
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 /* Footer Styles */

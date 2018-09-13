@@ -9,14 +9,26 @@
 
 <h1> @L["Topics"]</h1>
 <div>
-    This is the topics page  
-
-    <ul>
+    
+    <div class="row">
         @foreach (TopicDto topic in Model)
-        {            
-            <li><a asp-area="" asp-controller="Course" asp-action="ByTopic" asp-route-topic="@topic.Code">@topic.Name</a></li>
+        {
+                
+            <div class="col-md-4 card-column">
+                <div class="card">
+                    <img class="card-img-top" src="~/images/cyber-security-2.jpg" alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title">@topic.Name</h5>
+                        <p class="card-text">@topic.Description</p>
+                        <a class="btn btn-primary" asp-area="" asp-controller="Course" asp-action="ByTopic" asp-route-topic="@topic.Code">Go!</a>
+                    </div>
+                </div>
+            </div>
         }
+       
+    </div>
+    
 
-    </ul>
+    
 
 </div>

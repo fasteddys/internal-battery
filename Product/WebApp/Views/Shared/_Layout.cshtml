@@ -10,7 +10,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - UpDiddy</title>
-    <link rel="stylesheet" href="~/css/site.min.css" />
+    <environment names="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="~/css/index.css"/>
+    </environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="~/css/site.min.css" />
+    </environment>
+
+        
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
