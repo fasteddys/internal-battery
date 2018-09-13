@@ -70,7 +70,8 @@ namespace UpDiddyApi.Models
         public DbSet<CommunicationSubscription> CommunicationSubscription { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-       //     modelBuilder.Entity<Topic>().ToTable("Topic");         
+
+         
         }
     }
 

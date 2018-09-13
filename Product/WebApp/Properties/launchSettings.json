@@ -7,34 +7,23 @@
       "sslPort": 44316
     }
   },
-  "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "WebApp-OpenIDConnect-DotNet": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "http://localhost:5000"
-    },
-    "WebApp-Development": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "http://localhost:5000",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "WebApp-DevelopmentLocalApi": {
+  "profiles": {    
+    "WebApp-Dev-Cloud": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "http://localhost:5000",
       "environmentVariables": {
         "Key": "Value",
-        "ASPNETCORE_ENVIRONMENT": "DevelopmentLocalApi"
+        "ASPNETCORE_ENVIRONMENT": "DevelopmentCloud"
+      }
+    },
+    "WebApp-Dev-Local": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5000",
+      "environmentVariables": {
+        "Key": "Value",
+        "ASPNETCORE_ENVIRONMENT": "DevelopmentLocal"
       }
     }
   }
