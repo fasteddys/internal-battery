@@ -18,5 +18,6 @@ namespace UpDiddyApi.Models
         public int? IsRetake { get; set; }
         public DateTime? CompletionDate { get; set; }
         public DateTime? DroppedDate { get; set; }
+        public int EnrollmentStatusId { get; set; }
     }
 }
