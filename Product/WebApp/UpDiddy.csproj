@@ -25,7 +25,6 @@
     <Folder Include="Resources\" />
     <Folder Include="Views\Topic\" />
     <Folder Include="Views\User\" />
-    <Folder Include="ViewModels\" />
     <Folder Include="Views\Course\" />
     <Folder Include="wwwroot\lib\font-awesome\" />
     <Folder Include="Helpers\" />

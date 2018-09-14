@@ -8,6 +8,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using UpDiddy.Api;
 using UpDiddyLib.Dto;
+using UpDiddy.ViewModels;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -35,8 +36,8 @@ namespace UpDiddy.Controllers
             
             // Create Interface and use DI to inject 
             ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
-            IList<TopicDto> model = API.Topics();            
-            return View(model);
+            TopicViewModel TopicViewModel = new TopicViewModel(_configuration, API.Topics());       
+            return View(TopicViewModel);
         }
     }
 }
