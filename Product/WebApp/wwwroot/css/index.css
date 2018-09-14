@@ -29,6 +29,9 @@ textarea {
 .font-blue {
   color: #547eff; }
 
+.nav.navbar-right li {
+  padding-right: 10px; }
+
 /* Card Styles */
 .card-column {
   padding-top: 10px;
