@@ -1,11 +1,7 @@
-body {
-  padding-bottom: 20px; }
-
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
-  padding-left: 15px;
-  padding-right: 15px; }
+  padding: 25px 15px; }
 
 /* Set widths on the form inputs since otherwise they're 100% wide */
 input,
@@ -27,12 +23,32 @@ textarea {
   /* Hide captions */
   .carousel-caption {
     display: none; } }
-
 .font-light-gray {
   color: #cbcbcb; }
 
 .font-blue {
   color: #547eff; }
+
+/* Card Styles */
+.card-column {
+  padding-top: 10px;
+  padding-bottom: 10px; }
+  .card-column .card {
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    transition: box-shadow 0.1s ease-in-out; }
+    .card-column .card:hover {
+      cursor: pointer;
+      -webkit-box-shadow: 0px 2px 10px 0px #ccc;
+      /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+      -moz-box-shadow: 0px 2px 10px 0px #ccc;
+      /* Firefox 3.5 - 3.6 */
+      box-shadow: 0px 2px 10px 0px #ccc;
+      /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+      transition: box-shadow 0.1s ease-in-out; }
+    .card-column .card img {
+      height: 230px; }
 
 /* Footer Styles */
 footer {
@@ -58,3 +74,5 @@ footer {
     margin: 0 0 20px 0; }
   footer #FooterSubscribeForm input {
     width: 100px; }
+
+/*# sourceMappingURL=index.css.map */
