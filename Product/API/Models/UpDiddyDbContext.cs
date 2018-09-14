@@ -68,6 +68,18 @@ namespace UpDiddyApi.Models
         public DbSet<CommunicationType> CommunicationType { get; set; }
         public DbSet<CommunicationTemplate> CommunicationTemplate { get; set; }
         public DbSet<CommunicationSubscription> CommunicationSubscription { get; set; }
+        public DbSet<ReportEnrollmentByVendor> ReportEnrollmentByVendors { get; set; }
+        public DbSet<Rebate> Rebate { get; set; }
+        public DbSet<VendorPromoCode> VendorPromoCode { get; set; }
+        public DbSet<PromoCodes> PromoCode { get; set; }
+        public DbSet<SubscriberPromoCode> SubscriberPromoCode { get; set; }
+        public DbSet<CoursePromoCode> CoursePromoCode { get; set; }
+        public DbSet<PromoType> PromoType { get; set; }
+        public DbSet<Payment> Payment { get; set; }
+        public DbSet<PaymentBatch> PaymentBatch { get; set; }
+        public DbSet<PaymentStatus> PaymentStatus { get; set; }
+        public DbSet<PaymentProcessor> PaymentProcessor { get; set; }
+        public DbSet<EnrollmentStatus> EnrollmentStatus { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 

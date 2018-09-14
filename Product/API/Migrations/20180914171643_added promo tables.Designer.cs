@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180914171643_added promo tables")]
+    partial class addedpromotables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -339,8 +341,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("CoursePromoCodeGuid");
 
-                    b.Property<int>("PromoCodeId");
-
                     b.HasKey("CoursePromoCodeId");
 
                     b.ToTable("CoursePromoCode");
@@ -450,24 +450,6 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("Enrollment");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.EnrollmentStatus", b =>
-                {
-                    b.Property<int>("EnrollmentStatusId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Description");
-
-                    b.Property<Guid?>("EnrollmentStatusGuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired();
-
-                    b.HasKey("EnrollmentStatusId");
-
-                    b.ToTable("EnrollmentStatus");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.Gender", b =>
                 {
                     b.Property<int>("GenderId")
@@ -559,99 +541,13 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("NewsType");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.Payment", b =>
-                {
-                    b.Property<int>("PaymentId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("EnrollmentId");
-
-                    b.Property<int>("PaymentBatchId");
-
-                    b.Property<string>("PaymentCurrencyType");
-
-                    b.Property<DateTime>("PaymentDate");
-
-                    b.Property<Guid?>("PaymentGuid");
-
-                    b.Property<string>("PaymentNonce");
-
-                    b.Property<int>("PaymentProcessorId");
-
-                    b.Property<int>("PaymentStatus");
-
-                    b.Property<decimal>("PaymentValue");
-
-                    b.HasKey("PaymentId");
-
-                    b.ToTable("Payment");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.PaymentBatch", b =>
-                {
-                    b.Property<int>("PaymentBatchId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Description");
-
-                    b.Property<string>("Name")
-                        .IsRequired();
-
-                    b.Property<Guid?>("PaymentBatchGuid");
-
-                    b.Property<string>("Status");
-
-                    b.HasKey("PaymentBatchId");
-
-                    b.ToTable("PaymentBatch");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.PaymentProcessor", b =>
-                {
-                    b.Property<int>("PaymentProcessorId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Description");
-
-                    b.Property<string>("Name")
-                        .IsRequired();
-
-                    b.Property<Guid?>("PaymentProcessorGuid");
-
-                    b.HasKey("PaymentProcessorId");
-
-                    b.ToTable("PaymentProcessor");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.PaymentStatus", b =>
-                {
-                    b.Property<int>("PaymentStatusId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Description");
-
-                    b.Property<string>("Name")
-                        .IsRequired();
-
-                    b.Property<Guid?>("PaymentStatusGuid");
-
-                    b.HasKey("PaymentStatusId");
-
-                    b.ToTable("PaymentStatus");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.PromoCodes", b =>
                 {
                     b.Property<int>("PromoCodesId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("PromoCode")
-                        .IsRequired();
+                    b.Property<string>("PromoCode");
 
                     b.Property<Guid?>("PromoCodesGuid");
 
@@ -659,8 +555,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<DateTime>("PromoEndDate");
 
-                    b.Property<string>("PromoName")
-                        .IsRequired();
+                    b.Property<string>("PromoName");
 
                     b.Property<DateTime>("PromoStartDate");
 
@@ -683,8 +578,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("PromoTypeGuid");
 
-                    b.Property<string>("PromoTypeName")
-                        .IsRequired();
+                    b.Property<string>("PromoTypeName");
 
                     b.HasKey("PromoTypeId");
 
@@ -699,15 +593,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("EnrollmentId");
 
-                    b.Property<decimal>("RebateAmount");
-
                     b.Property<Guid?>("RebateGuid");
-
-                    b.Property<DateTime>("RebateIssueDate");
-
-                    b.Property<int>("RebateIssueStatus");
-
-                    b.Property<int>("RebateIssued");
 
                     b.HasKey("RebateId");
 
@@ -794,8 +680,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("SubscriberPromoCodeId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("PromoCodeId");
 
                     b.Property<int>("SubscriberId");
 
