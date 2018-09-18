@@ -29,6 +29,16 @@ namespace UpDiddy.Controllers
             _configuration = configuration;
         }
 
+        [HttpGet]
+        [Route("/Topic/{TopicSlug}")]
+        public IActionResult Get(string TopicSlug)
+        {
+            ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
+            string TopicName = API.TopicBySlug(TopicSlug).Name;
+            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, API.Courses(TopicSlug), TopicName);
+
+            return View("Details", CourseViewModel);
+        }
 
         // GET: /<controller>/
         public IActionResult Index()

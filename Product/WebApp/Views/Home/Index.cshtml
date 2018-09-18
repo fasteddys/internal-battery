@@ -1,31 +1,70 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model HomeViewModel
+
 @inject IViewLocalizer L
 
 @{
     ViewData["Title"] = L["Home Page"];
 }
 
-
-<div id="HomeContainer" class="row">
-    <div class="jumbotron">
-        <h1 class="display-4">Join CareerCircle today and begin your journey!</h1>
-        <p class="lead">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-            Nam varius porta orci, eu lobortis sem.
-            
-        </p>
-        <hr class="my-4">
-        <p>
-            Etiam laoreet pellentesque enim, rhoncus auctor leo posuere in.
-            Phasellus magna magna, accumsan et est in, varius suscipit sapien.
-            Proin sodales ante id dui eleifend convallis.
-            Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.
-            Sed vitae eros fermentum, tincidunt velit a, accumsan orci.
-            Cras magna neque, maximus a porta suscipit, interdum sed nisi.
-            Ut a ante non lectus accumsan tincidunt.
-            Phasellus ligula felis, congue ac consectetur eu, rhoncus ut massa.
-            Vestibulum porta placerat laoreet. Duis non velit mauris. Donec mollis neque quis tristique ultricies.</p>
-            <a class="btn btn-primary btn-lg" href="#" role="button">Create Account</a>
+<div class="home-container">
+    <div class="row">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10 offset-md-1 hero-container">
+                    <div class="hero-title">The truth of the matter is that you always know the right thing to do. <span class="hero-bold">The hard part is doing it.</span></div>
+                    <div class="hero-subtext">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</div>
+                    <div class="brand-button contrast-primary">Get Started</div>
+                </div>
+            </div>
+            <div class="row" style="background-color: #0195D3">
+                <div class="col-md-6 f-color-white">
+                    <div class="hero-title hero-bold">Join Career Circle today</div>
+                    <div class="hero-title">and begin your journey Up</div>
+                    <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</div>
+                    <div class="brand-button contrast-secondary">Sign Up Today!</div>
+                </div>
+                <div class="col-md-6">
+                    <img class="hero-my-circle" src="~/images/circle.png" />
+                </div>
+            </div>
+        </div>
     </div>
-    
+    <div class="row">
+        <div class="container">
+            <div class="row course-categories">
+                <div class="col-md-6 ">
+                    <span class="section-heading f-color-primary">
+                        Career Training Categories
+                    </span>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Course Search">
+                        <div class="input-group-append">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        </div>
+                    </div>
+                </div>
+                @foreach (TopicDto topic in Model.Topics)
+                {
+
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-xs-12 card-column">
+                        <div class="card">
+                            <img class="card-img-top" src="@(Model.ImageUrl + topic.DesktopImage)" alt="Card image cap">
+                            <div class="card-body">
+                                <h5 class="card-title">@topic.Name</h5>
+                                <p class="card-text fade-text">@topic.Description</p>
+                                <div class="card-footer-cc">
+                                    <a href="#" class="view-courses-link">View Courses <i class="fas fa-angle-double-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </div>

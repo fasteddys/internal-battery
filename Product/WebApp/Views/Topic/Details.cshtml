@@ -1,0 +1,33 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model CourseViewModel
+
+<div class="detail-view-container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="col-md-8">
+                    @Model.ParentTopicName
+                </div>
+                <div class="col-md-4">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    @foreach (CourseDto course in Model.Courses)
+                    {
+
+                        <div class="col-md-4">
+                            @course.Name
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

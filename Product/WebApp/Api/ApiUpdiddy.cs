@@ -36,6 +36,15 @@ namespace UpDiddy.Api
             return Get<TopicDto>($"topic/{TopicId}", false);
         }
 
+        public TopicDto TopicBySlug(string TopicSlug)
+        {
+            return Get<TopicDto>("topic/slug/" + TopicSlug, false);
+        }
+
+        public IList<CourseDto> Courses(string TopicSlug)
+        {
+            return Get<IList<CourseDto>>("course/" + TopicSlug, false);
+        }
     }
 }
 

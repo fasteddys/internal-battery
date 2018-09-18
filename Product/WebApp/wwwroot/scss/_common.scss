@@ -1,0 +1,98 @@
+﻿$color-primary: #F8971D;
+.f-color-primary{
+    color: $color-primary;
+}
+
+$color-secondary: #0195D3;
+.f-color-secondary {
+    color: $color-secondary;
+}
+
+$color-secondary-light: #A4D7F4;
+.f-color-secondary-light {
+    color: $color-secondary-light;
+}
+
+$color-tertiary-gray: #808080;
+.f-color-tertiary-gray {
+    color: $color-tertiary-gray;
+}
+
+$color-white: #fff;
+.f-color-white{
+    color: $color-white;
+}
+
+/* Font Declarations */
+@font-face {
+    font-family: "OpenSans-Bold";
+    src: url('../fonts/OpenSans-Bold.ttf') format('truetype');
+}
+$opensans-bold: 'OpenSans-Bold';
+.opensans-bold{font-family: $opensans-bold}
+
+@font-face {
+    font-family: "OpenSans-Regular";
+    src: url('../fonts/OpenSans-Regular.ttf') format('truetype');
+}
+$opensans-regular: 'OpenSans-Regular';
+.opensans-regular { font-family: $opensans-regular}
+
+@font-face {
+    font-family: "OpenSans-Light";
+    src: url('../fonts/OpenSans-Light.ttf') format('truetype');
+}
+$opensans-light: 'OpenSans-Light';
+.opensans-light {font-family: $opensans-light}
+
+.brand-button-light{
+    background-color: #fff;
+    border-radius: 1rem;
+    border: 1px solid $color-secondary;
+    padding: .5rem 1.75rem;
+}
+
+.brand-button {
+    border-radius: .5rem;
+    max-width: 14rem;
+    padding: .4rem;
+    font-size: 1.685rem;
+    text-align: center;
+
+    &.contrast-primary {
+        background-color: $color-primary;
+        color: #fff;
+        border: 2px solid #fff;
+    }
+
+    &.contrast-secondary {
+        background-color: $color-white;
+        color: $color-secondary;
+        border: 2px solid $color-secondary;
+    }
+}
+
+nav .brand-button-light {
+    background-color: transparent;
+    border-radius: 0;
+    border: 0;
+    padding: 0;
+}
+
+.row{
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Helper classes */
+.container-align-right{
+    text-align: right;
+}
+
+.container-align-left {
+    text-align: left;
+}
+
+.container-align-center {
+    text-align: center;
+}

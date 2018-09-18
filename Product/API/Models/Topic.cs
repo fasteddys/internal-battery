@@ -11,6 +11,8 @@ namespace UpDiddyApi.Models
         public int TopicId { get; set; }
         public Guid? TopicGuid { get; set; }
         [Required]
+        public string Slug { get; set; }
+        [Required]
         public string Name { get; set; }
         public string Description { get; set; }
         public string DesktopImage { get; set; }

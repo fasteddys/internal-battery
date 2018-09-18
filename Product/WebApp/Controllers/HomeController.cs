@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Localization;
 using UpDiddy.Helpers;
 using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
+using UpDiddy.ViewModels;
 
 namespace UpDiddy.Controllers
 {
@@ -40,9 +41,9 @@ namespace UpDiddy.Controllers
             ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
             var x = API.GetAsString("Values", true);
             var xx = API.Get<string>("Values", true);
- 
 
-            return View();
+            HomeViewModel HomeViewModel = new HomeViewModel(_configuration, API.Topics());
+            return View(HomeViewModel);
         }
 
         public IActionResult Terms()

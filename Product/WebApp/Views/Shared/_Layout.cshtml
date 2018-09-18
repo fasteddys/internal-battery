@@ -9,7 +9,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - UpDiddy</title>
+    <title>@ViewData["Title"] - CareerCircle</title>
     <environment names="Development,DevelopmentLocalApi,DevelopmentLocal">
         <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css"/>
         <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css"/>
@@ -22,27 +22,39 @@
         
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white">
         <div class="container">
             <a class="navbar-brand" href="/">CareerCircle</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#NavigationItems" aria-controls="NavigationItems" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarText">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item"><a class="nav-link" asp-controller="Topic" asp-action="Index">@Localizer["Topics"]</a></li>
+            <div class="collapse navbar-collapse" id="NavigationItems">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item"><a class="nav-link" asp-controller="Topic" asp-action="Index">@Localizer["Career Skilling"]</a></li>
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["News"]</a></li>
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["Contact"]</a></li>
+
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item nav-link-right"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="EditProfile">Hello, @User.Identity.Name!</a></li>
+                        <li class="nav-item nav-link"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a></li>
+                        <li class="nav-item nav-link"><a class="nav-link" asp-area="" asp-controller="User" asp-action="Dashboard" asp-route-username='@User.Identity.Name'>My Circle</a></li>
+                    }
+                    else
+                    {
+                        <li class="nav-item nav-link-right"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignIn">Sign In</a></li>
+                        <li class="nav-item brand-button-light"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignIn">Sign Up</a></li>
+                    }
                 </ul>
-                @await Html.PartialAsync("_LoginPartial")
+
             </div>
         </div>
     </nav>
 
-    <div class="container body-content">
-        @RenderBody()
-    </div>
+    @RenderBody()
+    
     @await Html.PartialAsync("_Footer")
     <environment names="Development,DevelopmentLocalApi,DevelopmentLocal">
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

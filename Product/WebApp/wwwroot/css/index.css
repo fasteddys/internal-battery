@@ -1,14 +1,132 @@
+/* Imports */
+.f-color-primary {
+  color: #F8971D; }
+
+.f-color-secondary {
+  color: #0195D3; }
+
+.f-color-secondary-light {
+  color: #A4D7F4; }
+
+.f-color-tertiary-gray {
+  color: #808080; }
+
+.f-color-white {
+  color: #fff; }
+
+/* Font Declarations */
+@font-face {
+  font-family: "OpenSans-Bold";
+  src: url("../fonts/OpenSans-Bold.ttf") format("truetype"); }
+.opensans-bold {
+  font-family: "OpenSans-Bold"; }
+
+@font-face {
+  font-family: "OpenSans-Regular";
+  src: url("../fonts/OpenSans-Regular.ttf") format("truetype"); }
+.opensans-regular {
+  font-family: "OpenSans-Regular"; }
+
+@font-face {
+  font-family: "OpenSans-Light";
+  src: url("../fonts/OpenSans-Light.ttf") format("truetype"); }
+.opensans-light {
+  font-family: "OpenSans-Light"; }
+
+.brand-button-light {
+  background-color: #fff;
+  border-radius: 1rem;
+  border: 1px solid #0195D3;
+  padding: .5rem 1.75rem; }
+
+.brand-button {
+  border-radius: .5rem;
+  max-width: 14rem;
+  padding: .4rem;
+  font-size: 1.685rem;
+  text-align: center; }
+  .brand-button.contrast-primary {
+    background-color: #F8971D;
+    color: #fff;
+    border: 2px solid #fff; }
+  .brand-button.contrast-secondary {
+    background-color: #fff;
+    color: #0195D3;
+    border: 2px solid #0195D3; }
+
+nav .brand-button-light {
+  background-color: transparent;
+  border-radius: 0;
+  border: 0;
+  padding: 0; }
+
+.row {
+  margin-left: 0;
+  margin-right: 0; }
+
+/* Helper classes */
+.container-align-right {
+  text-align: right; }
+
+.container-align-left {
+  text-align: left; }
+
+.container-align-center {
+  text-align: center; }
+
+body {
+  font-family: "OpenSans-Regular";
+  color: #0195D3;
+  padding-top: 6.375em; }
+  body a {
+    color: #0195D3; }
+  body .section-heading {
+    font-size: 1rem; }
+  body nav {
+    text-transform: uppercase;
+    border-bottom: 1px solid #A4D7F4; }
+    body nav.navbar-light .navbar-nav li {
+      margin-right: 1rem; }
+    body nav.navbar-light .navbar-nav .nav-link {
+      color: #0195D3;
+      font-size: 1.125rem; }
+  body .hero-title {
+    font-size: 2rem;
+    font-family: "OpenSans-Light"; }
+  body .hero-bold {
+    font-family: "OpenSans-Bold"; }
+  body .home-container {
+    margin-top: 57px; }
+    body .home-container .container {
+      padding-top: 4rem; }
+    body .home-container .hero-container {
+      text-align: center; }
+      body .home-container .hero-container > div {
+        margin: 0 auto;
+        margin-bottom: 1.5rem; }
+      body .home-container .hero-container .hero-subtext {
+        color: #808080;
+        line-height: 1.8rem; }
+      body .home-container .hero-container .brand-button-heavy {
+        font-size: 1.6rem; }
+    body .home-container .hero-my-circle {
+      width: inherit; }
+    body .home-container .course-categories > div {
+      margin-bottom: 2.5rem; }
+    body .home-container .course-categories .input-group input:focus {
+      border: 1px solid #A4D7F4;
+      box-shadow: none; }
+    body .home-container .course-categories .input-group .input-group-text {
+      background-color: #fff; }
+      body .home-container .course-categories .input-group .input-group-text i {
+        color: #0195D3; }
+
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
   padding: 25px 15px; }
 
 /* Set widths on the form inputs since otherwise they're 100% wide */
-input,
-select,
-textarea {
-  max-width: 280px; }
-
 /* Carousel */
 .carousel-caption p {
   font-size: 20px;
@@ -18,17 +136,28 @@ textarea {
 .carousel-inner .item img[src$=".svg"] {
   width: 100%; }
 
-/* Hide/rearrange for smaller screens */
-@media screen and (max-width: 767px) {
-  /* Hide captions */
-  .carousel-caption {
-    display: none; } }
-.font-light-gray {
-  color: #cbcbcb; }
-
-.font-blue {
-  color: #547eff; }
-
+@media (min-width: 992px) {
+  body .section-heading {
+    font-size: 2.625rem; }
+  body nav {
+    height: 6.375rem; }
+    body nav .brand-button-light {
+      background-color: #fff;
+      border-radius: 1rem;
+      border: 1px solid #0195D3;
+      padding: .5rem 1.75rem; }
+    body nav .navbar-nav li {
+      padding: .5rem .5rem .5rem .5rem; }
+      body nav .navbar-nav li.nav-link-right {
+        border-left: 1px solid #A4D7F4;
+        padding-left: 1.2rem; }
+  body .home-container {
+    margin-top: 6.375em; } }
+@media (min-width: 768px) {
+  body .section-heading {
+    font-size: 1.5rem; }
+  body .home-container .course-categories > div {
+    margin-bottom: 0; } }
 .nav.navbar-right li {
   padding-right: 10px; }
 
@@ -37,25 +166,35 @@ textarea {
   padding-top: 10px;
   padding-bottom: 10px; }
   .card-column .card {
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-    transition: box-shadow 0.1s ease-in-out; }
-    .card-column .card:hover {
-      cursor: pointer;
-      -webkit-box-shadow: 0px 2px 10px 0px #ccc;
-      /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
-      -moz-box-shadow: 0px 2px 10px 0px #ccc;
-      /* Firefox 3.5 - 3.6 */
-      box-shadow: 0px 2px 10px 0px #ccc;
-      /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
-      transition: box-shadow 0.1s ease-in-out; }
+    border: 0; }
+    .card-column .card .card-text {
+      font-size: .75rem;
+      color: #808080;
+      line-height: 1rem;
+      overflow: hidden; }
+      .card-column .card .card-text.fade-text {
+        position: relative;
+        height: 4em; }
+      .card-column .card .card-text.fade-text:after {
+        content: "";
+        text-align: right;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 30%;
+        height: 1.2em;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0), white 50%); }
+    .card-column .card .card-footer-cc {
+      text-align: right; }
+      .card-column .card .card-footer-cc .view-courses-link {
+        font-size: .8125rem;
+        font-family: "OpenSans-Bold"; }
     .card-column .card img {
       height: 230px; }
 
 /* Footer Styles */
 footer {
-  background-image: linear-gradient(#000032, #000024);
+  background-color: #0195D3;
   color: #cbcbcb;
   padding: 20px 0; }
   footer a {
