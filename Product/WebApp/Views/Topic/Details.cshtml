@@ -2,28 +2,65 @@
 @using UpDiddyLib.Dto
 @model CourseViewModel
 
+
 <div class="detail-view-container">
-    <div class="row">
+    <div class="row topic-hero-band">
         <div class="col-md-12">
             <div class="container">
-                <div class="col-md-8">
-                    @Model.ParentTopicName
-                </div>
-                <div class="col-md-4">
-
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="hero-title">@Model.Parent.Name Courses</div>
+                        <div class="hero-subtitle">@Model.Parent.Description</div>
+                        <div class="brand-button contrast-secondary">Enroll Today!</div>
+                    </div>
+                    <div class="col-md-4 container-align-right">
+                        <img src="~/images/globe.png" />
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row course-list-container">
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
+                    <div class="col-md-12">
+                        <span class="breadcrumb-text"><a href="/">Home</a> / <a href="#">Career Skilling</a> / @Model.Parent.Name</span>
+                    </div>
+                    <div class="col-md-6 ">
+                        <span class="section-heading f-color-primary">
+                            List of @Model.Parent.Name Courses
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Course Search">
+                            <div class="input-group-append">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            </div>
+                        </div>
+                    </div>
                     @foreach (CourseDto course in Model.Courses)
                     {
 
-                        <div class="col-md-4">
-                            @course.Name
+                        <div class="col-md-4 card-column">
+                            <div class="card">
+                                <img class="card-img-top" src="@(Model.ImageUrl + course.DesktopImage)" alt="Card image cap">
+                                <div class="card-body">
+                                    <h5 class="card-title">@course.Name</h5>
+                                    <p class="card-text fade-text">@course.Description</p>
+                                    <div class="row course-footer">
+                                        <div class="col-md-6">
+                                            Cost: $@course.Price
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card-footer-cc">
+                                                <a href="#" class="card-anchor-link">Enroll <i class="fas fa-check-circle"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     }
                 </div>

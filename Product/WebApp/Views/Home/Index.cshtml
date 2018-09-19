@@ -9,30 +9,31 @@
     ViewData["Title"] = L["Home Page"];
 }
 
+
 <div class="home-container">
-    <div class="row">
+    <div class="row home-hero">
         <div class="container">
-            <div class="row">
+            <div class="row home-hero-top">
                 <div class="col-md-10 offset-md-1 hero-container">
                     <div class="hero-title">The truth of the matter is that you always know the right thing to do. <span class="hero-bold">The hard part is doing it.</span></div>
                     <div class="hero-subtext">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</div>
                     <div class="brand-button contrast-primary">Get Started</div>
                 </div>
             </div>
-            <div class="row" style="background-color: #0195D3">
+            <div class="row home-hero-bottom">
                 <div class="col-md-6 f-color-white">
                     <div class="hero-title hero-bold">Join Career Circle today</div>
-                    <div class="hero-title">and begin your journey Up</div>
-                    <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</div>
+                    <div class="hero-title hero-title-regular">and begin your journey Up</div>
+                    <div class="hero-description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</div>
                     <div class="brand-button contrast-secondary">Sign Up Today!</div>
                 </div>
                 <div class="col-md-6">
-                    <img class="hero-my-circle" src="~/images/circle.png" />
+                    <img class="hero-my-circle" src="~/images/career_circle_graphic.png" />
                 </div>
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row home-courses">
         <div class="container">
             <div class="row course-categories">
                 <div class="col-md-6 ">
@@ -50,15 +51,15 @@
                 </div>
                 @foreach (TopicDto topic in Model.Topics)
                 {
-
+                    string DescriptionBlurb = topic.Description.Substring(0, 130) + "...";
                     <div class="col-lg-4 col-md-6 col-sm-6 col-xs-12 card-column">
                         <div class="card">
                             <img class="card-img-top" src="@(Model.ImageUrl + topic.DesktopImage)" alt="Card image cap">
                             <div class="card-body">
                                 <h5 class="card-title">@topic.Name</h5>
-                                <p class="card-text fade-text">@topic.Description</p>
+                                <p class="card-text fade-text">@DescriptionBlurb</p>
                                 <div class="card-footer-cc">
-                                    <a href="#" class="view-courses-link">View Courses <i class="fas fa-angle-double-right"></i></a>
+                                    <a href="/Topic/@(topic.Slug)" class="view-courses-link">View Courses <i class="fas fa-angle-double-right"></i></a>
                                 </div>
                             </div>
                         </div>

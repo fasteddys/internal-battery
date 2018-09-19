@@ -41,8 +41,9 @@ namespace UpDiddy.Controllers
         {
             
             ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
-            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, API.Courses("test"), "test");
-            return View(CourseViewModel);
+            //CourseViewModel CourseViewModel = new CourseViewModel(_configuration, API.Courses());
+            //return View(CourseViewModel);
+            return View();
         }
 
 

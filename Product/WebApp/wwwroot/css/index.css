@@ -1,15 +1,24 @@
 /* Imports */
 .f-color-primary {
-  color: #F8971D; }
+  color: #4089A0; }
+
+.bg-color-primary {
+  background-color: #4089A0; }
 
 .f-color-secondary {
-  color: #0195D3; }
+  color: #03264A; }
+
+.bg-color-secondary {
+  background-color: #03264A; }
 
 .f-color-secondary-light {
-  color: #A4D7F4; }
+  color: #03264A; }
 
 .f-color-tertiary-gray {
   color: #808080; }
+
+.f-color-tertiary-light-gray {
+  color: #F3F3F3; }
 
 .f-color-white {
   color: #fff; }
@@ -36,23 +45,23 @@
 .brand-button-light {
   background-color: #fff;
   border-radius: 1rem;
-  border: 1px solid #0195D3;
+  border: 0.0625rem solid #03264A;
   padding: .5rem 1.75rem; }
 
 .brand-button {
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   max-width: 14rem;
   padding: .4rem;
   font-size: 1.685rem;
   text-align: center; }
   .brand-button.contrast-primary {
-    background-color: #F8971D;
+    background-color: #4089A0;
     color: #fff;
-    border: 2px solid #fff; }
+    border: 0.125rem solid #fff; }
   .brand-button.contrast-secondary {
     background-color: #fff;
-    color: #0195D3;
-    border: 2px solid #0195D3; }
+    color: #03264A;
+    border: 0.125rem solid #03264A; }
 
 nav .brand-button-light {
   background-color: transparent;
@@ -74,92 +83,65 @@ nav .brand-button-light {
 .container-align-center {
   text-align: center; }
 
+.breadcrumb-text {
+  color: #808080;
+  font-size: 0.8125rem; }
+
+input {
+  font-family: FontAwesome, "Open Sans", Verdana, sans-serif; }
+
 body {
   font-family: "OpenSans-Regular";
-  color: #0195D3;
+  color: #03264A;
   padding-top: 6.375em; }
-  body a {
-    color: #0195D3; }
   body .section-heading {
     font-size: 1rem; }
   body nav {
     text-transform: uppercase;
-    border-bottom: 1px solid #A4D7F4; }
-    body nav.navbar-light .navbar-nav li {
-      margin-right: 1rem; }
+    border-bottom: 1px solid #03264A; }
+    body nav .navbar-brand {
+      margin: 0; }
     body nav.navbar-light .navbar-nav .nav-link {
-      color: #0195D3;
+      color: #03264A;
       font-size: 1.125rem; }
   body .hero-title {
     font-size: 2rem;
     font-family: "OpenSans-Light"; }
   body .hero-bold {
     font-family: "OpenSans-Bold"; }
-  body .home-container {
-    margin-top: 57px; }
-    body .home-container .container {
-      padding-top: 4rem; }
-    body .home-container .hero-container {
-      text-align: center; }
-      body .home-container .hero-container > div {
-        margin: 0 auto;
-        margin-bottom: 1.5rem; }
-      body .home-container .hero-container .hero-subtext {
-        color: #808080;
-        line-height: 1.8rem; }
-      body .home-container .hero-container .brand-button-heavy {
-        font-size: 1.6rem; }
-    body .home-container .hero-my-circle {
-      width: inherit; }
-    body .home-container .course-categories > div {
-      margin-bottom: 2.5rem; }
-    body .home-container .course-categories .input-group input:focus {
-      border: 1px solid #A4D7F4;
-      box-shadow: none; }
-    body .home-container .course-categories .input-group .input-group-text {
-      background-color: #fff; }
-      body .home-container .course-categories .input-group .input-group-text i {
-        color: #0195D3; }
-
-/* Wrapping element */
-/* Set some basic padding to keep content from hitting the edges */
-.body-content {
-  padding: 25px 15px; }
-
-/* Set widths on the form inputs since otherwise they're 100% wide */
-/* Carousel */
-.carousel-caption p {
-  font-size: 20px;
-  line-height: 1.4; }
-
-/* Make .svg files in the carousel display properly in older browsers */
-.carousel-inner .item img[src$=".svg"] {
-  width: 100%; }
-
-@media (min-width: 992px) {
-  body .section-heading {
-    font-size: 2.625rem; }
-  body nav {
-    height: 6.375rem; }
-    body nav .brand-button-light {
-      background-color: #fff;
-      border-radius: 1rem;
-      border: 1px solid #0195D3;
-      padding: .5rem 1.75rem; }
-    body nav .navbar-nav li {
-      padding: .5rem .5rem .5rem .5rem; }
-      body nav .navbar-nav li.nav-link-right {
-        border-left: 1px solid #A4D7F4;
-        padding-left: 1.2rem; }
-  body .home-container {
-    margin-top: 6.375em; } }
-@media (min-width: 768px) {
-  body .section-heading {
-    font-size: 1.5rem; }
+  body .home-container .hero-container {
+    text-align: center; }
+    body .home-container .hero-container > div {
+      margin: 0 auto;
+      margin-bottom: 1.5rem; }
+    body .home-container .hero-container .hero-subtext {
+      color: #808080;
+      line-height: 1.8rem; }
+    body .home-container .hero-container .brand-button-heavy {
+      font-size: 1.6rem; }
+  body .home-container .hero-my-circle {
+    width: inherit; }
+  body .home-container .home-hero .home-hero-bottom .hero-title-regular, body .home-container .home-hero .home-hero-bottom .hero-description {
+    padding-bottom: 2.1875rem; }
   body .home-container .course-categories > div {
-    margin-bottom: 0; } }
-.nav.navbar-right li {
-  padding-right: 10px; }
+    margin-bottom: 2.5rem; }
+  body .home-container .course-categories .input-group input:focus {
+    border: 1px solid #03264A;
+    box-shadow: none; }
+  body .home-container .course-categories .input-group .input-group-text {
+    background-color: #fff; }
+    body .home-container .course-categories .input-group .input-group-text i {
+      color: #03264A; }
+  body .topic-hero-band {
+    background-color: #03264A;
+    padding: 4rem 0;
+    color: #fff; }
+    body .topic-hero-band .hero-title {
+      font-size: 3rem; }
+    body .topic-hero-band .hero-subtitle {
+      font-size: 1rem; }
+    body .topic-hero-band .brand-button {
+      margin-top: 2rem; }
 
 /* Card Styles */
 .card-column {
@@ -167,36 +149,81 @@ body {
   padding-bottom: 10px; }
   .card-column .card {
     border: 0; }
+    .card-column .card .card-img-top {
+      border-radius: 0; }
+    .card-column .card .card-body {
+      background-color: #F3F3F3;
+      border-bottom-left-radius: .5rem;
+      border-bottom-right-radius: .5rem; }
+    .card-column .card .card-title {
+      margin-bottom: .5rem; }
     .card-column .card .card-text {
       font-size: .75rem;
       color: #808080;
       line-height: 1rem;
-      overflow: hidden; }
-      .card-column .card .card-text.fade-text {
-        position: relative;
-        height: 4em; }
-      .card-column .card .card-text.fade-text:after {
-        content: "";
-        text-align: right;
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 30%;
-        height: 1.2em;
-        background: linear-gradient(to right, rgba(255, 255, 255, 0), white 50%); }
+      overflow: hidden;
+      margin-bottom: .5rem; }
     .card-column .card .card-footer-cc {
       text-align: right; }
       .card-column .card .card-footer-cc .view-courses-link {
+        color: #03264A;
+        font-size: 0.8125rem; }
+        .card-column .card .card-footer-cc .view-courses-link:hover {
+          text-decoration: none; }
+      .card-column .card .card-footer-cc .card-anchor-link {
         font-size: .8125rem;
         font-family: "OpenSans-Bold"; }
+    .card-column .card .course-footer div[class^="col-"] {
+      padding: 0;
+      font-size: 0.8125rem;
+      color: #4089A0; }
+      .card-column .card .course-footer div[class^="col-"] i, .card-column .card .course-footer div[class^="col-"] a {
+        color: #4089A0; }
     .card-column .card img {
       height: 230px; }
 
+/* Topic Page Styles */
+.course-list-container {
+  padding-top: 1.625rem;
+  padding-bottom: 5.375rem; }
+
 /* Footer Styles */
 footer {
-  background-color: #0195D3;
-  color: #cbcbcb;
-  padding: 20px 0; }
+  font-size: .8125rem; }
+  footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0; }
+    footer ul li {
+      display: inline-block; }
+  footer .footer-top {
+    background-color: #03264A;
+    color: #fff;
+    padding: 2.625rem; }
+    footer .footer-top .footer-header {
+      color: #4089A0; }
+    footer .footer-top .footer-content {
+      margin-top: 1.25rem; }
+      footer .footer-top .footer-content ul {
+        padding-top: .6rem; }
+        footer .footer-top .footer-content ul li {
+          border-right: 1px solid #fff;
+          padding: 0 1rem; }
+          footer .footer-top .footer-content ul li:first-child {
+            padding-left: 0; }
+          footer .footer-top .footer-content ul li:last-child {
+            border-right: 0; }
+      footer .footer-top .footer-content .input-group-text {
+        border: 0; }
+  footer .footer-bottom {
+    padding: 1.875rem 0; }
+    footer .footer-bottom div[class^="col-"] {
+      line-height: 1rem; }
+    footer .footer-bottom .social-links li {
+      font-size: 1rem;
+      padding-left: 1.5rem; }
+      footer .footer-bottom .social-links li:first-child {
+        padding-left: 0; }
   footer a {
     color: #fff;
     cursor: pointer; }
@@ -216,5 +243,43 @@ footer {
     margin: 0 0 20px 0; }
   footer #FooterSubscribeForm input {
     width: 100px; }
+
+@media (min-width: 1200px) {
+  body nav.navbar-light .navbar-nav li {
+    margin-right: 1rem; } }
+@media (min-width: 992px) {
+  body .home-container .home-hero {
+    background-image: url("../images/skyline_background.png");
+    background-size: contain;
+    background-position: top; }
+    body .home-container .home-hero .home-hero-top {
+      padding-top: 6rem; }
+    body .home-container .home-hero .home-hero-bottom {
+      padding-top: 18rem;
+      padding-bottom: 6rem; }
+  body .home-container .home-courses {
+    margin-top: 6.25rem;
+    margin-bottom: 7.5rem; }
+  body .section-heading {
+    font-size: 2.625rem; }
+  body nav {
+    height: 6.375rem; }
+    body nav .navbar-brand {
+      margin: 0 1rem; }
+    body nav .brand-button-light {
+      background-color: #fff;
+      border-radius: 1rem;
+      border: 1px solid #03264A;
+      padding: .5rem 1.75rem; }
+    body nav .navbar-nav li {
+      padding: .5rem .5rem .5rem .5rem; }
+      body nav .navbar-nav li.nav-link-right {
+        border-left: 1px solid #03264A;
+        padding-left: 1.2rem; } }
+@media (min-width: 768px) {
+  body .section-heading {
+    font-size: 1.5rem; }
+  body .home-container .course-categories > div {
+    margin-bottom: 0; } }
 
 /*# sourceMappingURL=index.css.map */

@@ -34,8 +34,8 @@ namespace UpDiddy.Controllers
         public IActionResult Get(string TopicSlug)
         {
             ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
-            string TopicName = API.TopicBySlug(TopicSlug).Name;
-            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, API.Courses(TopicSlug), TopicName);
+            TopicDto Topic = API.TopicBySlug(TopicSlug);
+            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, API.Courses(TopicSlug), Topic);
 
             return View("Details", CourseViewModel);
         }

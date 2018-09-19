@@ -1,14 +1,36 @@
-﻿$color-primary: #F8971D;
+﻿$rem-1: .0625rem;
+$rem-2: .125rem;
+$rem-3: .1875rem;
+$rem-4: .25rem;
+$rem-5: .3125rem;
+$rem-6: .375rem;
+$rem-7: .4375rem;
+$rem-8: .5rem;
+$rem-9: .5625rem;
+$rem-10: .625rem;
+$rem-11: .6875rem;
+$rem-12: .75rem;
+$rem-13: .8125rem;
+$rem-14: .875rem;
+$rem-15: .9375rem;
+
+$color-primary: #4089A0;
 .f-color-primary{
     color: $color-primary;
 }
+.bg-color-primary {
+    background-color: $color-primary;
+}
 
-$color-secondary: #0195D3;
+$color-secondary: #03264A;
 .f-color-secondary {
     color: $color-secondary;
 }
+.bg-color-secondary {
+    background-color: $color-secondary;
+}
 
-$color-secondary-light: #A4D7F4;
+$color-secondary-light: #03264A;
 .f-color-secondary-light {
     color: $color-secondary-light;
 }
@@ -18,10 +40,17 @@ $color-tertiary-gray: #808080;
     color: $color-tertiary-gray;
 }
 
+$color-tertiary-light-gray: #F3F3F3;
+.f-color-tertiary-light-gray {
+    color: $color-tertiary-light-gray;
+}
+
 $color-white: #fff;
 .f-color-white{
     color: $color-white;
 }
+
+
 
 /* Font Declarations */
 @font-face {
@@ -48,12 +77,12 @@ $opensans-light: 'OpenSans-Light';
 .brand-button-light{
     background-color: #fff;
     border-radius: 1rem;
-    border: 1px solid $color-secondary;
+    border: $rem-1 solid $color-secondary;
     padding: .5rem 1.75rem;
 }
 
 .brand-button {
-    border-radius: .5rem;
+    border-radius: $rem-8;
     max-width: 14rem;
     padding: .4rem;
     font-size: 1.685rem;
@@ -62,13 +91,13 @@ $opensans-light: 'OpenSans-Light';
     &.contrast-primary {
         background-color: $color-primary;
         color: #fff;
-        border: 2px solid #fff;
+        border: $rem-2 solid #fff;
     }
 
     &.contrast-secondary {
         background-color: $color-white;
         color: $color-secondary;
-        border: 2px solid $color-secondary;
+        border: $rem-2 solid $color-secondary;
     }
 }
 
@@ -83,9 +112,8 @@ nav .brand-button-light {
     margin-left: 0;
     margin-right: 0;
 }
-
 /* Helper classes */
-.container-align-right{
+.container-align-right {
     text-align: right;
 }
 
@@ -95,4 +123,14 @@ nav .brand-button-light {
 
 .container-align-center {
     text-align: center;
+}
+
+
+.breadcrumb-text {
+    color: $color-tertiary-gray;
+    font-size: $rem-13;
+}
+
+input {
+    font-family: FontAwesome, "Open Sans", Verdana, sans-serif;
 }
