@@ -1,104 +1,64 @@
 ﻿ <footer>
-     <div class="container">
-         <div class="row">
-            <div class="col-md-6">
+    <div class="row footer-top">
+        <div class="col-md-12">
+            <div class="container">
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="subheading">
+                    <div class="col-md-4">
+                        <div class="footer-header">
                             Customer Service
                         </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <ul class="link-list">
-                                    <li>
-                                        <a asp-area="" asp-controller="Home" asp-action="ContactUs">Contact Us</a>
-                                    </li>
-                                    <li>
-                                        <a>Enrollment &amp; Payment</a>
-                                    </li>
-                                    <li>
-                                        <a>Support</a>
-                                    </li>
-                                    <li>
-                                        <a>FAQ</a>
-                                    </li>
-                                </ul>
-                            </div>
+                        <div class="footer-content">
+                            <ul>
+                                <li>Contact</li>
+                                <li>Enrollment &amp; Payment</li>
+                                <li>Support</li>
+                            </ul>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="subheading">
-                            Information
+                    <div class="col-md-4">
+                        <div class="footer-header">
+                            More Information
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <ul class="link-list">
-                                    <li>
-                                        <a asp-area="" asp-controller="Home" asp-action="AboutUs">About Us</a>
-                                    </li>
-                                    <li>
-                                        <a>Work With Us</a>
-                                    </li>
-                                    <li>
-                                        <a asp-area="" asp-controller="Home" asp-action="WhatWeAreAbout">What We're About</a>
-                                    </li>
-                                    <li>
-                                        <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
-                                    </li>
-                                    <li>
-                                        <a asp-area="" asp-controller="Home" asp-action="Terms">Terms and Conditions</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <ul class="link-list">
-                                    <li>
-                                        <a>Careers</a>
-                                    </li>
-                                    <li>
-                                        <a>Sitemap</a>
-                                    </li>
-                                    <li>
-                                        <a asp-area="" asp-controller="Home" asp-action="News">News</a>
-                                    </li>
-                                </ul>
+                        <div class="footer-content">
+                            <ul>
+                                <li>Work With Us</li>
+                                <li>Careers</li>
+                                <li>Sitemap</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="footer-header">
+                            Stay up to date with Career Circle
+                        </div>
+                        <div class="footer-content">
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" placeholder="Email Address">
+                                <div class="input-group-append">
+                                    <span class="input-group-text bg-color-primary f-color-white">Subscribe</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+        </div>
+    </div>
+    <div class="row footer-bottom">
+        <div class="col-md-12">
+            <div class="container">
                 <div class="row">
-                    <div class="col-md-6">
-                        <span class="callout-text">Stay up to date with CareerCloud</span>
-                        <span class="callout-text font-blue">Sign up for our CareerCloud newsletter to learn about our latest offerings</span>
-                        <form id="FooterSubscribeForm">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <input type="text" class="form-control">
-                                </div>
-                                <div class="col-md-6">
-                                    <button class="btn btn-primary">
-                                        Subscribe
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
+                    <div class="col-md-9">
+                        <i class="far fa-copyright"></i>2018 Career Circle, an Allegis Group company. All rights reserved.  Privacy Policy | Terms and Conditions | Cookie Policy
                     </div>
-                    <div class="col-md-6 text-right">
-                        <ul class="link-list social">
-                            <li>
-                                <i class="fab fa-instagram"></i>
-                            </li>
-                            <li>
-                                <i class="fab fa-twitter"></i>
-                            </li>
-                            <li>
-                                <i class="fab fa-facebook"></i>
-                            </li>
+                    <div class="col-md-3 container-align-right">
+                        <ul class="social-links">
+                            <li><i class="fab fa-facebook"></i></li>
+                            <li><i class="fab fa-twitter"></i></li>
+                            <li><i class="fab fa-linkedin"></i></li>
+                            <li><i class="fab fa-google-plus"></i></li>
+                            <li><i class="fab fa-youtube"></i></li>
                         </ul>
-                        <i class="far fa-copyright"></i> 2018 CareerCloud Inc.
-                        @await Html.PartialAsync("_SelectLanguagePartial")
                     </div>
                 </div>
             </div>

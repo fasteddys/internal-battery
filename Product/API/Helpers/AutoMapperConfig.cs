@@ -18,6 +18,8 @@ namespace UpDiddyApi.Helpers
                 cfg.CreateMap<TopicDto, Topic>();
                 cfg.CreateMap<Vendor, VendorDto>();
                 cfg.CreateMap<VendorDto, Vendor>();
+                cfg.CreateMap<Course, CourseDto>();
+                cfg.CreateMap<CourseDto, Course>();
             });
 
         }

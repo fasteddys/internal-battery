@@ -46,7 +46,6 @@ namespace UpDiddyApi.Controllers
         // GET: api/topics/id
         [HttpGet]
         [Route("api/[controller]/{TopicId}")]
-        
         public IActionResult Get(int TopicId)
         {
             Topic topic = _db.Topic
@@ -59,6 +58,19 @@ namespace UpDiddyApi.Controllers
             return Ok(_mapper.Map<TopicDto>(topic)); 
         }
 
+        [HttpGet]
+        [Route("api/[controller]/slug/{TopicSlug}")]
+        public IActionResult Get(string TopicSlug)
+        {
+            Topic topic = _db.Topic
+                .Where(t => t.IsDeleted == 0 && t.Slug == TopicSlug)
+                .FirstOrDefault();
+
+            if (topic == null)
+                return NotFound();
+
+            return Ok(_mapper.Map<TopicDto>(topic));
+        }
 
     }
 
