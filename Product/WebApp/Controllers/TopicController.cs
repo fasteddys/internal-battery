@@ -21,23 +21,27 @@ namespace UpDiddy.Controllers
         AzureAdB2COptions AzureAdB2COptions;
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
+        ApiUpdiddy _Api;
+
 
         public TopicController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
             _configuration = configuration;
+            _Api = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
         }
-
 
         // GET: /<controller>/
         public IActionResult Index()
-        {
-            
+        {            
             // Create Interface and use DI to inject 
-            ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
-            TopicViewModel TopicViewModel = new TopicViewModel(_configuration, API.Topics());       
+            TopicViewModel TopicViewModel = new TopicViewModel(_configuration, _Api.Topics());       
             return View(TopicViewModel);
         }
+
+
+
+
     }
 }

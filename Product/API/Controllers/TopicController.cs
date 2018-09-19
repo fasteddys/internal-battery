@@ -46,6 +46,7 @@ namespace UpDiddyApi.Controllers
         // GET: api/topics/id
         [HttpGet]
         [Route("api/[controller]/{TopicId}")]
+        
         public IActionResult Get(int TopicId)
         {
             Topic topic = _db.Topic
