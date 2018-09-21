@@ -12,6 +12,7 @@ using AutoMapper;
 using UpDiddyLib.Dto;
 using UpDiddyApi.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using Hangfire;
 
 namespace UpDiddyApi
 {
@@ -61,8 +62,9 @@ namespace UpDiddyApi
 
             // Get the connection string from the Azure secret vault
             var SqlConnection = _vaultConfig["CareerCircleSqlConnection"];         
-            services.AddDbContext<UpDiddyDbContext>(options =>               
-                options.UseSqlServer(SqlConnection));
+            services.AddDbContext<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
+
+            services.AddHangfire(x => x.UseSqlServerStorage(SqlConnection));
 
             // Add framework services.
             services.AddMvc();
@@ -81,6 +83,9 @@ namespace UpDiddyApi
             ScopeWrite = Configuration["AzureAdB2C:ScopeWrite"];
             
             app.UseAuthentication();
+
+            app.UseHangfireDashboard("/dashboard");
+            app.UseHangfireServer();
 
             app.UseMvc(routes =>
             {
