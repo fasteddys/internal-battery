@@ -96,7 +96,7 @@ body nav {
     margin: 0; }
   body nav.navbar-light .navbar-nav .nav-link {
     color: #03264A;
-    font-size: 1.125rem; }
+    font-size: 0.75rem; }
 
 body {
   font-family: "OpenSans-Regular";
@@ -226,10 +226,16 @@ body {
 
 .checkout-page-container .checkout-hero {
   padding: 3rem 0;
-  background-color: #03264A; }
+  background-color: #03264A;
+  color: #fff; }
   .checkout-page-container .checkout-hero .checkout-known-info-header {
-    font-size: 2rem;
-    color: #fff; }
+    font-size: 2rem; }
+  .checkout-page-container .checkout-hero .known-info-container ul {
+    margin: 0;
+    padding: 0;
+    list-style: none; }
+.checkout-page-container .checkout-vendor-info-container {
+  padding: 3rem 0; }
 
 /* Footer Styles */
 footer {

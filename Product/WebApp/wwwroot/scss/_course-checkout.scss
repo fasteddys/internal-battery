@@ -1,11 +1,24 @@
 ﻿@import '_variables';
-.checkout-page-container{
-    .checkout-hero{
+.checkout-page-container {
+    .checkout-hero {
         padding: 3rem 0;
         background-color: $color-secondary;
-        .checkout-known-info-header{
+        color: $color-white;
+
+        .checkout-known-info-header {
             font-size: 2rem;
-            color: $color-white;
         }
+
+        .known-info-container {
+            ul {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+        }
+    }
+
+    .checkout-vendor-info-container {
+        padding: 3rem 0;
     }
 }
