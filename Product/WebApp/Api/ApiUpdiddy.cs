@@ -45,6 +45,11 @@ namespace UpDiddy.Api
         {
             return Get<IList<CourseDto>>("course/" + TopicSlug, false);
         }
+
+        public SubscriberDto Subscriber(Guid SubscriberGuid)
+        {
+            return Get<SubscriberDto>("subscriber/" + SubscriberGuid);
+        }
     }
 }
 

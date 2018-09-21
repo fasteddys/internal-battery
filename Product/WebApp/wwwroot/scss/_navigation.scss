@@ -1,0 +1,21 @@
+﻿@import '_variables';
+body {
+    nav {
+        text-transform: uppercase;
+        border-bottom: 1px solid $color-secondary-light;
+
+        .navbar-brand {
+            margin: 0;
+        }
+
+        &.navbar-light {
+            .navbar-nav {
+
+                .nav-link {
+                    color: $color-secondary;
+                    font-size: 1.125rem;
+                }
+            }
+        }
+    }
+}

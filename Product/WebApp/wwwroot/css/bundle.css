@@ -1,4 +1,3 @@
-/* Imports */
 .f-color-primary {
   color: #4089A0; }
 
@@ -90,20 +89,21 @@ nav .brand-button-light {
 input {
   font-family: FontAwesome, "Open Sans", Verdana, sans-serif; }
 
+body nav {
+  text-transform: uppercase;
+  border-bottom: 1px solid #03264A; }
+  body nav .navbar-brand {
+    margin: 0; }
+  body nav.navbar-light .navbar-nav .nav-link {
+    color: #03264A;
+    font-size: 1.125rem; }
+
 body {
   font-family: "OpenSans-Regular";
   color: #03264A;
   padding-top: 6.375em; }
   body .section-heading {
     font-size: 1rem; }
-  body nav {
-    text-transform: uppercase;
-    border-bottom: 1px solid #03264A; }
-    body nav .navbar-brand {
-      margin: 0; }
-    body nav.navbar-light .navbar-nav .nav-link {
-      color: #03264A;
-      font-size: 1.125rem; }
   body .hero-title {
     font-size: 2rem;
     font-family: "OpenSans-Light"; }
@@ -143,6 +143,43 @@ body {
     body .topic-hero-band .brand-button {
       margin-top: 2rem; }
 
+@media (min-width: 1200px) {
+  body nav.navbar-light .navbar-nav li {
+    margin-right: 1rem; } }
+@media (min-width: 992px) {
+  body .home-container .home-hero {
+    background-image: url("../images/skyline_background.png");
+    background-size: contain;
+    background-position: top; }
+    body .home-container .home-hero .home-hero-top {
+      padding-top: 6rem; }
+    body .home-container .home-hero .home-hero-bottom {
+      padding-top: 18rem;
+      padding-bottom: 6rem; }
+  body .home-container .home-courses {
+    margin-top: 6.25rem;
+    margin-bottom: 7.5rem; }
+  body .section-heading {
+    font-size: 2.625rem; }
+  body nav {
+    height: 6.375rem; }
+    body nav .navbar-brand {
+      margin: 0 1rem; }
+    body nav .brand-button-light {
+      background-color: #fff;
+      border-radius: 1rem;
+      border: 1px solid #03264A;
+      padding: .5rem 1.75rem; }
+    body nav .navbar-nav li {
+      padding: .5rem .5rem .5rem .5rem; }
+      body nav .navbar-nav li.nav-link-right {
+        border-left: 1px solid #03264A;
+        padding-left: 1.2rem; } }
+@media (min-width: 768px) {
+  body .section-heading {
+    font-size: 1.5rem; }
+  body .home-container .course-categories > div {
+    margin-bottom: 0; } }
 /* Card Styles */
 .card-column {
   padding-top: 10px;
@@ -186,6 +223,13 @@ body {
 .course-list-container {
   padding-top: 1.625rem;
   padding-bottom: 5.375rem; }
+
+.checkout-page-container .checkout-hero {
+  padding: 3rem 0;
+  background-color: #03264A; }
+  .checkout-page-container .checkout-hero .checkout-known-info-header {
+    font-size: 2rem;
+    color: #fff; }
 
 /* Footer Styles */
 footer {
@@ -244,42 +288,4 @@ footer {
   footer #FooterSubscribeForm input {
     width: 100px; }
 
-@media (min-width: 1200px) {
-  body nav.navbar-light .navbar-nav li {
-    margin-right: 1rem; } }
-@media (min-width: 992px) {
-  body .home-container .home-hero {
-    background-image: url("../images/skyline_background.png");
-    background-size: contain;
-    background-position: top; }
-    body .home-container .home-hero .home-hero-top {
-      padding-top: 6rem; }
-    body .home-container .home-hero .home-hero-bottom {
-      padding-top: 18rem;
-      padding-bottom: 6rem; }
-  body .home-container .home-courses {
-    margin-top: 6.25rem;
-    margin-bottom: 7.5rem; }
-  body .section-heading {
-    font-size: 2.625rem; }
-  body nav {
-    height: 6.375rem; }
-    body nav .navbar-brand {
-      margin: 0 1rem; }
-    body nav .brand-button-light {
-      background-color: #fff;
-      border-radius: 1rem;
-      border: 1px solid #03264A;
-      padding: .5rem 1.75rem; }
-    body nav .navbar-nav li {
-      padding: .5rem .5rem .5rem .5rem; }
-      body nav .navbar-nav li.nav-link-right {
-        border-left: 1px solid #03264A;
-        padding-left: 1.2rem; } }
-@media (min-width: 768px) {
-  body .section-heading {
-    font-size: 1.5rem; }
-  body .home-container .course-categories > div {
-    margin-bottom: 0; } }
-
-/*# sourceMappingURL=index.css.map */
+/*# sourceMappingURL=bundle.css.map */

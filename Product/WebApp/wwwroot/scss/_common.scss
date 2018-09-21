@@ -1,20 +1,5 @@
-﻿$rem-1: .0625rem;
-$rem-2: .125rem;
-$rem-3: .1875rem;
-$rem-4: .25rem;
-$rem-5: .3125rem;
-$rem-6: .375rem;
-$rem-7: .4375rem;
-$rem-8: .5rem;
-$rem-9: .5625rem;
-$rem-10: .625rem;
-$rem-11: .6875rem;
-$rem-12: .75rem;
-$rem-13: .8125rem;
-$rem-14: .875rem;
-$rem-15: .9375rem;
+﻿@import '_variables';
 
-$color-primary: #4089A0;
 .f-color-primary{
     color: $color-primary;
 }
@@ -22,7 +7,7 @@ $color-primary: #4089A0;
     background-color: $color-primary;
 }
 
-$color-secondary: #03264A;
+
 .f-color-secondary {
     color: $color-secondary;
 }
@@ -30,22 +15,22 @@ $color-secondary: #03264A;
     background-color: $color-secondary;
 }
 
-$color-secondary-light: #03264A;
+
 .f-color-secondary-light {
     color: $color-secondary-light;
 }
 
-$color-tertiary-gray: #808080;
+
 .f-color-tertiary-gray {
     color: $color-tertiary-gray;
 }
 
-$color-tertiary-light-gray: #F3F3F3;
+
 .f-color-tertiary-light-gray {
     color: $color-tertiary-light-gray;
 }
 
-$color-white: #fff;
+
 .f-color-white{
     color: $color-white;
 }
@@ -57,21 +42,21 @@ $color-white: #fff;
     font-family: "OpenSans-Bold";
     src: url('../fonts/OpenSans-Bold.ttf') format('truetype');
 }
-$opensans-bold: 'OpenSans-Bold';
+
 .opensans-bold{font-family: $opensans-bold}
 
 @font-face {
     font-family: "OpenSans-Regular";
     src: url('../fonts/OpenSans-Regular.ttf') format('truetype');
 }
-$opensans-regular: 'OpenSans-Regular';
+
 .opensans-regular { font-family: $opensans-regular}
 
 @font-face {
     font-family: "OpenSans-Light";
     src: url('../fonts/OpenSans-Light.ttf') format('truetype');
 }
-$opensans-light: 'OpenSans-Light';
+
 .opensans-light {font-family: $opensans-light}
 
 .brand-button-light{

@@ -106,8 +106,6 @@ namespace UpDiddy
             });
 
 
-            
-
             // Adds a default in-memory implementation of IDistributedCache.
             services.AddDistributedMemoryCache();
             services.AddSession(options =>

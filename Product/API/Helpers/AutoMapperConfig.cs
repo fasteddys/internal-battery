@@ -20,6 +20,8 @@ namespace UpDiddyApi.Helpers
                 cfg.CreateMap<VendorDto, Vendor>();
                 cfg.CreateMap<Course, CourseDto>();
                 cfg.CreateMap<CourseDto, Course>();
+                cfg.CreateMap<Subscriber, SubscriberDto>();
+                cfg.CreateMap<SubscriberDto, Subscriber>();
             });
 
         }

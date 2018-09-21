@@ -24,13 +24,13 @@ using UpDiddy.ViewModels;
 
 namespace UpDiddy.Controllers
 {
-    public class CourseController : Controller
+    public class CourseController : BaseController
     {
         AzureAdB2COptions AzureAdB2COptions;
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
 
-        public CourseController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration)
+        public CourseController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration) : base(azureAdB2COptions.Value, configuration)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
@@ -44,6 +44,14 @@ namespace UpDiddy.Controllers
             //CourseViewModel CourseViewModel = new CourseViewModel(_configuration, API.Courses());
             //return View(CourseViewModel);
             return View();
+        }
+        
+        [Authorize]
+        public IActionResult Checkout()
+        {
+            setCurrentClientGuid();
+            CheckoutViewModel checkoutViewModel = new CheckoutViewModel(this.subscriber);
+            return View(checkoutViewModel);
         }
 
 
