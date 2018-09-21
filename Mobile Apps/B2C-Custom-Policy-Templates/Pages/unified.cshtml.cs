@@ -15,8 +15,6 @@ namespace B2C_Custom_Policy_Templates.Pages
 
         public void OnGet()
         {
-
-
             string CultureName = Request.Query["ui_locales"].ToString();
             if (string.IsNullOrEmpty(CultureName))            
                 CultureName = "en";
@@ -26,9 +24,6 @@ namespace B2C_Custom_Policy_Templates.Pages
             if ( CultureName == "fr")
                     TermsLabel = "Termes et conditions";
                 
-                    
-
-
             //  CultureName = "fr";
 
             var rqf = Request.HttpContext.Features.Get<IRequestCultureFeature>();
@@ -42,16 +37,8 @@ namespace B2C_Custom_Policy_Templates.Pages
             //System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo(CultureName);
             //System.Globalization.CultureInfo.CurrentUICulture= new System.Globalization.CultureInfo(CultureName);
 
- 
-
             CultureInfo.CurrentCulture = new CultureInfo(CultureName, false); 
             CultureInfo.CurrentUICulture = new CultureInfo(CultureName, false);
-         
-
-
-
-
-
 
         }
 
