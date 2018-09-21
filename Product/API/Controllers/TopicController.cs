@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-
+using Hangfire;
+using UpDiddyApi.Workflow;
 
 namespace UpDiddyApi.Controllers
 {
@@ -38,6 +39,8 @@ namespace UpDiddyApi.Controllers
                 .Where(t => t.IsDeleted == 0)
                 .ProjectTo<TopicDto>()
                 .ToList();
+
+            BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.WozU("test"));
 
             return Ok(rval) ;
             
