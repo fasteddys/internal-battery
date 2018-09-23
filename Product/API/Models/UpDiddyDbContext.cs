@@ -80,6 +80,13 @@ namespace UpDiddyApi.Models
         public DbSet<PaymentStatus> PaymentStatus { get; set; }
         public DbSet<PaymentProcessor> PaymentProcessor { get; set; }
         public DbSet<EnrollmentStatus> EnrollmentStatus { get; set; }
+        public DbSet<VendorStudentLogin> VendorStudentLogin { get; set; }
+        public DbSet<WozTransactionLog> WozTransactionLog { get; set; }
+        public DbSet<WozCourseSection> WozCourseSection { get; set; }
+
+        
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
