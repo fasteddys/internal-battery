@@ -1,6 +1,6 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
-@model CourseViewModel
+@model TopicViewModel
 
 
 <div class="detail-view-container">
@@ -9,8 +9,8 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-8">
-                        <div class="hero-title">@Model.Parent.Name Courses</div>
-                        <div class="hero-subtitle">@Model.Parent.Description</div>
+                        <div class="hero-title">@Model.Topic.Name Courses</div>
+                        <div class="hero-subtitle">@Model.Topic.Description</div>
                         <div class="brand-button contrast-secondary">Enroll Today!</div>
                     </div>
                     <div class="col-md-4 container-align-right">
@@ -25,11 +25,11 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
-                        <span class="breadcrumb-text"><a href="/">Home</a> / <a href="#">Career Skilling</a> / @Model.Parent.Name</span>
+                        <span class="breadcrumb-text"><a href="/">Home</a> / <a href="#">Career Skilling</a> / @Model.Topic.Name</span>
                     </div>
                     <div class="col-md-6 ">
                         <span class="section-heading f-color-primary">
-                            List of @Model.Parent.Name Courses
+                            List of @Model.Topic.Name Courses
                         </span>
                     </div>
                     <div class="col-md-6">
@@ -55,7 +55,7 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="card-footer-cc">
-                                                <a class="card-anchor-link" asp-controller="Course" asp-action="Checkout">Enroll <i class="fas fa-check-circle"></i></a>
+                                                <a class="card-anchor-link" href="/Course/Checkout/@(course.Slug)">Enroll <i class="fas fa-check-circle"></i></a>
                                             </div>
                                         </div>
                                     </div>

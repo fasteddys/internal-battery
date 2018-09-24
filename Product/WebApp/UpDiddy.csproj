@@ -30,7 +30,6 @@
   <ItemGroup>
     <Folder Include="Resources\" />
     <Folder Include="Views\User\" />
-    <Folder Include="Views\Course\" />
     <Folder Include="wwwroot\lib\font-awesome\" />
     <Folder Include="Helpers\" />
     <Folder Include="Api\" />

@@ -72,6 +72,7 @@
     padding: .4rem;
     font-size: 1.685rem;
     text-align: center;
+    cursor: pointer;
 
     &.contrast-primary {
         background-color: $color-primary;
@@ -83,6 +84,12 @@
         background-color: $color-white;
         color: $color-secondary;
         border: $rem-2 solid $color-secondary;
+    }
+
+    &:hover {
+        background-color: $color-primary;
+        color: $color-white;
+        border: $rem-2 solid $color-white;
     }
 }
 

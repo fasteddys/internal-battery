@@ -52,7 +52,8 @@
   max-width: 14rem;
   padding: .4rem;
   font-size: 1.685rem;
-  text-align: center; }
+  text-align: center;
+  cursor: pointer; }
   .brand-button.contrast-primary {
     background-color: #4089A0;
     color: #fff;
@@ -61,6 +62,10 @@
     background-color: #fff;
     color: #03264A;
     border: 0.125rem solid #03264A; }
+  .brand-button:hover {
+    background-color: #4089A0;
+    color: #fff;
+    border: 0.125rem solid #fff; }
 
 nav .brand-button-light {
   background-color: transparent;
@@ -109,6 +114,19 @@ body {
     font-family: "OpenSans-Light"; }
   body .hero-bold {
     font-family: "OpenSans-Bold"; }
+  body .home-container .home-hero-top {
+    background-image: url("../images/city_skyline.jpg");
+    background-position: bottom;
+    background-size: contain;
+    padding: 5rem 0 10rem 0; }
+  body .home-container .home-hero-bottom {
+    padding: 5rem 0;
+    margin-top: -1px;
+    background-color: #03264A; }
+    body .home-container .home-hero-bottom .home-hero-bottom-cta > div > div {
+      margin-bottom: 1.5rem; }
+      body .home-container .home-hero-bottom .home-hero-bottom-cta > div > div:first-child {
+        margin-bottom: 0; }
   body .home-container .hero-container {
     text-align: center; }
     body .home-container .hero-container > div {
@@ -226,7 +244,7 @@ body {
 
 .checkout-page-container .checkout-hero {
   padding: 3rem 0;
-  background-color: #03264A;
+  background-color: #84A550;
   color: #fff; }
   .checkout-page-container .checkout-hero .checkout-known-info-header {
     font-size: 2rem; }
@@ -236,6 +254,19 @@ body {
     list-style: none; }
 .checkout-page-container .checkout-vendor-info-container {
   padding: 3rem 0; }
+.checkout-page-container #CourseCheckoutForm button {
+  font-size: 1rem;
+  padding: .5rem 1rem;
+  transition: background-color 0.15s ease; }
+  .checkout-page-container #CourseCheckoutForm button:hover {
+    background-color: #03264A; }
+.checkout-page-container #CourseCheckoutForm .same-as-above,
+.checkout-page-container #CourseCheckoutForm .billing-info-header {
+  display: inline-block;
+  margin-right: 2rem; }
+.checkout-page-container #CourseCheckoutForm .payment-info-header {
+  border-top: 0.0625rem dashed #4089A0;
+  padding-top: 1rem; }
 
 /* Footer Styles */
 footer {

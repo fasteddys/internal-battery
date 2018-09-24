@@ -64,6 +64,19 @@ namespace UpDiddyApi.Controllers
             return Ok(rval);
 
         }
+
+        [HttpGet]
+        [Route("api/[controller]/slug/{CourseSlug}")]
+        public IActionResult GetCourse(string CourseSlug)
+        {
+            IList<CourseDto> rval = null;
+            rval = _db.Course
+                .Where(t => t.IsDeleted == 0 && t.CourseId == 0)
+                .ProjectTo<CourseDto>()
+                .ToList();
+
+            return Ok(rval);
+        }
     }
 
 }

@@ -2,7 +2,7 @@
 .checkout-page-container {
     .checkout-hero {
         padding: 3rem 0;
-        background-color: $color-secondary;
+        background-color: $color-tertiary;
         color: $color-white;
 
         .checkout-known-info-header {
@@ -20,5 +20,28 @@
 
     .checkout-vendor-info-container {
         padding: 3rem 0;
+    }
+
+    #CourseCheckoutForm {
+        button {
+            font-size: 1rem;
+            padding: .5rem 1rem;
+            transition: background-color 0.15s ease;
+
+            &:hover {
+                background-color: $color-secondary;
+            }
+        }
+
+        .same-as-above,
+        .billing-info-header {
+            display: inline-block;
+            margin-right: 2rem;
+        }
+
+        .payment-info-header{
+            border-top: $rem-1 dashed $color-primary;
+            padding-top: 1rem;
+        }
     }
 }

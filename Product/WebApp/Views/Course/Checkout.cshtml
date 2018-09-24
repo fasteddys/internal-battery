@@ -1,22 +1,38 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
-@model CheckoutViewModel
+@model CourseViewModel
 
 <div class="checkout-page-container">
+    <div class="row course-hero-band">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="hero-title">@Model.Parent.Name Courses</div>
+                        <div class="hero-subtitle">@Model.Parent.Description</div>
+                        <div class="brand-button contrast-secondary">Enroll Today!</div>
+                    </div>
+                    <div class="col-md-4 container-align-right">
+                        <img src="~/images/globe.png" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row checkout-hero">
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="checkout-known-info-header">
-                            Your Information 
+                            Your Information
                         </div>
                         <div class="known-info-container">
                             @await Html.PartialAsync("_CheckoutInformation")
                         </div>
                     </div>
                     <div class="col-md-6">
-                        
+
                     </div>
                 </div>
             </div>
@@ -27,49 +43,64 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
-                        <form>
+                        <form id="CourseCheckoutForm">
                             <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <div class="billing-info-header"><h3>Billing Information</h3></div>
+                                    <div class="form-check same-as-above">
+                                        <input type="checkbox" class="form-check-input" id="SameAsAboveCheckbox">
+                                        <label class="form-check-label" for="sameAsAboveCheckbox">Same as above</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row billing-info-container">
                                 <div class="form-group col-md-6">
-                                    <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                                    <input type="text" class="form-control" id="FullName" placeholder="Full Name">
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <input type="password" class="form-control" id="inputPassword4" placeholder="Password">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="inputAddress">Address</label>
-                                <input type="text" class="form-control" id="inputAddress" placeholder="1234 Main St">
-                            </div>
-                            <div class="form-group">
-                                <label for="inputAddress2">Address 2</label>
-                                <input type="text" class="form-control" id="inputAddress2" placeholder="Apartment, studio, or floor">
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group col-md-6">
-                                    <label for="inputCity">City</label>
-                                    <input type="text" class="form-control" id="inputCity">
+                                    <input type="text" class="form-control" id="Address" placeholder="Address">
                                 </div>
                                 <div class="form-group col-md-4">
-                                    <label for="inputState">State</label>
-                                    <select id="inputState" class="form-control">
-                                        <option selected>Choose...</option>
-                                        <option>...</option>
+                                    <select class="form-control" id="City">
+                                        <option selected>City</option>
+                                        <option>MD</option>
                                     </select>
                                 </div>
                                 <div class="form-group col-md-2">
-                                    <label for="inputZip">Zip</label>
-                                    <input type="text" class="form-control" id="inputZip">
+                                    <input type="text" class="form-control" id="ZipCode" placeholder="Zip Code">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <select class="form-control" id="Country">
+                                        <option selected>Country</option>
+                                        <option>United States</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="gridCheck">
-                                    <label class="form-check-label" for="gridCheck">
-                                        Check me out
-                                    </label>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <div class="payment-info-header">
+                                        <h3>Secure Payment Information</h3>
+                                    </div>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Sign in</button>
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <input type="text" class="form-control" id="CreditCardNumber" placeholder="Credit Card Number">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <input type="text" class="form-control" id="CardholderName" placeholder="Cardholder Name">
+                                </div>
+                                <div class="form-group col-md-1">
+                                    <input type="text" class="form-control" id="CardMonth" placeholder="MM">
+                                </div>
+                                <div class="form-group col-md-1">
+                                    <input type="text" class="form-control" id="CardMonth" placeholder="YY">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <input type="text" class="form-control" id="Cvv" placeholder="CVV">
+                                </div>
+                            </div>
+                            <button type="submit" class="brand-button contrast-primary">Enroll</button>
                         </form>
                     </div>
                 </div>

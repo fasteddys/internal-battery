@@ -18,7 +18,7 @@ using UpDiddy.Helpers;
 using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
-
+using UpDiddyLib.Dto;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -47,11 +47,19 @@ namespace UpDiddy.Controllers
         }
         
         [Authorize]
-        public IActionResult Checkout()
+        [HttpGet]
+        [Route("/Course/Checkout/{CourseSlug}")]
+        public IActionResult Get(string CourseSlug)
         {
             setCurrentClientGuid();
-            CheckoutViewModel checkoutViewModel = new CheckoutViewModel(this.subscriber);
-            return View(checkoutViewModel);
+
+            ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
+            CourseDto Course = API.Course(CourseSlug);
+            TopicDto ParentTopic = API.TopicById(Course.TopicId);
+            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic);
+
+            
+            return View("Checkout", CourseViewModel);
         }
 
 
