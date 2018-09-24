@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddyLib.Dto
 {
-    public class VendorDto
+    public class VendorDto : BaseDto
     {
         public int VendorId { get; set; }
         public string Name { get; set; }

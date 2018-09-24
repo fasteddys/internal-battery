@@ -12,6 +12,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
 using Newtonsoft;
 using System.Reflection;
+using System.Globalization;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -22,7 +23,7 @@ namespace UpDiddyApi.Controllers
     public class WozController : Controller
     {
 
-
+        #region Class Members
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
@@ -31,7 +32,9 @@ namespace UpDiddyApi.Controllers
         private  readonly string _apiBaseUri = String.Empty;
         private readonly string _accessToken = String.Empty;
         private readonly WozTransactionLog _log = null;
+        #endregion
 
+        #region Constructor
         public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             _db = db;
@@ -39,25 +42,257 @@ namespace UpDiddyApi.Controllers
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
             _queue = new CCQueue("ccmessagequeue", _queueConnection);
-            _apiBaseUri = "https://clientapi.qa.exeterlms.com/v1/";
+            // TODO put in configuration
+          //  _apiBaseUri = "https://clientapi.qa.exeterlms.com/v1/";
+            _apiBaseUri = _configuration["Woz:ApiUrl"];
             _accessToken = _configuration["WozAccessToken"];
             _log = new WozTransactionLog();
 
         }
+        #endregion
+
+        #region Student Enrollment 
+
+        [HttpPost]
+        [Route("api/[controller]/SaveStudentEnrollment/{EnrollmentGuid}")]
+        // Save student with a vendor to database  
+        public MessageTransactionResponse SaveStudentEnrollment([FromBody] VendorStudentLogin StudentLogin, [FromRoute] string EnrollmentGuid)
+        {
+            _log.EndPoint = "SaveStudentEnrollment";
+            string StudentLoginJson = Newtonsoft.Json.JsonConvert.SerializeObject(StudentLogin);
+            _log.InputParameters = "VendorStudentLogin=" + StudentLoginJson + ";";
+            _log.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
+
+            MessageTransactionResponse Rval = new MessageTransactionResponse();
+
+            try
+            {
+                _db.VendorStudentLogin.Add(StudentLogin);
+                _db.SaveChanges();
+                CreateResponse(string.Empty, "Student login created", StudentLogin.VendorStudentLoginId.ToString(), TransactionState.Complete);
+
+            }
+            catch (Exception ex)
+            {
+                return CreateResponse(string.Empty, ex.Message, string.Empty, TransactionState.FatalError);
+            }
+
+            return Rval;
+        }
 
 
-        // GET: api/<controller>
+
         [HttpGet]
-        public async Task<IActionResult> Get()
-        {        
-            HttpClient client = new HttpClient();
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + "courses");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
-            HttpResponseMessage response = await client.SendAsync(request);
-            var ResponseJson = await response.Content.ReadAsStringAsync();
-            return Ok(ResponseJson);
+        [Route("api/[controller]/EnrollStudent/{EnrollmentGuid}")]
+        // Enroll a student with a vendor 
+        public async Task<MessageTransactionResponse> EnrollStudent(string EnrollmentGuid)
+        {
+
+            _log.EndPoint = "EnrollStudent";
+            _log.InputParameters = "EnrollmentGuid=" + EnrollmentGuid + ";";
+
+            MessageTransactionResponse Rval = new MessageTransactionResponse();
+
+            // Get the Enrollment Object 
+            Enrollment Enrollment = _db.Enrollment
+                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                 .FirstOrDefault();
+
+            // Check the validity of the request 
+            if (Enrollment == null)
+                return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
+            _log.EnrollmentGuid = Enrollment.EnrollmentGuid;
+
+            // Validate we have a subscriber
+            _db.Entry(Enrollment).Reference(s => s.Subscriber).Load();
+            if (Enrollment.Subscriber == null)
+                return CreateResponse(string.Empty, $"Subscriber with id {Enrollment.SubscriberId} was not found.", Enrollment.SubscriberId.ToString(), TransactionState.FatalError);
+
+            // Valid we have a course                         
+            _db.Entry(Enrollment).Reference(c => c.Course).Load();
+            if (Enrollment.Course == null)
+                return CreateResponse(string.Empty, $"Course with id {Enrollment.CourseId} was not found.", Enrollment.SubscriberId.ToString(), TransactionState.FatalError);
+
+            // Check to see if we need to enroll the student with the vendor 
+            VendorStudentLogin StudentLogin = _db.VendorStudentLogin
+                 .Where(v => v.IsDeleted == 0 &&
+                             v.SubscriberId == Enrollment.SubscriberId &&
+                             v.VendorId == Enrollment.Course.VendorId)
+                 .FirstOrDefault();
+
+            // Return user's login for the vendor 
+            if (StudentLogin != null)
+                CreateResponse(string.Empty, "Student login found", StudentLogin.VendorLogin, TransactionState.Complete);
+
+            // Call Woz to register student
+            WozStudent Student = new WozStudent()
+            {
+                firstName = Enrollment.Subscriber.FirstName,
+                lastName = Enrollment.Subscriber.LastName,
+                emailAddress = Enrollment.Subscriber.Email,
+                acceptedTermsOfServiceDocumentId = Enrollment.TermsOfServiceFlag == null ? 0 : (int)Enrollment.TermsOfServiceFlag,
+                suppressRegistrationEmail = false
+            };
+
+            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(Student);
+            HttpClient client = WozClient();
+            HttpRequestMessage WozRequest = WozPostRequest("users", Json);
+            HttpResponseMessage WozResponse = await client.SendAsync(WozRequest);
+            var ResponseJson = await WozResponse.Content.ReadAsStringAsync();
+
+            _log.WozResponseJson = ResponseJson;
+
+            if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                // dynamic ResponseObject  = System.Web.Helpers.Json.Decode(ResponseJson);
+                //dynamic ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                try
+                {
+                    string TransactionId = ResponseObject.transactionId;
+                    string Message = ResponseObject.message;
+                    return CreateResponse(ResponseJson, Message, TransactionId, TransactionState.InProgress);
+                }
+                catch (Exception ex)
+                {
+                    return CreateResponse(ResponseJson, ex.Message, string.Empty, TransactionState.FatalError);
+                }
+            }
+            else
+            {
+                return CreateResponse(ResponseJson, WozResponse.StatusCode.ToString() + " Error", string.Empty, TransactionState.Error);
+            }
+
 
         }
+
+
+        #endregion
+
+        #region Register Student to Course 
+        [HttpGet]
+        [Route("api/[controller]/RegisterStudent/{EnrollmentGuid}")]
+        // Enroll a student with a vendor 
+        public async Task<MessageTransactionResponse> RegisterStudent(string EnrollmentGuid)
+        {
+
+            _log.EndPoint = "RegisterStudent";
+            _log.InputParameters = "EnrollmentGuid=" + EnrollmentGuid + ";";
+
+            MessageTransactionResponse Rval = new MessageTransactionResponse();
+
+            // Get the Enrollment Object 
+            Enrollment Enrollment = _db.Enrollment
+                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                 .FirstOrDefault();
+
+            // Check the validity of the request 
+            if (Enrollment == null)
+                return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
+            _log.EnrollmentGuid = Enrollment.EnrollmentGuid;
+
+            // Valid we have a course                         
+            _db.Entry(Enrollment).Reference(c => c.Course).Load();
+            if (Enrollment.Course == null)
+                return CreateResponse(string.Empty, $"Course with id {Enrollment.CourseId} was not found.", Enrollment.SubscriberId.ToString(), TransactionState.FatalError);
+
+            // Check to see if we need to enroll the student with the vendor 
+            VendorStudentLogin StudentLogin = _db.VendorStudentLogin
+                 .Where(v => v.IsDeleted == 0 &&
+                             v.SubscriberId == Enrollment.SubscriberId &&
+                             v.VendorId == Enrollment.Course.VendorId)
+                 .FirstOrDefault();
+
+            // We need to have a login for the student to proceed 
+            if (StudentLogin == null)
+                CreateResponse(string.Empty, "Student not login found", string.Empty, TransactionState.Error);
+
+            String ExeterId = StudentLogin.VendorLogin;
+
+            // Get section for the course 
+            DateTime CurrentDate = DateTime.Now;
+            DateTime CurrentDateUtc = DateTime.SpecifyKind(CurrentDate, DateTimeKind.Utc);
+            long EnrollmentDateUtc = ((DateTimeOffset)CurrentDateUtc).ToUnixTimeSeconds();
+            int Year = CurrentDate.Year;
+            int Month = CurrentDate.Month;
+
+            WozCourseSection Section = _db.WozCourseSection
+                .Where(v => v.IsDeleted == 0 &&
+                            v.CourseCode == Enrollment.Course.Code &&
+                            v.Month == Month &&
+                            v.Year == Year)
+                .FirstOrDefault();
+
+            // If a section has already been created, return the section ID to the caller 
+            if (Section == null)
+                return CreateResponse(string.Empty, "Section not found", Section.Section.ToString(), TransactionState.Error);
+
+            // Call Woz to enroll the student
+            WozEnrollment Student = new WozEnrollment()
+            {
+                exeterId = ExeterId,
+                enrollmentDateUtc = EnrollmentDateUtc
+            };
+
+            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(Student);
+            HttpClient client = WozClient();
+            HttpRequestMessage WozRequest = WozPostRequest("sections/" + Section.Section.ToString() + "/enrollments", Json);
+            HttpResponseMessage WozResponse = await client.SendAsync(WozRequest);
+            var ResponseJson = await WozResponse.Content.ReadAsStringAsync();
+
+            _log.WozResponseJson = ResponseJson;
+
+            if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                try
+                {
+                    string TransactionId = ResponseObject.transactionId;
+                    string Message = ResponseObject.message;
+                    return CreateResponse(ResponseJson, Message, TransactionId, TransactionState.InProgress);
+                }
+                catch (Exception ex)
+                {
+                    return CreateResponse(ResponseJson, ex.Message, string.Empty, TransactionState.FatalError);
+                }
+            }
+            else
+            {
+                return CreateResponse(ResponseJson, WozResponse.StatusCode.ToString() + " Error", string.Empty, TransactionState.Error);
+            }
+        }
+
+        #endregion
+
+        #region Course Sections 
+
+        [HttpPost]
+        [Route("api/[controller]/SaveCourseSection/{EnrollmentGuid}")]
+        // Save a section for database                         
+        public MessageTransactionResponse SaveCourseSection([FromBody]  WozCourseSection CouseSection, [FromRoute] string EnrollmentGuid)
+        {
+            _log.EndPoint = "SaveSection";
+            string StudentLoginJson = Newtonsoft.Json.JsonConvert.SerializeObject(CouseSection);
+            _log.InputParameters = "WozCourseSection=" + StudentLoginJson + ";";
+            _log.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
+
+            MessageTransactionResponse Rval = new MessageTransactionResponse();
+            try
+            {
+                _db.WozCourseSection.Add(CouseSection);
+                _db.SaveChanges();
+                CreateResponse(string.Empty, "Course section login created", CouseSection.WozCourseSectionId.ToString(), TransactionState.Complete);
+
+            }
+            catch (Exception ex)
+            {
+                return CreateResponse(string.Empty, ex.Message, string.Empty, TransactionState.FatalError);
+            }
+
+            return Rval;
+        }
+      
+
 
         [HttpGet]
         [Route("api/[controller]/CreateSection/{EnrollmentGuid}/{CourseCode}")]
@@ -87,11 +322,14 @@ namespace UpDiddyApi.Controllers
                 return CreateResponse(string.Empty, string.Empty, Section.Section.ToString(), TransactionState.Complete);
 
             // Request a new section be created 
-            DateTime firstDayOfMonth = new DateTime(CurrentDate.Year, CurrentDate.Month, 1);
-            DateTime lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
-            long startDateUTC = ((DateTimeOffset)firstDayOfMonth).ToUnixTimeSeconds();
-            long endDateUTC = ((DateTimeOffset)lastDayOfMonth).ToUnixTimeSeconds();
-
+            
+            DateTime FirstDayOfMonth = new DateTime(CurrentDate.Year, CurrentDate.Month, 1);
+            DateTime FirstDayOfMonthUtc = DateTime.SpecifyKind(FirstDayOfMonth, DateTimeKind.Utc);
+            DateTime LastDayOfMonth = FirstDayOfMonth.AddMonths(1);
+            DateTime LastDayOfMonthUtc = DateTime.SpecifyKind(LastDayOfMonth, DateTimeKind.Utc);
+            long startDateUTC = ((DateTimeOffset)FirstDayOfMonthUtc).ToUnixTimeSeconds();
+            long endDateUTC = ((DateTimeOffset)LastDayOfMonthUtc).ToUnixTimeSeconds();
+ 
             WozSection NewSection = new WozSection()
             {
                 courseCode = CourseCode,
@@ -102,20 +340,44 @@ namespace UpDiddyApi.Controllers
                 timeZone = "Eastern Standard Time"
             };
 
-                  
+            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(NewSection);
+            HttpClient client = WozClient();
+            HttpRequestMessage WozRequest = WozPostRequest("sections", Json);
+            HttpResponseMessage WozResponse = await client.SendAsync(WozRequest);
+            var ResponseJson = await WozResponse.Content.ReadAsStringAsync();
+
+            _log.WozResponseJson = ResponseJson;
+
+            if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                 
+                var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                try
+                {
+                    string TransactionId = ResponseObject.transactionId;
+                    string Message = ResponseObject.message;
+                    return CreateResponse(ResponseJson, Message, TransactionId, TransactionState.InProgress);
+                }
+                catch (Exception ex)
+                {
+                    return CreateResponse(ResponseJson, ex.Message, string.Empty, TransactionState.FatalError);
+                }
+            }
+            else
+            {
+                return CreateResponse(ResponseJson, WozResponse.StatusCode.ToString() + " Error", string.Empty, TransactionState.Error);
+            }
 
 
-
-
-            return Rval;
         }
 
+        #endregion
 
-
+        #region Transactions 
 
         [HttpGet]
         [Route("api/[controller]/TransactionStatus/{EnrollmentGuid}/{TransactionId}")]
-        // Enroll a student with a vendor 
+        // check the status of an enrollment transaction
         public async Task<MessageTransactionResponse> TransactionStatus(string EnrollmentGuid, string TransactionId)
         {
             _log.EndPoint = "TransactionStatus";
@@ -172,95 +434,25 @@ namespace UpDiddyApi.Controllers
             {
                 return CreateResponse(ResponseJson, WozResponse.StatusCode.ToString() + " Error", string.Empty, TransactionState.Error);
             }
-
-          
+            
         }
 
+        #endregion
 
-
+        #region Courses 
+        // GET: api/<controller>
         [HttpGet]
-        [Route("api/[controller]/EnrollStudent/{EnrollmentGuid}")]
-        // Enroll a student with a vendor 
-        public async Task<MessageTransactionResponse> EnrollStudent(string EnrollmentGuid)
+        public async Task<IActionResult> Get()
         {
-            
-            _log.EndPoint = "EnrollStudent";
-            _log.InputParameters = "EnrollmentGuid=" + EnrollmentGuid + ";";
+            HttpClient client = new HttpClient();
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + "courses");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            HttpResponseMessage response = await client.SendAsync(request);
+            var ResponseJson = await response.Content.ReadAsStringAsync();
+            return Ok(ResponseJson);
 
-            MessageTransactionResponse Rval = new MessageTransactionResponse();
-         
-            // Get the Enrollment Object 
-            Enrollment Enrollment = _db.Enrollment
-                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
-                 .FirstOrDefault();
-
-            // Check the validity of the request 
-            if (Enrollment == null)
-                return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
-            _log.EnrollmentGuid = Enrollment.EnrollmentGuid;
-                
-            // Validate we have a subscriber
-            _db.Entry(Enrollment).Reference(s => s.Subscriber).Load();
-            if (Enrollment.Subscriber == null)
-                return CreateResponse(string.Empty, $"Subscriber with id {Enrollment.SubscriberId} was not found.", Enrollment.SubscriberId.ToString(), TransactionState.FatalError);
-            
-            // Valid we have a course                         
-            _db.Entry(Enrollment).Reference(c => c.Course).Load();
-            if (Enrollment.Course == null)
-                return CreateResponse(string.Empty, $"Course with id {Enrollment.CourseId} was not found.", Enrollment.SubscriberId.ToString(), TransactionState.FatalError);
-            
-            // Check to see if we need to enroll the student with the vendor 
-            VendorStudentLogin StudentLogin = _db.VendorStudentLogin
-                 .Where(v => v.IsDeleted == 0 && 
-                             v.SubscriberId == Enrollment.SubscriberId && 
-                             v.VendorId == Enrollment.Course.VendorId)
-                 .FirstOrDefault();
-
-            // Return user's login for the vendor 
-            if (StudentLogin != null)
-                CreateResponse(string.Empty, "Student login found", StudentLogin.VendorLogin, TransactionState.Complete);
-            
-            // Call Woz to register student
-            WozStudent Student = new WozStudent()
-            {
-                firstName = Enrollment.Subscriber.FirstName,
-                lastName = Enrollment.Subscriber.LastName,
-                emailAddress = Enrollment.Subscriber.Email,                
-                acceptedTermsOfServiceDocumentId = Enrollment.TermsOfServiceFlag == null ? 0 : (int) Enrollment.TermsOfServiceFlag,
-                suppressRegistrationEmail = false
-            };
-
-            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(Student);
-            HttpClient client = WozClient();
-            HttpRequestMessage WozRequest = WozPostRequest("users", Json);
-            HttpResponseMessage WozResponse = await client.SendAsync(WozRequest);
-            var ResponseJson = await WozResponse.Content.ReadAsStringAsync();
-    
-            _log.WozResponseJson = ResponseJson;
-
-            if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                // dynamic ResponseObject  = System.Web.Helpers.Json.Decode(ResponseJson);
-                //dynamic ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
-                var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);             
-                try
-                {
-                    string TransactionId = ResponseObject.transactionId;
-                    string Message = ResponseObject.message;
-                   return CreateResponse(ResponseJson, Message, TransactionId, TransactionState.InProgress);
-                }
-                catch( Exception ex )
-                {
-                    return CreateResponse(ResponseJson, ex.Message, string.Empty, TransactionState.FatalError);
-                }                
-            }
-            else
-            {
-                return CreateResponse(ResponseJson, WozResponse.StatusCode.ToString() + " Error", string.Empty, TransactionState.Error);
-            }
-           
- 
         }
+        #endregion
 
         #region Helper Functions
         private HttpRequestMessage WozPostRequest(string ApiAction, string Content)
