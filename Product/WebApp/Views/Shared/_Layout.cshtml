@@ -13,7 +13,7 @@
     <environment names="Development,DevelopmentLocalApi,DevelopmentLocal">
         <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css"/>
         <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css"/>
-        <link rel="stylesheet" href="~/css/index.css"/>
+        <link rel="stylesheet" href="~/css/bundle.css"/>
     </environment>
     <environment names="Staging,Production">
         <link rel="stylesheet" href="~/css/site.min.css" />
@@ -24,7 +24,9 @@
 <body>
     <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white">
         <div class="container">
-            <a class="navbar-brand" href="/">CareerCircle</a>
+            <a class="navbar-brand" href="/">
+                <img src="~/images/cc_logo.png"/>
+            </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#NavigationItems" aria-controls="NavigationItems" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -32,8 +34,8 @@
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item"><a class="nav-link" asp-controller="Topic" asp-action="Index">@Localizer["Career Skilling"]</a></li>
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["News"]</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["Contact"]</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="News">@Localizer["News"]</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Contact">@Localizer["Contact"]</a></li>
 
 
                     @if (User.Identity.IsAuthenticated)

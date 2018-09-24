@@ -35,9 +35,10 @@ namespace UpDiddy.Controllers
         {
             ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
             TopicDto Topic = API.TopicBySlug(TopicSlug);
-            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, API.Courses(TopicSlug), Topic);
+            TopicViewModel TopicViewModel = new TopicViewModel(_configuration, API.getCousesByTopicSlug(TopicSlug), Topic);
+            //CourseViewModel CourseViewModel = new CourseViewModel(_configuration, API.Courses(TopicSlug), Topic);
 
-            return View("Details", CourseViewModel);
+            return View("Details", TopicViewModel);
         }
 
         // GET: /<controller>/
@@ -45,9 +46,9 @@ namespace UpDiddy.Controllers
         {
             
             // Create Interface and use DI to inject 
-            ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
-            TopicViewModel TopicViewModel = new TopicViewModel(_configuration, API.Topics());       
-            return View(TopicViewModel);
+            //ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
+            //TopicViewModel TopicViewModel = new TopicViewModel(_configuration, API.Topics());       
+            return View();
         }
     }
 }

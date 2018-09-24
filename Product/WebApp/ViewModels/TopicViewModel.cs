@@ -8,11 +8,13 @@ namespace UpDiddy.ViewModels
     public class TopicViewModel : BaseViewModel
     {
         public string TopicName { get; set;}
-        public IList<TopicDto> Topics { get; set; }
-        public TopicViewModel(IConfiguration _configuration, IList<TopicDto> TopicsFromDto)
+        public TopicDto Topic { get; set; }
+        public IList<CourseDto> Courses { get; set; }
+        public TopicViewModel(IConfiguration _configuration,IList<CourseDto> courses, TopicDto topic)
         {
             this.ImageUrl = _configuration["BaseImageUrl"];
-            this.Topics = TopicsFromDto;
+            this.Courses = courses;
+            this.Topic = topic;
         }
     }
 }

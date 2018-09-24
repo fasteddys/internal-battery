@@ -18,19 +18,19 @@ using UpDiddy.Helpers;
 using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
-
+using UpDiddyLib.Dto;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddy.Controllers
 {
-    public class CourseController : Controller
+    public class CourseController : BaseController
     {
         AzureAdB2COptions AzureAdB2COptions;
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
 
-        public CourseController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration)
+        public CourseController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration) : base(azureAdB2COptions.Value, configuration)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
@@ -44,6 +44,22 @@ namespace UpDiddy.Controllers
             //CourseViewModel CourseViewModel = new CourseViewModel(_configuration, API.Courses());
             //return View(CourseViewModel);
             return View();
+        }
+        
+        [Authorize]
+        [HttpGet]
+        [Route("/Course/Checkout/{CourseSlug}")]
+        public IActionResult Get(string CourseSlug)
+        {
+            setCurrentClientGuid();
+
+            ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
+            CourseDto Course = API.Course(CourseSlug);
+            TopicDto ParentTopic = API.TopicById(Course.TopicId);
+            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic);
+
+            
+            return View("Checkout", CourseViewModel);
         }
 
 

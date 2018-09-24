@@ -1,12 +1,110 @@
-﻿@model UpDiddy.ViewModels.CourseViewModel
-@using Microsoft.AspNetCore.Mvc.Localization
-@inject IViewLocalizer L
-@{
-    ViewData["Title"] = L["Home Page"];
-}
-<h1> @L[@Model.CourseName]</h1>
-<div>
-    <ul>
-        This is the course checkout page CHA-CHING!
-    </ul>
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model CourseViewModel
+
+<div class="checkout-page-container">
+    <div class="row course-hero-band">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="hero-title">@Model.Parent.Name Courses</div>
+                        <div class="hero-subtitle">@Model.Parent.Description</div>
+                        <div class="brand-button contrast-secondary">Enroll Today!</div>
+                    </div>
+                    <div class="col-md-4 container-align-right">
+                        <img src="~/images/globe.png" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row checkout-hero">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="checkout-known-info-header">
+                            Your Information
+                        </div>
+                        <div class="known-info-container">
+                            @await Html.PartialAsync("_CheckoutInformation")
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row checkout-vendor-info-container">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <form id="CourseCheckoutForm">
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <div class="billing-info-header"><h3>Billing Information</h3></div>
+                                    <div class="form-check same-as-above">
+                                        <input type="checkbox" class="form-check-input" id="SameAsAboveCheckbox">
+                                        <label class="form-check-label" for="sameAsAboveCheckbox">Same as above</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row billing-info-container">
+                                <div class="form-group col-md-6">
+                                    <input type="text" class="form-control" id="FullName" placeholder="Full Name">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <input type="text" class="form-control" id="Address" placeholder="Address">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <select class="form-control" id="City">
+                                        <option selected>City</option>
+                                        <option>MD</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <input type="text" class="form-control" id="ZipCode" placeholder="Zip Code">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <select class="form-control" id="Country">
+                                        <option selected>Country</option>
+                                        <option>United States</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <div class="payment-info-header">
+                                        <h3>Secure Payment Information</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <input type="text" class="form-control" id="CreditCardNumber" placeholder="Credit Card Number">
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <input type="text" class="form-control" id="CardholderName" placeholder="Cardholder Name">
+                                </div>
+                                <div class="form-group col-md-1">
+                                    <input type="text" class="form-control" id="CardMonth" placeholder="MM">
+                                </div>
+                                <div class="form-group col-md-1">
+                                    <input type="text" class="form-control" id="CardMonth" placeholder="YY">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <input type="text" class="form-control" id="Cvv" placeholder="CVV">
+                                </div>
+                            </div>
+                            <button type="submit" class="brand-button contrast-primary">Enroll</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
