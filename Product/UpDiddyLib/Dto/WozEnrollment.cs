@@ -6,7 +6,7 @@ namespace UpDiddyLib.Dto
 {
     public class WozEnrollment
     {
-        public string exeterId { get; set; }
-        public long enrollmentDateUtc { get; set; }
+        public int exeterId { get; set; }
+        public long enrollmentDateUTC { get; set; }
     }
 }

@@ -55,7 +55,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpPost]
         [Route("api/[controller]/SaveStudentEnrollment/{EnrollmentGuid}")]
-        // Save student with a vendor to database  
+        // Save student's vendor enrollment info to database  
         public MessageTransactionResponse SaveStudentEnrollment([FromBody] VendorStudentLogin StudentLogin, [FromRoute] string EnrollmentGuid)
         {
             _log.EndPoint = "SaveStudentEnrollment";
@@ -207,7 +207,7 @@ namespace UpDiddyApi.Controllers
             if (StudentLogin == null)
                 CreateResponse(string.Empty, "Student not login found", string.Empty, TransactionState.Error);
 
-            String ExeterId = StudentLogin.VendorLogin;
+            int ExeterId = int.Parse(StudentLogin.VendorLogin);
 
             // Get section for the course 
             DateTime CurrentDate = DateTime.Now;
@@ -231,7 +231,7 @@ namespace UpDiddyApi.Controllers
             WozEnrollment Student = new WozEnrollment()
             {
                 exeterId = ExeterId,
-                enrollmentDateUtc = EnrollmentDateUtc
+                enrollmentDateUTC = EnrollmentDateUtc
             };
 
             string Json = Newtonsoft.Json.JsonConvert.SerializeObject(Student);
@@ -295,15 +295,29 @@ namespace UpDiddyApi.Controllers
 
 
         [HttpGet]
-        [Route("api/[controller]/CreateSection/{EnrollmentGuid}/{CourseCode}")]
-        // Enroll a student with a vendor 
-        public async Task<MessageTransactionResponse> CreateSection(string EnrollmentGuid, string CourseCode)
+        [Route("api/[controller]/CreateSection/{EnrollmentGuid}")]
+        // Create or retreive a section for the the given course 
+        public async Task<MessageTransactionResponse> CreateSection(string EnrollmentGuid)
         {
-            _log.EndPoint = "CourseSection";
+            _log.EndPoint = "CreateSection";
             _log.InputParameters = "EnrollmentGuid=" + EnrollmentGuid + ";";
-            _log.InputParameters = "CourseCode=" + CourseCode + ";";
+            _log.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
 
-            MessageTransactionResponse Rval = new MessageTransactionResponse();
+            // Get the Enrollment Object 
+            Enrollment Enrollment = _db.Enrollment
+                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                 .FirstOrDefault();
+
+            // Check the validity of the request 
+            if (Enrollment == null)
+                return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
+
+            // Valid we have a course                         
+            _db.Entry(Enrollment).Reference(c => c.Course).Load();
+            if (Enrollment.Course == null)
+                return CreateResponse(string.Empty, $"Course with id {Enrollment.CourseId} was not found.", Enrollment.SubscriberId.ToString(), TransactionState.FatalError);
+
+            string CourseCode = Enrollment.Course.Code;
 
             // See if the section for the course has been created for the current month and year 
             DateTime CurrentDate = DateTime.UtcNow;
@@ -419,7 +433,7 @@ namespace UpDiddyApi.Controllers
                     //  Expired = 700
                     
                     string TransactionStatus = ResponseObject.status;
-                    return CreateResponse(ResponseJson,TransactionStatus, TransactionId, TransactionState.InProgress);
+                    return CreateResponse(ResponseJson,"Transaction Complete", TransactionStatus, TransactionState.Complete);
                 }
                 catch (Exception ex)
                 {

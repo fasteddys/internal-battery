@@ -32,7 +32,32 @@ namespace UpDiddyApi.Controllers
         }
 
 
-       
+
+        // TODO Create Enrollment Status to allow callers to set the status of an enrollment 
+
+
+        [HttpPut]
+        [Route("api/[controller]")]
+        public IActionResult Put([FromBody] EnrollmentDto EnrollmentDto)
+        {
+
+            try
+            {
+                Enrollment Enrollment = _mapper.Map<Enrollment>(EnrollmentDto);
+                _db.Enrollment.Add(Enrollment);
+                _db.SaveChanges();
+                return Ok(Enrollment.EnrollmentGuid);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, ex);
+            }
+
+
+        }
+
+
+
         [HttpPost]
         [Route("api/[controller]")]
         public IActionResult Post([FromBody] EnrollmentDto EnrollmentDto)
