@@ -19,3 +19,35 @@ body {
         }
     }
 }
+
+@media (min-width: 0px) {
+    body {
+        .navbar-brand {
+            img {
+                width: 6rem;
+            }
+        }
+
+        .hero-home-bottom-details {
+            text-align: center;
+        }
+    }
+}
+
+@media (min-width: 992px) {
+    body {
+        .hero-home-bottom-details{
+            text-align: left;
+        }
+    }
+}
+
+@media (min-width: 1200px) {
+    body {
+        .navbar-brand {
+            img {
+                width: 11.875rem;
+            }
+        }
+    }
+}
