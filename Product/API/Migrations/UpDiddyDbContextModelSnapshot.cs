@@ -286,6 +286,9 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<decimal?>("Price");
 
+                    b.Property<string>("Slug")
+                        .IsRequired();
+
                     b.Property<int?>("SortOrder");
 
                     b.Property<string>("TabletImage");
@@ -445,7 +448,13 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("SubscriberId");
 
+                    b.Property<int?>("TermsOfServiceFlag");
+
                     b.HasKey("EnrollmentId");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("SubscriberId");
 
                     b.ToTable("Enrollment");
                 });
@@ -782,6 +791,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("PhoneNumber");
 
+                    b.Property<string>("ProfileImage");
+
                     b.Property<Guid?>("SubscriberGuid");
 
                     b.HasKey("SubscriberId");
@@ -968,6 +979,33 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("VendorPromoCode");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.VendorStudentLogin", b =>
+                {
+                    b.Property<int>("VendorStudentLoginId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.Property<int>("VendorId");
+
+                    b.Property<string>("VendorLogin");
+
+                    b.HasKey("VendorStudentLoginId");
+
+                    b.ToTable("VendorStudentLogin");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.VendorTermsOfService", b =>
                 {
                     b.Property<int>("VendorTermsOfServiceId")
@@ -996,6 +1034,79 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("VendorTermsOfServiceId");
 
                     b.ToTable("VendorTermsOfService");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.WozCourseSection", b =>
+                {
+                    b.Property<int>("WozCourseSectionId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("CourseCode");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("Month");
+
+                    b.Property<int>("Section");
+
+                    b.Property<int>("Year");
+
+                    b.HasKey("WozCourseSectionId");
+
+                    b.ToTable("WozCourseSection");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.WozTransactionLog", b =>
+                {
+                    b.Property<int>("WozTransactionLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("EndPoint");
+
+                    b.Property<Guid?>("EnrollmentGuid");
+
+                    b.Property<string>("InputParameters");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("ResponseJson");
+
+                    b.Property<string>("WozResponseJson");
+
+                    b.HasKey("WozTransactionLogId");
+
+                    b.ToTable("WozTransactionLog");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.Enrollment", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

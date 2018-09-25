@@ -242,10 +242,14 @@ body {
   padding-top: 1.625rem;
   padding-bottom: 5.375rem; }
 
-.checkout-page-container .checkout-hero {
+.checkout-page-container .checkout-topic-detail-band {
   padding: 3rem 0;
-  background-color: #84A550;
+  background-color: #03264A;
   color: #fff; }
+  .checkout-page-container .checkout-topic-detail-band .hero-subtitle {
+    margin-top: 1rem; }
+.checkout-page-container .checkout-hero {
+  padding: 3rem 0; }
   .checkout-page-container .checkout-hero .checkout-known-info-header {
     font-size: 2rem; }
   .checkout-page-container .checkout-hero .known-info-container ul {
@@ -253,20 +257,25 @@ body {
     padding: 0;
     list-style: none; }
 .checkout-page-container .checkout-vendor-info-container {
-  padding: 3rem 0; }
+  padding: 0 0 3rem 0; }
 .checkout-page-container #CourseCheckoutForm button {
   font-size: 1rem;
   padding: .5rem 1rem;
   transition: background-color 0.15s ease; }
   .checkout-page-container #CourseCheckoutForm button:hover {
     background-color: #03264A; }
+.checkout-page-container #CourseCheckoutForm .billing-info-header-container {
+  border-top: 0.0625rem dashed #4089A0;
+  padding-top: 3rem; }
+.checkout-page-container #CourseCheckoutForm .billing-info-container {
+  padding-bottom: 3rem; }
 .checkout-page-container #CourseCheckoutForm .same-as-above,
 .checkout-page-container #CourseCheckoutForm .billing-info-header {
   display: inline-block;
   margin-right: 2rem; }
 .checkout-page-container #CourseCheckoutForm .payment-info-header {
   border-top: 0.0625rem dashed #4089A0;
-  padding-top: 1rem; }
+  padding-top: 3rem; }
 
 .about-us-container > div {
   padding: 3rem 0; }

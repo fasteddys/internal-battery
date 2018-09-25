@@ -48,7 +48,8 @@ namespace UpDiddy.Api
 
         public CourseDto Course(string CourseSlug)
         {
-            return Get<CourseDto>("course/slug/" + CourseSlug, false);
+            CourseDto retVal = Get<CourseDto>("course/slug/" + CourseSlug, false);
+            return retVal;
         }
 
         public SubscriberDto Subscriber(Guid SubscriberGuid)
