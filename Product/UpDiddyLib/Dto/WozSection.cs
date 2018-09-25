@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-    public class WozSection
+    public class WozSectionDto
     {
         public string courseCode { get; set; }
         public long startDateUTC { get; set; }

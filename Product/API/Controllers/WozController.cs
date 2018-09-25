@@ -54,6 +54,47 @@ namespace UpDiddyApi.Controllers
         #region Student Enrollment 
 
         [HttpPost]
+        [Route("api/[controller]/SaveWozEnrollment/{EnrollmentGuid}")]
+        // Save student's vendor specific enrollment info to database  
+        public MessageTransactionResponse SaveWozEnrollment([FromBody] WozCourseEnrollmentDto WozEnrollmentDto, [FromRoute] string EnrollmentGuid)
+        {
+            _log.EndPoint = "WozCourseEnrollmentDto";
+            string WozEnrollmentJson = Newtonsoft.Json.JsonConvert.SerializeObject(WozEnrollmentDto);
+            _log.InputParameters = "WozEnrollmentJson=" + WozEnrollmentJson + ";";
+            _log.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
+
+            MessageTransactionResponse Rval = new MessageTransactionResponse();
+            try
+            {
+                // Get the Enrollment Object 
+                Enrollment Enrollment = _db.Enrollment
+                     .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                     .FirstOrDefault();
+
+                // Check the validity of the request 
+                if (Enrollment == null)
+                    return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
+
+                WozCourseEnrollment WozEnrollment = _mapper.Map<WozCourseEnrollment>(WozEnrollmentDto);
+                WozEnrollment.EnrollmentId = Enrollment.EnrollmentId;
+
+                _db.WozCourseEnrollment.Add(WozEnrollment);
+                _db.SaveChanges();
+                CreateResponse(string.Empty, "Wox enrollment record created", WozEnrollment.WozCourseEnrollmentId.ToString(), TransactionState.Complete);
+
+            }
+            catch (Exception ex)
+            {
+                return CreateResponse(string.Empty, ex.Message, string.Empty, TransactionState.FatalError);
+            }
+
+            return Rval;
+        }
+
+
+
+
+        [HttpPost]
         [Route("api/[controller]/SaveStudentEnrollment/{EnrollmentGuid}")]
         // Save student's vendor enrollment info to database  
         public MessageTransactionResponse SaveStudentEnrollment([FromBody] VendorStudentLogin StudentLogin, [FromRoute] string EnrollmentGuid)
@@ -69,7 +110,7 @@ namespace UpDiddyApi.Controllers
             {
                 _db.VendorStudentLogin.Add(StudentLogin);
                 _db.SaveChanges();
-                CreateResponse(string.Empty, "Student login created", StudentLogin.VendorStudentLoginId.ToString(), TransactionState.Complete);
+                CreateResponse(string.Empty, "Student enrollment created", StudentLogin.VendorStudentLoginId.ToString(), TransactionState.Complete);
 
             }
             catch (Exception ex)
@@ -125,7 +166,7 @@ namespace UpDiddyApi.Controllers
                 CreateResponse(string.Empty, "Student login found", StudentLogin.VendorLogin, TransactionState.Complete);
 
             // Call Woz to register student
-            WozStudent Student = new WozStudent()
+            WozStudentDto Student = new WozStudentDto()
             {
                 firstName = Enrollment.Subscriber.FirstName,
                 lastName = Enrollment.Subscriber.LastName,
@@ -139,7 +180,6 @@ namespace UpDiddyApi.Controllers
             HttpRequestMessage WozRequest = WozPostRequest("users", Json);
             HttpResponseMessage WozResponse = await client.SendAsync(WozRequest);
             var ResponseJson = await WozResponse.Content.ReadAsStringAsync();
-
             _log.WozResponseJson = ResponseJson;
 
             if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
@@ -228,7 +268,7 @@ namespace UpDiddyApi.Controllers
                 return CreateResponse(string.Empty, "Section not found", Section.Section.ToString(), TransactionState.Error);
 
             // Call Woz to enroll the student
-            WozEnrollment Student = new WozEnrollment()
+            WozEnrollmentDto Student = new WozEnrollmentDto()
             {
                 exeterId = ExeterId,
                 enrollmentDateUTC = EnrollmentDateUtc
@@ -239,7 +279,6 @@ namespace UpDiddyApi.Controllers
             HttpRequestMessage WozRequest = WozPostRequest("sections/" + Section.Section.ToString() + "/enrollments", Json);
             HttpResponseMessage WozResponse = await client.SendAsync(WozRequest);
             var ResponseJson = await WozResponse.Content.ReadAsStringAsync();
-
             _log.WozResponseJson = ResponseJson;
 
             if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
@@ -344,7 +383,7 @@ namespace UpDiddyApi.Controllers
             long startDateUTC = ((DateTimeOffset)FirstDayOfMonthUtc).ToUnixTimeSeconds();
             long endDateUTC = ((DateTimeOffset)LastDayOfMonthUtc).ToUnixTimeSeconds();
  
-            WozSection NewSection = new WozSection()
+            WozSectionDto NewSection = new WozSectionDto()
             {
                 courseCode = CourseCode,
                 startDateUTC = startDateUTC,
@@ -414,6 +453,7 @@ namespace UpDiddyApi.Controllers
             HttpRequestMessage WozRequest = WozGetRequest("transactions/" + TransactionId);
             HttpResponseMessage WozResponse = await client.SendAsync(WozRequest);
             var ResponseJson = await WozResponse.Content.ReadAsStringAsync();
+            _log.WozResponseJson = ResponseJson;
  
 
             if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
@@ -468,8 +508,53 @@ namespace UpDiddyApi.Controllers
         }
         #endregion
 
-        #region Helper Functions
-        private HttpRequestMessage WozPostRequest(string ApiAction, string Content)
+        #region Terms Of Service
+        [HttpGet]
+        [Route("api/[controller]/TermsOfService")]
+        // TODO enable caching 
+        // [ResponseCache(Duration = 600)]
+        // Create or retreive a section for the the given course 
+        public async Task<WozTermsOfServiceDto> TermsOfService()
+        {
+            
+            WozTermsOfServiceDto Rval = new WozTermsOfServiceDto();
+
+            HttpClient client = WozClient();
+            HttpRequestMessage WozRequest = WozGetRequest("tos");
+            HttpResponseMessage WozResponse = await client.SendAsync(WozRequest);
+            var ResponseJson = await WozResponse.Content.ReadAsStringAsync();
+
+
+            if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                // dynamic ResponseObject  = System.Web.Helpers.Json.Decode(ResponseJson);
+                //dynamic ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                try
+                {
+                    string TermsOfServiceId = ResponseObject.termsOfServiceDocumentId;
+                    string Content = ResponseObject.termsOfServiceContent;
+                    Rval.DocumentId = int.Parse(TermsOfServiceId);
+                    Rval.TermsOfService = Content;
+
+                }
+                catch (Exception ex)
+                {
+                    
+                }
+            }
+            else
+            {
+                 
+            }
+
+            return Rval;
+        }
+
+            #endregion
+
+            #region Helper Functions
+            private HttpRequestMessage WozPostRequest(string ApiAction, string Content)
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, _apiBaseUri + ApiAction)
             {

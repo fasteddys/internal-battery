@@ -10,7 +10,7 @@ namespace SandBox
         static void Main(string[] args)
         {
 
-            WozStudent wz = new WozStudent();
+            WozStudentDto wz = new WozStudentDto();
             wz.emailAddress = "email@email.com";
             wz.acceptedTermsOfServiceDocumentId = 1;
             wz.firstName = "Jim";
@@ -60,6 +60,22 @@ namespace SandBox
             };
             var EnrollmentDTOJson = Newtonsoft.Json.JsonConvert.SerializeObject(ed);
 
+
+
+            WozCourseEnrollmentDto wce = new WozCourseEnrollmentDto()
+            {
+
+                WozCourseEnrollmentId = 0,
+                WozEnrollmentId = 34,
+                SectionId = 44,
+                EnrollmentStatus = 500,
+                ExeterId = 3421,
+                EnrollmentDateUTC = 34l,
+                EnrollmentId = -1
+
+            };
+
+            var WozCourseEnrollmentDtoJson = Newtonsoft.Json.JsonConvert.SerializeObject(wce);
 
 
             string ResponseJson = "{\"transactionId\":\"87622324-7d8a-4180-a823-7e04c43d02f0\",\"payload\":null,\"payloadType\":null,\"message\":\"The request to modify LMS data was successfully queued for processing.  The status of the request may be monitored with the following transaction identifier: '87622324-7d8a-4180-a823-7e04c43d02f0'.\"}";
