@@ -37,26 +37,30 @@ namespace UpDiddyApi.Controllers
 
 
         [HttpPut]
-        [Route("api/[controller]")]
-        public IActionResult Put([FromBody] EnrollmentDto EnrollmentDto)
+        [Route("api/[controller]/UpdateEnrollmentStatus/{EnrollmentGuid}/{EnrollmentStatus}")]
+        public IActionResult UpdateEnrollmentStatus(string EnrollmentGuid, int EnrollmentStatus )
         {
-
             try
             {
-                Enrollment Enrollment = _mapper.Map<Enrollment>(EnrollmentDto);
-                _db.Enrollment.Add(Enrollment);
+                // Get the Enrollment Object 
+                Enrollment Enrollment = _db.Enrollment
+                     .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                     .FirstOrDefault();
+
+                if (Enrollment == null)
+                    return NotFound();
+
+                Enrollment.EnrollmentStatusId = EnrollmentStatus;
                 _db.SaveChanges();
+                
+
                 return Ok(Enrollment.EnrollmentGuid);
             }
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status400BadRequest, ex);
             }
-
-
         }
-
-
 
         [HttpPost]
         [Route("api/[controller]")]
