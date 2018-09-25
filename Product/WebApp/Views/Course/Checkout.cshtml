@@ -3,14 +3,13 @@
 @model CourseViewModel
 
 <div class="checkout-page-container">
-    <div class="row course-hero-band">
+    <div class="row checkout-topic-detail-band">
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
                     <div class="col-md-8">
-                        <div class="hero-title">@Model.Parent.Name Courses</div>
-                        <div class="hero-subtitle">@Model.Parent.Description</div>
-                        <div class="brand-button contrast-secondary">Enroll Today!</div>
+                        <div class="hero-title">@Model.Course.Name</div>
+                        <div class="hero-subtitle">@Model.Course.Description</div>
                     </div>
                     <div class="col-md-4 container-align-right">
                         <img src="~/images/globe.png" />
@@ -45,7 +44,7 @@
                     <div class="col-md-12">
                         <form id="CourseCheckoutForm">
                             <div class="form-row">
-                                <div class="form-group col-md-12">
+                                <div class="form-group col-md-12 billing-info-header-container">
                                     <div class="billing-info-header"><h3>Billing Information</h3></div>
                                     <div class="form-check same-as-above">
                                         <input type="checkbox" class="form-check-input" id="SameAsAboveCheckbox">

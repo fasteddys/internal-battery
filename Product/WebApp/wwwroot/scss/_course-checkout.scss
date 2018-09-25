@@ -1,9 +1,17 @@
 ﻿@import '_variables';
 .checkout-page-container {
+    .checkout-topic-detail-band {
+        padding: 3rem 0;
+        background-color: $color-secondary;
+        color: $color-white;
+        .hero-subtitle{
+            margin-top: 1rem;
+        }
+    }
+
     .checkout-hero {
         padding: 3rem 0;
-        background-color: $color-tertiary;
-        color: $color-white;
+
 
         .checkout-known-info-header {
             font-size: 2rem;
@@ -19,7 +27,7 @@
     }
 
     .checkout-vendor-info-container {
-        padding: 3rem 0;
+        padding: 0 0 3rem 0;
     }
 
     #CourseCheckoutForm {
@@ -33,15 +41,22 @@
             }
         }
 
+        .billing-info-header-container {
+            border-top: $rem-1 dashed $color-primary;
+            padding-top: 3rem;
+        }
+        .billing-info-container{
+            padding-bottom: 3rem;
+        }
         .same-as-above,
         .billing-info-header {
             display: inline-block;
             margin-right: 2rem;
         }
 
-        .payment-info-header{
+        .payment-info-header {
             border-top: $rem-1 dashed $color-primary;
-            padding-top: 1rem;
+            padding-top: 3rem;
         }
     }
 }

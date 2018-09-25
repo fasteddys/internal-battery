@@ -18,6 +18,7 @@ using UpDiddy.Helpers;
 using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
+using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
 {

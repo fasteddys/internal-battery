@@ -140,13 +140,14 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/slug/{CourseSlug}")]
         public IActionResult GetCourse(string CourseSlug)
         {
-            IList<CourseDto> rval = null;
-            rval = _db.Course
-                .Where(t => t.IsDeleted == 0 && t.CourseId == 0)
-                .ProjectTo<CourseDto>()
-                .ToList();
+            
+            Course course = _db.Course
+                .Where(t => t.IsDeleted == 0 && t.Slug == CourseSlug)
+                .FirstOrDefault();
 
-            return Ok(rval);
+            if (course == null)
+                return NotFound();
+            return Ok(_mapper.Map<CourseDto>(course));
         }
     }
 

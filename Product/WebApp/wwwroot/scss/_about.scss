@@ -1,0 +1,17 @@
+﻿@import '_variables';
+
+.about-us-container {
+    > div {
+        padding: 3rem 0;
+    }
+
+    .about-us-hero {
+        background-color: $color-secondary;
+        color: $color-white;
+    }
+
+    .about-us-secondary-band {
+        background-color: $color-primary;
+        color: $color-white;
+    }
+}
