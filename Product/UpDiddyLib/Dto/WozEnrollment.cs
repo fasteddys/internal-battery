@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-    public class WozEnrollment
+    public class WozEnrollmentDto
     {
         public int exeterId { get; set; }
         public long enrollmentDateUTC { get; set; }

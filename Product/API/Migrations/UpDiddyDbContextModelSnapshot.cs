@@ -1036,6 +1036,39 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("VendorTermsOfService");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.WozCourseEnrollment", b =>
+                {
+                    b.Property<int>("WozCourseEnrollmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<long>("EnrollmentDateUTC");
+
+                    b.Property<int>("EnrollmentId");
+
+                    b.Property<int>("EnrollmentStatus");
+
+                    b.Property<int>("ExeterId");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("SectionId");
+
+                    b.Property<int>("WozEnrollmentId");
+
+                    b.HasKey("WozCourseEnrollmentId");
+
+                    b.ToTable("WozCourseEnrollment");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.WozCourseSection", b =>
                 {
                     b.Property<int>("WozCourseSectionId")

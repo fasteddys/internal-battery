@@ -83,9 +83,8 @@ namespace UpDiddyApi.Models
         public DbSet<VendorStudentLogin> VendorStudentLogin { get; set; }
         public DbSet<WozTransactionLog> WozTransactionLog { get; set; }
         public DbSet<WozCourseSection> WozCourseSection { get; set; }
-
+        public DbSet<WozCourseEnrollment> WozCourseEnrollment { get; set; }
         
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
