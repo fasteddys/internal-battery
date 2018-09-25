@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddyLib.Dto
 {
-    public class TopicDto
+    public class TopicDto : BaseDto
     {
         public int TopicId { get; set; }
         public Guid? TopicGuid { get; set; }

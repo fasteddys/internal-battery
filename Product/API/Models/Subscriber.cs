@@ -21,5 +21,6 @@ namespace UpDiddyApi.Models
         public string Address { get; set; }
         public int? GenderId { get; set; }
         public int? EducationLevelId { get; set; }
+        public string ProfileImage { get; set; }
     }
 }

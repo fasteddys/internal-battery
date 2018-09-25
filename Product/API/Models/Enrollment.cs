@@ -11,7 +11,9 @@ namespace UpDiddyApi.Models
         public int EnrollmentId { get; set; }   
         public Guid? EnrollmentGuid { get; set; }
         public int CourseId { get; set; }
+        public Course Course { get; set; }
         public int SubscriberId { get; set; }
+        public Subscriber Subscriber { get; set; }
         public DateTime DateEnrolled { get; set; }
         public Decimal PricePaid { get; set; }
         public int PercentComplete { get; set; }
@@ -19,5 +21,6 @@ namespace UpDiddyApi.Models
         public DateTime? CompletionDate { get; set; }
         public DateTime? DroppedDate { get; set; }
         public int EnrollmentStatusId { get; set; }
+        public int? TermsOfServiceFlag { get; set; }
     }
 }

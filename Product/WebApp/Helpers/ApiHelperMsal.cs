@@ -33,7 +33,7 @@ namespace UpDiddy.Helpers
             {
                 // TODO instrument with json string and requested type 
                 var msg = ex.Message;
-                return (T)Convert.ChangeType(null, typeof(T)); ;
+                return (T)Convert.ChangeType(null, typeof(T)); 
             }
         }
 

@@ -29,7 +29,9 @@ namespace UpDiddyApi
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                // Add in the azure vault entries 
+                .AddConfiguration(configuration);
                 
             builder.AddEnvironmentVariables();
 
@@ -39,6 +41,7 @@ namespace UpDiddyApi
             }
             
             Configuration = builder.Build();
+           
         }
 
         public IConfigurationRoot Configuration { get; set; }
@@ -65,6 +68,11 @@ namespace UpDiddyApi
             services.AddDbContext<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
 
             services.AddHangfire(x => x.UseSqlServerStorage(SqlConnection));
+
+
+
+            // Add Dependency Injection for the configuration object
+            services.AddSingleton<IConfiguration>(Configuration);
 
             // Add framework services.
             services.AddMvc();
