@@ -268,6 +268,24 @@ body {
   border-top: 0.0625rem dashed #4089A0;
   padding-top: 1rem; }
 
+.about-us-container > div {
+  padding: 3rem 0; }
+.about-us-container .about-us-hero {
+  background-color: #03264A;
+  color: #fff; }
+.about-us-container .about-us-secondary-band {
+  background-color: #4089A0;
+  color: #fff; }
+
+.contact-us-container > div {
+  padding: 3rem 0; }
+.contact-us-container .contact-us-hero {
+  background-color: #03264A;
+  color: #fff; }
+.contact-us-container .contact-us-secondary-band {
+  background-color: #4089A0;
+  color: #fff; }
+
 /* Footer Styles */
 footer {
   font-size: .8125rem; }

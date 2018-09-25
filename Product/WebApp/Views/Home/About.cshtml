@@ -1,23 +1,50 @@
-﻿ 
-@using Microsoft.AspNetCore.Mvc.Localization
-@inject IViewLocalizer Localizer
+﻿<div class="about-us-container">
+    <div class="row about-us-hero">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3>About Us</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row about-us-primary-band">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        Career Circle is here to support <strong>you</strong> as the staffing and recruiting industry continues to evolve and transform, by:
+                        <ul>
+                            <li>Jump starting your digital career experience by aligning you to a unique Career Skills path</li>
+                            <li>Creating focus and ensuring relevance in your current career and/or for future career goals</li>
+                            <li>Helping you enhance your skill set by stacking skills</li>
+                            <li>Improving your job readiness and competitiveness in the market</li>
+                            <li>Defining and/or clarifying your career pathway</li>
+                            <li>Keep you job-relevant in the digital age</li>
+                            <li>Ensuring alignment of your career path to your career goals</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row about-us-secondary-band">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="offset-md-6 col-md-6">
 
-@{
-    ViewData["Title"] = "About";
-}
-<h2>@ViewData["Title"].</h2>
-<h3>@ViewData["Message"]</h3>
-@using System.Security.Claims
-<table class="table-hover table-condensed table-striped">
-    <tr>
-        <th>Claim Type @Localizer["About"] </th>
-        <th>Claim Value</th>
-    </tr>
-    @foreach (Claim claim in User.Claims)
-    {
-        <tr>
-            <td>@claim.Type</td>
-            <td>@claim.Value</td>
-        </tr>
-    }
-</table>
+                        Career Circle Services include: 
+                        <ul>
+                            <li>Careerskilling</li>
+                            <li>Mentoring</li>
+                            <li>Coaching</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
