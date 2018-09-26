@@ -8,6 +8,15 @@ $(document).ready(function () {
             $('.billing-info-container').show();
         }
     });
+
+    $("#TermsOfServiceCheckbox").change(function () {
+        if (this.checked) {
+            $('#EnrollmentSubmitButton').prop('disabled', false);
+        }
+        else {
+            $('#EnrollmentSubmitButton').prop('disabled', true);
+        }
+    });
 });
 
 

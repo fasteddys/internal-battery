@@ -1,6 +1,42 @@
 ﻿@import '_variables';
 /* Topic Page Styles */
-.course-list-container {
-    padding-top: 1.625rem;
-    padding-bottom: 5.375rem;
+@media (min-width: 0px) {
+    .detail-view-container {
+        .course-list-container {
+            padding-top: 1.625rem;
+            padding-bottom: 5.375rem;
+            .section-heading{
+                font-size: 2rem;
+            }
+        }
+    }
 }
+
+@media (min-width: 320px){
+
+}
+
+@media (min-width: 768px) {
+    .detail-view-container {
+        .course-list-container {
+            .section-heading {
+                font-size: 1.4rem;
+            }
+        }
+    }
+}
+
+@media (min-width: 992px) {
+    .detail-view-container {
+        .course-list-container {
+            .section-heading {
+                font-size: 1.8rem;
+            }
+        }
+    }
+}
+
+@media (min-width: 1200px) {
+
+}
+

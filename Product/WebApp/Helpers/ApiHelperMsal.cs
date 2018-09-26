@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft;
 using Newtonsoft.Json;
+using System.Text.Encodings;
+using System.IO;
+using System.Text;
 
 namespace UpDiddy.Helpers
 {
@@ -42,6 +45,23 @@ namespace UpDiddy.Helpers
         {
             Task<string> Response = _GetAsync(ApiAction, Authorized);
             return Response.Result;
+        }
+
+        public string Post<T>(T Body, string ApiAction, bool Authorized = false)
+        {
+            
+            
+            string jsonToSend = "{}";
+            try
+            {
+                jsonToSend  = JsonConvert.SerializeObject(Body);
+            }
+            catch (Exception e)
+            {
+
+            }
+            return _PostAsync(jsonToSend, ApiAction, Authorized).ToString();
+            
         }
 
         #region Helpers Functions
@@ -100,8 +120,57 @@ namespace UpDiddy.Helpers
 
         }
 
+        private async Task<HttpStatusCode> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
+        {
+            string ApiUrl = _ApiBaseUri + ApiAction;
+            var client = new HttpClient();
+            var request = PostRequest(ApiAction, JsonToSend);
+            var response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            return response.StatusCode;
+            
+            
+        }
 
-#endregion
+        private HttpRequestMessage PostRequest(string ApiAction, string Content)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, _ApiBaseUri + ApiAction)
+            {
+                Content = new StringContent(Content)
+            };
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            return request;
+        }
+
+        public static void SerializeJsonIntoStream(object value, Stream stream)
+        {
+            using (var sw = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
+            using (var jtw = new JsonTextWriter(sw) { Formatting = Formatting.None })
+            {
+                var js = new JsonSerializer();
+                js.Serialize(jtw, value);
+                jtw.Flush();
+            }
+        }
+
+        private static HttpContent CreateHttpContent(object content)
+        {
+            HttpContent httpContent = null;
+
+            if (content != null)
+            {
+                var ms = new MemoryStream();
+                SerializeJsonIntoStream(content, ms);
+                ms.Seek(0, SeekOrigin.Begin);
+                httpContent = new StreamContent(ms);
+                httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            }
+
+            return httpContent;
+        }
+
+
+        #endregion
 
     }
 }

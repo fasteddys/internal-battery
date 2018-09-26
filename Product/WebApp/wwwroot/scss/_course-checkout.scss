@@ -4,7 +4,8 @@
         padding: 3rem 0;
         background-color: $color-secondary;
         color: $color-white;
-        .hero-subtitle{
+
+        .hero-subtitle {
             margin-top: 1rem;
         }
     }
@@ -28,35 +29,58 @@
 
     .checkout-vendor-info-container {
         padding: 0 0 3rem 0;
-    }
 
-    #CourseCheckoutForm {
-        button {
-            font-size: 1rem;
-            padding: .5rem 1rem;
-            transition: background-color 0.15s ease;
+        #CourseCheckoutForm {
+            button {
+                font-size: 1rem;
+                padding: .5rem 1rem;
+                transition: background-color 0.15s ease;
 
-            &:hover {
-                background-color: $color-secondary;
+                &:hover {
+                    background-color: $color-secondary;
+                }
+                &:disabled{
+                    background-color: $color-tertiary-gray;
+                    cursor: default;
+                }
+            }
+
+            .billing-info-header-container {
+                border-top: $rem-1 dashed $color-primary;
+                padding-top: 3rem;
+            }
+
+            .billing-info-container {
+                padding-bottom: 3rem;
+            }
+
+            .same-as-above,
+            .billing-info-header {
+                display: inline-block;
+                margin-right: 2rem;
+            }
+
+            .payment-info-header {
+                border-top: $rem-1 dashed $color-primary;
+                padding-top: 3rem;
+            }
+
+            .tos-agree{
+                padding-top: 1rem;
             }
         }
 
-        .billing-info-header-container {
-            border-top: $rem-1 dashed $color-primary;
+        .terms-of-service-header {
             padding-top: 3rem;
-        }
-        .billing-info-container{
-            padding-bottom: 3rem;
-        }
-        .same-as-above,
-        .billing-info-header {
-            display: inline-block;
-            margin-right: 2rem;
+            margin-top: 3rem;
+            border-top: $rem-1 dashed $color-primary;
         }
 
-        .payment-info-header {
-            border-top: $rem-1 dashed $color-primary;
-            padding-top: 3rem;
+        .terms-of-service-scrollview {
+            max-height: 10rem;
+            border: $rem-1 solid $color-tertiary-light-gray;
+            padding: 1.5rem;
+            overflow: auto;
         }
     }
 }
