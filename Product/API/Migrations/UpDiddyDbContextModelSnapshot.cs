@@ -1098,6 +1098,31 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("WozCourseSection");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.WozTermsOfService", b =>
+                {
+                    b.Property<int>("WozTermsOfServiceId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("DocumentId");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("TermsOfService");
+
+                    b.HasKey("WozTermsOfServiceId");
+
+                    b.ToTable("WozTermsOfService");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.WozTransactionLog", b =>
                 {
                     b.Property<int>("WozTransactionLogId")

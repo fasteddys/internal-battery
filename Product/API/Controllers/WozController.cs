@@ -517,53 +517,79 @@ namespace UpDiddyApi.Controllers
         public async Task<WozTermsOfServiceDto> TermsOfService()
         {
             
-            WozTermsOfServiceDto Rval = new WozTermsOfServiceDto();
+            WozTermsOfServiceDto RVal = new WozTermsOfServiceDto();
 
-            HttpClient client = WozClient();
-            HttpRequestMessage WozRequest = WozGetRequest("tos");
-            HttpResponseMessage WozResponse = await client.SendAsync(WozRequest);
-            var ResponseJson = await WozResponse.Content.ReadAsStringAsync();
+            try
+            {                
+                HttpClient client = WozClient();
+                HttpRequestMessage WozRequest = WozGetRequest("tos");
+                HttpResponseMessage WozResponse = await client.SendAsync(WozRequest);
+                var ResponseJson = await WozResponse.Content.ReadAsStringAsync();
 
-
-            if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                // dynamic ResponseObject  = System.Web.Helpers.Json.Decode(ResponseJson);
-                //dynamic ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
-                var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
-                try
+                if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
                 {
+                    // dynamic ResponseObject  = System.Web.Helpers.Json.Decode(ResponseJson);
+                    //dynamic ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                    var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+
                     string TermsOfServiceId = ResponseObject.termsOfServiceDocumentId;
                     string Content = ResponseObject.termsOfServiceContent;
-                    Rval.DocumentId = int.Parse(TermsOfServiceId);
-                    Rval.TermsOfService = Content;
+                    RVal.DocumentId = int.Parse(TermsOfServiceId);
+                    RVal.TermsOfService = Content;
+                     
+                    // See if the latest TOS from woz has been stored to our local DB
+                    WozTermsOfService tos = _db.WozTermsOfService
+                        .Where(t => t.IsDeleted == 0 && t.DocumentId == RVal.DocumentId)                
+                        .FirstOrDefault();
+
+                    // Add the latest version to our database if it's not there 
+                    if ( tos == null )
+                    {
+                        WozTermsOfService NewTermsOfService = _mapper.Map<WozTermsOfService>(RVal);
+                        _db.WozTermsOfService.Add(NewTermsOfService);
+                        _db.SaveChanges();
+                    }
 
                 }
-                catch (Exception ex)
-                {
-                    
-                }
+                else
+                    RVal = LastGoodTermsOfService();
+            
             }
-            else
+            catch( Exception ex )
             {
-                 
+                RVal = LastGoodTermsOfService();
             }
-
-            return Rval;
+            return RVal;
         }
 
             #endregion
 
-            #region Helper Functions
-            private HttpRequestMessage WozPostRequest(string ApiAction, string Content)
+     #region Helper Functions
+
+
+         private WozTermsOfServiceDto LastGoodTermsOfService()
+         {
+            WozTermsOfServiceDto RVal = null;
+            WozTermsOfService tos = _db.WozTermsOfService
+                .Where(t => t.IsDeleted == 0)
+                .OrderByDescending(t => t.DocumentId)
+                .FirstOrDefault();
+
+            if (tos != null)
+                RVal = _mapper.Map<WozTermsOfServiceDto>(tos);
+                
+           return RVal;            
+         }
+
+
+        private HttpRequestMessage WozPostRequest(string ApiAction, string Content)
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, _apiBaseUri + ApiAction)
             {
-                Content = new StringContent(Content)
+               Content = new StringContent(Content)
             };
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
             return request;
-
         }
 
         private HttpRequestMessage WozGetRequest(string ApiAction)
