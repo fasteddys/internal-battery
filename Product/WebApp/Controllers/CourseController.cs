@@ -56,13 +56,36 @@ namespace UpDiddy.Controllers
             ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
             CourseDto Course = API.Course(CourseSlug);
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
-            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic);
+            WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
+            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
 
             
             return View("Checkout", CourseViewModel);
         }
 
-
+        [HttpPost]
+        public IActionResult Checkout(int TermsOfServiceDocId, string CourseSlug)
+        {
+            setCurrentClientGuid();
+            DateTime dateTime = new DateTime();
+            CourseDto Course = API.Course(CourseSlug);
+            //ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
+            EnrollmentDto enrollmentDto = new EnrollmentDto
+            {
+                CourseId = Course.CourseId,
+                EnrollmentGuid = Guid.NewGuid(),
+                SubscriberId = this.subscriber.SubscriberId,
+                DateEnrolled = dateTime,
+                PricePaid = (decimal)Course.Price,
+                PercentComplete = 0,
+                IsRetake = 0, //TODO Make this check DB for existing entry
+                EnrollmentStatusId = 0,
+                TermsOfServiceFlag = TermsOfServiceDocId
+            };
+            API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
+            EnrollmentSuccessViewModel enrollmentSuccessViewModel = new EnrollmentSuccessViewModel();
+            return View("EnrollmentSuccess", enrollmentSuccessViewModel);
+        }
 
 
 

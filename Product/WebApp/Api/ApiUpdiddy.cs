@@ -56,6 +56,15 @@ namespace UpDiddy.Api
         {
             return Get<SubscriberDto>("subscriber/" + SubscriberGuid);
         }
+
+        public WozTermsOfServiceDto GetWozTermsOfService()
+        {
+            return Get<WozTermsOfServiceDto>("woz/TermsOfService/", false);
+        }
+        public string EnrollStudentAndObtainEnrollmentGUID(EnrollmentDto enrollmentDto)
+        {
+            return Post<EnrollmentDto>(enrollmentDto, "enrollment/", false);
+        }
     }
 }
 
