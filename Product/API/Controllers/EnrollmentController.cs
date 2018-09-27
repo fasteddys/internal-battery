@@ -31,8 +31,6 @@ namespace UpDiddyApi.Controllers
             _queue = new CCQueue("ccmessagequeue", _queueConnection);
         }
 
-
-
         // Update the status of an enrolllment 
         [HttpPut]
         [Route("api/[controller]/UpdateEnrollmentStatus/{EnrollmentGuid}/{EnrollmentStatus}")]
@@ -48,7 +46,9 @@ namespace UpDiddyApi.Controllers
                 if (Enrollment == null)
                     return NotFound();
 
+                // Update the enrollment status and update the modify date 
                 Enrollment.EnrollmentStatusId = EnrollmentStatus;
+                Enrollment.ModifyDate = DateTime.Now;
                 _db.SaveChanges();
                 
 

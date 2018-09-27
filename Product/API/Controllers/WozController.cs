@@ -53,17 +53,58 @@ namespace UpDiddyApi.Controllers
 
         #region Student Enrollment 
 
+
         [HttpPost]
-        [Route("api/[controller]/SaveWozEnrollment/{EnrollmentGuid}")]
+        [Route("api/[controller]/SaveWozStudentLogin/{EnrollmentGuid}")]
         // Save student's vendor specific enrollment info to database  
-        public MessageTransactionResponse SaveWozEnrollment([FromBody] WozCourseEnrollmentDto WozEnrollmentDto, [FromRoute] string EnrollmentGuid)
+        public MessageTransactionResponse SaveWozStudentLogin([FromBody] VendorStudentLoginDto WozEnrollmentDto, [FromRoute] string EnrollmentGuid)
         {
-            _log.EndPoint = "WozCourseEnrollmentDto";
+            _log.EndPoint = "SaveWozStudentLogin";
             string WozEnrollmentJson = Newtonsoft.Json.JsonConvert.SerializeObject(WozEnrollmentDto);
             _log.InputParameters = "WozEnrollmentJson=" + WozEnrollmentJson + ";";
+ 
+            MessageTransactionResponse Rval = new MessageTransactionResponse();
+            try
+            {
+
+                // Get the Enrollment Object 
+                Enrollment Enrollment = _db.Enrollment
+                     .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                     .FirstOrDefault();
+
+                // Check the validity of the request 
+                if (Enrollment == null)
+                    return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
+
+                VendorStudentLogin StudentLogin = _mapper.Map<VendorStudentLogin>(WozEnrollmentDto);
+                StudentLogin.SubscriberId = Enrollment.SubscriberId;
+           
+                _db.VendorStudentLogin.Add(StudentLogin);
+                _db.SaveChanges();
+                CreateResponse(string.Empty, "Wox student login created", StudentLogin.VendorStudentLoginId.ToString(), TransactionState.Complete);
+            }
+            catch (Exception ex)
+            {
+                return CreateResponse(string.Empty, ex.Message + "Inner Exception: " + ex.InnerException.Message, string.Empty, TransactionState.FatalError);
+            }
+
+            return Rval;
+        }
+
+
+        /*   Is this redundant ????
+        [HttpPost]
+        [Route("api/[controller]/SaveStudentEnrollment/{EnrollmentGuid}")]
+        // Save student's vendor enrollment info to database  
+        public MessageTransactionResponse SaveStudentEnrollment([FromBody] VendorStudentLoginDto StudentLoginDto, [FromRoute] string EnrollmentGuid)
+        {
+            _log.EndPoint = "SaveStudentEnrollment";
+            string StudentLoginJson = Newtonsoft.Json.JsonConvert.SerializeObject(StudentLoginDto);
+            _log.InputParameters = "VendorStudentLogin=" + StudentLoginJson + ";";
             _log.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
 
             MessageTransactionResponse Rval = new MessageTransactionResponse();
+
             try
             {
                 // Get the Enrollment Object 
@@ -74,40 +115,12 @@ namespace UpDiddyApi.Controllers
                 // Check the validity of the request 
                 if (Enrollment == null)
                     return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
-
-                WozCourseEnrollment WozEnrollment = _mapper.Map<WozCourseEnrollment>(WozEnrollmentDto);
-                WozEnrollment.EnrollmentId = Enrollment.EnrollmentId;
-
-                _db.WozCourseEnrollment.Add(WozEnrollment);
-                _db.SaveChanges();
-                CreateResponse(string.Empty, "Wox enrollment record created", WozEnrollment.WozCourseEnrollmentId.ToString(), TransactionState.Complete);
-
-            }
-            catch (Exception ex)
-            {
-                return CreateResponse(string.Empty, ex.Message, string.Empty, TransactionState.FatalError);
-            }
-
-            return Rval;
-        }
+                _log.EnrollmentGuid = Enrollment.EnrollmentGuid;
 
 
+                VendorStudentLogin StudentLogin = _mapper.Map<VendorStudentLogin>(StudentLoginDto);
+                StudentLogin.SubscriberId = Enrollment.SubscriberId;
 
-
-        [HttpPost]
-        [Route("api/[controller]/SaveStudentEnrollment/{EnrollmentGuid}")]
-        // Save student's vendor enrollment info to database  
-        public MessageTransactionResponse SaveStudentEnrollment([FromBody] VendorStudentLogin StudentLogin, [FromRoute] string EnrollmentGuid)
-        {
-            _log.EndPoint = "SaveStudentEnrollment";
-            string StudentLoginJson = Newtonsoft.Json.JsonConvert.SerializeObject(StudentLogin);
-            _log.InputParameters = "VendorStudentLogin=" + StudentLoginJson + ";";
-            _log.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
-
-            MessageTransactionResponse Rval = new MessageTransactionResponse();
-
-            try
-            {
                 _db.VendorStudentLogin.Add(StudentLogin);
                 _db.SaveChanges();
                 CreateResponse(string.Empty, "Student enrollment created", StudentLogin.VendorStudentLoginId.ToString(), TransactionState.Complete);
@@ -120,7 +133,7 @@ namespace UpDiddyApi.Controllers
 
             return Rval;
         }
-
+        */
 
 
         [HttpGet]
@@ -210,6 +223,48 @@ namespace UpDiddyApi.Controllers
         #endregion
 
         #region Register Student to Course 
+
+
+        [HttpPost]
+        [Route("api/[controller]/SaveWozCourseEnrollment/{EnrollmentGuid}")]
+        // Save student's vendor specific enrollment info to database  
+        public MessageTransactionResponse SaveWozCourseEnrollment([FromBody] WozCourseEnrollmentDto WozEnrollmentDto, [FromRoute] string EnrollmentGuid)
+        {
+            _log.EndPoint = "SaveWozCourseEnrollment";
+            string WozEnrollmentJson = Newtonsoft.Json.JsonConvert.SerializeObject(WozEnrollmentDto);
+            _log.InputParameters = "WozEnrollmentJson=" + WozEnrollmentJson + ";";
+            _log.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
+
+            MessageTransactionResponse Rval = new MessageTransactionResponse();
+            try
+            {
+                // Get the Enrollment Object 
+                Enrollment Enrollment = _db.Enrollment
+                     .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                     .FirstOrDefault();
+
+                // Check the validity of the request 
+                if (Enrollment == null)
+                    return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
+
+                WozCourseEnrollment WozEnrollment = _mapper.Map<WozCourseEnrollment>(WozEnrollmentDto);
+                WozEnrollment.EnrollmentId = Enrollment.EnrollmentId;
+
+                _db.WozCourseEnrollment.Add(WozEnrollment);
+                _db.SaveChanges();
+                CreateResponse(string.Empty, "Wox enrollment record created", WozEnrollment.WozCourseEnrollmentId.ToString(), TransactionState.Complete);
+
+            }
+            catch (Exception ex)
+            {
+                return CreateResponse(string.Empty, ex.Message, string.Empty, TransactionState.FatalError);
+            }
+
+            return Rval;
+        }
+
+
+
         [HttpGet]
         [Route("api/[controller]/RegisterStudent/{EnrollmentGuid}")]
         // Enroll a student with a vendor 
@@ -564,7 +619,7 @@ namespace UpDiddyApi.Controllers
 
             #endregion
 
-     #region Helper Functions
+        #region Helper Functions
 
 
          private WozTermsOfServiceDto LastGoodTermsOfService()

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using UpDiddyApi.Models;
 using UpDiddyLib;
 using UpDiddyLib.Dto;
@@ -9,6 +10,20 @@ namespace SandBox
     {
         static void Main(string[] args)
         {
+
+ 
+
+            string WozTransResponse = "{\"transactionId\":\"fa7ac26d-0c3d-43b4-ab9d-1b48b2d081b7\",\"clientId\":\"allegis.qa.exeterlms.com\",\"createDateUTC\":1537873016476,\"lastOperationDateUTC\":1537873024607,\"expectedCompletionDateUTC\":253402300800000,\"operation\":\"UserCreate\",\"status\":400,\"message\":\"The operation has completed with the following message: User Email: ikoplowitz@populusgroup.com Id: 5b237d37-ef06-495f-88a9-5ba3ecbb5ec3 registration successful!\",\"resource\":\"{\\\"invitationCode\\\":\\\"a056bc5f - 7d76 - 400d - b6a1 - 7eaa1e84a69f\\\",\\\"registrationUrl\\\":\\\"https://allegis.qa.exeterlms.com/Account/Register?invitationCode=a056bc5f-7d76-400d-b6a1-7eaa1e84a69f\\\",\\\"exeterId\\\":3237,\\\"firstName\\\":\\\"Ian\\\",\\\"lastName\\\":\\\"Koplowitz\\\",\\\"emailAddress\\\":\\\"ikoplowitz@populusgroup.com\\\",\\\"integrationIds\\\":null}\",\"apiVersion\":\"1.0\"}";
+
+            JObject WozJson = JObject.Parse(WozTransResponse);
+            string WozResourceStr = (string)WozJson["resource"];
+            var WozResourceObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(WozResourceStr);
+            string Exeterid = WozResourceObject.exeterId;
+            string RegistrationUrl = WozResourceObject.registrationUrl;
+            
+
+
+
 
             WozStudentDto wz = new WozStudentDto();
             wz.emailAddress = "email@email.com";

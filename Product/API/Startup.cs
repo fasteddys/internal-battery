@@ -13,6 +13,9 @@ using UpDiddyLib.Dto;
 using UpDiddyApi.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Hangfire;
+using UpDiddyApi.Workflow;
+using Hangfire.SqlServer;
+using System;
 
 namespace UpDiddyApi
 {
@@ -67,10 +70,12 @@ namespace UpDiddyApi
             var SqlConnection = _vaultConfig["CareerCircleSqlConnection"];         
             services.AddDbContext<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
 
-            services.AddHangfire(x => x.UseSqlServerStorage(SqlConnection));
-
-
-
+            var HangFireSqlConnection = _vaultConfig["HangFireJimDev"];
+            services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
+            // Have the workflow monitor run every minute 
+             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
+             RecurringJob.AddOrUpdate(() => new WorkFlowMonitor().DoWork(), Cron.Minutely);
+    
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
 

@@ -40,7 +40,12 @@ namespace UpDiddyApi.Controllers
                 .ProjectTo<TopicDto>()
                 .ToList();
 
-            BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.WozU("test"));
+
+            // TODO remove test code 
+            //  BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.WozU("test"));
+            BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem("00000000-0000-0000-0000-000000000001"));
+
+            
 
             return Ok(rval) ;
             

@@ -36,8 +36,7 @@ namespace UpDiddy.Helpers
                 return (T)Convert.ChangeType(null, typeof(T)); 
             }
         }
-
-
+ 
         public string GetAsString(string ApiAction, bool Authorized = false)
         {
             Task<string> Response = _GetAsync(ApiAction, Authorized);
