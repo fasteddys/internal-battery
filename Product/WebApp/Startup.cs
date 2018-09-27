@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Localization;
 // using UserDetailsClient.Core;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace UpDiddy
 {
@@ -55,12 +56,12 @@ namespace UpDiddy
             .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
             .AddCookie();
 
-            /* HTTPS redirect
+            /* HTTPS redirect 
             services.Configure<MvcOptions>(options =>
             {
                 options.Filters.Add(new RequireHttpsAttribute());
-            });
-            */
+            });*/
+            
 
             #region AddLocalizationß
             services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -146,7 +147,7 @@ namespace UpDiddy
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            /* need Microsoft.AspNetCore.Rewrite to redirect to https
+            /* Implements HTTPS redirect
             var options = new RewriteOptions().AddRedirectToHttps();
             app.UseRewriter(options);
             */

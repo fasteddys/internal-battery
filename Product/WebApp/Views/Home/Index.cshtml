@@ -61,7 +61,12 @@
                 </div>
                 @foreach (TopicDto topic in Model.Topics)
                 {
-                    string DescriptionBlurb = topic.Description.Substring(0, 130) + "...";
+                    string DescriptionBlurb = topic.Description;
+                    if (DescriptionBlurb.Length > 130)
+                    {
+                        DescriptionBlurb = DescriptionBlurb.Substring(0, 130) + "...";
+
+                    }
                     <div class="col-lg-4 col-md-6 col-sm-6 col-xs-12 card-column">
                         <div class="card">
                             <img class="card-img-top" src="@(Model.ImageUrl + topic.DesktopImage)" alt="Card image cap">
