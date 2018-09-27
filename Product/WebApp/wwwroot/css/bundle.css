@@ -114,7 +114,7 @@ body nav {
     text-align: left; } }
 @media (min-width: 1200px) {
   body .navbar-brand img {
-    width: 11.875rem; } }
+    width: 9rem; } }
 body {
   font-family: "OpenSans-Regular";
   color: #03264A;
@@ -196,7 +196,7 @@ body {
   body .home-container .home-courses .course-categories .career-training-header-container {
     text-align: left; }
   body .home-container .home-courses .course-categories .card-column .card img {
-    height: 15.625rem; }
+    height: 14rem; }
   body .home-container .home-courses .course-categories > div {
     margin-bottom: 0; } }
 @media (min-width: 992px) {
@@ -392,6 +392,10 @@ footer {
   footer a {
     color: #fff;
     cursor: pointer; }
+    footer a .fab {
+      color: #03264A; }
+      footer a .fab:hover {
+        color: #4089A0; }
   footer a:hover {
     color: #547eff;
     text-decoration: none; }

@@ -9,7 +9,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CareerCircle</title>
+    <title>CareerCircle</title>
+    <link rel="shortcut icon" href="~/images/Icon-20.png"/>
     <environment names="Development,DevelopmentLocalApi,DevelopmentLocal">
         <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css"/>
         <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css"/>
@@ -34,8 +35,8 @@
                 <ul class="navbar-nav ml-auto">
                     <!--<li class="nav-item"><a class="nav-link" asp-controller="Topic" asp-action="Index">@Localizer["Career Skilling"]</a></li>-->
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="News">@Localizer["News"]</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="ContactUs">@Localizer["Contact"]</a></li>
+                    <!--<li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="News">@Localizer["News"]</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="ContactUs">@Localizer["Contact"]</a></li>-->
 
 
                     @if (User.Identity.IsAuthenticated)

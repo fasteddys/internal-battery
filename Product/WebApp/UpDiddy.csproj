@@ -14,6 +14,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Rewrite" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.2" />
@@ -142,5 +143,10 @@
     <Compile Update="Resources\Views.Home.Terms.fr.Designer.cs">
       <DependentUpon>Views.Home.Terms.fr.resx</DependentUpon>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Views\Home\Unified.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
   </ItemGroup>
 </Project>

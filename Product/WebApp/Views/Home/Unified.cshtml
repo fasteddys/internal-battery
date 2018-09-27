@@ -1,0 +1,37 @@
+﻿@page
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model UnifiedViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.AspNetCore.Localization
+@using  Microsoft.AspNetCore.Http
+@inject IViewLocalizer Localizer
+@{
+    
+    //var rqf = Request.HttpContext.Features.Get<IRequestCultureFeature>();
+    // Culture contains the information of the requested culture
+    //var culture = rqf.RequestCulture.Culture;
+
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 offset-md-2">
+                    <div class="container unified-container">
+                        <div class="row">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div id="api"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+        
+    
