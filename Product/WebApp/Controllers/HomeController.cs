@@ -93,6 +93,7 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         public IActionResult Unified()
         {
             return View();

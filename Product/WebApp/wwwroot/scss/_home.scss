@@ -120,6 +120,7 @@ body {
 
 @media (min-width: 0px) {
     body {
+        padding-top: 68.42px;
         .home-container {
 
             .home-courses {
@@ -193,6 +194,8 @@ body {
 
 @media (min-width: 992px) {
     body {
+        padding-top: 6.375em;
+
         .home-container {
             .home-hero {
                 background-image: url('../images/skyline_background.png');
@@ -213,8 +216,8 @@ body {
                 margin-top: 6.25rem;
                 margin-bottom: 7.5rem;
 
-                .course-categories{
-                    .section-heading{
+                .course-categories {
+                    .section-heading {
                         font-size: 2rem;
                     }
                 }

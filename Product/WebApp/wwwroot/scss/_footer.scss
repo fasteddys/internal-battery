@@ -2,7 +2,7 @@
 /* Footer Styles */ 
 footer {
     font-size: .8125rem;
-
+    text-align: center;
     ul {
         list-style: none;
         padding: 0;
@@ -109,6 +109,24 @@ footer {
     #FooterSubscribeForm {
         input {
             width: 100px;
+        }
+    }
+}
+
+@media (min-width: 0){
+    footer{
+        .container-align-right{
+            text-align: center;
+            margin-top:1rem;
+        }
+    }
+}
+@media (min-width: 768px){
+    footer {
+        text-align: left;
+        .container-align-right {
+            text-align: right;
+            margin-top: 0;
         }
     }
 }

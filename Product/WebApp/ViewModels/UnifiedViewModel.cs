@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace UpDiddy.ViewModels
 {
-    public class UnifiedViewModel : PageModel
+    public class UnifiedViewModel : BaseViewModel
     {
         public string TermsLabel { get; set; }
 
