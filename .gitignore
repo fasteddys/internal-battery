@@ -39,3 +39,9 @@ Thumbs.db
 
 # dotCover
 *.dotCover
+
+# publish metadata
+*.pubxml
+
+# sass-cache
+*.scssc
