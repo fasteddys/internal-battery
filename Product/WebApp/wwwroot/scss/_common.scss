@@ -101,6 +101,8 @@ nav .brand-button-light {
     padding: 0;
 }
 
+
+
 .row{
     margin-left: 0;
     margin-right: 0;
@@ -126,4 +128,29 @@ nav .brand-button-light {
 
 input {
     font-family: FontAwesome, "Open Sans", Verdana, sans-serif;
+}
+
+.no-padding{
+    padding: 0;
+}
+
+.no-margin{
+    margin: 0;
+}
+
+@media (min-width: 992px){
+    .navbar-light {
+        .navbar-nav {
+            .brand-button-light {
+
+                &:hover {
+                    background-color: $color-secondary;
+                }
+
+                .nav-link:hover {
+                    color: $color-white;
+                }
+            }
+        }
+    }
 }

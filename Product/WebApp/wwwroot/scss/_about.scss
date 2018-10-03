@@ -1,17 +1,92 @@
 ﻿@import '_variables';
 
-.about-us-container {
-    > div {
-        padding: 3rem 0;
-    }
+// Base Styles
+@media (min-width: 0px) {
+    .about-us-container {
+        > div {
+            padding: 5rem 0;
+        }
 
-    .about-us-hero {
-        background-color: $color-secondary;
-        color: $color-white;
-    }
+        .about-us-primary-band {
+            background-image: linear-gradient( rgba(3, 38, 74, 0.45), rgba(3, 38, 74, 0.45) ), url('../images/about-background-2.jpg');
+            background-size: cover;
+            background-position: top;
+            padding: 8rem 0;
+        }
 
-    .about-us-secondary-band {
-        background-color: $color-primary;
-        color: $color-white;
+        .about-us-hero {
+            background-image: url('../images/medium_blue_background.jpg');
+            color: $color-white;
+            background-size: cover;
+
+            .about-us-header {
+                font-size: 1.5rem;
+            }
+
+            .career-circle-video-container {
+                overflow: hidden;
+                padding-bottom: 56.25%;
+                position: relative;
+                height: 0;
+
+                iframe {
+                    left: 0;
+                    top: 0;
+                    height: 100%;
+                    width: 100%;
+                    position: absolute;
+                }
+            }
+        }
+
+        .content-panel {
+            color: $color-white;
+            background-color: $color-secondary;
+            padding: 2rem;
+            border-left: $rem-5 solid $color-tertiary;
+
+            .content-panel-header {
+                font-size: 1.5rem;
+                padding-bottom: 2rem;
+            }
+        }
+
+        .about-us-secondary-band {
+            .partners-band {
+                .partners-header {
+                    font-size: 1.5rem;
+                    padding-bottom: 1rem;
+                }
+            }
+        }
+
+        .about-us-tertiary-band {
+            background-color: $color-primary;
+            color: $color-white;
+            .contact-us-header{
+                font-size: 1.5rem;
+                padding-bottom: 1rem;
+            }
+        }
     }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+//Extra Large Styles
+@media (min-width: 1200px) {
 }

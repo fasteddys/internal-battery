@@ -12227,4 +12227,11 @@ $(document).ready(function () {
             $('#EnrollmentSubmitButton').prop('disabled', true);
         }
     });
+
+    $('.play-button').on('click', function () {
+        $(this).hide();
+        $('.enrollment-success-video-thumbnail').hide();
+        $('#EnrollmentSuccessVideo').prop('controls', true);
+        document.getElementById("EnrollmentSuccessVideo").play();
+    });
 });

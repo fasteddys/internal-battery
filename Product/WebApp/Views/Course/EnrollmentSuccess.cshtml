@@ -1,9 +1,9 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
-@model EnrollmentSuccessViewModel
+@model CourseViewModel
 
 <div class="checkout-page-container">
-    <div class="row checkout-hero">
+    <div class="row enrollment-success-hero-band">
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
@@ -26,7 +26,50 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
+                        <div class="row enrollment-success-video-container">
+                            @{ 
+                                String firstGridViewsize = "sm";
+                                String secondGridViewsize = "md";
+                                if (Model.Course.Description.Length > 130)
+                                {
+                                    firstGridViewsize = "md";
+                                    secondGridViewsize = "xl";
+                                }
+                            }
+                            <div class="col-@(firstGridViewsize)-12 col-@(secondGridViewsize)-7 no-padding">
+                                <div class="enrollment-success-video">
+                                    <video id="EnrollmentSuccessVideo">
+                                        <source src="~/images/Career_Circle.mp4" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <div class="enrollment-success-video-thumbnail">
 
+                                    </div>
+                                    <div class="play-button-container">
+
+                                        <div class="play-button">
+                                            <i class="fas fa-play-circle fa-7x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-@(firstGridViewsize)-12 col-@(secondGridViewsize)-5">
+                                <div class="enrollment-success-video-details">
+                                    <div class="enrolled-course-name-header">
+                                        @Model.Course.Name
+                                    </div>
+                                    <div class="enrolled-course-description">
+                                        @Model.Course.Description
+                                    </div>
+                                    <div class="enrollment-success-cta">
+                                        <a>
+                                            <div class="brand-button contrast-primary">Begin!</div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
