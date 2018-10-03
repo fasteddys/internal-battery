@@ -1,0 +1,56 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model UnifiedViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.AspNetCore.Http
+@using System.Globalization
+@using Microsoft.AspNetCore.Http.Features
+@using System.Web
+@inject IViewLocalizer Localizer
+@{
+    Layout = null;
+    string DomainName = Context.Request.Host.ToString();
+    string SSLProtocol = Context.Request.Scheme.ToString();
+    string ProtocolAndHost = SSLProtocol + "://" + DomainName;
+}
+
+<!doctype html>
+<html>
+<head>
+    <title>CareerCircle - Signup/Login</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareerCircle</title>
+    <link rel="shortcut icon" href="@(ProtocolAndHost)/images/Icon-20.png" />
+    <environment names="Development,DevelopmentLocalApi,DevelopmentLocal">
+        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/lib/bootstrap/css/bootstrap.min.css" />
+        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/lib/font-awesome/css/all.min.css" />
+        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/Unified.css" />
+        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/bundle.css" />
+    </environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" type="text/css" href="~/css/site.min.css" />
+    </environment>
+</head>
+<body>
+    <div class="row coming-soon-container">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <object type="image/svg+xml" data="~/images/careercircle-stackedlogo.svg">
+                            Your browser does not support SVG
+                        </object>
+                        <h1>Coming Soon...</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+
+
+

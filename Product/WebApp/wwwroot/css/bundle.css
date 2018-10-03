@@ -562,6 +562,10 @@ body {
     padding-bottom: 1rem; }
   .checkout-page-container .enrollment-success-content .enrollment-success-video-container .enrollment-success-video-details .enrolled-course-name-header {
     font-size: 1.5rem; } }
+@media (min-width: 0px) {
+  .coming-soon-container {
+    margin-top: 6rem;
+    text-align: center; } }
 /* Footer Styles */
 footer {
   font-size: .8125rem;

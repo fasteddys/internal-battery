@@ -99,6 +99,10 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        public IActionResult ComingSoon()
+        {
+            return View();
+        }
 
         [Authorize]
         public async Task<IActionResult> Api()

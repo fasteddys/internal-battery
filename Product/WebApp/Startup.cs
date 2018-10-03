@@ -192,11 +192,12 @@ namespace UpDiddy
             app.UseSession();
             app.UseAuthentication();
 
+            // TODO - Change template action below to index upon site launch.
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Home}/{action=ComingSoon}/{id?}");
             });
         }
 
