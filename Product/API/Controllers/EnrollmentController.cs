@@ -33,9 +33,7 @@ namespace UpDiddyApi.Controllers
 
 
 
-        // TODO Create Enrollment Status to allow callers to set the status of an enrollment 
-
-
+        // Update the status of an enrolllment 
         [HttpPut]
         [Route("api/[controller]/UpdateEnrollmentStatus/{EnrollmentGuid}/{EnrollmentStatus}")]
         public IActionResult UpdateEnrollmentStatus(string EnrollmentGuid, int EnrollmentStatus )
