@@ -34,15 +34,24 @@
     </environment>
 </head>
 <body>
+    <style>
+        object {
+            max-width: 600px;
+            width: 100%;
+        }
+        @@media (min-width: 576px){
+            h2{
+                font-size: 4rem;
+            }
+        }
+    </style>
     <div class="row coming-soon-container">
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
-                        <object type="image/svg+xml" data="~/images/careercircle-stackedlogo.svg">
-                            Your browser does not support SVG
-                        </object>
-                        <h1>Coming Soon...</h1>
+                        <object data="~/images/careercircle-stackedlogo.svg" type="image/svg+xml"></object>
+                        <h2>Coming Soon...</h2>
                     </div>
                 </div>
             </div>
