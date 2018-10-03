@@ -28,10 +28,7 @@ namespace UpDiddy
 
         public Startup(IHostingEnvironment env)
         {
-            if (System.Diagnostics.Debugger.IsAttached)
-            {
-                System.Threading.Thread.Sleep(2000);
-            }
+            
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -45,6 +42,7 @@ namespace UpDiddy
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddAuthentication(sharedOptions =>
@@ -184,8 +182,12 @@ namespace UpDiddy
                 SupportedUICultures = supportedCultures
             });
 
+            app.Use((context, next) =>
+            {
+                context.Response.Headers["Access-Control-Allow-Origin"] = "https://login.microsoftonline.com";
+                return next.Invoke();
+            });
 
-            
             app.UseStaticFiles();
             app.UseSession();
             app.UseAuthentication();

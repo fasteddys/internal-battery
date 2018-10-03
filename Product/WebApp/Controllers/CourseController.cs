@@ -83,8 +83,15 @@ namespace UpDiddy.Controllers
                 TermsOfServiceFlag = TermsOfServiceDocId
             };
             API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
-            EnrollmentSuccessViewModel enrollmentSuccessViewModel = new EnrollmentSuccessViewModel();
-            return View("EnrollmentSuccess", enrollmentSuccessViewModel);
+            TopicDto ParentTopic = API.TopicById(Course.TopicId);
+            WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
+            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
+            return View("EnrollmentSuccess", CourseViewModel);
+        }
+
+        public IActionResult EnrollmentSuccess()
+        {
+            return View();
         }
 
 

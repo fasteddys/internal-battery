@@ -1,0 +1,186 @@
+﻿@import '_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .checkout-page-container {
+        > div {
+            padding: 2rem 0;
+        }
+
+        .enrollment-success-hero-band {
+            background-image: url('../images/medium_blue_background.jpg');
+            color: $color-white;
+            background-size: cover;
+
+            .enrollment-success-hero {
+                padding-bottom: 2rem;
+
+                .enrollment-success-header {
+                    font-size: 2rem;
+                }
+            }
+        }
+
+        .enrollment-success-content {
+            padding: 1rem 0rem;
+
+            .enrollment-success-video-container {
+                background-color: $color-tertiary-light-gray;
+
+                .enrollment-success-video {
+                    overflow: hidden;
+                    padding-bottom: 56.25%;
+                    position: relative;
+                    height: 0;
+
+                    video {
+                        left: 0;
+                        top: 0;
+                        height: 100%;
+                        width: 100%;
+                        position: absolute;
+                    }
+
+
+                    .play-button {
+                        position: absolute;
+                        cursor: pointer;
+                        color: $color-white;
+                        text-align: center;
+                        top: 50%;
+                        left: 0;
+                        right: 0;
+                        transform: translateY(-50%);
+                    }
+
+                    .enrollment-success-video-thumbnail{
+                        background-image: url('../images/cyber-security-dii.jpg');
+                        height:100%;
+                        width: 100%;
+                        background-size:cover;
+                        position: absolute;
+                    }
+                }
+
+                .enrollment-success-video-details {
+                    padding: 1rem 1rem;
+                    text-align: center;
+
+                    > div {
+                        padding-bottom: 1rem;
+                    }
+
+                    .enrolled-course-name-header {
+                        color: $color-primary;
+                    }
+
+                    .enrollment-course-description {
+                        color: $color-tertiary-gray;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+    .checkout-page-container {
+        .enrollment-success-content {
+            padding: 1rem 0;
+
+            .enrollment-success-video-container {
+                .enrollment-success-video{
+                    .play-button{
+
+                    }
+                }
+                .enrollment-success-video-details {
+                    > div{
+                        padding-bottom: 1rem;
+                    }
+                    .enrolled-course-name-header {
+                        font-size: 1rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Small Styles
+@media (min-width: 576px) {
+    .checkout-page-container {
+        .enrollment-success-content {
+            padding: 1rem 0;
+
+            .enrollment-success-video-container {
+                .enrollment-success-video {
+                    .play-button {
+                    }
+                }
+
+                .enrollment-success-video-details {
+                    text-align: left;
+                    .enrolled-course-name-header {
+                        font-size: 1rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+    .checkout-page-container {
+        .enrollment-success-content {
+            padding: 3rem 0;
+
+            .enrollment-success-video-container {
+                .enrollment-success-video {
+                    .play-button {
+                    }
+                }
+
+                .enrollment-success-video-details {
+                    > div {
+                        padding-bottom: 0.15rem;
+                    }
+
+                    .enrolled-course-name-header {
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Large Styles
+@media (min-width: 992px) {
+    .checkout-page-container {
+        .enrollment-success-content {
+
+            .enrollment-success-video-container {
+                .enrollment-success-video {
+                    .play-button {
+                    }
+                }
+
+                .enrollment-success-video-details {
+                    > div {
+                        padding-bottom: 1rem;
+                    }
+
+                    .enrolled-course-name-header {
+                        font-size: 1.5rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+//Extra Large Styles
+@media (min-width: 1200px) {
+}
