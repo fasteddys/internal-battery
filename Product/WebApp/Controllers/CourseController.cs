@@ -39,10 +39,6 @@ namespace UpDiddy.Controllers
 
         public IActionResult Index()
         {
-            
-            ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
-            //CourseViewModel CourseViewModel = new CourseViewModel(_configuration, API.Courses());
-            //return View(CourseViewModel);
             return View();
         }
         
@@ -51,9 +47,9 @@ namespace UpDiddy.Controllers
         [Route("/Course/Checkout/{CourseSlug}")]
         public IActionResult Get(string CourseSlug)
         {
-            GetSubscriber();
 
-            ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
+            GetSubscriber();
+            
             CourseDto Course = API.Course(CourseSlug);
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
@@ -65,11 +61,10 @@ namespace UpDiddy.Controllers
 
         [HttpPost]
         public IActionResult Checkout(int TermsOfServiceDocId, string CourseSlug)
-        {
+        {          
             GetSubscriber();
             DateTime dateTime = new DateTime();
-            CourseDto Course = API.Course(CourseSlug);
-            //ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
+            CourseDto Course = API.Course(CourseSlug);            
             EnrollmentDto enrollmentDto = new EnrollmentDto
             {
                 CourseId = Course.CourseId,

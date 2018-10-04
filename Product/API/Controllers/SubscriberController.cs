@@ -20,10 +20,10 @@ namespace UpDiddyApi.Controllers
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
-        public SubscriberController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration)
+        public SubscriberController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration) 
         {
             _db = db;
-            _mapper = mapper;
+            _mapper = mapper;        
 
         }
 

@@ -28,8 +28,11 @@ namespace UpDiddy.Controllers
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
    
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration) : base(azureAdB2COptions.Value, configuration)
+        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration) 
+            : base(azureAdB2COptions.Value, configuration)
         {
+
+
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
             _configuration = configuration;
@@ -37,8 +40,6 @@ namespace UpDiddy.Controllers
 
         public IActionResult Index()
         {
-
-
             // TODO remove test code 
             GetSubscriber();
 
@@ -48,8 +49,6 @@ namespace UpDiddy.Controllers
 
         public IActionResult Terms()
         {
-
-
             return View();
         }
 

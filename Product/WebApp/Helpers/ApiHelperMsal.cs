@@ -69,6 +69,7 @@ namespace UpDiddy.Helpers
         private async Task AddBearerTokenAsync(HttpRequestMessage request)
         {
           
+
             // Retrieve the token with the specified scopes
             var scope = AzureOptions.ApiScopes.Split(' ');
             string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;

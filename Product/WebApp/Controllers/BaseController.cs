@@ -21,13 +21,38 @@ namespace UpDiddy.Controllers
     {
      
         public SubscriberDto subscriber;
+        private ApiUpdiddy _Api  = null;
+        private AzureAdB2COptions _AzureAdB2COptions = null;
+        private IConfiguration _configuration = null;
+
+
 
         public BaseController(AzureAdB2COptions AzureAdB2COptions, IConfiguration configuration)
         {
-            this.API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, configuration);                        
+            _AzureAdB2COptions = AzureAdB2COptions;
+            _configuration = configuration;
+
+
+           // this.API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, configuration);                        
         }
 
-        public ApiUpdiddy API { get;  }        
+         public ApiUpdiddy API {
+            get
+            {
+                if (_Api != null)
+                    return _Api;
+                else
+                {
+                    _Api = new ApiUpdiddy(_AzureAdB2COptions, this.HttpContext, _configuration);
+                    return _Api;
+                }
+
+            }
+
+
+        }  
+        
+     
 
         public void GetSubscriber()
         {

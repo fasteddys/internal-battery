@@ -29,7 +29,7 @@ namespace UpDiddy.Api
         // TODO add application caching  
         public IList<TopicDto> Topics()
         {
-            return Get<IList<TopicDto>>("topic", true);
+            return Get<IList<TopicDto>>("topic", false);
         }
 
         public TopicDto TopicById(int TopicId)
