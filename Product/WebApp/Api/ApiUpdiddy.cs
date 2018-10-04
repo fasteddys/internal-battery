@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using UpDiddy.Helpers;
 using UpDiddyLib.Dto;
+using System.Net;
 
 
 namespace UpDiddy.Api
@@ -65,6 +66,13 @@ namespace UpDiddy.Api
         {
             return Post<EnrollmentDto>(enrollmentDto, "enrollment/", false);
         }
+
+        public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
+        {
+            return Get<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail));
+        }
+
+
     }
 }
 

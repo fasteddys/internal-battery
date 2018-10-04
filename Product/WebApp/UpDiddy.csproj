@@ -33,7 +33,6 @@
     <Folder Include="Resources\" />
     <Folder Include="Views\User\" />
     <Folder Include="wwwroot\lib\font-awesome\" />
-    <Folder Include="Helpers\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Remove="Resources\AppResources.es.resx" />
