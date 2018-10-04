@@ -51,7 +51,7 @@ namespace UpDiddy.Controllers
         [Route("/Course/Checkout/{CourseSlug}")]
         public IActionResult Get(string CourseSlug)
         {
-            setCurrentClientGuid();
+            GetSubscriber();
 
             ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
             CourseDto Course = API.Course(CourseSlug);

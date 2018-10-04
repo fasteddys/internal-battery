@@ -22,13 +22,13 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         AzureAdB2COptions AzureAdB2COptions;
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
    
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration)
+        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration) : base(azureAdB2COptions.Value, configuration)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
@@ -37,11 +37,10 @@ namespace UpDiddy.Controllers
 
         public IActionResult Index()
         {
-            var xxx = _configuration["Api:ApiUrl"];
+
+
             // TODO remove test code 
-            ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
-            var x = API.GetAsString("Values", true);
-            var xx = API.Get<string>("Values", true);
+            GetSubscriber();
 
             HomeViewModel HomeViewModel = new HomeViewModel(_configuration, API.Topics());
             return View(HomeViewModel);
