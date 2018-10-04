@@ -29,7 +29,7 @@ namespace UpDiddy.Api
         // TODO add application caching  
         public IList<TopicDto> Topics()
         {
-            return Get<IList<TopicDto>>("topic", false);
+            return Get<IList<TopicDto>>("topic", true);
         }
 
         public TopicDto TopicById(int TopicId)
@@ -69,7 +69,7 @@ namespace UpDiddy.Api
 
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
         {
-            return Get<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail));
+            return Get<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);
         }
 
 

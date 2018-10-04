@@ -90,7 +90,7 @@ namespace UpDiddy.Helpers
 
                 // Add token to the Authorization header and make the request 
                 if ( Authorized)
-                    await AddBearerTokenAsync(request);
+                    await AddBearerTokenAsync(request); 
 
                 HttpResponseMessage response = await client.SendAsync(request);
                 // Handle the response

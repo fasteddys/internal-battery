@@ -19,7 +19,7 @@ namespace UpDiddy.Controllers
 
     public class BaseController : Controller
     {
-        public ApiUpdiddy API;
+     
         public SubscriberDto subscriber;
 
         public BaseController(AzureAdB2COptions AzureAdB2COptions, IConfiguration configuration)

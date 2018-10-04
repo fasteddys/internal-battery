@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -58,6 +59,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         [Route("api/[controller]/CreateSubscriber/{SubscriberGuid}/{SubscriberEmail}")]
         public IActionResult NewSubscriber(string SubscriberGuid, string SubscriberEmail)
         {

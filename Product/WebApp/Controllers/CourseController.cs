@@ -66,7 +66,7 @@ namespace UpDiddy.Controllers
         [HttpPost]
         public IActionResult Checkout(int TermsOfServiceDocId, string CourseSlug)
         {
-            setCurrentClientGuid();
+            GetSubscriber();
             DateTime dateTime = new DateTime();
             CourseDto Course = API.Course(CourseSlug);
             //ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
