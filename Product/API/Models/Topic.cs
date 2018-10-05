@@ -19,5 +19,6 @@ namespace UpDiddyApi.Models
         public string TabletImage { get; set; }
         public string MobileImage { get; set; }
         public int? SortOrder { get; set; }
+        public int? Hidden { get; set; }
     }
 }

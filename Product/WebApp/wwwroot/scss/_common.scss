@@ -79,6 +79,9 @@
         background-color: $color-primary;
         color: #fff;
         border: $rem-2 solid #fff;
+        &:hover{
+            background-color: $color-secondary;
+        }
     }
 
     &.contrast-secondary {

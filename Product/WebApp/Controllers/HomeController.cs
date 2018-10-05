@@ -19,6 +19,10 @@ using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
+using System.Net.Mail;
+using SendGrid;
+using SendGrid.Helpers.Mail;
+using System.Text;
 
 namespace UpDiddy.Controllers
 {
@@ -28,6 +32,7 @@ namespace UpDiddy.Controllers
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
    
+
         public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration) 
             : base(azureAdB2COptions.Value, configuration)
         {
@@ -80,15 +85,42 @@ namespace UpDiddy.Controllers
         }
 
         public IActionResult About()
-        {
-    
+        { 
             return View();
         }
 
-        public IActionResult ContactUs()
+        [HttpPost]
+        public IActionResult ContactUs(string ContactUsFirstName, 
+            string ContactUsLastName, 
+            string ContactUsEmail, 
+            string ContactUsType, 
+            string ContactUsComment)
         {
+            var apiKey = _configuration["SendgridAPIKey"];
+            var client = new SendGridClient(apiKey);
+            var from = new EmailAddress("ikoplowitz@populusgroup.com");
+            var subject = "A new contact message has been submitted";
+            var to = new EmailAddress("ikoplowitz@populusgroup.com");
+            var emailBody = formatContactEmail(ContactUsFirstName, ContactUsLastName, ContactUsEmail, ContactUsType, ContactUsComment);
+            var plainTextContent = emailBody;
+            var htmlContent = emailBody;
+            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
+            var response = client.SendEmailAsync(msg);
+            return RedirectToAction("About", new AboutViewModel());
+        }
 
-            return View();
+        private string formatContactEmail(string ContactUsFirstName,
+            string ContactUsLastName,
+            string ContactUsEmail,
+            string ContactUsType,
+            string ContactUsComment)
+        {
+            StringBuilder emailBody = new StringBuilder("<strong>New email submitted by: </strong>" + ContactUsLastName + ", " + ContactUsFirstName);
+            emailBody.Append("<p><strong>User's email: </strong>" + ContactUsEmail + "</p>");
+            emailBody.Append("<p><strong>Contact topic: </strong>" + ContactUsType + "</p>");
+            emailBody.Append("<p><strong>Message: </strong></p>");
+            emailBody.Append("<p>" + ContactUsComment + "</p>");
+            return emailBody.ToString();
         }
 
         [AllowAnonymous]

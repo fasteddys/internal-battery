@@ -1,4 +1,8 @@
-﻿<div class="about-us-container">
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model AboutViewModel
+
+<div class="about-us-container">
     <div class="row about-us-hero">
         <div class="col-md-12">
             <div class="container">
@@ -80,22 +84,22 @@
                     <div class="col-md-12">
                         <div class="contact-us-band">
                             <div class="contact-us-header">Contact Us</div>
-                            <form>
+                            <form id="ContactUsForm" asp-controller="Home" asp-action="ContactUs">
                                 <div class="form-group">
                                     <label for="exampleFormControlTextarea1">First Name</label>
-                                    <input type="text" class="form-control">
+                                    <input required type="text" class="form-control" asp-for="ContactUsFirstName">
                                 </div>
                                 <div class="form-group">
                                     <label for="exampleFormControlTextarea1">Last Name</label>
-                                    <input type="text" class="form-control">
+                                    <input required type="text" class="form-control" asp-for="ContactUsLastName">
                                 </div>
                                 <div class="form-group">
                                     <label for="exampleFormControlTextarea1">Email</label>
-                                    <input type="email" class="form-control" id="exampleFormControlInput1">
+                                    <input required type="email" class="form-control" id="exampleFormControlInput1" asp-for="ContactUsEmail">
                                 </div>
                                 <div class="form-group">
                                     <label for="exampleFormControlTextarea1">Contact Type</label>
-                                    <select class="form-control" id="exampleFormControlSelect1">
+                                    <select class="form-control" id="exampleFormControlSelect1" asp-for="ContactUsType">
                                         <option selected>General</option>
                                         <option>Partner</option>
                                         <option>Career paths</option>
@@ -103,7 +107,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="exampleFormControlTextarea1">General</label>
-                                    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                                    <textarea required class="form-control" id="exampleFormControlTextarea1" rows="3" asp-for="ContactUsComment"></textarea>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary">Submit</button>
@@ -115,3 +119,6 @@
         </div>
     </div>
 </div>
+<script>
+    document.getElementById("ContactUsForm").trigger('reset');
+</script>

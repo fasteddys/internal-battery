@@ -27,6 +27,8 @@ namespace UpDiddyApi.Models
         public int? VendorId { get; set; }
         public int? SortOrder { get; set; }
         public int? CourseDeliveryId { get; set; }
+        public int? Hidden { get; set; }
+        public string VideoUrl { get; set; }
         
     }
 }
