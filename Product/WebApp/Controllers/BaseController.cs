@@ -25,15 +25,10 @@ namespace UpDiddy.Controllers
         private AzureAdB2COptions _AzureAdB2COptions = null;
         private IConfiguration _configuration = null;
 
-
-
         public BaseController(AzureAdB2COptions AzureAdB2COptions, IConfiguration configuration)
         {
             _AzureAdB2COptions = AzureAdB2COptions;
-            _configuration = configuration;
-
-
-           // this.API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, configuration);                        
+            _configuration = configuration;                
         }
 
          public ApiUpdiddy API {
@@ -46,14 +41,9 @@ namespace UpDiddy.Controllers
                     _Api = new ApiUpdiddy(_AzureAdB2COptions, this.HttpContext, _configuration);
                     return _Api;
                 }
-
             }
-
-
         }  
-        
-     
-
+             
         public void GetSubscriber()
         {
  
