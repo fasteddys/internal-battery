@@ -1,66 +1,89 @@
 ﻿@import '_variables';
-/* Card Styles */
-.card-column {
-    padding-top: 10px;
-    padding-bottom: 10px;
 
-    .card {
-        border: 0;
+// Base Styles
+@media (min-width: 0px) {
+    .card-column {
+        padding-top: 10px;
+        padding-bottom: 10px;
 
-        .card-img-top {
-            border-radius: 0;
-        }
+        .card {
+            border: 0;
 
-        .card-body {
-            background-color: $color-tertiary-light-gray;
-            border-bottom-left-radius: .5rem;
-            border-bottom-right-radius: .5rem;
-        }
+            .card-img-top {
+                border-radius: 0;
+            }
 
-        .card-title {
-            margin-bottom: .5rem;
-        }
+            .card-body {
+                background-color: $color-tertiary-light-gray;
+                border-bottom-left-radius: .5rem;
+                border-bottom-right-radius: .5rem;
+            }
 
-        .card-text {
-            font-size: .75rem;
-            color: $color-tertiary-gray;
-            line-height: 1rem;
-            overflow: hidden;
-            margin-bottom: .5rem;
-        }
+            .card-title {
+                margin-bottom: .5rem;
+            }
 
-        .card-footer-cc {
-            text-align: right;
+            .card-text {
+                font-size: .75rem;
+                color: $color-tertiary-gray;
+                line-height: 1rem;
+                overflow: hidden;
+                margin-bottom: .5rem;
+            }
 
-            .view-courses-link {
-                color: $color-secondary;
-                font-size: $rem-13;
+            .card-footer-cc {
+                text-align: right;
 
-                &:hover {
-                    text-decoration: none;
+                .view-courses-link {
+                    color: $color-secondary;
+                    font-size: $rem-13;
+
+                    &:hover {
+                        text-decoration: none;
+                    }
+                }
+
+                .card-anchor-link {
+                    font-size: .8125rem;
+                    font-family: $opensans-bold;
                 }
             }
 
-            .card-anchor-link {
-                font-size: .8125rem;
-                font-family: $opensans-bold;
-            }
-        }
-
-        .course-footer {
-            div[class^="col-"] {
-                padding: 0;
-                font-size: $rem-13;
-                color: $color-primary;
-
-                i, a {
+            .course-footer {
+                div[class^="col-"] {
+                    padding: 0;
+                    font-size: $rem-13;
                     color: $color-primary;
+
+                    i, a {
+                        color: $color-primary;
+                    }
                 }
             }
-        }
 
-        img {
-            height: 230px;
+            img {
+                height: 230px;
+            }
         }
     }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+//Extra Large Styles
+@media (min-width: 1200px) {
 }

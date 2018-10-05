@@ -18,7 +18,7 @@
                         <div class="hero-title">@Model.Topic.Name Courses</div>
                         <div class="hero-subtitle">@Model.Topic.Description</div>
                     </div>
-                    <div class="col-md-4 container-align-right">
+                    <div class="col-md-4 d-none d-md-block container-align-right">
                         <img src="~/images/globe.png" />
                     </div>
                 </div>
@@ -30,7 +30,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
-                        <span class="breadcrumb-text"><a href="/">Home</a> / <a href="#">Career Skilling</a> / @Model.Topic.Name</span>
+                        <span class="breadcrumb-text"><a href="/Home/Index">Home</a> <!--/ <a href="#">Career Skilling</a>--> / @Model.Topic.Name</span>
                     </div>
                     <div class="col-md-6 ">
                         <span class="section-heading f-color-primary">
@@ -42,10 +42,10 @@
                             @if (topicHasCourses)
                             {
                                 <!--
-                                <input type="text" class="form-control" placeholder="Course Search">
-                                <div class="input-group-append">
-                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                </div>-->
+                <input type="text" class="form-control" placeholder="Course Search">
+                <div class="input-group-append">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                </div>-->
                             }
                         </div>
                     </div>
@@ -54,30 +54,35 @@
                         foreach (CourseDto course in Model.Courses)
                         {
                             string DescriptionBlurb = course.Description;
-                            if(DescriptionBlurb.Length > 130)
+                            if (DescriptionBlurb.Length > 130)
                             {
                                 DescriptionBlurb = DescriptionBlurb.Substring(0, 130) + "...";
 
                             }
-                            <div class="col-md-4 card-column">
-                                <div class="card">
-                                    <img class="card-img-top" src="@(Model.ImageUrl + course.DesktopImage)" alt="Card image cap">
-                                    <div class="card-body">
-                                        <h5 class="card-title">@course.Name</h5>
-                                        <p class="card-text fade-text">@DescriptionBlurb</p>
-                                        <div class="row course-footer">
-                                            <div class="col-md-6">
-                                                Cost: $@course.Price
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="card-footer-cc">
-                                                    <a class="card-anchor-link" href="/Course/Checkout/@(course.Slug)">Enroll <i class="fas fa-check-circle"></i></a>
+                            if (course.Hidden == 0 || course.Hidden == null)
+                            {
+                                <div class="col-lg-4 col-md-6 col-sm-6 col-12 card-column">
+                                    <div class="card">
+                                        <img class="card-img-top" src="@(Model.ImageUrl + course.DesktopImage)" alt="Card image cap">
+                                        <div class="card-body">
+                                            <h5 class="card-title">@course.Name</h5>
+                                            <p class="card-text fade-text">@DescriptionBlurb</p>
+                                            <div class="row course-footer">
+                                                <div class="col-6">
+                                                    Cost: $@course.Price
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="card-footer-cc">
+                                                        <a class="card-anchor-link" href="/Course/Checkout/@(course.Slug)">Enroll <i class="fas fa-check-circle"></i></a>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+
+                            }
+
                         }
                     }
                     else

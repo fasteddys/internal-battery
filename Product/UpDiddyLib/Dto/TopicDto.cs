@@ -16,6 +16,7 @@ namespace UpDiddyLib.Dto
         public string MobileImage { get; set; }
         public int? SortOrder { get; set; }
         public string Slug { get; set; }
+        public int? Hidden { get; set; }
 
     }
 }

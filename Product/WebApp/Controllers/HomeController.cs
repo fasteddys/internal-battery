@@ -19,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
+using System.Net.Mail;
 
 namespace UpDiddy.Controllers
 {

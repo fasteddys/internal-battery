@@ -20,5 +20,7 @@ namespace UpDiddyLib.Dto
         public int? SortOrder { get; set; }
         public int? CourseDeliveryId { get; set; }
         public string Slug { get; set; }
+        public int? Hidden { get; set; }
+        public string VideoUrl { get; set; }
     }
 }
