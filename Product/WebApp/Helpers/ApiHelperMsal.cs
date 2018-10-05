@@ -40,6 +40,22 @@ namespace UpDiddy.Helpers
             }
         }
 
+        public T Post<T>(string ApiAction, bool Authorized = false, string Content = null)
+        {
+            Task<string> Response = _PostAsync(ApiAction, Authorized, Content);
+            try
+            {
+                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
+                return rval;
+            }
+            catch (Exception ex)
+            {
+                // TODO instrument with json string and requested type 
+                var msg = ex.Message;
+                return (T)Convert.ChangeType(null, typeof(T));
+            }
+        }
+
 
         public string GetAsString(string ApiAction, bool Authorized = false)
         {
@@ -79,6 +95,51 @@ namespace UpDiddy.Helpers
             // Add Bearer Token for MSAL authenticatiopn
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
         }
+
+        private async Task<string> _PostAsync(string ApiAction, bool Authorized, string Content )
+        {
+            string responseString = "";
+            try
+            {
+                HttpClient client = new HttpClient();
+                string ApiUrl = _ApiBaseUri + ApiAction;
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, ApiUrl);
+                if (!string.IsNullOrEmpty(Content))
+                    request.Content = new StringContent(Content);
+
+                // Add token to the Authorization header and make the request 
+                if (Authorized)
+                    await AddBearerTokenAsync(request);
+
+                HttpResponseMessage response = await client.SendAsync(request);
+                // Handle the response
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        responseString = await response.Content.ReadAsStringAsync();
+                        break;
+                    case HttpStatusCode.Unauthorized:
+                        responseString = $"Please sign in again. {response.ReasonPhrase}";
+                        break;
+                    default:
+                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
+                        break;
+                }
+            }
+            catch (MsalUiRequiredException ex)
+            {
+                responseString = $"Session has expired. Please sign in again. {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                responseString = $"Error calling API: {ex.Message}";
+            }
+
+            return responseString;
+
+        }
+
+
 
         private async Task<string> _GetAsync(string ApiAction, bool Authorized = false)
         {
