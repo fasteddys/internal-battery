@@ -18,24 +18,16 @@ namespace UpDiddyApi
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .ConfigureAppConfiguration((context, config) =>
-                {                    
-                    config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                {
+                    config.AddEnvironmentVariables();
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);                  
                     var builtConfig = config.Build();
-
-                    config.AddAzureKeyVault(
-                    builtConfig["Vault"],
-                    builtConfig["ClientId"],
-                    builtConfig["ClientSecret"]);
-
                 })
                 .UseStartup<Startup>()
                 .Build();
 
             host.Run();
         }
-
-
- 
 
     }
 }

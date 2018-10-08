@@ -22,13 +22,14 @@ namespace UpDiddyApi
     {
         public static string ScopeRead;
         public static string ScopeWrite;
-        private IConfiguration _vaultConfig;
+
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
-            _vaultConfig = configuration;
+ 
+
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 // Add in the azure vault entries 
                 .AddConfiguration(configuration);
@@ -38,10 +39,27 @@ namespace UpDiddyApi
             if (env.IsDevelopment())
             {
                 builder.AddUserSecrets<Startup>();
-            }
-            
+            }            
             Configuration = builder.Build();
-           
+
+            // Rebuild the configuration now that have included user secrets 
+
+            var builder1 = new ConfigurationBuilder()
+                .AddConfiguration(configuration)
+                .AddAzureKeyVault(
+              Configuration["VaultUrl"],
+              Configuration["VaultClientId"],
+              Configuration["VaultClientSecret"]);
+
+            Configuration = builder1.Build();
+
+
+          
+
+
+
+
+
         }
 
         public IConfigurationRoot Configuration { get; set; }
@@ -64,12 +82,10 @@ namespace UpDiddyApi
                 });
 
             // Get the connection string from the Azure secret vault
-            var SqlConnection = _vaultConfig["CareerCircleSqlConnection"];         
+            var SqlConnection = Configuration["CareerCircleSqlConnection"];         
+            
             services.AddDbContext<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
-
             services.AddHangfire(x => x.UseSqlServerStorage(SqlConnection));
-
-
 
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);

@@ -15,7 +15,10 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:5001/"
+      "applicationUrl": "http://localhost:5001/",
+      "Vault": "https://careercircledev.vault.azure.net/",
+      "ClientId": "f2398c4c-3486-4341-8448-c1c3a118bfbb",
+      "ClientSecret": "fC+tqQYgZjpY5OoEG9OWkWeOgPp9co6LrM4HZiULIk8="
     },
     "Api-Dev-Cloud": {
       "commandName": "Project",
@@ -25,6 +28,15 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "http://localhost:5001/"
+    },
+    "Api-Production": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "https://api.careercircle.io/api/topic/",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      },
+      "applicationUrl": "https://api.careercircle.io/"
     }
   }
 }
