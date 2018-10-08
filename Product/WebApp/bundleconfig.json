@@ -8,7 +8,7 @@
     "inputFiles": [
       "wwwroot/lib/bootstrap/css/bootstrap.min.css",
       "wwwroot/lib/font-awesome/css/all.min.css",
-      "wwwroot/css/index.css"
+      "wwwroot/css/bundle.css"
 
     ]
   },
