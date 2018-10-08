@@ -47,6 +47,12 @@
   border: 0.0625rem solid #03264A;
   padding: .5rem 1.75rem; }
 
+.btn-primary {
+  background-color: #03264A;
+  border: 0.125rem solid #fff; }
+  .btn-primary.font-small {
+    font-size: 1rem; }
+
 .brand-button {
   border-radius: 0.5rem;
   max-width: 14rem;
