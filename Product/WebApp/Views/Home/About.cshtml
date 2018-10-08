@@ -86,31 +86,31 @@
                             <div class="contact-us-header">Contact Us</div>
                             <form id="ContactUsForm" asp-controller="Home" asp-action="ContactUs">
                                 <div class="form-group">
-                                    <label for="exampleFormControlTextarea1">First Name</label>
+                                    <label for="ContactUsFirstName">First Name</label>
                                     <input required type="text" class="form-control" asp-for="ContactUsFirstName">
                                 </div>
                                 <div class="form-group">
-                                    <label for="exampleFormControlTextarea1">Last Name</label>
+                                    <label for="ContactUsLastName">Last Name</label>
                                     <input required type="text" class="form-control" asp-for="ContactUsLastName">
                                 </div>
                                 <div class="form-group">
-                                    <label for="exampleFormControlTextarea1">Email</label>
-                                    <input required type="email" class="form-control" id="exampleFormControlInput1" asp-for="ContactUsEmail">
+                                    <label for="ContactUsEmail">Email</label>
+                                    <input required type="email" class="form-control" id="ContactUsEmail" asp-for="ContactUsEmail">
                                 </div>
                                 <div class="form-group">
-                                    <label for="exampleFormControlTextarea1">Contact Type</label>
-                                    <select class="form-control" id="exampleFormControlSelect1" asp-for="ContactUsType">
+                                    <label for="ContactUsType">Contact Type</label>
+                                    <select class="form-control" id="ContactUsType" asp-for="ContactUsType">
                                         <option selected>General</option>
                                         <option>Partner</option>
                                         <option>Career paths</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="exampleFormControlTextarea1">General</label>
-                                    <textarea required class="form-control" id="exampleFormControlTextarea1" rows="3" asp-for="ContactUsComment"></textarea>
+                                    <label for="ContactUsComment">General</label>
+                                    <textarea required class="form-control" id="ContactUsComment" rows="3" asp-for="ContactUsComment"></textarea>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary">Submit</button>
+                                <button type="submit" class="btn btn-primary brand-button font-small">Submit</button>
                             </form>
                         </div>
                     </div>
