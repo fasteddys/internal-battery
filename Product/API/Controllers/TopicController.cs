@@ -21,12 +21,28 @@ namespace UpDiddyApi.Controllers
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
         public TopicController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration)
         {
             _db = db;
             _mapper = mapper;
+            _configuration = configuration;
          
         }
+ 
+ 
+
+        [HttpGet]
+        [Route("api/[controller]/VaultUri")]
+        public IActionResult VaultUri()
+        {
+ 
+
+            return Ok(_configuration["Vault"] );
+
+        }
+
+
 
         // GET: api/topics
         [HttpGet]
@@ -40,6 +56,7 @@ namespace UpDiddyApi.Controllers
                 .ProjectTo<TopicDto>()
                 .ToList();
 
+            // TODO remove test 
             BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.WozU("test"));
 
             return Ok(rval) ;
