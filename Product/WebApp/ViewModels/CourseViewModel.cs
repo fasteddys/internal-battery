@@ -13,6 +13,15 @@ namespace UpDiddy.ViewModels
         public WozTermsOfServiceDto TermsOfService { get; set; }
         public Boolean TermsOfServiceDocId { get; set; }
         public string CourseSlug { get; set; }
+        public string PaymentMethodNonce { get; set; }
+        public string BillingFirstName { get; set; }
+        public string BillingLastName { get; set; }
+        public string BillingState { get; set; }
+        public string BillingCity { get; set; }
+        public string BillingZipCode { get; set; }
+        public string BillingCountry { get; set; }
+        public string BillingAddress { get; set; }
+        public Boolean SameAsAboveCheckbox { get; set; }
         public CourseViewModel(IConfiguration _configuration, CourseDto course, SubscriberDto subscriber, TopicDto parentTopic, WozTermsOfServiceDto tos)
         {
             this.TermsOfService = tos;

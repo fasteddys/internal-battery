@@ -39,7 +39,8 @@
                 &:hover {
                     background-color: $color-secondary;
                 }
-                &:disabled{
+
+                &:disabled {
                     background-color: $color-tertiary-gray;
                     cursor: default;
                 }
@@ -65,8 +66,17 @@
                 padding-top: 3rem;
             }
 
-            .tos-agree{
+            .tos-agree {
                 padding-top: 1rem;
+            }
+
+            .bt-drop-in-wrapper {
+                width: 100%;
+                .braintree-form__field-group{
+                    label{
+                        width: 100%;
+                    }
+                }
             }
         }
 

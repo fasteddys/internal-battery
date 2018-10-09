@@ -346,6 +346,10 @@ body {
     padding-top: 3rem; }
   .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .tos-agree {
     padding-top: 1rem; }
+  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .bt-drop-in-wrapper {
+    width: 100%; }
+    .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .bt-drop-in-wrapper .braintree-form__field-group label {
+      width: 100%; }
   .checkout-page-container .checkout-vendor-info-container .terms-of-service-header {
     padding-top: 3rem;
     margin-top: 3rem;

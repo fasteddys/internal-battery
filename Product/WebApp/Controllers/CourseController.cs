@@ -19,6 +19,8 @@ using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
+using UpDiddy.Helpers.Braintree;
+using Braintree;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -29,12 +31,24 @@ namespace UpDiddy.Controllers
         AzureAdB2COptions AzureAdB2COptions;
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
+        private IBraintreeConfiguration braintreeConfiguration;
+        private static readonly TransactionStatus[] transactionSuccessStatuses = {
+                TransactionStatus.AUTHORIZED,
+                TransactionStatus.AUTHORIZING,
+                TransactionStatus.SETTLED,
+                TransactionStatus.SETTLING,
+                TransactionStatus.SETTLEMENT_CONFIRMED,
+                TransactionStatus.SETTLEMENT_PENDING,
+                TransactionStatus.SUBMITTED_FOR_SETTLEMENT
+            };
 
         public CourseController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration) : base(azureAdB2COptions.Value, configuration)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
             _configuration = configuration;
+            braintreeConfiguration = new BraintreeConfiguration(_configuration);
+
         }
 
         public IActionResult Index()
@@ -54,13 +68,26 @@ namespace UpDiddy.Controllers
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
             CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
-
-            
+            var gateway = braintreeConfiguration.GetGateway();
+            var clientToken = gateway.ClientToken.Generate();
+            ViewBag.ClientToken = clientToken;
             return View("Checkout", CourseViewModel);
         }
 
+
+
         [HttpPost]
-        public IActionResult Checkout(int TermsOfServiceDocId, string CourseSlug)
+        public IActionResult Checkout(
+            int TermsOfServiceDocId, 
+            string CourseSlug,
+            Boolean SameAsAboveCheckbox,
+            string BillingFirstName,
+            string BillingLastName,
+            string BillingZipCode,
+            string BillingState,
+            string BillingCity,
+            string BillingCountry,
+            string BillingAddress)
         {          
             GetSubscriber();
             DateTime dateTime = new DateTime();
@@ -81,7 +108,121 @@ namespace UpDiddy.Controllers
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
             CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
-            return View("EnrollmentSuccess", CourseViewModel);
+
+
+
+
+            // -----------------------  Braintree Integration  ------------------------------
+
+            // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method
+
+
+            var gateway = braintreeConfiguration.GetGateway();
+            Decimal amount = Convert.ToDecimal(Course.Price);
+
+            var nonce = Request.Form["payment_method_nonce"];
+            
+            AddressRequest addressRequest;
+
+            if (SameAsAboveCheckbox)
+            {
+                addressRequest = new AddressRequest
+                {
+                    FirstName = this.subscriber.FirstName,
+                    LastName = this.subscriber.LastName,
+                    StreetAddress = this.subscriber.Address
+                };
+            }
+            else
+            {
+                addressRequest = new AddressRequest
+                {
+                    // Assuming form fields are filled in at this point until above TODO is handled
+                    FirstName = BillingFirstName,
+                    LastName = BillingLastName,
+                    StreetAddress = BillingAddress,
+                    Region = BillingState,
+                    Locality = BillingCity,
+                    PostalCode = BillingZipCode,
+                    CountryCodeAlpha2 = BillingCountry
+
+                };
+            }
+            
+            TransactionRequest request = new TransactionRequest
+            {
+                Amount = amount,
+                MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID"),
+                PaymentMethodNonce = nonce,
+                Customer = new CustomerRequest
+                {
+                    FirstName = this.subscriber.FirstName,
+                    LastName = this.subscriber.LastName,
+                    Phone = this.subscriber.PhoneNumber,
+                    Email = this.subscriber.Email
+                },
+                BillingAddress = addressRequest,
+                ShippingAddress = new AddressRequest
+                {
+                    FirstName = this.subscriber.FirstName,
+                    LastName = this.subscriber.LastName,
+                    StreetAddress = this.subscriber.Address
+                },
+                Options = new TransactionOptionsRequest
+                {
+                    SubmitForSettlement = true
+                },
+            };
+
+            Result<Transaction> result = gateway.Transaction.Sale(request);
+            
+            if (result.IsSuccess())
+            {
+                Transaction transaction = result.Target;
+                return View("EnrollmentSuccess", CourseViewModel);
+            }
+            return View("Index");
+            /**
+             * TODO: Implement error page for card submission
+             * 
+            else if (result.Transaction != null)
+            {
+                return View("EnrollmentSuccess", CourseViewModel);
+            }
+            else
+            {
+                string errorMessages = "";
+                foreach (ValidationError error in result.Errors.DeepAll())
+                {
+                    errorMessages += "Error: " + (int)error.Code + " - " + error.Message + "\n";
+                }
+                TempData["Flash"] = errorMessages;
+                return RedirectToAction("Home");
+            }
+            */
+        }
+
+        public Boolean EnsureFormFieldsNotNullOrEmpty(
+            string BillingFirstName,
+            string BillingLastName,
+            string BillingZipCode,
+            string BillingCity,
+            string BillingState,
+            string BillingCountry,
+            string BillingAddress)
+        {
+            if(BillingFirstName != null && !("").Equals(BillingFirstName)
+                && BillingLastName != null && !("").Equals(BillingLastName)
+                && BillingZipCode != null && !("").Equals(BillingZipCode)
+                && BillingCity != null && !("").Equals(BillingCity)
+                && BillingState != null && !("").Equals(BillingState)
+                && BillingCountry != null && !("").Equals(BillingCountry)
+                && BillingAddress != null && !("").Equals(BillingAddress)
+                )
+            {
+                return true;
+            }
+            return false;
         }
 
         public IActionResult EnrollmentSuccess()

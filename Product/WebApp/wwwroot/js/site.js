@@ -3,9 +3,11 @@ $(document).ready(function () {
     $("#SameAsAboveCheckbox").change(function () {
         if (this.checked) {
             $('.billing-info-container').hide();
+            $('.billing-info-container input, .billing-info-container select').removeAttr('required');
         }
         else {
             $('.billing-info-container').show();
+            $('.billing-info-container input, .billing-info-container select').prop('required', true);
         }
     });
 
