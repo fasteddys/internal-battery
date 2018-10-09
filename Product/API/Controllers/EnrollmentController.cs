@@ -76,10 +76,8 @@ namespace UpDiddyApi.Controllers
             {
                 return StatusCode(StatusCodes.Status400BadRequest, ex);
             }
-            
            
         }
-
 
     }
 }

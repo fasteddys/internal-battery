@@ -29,9 +29,9 @@ namespace UpDiddyApi.Controllers
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
         private readonly CCQueue _queue = null;
-        private  readonly string _apiBaseUri = String.Empty;
+        private readonly string _apiBaseUri = String.Empty;
         private readonly string _accessToken = String.Empty;
-        private readonly WozTransactionLog _log = null;
+        private WozTransactionLog _log = null;
         #endregion
 
         #region Constructor
@@ -81,7 +81,7 @@ namespace UpDiddyApi.Controllers
            
                 _db.VendorStudentLogin.Add(StudentLogin);
                 _db.SaveChanges();
-                CreateResponse(string.Empty, "Wox student login created", StudentLogin.VendorStudentLoginId.ToString(), TransactionState.Complete);
+                CreateResponse(string.Empty, "Woz student login created", StudentLogin.VendorStudentLoginId.ToString(), TransactionState.Complete);
             }
             catch (Exception ex)
             {
@@ -677,6 +677,8 @@ namespace UpDiddyApi.Controllers
             };
 
             string RValJson = Newtonsoft.Json.JsonConvert.SerializeObject(RVal);
+
+            if (_log.WozTransactionLogId > 0) _log.WozTransactionLogId = 0;
             _log.ResponseJson = RValJson;
             _log.ModifyDate = DateTime.Now;
             _log.CreateDate = DateTime.Now;
@@ -685,7 +687,7 @@ namespace UpDiddyApi.Controllers
 
             _db.WozTransactionLog.Add(_log);
             _db.SaveChanges();
-
+            
             return RVal;
         }
         #endregion

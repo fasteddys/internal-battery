@@ -46,6 +46,8 @@ namespace UpDiddyApi.Workflow
             return RVal;
         }
 
+
+        //todo brent in progress #2
         public async Task<string> UpdateEnrollmentStatus(string EnrollmentGuid, EnrollmentStatus status)
         {
             HttpClient Client = ApiClient();
@@ -116,7 +118,7 @@ namespace UpDiddyApi.Workflow
         private HttpClient ApiClient()
         {
             HttpClient client = new HttpClient();
-            //  client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
 
             return client;
 

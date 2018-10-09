@@ -19,7 +19,6 @@ using System;
 
 namespace UpDiddyApi
 {
- 
 
     public class Startup
     {
