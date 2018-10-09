@@ -72,6 +72,12 @@ footer {
     a {
         color: #fff;
         cursor: pointer;
+        .fab{
+            color: $color-secondary;
+            &:hover{
+                color: $color-primary;
+            }
+        }
     }
 
     a:hover {

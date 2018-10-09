@@ -42,7 +42,8 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
-                        <form id="CourseCheckoutForm">
+                        <form id="CourseCheckoutForm" asp-controller="Course" asp-action="Checkout">
+                            <input type="hidden" value="@Model.Course.Slug" asp-for="CourseSlug"/>
                             <div class="form-row">
                                 <div class="form-group col-md-12 billing-info-header-container">
                                     <div class="billing-info-header"><h3>Billing Information</h3></div>
@@ -54,22 +55,22 @@
                             </div>
                             <div class="form-row billing-info-container">
                                 <div class="form-group col-md-6">
-                                    <input type="text" class="form-control" id="FullName" placeholder="Full Name">
+                                    <input type="text" class="form-control" name="FullName" id="FullName" placeholder="Full Name">
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <input type="text" class="form-control" id="Address" placeholder="Address">
+                                    <input type="text" class="form-control" name="LastName" id="Address" placeholder="Address">
                                 </div>
                                 <div class="form-group col-md-4">
-                                    <select class="form-control" id="City">
+                                    <select class="form-control" id="City" name="City">
                                         <option selected>City</option>
                                         <option>MD</option>
                                     </select>
                                 </div>
                                 <div class="form-group col-md-2">
-                                    <input type="text" class="form-control" id="ZipCode" placeholder="Zip Code">
+                                    <input type="text" class="form-control" name="ZipCode" id="ZipCode" placeholder="Zip Code">
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <select class="form-control" id="Country">
+                                    <select class="form-control" id="Country" name="Country">
                                         <option selected>Country</option>
                                         <option>United States</option>
                                     </select>
@@ -84,28 +85,52 @@
                             </div>
                             <div class="form-row">
                                 <div class="form-group col-md-4">
-                                    <input type="text" class="form-control" id="CreditCardNumber" placeholder="Credit Card Number">
+                                    <input type="text" class="form-control" id="CreditCardNumber" placeholder="Credit Card Number" name="CreditCardNumber">
                                 </div>
                                 <div class="form-group col-md-4">
-                                    <input type="text" class="form-control" id="CardholderName" placeholder="Cardholder Name">
+                                    <input type="text" class="form-control" id="CardholderName" placeholder="Cardholder Name" name="CardholderName">
                                 </div>
                                 <div class="form-group col-md-1">
-                                    <input type="text" class="form-control" id="CardMonth" placeholder="MM">
+                                    <input type="text" class="form-control" id="CardMonth" placeholder="MM" name="CardMonth">
                                 </div>
                                 <div class="form-group col-md-1">
-                                    <input type="text" class="form-control" id="CardMonth" placeholder="YY">
+                                    <input type="text" class="form-control" id="CardYear" placeholder="YY" name="CardYear">
                                 </div>
                                 <div class="form-group col-md-2">
-                                    <input type="text" class="form-control" id="Cvv" placeholder="CVV">
+                                    <input type="text" class="form-control" id="Cvv" placeholder="CVV" name="CVV">
                                 </div>
                             </div>
-                            <button type="submit" class="brand-button contrast-primary">Enroll</button>
+                            <div class="form-row">
+                                <div class="form-group col-md-12">
+                                    <div class="terms-of-service-header">
+                                        <h3>Terms of Service</h3>
+                                    </div>
+                                    <div class="terms-of-service-scrollview">
+                                        @Model.TermsOfService.TermsOfService
+                                    </div>
+                                    <div class="form-check tos-agree">
+                                        <input type="hidden" asp-for="TermsOfServiceDocId" value="@Model.TermsOfService.DocumentId" />
+                                        <input type="checkbox" class="form-check-input" id="TermsOfServiceCheckbox">
+                                        <label class="form-check-label" for="TermsOfServiceCheckbox">I agree</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" id="EnrollmentSubmitButton" class="brand-button contrast-primary enrollment-submit" disabled>Enroll</button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <div class="row checkout-hero">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
-@await Html.PartialAsync("_WOZ-TOS")

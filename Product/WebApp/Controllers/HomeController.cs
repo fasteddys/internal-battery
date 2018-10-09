@@ -93,6 +93,11 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        public IActionResult Unified()
+        {
+            return View();
+        }
+
 
         [Authorize]
         public async Task<IActionResult> Api()

@@ -16,6 +16,8 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 // using UserDetailsClient.Core;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace UpDiddy
 {
@@ -26,6 +28,10 @@ namespace UpDiddy
 
         public Startup(IHostingEnvironment env)
         {
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                System.Threading.Thread.Sleep(2000);
+            }
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -49,7 +55,14 @@ namespace UpDiddy
             })      
             .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
             .AddCookie();
-           
+
+            /* HTTPS redirect 
+            services.Configure<MvcOptions>(options =>
+            {
+                options.Filters.Add(new RequireHttpsAttribute());
+            });*/
+            
+
             #region AddLocalizationß
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -134,6 +147,11 @@ namespace UpDiddy
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+            /* Implements HTTPS redirect
+            var options = new RewriteOptions().AddRedirectToHttps();
+            app.UseRewriter(options);
+            */
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -165,9 +183,9 @@ namespace UpDiddy
                 // UI strings that we have localized.
                 SupportedUICultures = supportedCultures
             });
- 
 
 
+            
             app.UseStaticFiles();
             app.UseSession();
             app.UseAuthentication();
