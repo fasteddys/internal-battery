@@ -64,6 +64,7 @@
     border-radius: 1rem;
     border: $rem-1 solid $color-secondary;
     padding: .5rem 1.75rem;
+    cursor: pointer;
 } 
 
 .btn-primary{
@@ -158,10 +159,10 @@ input {
 
                 &:hover {
                     background-color: $color-secondary;
-                }
 
-                .nav-link:hover {
-                    color: $color-white;
+                    .nav-link{
+                        color: $color-white;
+                    }
                 }
             }
         }

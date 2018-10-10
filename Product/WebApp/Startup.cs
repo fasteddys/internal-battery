@@ -124,14 +124,11 @@ namespace UpDiddy
 
 
             // Adds a default in-memory implementation of IDistributedCache.
-            services.AddDistributedMemoryCache();
-            services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromHours(1);
-                // options.CookieHttpOnly = true;
-                options.Cookie.HttpOnly = true;
-            });
+            //services.AddDistributedMemoryCache();
+            
 
+            Console.WriteLine("Redis name: " + Configuration.GetValue<string>("redis:name") + ", Redis host: " + Configuration.GetValue<string>("redis:host"));
+            Console.WriteLine("B2C Secret: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientSecret") + ", B2C ID: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientId"));
 
             // Add Redis session cahce
             services.AddDistributedRedisCache(options =>
@@ -139,7 +136,13 @@ namespace UpDiddy
                 options.InstanceName = Configuration.GetValue<string>("redis:name");
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
-            services.AddSession();
+
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromHours(1);
+                // options.CookieHttpOnly = true;
+                options.Cookie.HttpOnly = true;
+            });
 
 
         }
