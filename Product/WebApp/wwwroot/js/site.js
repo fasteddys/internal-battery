@@ -26,6 +26,7 @@ $(document).ready(function () {
         $('#EnrollmentSuccessVideo').prop('controls', true);
         document.getElementById("EnrollmentSuccessVideo").play();
     });
+
 });
 
 

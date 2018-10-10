@@ -173,7 +173,7 @@ namespace UpDiddy.Controllers
                     SubmitForSettlement = true
                 },
             };
-
+            
             Result<Transaction> result = gateway.Transaction.Sale(request);
             
             if (result.IsSuccess())
@@ -181,25 +181,11 @@ namespace UpDiddy.Controllers
                 Transaction transaction = result.Target;
                 return View("EnrollmentSuccess", CourseViewModel);
             }
-            return View("Index");
-            /**
-             * TODO: Implement error page for card submission
-             * 
-            else if (result.Transaction != null)
-            {
-                return View("EnrollmentSuccess", CourseViewModel);
-            }
             else
             {
-                string errorMessages = "";
-                foreach (ValidationError error in result.Errors.DeepAll())
-                {
-                    errorMessages += "Error: " + (int)error.Code + " - " + error.Message + "\n";
-                }
-                TempData["Flash"] = errorMessages;
-                return RedirectToAction("Home");
+                return View("EnrollmentFailure", CourseViewModel);
             }
-            */
+            
         }
 
         public Boolean EnsureFormFieldsNotNullOrEmpty(

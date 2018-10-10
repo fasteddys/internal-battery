@@ -1,0 +1,24 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model CourseViewModel
+
+<div class="enrollment-failure-container">
+    <div class="row enrollment-failure-message-container">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="enrollment-failure-hero">
+                            <div class="enrollment-failure-header">
+                                Oops!
+                            </div>
+                            <div class="enrollment-failure-sub-header">
+                                Unfortunately, something went wrong with your payment. Please return to the <a href="/Course/Checkout/@Model.Course.Slug">enrollment page</a> and try again.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
