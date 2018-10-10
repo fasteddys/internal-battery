@@ -96,12 +96,11 @@ namespace UpDiddy.Controllers
             string ContactUsType, 
             string ContactUsComment)
         {
-            var apiKey = _configuration["SendgridAPIKey"];
-            var client = new SendGridClient(apiKey);
-            var from = new EmailAddress("ikoplowitz@populusgroup.com");
-            var subject = "A new contact message has been submitted";
-            var to = new EmailAddress("ikoplowitz@populusgroup.com");
-            var emailBody = formatContactEmail(ContactUsFirstName, ContactUsLastName, ContactUsEmail, ContactUsType, ContactUsComment);
+            var client = new SendGridClient(_configuration["Sendgrid:ApiKey"]);
+            var from = new EmailAddress(_configuration["Sendgrid:EmailSender"]);
+            var subject = _configuration["Sendgrid:EmailSubject"];
+            var to = new EmailAddress(_configuration["Sendgrid:EmailRecipient"]);
+            var emailBody = FormatContactEmail(ContactUsFirstName, ContactUsLastName, ContactUsEmail, ContactUsType, ContactUsComment);
             var plainTextContent = emailBody;
             var htmlContent = emailBody;
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
@@ -109,7 +108,7 @@ namespace UpDiddy.Controllers
             return RedirectToAction("About", new AboutViewModel());
         }
 
-        private string formatContactEmail(string ContactUsFirstName,
+        private string FormatContactEmail(string ContactUsFirstName,
             string ContactUsLastName,
             string ContactUsEmail,
             string ContactUsType,
