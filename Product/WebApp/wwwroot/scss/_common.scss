@@ -152,6 +152,9 @@ input {
     margin: 0;
 }
 
+a:hover{
+    text-decoration: none;
+}
 @media (min-width: 992px){
     .navbar-light {
         .navbar-nav {

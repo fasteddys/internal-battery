@@ -61,11 +61,30 @@
         }
 
         .about-us-tertiary-band {
-            background-color: $color-primary;
+            background: url('../images/light_blue_background.jpg');
+            background-size: cover;
             color: $color-white;
-            .contact-us-header{
+
+            .contact-us-header {
                 font-size: 1.5rem;
                 padding-bottom: 1rem;
+            }
+        }
+
+        #ContactUsForm {
+            .contact-us-button-container {
+                text-align: center;
+
+                button {
+                    padding: 0.4rem 3rem;
+                    box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
+                    border: 0;
+
+                    &:hover {
+                        background-color: $color-secondary;
+                        box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+                    }
+                }
             }
         }
     }
