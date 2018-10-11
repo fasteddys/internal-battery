@@ -24,7 +24,7 @@ namespace UpDiddyApi.Business
         {
             _db = context;
             _mapper = mapper;
-            _apiBaseUri = configuration["Woz:ApiUrl"];
+            _apiBaseUri = configuration["WozApiUrl"];
             _accessToken = configuration["WozAccessToken"];
         }
 

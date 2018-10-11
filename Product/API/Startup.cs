@@ -38,10 +38,11 @@ namespace UpDiddyApi
                 
             builder.AddEnvironmentVariables();
 
-            if (env.IsDevelopment())
+            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
             {
                 builder.AddUserSecrets<Startup>();
-            }            
+            }
+
             Configuration = builder.Build();
 
             // Rebuild the configuration now that have included user secrets 
@@ -54,13 +55,6 @@ namespace UpDiddyApi
               Configuration["VaultClientSecret"]);
 
             Configuration = builder1.Build();
-
-
-          
-
-
-
-
 
         }
 
@@ -88,12 +82,14 @@ namespace UpDiddyApi
             
             services.AddDbContext<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
 
+
             var HangFireSqlConnection = Configuration["HangFireJimDev"];
             services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
             // Have the workflow monitor run every minute 
              JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
              RecurringJob.AddOrUpdate(() => new WorkFlowMonitor().DoWork(), Cron.Minutely);
     
+
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
 
