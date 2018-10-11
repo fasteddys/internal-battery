@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20181004132700_removed requireds from subscriber")]
+    partial class removedrequiredsfromsubscriber
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -273,8 +275,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("DesktopImage");
 
-                    b.Property<int?>("Hidden");
-
                     b.Property<int>("IsDeleted");
 
                     b.Property<string>("MobileImage");
@@ -298,8 +298,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<int?>("TopicId");
 
                     b.Property<int?>("VendorId");
-
-                    b.Property<string>("VideoUrl");
 
                     b.HasKey("CourseId");
 
@@ -913,8 +911,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("DesktopImage");
 
-                    b.Property<int?>("Hidden");
-
                     b.Property<int>("IsDeleted");
 
                     b.Property<string>("MobileImage");
@@ -998,8 +994,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("RegistrationUrl");
 
                     b.Property<int>("SubscriberId");
 

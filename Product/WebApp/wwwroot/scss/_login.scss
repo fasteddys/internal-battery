@@ -1,0 +1,167 @@
+﻿@import '_variables';
+
+@media (min-width: 0px){
+    .login-container {
+        padding: 5rem 0;
+        margin-top: -6.375rem;
+
+        .container {
+            text-align: center;
+
+            .unified-container {
+                background-color: $color-white;
+                border-radius: 1rem;
+
+                button {
+                    width: 10rem;
+                    margin: 0 auto;
+                }
+
+                .localAccount {
+                    border-top: 0 !important;
+                }
+
+                h2 {
+                    font-size: 1.5rem;
+                }
+
+                .intro {
+                    h2 {
+                        content: 'CareerCircle Login';
+                    }
+
+                    padding: .5rem 1rem;
+                    border-bottom: $rem-1 solid $color-tertiary-light-gray;
+                }
+
+                .divider {
+                    display: none;
+                }
+
+                .create {
+                    border-top: $rem-1 solid $color-tertiary-light-gray;
+                    padding: .5rem 1rem;
+
+                    a {
+                        margin-left: 1rem;
+                    }
+
+                    p {
+                        margin: 0;
+                    }
+                }
+
+                .buttons {
+                    margin: 1rem;
+
+                    #next {
+                        background-color: $color-primary;
+                        border: 0;
+                        padding: .75rem 1rem;
+                        border-radius: .5rem;
+                        color: $color-white;
+                        cursor: pointer;
+
+                        &:focus {
+                            background-color: $color-secondary;
+                            outline: none;
+                        }
+                    }
+                }
+
+                input {
+                    border-radius: .25rem;
+                    border: $rem-1 solid $color-tertiary-gray;
+                    font-family: $opensans-regular;
+                    padding: .4rem .75rem;
+                    width: 10rem;
+                    margin: 0 auto;
+                    color: $color-secondary;
+
+                    &::placeholder {
+                        color: $color-tertiary-gray;
+                    }
+                }
+
+                #forgotPassword {
+                    display: none;
+                }
+
+                #logonIdentifier {
+                    margin-top: 1rem;
+                }
+
+                #password {
+                    margin-top: 1rem;
+                }
+
+                .entry-item {
+                    label {
+                        display: none;
+                    }
+                }
+
+                input[id^='extension_AgreedToTermsAndConditions'] {
+                    width: initial;
+                }
+
+                label[for^='extension_AgreedToTermsAndConditions'] {
+                    position: relative;
+                    padding-left: 30px;
+                    text-align: left;
+                    margin-left: 32px;
+                }
+                #attributeList{
+                    padding-top: 1px;
+                }
+                #attributeVerification{
+                    margin-top: 2rem;
+                }
+            }
+        }
+    }
+}
+@media (min-width: 576px){
+    .login-container {
+        padding: 12rem 0;
+
+        .container {
+            .unified-container {
+                h2 {
+                    font-size: 2rem;
+                }
+
+                input {
+                    width: 18rem;
+                }
+
+                .buttons {
+                    #next {
+                        padding: .75rem 6rem;
+                    }
+                }
+
+                button {
+                    width: 15rem;
+                }
+
+                label[for^='extension_AgreedToTermsAndConditions'] {
+                    text-align: center;
+                    margin-left: 0;
+                }
+            }
+        }
+    }
+}
+@media (min-width:768px){
+    .login-container {
+        .container {
+            .unified-container {
+                input {
+                    width: 26rem;
+                }
+            }
+        }
+    }
+}
+

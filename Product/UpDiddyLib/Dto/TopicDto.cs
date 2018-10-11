@@ -7,22 +7,76 @@ namespace UpDiddyLib.Dto
 {
     public class TopicDto : BaseDto
     {
-        public int      TopicId { get; set; }
-        public Guid?    TopicGuid { get; set; }
-        propfull private string Name;
+        private int _TopicId;
+        private Guid? _TopicGuid;
+        private string _Name;
+        private string _Description;
+        private string _DesktopImage;
+        private string _TabletImage;
+        private string _MobileImage;
+        private int? _SortOrder;
+        private string _Slug;
+        private int? _Hidden;
+
+        public int TopicId
+        {
+            get { return _TopicId; }
+            set { _TopicId = value; }
+        }
+
+        public Guid? TopicGuid
+        {
+            get { return _TopicGuid; }
+            set { _TopicGuid = value; }
+        }
 
         public string Name
         {
-            get { return Name; }
-            set { Name = value; }
+            get { return _Name = _Name ?? ""; }
+            set { _Name = value; }
         }
 
-        public string   Description { get; set; }
-        public string   DesktopImage { get; set; }
-        public string   TabletImage { get; set; }
-        public string    MobileImage { get; set; }
-        public int?     SortOrder { get; set; }
-        public string Slug { get; set; }
+        public string Description
+        {
+            get { return _Description = _Description ?? ""; }
+            set { _Description = value; }
+        }
+
+        public string DesktopImage
+        {
+            get { return _DesktopImage = _DesktopImage ?? ""; }
+            set { _DesktopImage = value; }
+        }
+
+        public string TabletImage
+        {
+            get { return _TabletImage = _TabletImage ?? ""; }
+            set { _TabletImage = value; }
+        }
+        public string MobileImage
+        {
+            get { return _MobileImage = _MobileImage ?? ""; }
+            set { _MobileImage = value; }
+        }
+
+        public int? SortOrder
+        {
+            get { return _SortOrder = _SortOrder ?? 0; }
+            set { _SortOrder = value; }
+        }
+
+        public string Slug
+        {
+            get { return _Slug = _Slug ?? ""; }
+            set { _Slug = value; }
+        }
+
+        public int? Hidden
+        {
+            get { return _Hidden = _Hidden ?? 0; }
+            set { _Hidden = value; }
+        }
+        
 
     }
 }
