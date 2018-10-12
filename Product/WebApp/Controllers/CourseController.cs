@@ -115,11 +115,13 @@ namespace UpDiddy.Controllers
             string BillingState,
             string BillingCity,
             string BillingCountry,
-            string BillingAddress)
+            string BillingAddress,
+            string PromoCodeForSubmission)
         {          
             GetSubscriber();
             DateTime dateTime = new DateTime();
-            CourseDto Course = API.Course(CourseSlug);            
+            CourseDto Course = API.Course(CourseSlug);
+            PromoCodeDto Code = API.GetPromoCode(PromoCodeForSubmission);
             EnrollmentDto enrollmentDto = new EnrollmentDto
             {
                 CourseId = Course.CourseId,
@@ -146,7 +148,13 @@ namespace UpDiddy.Controllers
 
 
             var gateway = braintreeConfiguration.GetGateway();
-            Decimal amount = Convert.ToDecimal(Course.Price);
+            Decimal amount;
+            if (PromoCodeForSubmission != null) {
+                amount = (Decimal)CalculatePromoCodeDiscountedPrice(Course.Price, Code.PromoValueFactor);
+            }
+            else {
+                amount = Convert.ToDecimal(Course.Price);
+            }
 
             var nonce = Request.Form["payment_method_nonce"];
             
