@@ -27,6 +27,15 @@ $(document).ready(function () {
         document.getElementById("EnrollmentSuccessVideo").play();
     });
 
+    $('#PromoCodeApplyButton').on('click', function () {
+        $.ajax({
+            url: "/api/promocode", success: function (result) {
+                alert();
+            }
+        });
+        var usersCodeFromInputField = $('#PromoCodeInput').val();
+    });
+
 });
 
 

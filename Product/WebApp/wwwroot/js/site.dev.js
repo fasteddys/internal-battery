@@ -12237,4 +12237,8 @@ $(document).ready(function () {
         document.getElementById("EnrollmentSuccessVideo").play();
     });
 
+    $('#PromoCodeApplyButton').on('click', function () {
+        alert($('#PromoCodeInput').val());
+    });
+
 });
