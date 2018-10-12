@@ -22,6 +22,7 @@ namespace UpDiddy.ViewModels
         public string BillingCountry { get; set; }
         public string BillingAddress { get; set; }
         public Boolean SameAsAboveCheckbox { get; set; }
+        public string PromoCodeForSubmission { get; set; }
         public CourseViewModel(IConfiguration _configuration, CourseDto course, SubscriberDto subscriber, TopicDto parentTopic, WozTermsOfServiceDto tos)
         {
             this.TermsOfService = tos;

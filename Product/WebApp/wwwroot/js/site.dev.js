@@ -12248,6 +12248,7 @@ $(document).ready(function () {
                     var resultAsJson = $.parseJSON(result);
                     $('#PromoCodeTotal').html("-$" + resultAsJson.AmountOffCourse);
                     $('#CourseTotal').html(resultAsJson.NewCoursePrice);
+                    $('#PromoCodeForSubmission').val(promoCode);
                 }
             });
         }
