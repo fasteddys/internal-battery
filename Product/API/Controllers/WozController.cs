@@ -65,7 +65,7 @@ namespace UpDiddyApi.Controllers
 
             MessageTransactionResponse Rval = new MessageTransactionResponse();
             try
-            {
+            {/*
                 // Get the Enrollment Object 
                 Enrollment Enrollment = _db.Enrollment
                      .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
@@ -81,7 +81,7 @@ namespace UpDiddyApi.Controllers
                 _db.WozCourseEnrollment.Add(WozEnrollment);
                 _db.SaveChanges();
                 CreateResponse(string.Empty, "Wox enrollment record created", WozEnrollment.WozCourseEnrollmentId.ToString(), TransactionState.Complete);
-
+                */
             }
             catch (Exception ex)
             {

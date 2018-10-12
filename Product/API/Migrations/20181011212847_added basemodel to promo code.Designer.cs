@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20181011212847_added basemodel to promo code")]
+    partial class addedbasemodeltopromocode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -702,16 +704,6 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
                     b.Property<string>("PromoTypeDescription");
 
                     b.Property<Guid?>("PromoTypeGuid");
@@ -1072,7 +1064,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<long>("EnrollmentDateUTC");
 
-                    b.Property<Guid>("EnrollmentGuid");
+                    b.Property<int>("EnrollmentId");
 
                     b.Property<int>("EnrollmentStatus");
 

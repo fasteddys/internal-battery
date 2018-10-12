@@ -149,6 +149,20 @@ namespace UpDiddyApi.Controllers
                 return NotFound();
             return Ok(_mapper.Map<CourseDto>(course));
         }
+
+        [HttpGet]
+        [Route("api/[controller]/guid/{CourseGuid}")]
+        public IActionResult GetCourseByGuid(Guid? CourseGuid)
+        {
+
+            Course course = _db.Course
+                .Where(t => t.IsDeleted == 0 && t.CourseGuid == CourseGuid)
+                .FirstOrDefault();
+
+            if (course == null)
+                return NotFound();
+            return Ok(_mapper.Map<CourseDto>(course));
+        }
     }
 
 }
