@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,6 +46,24 @@ namespace UpDiddyApi.Controllers
             return Ok(rval);
 
         }
+
+        [HttpGet]
+        [Route("api/[controller]/{PromoCode}")]
+        public IActionResult GetPromoCode(string PromoCode)
+        {
+            PromoCode promoCode = _db.PromoCode
+                .Where(t => t.IsDeleted == 0 && t.Code == PromoCode)
+                .FirstOrDefault();
+
+            if (promoCode == null)
+                return NotFound();
+            return Ok(_mapper.Map<PromoCodeDto>(promoCode));
+            
+        }
+
+        
+
+        
 
     }
 }

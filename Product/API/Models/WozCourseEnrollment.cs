@@ -13,6 +13,6 @@ namespace UpDiddyApi.Models
         public int EnrollmentStatus { get; set; }
         public int ExeterId { get; set; }
         public long EnrollmentDateUTC { get; set; }
-        public int EnrollmentId { get; set; }
+        public Guid EnrollmentGuid { get; set; }
     }
 }

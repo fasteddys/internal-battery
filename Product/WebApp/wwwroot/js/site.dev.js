@@ -12238,7 +12238,28 @@ $(document).ready(function () {
     });
 
     $('#PromoCodeApplyButton').on('click', function () {
-        alert($('#PromoCodeInput').val());
+        var promoCode = $('#PromoCodeInput').val();
+        var coursePrice = $('#CoursePrice').val();
+        var courseGuid = $('#CourseGuid').val();
+        if (promoCode !== undefined && promoCode !== '' && promoCodeIsValid(promoCode)) {
+            var getUrl = "/Course/PromoCode/" + courseGuid + "/" + promoCode;
+            $.ajax({
+                url: getUrl, success: function (result) {
+                    var resultAsJson = $.parseJSON(result);
+                    $('#PromoCodeTotal').html("-$" + resultAsJson.AmountOffCourse);
+                    $('#CourseTotal').html(resultAsJson.NewCoursePrice);
+                }
+            });
+        }
+        else {
+            alert("Promo code invalid; please try again.");
+        }
+        
     });
+
+    // TODO: Implement client side security form promo code.
+    function promoCodeIsValid(code) {
+        return true;
+    }
 
 });
