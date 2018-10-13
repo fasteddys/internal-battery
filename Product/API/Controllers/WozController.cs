@@ -248,7 +248,7 @@ namespace UpDiddyApi.Controllers
                     return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
 
                 WozCourseEnrollment WozEnrollment = _mapper.Map<WozCourseEnrollment>(WozEnrollmentDto);
-                WozEnrollment.EnrollmentId = Enrollment.EnrollmentId;
+              //  WozEnrollment.EnrollmentId = Enrollment.EnrollmentId;
 
                 _db.WozCourseEnrollment.Add(WozEnrollment);
                 _db.SaveChanges();
@@ -463,7 +463,7 @@ namespace UpDiddyApi.Controllers
                 try
                 {
                     string TransactionId = ResponseObject.transactionId;
-                    string Message = ResponseObject.message;
+                    string Message = "WozResponse = |" + ResponseObject.message + "| WozSectionDto = " + Json + "|";
                     return CreateResponse(ResponseJson, Message, TransactionId, TransactionState.InProgress);
                 }
                 catch (Exception ex)
@@ -678,15 +678,7 @@ namespace UpDiddyApi.Controllers
 
             string RValJson = Newtonsoft.Json.JsonConvert.SerializeObject(RVal);
 
-            if (_log.WozTransactionLogId > 0) _log.WozTransactionLogId = 0;
-            _log.ResponseJson = RValJson;
-            _log.ModifyDate = DateTime.Now;
-            _log.CreateDate = DateTime.Now;
-            _log.CreateGuid = Guid.NewGuid();
-            _log.ModifyGuid = Guid.NewGuid();
-
-            _db.WozTransactionLog.Add(_log);
-            _db.SaveChanges();
+       
             
             return RVal;
         }

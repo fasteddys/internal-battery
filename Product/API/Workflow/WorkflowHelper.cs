@@ -1,39 +1,73 @@
-﻿using Newtonsoft.Json;
+﻿using AutoMapper;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using UpDiddyApi.Business;
+using UpDiddyApi.Models;
+//using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Helpers;
 using UpDiddyLib.MessageQueue;
 
 namespace UpDiddyApi.Workflow
 {
-    public class WorkflowHelper
+    public class WorkflowHelper 
     {
-        private string _apiBaseUri = string.Empty;
-        private string _bearerToken = string.Empty;
-        public WorkflowHelper()
+
+        protected internal WozTransactionLog _log = null;
+        protected internal UpDiddyDbContext _db = null;
+        protected internal string _apiBaseUri = null;
+
+        public WorkflowHelper(UpDiddyDbContext context, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             // TODO Get URI from appsetting.json 
-            _apiBaseUri = "http://localhost:5001/api/";
-            // TODO get BearerToken
-
+            _apiBaseUri = "http://localhost:5001/api/";   // Is this still neeed      
+            _db = context;            
         }
 
         public void WorkItemError(string EnrollmentGuid, string Info)
-        { 
-            // TODO 
-            // Do something with the error to get human help!!!!
-
+        {
+             // Log error to system logger 
+             SysLog.SysError($"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info} ");
+            // Log Error to woz transaction log 
+            _log = new WozTransactionLog();
+            _log.EndPoint = "Error";
+            _log.InputParameters = $"enrollmentGuid={EnrollmentGuid}";
+             if (_log.WozTransactionLogId > 0)
+                _log.WozTransactionLogId = 0;         
+            _log.ModifyDate = DateTime.Now;
+            _log.CreateDate = DateTime.Now;
+            _log.CreateGuid = Guid.NewGuid();
+            _log.ModifyGuid = Guid.NewGuid();
+            _log.ResponseJson = Info;
+            _db.WozTransactionLog.Add(_log);
+            _db.SaveChanges();            
         }
         public void WorkItemFatalError(string EnrollmentGuid, string Info)
         {
-            // TODO 
-            // Do something with the error to get human help!!!!
-
+            // Log error to system logger 
+            SysLog.SysError($"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info} ");
+            // Log Error to woz transaction log 
+            _log = new WozTransactionLog();
+            _log.EndPoint = "FatalError";
+            _log.InputParameters = $"enrollmentGuid={EnrollmentGuid}";
+            if (_log.WozTransactionLogId > 0)
+                _log.WozTransactionLogId = 0;
+            _log.ModifyDate = DateTime.Now;
+            _log.CreateDate = DateTime.Now;
+            _log.CreateGuid = Guid.NewGuid();
+            _log.ModifyGuid = Guid.NewGuid();
+            _log.ResponseJson = Info;
+            _db.WozTransactionLog.Add(_log);
+            _db.SaveChanges();            
         }
 
         public async Task<MessageTransactionResponse> DoWorkItem(string ApiAction)
@@ -48,7 +82,7 @@ namespace UpDiddyApi.Workflow
 
 
         //todo brent in progress #2
-        public async Task<string> UpdateEnrollmentStatus(string EnrollmentGuid, EnrollmentStatus status)
+        public async Task<string> UpdateEnrollmentStatus(string EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus status)
         {
             HttpClient Client = ApiClient();
             HttpRequestMessage Request = ApiPutRequest("Enrollment/UpdateEnrollmentStatus/" + EnrollmentGuid + "/" + (int) status );
@@ -57,31 +91,7 @@ namespace UpDiddyApi.Workflow
             return ResponseJson;
         }
 
-
-
-        public async Task<string> CreateWozStudentLogin(VendorStudentLoginDto StudentLogin,string EnrollmentGuid)
-        {
-
-            string StudentLoginJson = Newtonsoft.Json.JsonConvert.SerializeObject(StudentLogin);
-            HttpClient Client = ApiClient();
-            HttpRequestMessage Request = ApiPostRequest("woz/SaveWozStudentLogin/" + EnrollmentGuid, StudentLoginJson);
-            HttpResponseMessage Response = await Client.SendAsync(Request);
-            var ResponseJson = await Response.Content.ReadAsStringAsync();
-            return ResponseJson;
-        }
-
-
-
-
-        public void ParseWozEnrollmentResource( string WozTransactionResponse, ref string ExeterId, ref string RegistrationUrl )
-        {
-            JObject WozJson = JObject.Parse(WozTransactionResponse);
-            string WozResourceStr = (string)WozJson["resource"];
-            var WozResourceObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(WozResourceStr);
-            ExeterId = WozResourceObject.exeterId;
-            RegistrationUrl = WozResourceObject.registrationUrl;
-        }
-
+ 
 
 
         private HttpRequestMessage ApiPutRequest(string ApiAction, string Content = "")

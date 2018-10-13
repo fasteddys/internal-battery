@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\WozController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Connected Services\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
