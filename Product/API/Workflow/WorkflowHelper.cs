@@ -25,18 +25,21 @@ namespace UpDiddyApi.Workflow
         protected internal WozTransactionLog _log = null;
         protected internal UpDiddyDbContext _db = null;
         protected internal string _apiBaseUri = null;
+        protected internal ISysLog _sysLog = null;
 
-        public WorkflowHelper(UpDiddyDbContext context, Microsoft.Extensions.Configuration.IConfiguration configuration)
+
+        public WorkflowHelper(UpDiddyDbContext context, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog)
         {
             // TODO Get URI from appsetting.json 
             _apiBaseUri = "http://localhost:5001/api/";   // Is this still neeed      
-            _db = context;            
+            _db = context;
+            _sysLog = sysLog;
         }
 
         public void WorkItemError(string EnrollmentGuid, string Info)
         {
              // Log error to system logger 
-             SysLog.SysError($"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info} ");
+             _sysLog.SysError($"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info} ");
             // Log Error to woz transaction log 
             _log = new WozTransactionLog();
             _log.EndPoint = "Error";
@@ -54,7 +57,7 @@ namespace UpDiddyApi.Workflow
         public void WorkItemFatalError(string EnrollmentGuid, string Info)
         {
             // Log error to system logger 
-            SysLog.SysError($"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info} ");
+            _sysLog.SysError($"Error for enrollment {EnrollmentGuid}.  Info: {Info} ");
             // Log Error to woz transaction log 
             _log = new WozTransactionLog();
             _log.EndPoint = "FatalError";

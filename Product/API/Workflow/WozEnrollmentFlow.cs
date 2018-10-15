@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.Business;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Helpers;
 using UpDiddyLib.MessageQueue;
 
 namespace UpDiddyApi.Workflow
@@ -23,10 +24,11 @@ namespace UpDiddyApi.Workflow
         private UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private IConfiguration _configuration;
-
+        private ISysEmail _sysEmail = null;
+        private ISysLog _sysLog = null;
         private int _retrySeconds = 0;
         private int _wozVendorId = 0;
-        public WozEnrollmentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration)
+        public WozEnrollmentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration,ISysEmail sysEmail, ISysLog sysLog)
         {
             // TODO putmagic numbers in appsettings
             _retrySeconds = 3;
@@ -34,16 +36,19 @@ namespace UpDiddyApi.Workflow
             _db = dbcontext;
             _mapper = mapper;
             _configuration = configuration;
-
+            _sysEmail = sysEmail;
+            _sysLog = sysLog;
         }
         #endregion
 
         #region Student Enrollment
 
         public async Task<MessageTransactionResponse> EnrollStudentWorkItem(string EnrollmentGuid)
-        {            
+        {
+           
             MessageTransactionResponse RVal = null;
-            WorkflowHelper Helper = new WorkflowHelper(_db,_configuration);
+            WorkflowHelper Helper = new WorkflowHelper(_db,_configuration,_sysLog);
+ 
             try
             {
                 WozInterface woz = new WozInterface(_db, _mapper, _configuration);
@@ -96,7 +101,7 @@ namespace UpDiddyApi.Workflow
         public async Task<MessageTransactionResponse> EnrollStudentInProgressWorkItem(string EnrollmentGuid, string TransactionId)
         {
             MessageTransactionResponse RVal = null;
-            WorkflowHelper Helper = new WorkflowHelper(_db, _configuration);
+            WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
                 WozInterface woz = new WozInterface(_db, _mapper, _configuration);
@@ -167,7 +172,7 @@ namespace UpDiddyApi.Workflow
         public async Task<MessageTransactionResponse> GetSectionWorkItem(string EnrollmentGuid)
         {
             MessageTransactionResponse RVal = null;
-            WorkflowHelper Helper = new WorkflowHelper(_db, _configuration);
+            WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
                 WozInterface woz = new WozInterface(_db, _mapper, _configuration);
@@ -205,7 +210,7 @@ namespace UpDiddyApi.Workflow
         public async Task<MessageTransactionResponse> CreateSectionInProgressWorkItem(string EnrollmentGuid,string TransactionId)
         {
             MessageTransactionResponse RVal = null;
-            WorkflowHelper Helper = new WorkflowHelper(_db, _configuration);
+            WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
                 WozInterface woz = new WozInterface(_db, _mapper, _configuration);
@@ -261,13 +266,11 @@ namespace UpDiddyApi.Workflow
 
 
         #region Register Student
-
-
         // Register the student in a woz section to complete the enrollment process 
         public async Task<MessageTransactionResponse> RegisterStudentWorkItem(string EnrollmentGuid)
         {
             MessageTransactionResponse RVal = null;
-            WorkflowHelper Helper = new WorkflowHelper(_db, _configuration);
+            WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
                 WozInterface woz = new WozInterface(_db, _mapper, _configuration);
@@ -306,7 +309,7 @@ namespace UpDiddyApi.Workflow
         public async Task<MessageTransactionResponse> RegisterStudentInProgressWorkItem(string EnrollmentGuid, string TransactionId)
         {
             MessageTransactionResponse RVal = null;
-            WorkflowHelper Helper = new WorkflowHelper(_db, _configuration);
+            WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
                 WozInterface woz = new WozInterface(_db, _mapper, _configuration);
@@ -357,9 +360,11 @@ namespace UpDiddyApi.Workflow
             }
             return RVal;
         }
- 
+
 
         #endregion
+
+        
 
 
     }

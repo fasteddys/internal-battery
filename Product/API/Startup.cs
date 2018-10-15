@@ -16,6 +16,7 @@ using Hangfire;
 using UpDiddyApi.Workflow;
 using Hangfire.SqlServer;
 using System;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi
 {
@@ -53,6 +54,13 @@ namespace UpDiddyApi
               Configuration["VaultUrl"],
               Configuration["VaultClientId"],
               Configuration["VaultClientSecret"]);
+
+
+            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
+            {
+                builder1.AddUserSecrets<Startup>();
+            }
+
 
             Configuration = builder1.Build();
 
@@ -92,7 +100,10 @@ namespace UpDiddyApi
 
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
-
+            // Add System Email   
+            services.AddSingleton<ISysEmail>( new SysEmail(Configuration) );
+            // Add System Email   
+            services.AddSingleton<ISysLog>(new SysLog(Configuration,new SysEmail(Configuration)));
             // Add framework services.
             services.AddMvc();
             // Add AutoMapper 
