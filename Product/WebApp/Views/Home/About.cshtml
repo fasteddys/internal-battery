@@ -1,10 +1,20 @@
-﻿<div class="about-us-container">
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model AboutViewModel
+
+<div class="about-us-container">
     <div class="row about-us-hero">
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
+                    <div class="col-md-6 col-xs-12">
+                        <div class="about-us-header">About Us</div>
+
+                    </div>
                     <div class="col-md-6">
-                        <h3>About Us</h3>
+                        <div class="career-circle-video-container">
+                            <iframe width="540" height="315" src="https://www.youtube.com/embed/q3XjjSWf2Ow" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -14,37 +24,102 @@
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-6">
-                        Career Circle is here to support <strong>you</strong> as the staffing and recruiting industry continues to evolve and transform, by:
-                        <ul>
-                            <li>Jump starting your digital career experience by aligning you to a unique Career Skills path</li>
-                            <li>Creating focus and ensuring relevance in your current career and/or for future career goals</li>
-                            <li>Helping you enhance your skill set by stacking skills</li>
-                            <li>Improving your job readiness and competitiveness in the market</li>
-                            <li>Defining and/or clarifying your career pathway</li>
-                            <li>Keep you job-relevant in the digital age</li>
-                            <li>Ensuring alignment of your career path to your career goals</li>
-                        </ul>
+                    <div class="col-md-4 col-xs-12">
+                        <div class="content-panel">
+                            <div class="content-panel-header">
+                                Relevance
+                            </div>
+                            <div class="content-panel-body">
+                                Upskill &amp; adapt to remain job-relevant in the digital age with CareerCircle.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xs-12">
+                        <div class="content-panel">
+                            <div class="content-panel-header">
+                                Self-Improvement
+                            </div>
+                            <div class="content-panel-body">
+                                Improving your job readiness and competitiveness while creating a career pathway.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xs-12">
+                        <div class="content-panel">
+                            <div class="content-panel-header">
+                                Intelligence
+                            </div>
+                            <div class="content-panel-body">
+                                This is sample text to fill the body of the intelligence area to test out the pic.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
     <div class="row about-us-secondary-band">
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
-                    <div class="offset-md-6 col-md-6">
-
-                        Career Circle Services include: 
-                        <ul>
-                            <li>Careerskilling</li>
-                            <li>Mentoring</li>
-                            <li>Coaching</li>
-                        </ul>
+                    <div class="col-md-12">
+                        <div class="partners-band">
+                            <div class="partners-header font">
+                                Partnering with...
+                            </div>
+                            <div class="partners-body">
+                                <img src="~/images/woz_logo.png" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row about-us-tertiary-band">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="contact-us-band">
+                            <div class="contact-us-header">Contact Us</div>
+                            <form id="ContactUsForm" asp-controller="Home" asp-action="ContactUs">
+                                <div class="form-group">
+                                    <label for="ContactUsFirstName">First Name</label>
+                                    <input required type="text" class="form-control" asp-for="ContactUsFirstName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ContactUsLastName">Last Name</label>
+                                    <input required type="text" class="form-control" asp-for="ContactUsLastName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ContactUsEmail">Email</label>
+                                    <input required type="email" class="form-control" id="ContactUsEmail" asp-for="ContactUsEmail">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ContactUsType">Contact Type</label>
+                                    <select class="form-control" id="ContactUsType" asp-for="ContactUsType">
+                                        <option selected>General</option>
+                                        <option>Partner</option>
+                                        <option>Career paths</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ContactUsComment">General</label>
+                                    <textarea required class="form-control" id="ContactUsComment" rows="3" asp-for="ContactUsComment"></textarea>
+                                </div>
+                                <div class="contact-us-button-container">
+                                    <button type="submit" class="btn btn-primary brand-button font-small">Submit</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+    document.getElementById("ContactUsForm").trigger('reset');
+</script>

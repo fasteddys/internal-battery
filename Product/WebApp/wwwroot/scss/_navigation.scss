@@ -14,6 +14,14 @@ body {
                 .nav-link {
                     color: $color-secondary;
                     font-size: $rem-12;
+
+                    &.temp-profile-link {
+                        cursor: default;
+
+                        &:hover {
+                            color:#03264A; 
+                        }
+                    }
                 }
             }
         }

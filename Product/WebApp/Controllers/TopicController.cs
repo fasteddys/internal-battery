@@ -15,7 +15,7 @@ using UpDiddy.ViewModels;
 namespace UpDiddy.Controllers
 {
   
-    public class TopicController : Controller
+    public class TopicController : BaseController
     {
 
         AzureAdB2COptions AzureAdB2COptions;
@@ -25,6 +25,7 @@ namespace UpDiddy.Controllers
 
 
         public TopicController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration)
+             : base(azureAdB2COptions.Value, configuration)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
@@ -35,21 +36,16 @@ namespace UpDiddy.Controllers
         [HttpGet]
         [Route("/Topic/{TopicSlug}")]
         public IActionResult Get(string TopicSlug)
-        {
-            ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
+        {         
             TopicDto Topic = API.TopicBySlug(TopicSlug);
             TopicViewModel TopicViewModel = new TopicViewModel(_configuration, API.getCousesByTopicSlug(TopicSlug), Topic);
-            //CourseViewModel CourseViewModel = new CourseViewModel(_configuration, API.Courses(TopicSlug), Topic);
-
+        
             return View("Details", TopicViewModel);
         }
 
         // GET: /<controller>/
         public IActionResult Index()
-        {            
-            // Create Interface and use DI to inject 
-            //ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
-            //TopicViewModel TopicViewModel = new TopicViewModel(_configuration, API.Topics());       
+        {               
             return View();
         }
     }

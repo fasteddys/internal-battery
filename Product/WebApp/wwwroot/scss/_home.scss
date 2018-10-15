@@ -30,7 +30,7 @@ body {
         }
         .home-hero-bottom{
             padding: 5rem 0;
-            margin-top: -1px;
+            margin-top: -2px;
             background-color: $color-secondary;
 
             .home-hero-bottom-cta{
@@ -120,6 +120,7 @@ body {
 
 @media (min-width: 0px) {
     body {
+        padding-top: 68.42px;
         .home-container {
 
             .home-courses {
@@ -143,13 +144,31 @@ body {
                     .card-column {
                         .card {
                             img {
-                                height: 9.374rem;
+                                height: auto;
                             }
                         }
                     }
 
                     .section-heading {
                         font-size: 2rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (min-width: 576px){
+    body {
+        .home-container {
+            .home-courses {
+                .course-categories {
+                    .card-column {
+                        .card {
+                            img {
+                                height: 9.375rem;
+                            }
+                        }
                     }
                 }
             }
@@ -172,6 +191,7 @@ body {
 
                     .career-training-header-container {
                         text-align: left;
+                        margin-bottom: 2rem;
                     }
 
                     .card-column {
@@ -193,6 +213,8 @@ body {
 
 @media (min-width: 992px) {
     body {
+        padding-top: 6.375em;
+
         .home-container {
             .home-hero {
                 background-image: url('../images/skyline_background.png');
@@ -210,12 +232,20 @@ body {
             }
 
             .home-courses {
-                margin-top: 6.25rem;
+                margin-top: 0;
                 margin-bottom: 7.5rem;
 
-                .course-categories{
-                    .section-heading{
+                .course-categories {
+                    .section-heading {
                         font-size: 2rem;
+                    }
+
+                    .card-column {
+                        .card {
+                            img {
+                                height: 12rem;
+                            }
+                        }
                     }
                 }
             }
@@ -261,6 +291,20 @@ body {
                 .navbar-nav {
                     li {
                         margin-right: 1rem;
+                    }
+                }
+            }
+        }
+
+        .home-container {
+            .home-courses {
+                .course-categories {
+                    .card-column {
+                        .card {
+                            img {
+                                height: 14rem;
+                            }
+                        }
                     }
                 }
             }

@@ -25,7 +25,7 @@ namespace UpDiddy.Controllers
 
         public IActionResult Index()
         {
-            return RedirectToAction("Index", "Home");
+            return RedirectPermanent("https://www.careercircle.com/Home/Index");
         }
     }
 }

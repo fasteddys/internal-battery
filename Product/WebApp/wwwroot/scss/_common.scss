@@ -64,6 +64,16 @@
     border-radius: 1rem;
     border: $rem-1 solid $color-secondary;
     padding: .5rem 1.75rem;
+    cursor: pointer;
+} 
+
+.btn-primary{
+    background-color: $color-secondary;
+    border: $rem-2 solid $color-white;
+
+    &.font-small{
+        font-size: 1rem;
+    }
 }
 
 .brand-button {
@@ -79,6 +89,10 @@
         background-color: $color-primary;
         color: #fff;
         border: $rem-2 solid #fff;
+
+        &:hover {
+            background-color: $color-secondary;
+        }
     }
 
     &.contrast-secondary {
@@ -100,6 +114,8 @@ nav .brand-button-light {
     border: 0;
     padding: 0;
 }
+
+
 
 .row{
     margin-left: 0;
@@ -126,4 +142,32 @@ nav .brand-button-light {
 
 input {
     font-family: FontAwesome, "Open Sans", Verdana, sans-serif;
+}
+
+.no-padding{
+    padding: 0;
+}
+
+.no-margin{
+    margin: 0;
+}
+
+a:hover{
+    text-decoration: none;
+}
+@media (min-width: 992px){
+    .navbar-light {
+        .navbar-nav {
+            .brand-button-light {
+
+                &:hover {
+                    background-color: $color-secondary;
+
+                    .nav-link{
+                        color: $color-white;
+                    }
+                }
+            }
+        }
+    }
 }

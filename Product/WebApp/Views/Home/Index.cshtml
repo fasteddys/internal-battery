@@ -18,7 +18,7 @@
                     <div class="col-md-10 offset-md-1 hero-container">
                         <div class="hero-title">The truth of the matter is that you always know the right thing to do. <span class="hero-bold">The hard part is doing it.</span></div>
                         <div class="hero-subtext">As the staffing and recruiting industry evolves with the digital world & transformation.  CareerCircle will help you determine your unique UpSkill path to jump start your digital career experience. CareerCircle will align, and create focus for your career by helping you achieve your career goals not only by upskilling, but also by creating mentoring, and coaching opportunities that align to your career goals.</div>
-                        <div class="brand-button contrast-primary">Get Started</div>
+                        <a asp-controller="Session" asp-action="SignIn"><div class="brand-button contrast-primary">Get Started</div></a>
                     </div>
                 </div>
             </div>
@@ -33,7 +33,7 @@
                         <div class="hero-title hero-title-regular">and begin your journey Up</div>
                         <div class="hero-description">CareerCircle helps you navigate the digital career experience, by aligning you career goals with  upskilling, mentoring, and coaching opportunities.</div>
                         <div class="brand-button-container">
-                            <div class="brand-button contrast-secondary">Sign Up Today!</div>
+                            <a asp-controller="Session" asp-action="SignIn"><div class="brand-button contrast-secondary">Sign Up Today!</div></a>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -52,12 +52,13 @@
                     </span>
                 </div>
                 <div class="col-md-6">
+                    <!--
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" placeholder="Course Search">
                         <div class="input-group-append">
                             <span class="input-group-text"><i class="fas fa-search"></i></span>
                         </div>
-                    </div>
+                    </div>-->
                 </div>
                 @foreach (TopicDto topic in Model.Topics)
                 {
@@ -68,16 +69,18 @@
 
                     }
                     <div class="col-lg-4 col-md-6 col-sm-6 col-xs-12 card-column">
-                        <div class="card">
-                            <img class="card-img-top" src="@(Model.ImageUrl + topic.DesktopImage)" alt="Card image cap">
-                            <div class="card-body">
-                                <h5 class="card-title">@topic.Name</h5>
-                                <p class="card-text fade-text">@DescriptionBlurb</p>
-                                <div class="card-footer-cc">
-                                    <a href="/Topic/@(topic.Slug)" class="view-courses-link">View Courses <i class="fas fa-angle-double-right"></i></a>
+                        <a class="card-hyperlink-container" href="/Topic/@(topic.Slug)">
+                            <div class="card">
+                                <img class="card-img-top" src="@(Model.ImageUrl + topic.DesktopImage)" alt="Card image cap">
+                                <div class="card-body">
+                                    <h5 class="card-title">@topic.Name</h5>
+                                    <p class="card-text fade-text">@DescriptionBlurb</p>
+                                    <!--<div class="card-footer-cc">
+                                        <a href="/Topic/@(topic.Slug)" class="view-courses-link">View Courses <i class="fas fa-angle-double-right"></i></a>
+                                    </div>-->
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 }
             </div>

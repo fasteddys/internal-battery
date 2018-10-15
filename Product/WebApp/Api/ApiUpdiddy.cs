@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using UpDiddy.Helpers;
 using UpDiddyLib.Dto;
+using System.Net;
 
 
 namespace UpDiddy.Api
@@ -52,6 +53,12 @@ namespace UpDiddy.Api
             return retVal;
         }
 
+        public CourseDto CourseByGuid(Guid CourseGuid)
+        {
+            CourseDto retVal = Get<CourseDto>("course/guid/" + CourseGuid, false);
+            return retVal;
+        }
+
         public SubscriberDto Subscriber(Guid SubscriberGuid)
         {
             return Get<SubscriberDto>("subscriber/" + SubscriberGuid);
@@ -65,6 +72,17 @@ namespace UpDiddy.Api
         {
             return Post<EnrollmentDto>(enrollmentDto, "enrollment/", false);
         }
+
+        public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
+        {
+            return Get<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);
+        }
+
+        public PromoCodeDto GetPromoCode(string PromoCode)
+        {
+            return Get<PromoCodeDto>("promocode/" + PromoCode, false);
+        }
+
     }
 }
 

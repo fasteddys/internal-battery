@@ -19,17 +19,25 @@ using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
+using System.Net.Mail;
+using SendGrid;
+using SendGrid.Helpers.Mail;
+using System.Text;
 
 namespace UpDiddy.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         AzureAdB2COptions AzureAdB2COptions;
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
    
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration)
+
+        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration) 
+            : base(azureAdB2COptions.Value, configuration)
         {
+
+
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
             _configuration = configuration;
@@ -37,11 +45,8 @@ namespace UpDiddy.Controllers
 
         public IActionResult Index()
         {
-            var xxx = _configuration["Api:ApiUrl"];
             // TODO remove test code 
-            ApiUpdiddy API = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
-            var x = API.GetAsString("Values", true);
-            var xx = API.Get<string>("Values", true);
+            GetSubscriber();
 
             HomeViewModel HomeViewModel = new HomeViewModel(_configuration, API.Topics());
             return View(HomeViewModel);
@@ -49,8 +54,6 @@ namespace UpDiddy.Controllers
 
         public IActionResult Terms()
         {
-
-
             return View();
         }
 
@@ -82,22 +85,53 @@ namespace UpDiddy.Controllers
         }
 
         public IActionResult About()
-        {
-    
+        { 
             return View();
         }
 
-        public IActionResult ContactUs()
+        [HttpPost]
+        public IActionResult ContactUs(string ContactUsFirstName, 
+            string ContactUsLastName, 
+            string ContactUsEmail, 
+            string ContactUsType, 
+            string ContactUsComment)
         {
-
-            return View();
+            var client = new SendGridClient(_configuration["Sendgrid:ApiKey"]);
+            var from = new EmailAddress(_configuration["Sendgrid:EmailSender"]);
+            var subject = _configuration["Sendgrid:EmailSubject"];
+            var to = new EmailAddress(_configuration["Sendgrid:EmailRecipient"]);
+            var emailBody = FormatContactEmail(ContactUsFirstName, ContactUsLastName, ContactUsEmail, ContactUsType, ContactUsComment);
+            var plainTextContent = emailBody;
+            var htmlContent = emailBody;
+            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
+            var response = client.SendEmailAsync(msg);
+            return RedirectToAction("About", new AboutViewModel());
         }
 
+        private string FormatContactEmail(string ContactUsFirstName,
+            string ContactUsLastName,
+            string ContactUsEmail,
+            string ContactUsType,
+            string ContactUsComment)
+        {
+            StringBuilder emailBody = new StringBuilder("<strong>New email submitted by: </strong>" + ContactUsLastName + ", " + ContactUsFirstName);
+            emailBody.Append("<p><strong>User's email: </strong>" + ContactUsEmail + "</p>");
+            emailBody.Append("<p><strong>Contact topic: </strong>" + ContactUsType + "</p>");
+            emailBody.Append("<p><strong>Message: </strong></p>");
+            emailBody.Append("<p>" + ContactUsComment + "</p>");
+            return emailBody.ToString();
+        }
+
+        [AllowAnonymous]
         public IActionResult Unified()
         {
             return View();
         }
 
+        public IActionResult ComingSoon()
+        {
+            return View();
+        }
 
         [Authorize]
         public async Task<IActionResult> Api()

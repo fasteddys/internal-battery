@@ -28,15 +28,18 @@ namespace UpDiddy
 
         public Startup(IHostingEnvironment env)
         {
-            if (System.Diagnostics.Debugger.IsAttached)
-            {
-                System.Threading.Thread.Sleep(2000);
-            }
+            
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
+
+            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
+            {
+                builder.AddUserSecrets<Startup>();
+            }
+
             Configuration = builder.Build();
         }
 
@@ -45,6 +48,7 @@ namespace UpDiddy
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddAuthentication(sharedOptions =>
@@ -120,14 +124,11 @@ namespace UpDiddy
 
 
             // Adds a default in-memory implementation of IDistributedCache.
-            services.AddDistributedMemoryCache();
-            services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromHours(1);
-                // options.CookieHttpOnly = true;
-                options.Cookie.HttpOnly = true;
-            });
+            //services.AddDistributedMemoryCache();
+            
 
+            Console.WriteLine("Redis name: " + Configuration.GetValue<string>("redis:name") + ", Redis host: " + Configuration.GetValue<string>("redis:host"));
+            Console.WriteLine("B2C Secret: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientSecret") + ", B2C ID: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientId"));
 
             // Add Redis session cahce
             services.AddDistributedRedisCache(options =>
@@ -135,7 +136,13 @@ namespace UpDiddy
                 options.InstanceName = Configuration.GetValue<string>("redis:name");
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
-            services.AddSession();
+
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromHours(1);
+                // options.CookieHttpOnly = true;
+                options.Cookie.HttpOnly = true;
+            });
 
 
         }
@@ -184,17 +191,22 @@ namespace UpDiddy
                 SupportedUICultures = supportedCultures
             });
 
+            app.Use((context, next) =>
+            {
+                context.Response.Headers["Access-Control-Allow-Origin"] = "https://login.microsoftonline.com";
+                return next.Invoke();
+            });
 
-            
             app.UseStaticFiles();
             app.UseSession();
             app.UseAuthentication();
 
+            // TODO - Change template action below to index upon site launch.
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Home}/{action=ComingSoon}/{id?}");
             });
         }
 

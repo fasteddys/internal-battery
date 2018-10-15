@@ -1,7 +1,6 @@
 ﻿@import '_variables';
 .checkout-page-container {
     .checkout-topic-detail-band {
-        padding: 3rem 0;
         background-color: $color-secondary;
         color: $color-white;
 
@@ -10,8 +9,29 @@
         }
     }
 
-    .checkout-hero {
+    .form-row {
+        border-top: $rem-1 dashed $color-primary;
         padding: 3rem 0;
+
+        .form-group {
+            #PromoCodeApplyButton {
+                padding: .375rem .75rem;
+            }
+
+            .total-container {
+                > div {
+                    padding: 0;
+
+                    &.total-row-item {
+                        border-top: $rem-1 solid $color-primary;
+                        padding-top: 1rem;
+                    }
+                }
+            }
+        }
+    }
+
+    .checkout-hero {
 
 
         .checkout-known-info-header {
@@ -28,7 +48,6 @@
     }
 
     .checkout-vendor-info-container {
-        padding: 0 0 3rem 0;
 
         #CourseCheckoutForm {
             button {
@@ -39,19 +58,17 @@
                 &:hover {
                     background-color: $color-secondary;
                 }
-                &:disabled{
+
+                &:disabled {
                     background-color: $color-tertiary-gray;
                     cursor: default;
                 }
             }
 
             .billing-info-header-container {
-                border-top: $rem-1 dashed $color-primary;
-                padding-top: 3rem;
             }
 
             .billing-info-container {
-                padding-bottom: 3rem;
             }
 
             .same-as-above,
@@ -61,19 +78,24 @@
             }
 
             .payment-info-header {
-                border-top: $rem-1 dashed $color-primary;
-                padding-top: 3rem;
             }
 
-            .tos-agree{
+            .tos-agree {
                 padding-top: 1rem;
+            }
+
+            .bt-drop-in-wrapper {
+                width: 100%;
+
+                .braintree-form__field-group {
+                    label {
+                        width: 100%;
+                    }
+                }
             }
         }
 
         .terms-of-service-header {
-            padding-top: 3rem;
-            margin-top: 3rem;
-            border-top: $rem-1 dashed $color-primary;
         }
 
         .terms-of-service-scrollview {
