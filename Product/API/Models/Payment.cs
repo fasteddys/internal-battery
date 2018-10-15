@@ -15,7 +15,7 @@ namespace UpDiddyApi.Models
         public DateTime PaymentDate { get; set; }
         public int PaymentStatus { get; set; }
         public int PaymentProcessorId { get; set; }
-        public Guid EnrollmentGuid { get; set; }
+        public Guid EnrollmentId { get; set; }
         public int PaymentBatchId { get; set; }
     }
 }
