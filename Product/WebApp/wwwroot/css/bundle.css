@@ -126,6 +126,10 @@ body nav {
   body nav.navbar-light .navbar-nav .nav-link {
     color: #03264A;
     font-size: 0.75rem; }
+    body nav.navbar-light .navbar-nav .nav-link.temp-profile-link {
+      cursor: default; }
+      body nav.navbar-light .navbar-nav .nav-link.temp-profile-link:hover {
+        color: #03264A; }
 
 @media (min-width: 0px) {
   body .navbar-brand img {
