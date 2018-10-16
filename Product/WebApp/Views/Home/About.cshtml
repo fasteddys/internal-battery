@@ -1,19 +1,24 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
 @model AboutViewModel
-
+@{
+    string DomainName = Context.Request.Host.ToString();
+    string SSLProtocol = Context.Request.Scheme.ToString();
+    string ProtocolAndHost = SSLProtocol + "://" + DomainName;
+}
 <div class="about-us-container">
     <div class="row about-us-hero">
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-6 col-xs-12">
-                        <div class="about-us-header">About Us</div>
-
+                    <div class="col-md-6">
+                        <p>
+                            <h3>At CareerCircle, we are not just hiring talent, we are helping create talent to fit the job market.</h3>
+                        </p>
                     </div>
                     <div class="col-md-6">
                         <div class="career-circle-video-container">
-                            <iframe width="540" height="315" src="https://www.youtube.com/embed/q3XjjSWf2Ow" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                            <video src="@(ProtocolAndHost)/videos/Career_Circle.mp4" controls frameborder="0" allowfullscreen></video>
                         </div>
                     </div>
                 </div>
@@ -37,6 +42,16 @@
                     <div class="col-md-4 col-xs-12">
                         <div class="content-panel">
                             <div class="content-panel-header">
+                                Skills For Tomorrow
+                            </div>
+                            <div class="content-panel-body">
+                                Striving to make a difference in the world by CareerSkilling to help in solving problems in their communities, empowering their friends, and defining the future or work in our world.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xs-12">
+                        <div class="content-panel">
+                            <div class="content-panel-header">
                                 Self-Improvement
                             </div>
                             <div class="content-panel-body">
@@ -44,16 +59,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4 col-xs-12">
-                        <div class="content-panel">
-                            <div class="content-panel-header">
-                                Intelligence
-                            </div>
-                            <div class="content-panel-body">
-                                This is sample text to fill the body of the intelligence area to test out the pic.
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -66,7 +72,7 @@
                     <div class="col-md-12">
                         <div class="partners-band">
                             <div class="partners-header font">
-                                Partnering with...
+                                Partnering with:
                             </div>
                             <div class="partners-body">
                                 <img src="~/images/woz_logo.png" />

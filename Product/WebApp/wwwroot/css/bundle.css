@@ -285,7 +285,8 @@ body {
         border-bottom-left-radius: .5rem;
         border-bottom-right-radius: .5rem; }
       .card-column .card .card-title {
-        margin-bottom: .5rem; }
+        margin-bottom: .5rem;
+        min-height: 3rem; }
       .card-column .card .card-text {
         font-size: .75rem;
         color: #808080;
@@ -396,7 +397,7 @@ body {
       padding-bottom: 56.25%;
       position: relative;
       height: 0; }
-      .about-us-container .about-us-hero .career-circle-video-container iframe {
+      .about-us-container .about-us-hero .career-circle-video-container video {
         left: 0;
         top: 0;
         height: 100%;
