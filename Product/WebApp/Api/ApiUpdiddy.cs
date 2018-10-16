@@ -53,6 +53,12 @@ namespace UpDiddy.Api
             return retVal;
         }
 
+        public CourseDto CourseByGuid(Guid CourseGuid)
+        {
+            CourseDto retVal = Get<CourseDto>("course/guid/" + CourseGuid, false);
+            return retVal;
+        }
+
         public SubscriberDto Subscriber(Guid SubscriberGuid)
         {
             return Get<SubscriberDto>("subscriber/" + SubscriberGuid);
@@ -72,6 +78,10 @@ namespace UpDiddy.Api
             return Get<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);
         }
 
+        public PromoCodeDto GetPromoCode(string PromoCode)
+        {
+            return Get<PromoCodeDto>("promocode/" + PromoCode, false);
+        }
 
     }
 }

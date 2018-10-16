@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    public class PromoCodes
+    public class PromoCode : BaseModel
     {
-        public int PromoCodesId { get; set; }
-        public Guid? PromoCodesGuid { get; set; }
+        public int PromoCodeId { get; set; }
+        public Guid? PromoCodeGuid { get; set; }
         [Required]
-        public string PromoCode { get; set; }
+        public string Code { get; set; }
         public DateTime PromoStartDate { get; set; }
         public DateTime PromoEndDate { get; set; }
         public int PromoTypeId { get; set; }
-        public Decimal PromoValueFacotr { get; set; }
+        public Decimal PromoValueFactor { get; set; }
         [Required]
         public string PromoName { get; set; }
         public string PromoDescription { get; set; }

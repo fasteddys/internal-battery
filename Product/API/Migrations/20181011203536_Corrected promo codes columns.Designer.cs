@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20181011203536_Corrected promo codes columns")]
+    partial class Correctedpromocodescolumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -578,7 +580,7 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<Guid>("EnrollmentGuid");
+                    b.Property<int>("EnrollmentId");
 
                     b.Property<int>("PaymentBatchId");
 
@@ -657,26 +659,16 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("PaymentStatus");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.PromoCode", b =>
+            modelBuilder.Entity("UpDiddyApi.Models.PromoCodes", b =>
                 {
-                    b.Property<int>("PromoCodeId")
+                    b.Property<int>("PromoCodesId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Code")
+                    b.Property<string>("PromoCode")
                         .IsRequired();
 
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<Guid?>("PromoCodeGuid");
+                    b.Property<Guid?>("PromoCodesGuid");
 
                     b.Property<string>("PromoDescription");
 
@@ -691,7 +683,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<decimal>("PromoValueFactor");
 
-                    b.HasKey("PromoCodeId");
+                    b.HasKey("PromoCodesId");
 
                     b.ToTable("PromoCode");
                 });
@@ -701,16 +693,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("PromoTypeId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
 
                     b.Property<string>("PromoTypeDescription");
 
@@ -1072,7 +1054,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<long>("EnrollmentDateUTC");
 
-                    b.Property<Guid>("EnrollmentGuid");
+                    b.Property<int>("EnrollmentId");
 
                     b.Property<int>("EnrollmentStatus");
 

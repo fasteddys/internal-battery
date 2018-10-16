@@ -26,6 +26,8 @@ namespace UpDiddyApi.Helpers
                 cfg.CreateMap<SubscriberDto, Subscriber>();
                 cfg.CreateMap<WozCourseEnrollment, WozCourseEnrollmentDto>();
                 cfg.CreateMap<WozCourseEnrollmentDto, WozCourseEnrollment>();
+                cfg.CreateMap<PromoCodeDto, PromoCode>();
+                cfg.CreateMap<PromoCode, PromoCodeDto>();
             });
 
         }

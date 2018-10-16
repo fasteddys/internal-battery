@@ -126,6 +126,10 @@ body nav {
   body nav.navbar-light .navbar-nav .nav-link {
     color: #03264A;
     font-size: 0.75rem; }
+    body nav.navbar-light .navbar-nav .nav-link.temp-profile-link {
+      cursor: default; }
+      body nav.navbar-light .navbar-nav .nav-link.temp-profile-link:hover {
+        color: #03264A; }
 
 @media (min-width: 0px) {
   body .navbar-brand img {
@@ -328,57 +332,50 @@ body {
   .detail-view-container .course-list-container .section-heading {
     font-size: 1.8rem; } }
 .checkout-page-container .checkout-topic-detail-band {
-  padding: 3rem 0;
   background-color: #03264A;
   color: #fff; }
   .checkout-page-container .checkout-topic-detail-band .hero-subtitle {
     margin-top: 1rem; }
-.checkout-page-container .checkout-hero {
+.checkout-page-container .form-row {
+  border-top: 0.0625rem dashed #4089A0;
   padding: 3rem 0; }
-  .checkout-page-container .checkout-hero .checkout-known-info-header {
-    font-size: 2rem; }
-  .checkout-page-container .checkout-hero .known-info-container ul {
-    margin: 0;
-    padding: 0;
-    list-style: none; }
-.checkout-page-container .checkout-vendor-info-container {
-  padding: 0 0 3rem 0; }
-  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm button {
-    font-size: 1rem;
-    padding: .5rem 1rem;
-    transition: background-color 0.15s ease; }
-    .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm button:hover {
-      background-color: #03264A; }
-    .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm button:disabled {
-      background-color: #808080;
-      cursor: default; }
-  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .billing-info-header-container {
-    border-top: 0.0625rem dashed #4089A0;
-    padding-top: 3rem; }
-  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .billing-info-container {
-    padding-bottom: 3rem; }
-  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .same-as-above,
-  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .billing-info-header {
-    display: inline-block;
-    margin-right: 2rem; }
-  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .payment-info-header {
-    border-top: 0.0625rem dashed #4089A0;
-    padding-top: 3rem; }
-  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .tos-agree {
-    padding-top: 1rem; }
-  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .bt-drop-in-wrapper {
+  .checkout-page-container .form-row .form-group #PromoCodeApplyButton {
+    padding: .375rem .75rem; }
+  .checkout-page-container .form-row .form-group .total-container > div {
+    padding: 0; }
+    .checkout-page-container .form-row .form-group .total-container > div.total-row-item {
+      border-top: 0.0625rem solid #4089A0;
+      padding-top: 1rem; }
+.checkout-page-container .checkout-hero .checkout-known-info-header {
+  font-size: 2rem; }
+.checkout-page-container .checkout-hero .known-info-container ul {
+  margin: 0;
+  padding: 0;
+  list-style: none; }
+.checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm button {
+  font-size: 1rem;
+  padding: .5rem 1rem;
+  transition: background-color 0.15s ease; }
+  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm button:hover {
+    background-color: #03264A; }
+  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm button:disabled {
+    background-color: #808080;
+    cursor: default; }
+.checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .same-as-above,
+.checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .billing-info-header {
+  display: inline-block;
+  margin-right: 2rem; }
+.checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .tos-agree {
+  padding-top: 1rem; }
+.checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .bt-drop-in-wrapper {
+  width: 100%; }
+  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .bt-drop-in-wrapper .braintree-form__field-group label {
     width: 100%; }
-    .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .bt-drop-in-wrapper .braintree-form__field-group label {
-      width: 100%; }
-  .checkout-page-container .checkout-vendor-info-container .terms-of-service-header {
-    padding-top: 3rem;
-    margin-top: 3rem;
-    border-top: 0.0625rem dashed #4089A0; }
-  .checkout-page-container .checkout-vendor-info-container .terms-of-service-scrollview {
-    max-height: 10rem;
-    border: 0.0625rem solid #F3F3F3;
-    padding: 1.5rem;
-    overflow: auto; }
+.checkout-page-container .checkout-vendor-info-container .terms-of-service-scrollview {
+  max-height: 10rem;
+  border: 0.0625rem solid #F3F3F3;
+  padding: 1.5rem;
+  overflow: auto; }
 
 @media (min-width: 0px) {
   .about-us-container > div {

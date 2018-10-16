@@ -21,6 +21,7 @@ using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
 using UpDiddy.Helpers.Braintree;
 using Braintree;
+using System.Text;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -74,7 +75,34 @@ namespace UpDiddy.Controllers
             return View("Checkout", CourseViewModel);
         }
 
+        [HttpGet]
+        [Route("/Course/PromoCode/{CourseGuid}/{PromotionalCode}")]
+        public string PromoCode(Guid CourseGuid, string PromotionalCode)
+        {
+            CourseDto Course = API.CourseByGuid(CourseGuid);
+            PromoCodeDto Code = API.GetPromoCode(PromotionalCode);
+            return AssemblePromoCodeJSONResponse(Code, Course);
+        }
 
+        private string AssemblePromoCodeJSONResponse(PromoCodeDto code, CourseDto course)
+        {
+            StringBuilder jsonString = new StringBuilder("{");
+            jsonString.Append("\"PromoValueFactor\": \"" + code.PromoValueFactor + "\",");
+            jsonString.Append("\"AmountOffCourse\": \"" + CalculatePriceOffOfCourse(course.Price, code.PromoValueFactor) + "\",");
+            jsonString.Append("\"NewCoursePrice\": \"" + CalculatePromoCodeDiscountedPrice(course.Price, code.PromoValueFactor) + "\"");
+            jsonString.Append("}");
+            return jsonString.ToString();
+        }
+
+        private Decimal? CalculatePromoCodeDiscountedPrice(Decimal? CoursePrice, Decimal PromoValueFactor)
+        {
+            return (CoursePrice - CalculatePriceOffOfCourse(CoursePrice, PromoValueFactor));
+        }
+
+        private Decimal CalculatePriceOffOfCourse(Decimal? CoursePrice, Decimal PromoValueFactor)
+        {
+            return (Math.Floor((Decimal)CoursePrice * PromoValueFactor * 100)) / 100;
+        }
 
         [HttpPost]
         public IActionResult Checkout(
@@ -87,11 +115,13 @@ namespace UpDiddy.Controllers
             string BillingState,
             string BillingCity,
             string BillingCountry,
-            string BillingAddress)
+            string BillingAddress,
+            string PromoCodeForSubmission)
         {          
             GetSubscriber();
             DateTime dateTime = new DateTime();
-            CourseDto Course = API.Course(CourseSlug);            
+            CourseDto Course = API.Course(CourseSlug);
+            PromoCodeDto Code = API.GetPromoCode(PromoCodeForSubmission);
             EnrollmentDto enrollmentDto = new EnrollmentDto
             {
                 CourseId = Course.CourseId,
@@ -118,7 +148,13 @@ namespace UpDiddy.Controllers
 
 
             var gateway = braintreeConfiguration.GetGateway();
-            Decimal amount = Convert.ToDecimal(Course.Price);
+            Decimal amount;
+            if (PromoCodeForSubmission != null) {
+                amount = (Decimal)CalculatePromoCodeDiscountedPrice(Course.Price, Code.PromoValueFactor);
+            }
+            else {
+                amount = Convert.ToDecimal(Course.Price);
+            }
 
             var nonce = Request.Form["payment_method_nonce"];
             

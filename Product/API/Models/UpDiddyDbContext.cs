@@ -25,9 +25,9 @@ namespace UpDiddyApi.Models
 
             IConfiguration config = configBuilder.Build();   
 
-            var VaultUrl = config["Vault"];
-            var VaultClientId = config["Clientid"];
-            var VaultSecret = config["ClientSecret"];
+            var VaultUrl = config["VaultUrl"];
+            var VaultClientId = config["VaultClientId"];
+            var VaultSecret = config["VaultClientSecret"];
 
             configBuilder.AddAzureKeyVault(
                  VaultUrl,
@@ -71,7 +71,7 @@ namespace UpDiddyApi.Models
         public DbSet<ReportEnrollmentByVendor> ReportEnrollmentByVendors { get; set; }
         public DbSet<Rebate> Rebate { get; set; }
         public DbSet<VendorPromoCode> VendorPromoCode { get; set; }
-        public DbSet<PromoCodes> PromoCode { get; set; }
+        public DbSet<PromoCode> PromoCode { get; set; }
         public DbSet<SubscriberPromoCode> SubscriberPromoCode { get; set; }
         public DbSet<CoursePromoCode> CoursePromoCode { get; set; }
         public DbSet<PromoType> PromoType { get; set; }

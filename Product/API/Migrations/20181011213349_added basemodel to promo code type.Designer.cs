@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20181011213349_added basemodel to promo code type")]
+    partial class addedbasemodeltopromocodetype
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -578,7 +580,7 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<Guid>("EnrollmentGuid");
+                    b.Property<int>("EnrollmentId");
 
                     b.Property<int>("PaymentBatchId");
 
@@ -1072,7 +1074,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<long>("EnrollmentDateUTC");
 
-                    b.Property<Guid>("EnrollmentGuid");
+                    b.Property<int>("EnrollmentId");
 
                     b.Property<int>("EnrollmentStatus");
 
