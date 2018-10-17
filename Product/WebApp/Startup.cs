@@ -170,6 +170,9 @@ namespace UpDiddy
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            if(env.IsProduction())
+                app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
+
             var supportedCultures = new[]
                 {
                 new CultureInfo("en-US"),
@@ -197,8 +200,6 @@ namespace UpDiddy
                 context.Response.Headers["Access-Control-Allow-Origin"] = "https://login.microsoftonline.com";
                 return next.Invoke();
             });
-
-            app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
         
             app.UseStaticFiles();
             app.UseSession();

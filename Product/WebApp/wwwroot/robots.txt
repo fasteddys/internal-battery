@@ -1,3 +1,5 @@
 ﻿User-agent: *
 Sitemap: sitemap.xml
 Disallow: /Course/Checkout
+Disallow: /Home/Error
+Disallow: /Home/PageNotFound
