@@ -1,8 +1,9 @@
 ﻿@import '_variables';
-/* Footer Styles */ 
+/* Footer Styles */
 footer {
     font-size: .8125rem;
     text-align: center;
+
     ul {
         list-style: none;
         padding: 0;
@@ -48,6 +49,19 @@ footer {
         }
     }
 
+    a {
+        color: #fff;
+        cursor: pointer;
+
+        .fab {
+            color: $color-secondary;
+
+            &:hover {
+                color: $color-primary;
+            }
+        }
+    }
+
     .footer-bottom {
         padding: 1.875rem 0;
 
@@ -65,20 +79,26 @@ footer {
                 }
             }
         }
-    }
 
-
-
-    a {
-        color: #fff;
-        cursor: pointer;
-        .fab{
-            color: $color-secondary;
+        a {
+            color: $color-primary;
+            cursor: pointer;
             &:hover{
-                color: $color-primary;
+                color: $color-secondary;
+            }
+            .fab {
+                color: $color-secondary;
+
+                &:hover {
+                    color: $color-primary;
+                }
             }
         }
     }
+
+
+
+
 
     a:hover {
         color: #547eff;

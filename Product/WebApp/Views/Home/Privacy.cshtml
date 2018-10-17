@@ -1,11 +1,256 @@
-﻿@using Microsoft.AspNetCore.Mvc.Localization
-@inject IViewLocalizer Localizer
-@{
-    ViewData["Title"] = @Localizer["Terms"];
-}
-<h2>Privacy Policy</h2>
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
 
-@using System.Security.Claims
-<p>
-    We are very private!
-</p>
+<div class="privacy-page-container">
+    <div class="row privacy-hero-band">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="privacy-hero">
+                            <div class="privacy-header">
+                                Privacy Policy
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row privacy-content">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row privacy-content-container">
+                            <p>Last modified: October 16, 2018</p>
+
+                            <p>CareerCircle is a company that provides a suite of automation and analytics services to enable companies to hire more effectively.</p>
+
+                            <p>CareerCircle believes that privacy and security are important for everyone. Our Privacy Policy will help you understand how we collect and use data to provide our services.</p>
+
+                            <p>We take the privacy and security of your information very seriously. As you use our services, we want you to be clear how we're using information and how you can interact with us about any privacy questions or concerns.</p>
+
+                            <p>
+                                Our Privacy Policy explains:
+                            </p>
+                            <div>
+                                <ul>
+                                    <li>
+                                        How we protect information that you transfer or input into CareerCirce.
+                                    </li>
+                                    <li>
+                                        What information we collect and why we collect it.
+                                    </li>
+                                    <li>
+                                        How we use the information we collect.
+                                    </li>
+                                    <li>
+                                        The choices we offer, including how to access and update information.
+                                    </li>
+                                    <li>
+                                        How we protect the confidentiality, integrity and accessibility of your information.
+                                    </li>
+                                </ul>
+                            </div>
+                            
+
+                            <h3>Information you upload or input</h3> 
+
+                            <p>
+                                Your information is yours. We will not share this information with any other user or party without your explicit permission. Many of our services allow you to upload or otherwise input information into your private HiringSolved database. Examples include uploading or importing candidates, entering jobs, notes, tags, etc. Your information is protected by multiple layers of security, which are designed to prevent unauthorized access.
+                            </p>
+                            
+                            <h3>Information we collect</h3>
+
+                            <p>We collect both anonymous and non-anonymous information to provide better services to all of our users.</p>
+
+                            <p>
+                                We collect information in three ways:
+                                <ul>
+                                    <li>
+                                        <b>Information you give us.</b> For example, many of our services require you to provide certain information to us to sign up for education opportunities that we offer. When you do, we'll ask for personal information, like your name, email address, telephone number or credit card.
+                                    </li>
+                                    <li>
+                                        Information we get from your use of our services. We may collect information about the services that you use and how you use them, like when you use our social integration services or you view, rate, or contact candidates through our service. This information includes:
+                                        <ul>
+                                            <li>
+                                                <b>Device information</b>
+                                            </li>
+                                            <li>
+                                                We may collect device-specific information (such as your hardware model, operating system version, unique device identifiers, and mobile network information including phone number). CareerCircle may associate your device identifiers or phone number with your CareerCircle Account.
+                                            </li>
+                                            <li>
+                                                <b>Log information</b>
+                                            </li>
+                                            <li>
+                                                When you use our services or view content provided by CareerCircle we might automatically collect and store certain information in server logs. This may include:
+                                                <ul>
+                                                    <li>
+                                                        details of how you used our service, such as your search queries and usage patterns,
+                                                    </li>
+                                                    <li>
+                                                        Internet protocol address,
+                                                    </li>
+                                                    <li>
+                                                        device event information such as crashes, system activity, hardware settings, browser type, browser language, the date and time of your request and referral URL, and
+                                                    </li>
+                                                    <li>
+                                                        cookies that may uniquely identify your browser or your CareerCircle Account.
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <b>Location information</b>
+                                            </li>
+                                            <li>
+                                                When you use a location-enabled CareerCircle service, we may collect and process information about your actual location, like GPS signals sent by a mobile device. We may also use various technologies to determine location, such as sensor data from your device that may, for example, provide information on nearby Wi-Fi access points and cell towers.
+                                            </li>
+                                            <li>
+                                                <b>Unique application numbers</b>
+                                            </li>
+                                            <li>
+                                                Certain services include a unique application number. This number and information about your installation (for example, the operating system type and application version number) may be sent to CareerCircle when you install or uninstall that service or when that service periodically contacts our servers, such as for automatic updates.
+                                            </li>
+                                            <li>
+                                                Local storage
+                                            </li>
+                                            <li>
+                                                We may collect and store information (including personal information) locally on your device using mechanisms such as browser web storage (including HTML 5) and application data caches.
+                                            </li>
+                                            <li>
+                                                Cookies and anonymous identifiers
+                                            </li>
+                                            <li>
+                                                We use various technologies to collect and store information when you visit a CareerCircle service, and this may include sending one or more cookies or anonymous identifiers to your device. We also use cookies and anonymous identifiers when you interact with services we offer to our partners, such as CareerCircle features that may appear on other sites.
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <b>Information we collect from our partners.</b> We may use and aggregate information from our business and integration partners to provide our services.
+                                    </li>
+                                </ul>
+                            </p>
+                            <h3>
+                                How we use information we collect
+                            </h3>
+                            <p>
+                                We use the information we collect from all of our services to provide, maintain, protect and improve them, to develop new ones, and to protect CareerCircle and our users. We also use this information to offer you tailored content – like giving you more relevant search results and candidate matching services.
+                            </p>
+                            <p>
+                                When you contact CareerCircle, we may keep a record of your communication to help solve any issues you might be facing. We may use your email address to inform you about our services, such as letting you know about upcoming changes or improvements, or with your permission, other notifications.
+                            </p>
+                            <p>
+                                We use information collected from cookies and other technologies, like pixel tags, to improve your user experience and the overall quality of our services. We may combine personal information from one service with information, including personal information, from other CareerCircle services – for example to make it easier to share things with people you know. We will ask for your consent before using information for a purpose other than those that are set out in this Privacy Policy.
+                            </p>
+                            <h3>
+                                Transparency and choice
+                            </h3>
+                            <p>
+                                You may contact us for any privacy related matters via email at privacy@CareerCircle.com.
+                            </p>
+                            <p>
+                                You may request information about any personal information we have stored about you and request that the information be removed by contacting us at privacy@CareerCircle.com, we will work with you to understand any data we store about you and remove it upon your request (requires identity verification).
+                            </p>
+                            <p>
+                                You may also set your browser to block all cookies, including cookies associated with our services, or to indicate when a cookie is being set by us. However, it's important to remember that many of our services may not function properly if your cookies are disabled. For example, we may not remember your preferences.
+                            </p>
+                            <h3>
+                                Information you share
+                            </h3>
+                            <p>
+                                Some of our services let you share information with others.
+                            </p>
+                            <h3>
+                                Information we share
+                            </h3>
+                            <p>
+                                We do not share personal information with companies, organizations and individuals unless one of the following circumstances apply:
+                                <ul>
+                                    <li>
+                                        <b>With your consent</b>
+                                        <ul>
+                                            <li>
+                                                We will never share personal information with companies, organizations or individuals outside of CareerCircle unless we have your permission to do so.
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        <b>For legal reasons</b>
+                                        <ul>
+                                            <li>
+                                                We will share personal information with companies, organizations or individuals outside of CareerCircle if we have a good-faith belief that access, use, preservation or disclosure of the information is reasonably necessary to:
+                                                <ul>
+                                                    <li>
+                                                        meet any applicable law, regulation, legal process or enforceable governmental request,
+                                                    </li>
+                                                    <li>
+                                                        enforce applicable Terms of Service, including investigation of potential violations,
+                                                    </li>
+                                                    <li>
+                                                        detect, prevent, or otherwise address fraud, security or technical issues, and
+                                                    </li>
+                                                    <li>
+                                                        protect against harm to the rights, property or safety of HiringSolved, our users or the public as required or permitted by law.
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </p>
+                            <h3>
+                                Information security
+                            </h3>
+                            <p>
+                                We work hard to protect our services and our users from unauthorized access to or unauthorized alteration, disclosure or destruction of information we hold. In particular:
+                            </p>
+                            <div>
+                                <ul>
+                                    <li>
+                                        We use strong encryption for transferring and strong information.
+                                        <ul>
+                                            <li>
+                                                SSL for information encrypted in transit.
+                                            </li>
+                                            <li>
+                                                AES 256 for information encrypted at rest.
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li>
+                                        We regularly review our information collection, storage and processing practices, including physical security measures, to guard against unauthorized access to systems.
+                                    </li>
+                                    <li>
+                                        We regularly audit our systems and software.
+                                    </li>
+                                    <li>
+                                        We employ automated monitoring and mitigation technology to warn and potentially stop malicious activity
+                                    </li>
+                                </ul>
+                            </div>
+                            <h3>
+                                Scope
+                            </h3>
+                            <p>
+                                Our Privacy Policy applies to all of the services offered by CareerCircle, including services offered on other sites (such as integration partners), but excludes services that have separate privacy policies that do not incorporate this Privacy Policy.
+                            </p>
+                            <h3>
+                                Enforcement
+                            </h3>
+                            <p>
+                                We regularly review our compliance with our Privacy Policy. We also adhere to several self-regulatory frameworks. When we receive formal written complaints, we will contact the person who made the complaint to follow up. We work with the appropriate regulatory authorities, including local data protection authorities, to resolve any complaints regarding the transfer of personal data that we cannot resolve with our users directly.
+                            </p>
+                            <h3>
+                                Changes
+                            </h3>
+                            <p>
+                                Our Privacy Policy may change from time to time. We will not reduce your rights under this Privacy Policy without your explicit consent. We will post any privacy policy changes on this page and, if the changes are significant, we will provide a more prominent notice (including, for certain services, email notification of privacy policy changes). We will also keep prior versions of this Privacy Policy in an archive for your review.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
