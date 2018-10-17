@@ -491,12 +491,12 @@ body {
           color: #03264A; }
           .login-container .container .unified-container input::placeholder {
             color: #808080; }
-        .login-container .container .unified-container #forgotPassword {
-          display: none; }
         .login-container .container .unified-container #logonIdentifier {
           margin-top: 1rem; }
         .login-container .container .unified-container #password {
           margin-top: 1rem; }
+        .login-container .container .unified-container .password-label {
+          display: inline-block; }
         .login-container .container .unified-container .entry-item label {
           display: none; }
         .login-container .container .unified-container input[id^='extension_AgreeToCareerCircleTerms'],
