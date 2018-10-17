@@ -6,11 +6,10 @@
                     <div class="col-md-12">
                         <div class="error-hero">
                             <div class="error-header">
-                                Oops!
+                                Page not found.
                             </div>
                             <div class="error-sub-header">
-                                Unfortunately, something went wrong with your request. <br/>
-                                You can click <a href="javascript:void(0);" onclick="history.go(-1);">here</a> to retry your last request, or you can click @Html.ActionLink("here","Index","Home") to return to the home page.
+                                The requested URL <span>@ViewBag.InvalidPath</span> was not found.
                             </div>
                         </div>
                     </div>
