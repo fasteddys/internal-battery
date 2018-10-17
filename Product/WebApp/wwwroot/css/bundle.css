@@ -725,6 +725,20 @@ body .topic-hero-band .brand-button {
   }
 }
 @media (min-width: 0px) {
+  .signout-container .signout-message-container {
+    background-image: url("../images/medium_blue_background.jpg");
+    color: #fff;
+    background-size: cover;
+    padding: 2rem 0;
+  }
+  .signout-container .signout-message-container .signout-hero {
+    padding-bottom: 2rem;
+  }
+  .signout-container .signout-message-container .signout-hero .signout-header {
+    font-size: 2rem;
+  }
+}
+@media (min-width: 0px) {
   .checkout-page-container > div {
     padding: 2rem 0;
   }
