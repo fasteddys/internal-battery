@@ -206,7 +206,7 @@ namespace UpDiddy
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=ComingSoon}/{id?}");
+                    template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
 
