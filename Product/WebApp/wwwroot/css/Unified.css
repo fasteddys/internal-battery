@@ -680,7 +680,9 @@ button {
     }
 
 
-label[for=extension_AgreedToTermsAndConditions] {
+label[for=extension_AgreeToCareerCircleTerms],
+label[for=extension_AgreeToCareerCircleMarketing],
+label[for=extension_AgreeToCareerCircleMarketing_True] {
     display: none;
 }
  
