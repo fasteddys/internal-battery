@@ -52,7 +52,7 @@ namespace UpDiddy.Controllers
             return View(HomeViewModel);
         }
 
-        public IActionResult Terms()
+        public IActionResult TermsOfService()
         {
             return View();
         }
