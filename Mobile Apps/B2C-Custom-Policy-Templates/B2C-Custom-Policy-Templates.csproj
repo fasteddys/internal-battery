@@ -40,4 +40,5 @@
       <DependentUpon>Pages.unified.fr.resx</DependentUpon>
     </Compile>
   </ItemGroup>
+  <ProjectExtensions><VisualStudio><UserProperties Properties_4launchSettings_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>
 </Project>

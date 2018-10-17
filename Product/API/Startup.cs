@@ -13,10 +13,13 @@ using UpDiddyLib.Dto;
 using UpDiddyApi.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Hangfire;
+using UpDiddyApi.Workflow;
+using Hangfire.SqlServer;
+using System;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi
 {
- 
 
     public class Startup
     {
@@ -36,10 +39,11 @@ namespace UpDiddyApi
                 
             builder.AddEnvironmentVariables();
 
-            if (env.IsDevelopment())
+            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
             {
                 builder.AddUserSecrets<Startup>();
-            }            
+            }
+
             Configuration = builder.Build();
 
             // Rebuild the configuration now that have included user secrets 
@@ -51,14 +55,14 @@ namespace UpDiddyApi
               Configuration["VaultClientId"],
               Configuration["VaultClientSecret"]);
 
+
+            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
+            {
+                builder1.AddUserSecrets<Startup>();
+            }
+
+
             Configuration = builder1.Build();
-
-
-          
-
-
-
-
 
         }
 
@@ -85,11 +89,21 @@ namespace UpDiddyApi
             var SqlConnection = Configuration["CareerCircleSqlConnection"];         
             
             services.AddDbContext<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
-            services.AddHangfire(x => x.UseSqlServerStorage(SqlConnection));
+
+
+            var HangFireSqlConnection = Configuration["HangFireJimDev"];
+            services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
+            // Have the workflow monitor run every minute 
+             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
+             RecurringJob.AddOrUpdate(() => new WorkFlowMonitor().DoWork(), Cron.Minutely);
+    
 
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
-
+            // Add System Email   
+            services.AddSingleton<ISysEmail>( new SysEmail(Configuration) );
+            // Add System Email   
+            services.AddSingleton<ISysLog>(new SysLog(Configuration,new SysEmail(Configuration)));
             // Add framework services.
             services.AddMvc();
             // Add AutoMapper 

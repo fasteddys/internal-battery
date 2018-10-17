@@ -1019,6 +1019,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
+                    b.Property<string>("RegistrationUrl");
+
                     b.Property<int>("SubscriberId");
 
                     b.Property<int>("VendorId");
