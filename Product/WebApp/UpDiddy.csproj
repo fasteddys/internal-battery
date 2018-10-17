@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <RootNamespace>UpDiddy</RootNamespace>
     <AssemblyName>UpDiddy</AssemblyName>
     <UserSecretsId>abef43f4-c788-49be-b1c6-a651a01eea9c</UserSecretsId>
