@@ -14,8 +14,7 @@ using UpDiddyLib.Dto;
 namespace UpDiddyApi.Controllers  
 {
     [ApiController]    
-    // TODO Authorized 
-    // [Authorize]
+ 
     public class SubscriberController : ControllerBase
     {
         private readonly UpDiddyDbContext _db = null;
@@ -29,6 +28,7 @@ namespace UpDiddyApi.Controllers
 
         // GET: api/courses
         [HttpGet]
+        [Authorize]
         [Route("api/[controller]")]
         public IActionResult Get()
         {
@@ -44,6 +44,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         [Route("api/[controller]/{SubscriberGuid}")]
         public IActionResult Get(Guid SubscriberGuid)
         {
@@ -58,7 +59,7 @@ namespace UpDiddyApi.Controllers
 
         }
 
-        [HttpGet]
+        [HttpPost]
         [Authorize]
         [Route("api/[controller]/CreateSubscriber/{SubscriberGuid}/{SubscriberEmail}")]
         public IActionResult NewSubscriber(string SubscriberGuid, string SubscriberEmail)
