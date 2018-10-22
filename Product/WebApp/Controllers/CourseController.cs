@@ -84,25 +84,6 @@ namespace UpDiddy.Controllers
             return AssemblePromoCodeJSONResponse(Code, Course);
         }
 
-        private string AssemblePromoCodeJSONResponse(PromoCodeDto code, CourseDto course)
-        {
-            StringBuilder jsonString = new StringBuilder("{");
-            jsonString.Append("\"PromoValueFactor\": \"" + code.PromoValueFactor + "\",");
-            jsonString.Append("\"AmountOffCourse\": \"" + CalculatePriceOffOfCourse(course.Price, code.PromoValueFactor) + "\",");
-            jsonString.Append("\"NewCoursePrice\": \"" + CalculatePromoCodeDiscountedPrice(course.Price, code.PromoValueFactor) + "\"");
-            jsonString.Append("}");
-            return jsonString.ToString();
-        }
-
-        private Decimal? CalculatePromoCodeDiscountedPrice(Decimal? CoursePrice, Decimal PromoValueFactor)
-        {
-            return (CoursePrice - CalculatePriceOffOfCourse(CoursePrice, PromoValueFactor));
-        }
-
-        private Decimal CalculatePriceOffOfCourse(Decimal? CoursePrice, Decimal PromoValueFactor)
-        {
-            return (Math.Floor((Decimal)CoursePrice * PromoValueFactor * 100)) / 100;
-        }
 
         [HttpPost]
         public IActionResult Checkout(
@@ -138,8 +119,6 @@ namespace UpDiddy.Controllers
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
             CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
-
-
 
 
             // -----------------------  Braintree Integration  ------------------------------
@@ -224,7 +203,16 @@ namespace UpDiddy.Controllers
             
         }
 
-        public Boolean EnsureFormFieldsNotNullOrEmpty(
+        
+        public IActionResult EnrollmentSuccess()
+        {
+            return View();
+        }
+
+
+        #region Private Helpers
+
+        private Boolean EnsureFormFieldsNotNullOrEmpty(
             string BillingFirstName,
             string BillingLastName,
             string BillingZipCode,
@@ -233,7 +221,7 @@ namespace UpDiddy.Controllers
             string BillingCountry,
             string BillingAddress)
         {
-            if(BillingFirstName != null && !("").Equals(BillingFirstName)
+            if (BillingFirstName != null && !("").Equals(BillingFirstName)
                 && BillingLastName != null && !("").Equals(BillingLastName)
                 && BillingZipCode != null && !("").Equals(BillingZipCode)
                 && BillingCity != null && !("").Equals(BillingCity)
@@ -247,10 +235,28 @@ namespace UpDiddy.Controllers
             return false;
         }
 
-        public IActionResult EnrollmentSuccess()
+
+        private string AssemblePromoCodeJSONResponse(PromoCodeDto code, CourseDto course)
         {
-            return View();
+            StringBuilder jsonString = new StringBuilder("{");
+            jsonString.Append("\"PromoValueFactor\": \"" + code.PromoValueFactor + "\",");
+            jsonString.Append("\"AmountOffCourse\": \"" + CalculatePriceOffOfCourse(course.Price, code.PromoValueFactor) + "\",");
+            jsonString.Append("\"NewCoursePrice\": \"" + CalculatePromoCodeDiscountedPrice(course.Price, code.PromoValueFactor) + "\"");
+            jsonString.Append("}");
+            return jsonString.ToString();
         }
+
+        private Decimal? CalculatePromoCodeDiscountedPrice(Decimal? CoursePrice, Decimal PromoValueFactor)
+        {
+            return (CoursePrice - CalculatePriceOffOfCourse(CoursePrice, PromoValueFactor));
+        }
+
+        private Decimal CalculatePriceOffOfCourse(Decimal? CoursePrice, Decimal PromoValueFactor)
+        {
+            return (Math.Floor((Decimal)CoursePrice * PromoValueFactor * 100)) / 100;
+        }
+        #endregion
+
 
 
 

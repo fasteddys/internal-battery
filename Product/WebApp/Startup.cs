@@ -171,6 +171,9 @@ namespace UpDiddy
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }
 
+            if(env.IsProduction())
+                app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
+
             var supportedCultures = new[]
                 {
                 new CultureInfo("en-US"),

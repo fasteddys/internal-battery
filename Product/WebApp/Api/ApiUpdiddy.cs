@@ -61,7 +61,7 @@ namespace UpDiddy.Api
 
         public SubscriberDto Subscriber(Guid SubscriberGuid)
         {
-            return Get<SubscriberDto>("subscriber/" + SubscriberGuid);
+            return Get<SubscriberDto>("subscriber/" + SubscriberGuid,true);
         }
 
         public WozTermsOfServiceDto GetWozTermsOfService()
@@ -75,7 +75,7 @@ namespace UpDiddy.Api
 
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
         {
-            return Get<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);
+            return Post<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);
         }
 
         public PromoCodeDto GetPromoCode(string PromoCode)
