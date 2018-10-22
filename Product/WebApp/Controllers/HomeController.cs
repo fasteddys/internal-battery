@@ -52,7 +52,7 @@ namespace UpDiddy.Controllers
             return View(HomeViewModel);
         }
 
-        public IActionResult Terms()
+        public IActionResult TermsOfService()
         {
             return View();
         }
@@ -188,9 +188,16 @@ namespace UpDiddy.Controllers
         public IActionResult Error(string message)
         {
             ViewBag.Message = message;
+            Response.StatusCode = 500;
             return View();
         }
 
+        public IActionResult PageNotFound()
+        {
+            ViewBag.InvalidPath = this.HttpContext.Request.Path;
+            Response.StatusCode = 404;
+            return View();
+        }
 
         [HttpPost]
         public IActionResult SetLanguage(string culture, string returnUrl)

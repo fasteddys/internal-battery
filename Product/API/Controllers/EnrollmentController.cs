@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddyApi.Models;
@@ -31,35 +32,7 @@ namespace UpDiddyApi.Controllers
             _queue = new CCQueue("ccmessagequeue", _queueConnection);
         }
 
-        // Update the status of an enrolllment 
-        [HttpPut]
-        [Route("api/[controller]/UpdateEnrollmentStatus/{EnrollmentGuid}/{EnrollmentStatus}")]
-        public IActionResult UpdateEnrollmentStatus(string EnrollmentGuid, int EnrollmentStatus )
-        {
-            try
-            {
-                // Get the Enrollment Object 
-                Enrollment Enrollment = _db.Enrollment
-                     .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
-                     .FirstOrDefault();
-
-                if (Enrollment == null)
-                    return NotFound();
-
-                // Update the enrollment status and update the modify date 
-                Enrollment.EnrollmentStatusId = EnrollmentStatus;
-                Enrollment.ModifyDate = DateTime.Now;
-                _db.SaveChanges();
-                
-
-                return Ok(Enrollment.EnrollmentGuid);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status400BadRequest, ex);
-            }
-        }
-
+   
         [HttpPost]
         [Route("api/[controller]")]
         public IActionResult Post([FromBody] EnrollmentDto EnrollmentDto)
@@ -78,6 +51,7 @@ namespace UpDiddyApi.Controllers
             }
            
         }
+
 
     }
 }
