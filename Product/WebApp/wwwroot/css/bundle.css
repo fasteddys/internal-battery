@@ -121,6 +121,8 @@ a:hover {
 body nav {
   text-transform: uppercase;
   border-bottom: 1px solid #03264A; }
+  body nav a {
+    cursor: pointer; }
   body nav .navbar-brand {
     margin: 0; }
   body nav.navbar-light .navbar-nav .nav-link {
@@ -652,6 +654,31 @@ body {
         color: #4089A0; }
       .error-container .error-message-container .error-hero .error-sub-header span {
         color: #808080; } }
+@media (min-width: 0px) {
+  .profile-container .profile-hero {
+    padding: 6.5rem 0 2rem 0;
+    background-color: #03264A;
+    position: relative;
+    color: #fff; }
+    .profile-container .profile-hero .profile-headshot {
+      position: absolute;
+      bottom: -80px; }
+      .profile-container .profile-hero .profile-headshot img {
+        width: 200px;
+        border-radius: 100px;
+        border: 0.625rem solid #fff; }
+    .profile-container .profile-hero .profile-header-info .career-circle-profile-text {
+      margin-bottom: 1rem; }
+    .profile-container .profile-hero .profile-header-info .career-circle-profile-name {
+      font-size: 2.625rem;
+      line-height: 3rem; }
+    .profile-container .profile-hero .profile-header-info .career-circle-profile-email {
+      color: #4089A0; }
+  .profile-container .profile-body-container {
+    margin: 2rem 0; }
+    .profile-container .profile-body-container .dashed-line-boxes-container > div {
+      border-top: 1px dashed #4089A0;
+      padding-top: 2rem; } }
 /* Footer Styles */
 footer {
   font-size: .8125rem;

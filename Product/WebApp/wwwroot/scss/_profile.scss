@@ -1,0 +1,79 @@
+﻿@import '_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .profile-container {
+        .profile-hero {
+            padding: 6.5rem 0 2rem 0;
+            background-color: $color-secondary;
+            position: relative;
+            color: $color-white;
+
+            .profile-headshot {
+                position: absolute;
+                bottom: -80px;
+
+                img {
+                    width: 200px;
+                    border-radius: 100px;
+                    border: $rem-10 solid $color-white;
+                }
+            }
+
+            .profile-header-info {
+                .career-circle-profile-text {
+                    margin-bottom: 1rem;
+                }
+
+                .career-circle-profile-name {
+                    font-size: 2.625rem;
+                    line-height: 3rem;
+                }
+
+                .career-circle-profile-email{
+                    color: $color-primary;
+                }
+            }
+        }
+
+        .profile-body-container {
+            margin: 2rem 0;
+            .dashed-line-boxes-container{
+                > div{
+                    border-top: 1px dashed $color-primary;
+                    padding-top: 2rem;
+                }
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+    .profile-container {
+    }
+}
+
+// Small Styles
+@media (min-width: 576px) {
+    .profile-container {
+    }
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+    .profile-container {
+    }
+}
+
+// Large Styles
+@media (min-width: 992px) {
+    .profile-container {
+    }
+}
+
+//Extra Large Styles
+@media (min-width: 1200px) {
+    .profile-container {
+    }
+}

@@ -89,6 +89,11 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        public IActionResult Profile()
+        {
+            return View();
+        }
+
         [HttpPost]
         public IActionResult ContactUs(string ContactUsFirstName, 
             string ContactUsLastName, 
@@ -183,6 +188,13 @@ namespace UpDiddy.Controllers
 
             ViewData["Payload"] = $"{responseString}";            
             return View();
+        }
+
+        [HttpGet]
+        [Route("/Home/TierLevel")]
+        public string TierLevel()
+        {
+            return "{\"Tier\": \"1\"}";
         }
 
         public IActionResult Error(string message)

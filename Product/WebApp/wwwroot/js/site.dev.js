@@ -12231,6 +12231,22 @@ $(document).ready(function () {
     });
     */
 
+    $('#MyCircleHeaderButton').on('click', function () {
+        var getUrl = "/Home/TierLevel";
+        $.ajax({
+            url: getUrl, success: function (result) {
+                var resultAsJson = $.parseJSON(result);
+                var tier = resultAsJson.Tier;
+                if (tier === "2") {
+                    $('#exampleModalLong').modal();
+                }
+                else if (tier === "1") {
+                    window.location.href = "/Home/Profile";
+                }
+            }
+        });
+    });
+
     $('.play-button').on('click', function () {
         $(this).hide();
         $('.enrollment-success-video-thumbnail').hide();

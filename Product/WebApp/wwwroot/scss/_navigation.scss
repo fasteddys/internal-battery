@@ -3,7 +3,9 @@ body {
     nav {
         text-transform: uppercase;
         border-bottom: 1px solid $color-secondary-light;
-
+        a{
+            cursor: pointer;
+        }
         .navbar-brand {
             margin: 0;
         }
