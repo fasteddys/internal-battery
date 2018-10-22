@@ -18,6 +18,8 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
+using System.Net;
+using UpDiddy.Helpers.RewriteRules;
 
 namespace UpDiddy
 {
@@ -28,7 +30,7 @@ namespace UpDiddy
 
         public Startup(IHostingEnvironment env)
         {
-            
+
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -48,7 +50,7 @@ namespace UpDiddy
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
+
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddAuthentication(sharedOptions =>
@@ -56,7 +58,7 @@ namespace UpDiddy
                 sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
 
-            })      
+            })
             .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
             .AddCookie();
 
@@ -65,7 +67,7 @@ namespace UpDiddy
             {
                 options.Filters.Add(new RequireHttpsAttribute());
             });*/
-            
+
 
             #region AddLocalizationß
             services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -125,7 +127,7 @@ namespace UpDiddy
 
             // Adds a default in-memory implementation of IDistributedCache.
             //services.AddDistributedMemoryCache();
-            
+
 
             Console.WriteLine("Redis name: " + Configuration.GetValue<string>("redis:name") + ", Redis host: " + Configuration.GetValue<string>("redis:host"));
             Console.WriteLine("B2C Secret: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientSecret") + ", B2C ID: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientId"));
@@ -150,7 +152,6 @@ namespace UpDiddy
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-           
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
@@ -159,7 +160,7 @@ namespace UpDiddy
             app.UseRewriter(options);
             */
 
-            if (env.IsDevelopment())
+            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
@@ -167,10 +168,14 @@ namespace UpDiddy
             else
             {
                 app.UseExceptionHandler("/Home/Error");
+                app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }
 
+            if(env.IsProduction())
+                app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
+
             var supportedCultures = new[]
-            {
+                {
                 new CultureInfo("en-US"),
                 new CultureInfo("en-AU"),
                 new CultureInfo("en-GB"),
@@ -181,7 +186,7 @@ namespace UpDiddy
                 new CultureInfo("fr-FR"),
                 new CultureInfo("fr")
             };
- 
+
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 DefaultRequestCulture = new RequestCulture("fr"),
@@ -196,7 +201,7 @@ namespace UpDiddy
                 context.Response.Headers["Access-Control-Allow-Origin"] = "https://login.microsoftonline.com";
                 return next.Invoke();
             });
-
+        
             app.UseStaticFiles();
             app.UseSession();
             app.UseAuthentication();
@@ -206,13 +211,18 @@ namespace UpDiddy
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=ComingSoon}/{id?}");
+                    template: "{controller=Home}/{action=Index}/{id?}");
+                routes.MapRoute(
+                    "NotFound",
+                    "{*url}",
+                    new { controller = "Home", action = "PageNotFound" }
+                );
             });
         }
 
 
 
-       
+
 
 
 
