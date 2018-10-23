@@ -19,5 +19,8 @@ namespace UpDiddyApi.Models
         [Required]
         public string PromoName { get; set; }
         public string PromoDescription { get; set; }
+        public int NumberOfRedemptions { get; set; }
+        public int MaxAllowedNumberOfRedemptions { get; set; }
+        public virtual PromoType PromoType { get; set; }
     }
 }

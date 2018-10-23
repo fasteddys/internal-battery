@@ -11,7 +11,7 @@ namespace UpDiddyApi.Models
         public int PromoTypeId { get; set; }
         public Guid? PromoTypeGuid { get; set; }
         [Required]
-        public string PromoTypeName { get; set; }
-        public string PromoTypeDescription { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
     }
 }
