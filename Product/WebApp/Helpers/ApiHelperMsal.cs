@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System.Text.Encodings;
 using System.IO;
 using System.Text;
+using UpDiddyLib.Dto;
 
 namespace UpDiddy.Helpers
 {
@@ -63,9 +64,9 @@ namespace UpDiddy.Helpers
             return Response.Result;
         }
 
-        public string Post<T>(T Body, string ApiAction, bool Authorized = false)
+        public T Post<T>(BaseDto Body, string ApiAction, bool Authorized = false)
         {
-            
+
             
             string jsonToSend = "{}";
             try
@@ -76,7 +77,9 @@ namespace UpDiddy.Helpers
             {
 
             }
-            return _PostAsync(jsonToSend, ApiAction, Authorized).ToString();
+            Task<string> Response = _PostAsync(jsonToSend, ApiAction, Authorized);
+            T rval = JsonConvert.DeserializeObject<T>(Response.Result);
+            return rval;
             
         }
 
@@ -182,14 +185,14 @@ namespace UpDiddy.Helpers
 
         }
 
-        private async Task<HttpStatusCode> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
+        private async Task<string> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
         {
             string ApiUrl = _ApiBaseUri + ApiAction;
             var client = new HttpClient();
             var request = PostRequest(ApiAction, JsonToSend);
             var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            return response.StatusCode;
+            string responseString = await response.Content.ReadAsStringAsync();
+            return responseString;
             
             
         }

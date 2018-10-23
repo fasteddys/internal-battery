@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UpDiddy.Helpers.Braintree
+namespace UpDiddyLib.Helpers.Braintree
 {
     public interface IBraintreeConfiguration
     {

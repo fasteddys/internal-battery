@@ -68,9 +68,9 @@ namespace UpDiddy.Api
         {
             return Get<WozTermsOfServiceDto>("woz/TermsOfService/", false);
         }
-        public string EnrollStudentAndObtainEnrollmentGUID(EnrollmentDto enrollmentDto)
+        public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentDto enrollmentDto)
         {
-            return Post<EnrollmentDto>(enrollmentDto, "enrollment/", false);
+            return Post<Guid>(enrollmentDto, "enrollment/", false);
         }
 
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
@@ -81,6 +81,11 @@ namespace UpDiddy.Api
         public PromoCodeDto GetPromoCode(string PromoCode)
         {
             return Get<PromoCodeDto>("promocode/" + PromoCode, false);
+        }
+
+        public BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto)
+        {
+            return Post<BraintreeResponseDto>(BraintreePaymentDto, "enrollment/ProcessBraintreePayment", true);
         }
 
     }

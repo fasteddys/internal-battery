@@ -10,7 +10,7 @@ $(document).ready(function () {
             $('.billing-info-container input, .billing-info-container select').prop('required', true);
         }
     });
-    /*
+    
     $("#TermsOfServiceCheckbox").change(function () {
         if (this.checked) {
             $('#EnrollmentSubmitButton').prop('disabled', false);
@@ -19,7 +19,7 @@ $(document).ready(function () {
             $('#EnrollmentSubmitButton').prop('disabled', true);
         }
     });
-    */
+    
 
     $('.play-button').on('click', function () {
         $(this).hide();
