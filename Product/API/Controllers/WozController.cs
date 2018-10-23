@@ -66,155 +66,115 @@ namespace UpDiddyApi.Controllers
 
         }
 
-        /*
-        // TODO THIS ENDPOINT MUST BE REMOVED!!!!
-        // GET: api/<controller>
+
         [HttpGet]
-        [Route("api/[controller]/LoadWozCourses")]
-        public async Task<IActionResult> LoadWozCourses()
+        // TODO Authorize [Authorize]
+        // TODO Cache to every 10 minutes 
+        [Route("api/[controller]/CourseSchedule/{CourseCode}")]
+        public async Task<IActionResult> CourseSchedule(string CourseCode)
         {
 
+            int MonthsLookAhead = 6;
+            int.TryParse(_configuration["Woz:CourseScheduleMonthLookahead"],out MonthsLookAhead) ;
 
-               string[] CourseCodes = {  "SWD100","SWD101","SWD102-CS","SWD102-JV","SWD103-AN","SWD103-RT",
-                                         "SWD104-CS","SWD104-JS","SWD104-JV","SWD105","SWD106-RW","SWD107-AG",
-                                         "SWD108-DE","SWD108-WS","DSO101","DSO102","DSO103-ME","DSO104","DSO105","DSO106-ML",
-                                         "DSO106-MO","DSO107","DSO109","CSO100","CSO101","CSO102","CSO103","CSO104","CSO105","CSO108"
-                                      };
-
-
-            // string[] CourseCodes = { "SWD100" };
-
-
-
-            string Name = string.Empty;
-            string CourseCode = string.Empty;
-            string Description = string.Empty;
-            string Mp4 = string.Empty;
-            string Mp4_720 = string.Empty;
-            string Mp4_540 = string.Empty;
-            string Mp4_360 = string.Empty;
-            string ResourceURI = string.Empty;
-            string ResourceKey = string.Empty;
-
-            string CurrentCourseCode = string.Empty;
-            string Json = string.Empty;
-
-            foreach (string code in CourseCodes)
-                {
-                    try
-                    {
-                        CurrentCourseCode = code;
-                        // TODO Blow away all current courses 
-                       
-
-                        Json = await GetCourseJson(code);
-                        var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(Json);
-                        ParseWozCourse(WozO, ref Description, ref Name, ref CourseCode, ref Mp4, ref Mp4_720, ref Mp4_540, ref Mp4_360, ref ResourceURI, ref ResourceKey);
-                        Json = await GetCourseDescriptionJson(ResourceURI);
-
-                        JObject WozJson = JObject.Parse(Json);
-                        Newtonsoft.Json.Linq.JToken CourseDescription = WozJson[ResourceKey];
-                        Description = CourseDescription.ToString();
-                        Description = Description.Replace("<h1>Description</h1>", string.Empty);
-
-                        Description = Utils.RemoveHTML(Description);
-                        Description = Utils.RemoveNewlines(Description);
-
-                        Course NewCourse = new Course()
-                        {
-                            CourseId = 0,
-                            CourseGuid = Guid.NewGuid(),
-                            Description = Description,
-                            Code = CourseCode,
-                            VideoUrl = Mp4_720,
-                            Name = Name,
-                            IsDeleted = 0,
-                            ModifyDate = DateTime.Now,
-                            CreateDate = DateTime.Now,
-                            Slug = Name.Trim().Replace(" ", "-")
-                        };
-                        _db.Add(NewCourse);
-                        Console.WriteLine(CurrentCourseCode + " is good");
-                }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(CurrentCourseCode + " has failed.");
-                        Console.WriteLine("Returned Json: " + Json);
-                }
-
-            }
-         
-           _db.SaveChanges();           
-            return Ok();
-
-        }
-
+            long UTCStartDate = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
+            long UTCEndDate = ((DateTimeOffset)DateTime.Now.AddMonths(MonthsLookAhead)).ToUnixTimeMilliseconds();
+            HttpClient client = new HttpClient();
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"courses/{CourseCode}/schedule?startDateUTC={UTCStartDate.ToString()}&endDateUTC={UTCEndDate.ToString()}");
  
-
-        private bool ParseWozCourse( dynamic WozO, ref string Description,
-                                    ref string Name, ref string CourseCode,
-                                    ref string Mp4, ref string Mp4_720, 
-                                    ref string Mp4_540, ref string Mp4_360,
-                                    ref string ResourceURI, ref string ResourceKey)
-        {
-
-            Description = WozO.description.ToString();
-            Name = WozO.name.ToString();
-            CourseCode = WozO.courseCode.ToString();
-
-            foreach (var appendix in WozO.appendices)
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            HttpResponseMessage response = await client.SendAsync(request);
+            var ResponseJson = await response.Content.ReadAsStringAsync();
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                var AType = (int)appendix.appendixType;
-                
-                if (AType == 1)
+                var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                JArray StartDatesJsonArray = WozO.startDatesUTC;
+
+                IList<long> CourseStartDatesUtc = null;
+                try
                 {
-                    ResourceURI = appendix.resourceUri;
-                    ResourceKey = appendix.resourceKey;
-
-                    foreach (var attr in appendix.attributes)
-                    {
-                        if (attr.key == "video-url-mp4")
-                            Mp4 = attr.value.ToString();
-                        else if (attr.key == "video-url-mp4-720")
-                            Mp4_720 = attr.value.ToString();
-                        else if (attr.key == "video-url-mp4-540")
-                            Mp4_540 = attr.value.ToString();
-                        else if (attr.key == "video-url-mp4-360")
-                            Mp4_360 = attr.value.ToString();
-                    }
+                    CourseStartDatesUtc = StartDatesJsonArray.Select(jv => (long)jv).ToList();
                 }
+                catch{}
+
+                WozCourseScheduleDto CourseSchedule = new WozCourseScheduleDto()
+                {
+                    CourseCode = CourseCode,
+                    StartDatesUTC = CourseStartDatesUtc
+                };
+
+                return Ok(CourseSchedule);
             }
-
-            return true;
+            else
+                return StatusCode((int)response.StatusCode);
         }
 
 
-        private async Task<string> GetCourseDescriptionJson(string ResourceUri)
+
+
+
+
+        [HttpGet]
+        // TODO Authorize [Authorize]
+        // TODO Cache to every 10 minutes 
+        [Route("api/[controller]/CourseStatus/{SubscriberGuid}/{EnrollmentGuid}")]
+        public async Task<IActionResult> CourseStatus(string SubscriberGuid, string EnrollmentGuid)
         {
-            HttpClient client = new HttpClient();
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ResourceUri);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
-            HttpResponseMessage response = await client.SendAsync(request);
-            var ResponseJson = await response.Content.ReadAsStringAsync();
-            return ResponseJson;
 
+            // Get the Enrollment Object 
+            Enrollment Enrollment = _db.Enrollment
+                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                 .FirstOrDefault();
+
+            if (Enrollment == null)
+                return NotFound();
+
+            // Get the woz course enrollment 
+            WozCourseEnrollment WozEnrollment = _db.WozCourseEnrollment
+                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                 .FirstOrDefault();
+
+            if (WozEnrollment == null)
+                return NotFound();
+
+
+            // Get the woz course enrollment 
+            Subscriber CourseSubscriber = _db.Subscriber
+                 .Where(t => t.IsDeleted == 0 && t.SubscriberGuid.ToString() == SubscriberGuid)
+                 .FirstOrDefault();
+
+            if (CourseSubscriber == null)
+                return NotFound();
+
+            if (Enrollment.SubscriberId != CourseSubscriber.SubscriberId)
+                return Unauthorized();
+
+           HttpClient client = new HttpClient();
+           HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"sections/{WozEnrollment.SectionId}/enrollments/{WozEnrollment.WozEnrollmentId}");
+           client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+           HttpResponseMessage response = await client.SendAsync(request);
+           var ResponseJson = await response.Content.ReadAsStringAsync();
+           if ( response.StatusCode == System.Net.HttpStatusCode.OK)
+           {
+                var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                string LetterGrade = WozO.progress.letterGrade;
+                string PercentageGrade = WozO.progress.percentageGrade;
+                string ActivitiesCompleted = WozO.progress.activitiesCompleted;
+                string ActivitiesTotal = WozO.progress.activitiesTotal;
+                WozCourseProgress CourseProgress = new WozCourseProgress()
+                {
+                    LetterGrade = LetterGrade,
+                    PercentageGrade = int.Parse(PercentageGrade),
+                    ActivitiesCompleted = int.Parse(ActivitiesCompleted),
+                    ActivitiesTotal = int.Parse(ActivitiesTotal)
+                };
+                return Ok(CourseProgress);
+            }
+           else 
+                return StatusCode((int) response.StatusCode);          
         }
 
 
-
-        private async Task<string> GetCourseJson(string CourseCode)
-        {
-            HttpClient client = new HttpClient();
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + "courses/" + CourseCode);
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
-            HttpResponseMessage response = await client.SendAsync(request);
-            var ResponseJson = await response.Content.ReadAsStringAsync();
-            return ResponseJson;
-
-        }
-
-    
-    */
 
         #endregion
 

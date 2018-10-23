@@ -25,6 +25,11 @@ namespace UpDiddyLib.Helpers
 
         }
 
+        static public DateTime UnixMillisecondsToLocalDatetime(long milliseconds)
+        { 
+            DateTimeOffset DatTimeOff = DateTimeOffset.FromUnixTimeMilliseconds(milliseconds).ToLocalTime();
+            return DatTimeOff.DateTime;
+        }
 
 
     }
