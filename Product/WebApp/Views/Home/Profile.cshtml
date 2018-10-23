@@ -1,4 +1,9 @@
-﻿<div class="profile-container">
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model ProfileViewModel
+
+<div class="profile-container">
     <div class="row profile-hero">
         <div class="col-md-12">
             <div class="container">
@@ -10,10 +15,13 @@
                         <div class="row profile-header-info">
                             <div class="offset-md-3 col-md-5">
                                 <div class="career-circle-profile-text">My CareerCircle Profile</div>
-                                <div id="ProfileName" class="career-circle-profile-name">John Smith</div>
+                                <div id="ProfileName" class="career-circle-profile-name">
+                                    <span id="ProfileFirstName">@(string.IsNullOrEmpty(Model.Subscriber.FirstName) ? "CareerCircle User" : Model.Subscriber.FirstName)</span>
+                                    <span id="ProfileLastName">@(string.IsNullOrEmpty(Model.Subscriber.LastName) ? "" : Model.Subscriber.LastName)</span>
+                                </div>
                                 <div class="career-circle-profile-email">
                                     <i class="fa fa-envelope" aria-hidden="true"></i>
-                                    johnsmith@careercircle.com
+                                    @Model.Subscriber.Email
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -44,24 +52,52 @@
                         <div class="dashed-line-boxes-container">
                             <div class="edit-personal-info-container">
                                 <div class="personal-info-header">
-                                    <h2>Contact Information</h2>
+                                    <div class="row">
+                                        <div class="col-md-6 no-padding">
+                                            <h2>Contact Information</h2>
+                                        </div>
+                                        <div class="col-md-6 container-align-right no-padding">
+                                            <button class="btn btn-primary" type="button" id="EditProfileInfoButton" >
+                                                Edit
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
                                 </div>
-                                <div class="personal-info-form">
-                                    <form id="PersonalInfoForm">
+                                <div class="personal-info-display">
+                                    <ul>
+                                        <li>
+                                            First name: <span id="ProfileFirstNameDisplay">@Model.DisplayedFirstName</span>
+                                        </li>
+                                        <li>
+                                            Last name: <span id="ProfileLastNameDisplay">@Model.DisplayedLastName</span>
+                                        </li>
+                                        <li>
+                                            Address: <span id="ProfileAddressDisplay">@Model.DisplayedAddress</span>
+                                        </li>
+                                        <li>
+                                            Phone number: <span id="ProfilePhoneNumberDisplay">@Model.DisplayedPhone</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="personal-info-form hidden" id="PersonalInfoForm">
+                                    <form asp-controller="Home" asp-action="UpdateProfileInformation" id="PersonalInfoForm">
                                         <div class="form-row">
                                             <div class="form-group col-md-6">
-                                                <input type="text" class="form-control" name="ProfileFirstName" id="ProfileFirstName" placeholder="First Name" required>
+                                                <input type="text" class="form-control" name="ProfileFirstName" id="ProfileFirstName" asp-for="UpdatedFirstName" placeholder="@Model.FirstNamePlaceholder" required>
                                             </div>
                                             <div class="form-group col-md-6">
-                                                <input type="text" class="form-control" name="ProfileLastName" id="ProfileLastName" placeholder="Last Name" required>
+                                                <input type="text" class="form-control" name="ProfileLastName" id="ProfileLastName" asp-for="UpdatedLastName" placeholder="@Model.LastNamePlaceholder" required>
                                             </div>
                                             <div class="form-group col-md-6">
-                                                <input type="text" class="form-control" name="ProfileEmail" id="ProfileEmail" placeholder="Email" required>
+                                                <input type="text" class="form-control" name="ProfileAddress" id="ProfileAddress" asp-for="UpdatedAddress" placeholder="@Model.AddressPlaceholder" required>
                                             </div>
                                             <div class="form-group col-md-6">
-                                                <input type="text" class="form-control" name="ProfilePhone" id="ProfilePhone" placeholder="Phone" required>
+                                                <input type="text" class="form-control" name="ProfilePhone" id="ProfilePhone" asp-for="UpdatedPhoneNumber" placeholder="@Model.PhonePlaceholder" required>
                                             </div>
                                         </div>
+
+                                        <button type="submit" id="EditProfileInfoSubmit" class="btn btn-primary">Submit</button>
                                     </form>
                                 </div>
                             </div>

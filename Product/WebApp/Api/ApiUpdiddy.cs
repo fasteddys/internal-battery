@@ -83,6 +83,11 @@ namespace UpDiddy.Api
             return Get<PromoCodeDto>("promocode/" + PromoCode, false);
         }
 
+        public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
+        {
+            return Post<BasicResponseDto>(Subscriber, "", false);
+        }
+
     }
 }
 

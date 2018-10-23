@@ -110,6 +110,9 @@ input {
 .no-margin {
   margin: 0; }
 
+.hidden {
+  display: none; }
+
 a:hover {
   text-decoration: none; }
 
@@ -678,7 +681,10 @@ body {
     margin: 2rem 0; }
     .profile-container .profile-body-container .dashed-line-boxes-container > div {
       border-top: 1px dashed #4089A0;
-      padding-top: 2rem; } }
+      padding-top: 2rem; }
+    .profile-container .profile-body-container .personal-info-display ul {
+      padding: 0;
+      list-style: none; } }
 /* Footer Styles */
 footer {
   font-size: .8125rem;

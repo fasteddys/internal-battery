@@ -91,7 +91,27 @@ namespace UpDiddy.Controllers
 
         public IActionResult Profile()
         {
-            return View();
+            GetSubscriber();
+            ProfileViewModel ProfileViewModel = new ProfileViewModel(_configuration, this.subscriber);
+            return View(ProfileViewModel);
+        }
+
+        [HttpPost]
+        public BasicResponseDto UpdateProfileInformation(string UpdatedFirstName, string UpdatedLastName, string UpdatedAddress, string UpdatedPhoneNumber)
+        {
+            SubscriberDto Subscriber = new SubscriberDto
+            {
+                FirstName = UpdatedFirstName,
+                LastName = UpdatedLastName,
+                Address = UpdatedAddress,
+                PhoneNumber = UpdatedPhoneNumber
+            };
+            API.UpdateProfileInformation(Subscriber);
+            return new BasicResponseDto
+            {
+                StatusCode = "200",
+                Description = "OK"
+            };
         }
 
         [HttpPost]

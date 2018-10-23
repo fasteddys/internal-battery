@@ -21,20 +21,22 @@ $(document).ready(function () {
     });
     */
 
-    $('#MyCircleHeaderButton').on('click', function () {
-        var getUrl = "/Home/TierLevel";
+    $('#EditProfileInfoButton').on('click', function () {
+        $('.personal-info-display').slideToggle();
+        $('#PersonalInfoForm').slideToggle();
+    });
+
+    $('#PersonalInfoForm').submit(function (e) {
         $.ajax({
-            url: getUrl, success: function (result) {
-                var resultAsJson = $.parseJSON(result);
-                var tier = resultAsJson.Tier;
-                if (tier === "1") {
-                    $('#exampleModalLong').modal();
-                }
-                else if (tier === "2") {
-                    window.location.href = "/Home/Profile";
-                }
+            type: "POST",
+            url: '/home/UpdateProfileInformation',
+            data: $(this).serialize(),
+            success: function (html) {
+                location.reload();
             }
         });
+        e.preventDefault();
+
     });
 
     $('.play-button').on('click', function () {
