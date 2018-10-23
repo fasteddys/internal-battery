@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    public class SubscriberPromoCode
+    public class SubscriberPromoCode : BaseModel
     {
         public int SubscriberPromoCodeId { get; set; }
         public Guid? SubscriberPromoCodeGuid { get; set; }

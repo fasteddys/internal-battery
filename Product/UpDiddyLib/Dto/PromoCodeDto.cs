@@ -15,5 +15,6 @@ namespace UpDiddyLib.Dto
         public Decimal Discount { get; set; }
         public Decimal FinalCost { get; set; }
         public Decimal PromoValueFactor { get; set; } // todo: remove this once references have been updated
+        
     }
 }

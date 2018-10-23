@@ -55,7 +55,12 @@ namespace UpDiddyApi.Controllers
         {
             try
             {
-                // todo: refactor this code. move business rules to IValidatableObject in Dto?
+                /*  todo: refactor this code. move business rules to IValidatableObject in Dto? to do this, i think we would need to
+                *   use a custom value resolver in automapper to transform x model objects () into a PromoCodeDto. once all of the necessary
+                *   properties exist within that Dto, then we could move all of the validation to:
+                *       IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+
+                */
                 PromoCode promoCode = _db.PromoCode
                     .Where(p => p.Code == code)
                     .FirstOrDefault();

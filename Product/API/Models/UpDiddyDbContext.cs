@@ -88,6 +88,8 @@ namespace UpDiddyApi.Models
         public DbSet<RedemptionStatus> RedemptionStatus { get; set; }
         public DbSet<PromoCodeRedemption> PromoCodeRedemption { get; set; }
         public DbSet<EnrollmentLog> EnrollmentLog { get; set; }
+        public DbSet<Country> Country { get; set; }
+        public DbSet<State> State { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
