@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using UpDiddyApi.Models;
+using UpDiddyLib.Helpers;
 using UpDiddyLib.MessageQueue;
 
 namespace UpDiddyApi.Business
@@ -17,10 +18,11 @@ namespace UpDiddyApi.Business
         protected internal CCQueue _queue = null;
         protected internal string _apiBaseUri = String.Empty;
         protected internal string _accessToken = String.Empty;
-        protected internal WozTransactionLog _log = null;
+        protected internal WozTransactionLog _translog = null;
+        protected internal ISysLog _syslog = null;
         #endregion
-       
-        
+
+
 
     }
 }

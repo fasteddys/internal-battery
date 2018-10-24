@@ -11,6 +11,8 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using Hangfire;
 using UpDiddyApi.Workflow;
+using UpDiddyApi.Business;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers
 {
@@ -22,11 +24,13 @@ namespace UpDiddyApi.Controllers
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
-        public TopicController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration)
+        private readonly ISysLog _syslog;
+        public TopicController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysLog sysLog)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
+            _syslog = sysLog;
          
         }
   
@@ -44,7 +48,11 @@ namespace UpDiddyApi.Controllers
 
 
             // TODO remove test code 
-           //  BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem("00000000-0000-0000-0000-000000000001"));
+            //  BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem("00000000-0000-0000-0000-000000000001"));
+
+//            WozInterface wi = new WozInterface(_db,_mapper,_configuration,_syslog);
+  //          wi.ReconcileFutureEnrollment("00000000-0000-0000-0000-000000000001");
+
            
             return Ok(rval) ;
             

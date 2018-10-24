@@ -7,28 +7,40 @@ namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
-        static public string RemoveHTML( string str)
+        static public string RemoveHTML( string Str)
         {
-            return Regex.Replace(str, "<.*?>", String.Empty);
+            return Regex.Replace(Str, "<.*?>", String.Empty);
         }
 
-        static public string RemoveNewlines(string str)
+        static public string RemoveNewlines(string Str)
         {
-            return Regex.Replace(str, "\r\n", String.Empty);
+            return Regex.Replace(Str, "\r\n", String.Empty);
         }
 
-        static public string RemoveRedundantSpaces(string str)
+        static public string RemoveRedundantSpaces(string Str)
         {
             RegexOptions options = RegexOptions.None;
             Regex regex = new Regex("[ ]{2,}", options);
-            return regex.Replace(str.Trim(), " ");
+            return regex.Replace(Str.Trim(), " ");
 
         }
 
-        static public DateTime UnixMillisecondsToLocalDatetime(long milliseconds)
+        static public DateTime UnixMillisecondsToLocalDatetime(long Milliseconds)
         { 
-            DateTimeOffset DatTimeOff = DateTimeOffset.FromUnixTimeMilliseconds(milliseconds).ToLocalTime();
+            DateTimeOffset DatTimeOff = DateTimeOffset.FromUnixTimeMilliseconds(Milliseconds).ToLocalTime();
             return DatTimeOff.DateTime;
+        }
+
+        static public long CurrentTimeInUnixMilliseconds()
+        {
+            long rval = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            return rval;
+        }
+
+        static public long CurrentTimeInUnixSeconds()
+        {
+            long rval = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            return rval;
         }
 
 
