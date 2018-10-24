@@ -12,6 +12,7 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace UpDiddyApi.Controllers
 {
@@ -41,7 +42,7 @@ namespace UpDiddyApi.Controllers
             IList<PromoCodeDto> rval = null;
             rval = _db.PromoCode
                 .Where(t => t.IsDeleted == 0)
-                .ProjectTo<PromoCodeDto>()
+                .ProjectTo<PromoCodeDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
             return Ok(rval);
@@ -51,17 +52,21 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         [HttpGet]
         [Route("api/[controller]/{code}/{courseGuid}/{subscriberGuid}")]
-        public IActionResult PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
+        public IActionResult PromoCodeValidation(string code, string courseGuid, string subscriberGuid, bool isRedemptionStarted = false)
         {
             try
             {
                 /*  todo: refactor this code. move business rules to IValidatableObject in Dto? to do this, i think we would need to
-                *   use a custom value resolver in automapper to transform x model objects () into a PromoCodeDto. once all of the necessary
-                *   properties exist within that Dto, then we could move all of the validation to:
+                *   use a custom value resolver in automapper to transform 5 model objects (PromoCode, Course, CoursePromoCode, 
+                *   VendorPromoCode, SubscriberPromoCode) into a PromoCodeDto. once all of the necessary properties exist within that 
+                *   Dto, then we could move all of the validation to:
                 *       IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-
                 */
+
+                #region business logic to refactor
+
                 PromoCode promoCode = _db.PromoCode
+                    .Include(p => p.PromoType)
                     .Where(p => p.Code == code)
                     .FirstOrDefault();
 
@@ -94,18 +99,13 @@ namespace UpDiddyApi.Controllers
                     .Where(cpc => cpc.PromoCodeId == promoCode.PromoCodeId)
                     .ToList();
 
-                // todo: test the following use cases
-                // course promo code does not exist for this course. this is ok
-                // course promo code does not exist for this promo code. this is ok
-                // course promo code exists and matches this promo code but it does not match the course. this is not ok
-                // course promo code exists for this course, but does not match the promo code we are using. this is ok
                 if (courseRestrictionsForThisPromoCode.Any() && !courseRestrictionsForThisPromoCode.Any(r => r.CourseId == course.CourseId))
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this course." });
 
                 List<VendorPromoCode> vendorRestrictionsForThisPromoCode = _db.VendorPromoCode
                     .Where(vpc => vpc.PromoCodeId == promoCode.PromoCodeId)
                     .ToList();
-                
+
                 if (vendorRestrictionsForThisPromoCode.Any() && !vendorRestrictionsForThisPromoCode.Any(vpc => vpc.VendorId == course.VendorId))
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this vendor." });
 
@@ -124,14 +124,14 @@ namespace UpDiddyApi.Controllers
 
                 if (subscriberRestrictionsForThisPromoCode.Any() && !subscriberRestrictionsForThisPromoCode.Any(spc => spc.SubscriberId == subscriber.SubscriberId))
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this subscriber." });
+                #endregion
 
-                // otherwise, promo code is valid - calculate discount and final cost
                 PromoCodeDto validPromoCode = _mapper.Map<PromoCodeDto>(promoCode);
                 validPromoCode.IsValid = true;
-               switch( promoCode.PromoType.Name)
+                switch (promoCode.PromoType.Name)
                 {
                     case "Dollar Amount":
-                        validPromoCode.Discount = !course.Price.HasValue ? 0 : Math.Max(0, course.Price.Value - promoCode.PromoValueFactor);
+                        validPromoCode.Discount = !course.Price.HasValue ? 0 : Math.Max(0, promoCode.PromoValueFactor);
                         break;
                     case "Percent Off":
                         validPromoCode.Discount = !course.Price.HasValue ? 0 : Math.Max(0, Math.Round(course.Price.Value * promoCode.PromoValueFactor, 2, MidpointRounding.ToEven));
