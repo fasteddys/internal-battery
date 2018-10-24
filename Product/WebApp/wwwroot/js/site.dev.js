@@ -12249,11 +12249,11 @@ $(document).ready(function () {
                 url: getUrl, success: function (result) {
                     if (result.validationMessage !== null) {
                         // show/hide conditionally if property has value
-                        $('#ValidationMessage').show();
+                        $('.promotional-code-validation').show();
                         $('#ValidationMessage').html(result.validationMessage);
                     } else {
-                        $('#ValidationMessage').hide();
-                        $('#PromoCodeTotal').html("-$" + result.Discount);
+                        $('.promotional-code-validation').hide();
+                        $('#PromoCodeTotal').html("-$" + result.discount);
                         $('#CourseTotal').html(result.FinalCost);
                         $('#PromoCodeRedemptionGuid').val(result.promoCodeRedemptionGuid);
                     }

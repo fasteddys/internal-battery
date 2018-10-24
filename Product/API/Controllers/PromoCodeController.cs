@@ -142,6 +142,26 @@ namespace UpDiddyApi.Controllers
 
                 validPromoCode.FinalCost = !course.Price.HasValue ? 0 : course.Price.Value - validPromoCode.Discount;
 
+                validPromoCode.PromoCodeRedemptionGuid = Guid.NewGuid();
+
+                _db.PromoCodeRedemption.Add(new PromoCodeRedemption()
+                {
+                    CreateDate = DateTime.UtcNow,
+                    CreateGuid = Guid.NewGuid(),
+                    IsDeleted = 0,
+                    PromoCodeRedemptionGuid = validPromoCode.PromoCodeRedemptionGuid,
+                    RedemptionStatusId = 1, // "In Process"
+                    ValueRedeemed = validPromoCode.Discount,
+                    CourseId = course.CourseId,
+                    CourseGuid = course.CourseGuid.Value, // todo: remove this pending discussion with Jim/Brent
+                    PromoCodeId = promoCode.PromoCodeId,
+                    PromoCodeGuid = promoCode.PromoCodeGuid.Value, // todo: remove this pending discussion with Jim/Brent
+                    SubscriberId = subscriber.SubscriberId,
+                    SubscriberGuid = subscriber.SubscriberGuid.Value, // todo: remove this pending discussion with Jim/Brent
+                });
+
+                _db.SaveChanges();
+                
                 return Ok(validPromoCode);
             }
             catch (Exception e)

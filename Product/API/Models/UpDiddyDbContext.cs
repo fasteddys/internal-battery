@@ -99,6 +99,8 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<PromoCode>()
                 .Property(pc => pc.MaxAllowedNumberOfRedemptions)
                 .HasDefaultValue(1);
+            modelBuilder.Entity<PromoCodeRedemption>()
+                .HasIndex(i => new { i.PromoCodeId, i.SubscriberId, i.CourseId, i.RedemptionStatusId }).IsUnique();
 
             modelBuilder.Entity<RedemptionStatus>().HasData(
                 new RedemptionStatus()
@@ -148,6 +150,8 @@ namespace UpDiddyApi.Models
                     PromoTypeGuid = Guid.NewGuid(),
                     PromoTypeId = 2
                 });
+
+            // todo: would like to be able to add check constraints here, but it seems it is only possible by editing the migration directly: https://stackoverflow.com/questions/34245449/is-it-possible-to-add-check-constraint-with-fluent-api-in-ef7
         }
     }
 }
