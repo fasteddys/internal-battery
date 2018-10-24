@@ -63,7 +63,7 @@ namespace UpDiddy.Controllers
         public IActionResult Get(string CourseSlug)
         {
 
-            GetSubscriber();
+            GetSubscriber(false);
             
             CourseDto Course = API.Course(CourseSlug);
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
@@ -118,7 +118,7 @@ namespace UpDiddy.Controllers
             string BillingAddress,
             string PromoCodeForSubmission)
         {          
-            GetSubscriber();
+            GetSubscriber(false);
             DateTime dateTime = new DateTime();
             CourseDto Course = API.Course(CourseSlug);
             PromoCodeDto Code = API.GetPromoCode(PromoCodeForSubmission);

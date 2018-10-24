@@ -12231,23 +12231,36 @@ $(document).ready(function () {
     });
     */
 
-    $('#EditProfileInfoButton').on('click', function () {
+    $('.edit-profile-info-button').on('click', function () {
         $('.personal-info-display').slideToggle();
-        $('#PersonalInfoForm').slideToggle();
-    });
+        $('#PersonalInfoFormContainer').slideToggle();
+        $('.edit-profile-info-button').toggleClass('expanded');
 
+        $('.edit-profile-info-button').each(function () {
+            if ($(this).hasClass("expanded") && !$(this).hasClass('profile-mobile-view')) {
+                $(this).html("Cancel");
+            } else {
+                if (!$(this).hasClass('profile-mobile-cancel')) {
+
+                    $(this).html("Edit");
+                }
+            }
+        });
+        
+    });
+    
     $('#PersonalInfoForm').submit(function (e) {
         $.ajax({
+            type: "POST",
             url: '/home/UpdateProfileInformation',
             data: $(this).serialize(),
             success: function (html) {
-                alert("Information successfully updated!");
+                location.reload();
             }
         });
         e.preventDefault();
 
     });
-
     $('.play-button').on('click', function () {
         $(this).hide();
         $('.enrollment-success-video-thumbnail').hide();

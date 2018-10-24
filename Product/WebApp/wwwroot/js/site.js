@@ -21,11 +21,24 @@ $(document).ready(function () {
     });
     */
 
-    $('#EditProfileInfoButton').on('click', function () {
+    $('.edit-profile-info-button').on('click', function () {
         $('.personal-info-display').slideToggle();
-        $('#PersonalInfoForm').slideToggle();
-    });
+        $('#PersonalInfoFormContainer').slideToggle();
+        $('.edit-profile-info-button').toggleClass('expanded');
 
+        $('.edit-profile-info-button').each(function () {
+            if ($(this).hasClass("expanded") && !$(this).hasClass('profile-mobile-view')) {
+                $(this).html("Cancel");
+            } else {
+                if (!$(this).hasClass('profile-mobile-cancel')) {
+
+                    $(this).html("Edit");
+                }
+            }
+        });
+        
+    });
+    
     $('#PersonalInfoForm').submit(function (e) {
         $.ajax({
             type: "POST",
@@ -38,12 +51,24 @@ $(document).ready(function () {
         e.preventDefault();
 
     });
-
     $('.play-button').on('click', function () {
         $(this).hide();
         $('.enrollment-success-video-thumbnail').hide();
         $('#EnrollmentSuccessVideo').prop('controls', true);
         document.getElementById("EnrollmentSuccessVideo").play();
+    });
+
+    $('.courses-in-progress-list-desktop li').each(function () {
+        $(this).hover(
+            function () {
+                $(this).find(".course-listing").animate({ width: '0' });
+                $(this).find(".progress").animate({ width: '98%' });
+            },
+            function () {
+                $(this).find(".course-listing").animate({ width: '98%' });
+                $(this).find(".progress").animate({ width: '0' });
+            }
+        );
     });
 
     $('#PromoCodeApplyButton').on('click', function () {

@@ -46,7 +46,7 @@ namespace UpDiddy.Controllers
         public IActionResult Index()
         {
             // TODO remove test code 
-            GetSubscriber();
+            GetSubscriber(false);
 
             HomeViewModel HomeViewModel = new HomeViewModel(_configuration, API.Topics());
             return View(HomeViewModel);
@@ -91,20 +91,27 @@ namespace UpDiddy.Controllers
 
         public IActionResult Profile()
         {
-            GetSubscriber();
+            GetSubscriber(true);
             ProfileViewModel ProfileViewModel = new ProfileViewModel(_configuration, this.subscriber);
             return View(ProfileViewModel);
         }
 
         [HttpPost]
-        public BasicResponseDto UpdateProfileInformation(string UpdatedFirstName, string UpdatedLastName, string UpdatedAddress, string UpdatedPhoneNumber)
+        public BasicResponseDto UpdateProfileInformation(
+            string UpdatedFirstName, 
+            string UpdatedLastName, 
+            string UpdatedAddress, 
+            string UpdatedPhoneNumber,
+            Guid CurrentSubscriberGuid
+            )
         {
             SubscriberDto Subscriber = new SubscriberDto
             {
                 FirstName = UpdatedFirstName,
                 LastName = UpdatedLastName,
                 Address = UpdatedAddress,
-                PhoneNumber = UpdatedPhoneNumber
+                PhoneNumber = UpdatedPhoneNumber,
+                SubscriberGuid = CurrentSubscriberGuid
             };
             API.UpdateProfileInformation(Subscriber);
             return new BasicResponseDto

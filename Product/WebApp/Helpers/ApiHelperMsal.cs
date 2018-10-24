@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System.Text.Encodings;
 using System.IO;
 using System.Text;
+using UpDiddyLib.Dto;
 
 namespace UpDiddy.Helpers
 {
@@ -23,20 +24,20 @@ namespace UpDiddy.Helpers
         protected string _ApiBaseUri = String.Empty;
         public AzureAdB2COptions AzureOptions { get; set; }
         public HttpContext HttpContext { get; set; }
-  
+
         public T Get<T>(string ApiAction, bool Authorized = false)
         {
             Task<string> Response = _GetAsync(ApiAction, Authorized);
             try
-            {                
+            {
                 T rval = JsonConvert.DeserializeObject<T>(Response.Result);
-                return rval;             
+                return rval;
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 // TODO instrument with json string and requested type 
                 var msg = ex.Message;
-                return (T)Convert.ChangeType(null, typeof(T)); 
+                return (T)Convert.ChangeType(null, typeof(T));
             }
         }
 
@@ -63,28 +64,30 @@ namespace UpDiddy.Helpers
             return Response.Result;
         }
 
-        public string Post<T>(T Body, string ApiAction, bool Authorized = false)
+        public T Post<T>(BaseDto Body, string ApiAction, bool Authorized = false)
         {
-            
-            
+
+
             string jsonToSend = "{}";
             try
             {
-                jsonToSend  = JsonConvert.SerializeObject(Body);
+                jsonToSend = JsonConvert.SerializeObject(Body);
             }
             catch (Exception e)
             {
 
             }
-            return _PostAsync(jsonToSend, ApiAction, Authorized).ToString();
-            
+            Task<string> Response = _PostAsync(jsonToSend, ApiAction, Authorized);
+            T rval = JsonConvert.DeserializeObject<T>(Response.Result);
+            return rval;
+
         }
 
         #region Helpers Functions
 
         private async Task AddBearerTokenAsync(HttpRequestMessage request)
         {
-          
+
 
             // Retrieve the token with the specified scopes
             var scope = AzureOptions.ApiScopes.Split(' ');
@@ -96,7 +99,7 @@ namespace UpDiddy.Helpers
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
         }
 
-        private async Task<string> _PostAsync(string ApiAction, bool Authorized, string Content )
+        private async Task<string> _PostAsync(string ApiAction, bool Authorized, string Content)
         {
             string responseString = "";
             try
@@ -145,14 +148,14 @@ namespace UpDiddy.Helpers
         {
             string responseString = "";
             try
-            {               
+            {
                 HttpClient client = new HttpClient();
                 string ApiUrl = _ApiBaseUri + ApiAction;
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
 
                 // Add token to the Authorization header and make the request 
-                if ( Authorized)
-                    await AddBearerTokenAsync(request); 
+                if (Authorized)
+                    await AddBearerTokenAsync(request);
 
                 HttpResponseMessage response = await client.SendAsync(request);
                 // Handle the response
@@ -182,16 +185,16 @@ namespace UpDiddy.Helpers
 
         }
 
-        private async Task<HttpStatusCode> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
+        private async Task<string> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
         {
             string ApiUrl = _ApiBaseUri + ApiAction;
             var client = new HttpClient();
             var request = PostRequest(ApiAction, JsonToSend);
             var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            return response.StatusCode;
-            
-            
+            string responseString = await response.Content.ReadAsStringAsync();
+            return responseString;
+
+
         }
 
         private HttpRequestMessage PostRequest(string ApiAction, string Content)

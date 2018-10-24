@@ -68,9 +68,9 @@ namespace UpDiddy.Api
         {
             return Get<WozTermsOfServiceDto>("woz/TermsOfService/", false);
         }
-        public string EnrollStudentAndObtainEnrollmentGUID(EnrollmentDto enrollmentDto)
+        public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentDto enrollmentDto)
         {
-            return Post<EnrollmentDto>(enrollmentDto, "enrollment/", false);
+            return Post<Guid>(enrollmentDto, "enrollment/", false);
         }
 
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
@@ -85,7 +85,7 @@ namespace UpDiddy.Api
 
         public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
         {
-            return Post<BasicResponseDto>(Subscriber, "", false);
+            return Post<BasicResponseDto>(Subscriber, "profile/update", false);
         }
 
     }

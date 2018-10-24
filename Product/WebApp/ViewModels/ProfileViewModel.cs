@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using System;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
@@ -28,6 +29,7 @@ namespace UpDiddy.ViewModels
         public string UpdatedState { get; set; }
         public string UpdatedCountry { get; set; }
         public string UpdatedPhoneNumber { get; set; }
+        public Guid CurrentSubscriberGuid { get; set; }
 
         public ProfileViewModel(IConfiguration _configuration, SubscriberDto subscriber)
         {
