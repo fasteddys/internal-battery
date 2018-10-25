@@ -10,9 +10,6 @@ namespace UpDiddyApi.Models
     {
         public int PromoCodeRedemptionId { get; set; }
         public Guid PromoCodeRedemptionGuid { get; set; }
-        public Guid PromoCodeGuid { get; set; }
-        public Guid SubscriberGuid { get; set; }
-        public Guid CourseGuid { get; set; }
         public DateTime? RedemptionDate { get; set; }
         public Decimal ValueRedeemed { get; set; }
         public string RedemptionNotes { get; set; }

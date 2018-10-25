@@ -12237,56 +12237,52 @@ $(document).ready(function () {
         $('#EnrollmentSuccessVideo').prop('controls', true);
         document.getElementById("EnrollmentSuccessVideo").play();
     });
-
+    
     $('#PromoCodeApplyButton').on('click', function () {
-        var promoCode = $('#PromoCodeInput').val();
-        var courseGuid = $('#CourseGuid').val();
-        var subscriberGuid = $('#SubscriberGuid').val();
+        var _promoCode = $('#PromoCodeInput').val();
+        var _courseGuid = $('#CourseGuid').val();
+        var _subscriberGuid = $('#SubscriberGuid').val();
 
-        if (promoCode !== undefined && promoCode !== '') {
-            var getUrl = "/Course/PromoCode/" + promoCode + "/" + courseGuid + "/" + subscriberGuid;
+        if (_promoCode !== undefined && $.trim(_promoCode) !== '') {
+            var form = $('#CourseCheckoutForm');
+            var token = $('input[name="__RequestVerificationToken"]', form).val();
+            var postUrl = "/Course/PromoCodeValidation/" + _promoCode + "/" + _courseGuid + "/" + _subscriberGuid;
+            
             $.ajax({
-                url: getUrl, success: function (result) {
-                    if (result.validationMessage !== null) {
-                        // show/hide conditionally if property has value
-                        $('.promotional-code-validation').show();
-                        $('#ValidationMessage').html(result.validationMessage);
-                    } else {
-                        $('.promotional-code-validation').hide();
+                url: postUrl,
+                type: 'POST',
+                contentType: 'application/x-www-form-urlencoded',
+                headers: { 'RequestVerificationToken': token},
+                success: function (result) {
+                    if (result.isValid) {
+                        $('#ValidationMessageSuccess span').html(result.validationMessage);
+                        $('#ValidationMessageSuccess').show();
+                        $('#ValidationMessageError').hide();                        
                         $('#PromoCodeTotal').html("-$" + result.discount);
                         $('#CourseTotal').html(result.FinalCost);
-                        $('#PromoCodeRedemptionGuid').val(result.promoCodeRedemptionGuid);
+                        $('#PromoCodeRedemptionGuid').val(result.promoCodeRedemptionGuid);                        
+                        $('#PromoCodeApplyButton').prop('disabled', true);
+                        $('#PromoCodeApplyButton').css('color', 'white');
+                    } else {
+                        $('#ValidationMessageError span').html(result.validationMessage);
+                        //$('#ValidationMessageSuccess').hide();
+                        //$('#ValidationMessageError').show();
                     }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $('#ValidationMessageError span').html('Woops! Something went wrong - please try another promo code.');
+                    //$('#ValidationMessageSuccess').hide();
+                    //$('#ValidationMessageError').show();
                 }
             });
         }
         else {
-            $('#ValidationMessage').html('No promotional code was supplied; please enter a value and try again.');
+            $('#ValidationMessageError').html('No promotional code was supplied; please enter a value and try again.');
+            //$('#ValidationMessageSuccess').hide();
+            //$('#ValidationMessageError').show();
         }
     });
 
-    //$('#PromoCodeApplyButton').on('click', function () {
-    //    var promoCode = $('#PromoCodeInput').val();
-    //    var coursePrice = $('#CoursePrice').val();
-    //    var courseGuid = $('#CourseGuid').val();
-    //    if (promoCode !== undefined && promoCode !== '' && promoCodeIsValid(promoCode)) {
-    //        var getUrl = "/Course/PromoCode/" + courseGuid + "/" + promoCode;
-    //        $.ajax({
-    //            url: getUrl, success: function (result) {
-    //                var resultAsJson = $.parseJSON(result);
-    //                $('#PromoCodeTotal').html("-$" + resultAsJson.AmountOffCourse);
-    //                $('#CourseTotal').html(resultAsJson.NewCoursePrice);
-    //                $('#PromoCodeForSubmission').val(promoCode);
-    //            }
-    //        });
-    //    }
-    //    else {
-    //        alert("Promo code invalid; please try again.");
-    //    }
-
-    //});
-
-    // TODO: Implement client side security form promo code.
     function promoCodeIsValid(code) {
         return true;
     }

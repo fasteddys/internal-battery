@@ -51,19 +51,29 @@ namespace UpDiddyApi.Controllers
 
         [Authorize]
         [HttpGet]
+        [Route("api/[controller]/{promoCodeRedemptionGuid}")]
+        public IActionResult PromoCodeRedemption(Guid promoCodeRedemptionGuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        [Authorize]
+        [HttpGet]
         [Route("api/[controller]/{code}/{courseGuid}/{subscriberGuid}")]
-        public IActionResult PromoCodeValidation(string code, string courseGuid, string subscriberGuid, bool isRedemptionStarted = false)
+        public IActionResult PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
         {
             try
             {
+                PromoCodeDto validPromoCodeDto = null;
+
+                #region business logic to refactor
+
                 /*  todo: refactor this code. move business rules to IValidatableObject in Dto? to do this, i think we would need to
                 *   use a custom value resolver in automapper to transform 5 model objects (PromoCode, Course, CoursePromoCode, 
                 *   VendorPromoCode, SubscriberPromoCode) into a PromoCodeDto. once all of the necessary properties exist within that 
                 *   Dto, then we could move all of the validation to:
                 *       IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
                 */
-
-                #region business logic to refactor
 
                 PromoCode promoCode = _db.PromoCode
                     .Include(p => p.PromoType)
@@ -83,7 +93,11 @@ namespace UpDiddyApi.Controllers
                 if (promoCode.PromoEndDate < currentDateTime.AddHours(4)) // todo: improve ghetto grace period date logic
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has expired." });
 
-                if (promoCode.NumberOfRedemptions >= promoCode.MaxAllowedNumberOfRedemptions)
+                var inProgressRedemptionsForThisCode = _db.PromoCodeRedemption
+                    .Include(pcr => pcr.RedemptionStatus)
+                    .Where(pcr => pcr.PromoCodeId == promoCode.PromoCodeId && pcr.IsDeleted == 0 && pcr.RedemptionStatus.Name == "In Process")
+                    .Count();
+                if (promoCode.NumberOfRedemptions + inProgressRedemptionsForThisCode >= promoCode.MaxAllowedNumberOfRedemptions)
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has exceeded its allowed number of redemptions." });
 
                 Guid parsedCourseGuid;
@@ -126,43 +140,61 @@ namespace UpDiddyApi.Controllers
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this subscriber." });
                 #endregion
 
-                PromoCodeDto validPromoCode = _mapper.Map<PromoCodeDto>(promoCode);
-                validPromoCode.IsValid = true;
-                switch (promoCode.PromoType.Name)
+                // check if there is an existing "in process" promo code redemption for this code, course, and subscriber that has not been logically deleted
+                var existingInProgressPromoCodeRedemption = _db.PromoCodeRedemption
+                    .Include(pcr => pcr.RedemptionStatus)
+                    .Where(pcr => pcr.PromoCodeId == promoCode.PromoCodeId && pcr.SubscriberId == subscriber.SubscriberId && pcr.CourseId == course.CourseId && pcr.RedemptionStatus.Name == "In Process" && pcr.IsDeleted == 0)
+                    .FirstOrDefault();
+
+                if (existingInProgressPromoCodeRedemption == null)
                 {
-                    case "Dollar Amount":
-                        validPromoCode.Discount = !course.Price.HasValue ? 0 : Math.Max(0, promoCode.PromoValueFactor);
-                        break;
-                    case "Percent Off":
-                        validPromoCode.Discount = !course.Price.HasValue ? 0 : Math.Max(0, Math.Round(course.Price.Value * promoCode.PromoValueFactor, 2, MidpointRounding.ToEven));
-                        break;
-                    default:
-                        throw new ApplicationException("Unrecognized promo type!");
+                    // create a new promo code redemption and store it in the db
+                    validPromoCodeDto = _mapper.Map<PromoCodeDto>(promoCode);
+                    validPromoCodeDto.IsValid = true;
+                    validPromoCodeDto.ValidationMessage = $"The promo code '{promoCode.PromoName}' has been applied successfully! See below for the updated price.";
+                    switch (promoCode.PromoType.Name)
+                    {
+                        case "Dollar Amount":
+                            validPromoCodeDto.Discount = !course.Price.HasValue ? 0 : Math.Max(0, promoCode.PromoValueFactor);
+                            break;
+                        case "Percent Off":
+                            validPromoCodeDto.Discount = !course.Price.HasValue ? 0 : Math.Max(0, Math.Round(course.Price.Value * promoCode.PromoValueFactor, 2, MidpointRounding.ToEven));
+                            break;
+                        default:
+                            throw new ApplicationException("Unrecognized promo type!");
+                    }
+                    validPromoCodeDto.FinalCost = !course.Price.HasValue ? 0 : course.Price.Value - validPromoCodeDto.Discount;
+                    validPromoCodeDto.PromoCodeRedemptionGuid = Guid.NewGuid();
+                    _db.PromoCodeRedemption.Add(new PromoCodeRedemption()
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.NewGuid(),
+                        IsDeleted = 0,
+                        PromoCodeRedemptionGuid = validPromoCodeDto.PromoCodeRedemptionGuid,
+                        RedemptionStatusId = 1, // "In Process"
+                        ValueRedeemed = validPromoCodeDto.Discount,
+                        CourseId = course.CourseId,
+                        PromoCodeId = promoCode.PromoCodeId,
+                        SubscriberId = subscriber.SubscriberId
+                    });
+                    _db.SaveChanges();
+                }
+                else
+                {
+                    // use the existing "in process" promo code redemption
+                    validPromoCodeDto = new PromoCodeDto()
+                    {
+                        Discount = existingInProgressPromoCodeRedemption.ValueRedeemed,
+                        FinalCost = !existingInProgressPromoCodeRedemption.Course.Price.HasValue ? 0 : existingInProgressPromoCodeRedemption.Course.Price.Value - existingInProgressPromoCodeRedemption.ValueRedeemed,
+                        IsValid = true,
+                        ValidationMessage = $"The promo code '{existingInProgressPromoCodeRedemption.PromoCode.PromoName}' has been applied successfully! See below for the updated price.",
+                        PromoCodeRedemptionGuid = existingInProgressPromoCodeRedemption.PromoCodeRedemptionGuid,
+                        PromoDescription = existingInProgressPromoCodeRedemption.PromoCode.PromoDescription,
+                        PromoName = existingInProgressPromoCodeRedemption.PromoCode.PromoName
+                    };
                 }
 
-                validPromoCode.FinalCost = !course.Price.HasValue ? 0 : course.Price.Value - validPromoCode.Discount;
-
-                validPromoCode.PromoCodeRedemptionGuid = Guid.NewGuid();
-
-                _db.PromoCodeRedemption.Add(new PromoCodeRedemption()
-                {
-                    CreateDate = DateTime.UtcNow,
-                    CreateGuid = Guid.NewGuid(),
-                    IsDeleted = 0,
-                    PromoCodeRedemptionGuid = validPromoCode.PromoCodeRedemptionGuid,
-                    RedemptionStatusId = 1, // "In Process"
-                    ValueRedeemed = validPromoCode.Discount,
-                    CourseId = course.CourseId,
-                    CourseGuid = course.CourseGuid.Value, // todo: remove this pending discussion with Jim/Brent
-                    PromoCodeId = promoCode.PromoCodeId,
-                    PromoCodeGuid = promoCode.PromoCodeGuid.Value, // todo: remove this pending discussion with Jim/Brent
-                    SubscriberId = subscriber.SubscriberId,
-                    SubscriberGuid = subscriber.SubscriberGuid.Value, // todo: remove this pending discussion with Jim/Brent
-                });
-
-                _db.SaveChanges();
-                
-                return Ok(validPromoCode);
+                return Ok(validPromoCodeDto);
             }
             catch (Exception e)
             {

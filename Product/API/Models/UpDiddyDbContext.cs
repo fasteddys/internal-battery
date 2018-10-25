@@ -100,7 +100,7 @@ namespace UpDiddyApi.Models
                 .Property(pc => pc.MaxAllowedNumberOfRedemptions)
                 .HasDefaultValue(1);
             modelBuilder.Entity<PromoCodeRedemption>()
-                .HasIndex(i => new { i.PromoCodeId, i.SubscriberId, i.CourseId, i.RedemptionStatusId }).IsUnique();
+                .HasIndex(i => new { i.PromoCodeId, i.SubscriberId, i.CourseId, i.RedemptionStatusId, i.IsDeleted }).IsUnique();
 
             modelBuilder.Entity<RedemptionStatus>().HasData(
                 new RedemptionStatus()
