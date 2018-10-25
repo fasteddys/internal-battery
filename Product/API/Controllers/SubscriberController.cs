@@ -36,7 +36,7 @@ namespace UpDiddyApi.Controllers
             IList<SubscriberDto> rval = null;
             rval = _db.Subscriber
                 .Where(t => t.IsDeleted == 0)
-                .ProjectTo<SubscriberDto>()
+                .ProjectTo<SubscriberDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
             return Ok(rval);

@@ -78,9 +78,9 @@ namespace UpDiddy.Api
             return Post<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);
         }
 
-        public PromoCodeDto GetPromoCode(string PromoCode)
+        public PromoCodeDto PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
         {
-            return Get<PromoCodeDto>("promocode/" + PromoCode, false);
+            return Get<PromoCodeDto>("promocode/" + code + "/" + courseGuid + "/" + subscriberGuid, true);
         }
 
     }

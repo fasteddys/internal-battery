@@ -253,6 +253,40 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("CommunicationType");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.Country", b =>
+                {
+                    b.Property<int>("CountryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Code2")
+                        .IsRequired();
+
+                    b.Property<string>("Code3")
+                        .IsRequired();
+
+                    b.Property<Guid?>("CountryGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired();
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("OfficialName");
+
+                    b.HasKey("CountryId");
+
+                    b.ToTable("Country");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Course", b =>
                 {
                     b.Property<int>("CourseId")
@@ -345,6 +379,16 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("CourseId");
 
                     b.Property<Guid?>("CoursePromoCodeGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
 
                     b.Property<int>("PromoCodeId");
 
@@ -450,6 +494,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<decimal>("PricePaid");
 
+                    b.Property<long?>("SectionStartTimestamp");
+
                     b.Property<int>("SubscriberId");
 
                     b.Property<int?>("TermsOfServiceFlag");
@@ -463,15 +509,66 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("Enrollment");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.EnrollmentLog", b =>
+                {
+                    b.Property<int>("EnrollmentLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<decimal>("CourseCost");
+
+                    b.Property<Guid>("CourseGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<Guid>("EnrollmentGuid");
+
+                    b.Property<Guid>("EnrollmentLogGuid");
+
+                    b.Property<DateTime>("EnrollmentTime");
+
+                    b.Property<int>("EnrollmentVendorInvoicePaymentMonth");
+
+                    b.Property<int>("EnrollmentVendorInvoicePaymentYear");
+
+                    b.Property<int>("EnrollmentVendorPaymentStatusId");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<decimal>("PromoApplied");
+
+                    b.Property<Guid>("SubscriberGuid");
+
+                    b.HasKey("EnrollmentLogId");
+
+                    b.ToTable("EnrollmentLog");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.EnrollmentStatus", b =>
                 {
                     b.Property<int>("EnrollmentStatusId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
                     b.Property<string>("Description");
 
                     b.Property<Guid?>("EnrollmentStatusGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
 
                     b.Property<string>("Name")
                         .IsRequired();
@@ -672,9 +769,17 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
+                    b.Property<int>("MaxAllowedNumberOfRedemptions")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue(1);
+
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("NumberOfRedemptions")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue(0);
 
                     b.Property<Guid?>("PromoCodeGuid");
 
@@ -693,7 +798,55 @@ namespace UpDiddyApi.Migrations
 
                     b.HasKey("PromoCodeId");
 
+                    b.HasIndex("PromoTypeId");
+
                     b.ToTable("PromoCode");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PromoCodeRedemption", b =>
+                {
+                    b.Property<int>("PromoCodeRedemptionId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CourseId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("PromoCodeId");
+
+                    b.Property<Guid>("PromoCodeRedemptionGuid");
+
+                    b.Property<DateTime?>("RedemptionDate");
+
+                    b.Property<string>("RedemptionNotes");
+
+                    b.Property<int>("RedemptionStatusId");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.Property<decimal>("ValueRedeemed");
+
+                    b.HasKey("PromoCodeRedemptionId");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("RedemptionStatusId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.HasIndex("PromoCodeId", "SubscriberId", "CourseId", "RedemptionStatusId", "IsDeleted")
+                        .IsUnique();
+
+                    b.ToTable("PromoCodeRedemption");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.PromoType", b =>
@@ -706,22 +859,27 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
+                    b.Property<string>("Description");
+
                     b.Property<int>("IsDeleted");
 
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<string>("PromoTypeDescription");
+                    b.Property<string>("Name")
+                        .IsRequired();
 
                     b.Property<Guid?>("PromoTypeGuid");
-
-                    b.Property<string>("PromoTypeName")
-                        .IsRequired();
 
                     b.HasKey("PromoTypeId");
 
                     b.ToTable("PromoType");
+
+                    b.HasData(
+                        new { PromoTypeId = 1, CreateDate = new DateTime(2018, 10, 25, 12, 7, 30, 224, DateTimeKind.Local), CreateGuid = new Guid("e1cd0af7-5bd6-40ca-9a48-92e568ce8fc3"), Description = "This type indicates that the PromoValueFactor is the dollar amount that should be subtracted from the course cost.", IsDeleted = 0, Name = "Dollar Amount", PromoTypeGuid = new Guid("ee99d1b8-82b7-4c46-84ee-481f97654ce4") },
+                        new { PromoTypeId = 2, CreateDate = new DateTime(2018, 10, 25, 12, 7, 30, 224, DateTimeKind.Local), CreateGuid = new Guid("a7f16a7c-cbc0-4890-84c2-97728b0ec90c"), Description = "This type indicates that the the course cost should be reduced by the percentage value of the PromoValueFactor.", IsDeleted = 0, Name = "Percent Off", PromoTypeGuid = new Guid("02342c90-4407-4f2f-96f2-5688956dffa0") }
+                    );
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Rebate", b =>
@@ -745,6 +903,37 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("RebateId");
 
                     b.ToTable("Rebate");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.RedemptionStatus", b =>
+                {
+                    b.Property<int>("RedemptionStatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<Guid>("RedemptionStatusGuid");
+
+                    b.HasKey("RedemptionStatusId");
+
+                    b.ToTable("RedemptionStatus");
+
+                    b.HasData(
+                        new { RedemptionStatusId = 1, CreateDate = new DateTime(2018, 10, 25, 12, 7, 30, 222, DateTimeKind.Local), CreateGuid = new Guid("2c32f6d8-39a0-4512-947a-774bee252e4f"), IsDeleted = 0, Name = "In Process", RedemptionStatusGuid = new Guid("e87cd4cd-5234-4f8f-bcc7-25de2756bd1b") },
+                        new { RedemptionStatusId = 2, CreateDate = new DateTime(2018, 10, 25, 12, 7, 30, 222, DateTimeKind.Local), CreateGuid = new Guid("0339ef2c-219d-47c4-97d5-fa07b9f6b076"), IsDeleted = 0, Name = "Completed", RedemptionStatusGuid = new Guid("d19ee69f-48f9-45b1-8e0c-8775943ea42d") }
+                    );
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.ReportEnrollmentByVendor", b =>
@@ -778,6 +967,39 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("ReportEnrollmentByVendorId");
 
                     b.ToTable("ReportEnrollmentByVendors");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.State", b =>
+                {
+                    b.Property<int>("StateId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Code")
+                        .IsRequired();
+
+                    b.Property<int>("CountryId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<Guid?>("StateGuid");
+
+                    b.HasKey("StateId");
+
+                    b.HasIndex("CountryId");
+
+                    b.ToTable("State");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Subscriber", b =>
@@ -827,6 +1049,16 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("SubscriberPromoCodeId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
 
                     b.Property<int>("PromoCodeId");
 
@@ -991,6 +1223,16 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("VendorPromoCodeId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
 
                     b.Property<int>("PromoCodeId");
 
@@ -1190,6 +1432,45 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
                         .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PromoCode", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.PromoType", "PromoType")
+                        .WithMany()
+                        .HasForeignKey("PromoTypeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PromoCodeRedemption", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.PromoCode", "PromoCode")
+                        .WithMany()
+                        .HasForeignKey("PromoCodeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.RedemptionStatus", "RedemptionStatus")
+                        .WithMany()
+                        .HasForeignKey("RedemptionStatusId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.State", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Country", "Country")
+                        .WithMany()
+                        .HasForeignKey("CountryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618

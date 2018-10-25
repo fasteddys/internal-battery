@@ -75,16 +75,14 @@ namespace UpDiddy.Controllers
             return View("Checkout", CourseViewModel);
         }
 
-        [HttpGet]
-        [Route("/Course/PromoCode/{CourseGuid}/{PromotionalCode}")]
-        public string PromoCode(Guid CourseGuid, string PromotionalCode)
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Route("/Course/PromoCodeValidation/{code}/{courseGuid}/{subscriberGuid}")]
+        public IActionResult PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
         {
-            CourseDto Course = API.CourseByGuid(CourseGuid);
-            PromoCodeDto Code = API.GetPromoCode(PromotionalCode);
-            return AssemblePromoCodeJSONResponse(Code, Course);
+            PromoCodeDto promoCodeDto = API.PromoCodeValidation(code, courseGuid, subscriberGuid);
+            return new ObjectResult(promoCodeDto);
         }
-
-
         [HttpPost]
         public IActionResult Checkout(
             int TermsOfServiceDocId, 
@@ -102,7 +100,7 @@ namespace UpDiddy.Controllers
             GetSubscriber();
             DateTime dateTime = new DateTime();
             CourseDto Course = API.Course(CourseSlug);
-            PromoCodeDto Code = API.GetPromoCode(PromoCodeForSubmission);
+            PromoCodeDto Code = null; // todo: replace this with new method call      API.GetPromoCode(PromoCodeForSubmission);
             EnrollmentDto enrollmentDto = new EnrollmentDto
             {
                 CourseId = Course.CourseId,
@@ -129,7 +127,7 @@ namespace UpDiddy.Controllers
             var gateway = braintreeConfiguration.GetGateway();
             Decimal amount;
             if (PromoCodeForSubmission != null) {
-                amount = (Decimal)CalculatePromoCodeDiscountedPrice(Course.Price, Code.PromoValueFactor);
+                amount = (Decimal)CalculatePromoCodeDiscountedPrice(Course.Price, Code.FinalCost);
             }
             else {
                 amount = Convert.ToDecimal(Course.Price);
@@ -234,18 +232,6 @@ namespace UpDiddy.Controllers
             }
             return false;
         }
-
-
-        private string AssemblePromoCodeJSONResponse(PromoCodeDto code, CourseDto course)
-        {
-            StringBuilder jsonString = new StringBuilder("{");
-            jsonString.Append("\"PromoValueFactor\": \"" + code.PromoValueFactor + "\",");
-            jsonString.Append("\"AmountOffCourse\": \"" + CalculatePriceOffOfCourse(course.Price, code.PromoValueFactor) + "\",");
-            jsonString.Append("\"NewCoursePrice\": \"" + CalculatePromoCodeDiscountedPrice(course.Price, code.PromoValueFactor) + "\"");
-            jsonString.Append("}");
-            return jsonString.ToString();
-        }
-
         private Decimal? CalculatePromoCodeDiscountedPrice(Decimal? CoursePrice, Decimal PromoValueFactor)
         {
             return (CoursePrice - CalculatePriceOffOfCourse(CoursePrice, PromoValueFactor));

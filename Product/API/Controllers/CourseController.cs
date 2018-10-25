@@ -38,11 +38,10 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]")]
         public IActionResult Get()
         {
-
             IList<CourseDto> rval = null;
             rval = _db.Course
                 .Where(t => t.IsDeleted == 0)
-                .ProjectTo<CourseDto>()
+                .ProjectTo<CourseDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
             return Ok(rval);
@@ -53,8 +52,11 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/{TopicSlug}")]
         public IActionResult Get(string TopicSlug)
         {
+            IList<TopicDto> matchingTopic = _db.Topic
+                .Where(t => t.Slug == TopicSlug)
+                .ProjectTo<TopicDto>(_mapper.ConfigurationProvider)
+                .ToList();
 
-            IList<TopicDto> matchingTopic = _db.Topic.Where(t => t.Slug == TopicSlug).ProjectTo<TopicDto>().ToList();
             int topicId = 0;
             foreach (TopicDto topic in matchingTopic)
             {
@@ -64,7 +66,7 @@ namespace UpDiddyApi.Controllers
             IList<CourseDto> rval = null;
             rval = _db.Course
                 .Where(t => t.IsDeleted == 0 && t.TopicId == topicId)
-                .ProjectTo<CourseDto>()
+                .ProjectTo<CourseDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
             return Ok(rval);
