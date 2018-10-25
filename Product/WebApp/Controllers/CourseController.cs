@@ -76,13 +76,21 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        [Route("/Course/PromoCode/{CourseGuid}/{PromotionalCode}")]
-        public string PromoCode(Guid CourseGuid, string PromotionalCode)
+        [Route("/Course/PromoCode/{code}/{courseGuid}/{subscriberGuid}")]
+        public IActionResult PromoCode(string code, string courseGuid, string subscriberGuid)
         {
-            CourseDto Course = API.CourseByGuid(CourseGuid);
-            PromoCodeDto Code = API.GetPromoCode(PromotionalCode);
-            return AssemblePromoCodeJSONResponse(Code, Course);
+            PromoCodeDto promoCodeDto = API.PromoCodeValidation(code, courseGuid, subscriberGuid);
+            return new ObjectResult(promoCodeDto);
         }
+
+        //[HttpGet]
+        //[Route("/Course/PromoCode/{CourseGuid}/{PromotionalCode}")]
+        //public string PromoCode(Guid CourseGuid, string PromotionalCode)
+        //{
+        //    CourseDto Course = API.CourseByGuid(CourseGuid);
+        //    PromoCodeDto Code = API.GetPromoCode(PromotionalCode);
+        //    return AssemblePromoCodeJSONResponse(Code, Course);
+        //}
 
         private string AssemblePromoCodeJSONResponse(PromoCodeDto code, CourseDto course)
         {
@@ -121,7 +129,7 @@ namespace UpDiddy.Controllers
             GetSubscriber(false);
             DateTime dateTime = new DateTime();
             CourseDto Course = API.Course(CourseSlug);
-            PromoCodeDto Code = API.GetPromoCode(PromoCodeForSubmission);
+            PromoCodeDto Code = null; // todo: replace this with new method call      API.GetPromoCode(PromoCodeForSubmission);
             EnrollmentDto enrollmentDto = new EnrollmentDto
             {
                 CourseId = Course.CourseId,

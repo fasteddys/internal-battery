@@ -27,44 +27,30 @@ namespace UpDiddyApi.Controllers
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
-         
+
         }
- 
- 
+
+
 
         [HttpGet]
         [Route("api/[controller]/VaultUri")]
         public IActionResult VaultUri()
         {
- 
-
-            return Ok(_configuration["Vault"] );
-
+            return Ok(_configuration["Vault"]);
         }
-
-
 
         // GET: api/topics
         [HttpGet]
         [Route("api/[controller]")]
         public IActionResult Get()
         {
- 
             IList<TopicDto> rval = null;
             rval = _db.Topic
                 .Where(t => t.IsDeleted == 0)
-                .ProjectTo<TopicDto>()
+                .ProjectTo<TopicDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
-
-            // TODO remove test code 
-            //  BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.WozU("test"));
-           // BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem("00000000-0000-0000-0000-000000000001"));
-
-            
-
-            return Ok(rval) ;
-            
+            return Ok(rval);
         }
 
         // GET: api/topics/id
@@ -79,7 +65,7 @@ namespace UpDiddyApi.Controllers
             if (topic == null)
                 return NotFound();
 
-            return Ok(_mapper.Map<TopicDto>(topic)); 
+            return Ok(_mapper.Map<TopicDto>(topic));
         }
 
         [HttpGet]

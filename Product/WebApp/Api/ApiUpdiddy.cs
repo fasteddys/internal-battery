@@ -78,14 +78,19 @@ namespace UpDiddy.Api
             return Get<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);
         }
 
-        public PromoCodeDto GetPromoCode(string PromoCode)
+        public PromoCodeDto PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
         {
-            return Get<PromoCodeDto>("promocode/" + PromoCode, false);
+            return Get<PromoCodeDto>("promocode/" + code + "/" + courseGuid + "/" + subscriberGuid, true);
         }
 
         public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
         {
             return Post<BasicResponseDto>(Subscriber, "profile/update", false);
+        }
+
+        public IList<CountryStateDto> GetCountryStateList()
+        {
+            return Get<IList<CountryStateDto>>("profile/LocationList", false);
         }
 
     }

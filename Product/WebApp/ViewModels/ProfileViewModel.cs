@@ -1,13 +1,16 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
+
 
 namespace UpDiddy.ViewModels
 {
     public class ProfileViewModel : BaseViewModel
     {
         public SubscriberDto Subscriber { get; set; }
+        public Dictionary<string, List<string>> CountryStateMapping { get; set; }
         public string DisplayedFirstName { get; set; }
         public string FirstNamePlaceholder { get; set; }
         public string DisplayedLastName { get; set; }
@@ -31,14 +34,15 @@ namespace UpDiddy.ViewModels
         public string UpdatedPhoneNumber { get; set; }
         public Guid CurrentSubscriberGuid { get; set; }
 
-        public ProfileViewModel(IConfiguration _configuration, SubscriberDto subscriber)
+        public ProfileViewModel(IConfiguration _configuration, SubscriberDto subscriber, IList<CountryStateDto> CountryStateList)
         {
             this.ImageUrl = _configuration["BaseImageUrl"];
             this.Subscriber = subscriber;
-            SetPRofileDisplayValues();
+            SetProfileDisplayValues();
+            InitializeCountryStateMapping(CountryStateList);
         }
 
-        private void SetPRofileDisplayValues()
+        private void SetProfileDisplayValues()
         {
             this.DisplayedFirstName = string.IsNullOrEmpty(this.Subscriber.FirstName) ? Helpers.Constants.NONE : this.Subscriber.FirstName;
             this.FirstNamePlaceholder = string.IsNullOrEmpty(this.Subscriber.FirstName) ? "First Name" : this.Subscriber.FirstName;
@@ -60,6 +64,27 @@ namespace UpDiddy.ViewModels
             */
             this.DisplayedPhone = string.IsNullOrEmpty(this.Subscriber.PhoneNumber) ? Helpers.Constants.NONE : this.Subscriber.PhoneNumber;
             this.PhonePlaceholder = string.IsNullOrEmpty(this.Subscriber.PhoneNumber) ? "Phone Number" : this.Subscriber.PhoneNumber;
+        }
+
+        private void InitializeCountryStateMapping(IList<CountryStateDto> CountryStateList)
+        {
+            string previousCountry = CountryStateList[0].DisplayName;
+            List<string> states = new List<string>();
+            this.CountryStateMapping = new Dictionary<string, List<string>>();
+            foreach (CountryStateDto csdto in CountryStateList)
+            {
+                if (!(previousCountry).Equals(csdto.DisplayName))
+                {
+                    this.CountryStateMapping.Add(previousCountry, states);
+                    states = new List<string>();
+                    previousCountry = csdto.DisplayName;
+                    states.Add(csdto.Name);
+                }
+                else
+                {
+                    states.Add(csdto.Name);
+                }
+            }
         }
     }
 }

@@ -92,7 +92,8 @@ namespace UpDiddy.Controllers
         public IActionResult Profile()
         {
             GetSubscriber(true);
-            ProfileViewModel ProfileViewModel = new ProfileViewModel(_configuration, this.subscriber);
+            IList<CountryStateDto> CountryStateList = API.GetCountryStateList();
+            ProfileViewModel ProfileViewModel = new ProfileViewModel(_configuration, this.subscriber, CountryStateList);
             return View(ProfileViewModel);
         }
 

@@ -73,24 +73,60 @@ $(document).ready(function () {
 
     $('#PromoCodeApplyButton').on('click', function () {
         var promoCode = $('#PromoCodeInput').val();
-        var coursePrice = $('#CoursePrice').val();
         var courseGuid = $('#CourseGuid').val();
-        if (promoCode !== undefined && promoCode !== '' && promoCodeIsValid(promoCode)) {
-            var getUrl = "/Course/PromoCode/" + courseGuid + "/" + promoCode;
+        var subscriberGuid = $('#SubscriberGuid').val();
+
+        if (promoCode !== undefined && promoCode !== '') {
+            var getUrl = "/Course/PromoCode/" + promoCode + "/" + courseGuid + "/" + subscriberGuid;
             $.ajax({
                 url: getUrl, success: function (result) {
-                    var resultAsJson = $.parseJSON(result);
-                    $('#PromoCodeTotal').html("-$" + resultAsJson.AmountOffCourse);
-                    $('#CourseTotal').html(resultAsJson.NewCoursePrice);
-                    $('#PromoCodeForSubmission').val(promoCode);
+                    if (result.validationMessage !== null) {
+                        // show/hide conditionally if property has value
+                        $('.promotional-code-validation').show();
+                        $('#ValidationMessage').html(result.validationMessage);
+                    } else {
+                        $('.promotional-code-validation').hide();
+                        $('#PromoCodeTotal').html("-$" + result.discount);
+                        $('#CourseTotal').html(result.FinalCost);
+                        $('#PromoCodeRedemptionGuid').val(result.promoCodeRedemptionGuid);
+                    }
                 }
             });
         }
         else {
-            alert("Promo code invalid; please try again.");
+            $('#ValidationMessage').html('No promotional code was supplied; please enter a value and try again.');
         }
-        
     });
+
+    $('#UpdatedCountry').change(function () {
+        var country = $(this).val();
+        var states = locationsList[country];
+        $("#UpdatedState").html("");
+        for (i = 0; i < states.length; i++) {
+            $('<option>').val(states[i]).text(states[i]).appendTo('#UpdatedState');
+        }
+    });
+    
+    //$('#PromoCodeApplyButton').on('click', function () {
+    //    var promoCode = $('#PromoCodeInput').val();
+    //    var coursePrice = $('#CoursePrice').val();
+    //    var courseGuid = $('#CourseGuid').val();
+    //    if (promoCode !== undefined && promoCode !== '' && promoCodeIsValid(promoCode)) {
+    //        var getUrl = "/Course/PromoCode/" + courseGuid + "/" + promoCode;
+    //        $.ajax({
+    //            url: getUrl, success: function (result) {
+    //                var resultAsJson = $.parseJSON(result);
+    //                $('#PromoCodeTotal').html("-$" + resultAsJson.AmountOffCourse);
+    //                $('#CourseTotal').html(resultAsJson.NewCoursePrice);
+    //                $('#PromoCodeForSubmission').val(promoCode);
+    //            }
+    //        });
+    //    }
+    //    else {
+    //        alert("Promo code invalid; please try again.");
+    //    }
+
+    //});
 
     // TODO: Implement client side security form promo code.
     function promoCodeIsValid(code) {

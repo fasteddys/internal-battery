@@ -5,32 +5,37 @@ using System.Threading.Tasks;
 using AutoMapper;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
- 
+
 namespace UpDiddyApi.Helpers
 {
     public class AutoMapperConfiguration
     {
-        static public void Init()
+        public static void Configure()
         {
             Mapper.Initialize(cfg =>
             {
-                cfg.CreateMap<Topic, TopicDto>();
-                cfg.CreateMap<TopicDto, Topic>();
-                cfg.CreateMap<Vendor, VendorDto>();
-                cfg.CreateMap<VendorDto, Vendor>();
-                cfg.CreateMap<Course, CourseDto>();
-                cfg.CreateMap<CourseDto, Course>();
-                cfg.CreateMap<Enrollment, EnrollmentDto>();
-                cfg.CreateMap<EnrollmentDto, Enrollment>();
-                cfg.CreateMap<Subscriber, SubscriberDto>();
-                cfg.CreateMap<SubscriberDto, Subscriber>();
-                cfg.CreateMap<WozCourseEnrollment, WozCourseEnrollmentDto>();
-                cfg.CreateMap<WozCourseEnrollmentDto, WozCourseEnrollment>();
-                cfg.CreateMap<PromoCodeDto, PromoCode>();
-                cfg.CreateMap<PromoCode, PromoCodeDto>();
+                cfg.AddProfile<ApiProfile>();
             });
-
         }
+    }
 
+    public class ApiProfile : Profile
+    {
+        public ApiProfile()
+        {
+            CreateMap<Topic, TopicDto>().ReverseMap();
+            CreateMap<Vendor, VendorDto>().ReverseMap();
+            CreateMap<Course, CourseDto>().ReverseMap();
+            CreateMap<Enrollment, EnrollmentDto>().ReverseMap();
+            CreateMap<Subscriber, SubscriberDto>().ReverseMap();
+            CreateMap<WozCourseEnrollment, WozCourseEnrollmentDto>().ReverseMap();
+            CreateMap<PromoCode, PromoCodeDto>()
+                .ForMember(x => x.IsValid, opt => opt.Ignore())
+                .ForMember(x => x.ValidationMessage, opt => opt.Ignore())
+                .ForMember(x => x.Discount, opt => opt.Ignore())
+                .ForMember(x => x.FinalCost, opt => opt.Ignore())
+                .ForMember(x => x.PromoCodeRedemptionGuid, opt => opt.Ignore())
+                .ReverseMap();
+        }
     }
 }

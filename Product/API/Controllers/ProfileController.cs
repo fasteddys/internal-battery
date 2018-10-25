@@ -5,6 +5,9 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
 using System;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using AutoMapper.QueryableExtensions;
 
 namespace UpDiddyApi.Controllers
 {
@@ -62,6 +65,28 @@ namespace UpDiddyApi.Controllers
             {
             }
             return Ok();
+
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/LocationList")]
+        public IActionResult LocationList()
+        {
+            
+
+            IList<CountryStateDto> CountryStates = (
+                from state in _db.State
+                join country in _db.Country on state.CountryId equals country.CountryId
+                select new
+                {
+                    country.DisplayName,
+                    country.Code2,
+                    country.Code3,
+                    state.Name,
+                    state.Code
+                }).ProjectTo<CountryStateDto>(_mapper.ConfigurationProvider).ToList();
+
+            return Ok(CountryStates);
 
         }
     }
