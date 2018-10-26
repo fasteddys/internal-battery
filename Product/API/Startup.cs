@@ -91,12 +91,18 @@ namespace UpDiddyApi
             services.AddDbContext<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
 
 
-            var HangFireSqlConnection = Configuration["HangFireJimDev"];
+            // Hangfire configuration
+            var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"];
             services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
-            // Have the workflow monitor run every minute 
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
-            RecurringJob.AddOrUpdate(() => new WorkFlowMonitor().DoWork(), Cron.Minutely);
-            
+
+            // PromoCodeRedemption cleanup
+            int promoCodeRedemptionCleanupScheduleInMinutes = 5;
+            int promoCodeRedemptionLookbackInMinutes = 30;
+            int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
+            int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
+            RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
+
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
             // Add System Email   

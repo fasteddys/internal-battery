@@ -12259,27 +12259,27 @@ $(document).ready(function () {
                         $('#ValidationMessageSuccess').show();
                         $('#ValidationMessageError').hide();                        
                         $('#PromoCodeTotal').html("-$" + result.discount);
-                        $('#CourseTotal').html(result.FinalCost);
+                        $('#CourseTotal').html(result.finalCost);
                         $('#PromoCodeRedemptionGuid').val(result.promoCodeRedemptionGuid);                        
                         $('#PromoCodeApplyButton').prop('disabled', true);
                         $('#PromoCodeApplyButton').css('color', 'white');
                     } else {
                         $('#ValidationMessageError span').html(result.validationMessage);
-                        //$('#ValidationMessageSuccess').hide();
-                        //$('#ValidationMessageError').show();
+                        $('#ValidationMessageSuccess').hide();
+                        $('#ValidationMessageError').show();
                     }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     $('#ValidationMessageError span').html('Woops! Something went wrong - please try another promo code.');
-                    //$('#ValidationMessageSuccess').hide();
-                    //$('#ValidationMessageError').show();
+                    $('#ValidationMessageSuccess').hide();
+                    $('#ValidationMessageError').show();
                 }
             });
         }
         else {
-            $('#ValidationMessageError').html('No promotional code was supplied; please enter a value and try again.');
-            //$('#ValidationMessageSuccess').hide();
-            //$('#ValidationMessageError').show();
+            $('#ValidationMessageError span').html('No promotional code was supplied; please enter a value and try again.');
+            $('#ValidationMessageSuccess').hide();
+            $('#ValidationMessageError').show();
         }
     });
 

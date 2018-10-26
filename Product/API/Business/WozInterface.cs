@@ -36,12 +36,12 @@ namespace UpDiddyApi.Business
 
         #region Enroll Student
         public MessageTransactionResponse EnrollStudent(string EnrollmentGuid)
-        {            
-            _log = new WozTransactionLog();
+        {
+            _translog = new WozTransactionLog();
             try
             {
-                _log.EndPoint = "Woz:EnrollStudent";
-                _log.InputParameters = $"enrollmentGuid={EnrollmentGuid}";
+                _translog.EndPoint = "Woz:EnrollStudent";
+                _translog.InputParameters = $"enrollmentGuid={EnrollmentGuid}";
 
                 // Get the Enrollment Object 
                 Enrollment Enrollment = _db.Enrollment
@@ -52,7 +52,7 @@ namespace UpDiddyApi.Business
                 if (Enrollment == null)
                     return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
 
-                _log.EnrollmentGuid = Enrollment.EnrollmentGuid;
+                _translog.EnrollmentGuid = Enrollment.EnrollmentGuid;
 
                 // Validate we have a subscriber
                 _db.Entry(Enrollment).Reference(s => s.Subscriber).Load();
@@ -92,7 +92,7 @@ namespace UpDiddyApi.Business
            
                 string ResponseJson = AsyncHelper.RunSync<string>(() => WozResponse.Content.ReadAsStringAsync());
 
-                _log.WozResponseJson = ResponseJson;
+                _translog.WozResponseJson = ResponseJson;
                 if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
                 { 
                     var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
@@ -130,10 +130,10 @@ namespace UpDiddyApi.Business
 
         public MessageTransactionResponse CreateWozStudentLogin(VendorStudentLoginDto StudentLoginDto, string EnrollmentGuid)
         {
-            _log = new WozTransactionLog();
-            _log.EndPoint = "WozInterface:SaveWozStudentLogin";
+            _translog = new WozTransactionLog();
+            _translog.EndPoint = "WozInterface:SaveWozStudentLogin";
             string WozEnrollmentJson = Newtonsoft.Json.JsonConvert.SerializeObject(StudentLoginDto);
-            _log.InputParameters = "WozEnrollmentJson=" + WozEnrollmentJson + ";";
+            _translog.InputParameters = "WozEnrollmentJson=" + WozEnrollmentJson + ";";
 
             MessageTransactionResponse Rval = new MessageTransactionResponse();
             try
@@ -181,16 +181,16 @@ namespace UpDiddyApi.Business
 
         public MessageTransactionResponse TransactionStatus(string EnrollmentGuid, string TransactionId)
         {
-            _log = new WozTransactionLog();
+            _translog = new WozTransactionLog();
             try
             {
-                _log.EndPoint = "WozInterface:TransactionStatus";
-                _log.InputParameters = "EnrollmentGuid=" + EnrollmentGuid + ";";
-                _log.InputParameters = "TransactionId=" + TransactionId + ";";
+                _translog.EndPoint = "WozInterface:TransactionStatus";
+                _translog.InputParameters = "EnrollmentGuid=" + EnrollmentGuid + ";";
+                _translog.InputParameters = "TransactionId=" + TransactionId + ";";
 
                 try
                 {
-                    _log.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
+                    _translog.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
                 }
                 catch (Exception ex)
                 {
@@ -203,7 +203,7 @@ namespace UpDiddyApi.Business
                 HttpResponseMessage WozResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(WozRequest));
                 string ResponseJson = AsyncHelper.RunSync<string>(() => WozResponse.Content.ReadAsStringAsync());
 
-                _log.WozResponseJson = ResponseJson;
+                _translog.WozResponseJson = ResponseJson;
                 if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
@@ -254,13 +254,13 @@ namespace UpDiddyApi.Business
         //  enrollment or 2) Request Woz create a new section for the  enrollment 
         public MessageTransactionResponse GetSectionForEnrollment(string EnrollmentGuid)
         {
-            _log = new WozTransactionLog();
+            _translog = new WozTransactionLog();
 
             try
             {
-                _log.EndPoint = "WozInterface:CreateSection";
-                _log.InputParameters = "EnrollmentGuid=" + EnrollmentGuid + ";";
-                _log.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
+                _translog.EndPoint = "WozInterface:CreateSection";
+                _translog.InputParameters = "EnrollmentGuid=" + EnrollmentGuid + ";";
+                _translog.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
 
                 // Get the Enrollment Object 
                 Enrollment Enrollment = _db.Enrollment
@@ -320,7 +320,7 @@ namespace UpDiddyApi.Business
 
                 string ResponseJson = AsyncHelper.RunSync<string>(() => WozResponse.Content.ReadAsStringAsync());
                 
-                _log.WozResponseJson = ResponseJson;
+                _translog.WozResponseJson = ResponseJson;
 
                 if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
                 {
@@ -350,14 +350,14 @@ namespace UpDiddyApi.Business
         public MessageTransactionResponse SaveCourseSection(WozCourseSectionDto CourseSectionDto, string EnrollmentGuid)
         {
 
-            _log = new WozTransactionLog();
+            _translog = new WozTransactionLog();
 
             try
             {
-                _log.EndPoint = "WozInterface:SaveCourseSection";
+                _translog.EndPoint = "WozInterface:SaveCourseSection";
                 string StudentLoginJson = Newtonsoft.Json.JsonConvert.SerializeObject(CourseSectionDto);
-                _log.InputParameters = "WozCourseSectionDto=" + StudentLoginJson + ";";
-                _log.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
+                _translog.InputParameters = "WozCourseSectionDto=" + StudentLoginJson + ";";
+                _translog.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
 
                 MessageTransactionResponse Rval = new MessageTransactionResponse();
                 try
@@ -426,11 +426,11 @@ namespace UpDiddyApi.Business
 
         public MessageTransactionResponse SaveWozCourseEnrollment(string EnrollmentGuid, WozCourseEnrollmentDto WozCourseEnrollmentDto)
         {
-            _log = new WozTransactionLog();
-            _log.EndPoint = "WozInterface:SaveWozCourseEnrollment";
+            _translog = new WozTransactionLog();
+            _translog.EndPoint = "WozInterface:SaveWozCourseEnrollment";
             string WozEnrollmentJson = Newtonsoft.Json.JsonConvert.SerializeObject(WozCourseEnrollmentDto);
-            _log.InputParameters = "WozEnrollmentJson=" + WozEnrollmentJson + ";";
-            _log.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
+            _translog.InputParameters = "WozEnrollmentJson=" + WozEnrollmentJson + ";";
+            _translog.EnrollmentGuid = Guid.Parse(EnrollmentGuid);
 
             MessageTransactionResponse Rval = new MessageTransactionResponse();
             try
@@ -465,9 +465,9 @@ namespace UpDiddyApi.Business
         // Enroll a student with a vendor 
         public  MessageTransactionResponse RegisterStudent(string EnrollmentGuid)
         {
-            _log = new WozTransactionLog();
-            _log.EndPoint = "WozInterface:RegisterStudent";
-            _log.InputParameters = "EnrollmentGuid=" + EnrollmentGuid + ";";
+            _translog = new WozTransactionLog();
+            _translog.EndPoint = "WozInterface:RegisterStudent";
+            _translog.InputParameters = "EnrollmentGuid=" + EnrollmentGuid + ";";
 
             MessageTransactionResponse Rval = new MessageTransactionResponse();
 
@@ -479,7 +479,7 @@ namespace UpDiddyApi.Business
             // Check the validity of the request 
             if (Enrollment == null)
                 return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
-            _log.EnrollmentGuid = Enrollment.EnrollmentGuid;
+            _translog.EnrollmentGuid = Enrollment.EnrollmentGuid;
 
             // Valid we have a course                         
             _db.Entry(Enrollment).Reference(c => c.Course).Load();
@@ -545,7 +545,7 @@ namespace UpDiddyApi.Business
             HttpResponseMessage WozResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(WozRequest));
 
             string ResponseJson = AsyncHelper.RunSync<string>(() => WozResponse.Content.ReadAsStringAsync());
-            _log.WozResponseJson = ResponseJson;
+            _translog.WozResponseJson = ResponseJson;
 
             if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
             {
@@ -648,14 +648,14 @@ namespace UpDiddyApi.Business
 
             string RValJson = Newtonsoft.Json.JsonConvert.SerializeObject(RVal);
 
-            if (_log.WozTransactionLogId > 0) _log.WozTransactionLogId = 0;
-            _log.ResponseJson = RValJson;
-            _log.ModifyDate = DateTime.Now;
-            _log.CreateDate = DateTime.Now;
-            _log.CreateGuid = Guid.NewGuid();
-            _log.ModifyGuid = Guid.NewGuid();
+            if (_translog.WozTransactionLogId > 0) _translog.WozTransactionLogId = 0;
+            _translog.ResponseJson = RValJson;
+            _translog.ModifyDate = DateTime.Now;
+            _translog.CreateDate = DateTime.Now;
+            _translog.CreateGuid = Guid.NewGuid();
+            _translog.ModifyGuid = Guid.NewGuid();
 
-            _db.WozTransactionLog.Add(_log);
+            _db.WozTransactionLog.Add(_translog);
             _db.SaveChanges();
 
             return RVal;
