@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
- 
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -14,7 +14,7 @@ namespace UpDiddyApi.Models
 
     public class UpDiddyDbContextFactory : IDesignTimeDbContextFactory<UpDiddyDbContext>
     {
-       
+
         public UpDiddyDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<UpDiddyDbContext>();
@@ -23,7 +23,7 @@ namespace UpDiddyApi.Models
                    .SetBasePath(CurrentDir)
                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-            IConfiguration config = configBuilder.Build();   
+            IConfiguration config = configBuilder.Build();
 
             var VaultUrl = config["VaultUrl"];
             var VaultClientId = config["VaultClientId"];
@@ -84,16 +84,75 @@ namespace UpDiddyApi.Models
         public DbSet<WozTransactionLog> WozTransactionLog { get; set; }
         public DbSet<WozCourseSection> WozCourseSection { get; set; }
         public DbSet<WozCourseEnrollment> WozCourseEnrollment { get; set; }
-
         public DbSet<WozTermsOfService> WozTermsOfService { get; set; }
+        public DbSet<RedemptionStatus> RedemptionStatus { get; set; }
+        public DbSet<PromoCodeRedemption> PromoCodeRedemption { get; set; }
+        public DbSet<EnrollmentLog> EnrollmentLog { get; set; }
+        public DbSet<Country> Country { get; set; }
+        public DbSet<State> State { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<PromoCode>()
+                .Property(pc => pc.NumberOfRedemptions)
+                .HasDefaultValue(0);
+            modelBuilder.Entity<PromoCode>()
+                .Property(pc => pc.MaxAllowedNumberOfRedemptions)
+                .HasDefaultValue(1);
+            modelBuilder.Entity<PromoCodeRedemption>()
+                .HasIndex(i => new { i.PromoCodeId, i.SubscriberId, i.CourseId, i.RedemptionStatusId, i.IsDeleted }).IsUnique();
 
-         
+            modelBuilder.Entity<RedemptionStatus>().HasData(
+                new RedemptionStatus()
+                {
+                    CreateDate = DateTime.Now,
+                    CreateGuid = Guid.NewGuid(), // todo: this should refer to an admin account's AD Guid
+                    IsDeleted = 0,
+                    ModifyDate = null,
+                    ModifyGuid = null,
+                    Name = "In Process",
+                    RedemptionStatusGuid = Guid.NewGuid(),
+                    RedemptionStatusId = 1
+                },
+                new RedemptionStatus()
+                {
+                    CreateDate = DateTime.Now,
+                    CreateGuid = Guid.NewGuid(), // todo: this should refer to an admin account's AD Guid
+                    IsDeleted = 0,
+                    ModifyDate = null,
+                    ModifyGuid = null,
+                    Name = "Completed",
+                    RedemptionStatusGuid = Guid.NewGuid(),
+                    RedemptionStatusId = 2
+                });
+            modelBuilder.Entity<PromoType>().HasData(
+                new PromoType()
+                {
+                    CreateDate = DateTime.Now,
+                    CreateGuid = Guid.NewGuid(), // todo: this should refer to an admin account's AD Guid
+                    IsDeleted = 0,
+                    ModifyDate = null,
+                    ModifyGuid = null,
+                    Description = "This type indicates that the PromoValueFactor is the dollar amount that should be subtracted from the course cost.",
+                    Name = "Dollar Amount",
+                    PromoTypeGuid = Guid.NewGuid(),
+                    PromoTypeId = 1
+                },
+                new PromoType()
+                {
+                    CreateDate = DateTime.Now,
+                    CreateGuid = Guid.NewGuid(), // todo: this should refer to an admin account's AD Guid
+                    IsDeleted = 0,
+                    ModifyDate = null,
+                    ModifyGuid = null,
+                    Description = "This type indicates that the the course cost should be reduced by the percentage value of the PromoValueFactor.",
+                    Name = "Percent Off",
+                    PromoTypeGuid = Guid.NewGuid(),
+                    PromoTypeId = 2
+                });
+
+            // todo: would like to be able to add check constraints here, but it seems it is only possible by editing the migration directly: https://stackoverflow.com/questions/34245449/is-it-possible-to-add-check-constraint-with-fluent-api-in-ef7
         }
     }
-
-
 }
 

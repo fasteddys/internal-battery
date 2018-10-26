@@ -1,4 +1,5 @@
 ﻿@import '_variables';
+
 .checkout-page-container {
     .checkout-topic-detail-band {
         background-color: $color-secondary;
@@ -60,6 +61,7 @@
                 }
 
                 &:disabled {
+                    color: $color-primary;
                     background-color: $color-tertiary-gray;
                     cursor: default;
                 }
@@ -91,6 +93,22 @@
                     label {
                         width: 100%;
                     }
+                }
+            }
+
+            #ValidationMessageError {
+                display: none;
+
+                span {
+                    color: darkred;
+                }
+            }
+
+            #ValidationMessageSuccess {
+                display: none;
+
+                span {
+                    color: $color-primary;
                 }
             }
         }

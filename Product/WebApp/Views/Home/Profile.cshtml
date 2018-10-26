@@ -1,0 +1,293 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model ProfileViewModel
+@{ 
+    List<string> countries = Model.CountryStateMapping.Keys.ToList();
+    countries.Sort();
+    countries.Remove("US");
+    countries.Insert(0, "US");
+}
+<script type="text/javascript">
+    var locationsList = {};
+    
+    @foreach (string country in Model.CountryStateMapping.Keys)
+    {
+        <text>
+            var states = [];
+        </text>
+        foreach (StateDto state in Model.CountryStateMapping[country])
+        {
+            <text>
+                states.push({"id" : "@state.StateId", "name" : "@state.Name"});
+            </text>
+        }
+        <text>
+            locationsList["@country"] = states;
+        </text>
+    }
+
+    
+
+</script>
+
+<div class="profile-container">
+    <div class="row profile-hero">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <!--<div class="profile-headshot">
+                            <img src="~/images/blank_avatar.jpg" />
+                        </div>-->
+                        <div class="row profile-header-info">
+                            <!--<div class="offset-md-3 col-md-5">-->
+                            <div class="col-md-8 no-padding">
+                                <div class="career-circle-profile-text">My CareerCircle Profile</div>
+                                <div id="ProfileName" class="career-circle-profile-name">
+                                    <span id="ProfileFirstName">@(string.IsNullOrEmpty(Model.Subscriber.FirstName) ? "CareerCircle User" : Model.Subscriber.FirstName)</span>
+                                    <span id="ProfileLastName">@(string.IsNullOrEmpty(Model.Subscriber.LastName) ? "" : Model.Subscriber.LastName)</span>
+                                </div>
+                                <div class="career-circle-profile-email">
+                                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                                    @Model.Subscriber.Email
+                                </div>
+                            </div>
+                            <!--
+                            <div class="col-md-4 no-padding">
+                                Circle Completion Rating
+                            </div>
+                            -->
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row profile-body-container">
+        <div class="col-md-12">
+            <div class="container">
+                <div class="row">
+                    <!--<div class="offset-md-3 col-md-9">-->
+                    <div class="col-md-12">
+                        <!--
+                        <div class="course-recommendation-container">
+                            <div class="course-recommendation-header">
+                                <h2>Course Recommendation</h2>
+                            </div>
+                        </div>-->
+                        @*
+                        <div class="courses-in-progress-container">
+                            <div class="course-in-progress-header">
+                                <h2>Courses in Progress</h2>
+                            </div>
+                            <div class="courses-in-progress-list-container">
+                                <ul class="courses-in-progress-list-desktop">
+                                    @foreach (WozCourseProgress enrollment in Model.CurrentEnrollments)
+                                    {
+                                        double percentComplete = 100;// Math.Floor((double)enrollment.ActivitiesCompleted/enrollment.ActivitiesTotal);
+                                        string classFormatter = "";
+                                        if(percentComplete < 50)
+                                        {
+                                            classFormatter = "less-than-50";
+                                        }
+                                        else
+                                        {
+                                            classFormatter = "more-than-50";
+                                        }
+                                        <li class="course-in-progress">
+                                            <div class="progress @(classFormatter)">
+
+                                                <div class="progress-bar" role="progressbar" style="width: @(percentComplete)%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
+                                                    <div class="course-completion-percentage">
+                                                        @(percentComplete)%
+                                                    </div>
+                                                </div>
+                                                @{
+                                                    if (percentComplete != 100)
+                                                    {
+                                                        <div class="course-continue-anchor">
+                                                            <a href="/">Continue</a>
+                                                        </div>
+                                                    }
+                                                }
+
+                                            </div>
+                                            <div class="course-listing">
+
+                                                <div class="row">
+                                                    <div class="col-12 col-sm-6 course-list-course-name">
+                                                        Network Defense
+                                                    </div>
+                                                    <div class="col-sm-6 container-align-right">
+                                                        Lecture 7
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </li>
+                                    }
+                                    
+                                </ul>
+                            </div>
+                        </div>*@
+                        <div class="dashed-line-boxes-container">
+                            <div class="edit-personal-info-container">
+                                <div class="personal-info-header">
+                                    <div class="row">
+                                        <div class="col-12 col-sm-8 no-padding">
+                                            <h2>Contact Information</h2>
+                                        </div>
+                                        <div class="col-4 d-none d-sm-block container-align-right no-padding">
+                                            <button class="btn btn-primary edit-profile-info-button" type="button">
+                                                Edit
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="personal-info-display">
+                                    <ul>
+                                        <li>
+                                            First name: <span id="ProfileFirstNameDisplay">@Model.DisplayedFirstName</span>
+                                        </li>
+                                        <li>
+                                            Last name: <span id="ProfileLastNameDisplay">@Model.DisplayedLastName</span>
+                                        </li>
+                                        <li>
+                                            Address: <span id="ProfileAddressDisplay">@Model.DisplayedAddress</span>
+                                        </li>
+                                        <li>
+                                            City: <span id="ProfileCityDisplay">@Model.DisplayedCity</span>
+                                        </li>
+                                        <li>
+                                            State: <span id="ProfileStateDisplay">@Model.DisplayedState</span>
+                                        </li>
+                                        <li>
+                                            Country: <span id="ProfileCountryDisplay">@Model.DisplayedCountry</span>
+                                        </li>
+                                        <li>
+                                            Phone number: <span id="ProfilePhoneNumberDisplay">@Model.DisplayedPhone</span>
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-primary edit-profile-info-button d-block d-sm-none profile-mobile-view" type="button">
+                                        Edit
+                                    </button>
+
+                                </div>
+                                <div class="personal-info-form hidden" id="PersonalInfoFormContainer">
+                                    <form asp-controller="Home" asp-action="UpdateProfileInformation" id="PersonalInfoForm">
+                                        <input type="hidden" asp-for="CurrentSubscriberGuid" value="@(Model.Subscriber.SubscriberGuid)" />
+                                        <input type="hidden" asp-for="UpdatedState" value="" />
+                                        <div class="form-row">
+                                            <div class="form-group col-md-6">
+                                                <input type="text" class="form-control" name="UpdatedFirstName" id="UpdatedFirstName" asp-for="UpdatedFirstName" placeholder="@Model.FirstNamePlaceholder">
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <input type="text" class="form-control" name="UpdatedLastName" id="UpdatedLastName" asp-for="UpdatedLastName" placeholder="@Model.LastNamePlaceholder">
+                                            </div>
+                                            <div class="form-group col-md-3">
+                                                <input type="text" class="form-control" name="UpdatedAddress" id="UpdatedAddress" asp-for="UpdatedAddress" placeholder="@Model.AddressPlaceholder">
+                                            </div>
+                                            <div class="form-group col-md-3">
+                                                <input type="text" class="form-control" name="UpdatedCity" id="UpdatedCity" asp-for="UpdatedCity" placeholder="@Model.CityPlaceholder">
+                                            </div>
+                                            <div class="form-group col-md-3">
+                                                <select class="form-control" id="UpdatedCountry">
+                                                    @{
+                                                        foreach (string country in countries)
+                                                        {
+                                                            if (Model.Country.DisplayName != ""){ 
+                                                                if (country.Equals(Model.Country.DisplayName)){
+                                                                    <option selected="selected">@country</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option>@country</option>
+                                                                }
+                                                            }
+                                                            else{
+                                                                if (country.Equals("US"))
+                                                                {
+                                                                    <option selected="selected">@country</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option>@country</option>
+                                                                }
+                                                            }
+                                                            
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="form-group col-md-3">
+                                                <select class="form-control" id="UpdatedStateInput">
+
+                                                </select>
+                                            </div>
+                                            <div class="form-group col-md-6">
+                                                <input type="text" class="form-control" name="UpdatedPhoneNumber" id="UpdatedPhoneNumber" asp-for="UpdatedPhoneNumber" placeholder="@Model.PhonePlaceholder">
+                                            </div>
+
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-6 col-sm-12 no-padding container-align-right">
+                                                <button type="submit" id="EditProfileInfoSubmit" class="btn btn-primary">Submit</button>
+                                            </div>
+                                            <div class="col-6 d-block d-sm-none no-padding">
+                                                <button class="btn btn-primary edit-profile-info-button profile-mobile-cancel" type="button">
+                                                    Edit
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    @{ 
+        if (!Model.State.Name.Equals(""))
+        {
+            <text>
+            var dropdown = document.getElementById("UpdatedStateInput");
+            var country = "@Model.Country.DisplayName";
+            var states = locationsList[country];
+            for (i = 0; i < states.length; i++)
+            {
+                var option = document.createElement("option");
+                option.text = states[i].name;
+                option.value = states[i].id;
+                dropdown.appendChild(option);
+    }
+            </text>
+        }
+        else
+        {
+            <text>
+            var dropdown = document.getElementById("UpdatedStateInput");
+            var country = "US";
+            var states = locationsList[country];
+            for (i = 0; i < states.length; i++)
+            {
+                var option = document.createElement("option");
+                option.text = states[i].name;
+                option.value = states[i].id;
+                dropdown.appendChild(option);
+    }
+            </text>
+        }
+    }
+    
+</script>

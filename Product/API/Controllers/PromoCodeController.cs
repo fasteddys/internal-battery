@@ -11,6 +11,8 @@ using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace UpDiddyApi.Controllers
 {
@@ -40,30 +42,165 @@ namespace UpDiddyApi.Controllers
             IList<PromoCodeDto> rval = null;
             rval = _db.PromoCode
                 .Where(t => t.IsDeleted == 0)
-                .ProjectTo<PromoCodeDto>()
+                .ProjectTo<PromoCodeDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
             return Ok(rval);
 
         }
 
+        [Authorize]
         [HttpGet]
-        [Route("api/[controller]/{PromoCode}")]
-        public IActionResult GetPromoCode(string PromoCode)
+        [Route("api/[controller]/{promoCodeRedemptionGuid}")]
+        public IActionResult PromoCodeRedemption(Guid promoCodeRedemptionGuid)
         {
-            PromoCode promoCode = _db.PromoCode
-                .Where(t => t.IsDeleted == 0 && t.Code == PromoCode)
-                .FirstOrDefault();
-
-            if (promoCode == null)
-                return NotFound();
-            return Ok(_mapper.Map<PromoCodeDto>(promoCode));
-            
+            throw new NotImplementedException();
         }
 
-        
+        [Authorize]
+        [HttpGet]
+        [Route("api/[controller]/{code}/{courseGuid}/{subscriberGuid}")]
+        public IActionResult PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
+        {
+            try
+            {
+                PromoCodeDto validPromoCodeDto = null;
 
-        
+                #region business logic to refactor
 
+                /*  todo: refactor this code. move business rules to IValidatableObject in Dto? to do this, i think we would need to
+                *   use a custom value resolver in automapper to transform 5 model objects (PromoCode, Course, CoursePromoCode, 
+                *   VendorPromoCode, SubscriberPromoCode) into a PromoCodeDto. once all of the necessary properties exist within that 
+                *   Dto, then we could move all of the validation to:
+                *       IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+                */
+
+                PromoCode promoCode = _db.PromoCode
+                    .Include(p => p.PromoType)
+                    .Where(p => p.Code == code)
+                    .FirstOrDefault();
+
+                if (promoCode == null)
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code does not exist." });
+
+                if (promoCode.IsDeleted == 1)
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code is no longer valid." });
+
+                DateTime currentDateTime = DateTime.Now;
+                if (promoCode.PromoStartDate > currentDateTime.AddHours(-4)) // todo: improve ghetto grace period date logic
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code is not yet active." });
+
+                if (promoCode.PromoEndDate < currentDateTime.AddHours(4)) // todo: improve ghetto grace period date logic
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has expired." });
+
+                var inProgressRedemptionsForThisCode = _db.PromoCodeRedemption
+                    .Include(pcr => pcr.RedemptionStatus)
+                    .Where(pcr => pcr.PromoCodeId == promoCode.PromoCodeId && pcr.IsDeleted == 0 && pcr.RedemptionStatus.Name == "In Process")
+                    .Count();
+                if (promoCode.NumberOfRedemptions + inProgressRedemptionsForThisCode >= promoCode.MaxAllowedNumberOfRedemptions)
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has exceeded its allowed number of redemptions." });
+
+                Guid parsedCourseGuid;
+                Guid.TryParse(courseGuid, out parsedCourseGuid);
+                Course course = _db.Course
+                    .Where(c => c.CourseGuid == parsedCourseGuid)
+                    .FirstOrDefault();
+
+                if (course == null)
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "The course specified is invalid." });
+
+                List<CoursePromoCode> courseRestrictionsForThisPromoCode = _db.CoursePromoCode
+                    .Where(cpc => cpc.PromoCodeId == promoCode.PromoCodeId)
+                    .ToList();
+
+                if (courseRestrictionsForThisPromoCode.Any() && !courseRestrictionsForThisPromoCode.Any(r => r.CourseId == course.CourseId))
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this course." });
+
+                List<VendorPromoCode> vendorRestrictionsForThisPromoCode = _db.VendorPromoCode
+                    .Where(vpc => vpc.PromoCodeId == promoCode.PromoCodeId)
+                    .ToList();
+
+                if (vendorRestrictionsForThisPromoCode.Any() && !vendorRestrictionsForThisPromoCode.Any(vpc => vpc.VendorId == course.VendorId))
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this vendor." });
+
+                Guid parsedSubscriberGuid;
+                Guid.TryParse(subscriberGuid, out parsedSubscriberGuid);
+                Subscriber subscriber = _db.Subscriber
+                    .Where(s => s.SubscriberGuid == parsedSubscriberGuid)
+                    .FirstOrDefault();
+
+                if (subscriber == null)
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "The subscriber specified is invalid." });
+
+                List<SubscriberPromoCode> subscriberRestrictionsForThisPromoCode = _db.SubscriberPromoCode
+                    .Where(spc => spc.PromoCodeId == promoCode.PromoCodeId)
+                    .ToList();
+
+                if (subscriberRestrictionsForThisPromoCode.Any() && !subscriberRestrictionsForThisPromoCode.Any(spc => spc.SubscriberId == subscriber.SubscriberId))
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this subscriber." });
+                #endregion
+
+                // check if there is an existing "in process" promo code redemption for this code, course, and subscriber that has not been logically deleted
+                var existingInProgressPromoCodeRedemption = _db.PromoCodeRedemption
+                    .Include(pcr => pcr.RedemptionStatus)
+                    .Where(pcr => pcr.PromoCodeId == promoCode.PromoCodeId && pcr.SubscriberId == subscriber.SubscriberId && pcr.CourseId == course.CourseId && pcr.RedemptionStatus.Name == "In Process" && pcr.IsDeleted == 0)
+                    .FirstOrDefault();
+
+                if (existingInProgressPromoCodeRedemption == null)
+                {
+                    // create a new promo code redemption and store it in the db
+                    validPromoCodeDto = _mapper.Map<PromoCodeDto>(promoCode);
+                    validPromoCodeDto.IsValid = true;
+                    validPromoCodeDto.ValidationMessage = $"The promo code '{promoCode.PromoName}' has been applied successfully! See below for the updated price.";
+                    switch (promoCode.PromoType.Name)
+                    {
+                        case "Dollar Amount":
+                            validPromoCodeDto.Discount = !course.Price.HasValue ? 0 : Math.Max(0, promoCode.PromoValueFactor);
+                            break;
+                        case "Percent Off":
+                            validPromoCodeDto.Discount = !course.Price.HasValue ? 0 : Math.Max(0, Math.Round(course.Price.Value * promoCode.PromoValueFactor, 2, MidpointRounding.ToEven));
+                            break;
+                        default:
+                            throw new ApplicationException("Unrecognized promo type!");
+                    }
+                    validPromoCodeDto.FinalCost = !course.Price.HasValue ? 0 : course.Price.Value - validPromoCodeDto.Discount;
+                    validPromoCodeDto.PromoCodeRedemptionGuid = Guid.NewGuid();
+                    _db.PromoCodeRedemption.Add(new PromoCodeRedemption()
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.NewGuid(),
+                        IsDeleted = 0,
+                        PromoCodeRedemptionGuid = validPromoCodeDto.PromoCodeRedemptionGuid,
+                        RedemptionStatusId = 1, // "In Process"
+                        ValueRedeemed = validPromoCodeDto.Discount,
+                        CourseId = course.CourseId,
+                        PromoCodeId = promoCode.PromoCodeId,
+                        SubscriberId = subscriber.SubscriberId
+                    });
+                    _db.SaveChanges();
+                }
+                else
+                {
+                    // use the existing "in process" promo code redemption
+                    validPromoCodeDto = new PromoCodeDto()
+                    {
+                        Discount = existingInProgressPromoCodeRedemption.ValueRedeemed,
+                        FinalCost = !existingInProgressPromoCodeRedemption.Course.Price.HasValue ? 0 : existingInProgressPromoCodeRedemption.Course.Price.Value - existingInProgressPromoCodeRedemption.ValueRedeemed,
+                        IsValid = true,
+                        ValidationMessage = $"The promo code '{existingInProgressPromoCodeRedemption.PromoCode.PromoName}' has been applied successfully! See below for the updated price.",
+                        PromoCodeRedemptionGuid = existingInProgressPromoCodeRedemption.PromoCodeRedemptionGuid,
+                        PromoDescription = existingInProgressPromoCodeRedemption.PromoCode.PromoDescription,
+                        PromoName = existingInProgressPromoCodeRedemption.PromoCode.PromoName
+                    };
+                }
+
+                return Ok(validPromoCodeDto);
+            }
+            catch (Exception e)
+            {
+                // todo: logging?
+                return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "An unexpected error occurred." });
+            }
+        }
     }
 }

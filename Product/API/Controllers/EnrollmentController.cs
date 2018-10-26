@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
-
+using AutoMapper.QueryableExtensions;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddyApi.Controllers
@@ -52,6 +50,17 @@ namespace UpDiddyApi.Controllers
            
         }
 
+        [HttpGet]
+        [Route("api/[controller]/CurrentEnrollments/{SubscriberId}")]
+        public IActionResult GetCurrentEnrollmentsForSubscriber(int SubscriberId)
+        {
+            IList<EnrollmentDto> rval = null;
+            rval = _db.Enrollment
+                .Where(t => t.IsDeleted == 0 && t.SubscriberId == SubscriberId)
+                .ProjectTo<EnrollmentDto>(_mapper.ConfigurationProvider)
+                .ToList();
 
+            return Ok(rval);
+        }
     }
 }

@@ -46,7 +46,7 @@ namespace UpDiddy.Controllers
         public IActionResult Index()
         {
             // TODO remove test code 
-            GetSubscriber();
+            GetSubscriber(false);
 
             HomeViewModel HomeViewModel = new HomeViewModel(_configuration, API.Topics());
             return View(HomeViewModel);
@@ -87,6 +87,62 @@ namespace UpDiddy.Controllers
         public IActionResult About()
         { 
             return View();
+        }
+
+        public IActionResult Profile()
+        {
+            GetSubscriber(true);
+            IList<CountryStateDto> CountryStateList = API.GetCountryStateList();
+            IList<EnrollmentDto> CurrentEnrollments = API.GetCurrentEnrollmentsForSubscriber(this.subscriber);
+            CountryDto SubscriberCountry = new CountryDto();
+            StateDto SubscriberState = new StateDto();
+            if (this.subscriber.StateId != 0)
+            {
+                SubscriberCountry = API.GetSubscriberCountry(this.subscriber.StateId);
+                SubscriberState = API.GetSubscriberState(this.subscriber.StateId);
+            }
+            IList<WozCourseProgress> WozCourseProgressions = new List<WozCourseProgress>();
+            foreach(EnrollmentDto enrollment in CurrentEnrollments)
+            {
+                WozCourseProgressions.Add(API.GetCurrentCourseProgress((Guid)this.subscriber.SubscriberGuid, (Guid)enrollment.EnrollmentGuid));
+            }
+            ProfileViewModel ProfileViewModel = new ProfileViewModel(
+                _configuration, 
+                this.subscriber, 
+                CountryStateList, 
+                WozCourseProgressions, 
+                SubscriberCountry,
+                SubscriberState);
+            return View(ProfileViewModel);
+        }
+
+        [HttpPost]
+        public BasicResponseDto UpdateProfileInformation(
+            string UpdatedFirstName, 
+            string UpdatedLastName, 
+            string UpdatedAddress, 
+            string UpdatedPhoneNumber,
+            string UpdatedCity,
+            int UpdatedState,
+            Guid CurrentSubscriberGuid
+            )
+        {
+            SubscriberDto Subscriber = new SubscriberDto
+            {
+                FirstName = UpdatedFirstName,
+                LastName = UpdatedLastName,
+                Address = UpdatedAddress,
+                PhoneNumber = UpdatedPhoneNumber,
+                City = UpdatedCity,
+                StateId = UpdatedState,
+                SubscriberGuid = CurrentSubscriberGuid
+            };
+            API.UpdateProfileInformation(Subscriber);
+            return new BasicResponseDto
+            {
+                StatusCode = "200",
+                Description = "OK"
+            };
         }
 
         [HttpPost]
@@ -183,6 +239,13 @@ namespace UpDiddy.Controllers
 
             ViewData["Payload"] = $"{responseString}";            
             return View();
+        }
+
+        [HttpGet]
+        [Route("/Home/TierLevel")]
+        public string TierLevel()
+        {
+            return "{\"Tier\": \"1\"}";
         }
 
         public IActionResult Error(string message)

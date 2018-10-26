@@ -68,9 +68,9 @@ namespace UpDiddy.Api
         {
             return Get<WozTermsOfServiceDto>("woz/TermsOfService/", false);
         }
-        public string EnrollStudentAndObtainEnrollmentGUID(EnrollmentDto enrollmentDto)
+        public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentDto enrollmentDto)
         {
-            return Post<EnrollmentDto>(enrollmentDto, "enrollment/", false);
+            return Post<Guid>(enrollmentDto, "enrollment/", false);
         }
 
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
@@ -78,9 +78,39 @@ namespace UpDiddy.Api
             return Post<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);
         }
 
-        public PromoCodeDto GetPromoCode(string PromoCode)
+        public PromoCodeDto PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
         {
-            return Get<PromoCodeDto>("promocode/" + PromoCode, false);
+            return Get<PromoCodeDto>("promocode/" + code + "/" + courseGuid + "/" + subscriberGuid, true);
+        }
+
+        public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
+        {
+            return Post<BasicResponseDto>(Subscriber, "profile/update", false);
+        }
+
+        public IList<CountryStateDto> GetCountryStateList()
+        {
+            return Get<IList<CountryStateDto>>("profile/LocationList", false);
+        }
+
+        public IList<EnrollmentDto> GetCurrentEnrollmentsForSubscriber(SubscriberDto Subscriber)
+        {
+            return Get<IList<EnrollmentDto>>("enrollment/CurrentEnrollments/" + Subscriber.SubscriberId, false); 
+        }
+
+        public WozCourseProgress GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)
+        {
+            return Get<WozCourseProgress>("woz/CourseStatus/" + SubscriberGuid + "/" + EnrollmentGuid, false);
+        }
+        
+        public CountryDto GetSubscriberCountry(int StateId)
+        {
+            return Get<CountryDto>("subscriber/CountryFromState/" + StateId, true);
+        }
+
+        public StateDto GetSubscriberState(int StateId)
+        {
+            return Get<StateDto>("subscriber/State/" + StateId, true);
         }
 
     }

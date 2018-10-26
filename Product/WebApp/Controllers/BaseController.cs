@@ -44,7 +44,7 @@ namespace UpDiddy.Controllers
             }
         }  
              
-        public void GetSubscriber()
+        public void GetSubscriber(bool HardRefresh)
         {
  
             if (User.Identity.IsAuthenticated)
@@ -57,9 +57,12 @@ namespace UpDiddy.Controllers
                     throw new Exception("Unable to locate email claim");
 
                 string objectId = User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
-                
+
                 // Try to get the subscriber from session 
-                string SubscriberJson = HttpContext.Session.GetString(Constants.SubsriberSessionKey);                
+
+                string SubscriberJson = "";
+                if(!HardRefresh)
+                    SubscriberJson = HttpContext.Session.GetString(Constants.SubsriberSessionKey);                
                 if ( String.IsNullOrEmpty(SubscriberJson)  )
                 {
                     this.subscriber = API.Subscriber(Guid.Parse(objectId));

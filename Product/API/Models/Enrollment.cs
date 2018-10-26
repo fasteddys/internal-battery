@@ -22,5 +22,6 @@ namespace UpDiddyApi.Models
         public DateTime? DroppedDate { get; set; }
         public int EnrollmentStatusId { get; set; }
         public int? TermsOfServiceFlag { get; set; }
+        public Int64? SectionStartTimestamp { get; set; }
     }
 }

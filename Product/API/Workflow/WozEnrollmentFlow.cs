@@ -14,6 +14,7 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.MessageQueue;
+using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 
 namespace UpDiddyApi.Workflow
 {
@@ -51,7 +52,7 @@ namespace UpDiddyApi.Workflow
  
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
                 RVal =  woz.EnrollStudent(EnrollmentGuid); 
                 switch (RVal.State)
                 {
@@ -84,7 +85,7 @@ namespace UpDiddyApi.Workflow
                         break;
                     case TransactionState.Complete:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentComplete);
-                        BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.GetSectionWorkItem(EnrollmentGuid));
+                        BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.EnrollStudentCompleteWorkItem(EnrollmentGuid));
                         break;
                 }
             }
@@ -104,7 +105,7 @@ namespace UpDiddyApi.Workflow
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
                 RVal = woz.TransactionStatus(EnrollmentGuid,TransactionId);
                 switch (RVal.State)
                 {
@@ -145,7 +146,7 @@ namespace UpDiddyApi.Workflow
                             woz.CreateWozStudentLogin(StudentLogin, EnrollmentGuid);
                             Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentComplete);
                             // Move to next workitem
-                            BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.GetSectionWorkItem(EnrollmentGuid));
+                            BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.EnrollStudentCompleteWorkItem(EnrollmentGuid));
                         }
                         else
                         {
@@ -163,19 +164,52 @@ namespace UpDiddyApi.Workflow
             return RVal;
         }
 
-        #endregion
+
+        public async Task<MessageTransactionResponse> EnrollStudentCompleteWorkItem(string EnrollmentGuid)
+        {
+
+            WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
+            // Get the Enrollment Object 
+            Enrollment Enrollment = _db.Enrollment
+                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                 .FirstOrDefault();
+
+            if ( Enrollment == null )
+            {
+                Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentFatalError);
+                Helper.WorkItemFatalError(EnrollmentGuid, "EnrollStudentCompleteWorkItem: Cannot located enrollment" );
+            }
+            else
+            {
+                // Use a different flow for instructor led courses versus self-paced 
+                if ( Enrollment.EnrollmentStatusId == (int) EnrollmentStatus.FutureRegisterStudentRequested )
+                    BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.RegisterInstructorLedStudentWorkItem(EnrollmentGuid));
+                else 
+                    BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.GetSectionWorkItem(EnrollmentGuid));
+            }
+
+            return new MessageTransactionResponse()
+            {
+                InformationalMessage = string.Empty,
+                Data = string.Empty,
+                ResponseJson = string.Empty,
+                State = TransactionState.Complete                
+            };
+        }
+
+            #endregion
 
 
-        #region Create Section
-   
-        // Get a woz course section for the current enrollment  
-        public async Task<MessageTransactionResponse> GetSectionWorkItem(string EnrollmentGuid)
+            #region Create Section
+
+            // Get a woz course section for the current enrollment  
+            public async Task<MessageTransactionResponse> GetSectionWorkItem(string EnrollmentGuid)
         {
             MessageTransactionResponse RVal = null;
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
                 RVal = woz.GetSectionForEnrollment(EnrollmentGuid);
                 switch (RVal.State)
                 {
@@ -213,7 +247,7 @@ namespace UpDiddyApi.Workflow
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
                 RVal = woz.TransactionStatus(EnrollmentGuid, TransactionId);
                 switch (RVal.State)
                 {
@@ -266,14 +300,25 @@ namespace UpDiddyApi.Workflow
 
 
         #region Register Student
-        // Register the student in a woz section to complete the enrollment process 
-        public async Task<MessageTransactionResponse> RegisterStudentWorkItem(string EnrollmentGuid)
+
+        public async Task<MessageTransactionResponse> RegisterInstructorLedStudentWorkItem(string EnrollmentGuid)
+        {
+            MessageTransactionResponse rval = null;
+
+            return rval;
+
+
+        }
+
+
+            // Register the student in a woz section to complete the enrollment process 
+            public async Task<MessageTransactionResponse> RegisterStudentWorkItem(string EnrollmentGuid)
         {
             MessageTransactionResponse RVal = null;
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
                 RVal = woz.RegisterStudent(EnrollmentGuid);
                 switch (RVal.State)
                 {
@@ -312,7 +357,7 @@ namespace UpDiddyApi.Workflow
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
                 RVal = woz.TransactionStatus(EnrollmentGuid, TransactionId);
                 switch (RVal.State)
                 {
