@@ -12,7 +12,6 @@ namespace UpDiddyLib.Dto
         public string ValidationMessage { get; set; }
         public Decimal Discount { get; set; }
         public Decimal FinalCost { get; set; }
-        public Decimal PromoValueFactor { get; set; } // todo: remove this once references have been updated
         public Guid PromoCodeRedemptionGuid { get; set; }
     }
 }

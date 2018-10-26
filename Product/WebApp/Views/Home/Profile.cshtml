@@ -18,10 +18,10 @@
         <text>
             var states = [];
         </text>
-        foreach(string state in Model.CountryStateMapping[country])
+        foreach (StateDto state in Model.CountryStateMapping[country])
         {
             <text>
-                states.push("@state");
+                states.push({"id" : "@state.StateId", "name" : "@state.Name"});
             </text>
         }
         <text>
@@ -160,6 +160,15 @@
                                             Address: <span id="ProfileAddressDisplay">@Model.DisplayedAddress</span>
                                         </li>
                                         <li>
+                                            City: <span id="ProfileCityDisplay">@Model.DisplayedCity</span>
+                                        </li>
+                                        <li>
+                                            State: <span id="ProfileStateDisplay">@Model.DisplayedState</span>
+                                        </li>
+                                        <li>
+                                            Country: <span id="ProfileCountryDisplay">@Model.DisplayedCountry</span>
+                                        </li>
+                                        <li>
                                             Phone number: <span id="ProfilePhoneNumberDisplay">@Model.DisplayedPhone</span>
                                         </li>
                                     </ul>
@@ -171,6 +180,7 @@
                                 <div class="personal-info-form hidden" id="PersonalInfoFormContainer">
                                     <form asp-controller="Home" asp-action="UpdateProfileInformation" id="PersonalInfoForm">
                                         <input type="hidden" asp-for="CurrentSubscriberGuid" value="@(Model.Subscriber.SubscriberGuid)" />
+                                        <input type="hidden" asp-for="UpdatedState" value="" />
                                         <div class="form-row">
                                             <div class="form-group col-md-6">
                                                 <input type="text" class="form-control" name="UpdatedFirstName" id="UpdatedFirstName" asp-for="UpdatedFirstName" placeholder="@Model.FirstNamePlaceholder">
@@ -189,20 +199,34 @@
                                                     @{
                                                         foreach (string country in countries)
                                                         {
-                                                            if (country.Equals("US"))
-                                                            {
-                                                                <option selected="selected">@country</option>
+                                                            if (Model.Country.DisplayName != ""){ 
+                                                                if (country.Equals(Model.Country.DisplayName)){
+                                                                    <option selected="selected">@country</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option>@country</option>
+                                                                }
                                                             }
-                                                            else
-                                                            {
-                                                                <option>@country</option>
+                                                            else{
+                                                                if (country.Equals("US"))
+                                                                {
+                                                                    <option selected="selected">@country</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option>@country</option>
+                                                                }
                                                             }
+                                                            
                                                         }
                                                     }
                                                 </select>
                                             </div>
                                             <div class="form-group col-md-3">
-                                                <select class="form-control" id="UpdatedState"></select>
+                                                <select class="form-control" id="UpdatedStateInput">
+
+                                                </select>
                                             </div>
                                             <div class="form-group col-md-6">
                                                 <input type="text" class="form-control" name="UpdatedPhoneNumber" id="UpdatedPhoneNumber" asp-for="UpdatedPhoneNumber" placeholder="@Model.PhonePlaceholder">
@@ -232,13 +256,37 @@
 </div>
 
 <script>
-    var dropdown = document.getElementById("UpdatedState");
-    var country = "US";
-    var states = locationsList[country];
-    for (i = 0; i < states.length; i++) {
-        var option = document.createElement("option");
-        option.text = states[i];
-        option.value = states[i];
-        dropdown.appendChild(option);
+    @{ 
+        if (!Model.State.Name.Equals(""))
+        {
+            <text>
+            var dropdown = document.getElementById("UpdatedStateInput");
+            var country = "@Model.Country.DisplayName";
+            var states = locationsList[country];
+            for (i = 0; i < states.length; i++)
+            {
+                var option = document.createElement("option");
+                option.text = states[i].name;
+                option.value = states[i].id;
+                dropdown.appendChild(option);
     }
+            </text>
+        }
+        else
+        {
+            <text>
+            var dropdown = document.getElementById("UpdatedStateInput");
+            var country = "US";
+            var states = locationsList[country];
+            for (i = 0; i < states.length; i++)
+            {
+                var option = document.createElement("option");
+                option.text = states[i].name;
+                option.value = states[i].id;
+                dropdown.appendChild(option);
+    }
+            </text>
+        }
+    }
+    
 </script>

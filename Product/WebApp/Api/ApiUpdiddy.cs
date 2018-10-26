@@ -102,6 +102,16 @@ namespace UpDiddy.Api
         {
             return Get<WozCourseProgress>("woz/CourseStatus/" + SubscriberGuid + "/" + EnrollmentGuid, false);
         }
+        
+        public CountryDto GetSubscriberCountry(int StateId)
+        {
+            return Get<CountryDto>("subscriber/CountryFromState/" + StateId, true);
+        }
+
+        public StateDto GetSubscriberState(int StateId)
+        {
+            return Get<StateDto>("subscriber/State/" + StateId, true);
+        }
 
     }
 }

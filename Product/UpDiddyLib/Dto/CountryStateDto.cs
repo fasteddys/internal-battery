@@ -46,5 +46,14 @@ namespace UpDiddyLib.Dto
             set { _Code = value; }
         }
 
+        private int _StateId;
+
+        public int StateId
+        {
+            get { return _StateId; }
+            set { _StateId = value; }
+        }
+
+
     }
 }

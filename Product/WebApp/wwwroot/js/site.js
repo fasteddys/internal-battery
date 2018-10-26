@@ -1,4 +1,4 @@
-﻿// Write your Javascript code.
+﻿
 $(document).ready(function () {
     $("#SameAsAboveCheckbox").change(function () {
         if (this.checked) {
@@ -10,7 +10,9 @@ $(document).ready(function () {
             $('.billing-info-container input, .billing-info-container select').prop('required', true);
         }
     });
-    
+
+
+
     $("#TermsOfServiceCheckbox").change(function () {
         if (this.checked) {
             $('#EnrollmentSubmitButton').prop('disabled', false);
@@ -19,7 +21,7 @@ $(document).ready(function () {
             $('#EnrollmentSubmitButton').prop('disabled', true);
         }
     });
-    
+
 
     $('.edit-profile-info-button').on('click', function () {
         $('.personal-info-display').slideToggle();
@@ -36,9 +38,9 @@ $(document).ready(function () {
                 }
             }
         });
-        
+
     });
-    
+
     $('#PersonalInfoForm').submit(function (e) {
         $.ajax({
             type: "POST",
@@ -72,66 +74,62 @@ $(document).ready(function () {
     });
 
     $('#PromoCodeApplyButton').on('click', function () {
-        var promoCode = $('#PromoCodeInput').val();
-        var courseGuid = $('#CourseGuid').val();
-        var subscriberGuid = $('#SubscriberGuid').val();
+        var _promoCode = $('#PromoCodeInput').val();
+        var _courseGuid = $('#CourseGuid').val();
+        var _subscriberGuid = $('#SubscriberGuid').val();
 
-        if (promoCode !== undefined && promoCode !== '') {
-            var getUrl = "/Course/PromoCode/" + promoCode + "/" + courseGuid + "/" + subscriberGuid;
+        if (_promoCode !== undefined && $.trim(_promoCode) !== '') {
+            var form = $('#CourseCheckoutForm');
+            var token = $('input[name="__RequestVerificationToken"]', form).val();
+            var postUrl = "/Course/PromoCodeValidation/" + _promoCode + "/" + _courseGuid + "/" + _subscriberGuid;
+
             $.ajax({
-                url: getUrl, success: function (result) {
-                    if (result.validationMessage !== null) {
-                        // show/hide conditionally if property has value
-                        $('.promotional-code-validation').show();
-                        $('#ValidationMessage').html(result.validationMessage);
-                    } else {
-                        $('.promotional-code-validation').hide();
+                url: postUrl,
+                type: 'POST',
+                contentType: 'application/x-www-form-urlencoded',
+                headers: { 'RequestVerificationToken': token },
+                success: function (result) {
+                    if (result.isValid) {
+                        $('#ValidationMessageSuccess span').html(result.validationMessage);
+                        $('#ValidationMessageSuccess').show();
+                        $('#ValidationMessageError').hide();
                         $('#PromoCodeTotal').html("-$" + result.discount);
-                        $('#CourseTotal').html(result.FinalCost);
+                        $('#CourseTotal').html(result.finalCost);
                         $('#PromoCodeRedemptionGuid').val(result.promoCodeRedemptionGuid);
+                        $('#PromoCodeApplyButton').prop('disabled', true);
+                        $('#PromoCodeApplyButton').css('color', 'white');
+                    } else {
+                        $('#ValidationMessageError span').html(result.validationMessage);
+                        $('#ValidationMessageSuccess').hide();
+                        $('#ValidationMessageError').show();
                     }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $('#ValidationMessageError span').html('Woops! Something went wrong - please try another promo code.');
+                    $('#ValidationMessageSuccess').hide();
+                    $('#ValidationMessageError').show();
                 }
             });
         }
         else {
-            $('#ValidationMessage').html('No promotional code was supplied; please enter a value and try again.');
+            $('#ValidationMessageError span').html('No promotional code was supplied; please enter a value and try again.');
+            $('#ValidationMessageSuccess').hide();
+            $('#ValidationMessageError').show();
         }
     });
 
     $('#UpdatedCountry').change(function () {
         var country = $(this).val();
         var states = locationsList[country];
-        $("#UpdatedState").html("");
+        $("#UpdatedStateInput").html("");
         for (i = 0; i < states.length; i++) {
-            $('<option>').val(states[i]).text(states[i]).appendTo('#UpdatedState');
+            $('<option>').val(states[i].id).text(states[i].name).appendTo('#UpdatedStateInput');
         }
     });
-    
-    //$('#PromoCodeApplyButton').on('click', function () {
-    //    var promoCode = $('#PromoCodeInput').val();
-    //    var coursePrice = $('#CoursePrice').val();
-    //    var courseGuid = $('#CourseGuid').val();
-    //    if (promoCode !== undefined && promoCode !== '' && promoCodeIsValid(promoCode)) {
-    //        var getUrl = "/Course/PromoCode/" + courseGuid + "/" + promoCode;
-    //        $.ajax({
-    //            url: getUrl, success: function (result) {
-    //                var resultAsJson = $.parseJSON(result);
-    //                $('#PromoCodeTotal').html("-$" + resultAsJson.AmountOffCourse);
-    //                $('#CourseTotal').html(resultAsJson.NewCoursePrice);
-    //                $('#PromoCodeForSubmission').val(promoCode);
-    //            }
-    //        });
-    //    }
-    //    else {
-    //        alert("Promo code invalid; please try again.");
-    //    }
 
-    //});
-
-    // TODO: Implement client side security form promo code.
-    function promoCodeIsValid(code) {
-        return true;
-    }
+    $('#UpdatedStateInput').change(function () {
+        $('#UpdatedState').val($(this).val());
+    });
 
 });
 

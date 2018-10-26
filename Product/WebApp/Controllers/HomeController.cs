@@ -94,12 +94,25 @@ namespace UpDiddy.Controllers
             GetSubscriber(true);
             IList<CountryStateDto> CountryStateList = API.GetCountryStateList();
             IList<EnrollmentDto> CurrentEnrollments = API.GetCurrentEnrollmentsForSubscriber(this.subscriber);
+            CountryDto SubscriberCountry = new CountryDto();
+            StateDto SubscriberState = new StateDto();
+            if (this.subscriber.StateId != 0)
+            {
+                SubscriberCountry = API.GetSubscriberCountry(this.subscriber.StateId);
+                SubscriberState = API.GetSubscriberState(this.subscriber.StateId);
+            }
             IList<WozCourseProgress> WozCourseProgressions = new List<WozCourseProgress>();
             foreach(EnrollmentDto enrollment in CurrentEnrollments)
             {
                 WozCourseProgressions.Add(API.GetCurrentCourseProgress((Guid)this.subscriber.SubscriberGuid, (Guid)enrollment.EnrollmentGuid));
             }
-            ProfileViewModel ProfileViewModel = new ProfileViewModel(_configuration, this.subscriber, CountryStateList, WozCourseProgressions);
+            ProfileViewModel ProfileViewModel = new ProfileViewModel(
+                _configuration, 
+                this.subscriber, 
+                CountryStateList, 
+                WozCourseProgressions, 
+                SubscriberCountry,
+                SubscriberState);
             return View(ProfileViewModel);
         }
 
@@ -109,6 +122,8 @@ namespace UpDiddy.Controllers
             string UpdatedLastName, 
             string UpdatedAddress, 
             string UpdatedPhoneNumber,
+            string UpdatedCity,
+            int UpdatedState,
             Guid CurrentSubscriberGuid
             )
         {
@@ -118,6 +133,8 @@ namespace UpDiddy.Controllers
                 LastName = UpdatedLastName,
                 Address = UpdatedAddress,
                 PhoneNumber = UpdatedPhoneNumber,
+                City = UpdatedCity,
+                StateId = UpdatedState,
                 SubscriberGuid = CurrentSubscriberGuid
             };
             API.UpdateProfileInformation(Subscriber);

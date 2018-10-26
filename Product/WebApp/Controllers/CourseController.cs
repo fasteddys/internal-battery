@@ -75,31 +75,13 @@ namespace UpDiddy.Controllers
             return View("Checkout", CourseViewModel);
         }
 
-        [HttpGet]
-        [Route("/Course/PromoCode/{code}/{courseGuid}/{subscriberGuid}")]
-        public IActionResult PromoCode(string code, string courseGuid, string subscriberGuid)
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Route("/Course/PromoCodeValidation/{code}/{courseGuid}/{subscriberGuid}")]
+        public IActionResult PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
         {
             PromoCodeDto promoCodeDto = API.PromoCodeValidation(code, courseGuid, subscriberGuid);
             return new ObjectResult(promoCodeDto);
-        }
-
-        //[HttpGet]
-        //[Route("/Course/PromoCode/{CourseGuid}/{PromotionalCode}")]
-        //public string PromoCode(Guid CourseGuid, string PromotionalCode)
-        //{
-        //    CourseDto Course = API.CourseByGuid(CourseGuid);
-        //    PromoCodeDto Code = API.GetPromoCode(PromotionalCode);
-        //    return AssemblePromoCodeJSONResponse(Code, Course);
-        //}
-
-        private string AssemblePromoCodeJSONResponse(PromoCodeDto code, CourseDto course)
-        {
-            StringBuilder jsonString = new StringBuilder("{");
-            jsonString.Append("\"PromoValueFactor\": \"" + code.PromoValueFactor + "\",");
-            jsonString.Append("\"AmountOffCourse\": \"" + CalculatePriceOffOfCourse(course.Price, code.PromoValueFactor) + "\",");
-            jsonString.Append("\"NewCoursePrice\": \"" + CalculatePromoCodeDiscountedPrice(course.Price, code.PromoValueFactor) + "\"");
-            jsonString.Append("}");
-            return jsonString.ToString();
         }
 
         private Decimal? CalculatePromoCodeDiscountedPrice(Decimal? CoursePrice, Decimal PromoValueFactor)
@@ -156,7 +138,7 @@ namespace UpDiddy.Controllers
             var gateway = braintreeConfiguration.GetGateway();
             Decimal amount;
             if (PromoCodeForSubmission != null) {
-                amount = (Decimal)CalculatePromoCodeDiscountedPrice(Course.Price, Code.PromoValueFactor);
+                amount = (Decimal)CalculatePromoCodeDiscountedPrice(Course.Price, Code.FinalCost);
             }
             else {
                 amount = Convert.ToDecimal(Course.Price);

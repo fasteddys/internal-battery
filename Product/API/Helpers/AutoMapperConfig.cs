@@ -29,6 +29,8 @@ namespace UpDiddyApi.Helpers
             CreateMap<Enrollment, EnrollmentDto>().ReverseMap();
             CreateMap<Subscriber, SubscriberDto>().ReverseMap();
             CreateMap<WozCourseEnrollment, WozCourseEnrollmentDto>().ReverseMap();
+            CreateMap<Country, CountryDto>().ReverseMap();
+            CreateMap<State, StateDto>().ReverseMap();
             CreateMap<PromoCode, PromoCodeDto>()
                 .ForMember(x => x.IsValid, opt => opt.Ignore())
                 .ForMember(x => x.ValidationMessage, opt => opt.Ignore())

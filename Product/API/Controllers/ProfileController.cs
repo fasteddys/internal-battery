@@ -54,6 +54,14 @@ namespace UpDiddyApi.Controllers
                     {
                         subscriber.Address = Subscriber.Address;
                     }
+                    if (!string.IsNullOrEmpty(Subscriber.City))
+                    {
+                        subscriber.City = Subscriber.City;
+                    }
+                    if(Subscriber.StateId != 0)
+                    {
+                        subscriber.StateId = Subscriber.StateId;
+                    }
                     if (!string.IsNullOrEmpty(Subscriber.PhoneNumber))
                     {
                         subscriber.PhoneNumber = Subscriber.PhoneNumber;
@@ -83,7 +91,8 @@ namespace UpDiddyApi.Controllers
                     country.Code2,
                     country.Code3,
                     state.Name,
-                    state.Code
+                    state.Code,
+                    state.StateId
                 }).ProjectTo<CountryStateDto>(_mapper.ConfigurationProvider).ToList();
 
             return Ok(CountryStates);
