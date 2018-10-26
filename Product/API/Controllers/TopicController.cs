@@ -11,6 +11,8 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using Hangfire;
 using UpDiddyApi.Workflow;
+using UpDiddyApi.Business;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers
 {
@@ -22,12 +24,14 @@ namespace UpDiddyApi.Controllers
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
-        public TopicController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration)
+        private readonly ISysLog _syslog;
+        public TopicController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysLog sysLog)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
-
+            _syslog = sysLog;
+         
         }
 
 

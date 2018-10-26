@@ -11,6 +11,7 @@ namespace UpDiddy.ViewModels
     {
         public SubscriberDto Subscriber { get; set; }
         public Dictionary<string, List<string>> CountryStateMapping { get; set; }
+        public IList<WozCourseProgress> CurrentEnrollments { get; set; }
         public string DisplayedFirstName { get; set; }
         public string FirstNamePlaceholder { get; set; }
         public string DisplayedLastName { get; set; }
@@ -34,10 +35,15 @@ namespace UpDiddy.ViewModels
         public string UpdatedPhoneNumber { get; set; }
         public Guid CurrentSubscriberGuid { get; set; }
 
-        public ProfileViewModel(IConfiguration _configuration, SubscriberDto subscriber, IList<CountryStateDto> CountryStateList)
+        public ProfileViewModel(
+            IConfiguration _configuration, 
+            SubscriberDto subscriber, 
+            IList<CountryStateDto> CountryStateList,
+            IList<WozCourseProgress> WozCourseProgressions)
         {
             this.ImageUrl = _configuration["BaseImageUrl"];
             this.Subscriber = subscriber;
+            this.CurrentEnrollments = WozCourseProgressions;
             SetProfileDisplayValues();
             InitializeCountryStateMapping(CountryStateList);
         }

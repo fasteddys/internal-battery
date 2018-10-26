@@ -86,27 +86,60 @@
                             position: relative;
                             overflow: hidden;
 
-                            .progress-bar {
-                                background-color: $color-secondary;
-                                position: relative;
-                                height: 2.5rem;
+                            &.less-than-50 {
+                                .progress-bar {
+                                    background-color: $color-secondary;
+                                    position: relative;
+                                    height: 2.5rem;
 
-                                .course-completion-percentage {
+                                    .course-completion-percentage {
+                                        position: absolute;
+                                        top: 8px;
+                                        left: 8px;
+                                        font-size: 1rem;
+                                        font-family: $opensans-bold;
+                                        z-index: 999;
+                                        color: $color-primary;
+                                    }
+                                }
+
+                                .course-continue-anchor {
                                     position: absolute;
-                                    top: 8px;
-                                    right: 8px;
+                                    right: 1rem;
+                                    top: 0.5rem;
                                     font-size: 1rem;
-                                    font-family: $opensans-bold;
-                                    z-index: 999;
-                                    color: $color-primary;
                                 }
                             }
 
-                            .course-continue-anchor {
-                                position: absolute;
-                                right: 1rem;
-                                top: 0.5rem;
-                                font-size: 1rem;
+                            &.more-than-50 {
+                                .progress-bar {
+                                    background-color: $color-secondary;
+                                    position: relative;
+                                    height: 2.5rem;
+
+                                    .course-completion-percentage {
+                                        position: absolute;
+                                        top: 8px;
+                                        right: 8px;
+                                        font-size: 1rem;
+                                        font-family: $opensans-bold;
+                                        z-index: 999;
+                                        color: $color-primary;
+                                    }
+                                }
+
+                                .course-continue-anchor {
+                                    position: absolute;
+                                    left: 1rem;
+                                    top: 0.5rem;
+                                    font-size: 1rem;
+                                    a{
+                                        color: $color-white;
+                                        &:hover{
+                                            color: $color-tertiary-light-gray;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
-
+using AutoMapper.QueryableExtensions;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddyApi.Controllers
@@ -31,35 +30,7 @@ namespace UpDiddyApi.Controllers
             _queue = new CCQueue("ccmessagequeue", _queueConnection);
         }
 
-        // Update the status of an enrolllment 
-        [HttpPut]
-        [Route("api/[controller]/UpdateEnrollmentStatus/{EnrollmentGuid}/{EnrollmentStatus}")]
-        public IActionResult UpdateEnrollmentStatus(string EnrollmentGuid, int EnrollmentStatus )
-        {
-            try
-            {
-                // Get the Enrollment Object 
-                Enrollment Enrollment = _db.Enrollment
-                     .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
-                     .FirstOrDefault();
-
-                if (Enrollment == null)
-                    return NotFound();
-
-                // Update the enrollment status and update the modify date 
-                Enrollment.EnrollmentStatusId = EnrollmentStatus;
-                Enrollment.ModifyDate = DateTime.Now;
-                _db.SaveChanges();
-                
-
-                return Ok(Enrollment.EnrollmentGuid);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status400BadRequest, ex);
-            }
-        }
-
+   
         [HttpPost]
         [Route("api/[controller]")]
         public IActionResult Post([FromBody] EnrollmentDto EnrollmentDto)
@@ -79,5 +50,17 @@ namespace UpDiddyApi.Controllers
            
         }
 
+        [HttpGet]
+        [Route("api/[controller]/CurrentEnrollments/{SubscriberId}")]
+        public IActionResult GetCurrentEnrollmentsForSubscriber(int SubscriberId)
+        {
+            IList<EnrollmentDto> rval = null;
+            rval = _db.Enrollment
+                .Where(t => t.IsDeleted == 0 && t.SubscriberId == SubscriberId)
+                .ProjectTo<EnrollmentDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(rval);
+        }
     }
 }

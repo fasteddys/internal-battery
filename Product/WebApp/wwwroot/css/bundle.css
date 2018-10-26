@@ -715,11 +715,28 @@ body {
             background-color: #fff;
             position: relative;
             overflow: hidden; }
-            .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress .progress-bar {
+            .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress.less-than-50 .progress-bar {
               background-color: #03264A;
               position: relative;
               height: 2.5rem; }
-              .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress .progress-bar .course-completion-percentage {
+              .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress.less-than-50 .progress-bar .course-completion-percentage {
+                position: absolute;
+                top: 8px;
+                left: 8px;
+                font-size: 1rem;
+                font-family: "OpenSans-Bold";
+                z-index: 999;
+                color: #4089A0; }
+            .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress.less-than-50 .course-continue-anchor {
+              position: absolute;
+              right: 1rem;
+              top: 0.5rem;
+              font-size: 1rem; }
+            .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress.more-than-50 .progress-bar {
+              background-color: #03264A;
+              position: relative;
+              height: 2.5rem; }
+              .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress.more-than-50 .progress-bar .course-completion-percentage {
                 position: absolute;
                 top: 8px;
                 right: 8px;
@@ -727,11 +744,15 @@ body {
                 font-family: "OpenSans-Bold";
                 z-index: 999;
                 color: #4089A0; }
-            .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress .course-continue-anchor {
+            .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress.more-than-50 .course-continue-anchor {
               position: absolute;
-              right: 1rem;
+              left: 1rem;
               top: 0.5rem;
               font-size: 1rem; }
+              .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress.more-than-50 .course-continue-anchor a {
+                color: #fff; }
+                .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress.more-than-50 .course-continue-anchor a:hover {
+                  color: #F3F3F3; }
     .profile-container .profile-body-container .dashed-line-boxes-container > div {
       border-top: 1px dashed #4089A0;
       padding-top: 2rem; }

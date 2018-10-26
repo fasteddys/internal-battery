@@ -93,7 +93,13 @@ namespace UpDiddy.Controllers
         {
             GetSubscriber(true);
             IList<CountryStateDto> CountryStateList = API.GetCountryStateList();
-            ProfileViewModel ProfileViewModel = new ProfileViewModel(_configuration, this.subscriber, CountryStateList);
+            IList<EnrollmentDto> CurrentEnrollments = API.GetCurrentEnrollmentsForSubscriber(this.subscriber);
+            IList<WozCourseProgress> WozCourseProgressions = new List<WozCourseProgress>();
+            foreach(EnrollmentDto enrollment in CurrentEnrollments)
+            {
+                WozCourseProgressions.Add(API.GetCurrentCourseProgress((Guid)this.subscriber.SubscriberGuid, (Guid)enrollment.EnrollmentGuid));
+            }
+            ProfileViewModel ProfileViewModel = new ProfileViewModel(_configuration, this.subscriber, CountryStateList, WozCourseProgressions);
             return View(ProfileViewModel);
         }
 

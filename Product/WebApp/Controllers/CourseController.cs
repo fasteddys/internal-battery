@@ -148,8 +148,6 @@ namespace UpDiddy.Controllers
             CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
 
 
-
-
             // -----------------------  Braintree Integration  ------------------------------
 
             // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method
@@ -232,7 +230,16 @@ namespace UpDiddy.Controllers
             
         }
 
-        public Boolean EnsureFormFieldsNotNullOrEmpty(
+        
+        public IActionResult EnrollmentSuccess()
+        {
+            return View();
+        }
+
+
+        #region Private Helpers
+
+        private Boolean EnsureFormFieldsNotNullOrEmpty(
             string BillingFirstName,
             string BillingLastName,
             string BillingZipCode,
@@ -241,7 +248,7 @@ namespace UpDiddy.Controllers
             string BillingCountry,
             string BillingAddress)
         {
-            if(BillingFirstName != null && !("").Equals(BillingFirstName)
+            if (BillingFirstName != null && !("").Equals(BillingFirstName)
                 && BillingLastName != null && !("").Equals(BillingLastName)
                 && BillingZipCode != null && !("").Equals(BillingZipCode)
                 && BillingCity != null && !("").Equals(BillingCity)
@@ -255,10 +262,10 @@ namespace UpDiddy.Controllers
             return false;
         }
 
-        public IActionResult EnrollmentSuccess()
-        {
-            return View();
-        }
+
+        
+        #endregion
+
 
 
 

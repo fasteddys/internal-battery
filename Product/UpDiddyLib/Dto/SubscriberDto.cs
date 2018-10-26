@@ -20,5 +20,7 @@ namespace UpDiddyLib.Dto
         public int? GenderId { get; set; }
         public int? EducationLevelId { get; set; }
         public string ProfileImage { get; set; }
+        public string City { get; set; }
+        public int StateId { get; set; }
     }
 }

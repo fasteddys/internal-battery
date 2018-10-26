@@ -10,7 +10,7 @@ $(document).ready(function () {
             $('.billing-info-container input, .billing-info-container select').prop('required', true);
         }
     });
-    /*
+    
     $("#TermsOfServiceCheckbox").change(function () {
         if (this.checked) {
             $('#EnrollmentSubmitButton').prop('disabled', false);
@@ -19,7 +19,7 @@ $(document).ready(function () {
             $('#EnrollmentSubmitButton').prop('disabled', true);
         }
     });
-    */
+    
 
     $('.edit-profile-info-button').on('click', function () {
         $('.personal-info-display').slideToggle();
@@ -62,7 +62,7 @@ $(document).ready(function () {
         $(this).hover(
             function () {
                 $(this).find(".course-listing").animate({ width: '0' });
-                $(this).find(".progress").animate({ width: '98%' });
+                $(this).find(".progress").animate({ width: '100%' });
             },
             function () {
                 $(this).find(".course-listing").animate({ width: '98%' });

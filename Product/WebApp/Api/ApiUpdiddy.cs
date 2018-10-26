@@ -61,7 +61,7 @@ namespace UpDiddy.Api
 
         public SubscriberDto Subscriber(Guid SubscriberGuid)
         {
-            return Get<SubscriberDto>("subscriber/" + SubscriberGuid);
+            return Get<SubscriberDto>("subscriber/" + SubscriberGuid,true);
         }
 
         public WozTermsOfServiceDto GetWozTermsOfService()
@@ -75,7 +75,7 @@ namespace UpDiddy.Api
 
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
         {
-            return Get<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);
+            return Post<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);
         }
 
         public PromoCodeDto PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
@@ -91,6 +91,16 @@ namespace UpDiddy.Api
         public IList<CountryStateDto> GetCountryStateList()
         {
             return Get<IList<CountryStateDto>>("profile/LocationList", false);
+        }
+
+        public IList<EnrollmentDto> GetCurrentEnrollmentsForSubscriber(SubscriberDto Subscriber)
+        {
+            return Get<IList<EnrollmentDto>>("enrollment/CurrentEnrollments/" + Subscriber.SubscriberId, false); 
+        }
+
+        public WozCourseProgress GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)
+        {
+            return Get<WozCourseProgress>("woz/CourseStatus/" + SubscriberGuid + "/" + EnrollmentGuid, false);
         }
 
     }

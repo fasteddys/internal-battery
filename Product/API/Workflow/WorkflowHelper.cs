@@ -84,14 +84,23 @@ namespace UpDiddyApi.Workflow
         }
 
 
-        //todo brent in progress #2
-        public async Task<string> UpdateEnrollmentStatus(string EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus status)
+ 
+        public string UpdateEnrollmentStatus(string EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus status)
         {
-            HttpClient Client = ApiClient();
-            HttpRequestMessage Request = ApiPutRequest("Enrollment/UpdateEnrollmentStatus/" + EnrollmentGuid + "/" + (int) status );
-            HttpResponseMessage Response = await Client.SendAsync(Request);
-            var ResponseJson = await Response.Content.ReadAsStringAsync();
-            return ResponseJson;
+            Enrollment Enrollment = _db.Enrollment
+                     .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                      .FirstOrDefault();
+
+            if (Enrollment != null)
+            {
+                // Update the enrollment status and update the modify date 
+                Enrollment.EnrollmentStatusId = (int)status;
+                Enrollment.ModifyDate = DateTime.Now;
+                _db.SaveChanges();
+                return $"Enrollment {EnrollmentGuid} updated to {status}";
+            }
+            else
+                return $"Enrollment {EnrollmentGuid} is not found";
         }
 
  

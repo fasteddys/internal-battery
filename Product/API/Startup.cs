@@ -86,17 +86,9 @@ namespace UpDiddyApi
               });
 
             // Get the connection string from the Azure secret vault
-            var SqlConnection = Configuration["CareerCircleSqlConnection"];
-
+            var SqlConnection = Configuration["CareerCircleSqlConnection"];                     
             services.AddDbContext<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
-
-
-            var HangFireSqlConnection = Configuration["HangFireJimDev"];
-            services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
-            // Have the workflow monitor run every minute 
-            JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
-            RecurringJob.AddOrUpdate(() => new WorkFlowMonitor().DoWork(), Cron.Minutely);
-            
+   
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
             // Add System Email   
@@ -105,9 +97,17 @@ namespace UpDiddyApi
             services.AddSingleton<ISysLog>(new SysLog(Configuration, new SysEmail(Configuration)));
             // Add framework services.
             services.AddMvc();
-
             // Add AutoMapper
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
+
+
+            // Now here
+            var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"];
+            services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
+            // Have the workflow monitor run every minute 
+            JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
+            RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.DoWork(), Cron.Minutely);
+            RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.ReconcileFutureEnrollments(), Cron.Minutely);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

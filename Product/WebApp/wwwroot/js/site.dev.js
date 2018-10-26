@@ -12220,7 +12220,7 @@ $(document).ready(function () {
             $('.billing-info-container input, .billing-info-container select').prop('required', true);
         }
     });
-    /*
+    
     $("#TermsOfServiceCheckbox").change(function () {
         if (this.checked) {
             $('#EnrollmentSubmitButton').prop('disabled', false);
@@ -12229,7 +12229,7 @@ $(document).ready(function () {
             $('#EnrollmentSubmitButton').prop('disabled', true);
         }
     });
-    */
+    
 
     $('.edit-profile-info-button').on('click', function () {
         $('.personal-info-display').slideToggle();
@@ -12272,7 +12272,7 @@ $(document).ready(function () {
         $(this).hover(
             function () {
                 $(this).find(".course-listing").animate({ width: '0' });
-                $(this).find(".progress").animate({ width: '98%' });
+                $(this).find(".progress").animate({ width: '100%' });
             },
             function () {
                 $(this).find(".course-listing").animate({ width: '98%' });
@@ -12311,10 +12311,12 @@ $(document).ready(function () {
     $('#UpdatedCountry').change(function () {
         var country = $(this).val();
         var states = locationsList[country];
+        $("#UpdatedState").html("");
         for (i = 0; i < states.length; i++) {
-            $('<option>').val(locationsList[country].eq(i)).appendTo('#UpdatedState');
+            $('<option>').val(states[i]).text(states[i]).appendTo('#UpdatedState');
         }
     });
+    
     //$('#PromoCodeApplyButton').on('click', function () {
     //    var promoCode = $('#PromoCodeInput').val();
     //    var coursePrice = $('#CoursePrice').val();
