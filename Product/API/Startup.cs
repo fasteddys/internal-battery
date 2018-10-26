@@ -97,12 +97,11 @@ namespace UpDiddyApi
             services.AddSingleton<ISysLog>(new SysLog(Configuration, new SysEmail(Configuration)));
             // Add framework services.
             services.AddMvc();
-            // Add AutoMapper
+            // Add AutoMapper 
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
 
-
             // Now here
-            var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"];
+            var HangFireSqlConnection = Configuration["HangFireJimDev"];
             services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
             // Have the workflow monitor run every minute 
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);

@@ -83,17 +83,6 @@ namespace UpDiddy.Controllers
             PromoCodeDto promoCodeDto = API.PromoCodeValidation(code, courseGuid, subscriberGuid);
             return new ObjectResult(promoCodeDto);
         }
-
-        private Decimal? CalculatePromoCodeDiscountedPrice(Decimal? CoursePrice, Decimal PromoValueFactor)
-        {
-            return (CoursePrice - CalculatePriceOffOfCourse(CoursePrice, PromoValueFactor));
-        }
-
-        private Decimal CalculatePriceOffOfCourse(Decimal? CoursePrice, Decimal PromoValueFactor)
-        {
-            return (Math.Floor((Decimal)CoursePrice * PromoValueFactor * 100)) / 100;
-        }
-
         [HttpPost]
         public IActionResult Checkout(
             int TermsOfServiceDocId, 
@@ -243,9 +232,15 @@ namespace UpDiddy.Controllers
             }
             return false;
         }
+        private Decimal? CalculatePromoCodeDiscountedPrice(Decimal? CoursePrice, Decimal PromoValueFactor)
+        {
+            return (CoursePrice - CalculatePriceOffOfCourse(CoursePrice, PromoValueFactor));
+        }
 
-
-        
+        private Decimal CalculatePriceOffOfCourse(Decimal? CoursePrice, Decimal PromoValueFactor)
+        {
+            return (Math.Floor((Decimal)CoursePrice * PromoValueFactor * 100)) / 100;
+        }
         #endregion
 
 
