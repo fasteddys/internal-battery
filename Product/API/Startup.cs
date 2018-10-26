@@ -101,12 +101,14 @@ namespace UpDiddyApi
             AutoMapperConfiguration.Init();
             services.AddAutoMapper(typeof(Startup));
 
-            // Now here
+            // Now here 
             var HangFireSqlConnection = Configuration["HangFireJimDev"];
             services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
             // Have the workflow monitor run every minute 
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
             RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.DoWork(), Cron.Minutely);
+
+            // TODO Change to Dailt
             RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.ReconcileFutureEnrollments(), Cron.Minutely);
         }
 
