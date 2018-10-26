@@ -365,6 +365,7 @@ body {
   .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm button:hover {
     background-color: #03264A; }
   .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm button:disabled {
+    color: #4089A0;
     background-color: #808080;
     cursor: default; }
 .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .same-as-above,
@@ -377,6 +378,14 @@ body {
   width: 100%; }
   .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .bt-drop-in-wrapper .braintree-form__field-group label {
     width: 100%; }
+.checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm #ValidationMessageError {
+  display: none; }
+  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm #ValidationMessageError span {
+    color: darkred; }
+.checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm #ValidationMessageSuccess {
+  display: none; }
+  .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm #ValidationMessageSuccess span {
+    color: #4089A0; }
 .checkout-page-container .checkout-vendor-info-container .terms-of-service-scrollview {
   max-height: 10rem;
   border: 0.0625rem solid #F3F3F3;

@@ -12331,9 +12331,9 @@ $(document).ready(function () {
     $('#UpdatedCountry').change(function () {
         var country = $(this).val();
         var states = locationsList[country];
-        $("#UpdatedState").html("");
+        $("#UpdatedStateInput").html("");
         for (i = 0; i < states.length; i++) {
-            $('<option>').val(states[i]).text(states[i]).appendTo('#UpdatedState');
+            $('<option>').val(states[i].id).text(states[i].name).appendTo('#UpdatedStateInput');
         }
     });
 
