@@ -142,14 +142,16 @@ namespace UpDiddyApi.Business
             try
             {
                 // Get the Enrollment Object 
-                Enrollment Enrollment = _db.Enrollment
-                     .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                Enrollment Enrollment = _db.Enrollment 
+                    .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
                      .FirstOrDefault();
 
                 // Check the validity of the request 
                 if (Enrollment == null)
                     return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
 
+                // Valid we have a course                         
+                _db.Entry(Enrollment).Reference(c => c.Course).Load();
 
                 // Check to see if we need to enroll the student with the vendor 
                 VendorStudentLogin ExistingStudentLogin = _db.VendorStudentLogin
