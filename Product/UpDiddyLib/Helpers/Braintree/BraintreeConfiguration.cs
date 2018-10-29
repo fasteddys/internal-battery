@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Braintree;
 using Microsoft.Extensions.Configuration;
-using UpDiddy.Helpers.Braintree;
+using UpDiddyLib.Helpers.Braintree;
 
-namespace UpDiddy.Helpers
+namespace UpDiddyLib.Helpers
 {
     public class BraintreeConfiguration : IBraintreeConfiguration
     {

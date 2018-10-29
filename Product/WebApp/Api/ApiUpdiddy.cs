@@ -113,6 +113,11 @@ namespace UpDiddy.Api
             return Get<StateDto>("subscriber/State/" + StateId, true);
         }
 
+        public BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto)
+        {
+            return Post<BraintreeResponseDto>(BraintreePaymentDto, "enrollment/ProcessBraintreePayment", true);
+        }
+
     }
 }
 

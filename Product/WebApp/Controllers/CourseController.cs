@@ -1,25 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Identity.Client;
-using System.Security.Claims;
-using UpDiddy.Models;
-using System.Net.Http.Headers;
-using System.Net.Http;
-using System.Net;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Localization;
-using Microsoft.AspNetCore.Localization;
-using UpDiddy.Helpers;
 using Microsoft.Extensions.Configuration;
-using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
-using UpDiddy.Helpers.Braintree;
+using UpDiddyLib.Helpers.Braintree;
+using UpDiddyLib.Helpers;
 using Braintree;
 using System.Text;
 
@@ -117,87 +105,35 @@ namespace UpDiddy.Controllers
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
             CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
-
-
-            // -----------------------  Braintree Integration  ------------------------------
-
-            // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method
-
-
-            var gateway = braintreeConfiguration.GetGateway();
-            Decimal amount;
-            if (PromoCodeForSubmission != null) {
-                amount = (Decimal)CalculatePromoCodeDiscountedPrice(Course.Price, Code.FinalCost);
-            }
-            else {
-                amount = Convert.ToDecimal(Course.Price);
-            }
-
-            var nonce = Request.Form["payment_method_nonce"];
-            
-            AddressRequest addressRequest;
-
-            if (SameAsAboveCheckbox)
+            BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
             {
-                addressRequest = new AddressRequest
-                {
-                    FirstName = this.subscriber.FirstName,
-                    LastName = this.subscriber.LastName,
-                    StreetAddress = this.subscriber.Address
-                };
-            }
-            else
-            {
-                addressRequest = new AddressRequest
-                {
-                    // Assuming form fields are filled in at this point until above TODO is handled
-                    FirstName = BillingFirstName,
-                    LastName = BillingLastName,
-                    StreetAddress = BillingAddress,
-                    Region = BillingState,
-                    Locality = BillingCity,
-                    PostalCode = BillingZipCode,
-                    CountryCodeAlpha2 = BillingCountry
-
-                };
-            }
-            
-            TransactionRequest request = new TransactionRequest
-            {
-                Amount = amount,
+                PaymentAmount = (Decimal)Course.Price,
+                Nonce = Request.Form["payment_method_nonce"],
+                FirstName = BillingFirstName,
+                LastName = BillingLastName,
+                PhoneNumber = this.subscriber.PhoneNumber,
+                Email = this.subscriber.Email,
+                Address = BillingAddress,
+                Region = BillingState,
+                Locality = BillingCity,
+                ZipCode = BillingZipCode,
+                CountryCode = BillingCountry,
                 MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID"),
-                PaymentMethodNonce = nonce,
-                Customer = new CustomerRequest
-                {
-                    FirstName = this.subscriber.FirstName,
-                    LastName = this.subscriber.LastName,
-                    Phone = this.subscriber.PhoneNumber,
-                    Email = this.subscriber.Email
-                },
-                BillingAddress = addressRequest,
-                ShippingAddress = new AddressRequest
-                {
-                    FirstName = this.subscriber.FirstName,
-                    LastName = this.subscriber.LastName,
-                    StreetAddress = this.subscriber.Address
-                },
-                Options = new TransactionOptionsRequest
-                {
-                    SubmitForSettlement = true
-                },
+                PromoCodeForSubmission = "This will be the promocode from Bill"
             };
-            
-            Result<Transaction> result = gateway.Transaction.Sale(request);
-            
-            if (result.IsSuccess())
+
+            BraintreeResponseDto brdto = API.SubmitBraintreePayment(BraintreePaymentDto);
+            if (brdto.WasSuccessful)
             {
-                Transaction transaction = result.Target;
                 return View("EnrollmentSuccess", CourseViewModel);
             }
             else
             {
                 return View("EnrollmentFailure", CourseViewModel);
             }
+
+            // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method
+
             
         }
 

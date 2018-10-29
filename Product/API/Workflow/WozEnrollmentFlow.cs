@@ -487,7 +487,8 @@ namespace UpDiddyApi.Workflow
                              woz.SaveWozCourseEnrollment(EnrollmentGuid, CourseEnrollmentDto);
                             // Done, Whew!!
                              Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.RegisterStudentComplete);
-
+                            // Todo consume any promo codes here
+                            // Todo Send "congrats you've enrolled" email
 
                         }
                         else
