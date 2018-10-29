@@ -677,8 +677,6 @@ namespace UpDiddyApi.Business
             try
             {
 
-                // TODO short circuit if current date is not within X days for the course start date
-                // DO check with WOZ on when these instructor courses and sections will be created
 
 
                 _syslog.SysInfo($"ReconcileFutureEnrollment: Starting with EnrollmentGuid =  {EnrollmentGuid}");
@@ -692,6 +690,19 @@ namespace UpDiddyApi.Business
                     _syslog.SysInfo($"ReconcileFutureEnrollment: Enrollment {EnrollmentGuid} not found!");
                     return false;
                 }
+
+                // Short circuit if current date >= the Friday before the course is to begin
+                DateTime StartDate = Utils.UnixMillisecondsToLocalDatetime((long) Enrollment.SectionStartTimestamp);                   
+                DateTime PriorFriday =  Utils.PriorDayOfWeek(StartDate, System.DayOfWeek.Friday);
+
+                if (PriorFriday > DateTime.Now)
+                {
+                    _syslog.SysInfo($"ReconcileFutureEnrollment:  Too early to check for enrollment.  PriorFriday = {PriorFriday.ToLongDateString() } ");
+                    return false;
+                }
+
+
+
                 // Load the asscociated course     
                 _db.Entry(Enrollment).Reference(c => c.Course).Load();
                 // Confirm that the enrollment has a status of future 
