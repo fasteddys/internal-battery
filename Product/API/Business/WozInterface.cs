@@ -37,7 +37,7 @@ namespace UpDiddyApi.Business
         #endregion
 
         #region Enroll Student
-        public MessageTransactionResponse EnrollStudent(string EnrollmentGuid)
+        public MessageTransactionResponse EnrollStudent(string EnrollmentGuid, ref bool IsInstructorLed)
         {            
             _translog = new WozTransactionLog();
             try
@@ -53,6 +53,10 @@ namespace UpDiddyApi.Business
                 // Check the validity of the request 
                 if (Enrollment == null)
                     return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
+
+                // Determine if the course is instructor led
+                if (Enrollment.EnrollmentStatusId == (int) EnrollmentStatus.FutureRegisterStudentRequested)
+                    IsInstructorLed = true;
 
                 _translog.EnrollmentGuid = Enrollment.EnrollmentGuid;
 
@@ -199,7 +203,7 @@ namespace UpDiddyApi.Business
                 MessageTransactionResponse Rval = new MessageTransactionResponse();
                 
                 string ResponseJson = string.Empty;
-                HttpResponseMessage WozResponse = ExecuteWozGet("transactions / " + TransactionId, ref ResponseJson);
+                HttpResponseMessage WozResponse = ExecuteWozGet("transactions/" + TransactionId, ref ResponseJson);
 
                 _translog.WozResponseJson = ResponseJson;
                 if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
@@ -456,9 +460,81 @@ namespace UpDiddyApi.Business
         }
 
 
- 
+
+        public MessageTransactionResponse RegisterStudentInstructorLed(string EnrollmentGuid)
+        {
+            _translog = new WozTransactionLog();
+            _translog.EndPoint = "WozInterface:RegisterStudentInstructorLed";
+            _translog.InputParameters = "EnrollmentGuid=" + EnrollmentGuid + ";";
+
+            MessageTransactionResponse Rval = new MessageTransactionResponse();
+
+            // Get the Enrollment Object 
+            Enrollment Enrollment = _db.Enrollment
+                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                 .FirstOrDefault();
+
+            // Check the validity of the request 
+            if (Enrollment == null)
+                return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
+            _translog.EnrollmentGuid = Enrollment.EnrollmentGuid;
+
+            // Valid we have a course                         
+            _db.Entry(Enrollment).Reference(c => c.Course).Load();
+            if (Enrollment.Course == null)
+                return CreateResponse(string.Empty, $"Course with id {Enrollment.CourseId} was not found.", Enrollment.SubscriberId.ToString(), TransactionState.FatalError);
+
+            // Check to see if we need to enroll the student with the vendor 
+            VendorStudentLogin StudentLogin = _db.VendorStudentLogin
+                 .Where(v => v.IsDeleted == 0 &&
+                             v.SubscriberId == Enrollment.SubscriberId &&
+                             v.VendorId == Enrollment.Course.VendorId)
+                 .FirstOrDefault();
+
+            // We need to have a login for the student to proceed 
+            if (StudentLogin == null)
+                CreateResponse(string.Empty, "Student not login found", string.Empty, TransactionState.Error);
+
+            int ExeterId = int.Parse(StudentLogin.VendorLogin);
+
+            WozFutureEnrollmentDto EnrollmentInfo = new WozFutureEnrollmentDto()
+            {
+                exeterId = ExeterId,
+                sectionStartDateUTC = (long) Enrollment.SectionStartTimestamp,
+                courseCode = Enrollment.Course.Code
+            };
+
+            string Json = Newtonsoft.Json.JsonConvert.SerializeObject(EnrollmentInfo);
+            string ResponseJson = string.Empty;
+            HttpResponseMessage WozResponse = ExecuteWozPost("/enrollments/future", Json, ref ResponseJson);            
+            _translog.WozResponseJson = ResponseJson;
+
+            if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                try
+                {
+                    string TransactionId = ResponseObject.transactionId;
+                    string Message = ResponseObject.message;
+                    return CreateResponse(ResponseJson, Message, TransactionId, TransactionState.InProgress);
+                }
+                catch (Exception ex)
+                {
+                    return CreateResponse(ResponseJson, ex.Message, string.Empty, TransactionState.FatalError);
+                }
+            }
+            else
+            {     
+               return CreateResponse(ResponseJson, WozResponse.StatusCode.ToString() + " Error", string.Empty, TransactionState.Error);
+            }
+        }
+
+
+
+
+
         // Enroll a student with a vendor 
-        public  MessageTransactionResponse RegisterStudent(string EnrollmentGuid)
+        public MessageTransactionResponse RegisterStudent(string EnrollmentGuid)
         {
             _translog = new WozTransactionLog();
             _translog.EndPoint = "WozInterface:RegisterStudent";
@@ -600,6 +676,9 @@ namespace UpDiddyApi.Business
         {
             try
             {
+
+
+
                 _syslog.SysInfo($"ReconcileFutureEnrollment: Starting with EnrollmentGuid =  {EnrollmentGuid}");
                 // Get the Enrollment Object 
                 Enrollment Enrollment = _db.Enrollment
@@ -611,6 +690,19 @@ namespace UpDiddyApi.Business
                     _syslog.SysInfo($"ReconcileFutureEnrollment: Enrollment {EnrollmentGuid} not found!");
                     return false;
                 }
+
+                // Short circuit if current date >= the Friday before the course is to begin
+                DateTime StartDate = Utils.UnixMillisecondsToLocalDatetime((long) Enrollment.SectionStartTimestamp);                   
+                DateTime PriorFriday =  Utils.PriorDayOfWeek(StartDate, System.DayOfWeek.Friday);
+
+                if (PriorFriday > DateTime.Now)
+                {
+                    _syslog.SysInfo($"ReconcileFutureEnrollment:  Too early to check for enrollment.  PriorFriday = {PriorFriday.ToLongDateString() } ");
+                    return false;
+                }
+
+
+
                 // Load the asscociated course     
                 _db.Entry(Enrollment).Reference(c => c.Course).Load();
                 // Confirm that the enrollment has a status of future 

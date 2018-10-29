@@ -7,7 +7,7 @@ namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
-        static public string RemoveHTML( string Str)
+        static public string RemoveHTML(string Str)
         {
             return Regex.Replace(Str, "<.*?>", String.Empty);
         }
@@ -26,7 +26,7 @@ namespace UpDiddyLib.Helpers
         }
 
         static public DateTime UnixMillisecondsToLocalDatetime(long Milliseconds)
-        { 
+        {
             DateTimeOffset DatTimeOff = DateTimeOffset.FromUnixTimeMilliseconds(Milliseconds).ToLocalTime();
             return DatTimeOff.DateTime;
         }
@@ -42,6 +42,17 @@ namespace UpDiddyLib.Helpers
             long rval = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             return rval;
         }
+
+
+        static public DateTime PriorDayOfWeek(DateTime StartTime, System.DayOfWeek DayOfTheWeek)
+        {           
+            int DaysApart = StartTime.DayOfWeek - DayOfTheWeek;
+            if (DaysApart < 0) DaysApart += 7;
+            DateTime PriorDay = StartTime.AddDays(-1 * DaysApart);
+
+            return PriorDay;
+        }
+
 
 
     }

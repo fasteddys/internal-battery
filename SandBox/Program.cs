@@ -3,6 +3,7 @@ using System;
 using UpDiddyApi.Models;
 using UpDiddyLib;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Helpers;
 
 namespace SandBox
 {
@@ -15,6 +16,12 @@ namespace SandBox
             long startDateUTC = 1543190400000;
             DateTimeOffset DatTimeOff = DateTimeOffset.FromUnixTimeMilliseconds(startDateUTC).ToLocalTime();
             DateTime StartTime = DatTimeOff.DateTime;
+
+   
+            DateTime PriorFriday =  Utils.PriorDayOfWeek(StartTime, System.DayOfWeek.Friday);
+            string TheDay = PriorFriday.ToString("ddd");
+
+
 
 
 
