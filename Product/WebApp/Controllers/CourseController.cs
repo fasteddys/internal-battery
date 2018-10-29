@@ -44,7 +44,7 @@ namespace UpDiddy.Controllers
         {
             return View();
         }
-        
+
         [Authorize]
         [HttpGet]
         [Route("/Course/Checkout/{CourseSlug}")]
@@ -52,7 +52,7 @@ namespace UpDiddy.Controllers
         {
 
             GetSubscriber(false);
-            
+
             CourseDto Course = API.Course(CourseSlug);
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
@@ -73,7 +73,7 @@ namespace UpDiddy.Controllers
         }
         [HttpPost]
         public IActionResult Checkout(
-            int TermsOfServiceDocId, 
+            int TermsOfServiceDocId,
             string CourseSlug,
             Boolean SameAsAboveCheckbox,
             string BillingFirstName,
@@ -83,31 +83,53 @@ namespace UpDiddy.Controllers
             string BillingCity,
             string BillingCountry,
             string BillingAddress,
-            string PromoCodeForSubmission)
-        {          
+            Guid? PromoCodeRedemptionGuid)
+        {
             GetSubscriber(false);
-            DateTime dateTime = new DateTime();
+            DateTime currentDate = DateTime.UtcNow;
             CourseDto Course = API.Course(CourseSlug);
-            PromoCodeDto Code = null; // todo: replace this with new method call      API.GetPromoCode(PromoCodeForSubmission);
+
+            TopicDto ParentTopic = API.TopicById(Course.TopicId);
+            WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
+            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
+
             EnrollmentDto enrollmentDto = new EnrollmentDto
             {
+                CreateDate = currentDate,
+                ModifyDate = currentDate,
+                DateEnrolled = currentDate,
+                CreateGuid = Guid.NewGuid(),
+                ModifyGuid = Guid.NewGuid(),
                 CourseId = Course.CourseId,
                 EnrollmentGuid = Guid.NewGuid(),
                 SubscriberId = this.subscriber.SubscriberId,
-                DateEnrolled = dateTime,
                 PricePaid = (decimal)Course.Price,
                 PercentComplete = 0,
                 IsRetake = 0, //TODO Make this check DB for existing entry
                 EnrollmentStatusId = 0,
                 TermsOfServiceFlag = TermsOfServiceDocId
             };
-            API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
-            TopicDto ParentTopic = API.TopicById(Course.TopicId);
-            WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
-            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
+
+            // todo: need to test this
+            if (PromoCodeRedemptionGuid.HasValue && PromoCodeRedemptionGuid.Value != Guid.Empty)
+            {
+                var validPromoCode = API.PromoCodeRedemptionValidation(PromoCodeRedemptionGuid.Value.ToString(), Course.CourseGuid.Value.ToString(), this.subscriber.SubscriberGuid.Value.ToString());
+
+                if (validPromoCode == null)
+                    return View("EnrollmentFailure", CourseViewModel);
+                else
+                {
+                    enrollmentDto.PricePaid -= validPromoCode.Discount;
+                    enrollmentDto.PromoCodeRedemptionGuid = validPromoCode.PromoCodeRedemptionGuid;
+                }
+            }
+
+            // Step 1: Process Payment
+            // todo: skip payment if price is zero
+
             BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
             {
-                PaymentAmount = (Decimal)Course.Price,
+                PaymentAmount = enrollmentDto.PricePaid,
                 Nonce = Request.Form["payment_method_nonce"],
                 FirstName = BillingFirstName,
                 LastName = BillingLastName,
@@ -118,13 +140,14 @@ namespace UpDiddy.Controllers
                 Locality = BillingCity,
                 ZipCode = BillingZipCode,
                 CountryCode = BillingCountry,
-                MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID"),
-                PromoCodeForSubmission = "This will be the promocode from Bill"
+                MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID")                
             };
-
             BraintreeResponseDto brdto = API.SubmitBraintreePayment(BraintreePaymentDto);
+
+            // todo: if payment was successful and a promo code was applied, consume it (update PromoCodeRedemption table to be "completed")
             if (brdto.WasSuccessful)
             {
+                API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
                 return View("EnrollmentSuccess", CourseViewModel);
             }
             else
@@ -134,10 +157,10 @@ namespace UpDiddy.Controllers
 
             // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method
 
-            
+
         }
 
-        
+
         public IActionResult EnrollmentSuccess()
         {
             return View();

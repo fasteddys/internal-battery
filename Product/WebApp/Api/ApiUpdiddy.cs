@@ -78,6 +78,11 @@ namespace UpDiddy.Api
             return Post<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);
         }
 
+        public PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid, string subscriberGuid)
+        {
+            return Get<PromoCodeDto>("promocode/promocoderedemptionvalidation/" + promoCodeRedemptionGuid + "/" + courseGuid + "/" + subscriberGuid, true);
+        }
+
         public PromoCodeDto PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
         {
             return Get<PromoCodeDto>("promocode/" + code + "/" + courseGuid + "/" + subscriberGuid, true);
@@ -118,6 +123,10 @@ namespace UpDiddy.Api
             return Post<BraintreeResponseDto>(BraintreePaymentDto, "enrollment/ProcessBraintreePayment", true);
         }
 
+        public VendorStudentLoginDto StudentLogin(int SubscriberId)
+        {
+            return Get<VendorStudentLoginDto>("enrollment/StudentLogin/" + SubscriberId.ToString(), true);
+        }
     }
 }
 

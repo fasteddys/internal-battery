@@ -10,5 +10,7 @@ namespace UpDiddyLib.Dto
         public int PercentageGrade { get; set; }
         public int ActivitiesCompleted { get; set; }
         public int ActivitiesTotal { get; set; }
+        public string CourseName { get; set; }
+        public string CourseUrl { get; set; }
     }
 }

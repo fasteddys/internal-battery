@@ -54,7 +54,38 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/{promoCodeRedemptionGuid}")]
         public IActionResult PromoCodeRedemption(Guid promoCodeRedemptionGuid)
         {
+            // lookup redemption by guid 
+
+            // make sure that 
             throw new NotImplementedException();
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("api/[controller]/PromoCodeRedemptionValidation/{promoCodeRedemptionGuid}/{courseGuid}/{subscriberGuid}")]
+        public IActionResult PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid, string subscriberGuid)
+        {
+            // lookup redemption by guid 
+            // make sure that the promo code is still in process
+            // that it is being redeemed for the same course and subscriber
+
+            var query = (from pcr in _db.PromoCodeRedemption.Include(pcr => pcr.RedemptionStatus)
+                         join c in _db.Course on pcr.CourseId equals c.CourseId
+                         join s in _db.Subscriber on pcr.SubscriberId equals s.SubscriberId
+                         where pcr.RedemptionStatus.Name == "In Process"
+                         && pcr.IsDeleted == 0
+                         && c.CourseGuid == Guid.Parse(courseGuid)
+                         && s.SubscriberGuid == Guid.Parse(subscriberGuid)
+                         && pcr.PromoCodeRedemptionGuid == Guid.Parse(promoCodeRedemptionGuid)
+                         select new PromoCodeDto()
+                         {
+                             Discount = pcr.ValueRedeemed,
+                             IsValid = true,
+                             PromoCodeRedemptionGuid = pcr.PromoCodeRedemptionGuid
+
+                         }).FirstOrDefault();
+
+            return Ok(query);
         }
 
         [Authorize]

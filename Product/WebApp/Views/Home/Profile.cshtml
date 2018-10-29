@@ -73,13 +73,13 @@
                 <div class="row">
                     <!--<div class="offset-md-3 col-md-9">-->
                     <div class="col-md-12">
-                        <!--
+                       <!--
                         <div class="course-recommendation-container">
                             <div class="course-recommendation-header">
                                 <h2>Course Recommendation</h2>
                             </div>
                         </div>-->
-                        @*
+                      
                         <div class="courses-in-progress-container">
                             <div class="course-in-progress-header">
                                 <h2>Courses in Progress</h2>
@@ -88,7 +88,7 @@
                                 <ul class="courses-in-progress-list-desktop">
                                     @foreach (WozCourseProgress enrollment in Model.CurrentEnrollments)
                                     {
-                                        double percentComplete = 100;// Math.Floor((double)enrollment.ActivitiesCompleted/enrollment.ActivitiesTotal);
+                                        double percentComplete = 30;// Math.Floor((double)enrollment.ActivitiesCompleted/enrollment.ActivitiesTotal);
                                         string classFormatter = "";
                                         if(percentComplete < 50)
                                         {
@@ -110,7 +110,7 @@
                                                     if (percentComplete != 100)
                                                     {
                                                         <div class="course-continue-anchor">
-                                                            <a href="/">Continue</a>
+                                                            <a href="@enrollment.CourseUrl">Continue</a>
                                                         </div>
                                                     }
                                                 }
@@ -120,10 +120,10 @@
 
                                                 <div class="row">
                                                     <div class="col-12 col-sm-6 course-list-course-name">
-                                                        Network Defense
+                                                        @enrollment.CourseName
                                                     </div>
                                                     <div class="col-sm-6 container-align-right">
-                                                        Lecture 7
+                                                        
                                                     </div>
                                                 </div>
                                             </div>
@@ -133,7 +133,7 @@
                                     
                                 </ul>
                             </div>
-                        </div>*@
+                        </div>
                         <div class="dashed-line-boxes-container">
                             <div class="edit-personal-info-container">
                                 <div class="personal-info-header">

@@ -134,7 +134,7 @@ namespace UpDiddyApi.Business
         public MessageTransactionResponse CreateWozStudentLogin(VendorStudentLoginDto StudentLoginDto, string EnrollmentGuid)
         {
             _translog = new WozTransactionLog();
-            _translog.EndPoint = "WozInterface:SaveWozStudentLogin";
+            _translog.EndPoint = "WozInterface:CreateWozStudentLogin";
             string WozEnrollmentJson = Newtonsoft.Json.JsonConvert.SerializeObject(StudentLoginDto);
             _translog.InputParameters = "WozEnrollmentJson=" + WozEnrollmentJson + ";";
 

@@ -15,6 +15,8 @@ using UpDiddyLib.Helpers;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 using AutoMapper.QueryableExtensions;
+using UpDiddyApi.Workflow;
+using Hangfire;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddyApi.Controllers
@@ -49,7 +51,18 @@ namespace UpDiddyApi.Controllers
             {
                 Enrollment Enrollment = _mapper.Map<Enrollment>(EnrollmentDto);
                 _db.Enrollment.Add(Enrollment);
+                if (EnrollmentDto.PromoCodeRedemptionGuid.HasValue)
+                {
+                    //var promoCodeRedemption = _db.PromoCodeRedemption.Where(pcr => pcr.PromoCodeRedemptionGuid == EnrollmentDto.PromoCodeRedemptionGuid).FirstOrDefault();
+                    //promoCodeRedemption.ModifyDate = DateTime.UtcNow;
+                    //promoCodeRedemption.ModifyGuid = Guid.NewGuid();
+                    //promoCodeRedemption.RedemptionStatusId = 2; // completed
+
+                    // todo: decrement the field in PromoCodes that keeps track of how many codes have been used
+                    //_db.Attach<PromoCodeRedemption>(promoCodeRedemption);
+                }
                 _db.SaveChanges();
+                BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString()));
                 return Ok(Enrollment.EnrollmentGuid);
             }
             catch ( Exception ex )
@@ -64,10 +77,7 @@ namespace UpDiddyApi.Controllers
         public BraintreeResponseDto ProcessBraintreePayment([FromBody] BraintreePaymentDto BraintreePaymentDto)
         {
             var gateway = braintreeConfiguration.GetGateway();
-            Decimal amount = 100; //TODO Get amount from Bill's endpoint
-
             var nonce = BraintreePaymentDto.Nonce;
-
             AddressRequest addressRequest;
 
             
@@ -86,7 +96,7 @@ namespace UpDiddyApi.Controllers
 
             TransactionRequest request = new TransactionRequest
             {
-                Amount = amount,
+                Amount = BraintreePaymentDto.PaymentAmount,
                 MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID"),
                 PaymentMethodNonce = nonce,
                 Customer = new CustomerRequest
@@ -136,6 +146,19 @@ namespace UpDiddyApi.Controllers
                 .ProjectTo<EnrollmentDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
+            return Ok(rval);
+        }
+
+        // TODO Use SubcriberGuid 
+        [HttpGet]
+        [Route("api/[controller]/StudentLogin/{SubscriberId}")]
+        public IActionResult StudentLogin(int SubscriberId)
+        {
+            VendorStudentLoginDto rval = null;
+            rval = _db.VendorStudentLogin
+                .Where(t => t.IsDeleted == 0 && t.SubscriberId == SubscriberId)
+                .ProjectTo<VendorStudentLoginDto>(_mapper.ConfigurationProvider)
+                .FirstOrDefault();
             return Ok(rval);
         }
     }

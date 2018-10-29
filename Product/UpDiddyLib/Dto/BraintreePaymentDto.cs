@@ -101,16 +101,5 @@ namespace UpDiddyLib.Dto
             get { return _MerchantAccountId; }
             set { _MerchantAccountId = value; }
         }
-
-        private string _PromoCodeForSubmission;
-
-        public string PromoCodeForSubmission
-        {
-            get { return _PromoCodeForSubmission; }
-            set { _PromoCodeForSubmission = value; }
-        }
-
-        
-
     }
 }
