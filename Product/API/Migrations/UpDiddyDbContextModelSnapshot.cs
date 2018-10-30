@@ -434,6 +434,33 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("CourseReview");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.CourseVariant", b =>
+                {
+                    b.Property<int>("CourseVariantId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid?>("CourseGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<decimal?>("Price");
+
+                    b.Property<string>("VariantType");
+
+                    b.HasKey("CourseVariantId");
+
+                    b.ToTable("CourseVariant");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.EducationLevel", b =>
                 {
                     b.Property<int>("EducationLevelId")
@@ -839,12 +866,11 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("CourseId");
 
+                    b.HasIndex("PromoCodeId");
+
                     b.HasIndex("RedemptionStatusId");
 
                     b.HasIndex("SubscriberId");
-
-                    b.HasIndex("PromoCodeId", "SubscriberId", "CourseId", "RedemptionStatusId", "IsDeleted")
-                        .IsUnique();
 
                     b.ToTable("PromoCodeRedemption");
                 });
@@ -877,8 +903,8 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("PromoType");
 
                     b.HasData(
-                        new { PromoTypeId = 1, CreateDate = new DateTime(2018, 10, 26, 11, 24, 14, 109, DateTimeKind.Local), CreateGuid = new Guid("101b4563-c903-4dc9-8623-b287ef27f877"), Description = "This type indicates that the PromoValueFactor is the dollar amount that should be subtracted from the course cost.", IsDeleted = 0, Name = "Dollar Amount", PromoTypeGuid = new Guid("d5c29d2e-b7a7-460f-81a1-f728915c0dd5") },
-                        new { PromoTypeId = 2, CreateDate = new DateTime(2018, 10, 26, 11, 24, 14, 110, DateTimeKind.Local), CreateGuid = new Guid("2bf5e8a1-be74-45ea-b260-f1499666677e"), Description = "This type indicates that the the course cost should be reduced by the percentage value of the PromoValueFactor.", IsDeleted = 0, Name = "Percent Off", PromoTypeGuid = new Guid("0a2fa4e9-3fec-4e5c-9cbc-3df321267724") }
+                        new { PromoTypeId = 1, CreateDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("d5533b5c-6c87-4c48-b9be-d6ffb5532a4c"), Description = "This type indicates that the PromoValueFactor is the dollar amount that should be subtracted from the course cost.", IsDeleted = 0, Name = "Dollar Amount", PromoTypeGuid = new Guid("1ddb91f6-a6e5-4c01-a020-1dea0ab77e95") },
+                        new { PromoTypeId = 2, CreateDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("d5533b5c-6c87-4c48-b9be-d6ffb5532a4c"), Description = "This type indicates that the the course cost should be reduced by the percentage value of the PromoValueFactor.", IsDeleted = 0, Name = "Percent Off", PromoTypeGuid = new Guid("1ddb91f6-a6e5-4c01-a020-1dea0ab77e95") }
                     );
                 });
 
@@ -931,8 +957,8 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("RedemptionStatus");
 
                     b.HasData(
-                        new { RedemptionStatusId = 1, CreateDate = new DateTime(2018, 10, 26, 11, 24, 14, 107, DateTimeKind.Local), CreateGuid = new Guid("05040ee9-60da-4a51-92a5-8c175d1ba8f5"), IsDeleted = 0, Name = "In Process", RedemptionStatusGuid = new Guid("01f55848-de9e-4cee-89f3-eb7f880626ae") },
-                        new { RedemptionStatusId = 2, CreateDate = new DateTime(2018, 10, 26, 11, 24, 14, 108, DateTimeKind.Local), CreateGuid = new Guid("8b9bd456-bb2f-4be7-b521-d84952378093"), IsDeleted = 0, Name = "Completed", RedemptionStatusGuid = new Guid("4588d5c8-3a2a-4c69-897e-5fe81d147758") }
+                        new { RedemptionStatusId = 1, CreateDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("d5533b5c-6c87-4c48-b9be-d6ffb5532a4c"), IsDeleted = 0, Name = "In Process", RedemptionStatusGuid = new Guid("1fe97cde-3a2d-42f1-8b8d-42824367020b") },
+                        new { RedemptionStatusId = 2, CreateDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("d5533b5c-6c87-4c48-b9be-d6ffb5532a4c"), IsDeleted = 0, Name = "Completed", RedemptionStatusGuid = new Guid("1fe97cde-3a2d-42f1-8b8d-42824367020b") }
                     );
                 });
 

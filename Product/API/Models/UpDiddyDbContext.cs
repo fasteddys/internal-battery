@@ -90,6 +90,7 @@ namespace UpDiddyApi.Models
         public DbSet<EnrollmentLog> EnrollmentLog { get; set; }
         public DbSet<Country> Country { get; set; }
         public DbSet<State> State { get; set; }
+        public DbSet<CourseVariant> CourseVariant { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -99,55 +100,56 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<PromoCode>()
                 .Property(pc => pc.MaxAllowedNumberOfRedemptions)
                 .HasDefaultValue(1);
-            modelBuilder.Entity<PromoCodeRedemption>()
-                .HasIndex(i => new { i.PromoCodeId, i.SubscriberId, i.CourseId, i.RedemptionStatusId, i.IsDeleted }).IsUnique();
+            // this caused a problem when cleaning up abandoned promo codes. may still want a constraint in the future, but needs to be implemented differently
+            //modelBuilder.Entity<PromoCodeRedemption>()
+            //    .HasIndex(i => new { i.PromoCodeId, i.SubscriberId, i.CourseId, i.RedemptionStatusId, i.IsDeleted }).IsUnique();
 
             modelBuilder.Entity<RedemptionStatus>().HasData(
                 new RedemptionStatus()
                 {
-                    CreateDate = DateTime.Now,
-                    CreateGuid = Guid.NewGuid(), // todo: this should refer to an admin account's AD Guid
+                    CreateDate = DateTime.MinValue,
+                    CreateGuid = Guid.Parse("D5533B5C-6C87-4C48-B9BE-D6FFB5532A4C"), // todo: this should refer to an admin account's AD Guid
                     IsDeleted = 0,
                     ModifyDate = null,
                     ModifyGuid = null,
                     Name = "In Process",
-                    RedemptionStatusGuid = Guid.NewGuid(),
+                    RedemptionStatusGuid = Guid.Parse("1FE97CDE-3A2D-42F1-8B8D-42824367020B"),
                     RedemptionStatusId = 1
                 },
                 new RedemptionStatus()
                 {
-                    CreateDate = DateTime.Now,
-                    CreateGuid = Guid.NewGuid(), // todo: this should refer to an admin account's AD Guid
+                    CreateDate = DateTime.MinValue,
+                    CreateGuid = Guid.Parse("D5533B5C-6C87-4C48-B9BE-D6FFB5532A4C"), // todo: this should refer to an admin account's AD Guid
                     IsDeleted = 0,
                     ModifyDate = null,
                     ModifyGuid = null,
                     Name = "Completed",
-                    RedemptionStatusGuid = Guid.NewGuid(),
+                    RedemptionStatusGuid = Guid.Parse("1FE97CDE-3A2D-42F1-8B8D-42824367020B"),
                     RedemptionStatusId = 2
                 });
             modelBuilder.Entity<PromoType>().HasData(
                 new PromoType()
                 {
-                    CreateDate = DateTime.Now,
-                    CreateGuid = Guid.NewGuid(), // todo: this should refer to an admin account's AD Guid
+                    CreateDate = DateTime.MinValue,
+                    CreateGuid = Guid.Parse("D5533B5C-6C87-4C48-B9BE-D6FFB5532A4C"), // todo: this should refer to an admin account's AD Guid
                     IsDeleted = 0,
                     ModifyDate = null,
                     ModifyGuid = null,
                     Description = "This type indicates that the PromoValueFactor is the dollar amount that should be subtracted from the course cost.",
                     Name = "Dollar Amount",
-                    PromoTypeGuid = Guid.NewGuid(),
+                    PromoTypeGuid = Guid.Parse("1DDB91F6-A6E5-4C01-A020-1DEA0AB77E95"),
                     PromoTypeId = 1
                 },
                 new PromoType()
                 {
-                    CreateDate = DateTime.Now,
-                    CreateGuid = Guid.NewGuid(), // todo: this should refer to an admin account's AD Guid
+                    CreateDate = DateTime.MinValue,
+                    CreateGuid = Guid.Parse("D5533B5C-6C87-4C48-B9BE-D6FFB5532A4C"), // todo: this should refer to an admin account's AD Guid
                     IsDeleted = 0,
                     ModifyDate = null,
                     ModifyGuid = null,
                     Description = "This type indicates that the the course cost should be reduced by the percentage value of the PromoValueFactor.",
                     Name = "Percent Off",
-                    PromoTypeGuid = Guid.NewGuid(),
+                    PromoTypeGuid = Guid.Parse("1DDB91F6-A6E5-4C01-A020-1DEA0AB77E95"),
                     PromoTypeId = 2
                 });
 

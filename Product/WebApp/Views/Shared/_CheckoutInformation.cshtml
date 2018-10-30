@@ -1,9 +1,9 @@
 ﻿@using UpDiddy.ViewModels
 @model CourseViewModel
-<ul>
-    <!--<li>First Name: @Model.Subscriber.FirstName</li>
-    <li>Last Name: @Model.Subscriber.LastName</li>
-    <li>Phone Number: @Model.Subscriber.PhoneNumber</li>-->
-    <li>Email Address: @Model.Subscriber.Email</li>
-    <!--<li>Address: @Model.Subscriber.Address</li>-->
-</ul>
+
+<div class="form-group col-md-3">
+    <input type="text" class="form-control" name="SubscriberFirstName" id="SubscriberFirstName" asp-for="Subscriber.FirstName" placeholder="@Model.Subscriber.FirstName" required>
+</div>
+<div class="form-group col-md-3">
+    <input type="text" class="form-control" name="SubscriberLastName" id="SubscriberLastName" asp-for="Subscriber.LastName" placeholder="@Model.Subscriber.FirstName" required>
+</div>

@@ -107,6 +107,13 @@ namespace UpDiddyApi
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
             RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.DoWork(), Cron.Minutely);
 
+            // PromoCodeRedemption cleanup
+            int promoCodeRedemptionCleanupScheduleInMinutes = 5;
+            int promoCodeRedemptionLookbackInMinutes = 30;
+            int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
+            int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
+            RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
+
             // TODO Change to Dailt
             RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.ReconcileFutureEnrollments(), Cron.Minutely);
         }

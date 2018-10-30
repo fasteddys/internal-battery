@@ -126,38 +126,43 @@ namespace UpDiddy.Controllers
 
             // Step 1: Process Payment
             // todo: skip payment if price is zero
-
-            BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
+            if (enrollmentDto.PricePaid == 0)
             {
-                PaymentAmount = enrollmentDto.PricePaid,
-                Nonce = Request.Form["payment_method_nonce"],
-                FirstName = BillingFirstName,
-                LastName = BillingLastName,
-                PhoneNumber = this.subscriber.PhoneNumber,
-                Email = this.subscriber.Email,
-                Address = BillingAddress,
-                Region = BillingState,
-                Locality = BillingCity,
-                ZipCode = BillingZipCode,
-                CountryCode = BillingCountry,
-                MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID")                
-            };
-            BraintreeResponseDto brdto = API.SubmitBraintreePayment(BraintreePaymentDto);
+                BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
+                {
+                    PaymentAmount = enrollmentDto.PricePaid,
+                    Nonce = Request.Form["payment_method_nonce"],
+                    FirstName = BillingFirstName,
+                    LastName = BillingLastName,
+                    PhoneNumber = this.subscriber.PhoneNumber,
+                    Email = this.subscriber.Email,
+                    Address = BillingAddress,
+                    Region = BillingState,
+                    Locality = BillingCity,
+                    ZipCode = BillingZipCode,
+                    CountryCode = BillingCountry,
+                    MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID")
+                };
+                BraintreeResponseDto brdto = API.SubmitBraintreePayment(BraintreePaymentDto);
 
-            // todo: if payment was successful and a promo code was applied, consume it (update PromoCodeRedemption table to be "completed")
-            if (brdto.WasSuccessful)
-            {
-                API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
-                return View("EnrollmentSuccess", CourseViewModel);
+
+                // todo: if payment was successful and a promo code was applied, consume it (update PromoCodeRedemption table to be "completed")
+                if (brdto.WasSuccessful)
+                {
+                    return View("EnrollmentSuccess", CourseViewModel);
+                }
+                else
+                {
+                    return View("EnrollmentFailure", CourseViewModel);
+                }
             }
             else
             {
-                return View("EnrollmentFailure", CourseViewModel);
+                // course is free with promo code
+                API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
+                return View("EnrollmentSuccess", CourseViewModel);
             }
-
             // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method
-
-
         }
 
 

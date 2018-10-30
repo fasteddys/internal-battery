@@ -12308,6 +12308,8 @@ $(document).ready(function () {
                         $('#PromoCodeRedemptionGuid').val(result.promoCodeRedemptionGuid);
                         $('#PromoCodeApplyButton').prop('disabled', true);
                         $('#PromoCodeApplyButton').css('color', 'white');
+                        if(result.finalCost==0)
+                            $('#BraintreePaymentContainer').hide();
                     } else {
                         $('#ValidationMessageError span').html(result.validationMessage);
                         $('#ValidationMessageSuccess').hide();
