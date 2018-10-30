@@ -51,39 +51,45 @@ namespace UpDiddyApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("api/[controller]/{promoCodeRedemptionGuid}")]
-        public IActionResult PromoCodeRedemption(Guid promoCodeRedemptionGuid)
-        {
-            // lookup redemption by guid 
-
-            // make sure that 
-            throw new NotImplementedException();
-        }
-
-        [Authorize]
-        [HttpGet]
         [Route("api/[controller]/PromoCodeRedemptionValidation/{promoCodeRedemptionGuid}/{courseGuid}/{subscriberGuid}")]
         public IActionResult PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid, string subscriberGuid)
         {
-            // lookup redemption by guid 
-            // make sure that the promo code is still in process
-            // that it is being redeemed for the same course and subscriber
-
+            // lookup redemption by guid and ensure that the following is true: 
+            //  the promo code is still in process
+            //  it is being redeemed for the same course and subscriber
+            //  we will not exceed the number of allowed redemptions for this code
             var query = (from pcr in _db.PromoCodeRedemption.Include(pcr => pcr.RedemptionStatus)
                          join c in _db.Course on pcr.CourseId equals c.CourseId
                          join s in _db.Subscriber on pcr.SubscriberId equals s.SubscriberId
+                         join pc in _db.PromoCode on pcr.PromoCodeId equals pc.PromoCodeId
                          where pcr.RedemptionStatus.Name == "In Process"
                          && pcr.IsDeleted == 0
                          && c.CourseGuid == Guid.Parse(courseGuid)
                          && s.SubscriberGuid == Guid.Parse(subscriberGuid)
                          && pcr.PromoCodeRedemptionGuid == Guid.Parse(promoCodeRedemptionGuid)
+                         && pc.NumberOfRedemptions < pc.MaxAllowedNumberOfRedemptions
                          select new PromoCodeDto()
                          {
                              Discount = pcr.ValueRedeemed,
                              IsValid = true,
                              PromoCodeRedemptionGuid = pcr.PromoCodeRedemptionGuid
-
                          }).FirstOrDefault();
+
+            // increment the number of redemptions for the code (if it is still valid)
+            if(query != null)
+            {
+                var promoCodeId = (from pc in _db.PromoCode
+                             join pcr in _db.PromoCodeRedemption on pc.PromoCodeId equals pcr.PromoCodeId
+                             where pcr.PromoCodeRedemptionGuid == Guid.Parse(promoCodeRedemptionGuid)
+                             select pc.PromoCodeId).FirstOrDefault();
+
+                var promoCodeToUpdate = _db.PromoCode.Where(pc => pc.PromoCodeId == promoCodeId).FirstOrDefault();
+                promoCodeToUpdate.ModifyDate = DateTime.UtcNow;
+                promoCodeToUpdate.ModifyGuid = Guid.NewGuid();
+                promoCodeToUpdate.NumberOfRedemptions += 1;
+                _db.Attach<PromoCode>(promoCodeToUpdate);
+                _db.SaveChanges();
+            }
 
             return Ok(query);
         }

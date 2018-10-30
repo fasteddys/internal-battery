@@ -15,6 +15,7 @@ using System.Reflection;
 using System.Globalization;
 using Newtonsoft.Json.Linq;
 using UpDiddyLib.Helpers;
+using AutoMapper.QueryableExtensions;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -70,8 +71,8 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         // TODO Authorize [Authorize]
         // TODO Cache to every 10 minutes 
-        [Route("api/[controller]/CourseSchedule/{CourseCode}")]
-        public async Task<IActionResult> CourseSchedule(string CourseCode)
+        [Route("api/[controller]/CourseSchedule/{CourseCode}/{CourseGuid}")]
+        public async Task<IActionResult> CourseSchedule(string CourseCode, Guid CourseGuid)
         {
 
             int MonthsLookAhead = 6;
@@ -87,6 +88,20 @@ namespace UpDiddyApi.Controllers
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             HttpResponseMessage response = await client.SendAsync(request);
             var ResponseJson = await response.Content.ReadAsStringAsync();
+
+            IList<CourseVariantDto> Variants = null;
+            Variants = _db.CourseVariant
+                .Where(t => t.IsDeleted == 0 && t.CourseGuid == CourseGuid)
+                .ProjectTo<CourseVariantDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            Dictionary<string, Decimal> VarToPrice = new Dictionary<string, Decimal>();
+            foreach(CourseVariantDto variant in Variants)
+            {
+                VarToPrice.Add(variant.VariantType, variant.Price);
+            }
+
+
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
@@ -102,7 +117,8 @@ namespace UpDiddyApi.Controllers
                 WozCourseScheduleDto CourseSchedule = new WozCourseScheduleDto()
                 {
                     CourseCode = CourseCode,
-                    StartDatesUTC = CourseStartDatesUtc
+                    StartDatesUTC = CourseStartDatesUtc,
+                    VariantToPrice = VarToPrice
                 };
 
                 return Ok(CourseSchedule);

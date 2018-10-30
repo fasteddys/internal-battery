@@ -54,7 +54,7 @@ namespace UpDiddy.Controllers
             GetSubscriber(false);
 
             CourseDto Course = API.Course(CourseSlug);
-            WozCourseScheduleDto CourseScheduleDto = API.CourseSchedule(Course.Code);
+            WozCourseScheduleDto CourseScheduleDto = API.CourseSchedule(Course.Code, (Guid)Course.CourseGuid);
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
             CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS, CourseScheduleDto);
@@ -84,12 +84,15 @@ namespace UpDiddy.Controllers
             string BillingCity,
             string BillingCountry,
             string BillingAddress,
-            Guid? PromoCodeRedemptionGuid)
+            Guid? PromoCodeRedemptionGuid,
+            Boolean InstructorLedChosen,
+            Boolean SelfPacedChosen,
+            Int64 DateOfInstructorLedSection)
         {
             GetSubscriber(false);
             DateTime currentDate = DateTime.UtcNow;
             CourseDto Course = API.Course(CourseSlug);
-            WozCourseScheduleDto wcsdto = API.CourseSchedule(Course.Code);
+            WozCourseScheduleDto wcsdto = API.CourseSchedule(Course.Code, (Guid)Course.CourseGuid);
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
             CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS, wcsdto);
@@ -107,7 +110,8 @@ namespace UpDiddy.Controllers
                 PricePaid = (decimal)Course.Price,
                 PercentComplete = 0,
                 IsRetake = 0, //TODO Make this check DB for existing entry
-                EnrollmentStatusId = 0,
+                EnrollmentStatusId = InstructorLedChosen ? (int)EnrollmentStatus.EnrollStudentRequested : (int)EnrollmentStatus.FutureRegisterStudentRequested,
+                SectionStartTimestamp = InstructorLedChosen ? DateOfInstructorLedSection : 0,
                 TermsOfServiceFlag = TermsOfServiceDocId
             };
 
@@ -127,38 +131,43 @@ namespace UpDiddy.Controllers
 
             // Step 1: Process Payment
             // todo: skip payment if price is zero
-
-            BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
+            if (enrollmentDto.PricePaid == 0)
             {
-                PaymentAmount = enrollmentDto.PricePaid,
-                Nonce = Request.Form["payment_method_nonce"],
-                FirstName = BillingFirstName,
-                LastName = BillingLastName,
-                PhoneNumber = this.subscriber.PhoneNumber,
-                Email = this.subscriber.Email,
-                Address = BillingAddress,
-                Region = BillingState,
-                Locality = BillingCity,
-                ZipCode = BillingZipCode,
-                CountryCode = BillingCountry,
-                MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID")                
-            };
-            BraintreeResponseDto brdto = API.SubmitBraintreePayment(BraintreePaymentDto);
+                BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
+                {
+                    PaymentAmount = enrollmentDto.PricePaid,
+                    Nonce = Request.Form["payment_method_nonce"],
+                    FirstName = BillingFirstName,
+                    LastName = BillingLastName,
+                    PhoneNumber = this.subscriber.PhoneNumber,
+                    Email = this.subscriber.Email,
+                    Address = BillingAddress,
+                    Region = BillingState,
+                    Locality = BillingCity,
+                    ZipCode = BillingZipCode,
+                    CountryCode = BillingCountry,
+                    MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID")
+                };
+                BraintreeResponseDto brdto = API.SubmitBraintreePayment(BraintreePaymentDto);
 
-            // todo: if payment was successful and a promo code was applied, consume it (update PromoCodeRedemption table to be "completed")
-            if (brdto.WasSuccessful)
-            {
-                API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
-                return View("EnrollmentSuccess", CourseViewModel);
+
+                // todo: if payment was successful and a promo code was applied, consume it (update PromoCodeRedemption table to be "completed")
+                if (brdto.WasSuccessful)
+                {
+                    return View("EnrollmentSuccess", CourseViewModel);
+                }
+                else
+                {
+                    return View("EnrollmentFailure", CourseViewModel);
+                }
             }
             else
             {
-                return View("EnrollmentFailure", CourseViewModel);
+                // course is free with promo code
+                API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
+                return View("EnrollmentSuccess", CourseViewModel);
             }
-
             // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method
-
-
         }
 
 

@@ -12308,6 +12308,8 @@ $(document).ready(function () {
                         $('#PromoCodeRedemptionGuid').val(result.promoCodeRedemptionGuid);
                         $('#PromoCodeApplyButton').prop('disabled', true);
                         $('#PromoCodeApplyButton').css('color', 'white');
+                        if (result.finalCost === 0)
+                            $('#BraintreePaymentContainer').hide();
                     } else {
                         $('#ValidationMessageError span').html(result.validationMessage);
                         $('#ValidationMessageSuccess').hide();
@@ -12334,6 +12336,15 @@ $(document).ready(function () {
         }
         else {
             $('#InstructorLedInputField').prop('disabled', true);;
+        }
+    });
+
+    $('.selection-radios-container input').change(function () {
+        if ($(this).attr('id') === "InstructorLedRadio" && $(this).is(':checked')) {
+            $('#CourseTotal').html(instructorLedPrice);
+        }
+        else if ($(this).attr('id') === "SelfPacedRadio" && $(this).is(':checked')) {
+            $('#CourseTotal').html(selfPacedPrice);
         }
     });
 

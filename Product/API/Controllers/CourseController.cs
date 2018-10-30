@@ -168,16 +168,15 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("api/[controller]/guid/{CourseGuid}/variant/{VariantType}")]
-        public IActionResult GetCourseVariantPrice(Guid? CourseGuid, int VariantType)
-        {/*
+        public IActionResult GetCourseVariantPrice(Guid? CourseGuid, string VariantType)
+        {
             CourseVariant courseVariant = _db.CourseVariant
                 .Where(t => t.IsDeleted == 0 && t.CourseGuid == CourseGuid && t.VariantType == VariantType)
                 .FirstOrDefault();
             if (courseVariant == null)
                 return Ok("0");
             else
-                return Ok(courseVariant.Price.ToString());*/
-            return Ok();
+                return Ok(courseVariant.Price.ToString());
 
         }
     }

@@ -4,6 +4,12 @@
 @using System.Collections;
 @model CourseViewModel
 
+<script type="text/javascript">
+    var selfPacedPrice = @Model.SelfPacedPrice;
+    var instructorLedPrice = @Model.InstructorLedPrice;
+
+</script>
+
 <div class="checkout-page-container">
     <div class="row checkout-topic-detail-band">
         <div class="col-md-12">
@@ -50,10 +56,51 @@
                             <input type="hidden" id="CourseGuid" name="CourseGuid" value="@Model.Course.CourseGuid" />
                             <input type="hidden" id="SubscriberGuid" name="SubscriberGuid" value="@Model.Subscriber.SubscriberGuid" />
                             <input type="hidden" id="PromoCodeRedemptionGuid" asp-for="PromoCodeRedemptionGuid" />
+                            @if (Model.IsInstructorLed)
+                            {
+                                <div class="form-row">
+                                    <div class="form-group col-12">
+                                        <div class="promotional-code-header"><h3>Section Selection:</h3></div>
+                                    </div>
+                                    <div class="form-group col-12">
+                                        <div class="form-group form-check selection-radios-container no-padding">
+                                            <div class="row">
+
+                                                <div class="col-6 no-padding">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="sectionSelectionRadios" id="SelfPacedRadio" value="selfPaced" asp-for="SelfPacedChosen" checked>
+                                                        <label class="form-check-label" for="SelfPacedRadio">
+                                                            Self-paced
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 no-padding">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="sectionSelectionRadios" id="InstructorLedRadio" value="instructorLed" asp-for="InstructorLedChosen">
+                                                        <label class="form-check-label" for="InstructorLedRadio">
+                                                            Instructor Led
+                                                        </label>
+                                                    </div>
+                                                    <select class="form-control" id="InstructorLedInputField" asp-for="DateOfInstructorLedSection">
+                                                        @foreach (long datetime in Model.WozCourseSchedule.StartDatesUTC)
+                                                        {
+                                                            <option value="@datetime">@Utils.UnixMillisecondsToLocalDatetime(datetime)</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            }
                             <div class="form-row">
                                 <div class="form-group col-md-6">
                                     <div class="promotional-code-header"><h3>Promotional Code</h3></div>
                                 </div>
+
                                 <div class="form-group col-md-6">
                                     <div class="input-group">
                                         <input type="text" id="PromoCodeInput" class="form-control" placeholder="Enter a promo code" aria-label="Promo code:" aria-describedby="PromoCodeApplyButton">
@@ -113,7 +160,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-row">
+                            <div class="form-row" id="BraintreePaymentContainer">
                                 <div class="form-group col-md-12">
                                     <div class="payment-info-header">
                                         <h3>Secure Payment Information</h3>
@@ -139,45 +186,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @if (Model.WozCourseSchedule != null)
-                            {
-                                <div class="form-row">
-                                    <div class="form-group col-12">
-                                        <div class="promotional-code-header"><h3>Section Selection:</h3></div>
-                                    </div>
-                                    <div class="form-group col-12">
-                                        <div class="form-group form-check selection-radios-container no-padding">
-                                            <div class="row">
-                                                <div class="col-6 no-padding">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="sectionSelectionRadios" id="InstructorLedRadio" value="instructorLed" checked>
-                                                        <label class="form-check-label" for="InstructorLedRadio">
-                                                            Instructor Led
-                                                        </label>
-                                                    </div>
-                                                    <select class="form-control" id="InstructorLedInputField">
-                                                        @foreach (long datetime in Model.WozCourseSchedule.StartDatesUTC)
-                                                        {
-                                                            <option value="@datetime">@Utils.UnixMillisecondsToLocalDatetime(datetime)</option>
-                                                        }
-                                                    </select>
-                                                </div>
-                                                <div class="col-6 no-padding">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="sectionSelectionRadios" id="SelfPacedRadio" value="selfPaced">
-                                                        <label class="form-check-label" for="SelfPacedRadio">
-                                                            Self-paced
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            
-                                            
-                                        </div>
-                                    </div>
-                                </div>
-                            }
+
                             <div class="form-row">
                                 <div class="form-group offset-md-6">
                                     <div class="promotional-code-header"><h3>Total:</h3></div>
@@ -188,7 +197,7 @@
                                             @Model.Course.Name
                                         </div>
                                         <div class="form-group col-6 container-align-right">
-                                            $@Model.Course.Price
+                                            $<span id="InitialCoursePrice">@Model.Course.Price</span>
                                         </div>
                                         <div class="form-group col-6">
                                             Promotional Code
@@ -228,7 +237,6 @@
         </div>
     </div>
 </div>
-
 <script src="https://js.braintreegateway.com/web/dropin/1.13.0/js/dropin.min.js"></script>
 <script>
     var client_token = "@ViewBag.ClientToken";
