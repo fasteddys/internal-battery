@@ -98,7 +98,7 @@ $(document).ready(function () {
                         $('#PromoCodeRedemptionGuid').val(result.promoCodeRedemptionGuid);
                         $('#PromoCodeApplyButton').prop('disabled', true);
                         $('#PromoCodeApplyButton').css('color', 'white');
-                        if(result.finalCost==0)
+                        if (result.finalCost === 0)
                             $('#BraintreePaymentContainer').hide();
                     } else {
                         $('#ValidationMessageError span').html(result.validationMessage);
@@ -117,6 +117,26 @@ $(document).ready(function () {
             $('#ValidationMessageError span').html('No promotional code was supplied; please enter a value and try again.');
             $('#ValidationMessageSuccess').hide();
             $('#ValidationMessageError').show();
+        }
+    });
+
+    $('.selection-radios-container input').change(function () {
+        if ($('#InstructorLedRadio').is(':checked')) {
+            $('#InstructorLedInputField').prop('disabled', false);;
+        }
+        else {
+            $('#InstructorLedInputField').prop('disabled', true);;
+        }
+    });
+
+    $('.selection-radios-container input').change(function () {
+        if ($(this).attr('id') === "InstructorLedRadio" && $(this).is(':checked')) {
+            $('#CourseTotal').html(instructorLedPrice);
+            $('#InitialCoursePrice').html(instructorLedPrice);
+        }
+        else if ($(this).attr('id') === "SelfPacedRadio" && $(this).is(':checked')) {
+            $('#CourseTotal').html(selfPacedPrice);
+            $('#InitialCoursePrice').html(selfPacedPrice);
         }
     });
 

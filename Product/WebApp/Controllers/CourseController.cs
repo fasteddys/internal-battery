@@ -54,9 +54,10 @@ namespace UpDiddy.Controllers
             GetSubscriber(false);
 
             CourseDto Course = API.Course(CourseSlug);
+            WozCourseScheduleDto CourseScheduleDto = API.CourseSchedule(Course.Code, (Guid)Course.CourseGuid);
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
-            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
+            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS, CourseScheduleDto);
             var gateway = braintreeConfiguration.GetGateway();
             var clientToken = gateway.ClientToken.Generate();
             ViewBag.ClientToken = clientToken;
@@ -84,6 +85,9 @@ namespace UpDiddy.Controllers
             string BillingCountry,
             string BillingAddress,
             Guid? PromoCodeRedemptionGuid,
+            Boolean InstructorLedChosen,
+            Boolean SelfPacedChosen,
+            Int64 DateOfInstructorLedSection,
             string SubscriberFirstName,
             string SubscriberLastName)
         {
@@ -104,10 +108,10 @@ namespace UpDiddy.Controllers
 
             DateTime currentDate = DateTime.UtcNow;
             CourseDto Course = API.Course(CourseSlug);
-
+            WozCourseScheduleDto wcsdto = API.CourseSchedule(Course.Code, (Guid)Course.CourseGuid);
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
-            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
+            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS, wcsdto);
 
             EnrollmentDto enrollmentDto = new EnrollmentDto
             {
@@ -122,7 +126,8 @@ namespace UpDiddy.Controllers
                 PricePaid = (decimal)Course.Price,
                 PercentComplete = 0,
                 IsRetake = 0, //TODO Make this check DB for existing entry
-                EnrollmentStatusId = 0,
+                EnrollmentStatusId = InstructorLedChosen ? (int)EnrollmentStatus.EnrollStudentRequested : (int)EnrollmentStatus.FutureRegisterStudentRequested,
+                SectionStartTimestamp = InstructorLedChosen ? DateOfInstructorLedSection : 0,
                 TermsOfServiceFlag = TermsOfServiceDocId
             };
 

@@ -29,11 +29,21 @@
                     }
                 }
             }
+
+            .selection-radios-container {
+                .form-check {
+                    margin-bottom: 1rem;
+                }
+
+                #InstructorLedInputField{
+                    width: 15rem;
+                }
+            }
         }
     }
 
     .checkout-hero {
-        
+
 
         .checkout-known-info-header {
             font-size: 2rem;
