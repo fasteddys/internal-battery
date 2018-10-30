@@ -12328,6 +12328,15 @@ $(document).ready(function () {
         }
     });
 
+    $('.selection-radios-container input').change(function () {
+        if ($('#InstructorLedRadio').is(':checked')) {
+            $('#InstructorLedInputField').prop('disabled', false);;
+        }
+        else {
+            $('#InstructorLedInputField').prop('disabled', true);;
+        }
+    });
+
     $('#UpdatedCountry').change(function () {
         var country = $(this).val();
         var states = locationsList[country];

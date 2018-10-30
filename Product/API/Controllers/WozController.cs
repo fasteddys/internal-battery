@@ -75,7 +75,9 @@ namespace UpDiddyApi.Controllers
         {
 
             int MonthsLookAhead = 6;
-            int.TryParse(_configuration["Woz:CourseScheduleMonthLookahead"],out MonthsLookAhead) ;
+            if (!(int.TryParse(_configuration["Woz:CourseScheduleMonthLookahead"], out MonthsLookAhead)))
+                MonthsLookAhead = 6;
+            
 
             long UTCStartDate = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
             long UTCEndDate = ((DateTimeOffset)DateTime.Now.AddMonths(MonthsLookAhead)).ToUnixTimeMilliseconds();

@@ -90,6 +90,7 @@ namespace UpDiddyApi.Models
         public DbSet<EnrollmentLog> EnrollmentLog { get; set; }
         public DbSet<Country> Country { get; set; }
         public DbSet<State> State { get; set; }
+        public DbSet<CourseVariant> CourseVariant { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

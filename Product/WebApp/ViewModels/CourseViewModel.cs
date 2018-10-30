@@ -11,6 +11,7 @@ namespace UpDiddy.ViewModels
         public CourseDto Course { get; set; }
         public SubscriberDto Subscriber { get; set; }
         public WozTermsOfServiceDto TermsOfService { get; set; }
+        public WozCourseScheduleDto WozCourseSchedule { get; set; }
         public Boolean TermsOfServiceDocId { get; set; }
         public string CourseSlug { get; set; }
         public string PaymentMethodNonce { get; set; }
@@ -23,13 +24,20 @@ namespace UpDiddy.ViewModels
         public string BillingAddress { get; set; }
         public Boolean SameAsAboveCheckbox { get; set; }
         public Guid PromoCodeRedemptionGuid { get; set; }
-        public CourseViewModel(IConfiguration _configuration, CourseDto course, SubscriberDto subscriber, TopicDto parentTopic, WozTermsOfServiceDto tos)
+        public CourseViewModel(
+            IConfiguration _configuration, 
+            CourseDto course, 
+            SubscriberDto subscriber, 
+            TopicDto parentTopic, 
+            WozTermsOfServiceDto tos,
+            WozCourseScheduleDto wcsdto)
         {
             this.TermsOfService = tos;
             this.ImageUrl = _configuration["BaseImageUrl"];
             this.Parent = parentTopic;
             this.Subscriber = subscriber;
             this.Course = course;
+            this.WozCourseSchedule = wcsdto;
         }
     }
 }

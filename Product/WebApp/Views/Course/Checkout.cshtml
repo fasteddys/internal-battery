@@ -1,5 +1,7 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
+@using UpDiddyLib.Helpers;
+@using System.Collections;
 @model CourseViewModel
 
 <div class="checkout-page-container">
@@ -79,9 +81,9 @@
                                 <div class="form-group col-md-12 billing-info-header-container">
                                     <div class="billing-info-header"><h3>Billing Information</h3></div>
                                     <!--<div class="form-check same-as-above">
-                                        <input type="checkbox" class="form-check-input" id="SameAsAboveCheckbox" asp-for="SameAsAboveCheckbox">
-                                        <label class="form-check-label" for="sameAsAboveCheckbox">Same as above</label>
-                                    </div>-->
+                <input type="checkbox" class="form-check-input" id="SameAsAboveCheckbox" asp-for="SameAsAboveCheckbox">
+                <label class="form-check-label" for="sameAsAboveCheckbox">Same as above</label>
+            </div>-->
                                 </div>
                                 <div class="form-group col-md-3">
                                     <input type="text" class="form-control" name="BillingFirstName" id="BillingFirstName" asp-for="BillingFirstName" placeholder="First Name" required>
@@ -137,6 +139,45 @@
                                     </div>
                                 </div>
                             </div>
+                            @if (Model.WozCourseSchedule != null)
+                            {
+                                <div class="form-row">
+                                    <div class="form-group col-12">
+                                        <div class="promotional-code-header"><h3>Section Selection:</h3></div>
+                                    </div>
+                                    <div class="form-group col-12">
+                                        <div class="form-group form-check selection-radios-container no-padding">
+                                            <div class="row">
+                                                <div class="col-6 no-padding">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="sectionSelectionRadios" id="InstructorLedRadio" value="instructorLed" checked>
+                                                        <label class="form-check-label" for="InstructorLedRadio">
+                                                            Instructor Led
+                                                        </label>
+                                                    </div>
+                                                    <select class="form-control" id="InstructorLedInputField">
+                                                        @foreach (long datetime in Model.WozCourseSchedule.StartDatesUTC)
+                                                        {
+                                                            <option value="@datetime">@Utils.UnixMillisecondsToLocalDatetime(datetime)</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="col-6 no-padding">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="sectionSelectionRadios" id="SelfPacedRadio" value="selfPaced">
+                                                        <label class="form-check-label" for="SelfPacedRadio">
+                                                            Self-paced
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            }
                             <div class="form-row">
                                 <div class="form-group offset-md-6">
                                     <div class="promotional-code-header"><h3>Total:</h3></div>

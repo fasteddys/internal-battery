@@ -352,6 +352,10 @@ body {
     .checkout-page-container .form-row .form-group .total-container > div.total-row-item {
       border-top: 0.0625rem solid #4089A0;
       padding-top: 1rem; }
+  .checkout-page-container .form-row .form-group .selection-radios-container .form-check {
+    margin-bottom: 1rem; }
+  .checkout-page-container .form-row .form-group .selection-radios-container #InstructorLedInputField {
+    width: 15rem; }
 .checkout-page-container .checkout-hero .checkout-known-info-header {
   font-size: 2rem; }
 .checkout-page-container .checkout-hero .known-info-container ul {

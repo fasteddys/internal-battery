@@ -54,9 +54,10 @@ namespace UpDiddy.Controllers
             GetSubscriber(false);
 
             CourseDto Course = API.Course(CourseSlug);
+            WozCourseScheduleDto CourseScheduleDto = API.CourseSchedule(Course.Code);
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
-            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
+            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS, CourseScheduleDto);
             var gateway = braintreeConfiguration.GetGateway();
             var clientToken = gateway.ClientToken.Generate();
             ViewBag.ClientToken = clientToken;
@@ -88,10 +89,10 @@ namespace UpDiddy.Controllers
             GetSubscriber(false);
             DateTime currentDate = DateTime.UtcNow;
             CourseDto Course = API.Course(CourseSlug);
-
+            WozCourseScheduleDto wcsdto = API.CourseSchedule(Course.Code);
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
-            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS);
+            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, WozTOS, wcsdto);
 
             EnrollmentDto enrollmentDto = new EnrollmentDto
             {
