@@ -85,8 +85,7 @@ namespace UpDiddy.Controllers
             string BillingCountry,
             string BillingAddress,
             Guid? PromoCodeRedemptionGuid,
-            Boolean InstructorLedChosen,
-            Boolean SelfPacedChosen,
+            string sectionSelectionRadios,
             Int64 DateOfInstructorLedSection,
             string SubscriberFirstName,
             string SubscriberLastName)
@@ -126,8 +125,8 @@ namespace UpDiddy.Controllers
                 PricePaid = (decimal)Course.Price,
                 PercentComplete = 0,
                 IsRetake = 0, //TODO Make this check DB for existing entry
-                EnrollmentStatusId = InstructorLedChosen ? (int)EnrollmentStatus.EnrollStudentRequested : (int)EnrollmentStatus.FutureRegisterStudentRequested,
-                SectionStartTimestamp = InstructorLedChosen ? DateOfInstructorLedSection : 0,
+                EnrollmentStatusId = sectionSelectionRadios== "instructorLed" ? (int)EnrollmentStatus.FutureRegisterStudentRequested : (int)EnrollmentStatus.EnrollStudentRequested,
+                SectionStartTimestamp = sectionSelectionRadios == "instructorLed" ? DateOfInstructorLedSection : 0,
                 TermsOfServiceFlag = TermsOfServiceDocId
             };
 
