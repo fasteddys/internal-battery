@@ -83,9 +83,25 @@ namespace UpDiddy.Controllers
             string BillingCity,
             string BillingCountry,
             string BillingAddress,
-            Guid? PromoCodeRedemptionGuid)
+            Guid? PromoCodeRedemptionGuid,
+            string SubscriberFirstName,
+            string SubscriberLastName)
         {
             GetSubscriber(false);
+
+            // update the subscriber's first name and last name if they do not exist (or if the values are different than what is stored currently). 
+            // we must do this here because first and last name are required for the enrollment process for Woz. 
+            // todo: refactor this; consider creating a partial view that is shared between the profile page, checkout, and anywhere else where we need to work with the subscriber
+            if (this.subscriber.FirstName == null || !this.subscriber.FirstName.Equals(SubscriberFirstName) || this.subscriber.LastName == null || !this.subscriber.LastName.Equals(SubscriberLastName))
+            {
+                API.UpdateProfileInformation(new SubscriberDto()
+                {
+                    SubscriberGuid = this.subscriber.SubscriberGuid,
+                    FirstName = SubscriberFirstName,
+                    LastName = SubscriberLastName
+                });
+            }
+
             DateTime currentDate = DateTime.UtcNow;
             CourseDto Course = API.Course(CourseSlug);
 
@@ -126,7 +142,7 @@ namespace UpDiddy.Controllers
 
             // Step 1: Process Payment
             // todo: skip payment if price is zero
-            if (enrollmentDto.PricePaid == 0)
+            if (enrollmentDto.PricePaid != 0)
             {
                 BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
                 {
@@ -149,6 +165,7 @@ namespace UpDiddy.Controllers
                 // todo: if payment was successful and a promo code was applied, consume it (update PromoCodeRedemption table to be "completed")
                 if (brdto.WasSuccessful)
                 {
+                    API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
                     return View("EnrollmentSuccess", CourseViewModel);
                 }
                 else

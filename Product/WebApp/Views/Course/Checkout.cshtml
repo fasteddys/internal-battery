@@ -18,25 +18,6 @@
             </div>
         </div>
     </div>
-    <div class="row checkout-hero">
-        <div class="col-md-12">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="checkout-known-info-header">
-                            Your Information
-                        </div>
-                        <div class="known-info-container">
-                            @await Html.PartialAsync("_CheckoutInformation")
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     <div class="row checkout-vendor-info-container">
         <div class="col-md-12">
             <div class="container">
@@ -48,6 +29,12 @@
                             <input type="hidden" id="CourseGuid" name="CourseGuid" value="@Model.Course.CourseGuid" />
                             <input type="hidden" id="SubscriberGuid" name="SubscriberGuid" value="@Model.Subscriber.SubscriberGuid" />
                             <input type="hidden" id="PromoCodeRedemptionGuid" asp-for="PromoCodeRedemptionGuid" />
+                            <div class="form-group col-md-3">
+
+                            </div>
+                            <div class="form-group col-md-3">
+
+                            </div>
                             <div class="form-row">
                                 <div class="form-group col-md-6">
                                     <div class="promotional-code-header"><h3>Promotional Code</h3></div>
@@ -73,6 +60,17 @@
                                             <!-- validation message success messages are added here-->
                                         </span>
                                     </div>
+                                </div>
+                            </div>
+                            <div class="form-row billing-info-container">
+                                <div class="form-group col-md-12 billing-info-header-container">
+                                    <div class="billing-info-header"><h3>Your Information</h3></div>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <input type="text" class="form-control" name="SubscriberFirstName" id="SubscriberFirstName" asp-for="Subscriber.FirstName" placeholder="First Name" required>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <input type="text" class="form-control" name="SubscriberLastName" id="SubscriberLastName" asp-for="Subscriber.LastName" placeholder="Last Name" required>
                                 </div>
                             </div>
                             <div class="form-row billing-info-container">
@@ -147,19 +145,19 @@
                                             @Model.Course.Name
                                         </div>
                                         <div class="form-group col-6 container-align-right">
-                                            $@Model.Course.Price
+                                            @string.Format("{0:C}", Model.Course.Price)
                                         </div>
                                         <div class="form-group col-6">
                                             Promotional Code
                                         </div>
                                         <div class="form-group col-6 container-align-right">
-                                            <span id="PromoCodeTotal">$0</span>
+                                            <span id="PromoCodeTotal">$0.00</span>
                                         </div>
                                         <div class="form-group col-6 total-row-item">
                                             Total
                                         </div>
                                         <div class="form-group col-6 container-align-right total-row-item">
-                                            $<span id="CourseTotal">@Model.Course.Price</span>
+                                            <span id="CourseTotal">@string.Format("{0:C}", Model.Course.Price)</span>
                                         </div>
                                     </div>
 
@@ -198,6 +196,12 @@
         container: '#bt-dropin'
     }, function (createErr, instance) {
         form.addEventListener('submit', function (event) {
+            // bypass payment if course cost is zero
+            if ($('#CourseTotal').val() === 0) {
+                HTMLFormElement.prototype.submit.call(form);
+                return;
+            }
+
             event.preventDefault();
 
             instance.requestPaymentMethod(function (err, payload) {
@@ -205,9 +209,10 @@
                     console.log('Error', err);
                     return;
                 }
+                
                 // Add the nonce to the form and submit
-                $('#BraintreeNonce').val(payload.nonce);
-                form.submit();
+                 $('#BraintreeNonce').val(payload.nonce);
+                 form.submit();
             });
         });
     });

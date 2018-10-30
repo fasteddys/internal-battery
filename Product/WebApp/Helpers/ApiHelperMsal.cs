@@ -187,12 +187,18 @@ namespace UpDiddy.Helpers
 
         private async Task<string> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
         {
-            string ApiUrl = _ApiBaseUri + ApiAction;
-            var client = new HttpClient();
-            var request = PostRequest(ApiAction, JsonToSend);
-            var response = await client.SendAsync(request);
-            string responseString = await response.Content.ReadAsStringAsync();
-            return responseString;
+
+
+
+                string ApiUrl = _ApiBaseUri + ApiAction;
+                var client = new HttpClient();
+                var request = PostRequest(ApiAction, JsonToSend);
+                // Add token to the Authorization header and make the request 
+                if (Authorized)
+                    await AddBearerTokenAsync(request);
+                var response = await client.SendAsync(request);
+                string responseString = await response.Content.ReadAsStringAsync();
+                return responseString;
 
 
         }

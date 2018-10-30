@@ -70,7 +70,7 @@ namespace UpDiddy.Api
         }
         public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentDto enrollmentDto)
         {
-            return Post<Guid>(enrollmentDto, "enrollment/", false);
+            return Post<Guid>(enrollmentDto, "enrollment/", true);
         }
 
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
@@ -100,7 +100,7 @@ namespace UpDiddy.Api
 
         public IList<EnrollmentDto> GetCurrentEnrollmentsForSubscriber(SubscriberDto Subscriber)
         {
-            return Get<IList<EnrollmentDto>>("enrollment/CurrentEnrollments/" + Subscriber.SubscriberId, false); 
+            return Get<IList<EnrollmentDto>>("enrollment/CurrentEnrollments/" + Subscriber.SubscriberId, true); 
         }
 
         public WozCourseProgress GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)

@@ -12303,8 +12303,8 @@ $(document).ready(function () {
                         $('#ValidationMessageSuccess span').html(result.validationMessage);
                         $('#ValidationMessageSuccess').show();
                         $('#ValidationMessageError').hide();
-                        $('#PromoCodeTotal').html("-$" + result.discount);
-                        $('#CourseTotal').html(result.finalCost);
+                        $('#PromoCodeTotal').html("-$" + result.discount.toFixed(2));
+                        $('#CourseTotal').html("$" + result.finalCost.toFixed(2));
                         $('#PromoCodeRedemptionGuid').val(result.promoCodeRedemptionGuid);
                         $('#PromoCodeApplyButton').prop('disabled', true);
                         $('#PromoCodeApplyButton').css('color', 'white');

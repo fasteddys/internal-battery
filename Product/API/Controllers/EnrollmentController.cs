@@ -17,6 +17,7 @@ using UpDiddyLib.Helpers;
 using AutoMapper.QueryableExtensions;
 using UpDiddyApi.Workflow;
 using Hangfire;
+using Microsoft.AspNetCore.Authorization;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddyApi.Controllers
@@ -41,7 +42,7 @@ namespace UpDiddyApi.Controllers
             braintreeConfiguration = new BraintreeConfiguration(_configuration);
         }
 
-   
+        [Authorize]
         [HttpPost]
         [Route("api/[controller]")]
         public IActionResult Post([FromBody] EnrollmentDto EnrollmentDto)
@@ -65,13 +66,14 @@ namespace UpDiddyApi.Controllers
                 BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString()));
                 return Ok(Enrollment.EnrollmentGuid);
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status400BadRequest, ex);
             }
-           
+
         }
 
+        [Authorize]
         [HttpPost]
         [Route("api/[controller]/ProcessBraintreePayment")]
         public BraintreeResponseDto ProcessBraintreePayment([FromBody] BraintreePaymentDto BraintreePaymentDto)
@@ -80,7 +82,7 @@ namespace UpDiddyApi.Controllers
             var nonce = BraintreePaymentDto.Nonce;
             AddressRequest addressRequest;
 
-            
+
             addressRequest = new AddressRequest
             {
                 // Assuming form fields are filled in at this point until above TODO is handled
@@ -125,17 +127,7 @@ namespace UpDiddyApi.Controllers
                 WasSuccessful = result.IsSuccess()
             };
         }
-
-        private Decimal? CalculatePromoCodeDiscountedPrice(Decimal? CoursePrice, Decimal PromoValueFactor)
-        {
-            return (CoursePrice - CalculatePriceOffOfCourse(CoursePrice, PromoValueFactor));
-        }
-
-        private Decimal CalculatePriceOffOfCourse(Decimal? CoursePrice, Decimal PromoValueFactor)
-        {
-            return (Math.Floor((Decimal)CoursePrice * PromoValueFactor * 100)) / 100;
-        }
-
+        [Authorize]
         [HttpGet]
         [Route("api/[controller]/CurrentEnrollments/{SubscriberId}")]
         public IActionResult GetCurrentEnrollmentsForSubscriber(int SubscriberId)
@@ -150,6 +142,7 @@ namespace UpDiddyApi.Controllers
         }
 
         // TODO Use SubcriberGuid 
+        [Authorize]
         [HttpGet]
         [Route("api/[controller]/StudentLogin/{SubscriberId}")]
         public IActionResult StudentLogin(int SubscriberId)
