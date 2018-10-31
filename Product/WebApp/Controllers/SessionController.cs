@@ -20,13 +20,25 @@ namespace UpDiddy.Controllers
             AzureAdB2COptions = b2cOptions.Value;
         }
 
-        public AzureAdB2COptions AzureAdB2COptions { get; set; } 
+        public AzureAdB2COptions AzureAdB2COptions { get; set; }
+
+
+        [HttpGet]
+        public IActionResult SignInAndEnroll()
+        {
+            SetAzureAdB2CCulture();
+            var redirectUrl = Url.Action(nameof(HomeController.Profile), "Home");
+            return Challenge(
+                new AuthenticationProperties { RedirectUri = redirectUrl },
+                OpenIdConnectDefaults.AuthenticationScheme);
+        }
+
 
         [HttpGet]
         public IActionResult SignIn()
         {
             SetAzureAdB2CCulture();
-            var redirectUrl = Url.Action(nameof(HomeController.Index), "Home");        
+            var redirectUrl = Url.Action(nameof(HomeController.Profile), "Home");        
             return Challenge(
                 new AuthenticationProperties { RedirectUri = redirectUrl},
                 OpenIdConnectDefaults.AuthenticationScheme);
