@@ -88,7 +88,7 @@
                                 <ul class="courses-in-progress-list-desktop">
                                     @foreach (WozCourseProgress enrollment in Model.CurrentEnrollments)
                                     {
-                                        double percentComplete = 70;// Math.Floor((double)enrollment.ActivitiesCompleted/enrollment.ActivitiesTotal);
+                                        double percentComplete = 50;// Math.Floor((double)enrollment.ActivitiesCompleted/enrollment.ActivitiesTotal);
                                         string classFormatter = "";
                                         if(percentComplete < 50)
                                         {
