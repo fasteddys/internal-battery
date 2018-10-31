@@ -72,6 +72,7 @@ namespace UpDiddy.Controllers
             PromoCodeDto promoCodeDto = API.PromoCodeValidation(code, courseGuid, subscriberGuid);
             return new ObjectResult(promoCodeDto);
         }
+
         [HttpPost]
         public IActionResult Checkout(
             int TermsOfServiceDocId,
@@ -85,8 +86,7 @@ namespace UpDiddy.Controllers
             string BillingCountry,
             string BillingAddress,
             Guid? PromoCodeRedemptionGuid,
-            Boolean InstructorLedChosen,
-            Boolean SelfPacedChosen,
+            string sectionSelectionRadios,
             Int64 DateOfInstructorLedSection,
             string SubscriberFirstName,
             string SubscriberLastName)
@@ -126,15 +126,16 @@ namespace UpDiddy.Controllers
                 PricePaid = (decimal)Course.Price,
                 PercentComplete = 0,
                 IsRetake = 0, //TODO Make this check DB for existing entry
-                EnrollmentStatusId = InstructorLedChosen ? (int)EnrollmentStatus.EnrollStudentRequested : (int)EnrollmentStatus.FutureRegisterStudentRequested,
-                SectionStartTimestamp = InstructorLedChosen ? DateOfInstructorLedSection : 0,
+                EnrollmentStatusId = sectionSelectionRadios == "instructorLed" ? (int)EnrollmentStatus.FutureRegisterStudentRequested : (int)EnrollmentStatus.EnrollStudentRequested,
+                SectionStartTimestamp = sectionSelectionRadios == "instructorLed" ? DateOfInstructorLedSection : 0,
                 TermsOfServiceFlag = TermsOfServiceDocId
             };
 
-            // todo: need to test this
+            PromoCodeDto validPromoCode = null;
+            // validate, consume, and apply promo code redemption 
             if (PromoCodeRedemptionGuid.HasValue && PromoCodeRedemptionGuid.Value != Guid.Empty)
             {
-                var validPromoCode = API.PromoCodeRedemptionValidation(PromoCodeRedemptionGuid.Value.ToString(), Course.CourseGuid.Value.ToString(), this.subscriber.SubscriberGuid.Value.ToString());
+                validPromoCode = API.PromoCodeRedemptionValidation(PromoCodeRedemptionGuid.Value.ToString(), Course.CourseGuid.Value.ToString(), this.subscriber.SubscriberGuid.Value.ToString());
 
                 if (validPromoCode == null)
                     return View("EnrollmentFailure", CourseViewModel);
@@ -145,8 +146,24 @@ namespace UpDiddy.Controllers
                 }
             }
 
-            // Step 1: Process Payment
-            // todo: skip payment if price is zero
+            // create enrollment log after applying promo code
+            EnrollmentLogDto enrollmentLogDto = new EnrollmentLogDto()
+            {
+                CourseCost = enrollmentDto.PricePaid,
+                CourseGuid = Course.CourseGuid.Value,
+                CreateDate = DateTime.UtcNow,
+                CreateGuid = Guid.NewGuid(),
+                EnrollmentGuid = enrollmentDto.EnrollmentGuid.Value,
+                EnrollmentLogGuid = Guid.NewGuid(),
+                EnrollmentTime = DateTime.UtcNow,
+                EnrollmentVendorInvoicePaymentMonth = DateTime.UtcNow.Month,
+                EnrollmentVendorInvoicePaymentYear = DateTime.UtcNow.Year,
+                EnrollmentVendorPaymentStatusId = 1, // todo: we have no entries in this table - what should we use? what goes here?
+                PromoApplied = validPromoCode != null ? validPromoCode.Discount : 0,
+                SubscriberGuid = this.subscriber.SubscriberGuid.Value
+            };
+
+            // process payment if price is not zero
             if (enrollmentDto.PricePaid != 0)
             {
                 BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
@@ -166,11 +183,10 @@ namespace UpDiddy.Controllers
                 };
                 BraintreeResponseDto brdto = API.SubmitBraintreePayment(BraintreePaymentDto);
 
-
-                // todo: if payment was successful and a promo code was applied, consume it (update PromoCodeRedemption table to be "completed")
                 if (brdto.WasSuccessful)
                 {
                     API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
+                    //API.WriteToEnrollmentLog(enrollmentLogDto); todo: work in progress
                     return View("EnrollmentSuccess", CourseViewModel);
                 }
                 else
@@ -182,6 +198,7 @@ namespace UpDiddy.Controllers
             {
                 // course is free with promo code
                 API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
+                //API.WriteToEnrollmentLog(enrollmentLogDto); todo: work in progress
                 return View("EnrollmentSuccess", CourseViewModel);
             }
             // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method
@@ -217,15 +234,6 @@ namespace UpDiddy.Controllers
                 return true;
             }
             return false;
-        }
-        private Decimal? CalculatePromoCodeDiscountedPrice(Decimal? CoursePrice, Decimal PromoValueFactor)
-        {
-            return (CoursePrice - CalculatePriceOffOfCourse(CoursePrice, PromoValueFactor));
-        }
-
-        private Decimal CalculatePriceOffOfCourse(Decimal? CoursePrice, Decimal PromoValueFactor)
-        {
-            return (Math.Floor((Decimal)CoursePrice * PromoValueFactor * 100)) / 100;
         }
         #endregion
 

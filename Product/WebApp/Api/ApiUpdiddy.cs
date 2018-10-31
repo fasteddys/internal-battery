@@ -73,6 +73,11 @@ namespace UpDiddy.Api
             return Post<Guid>(enrollmentDto, "enrollment/", true);
         }
 
+        public Guid WriteToEnrollmentLog(EnrollmentLogDto enrollmentLogDto)
+        {
+            return Post<Guid>(enrollmentLogDto, "enrollment/EnrollmentLog", true);
+        }
+
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
         {
             return Post<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);

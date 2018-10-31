@@ -240,7 +240,7 @@
     }, function (createErr, instance) {
         form.addEventListener('submit', function (event) {
             // bypass payment if course cost is zero
-            if ($('#CourseTotal').val() === 0) {
+            if ($('#CourseTotal').html() === "$0.00") {
                 HTMLFormElement.prototype.submit.call(form);
                 return;
             }
