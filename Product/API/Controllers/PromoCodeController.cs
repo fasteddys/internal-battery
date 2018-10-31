@@ -74,10 +74,17 @@ namespace UpDiddyApi.Controllers
                              IsValid = true,
                              PromoCodeRedemptionGuid = pcr.PromoCodeRedemptionGuid
                          }).FirstOrDefault();
-
-            // increment the number of redemptions for the code (if it is still valid)
-            if(query != null)
+            
+            if (query != null)
             {
+                // mark the promo code as completed
+                var completedPromoCodeRedemption = _db.PromoCodeRedemption.Where(pcr => pcr.PromoCodeRedemptionGuid == query.PromoCodeRedemptionGuid).FirstOrDefault();
+                completedPromoCodeRedemption.ModifyDate = DateTime.UtcNow;
+                completedPromoCodeRedemption.ModifyGuid = Guid.NewGuid();
+                completedPromoCodeRedemption.RedemptionStatusId = 2; // completed
+                _db.Attach<PromoCodeRedemption>(completedPromoCodeRedemption);
+                
+                // increment the number of redemptions for the code
                 var promoCodeId = (from pc in _db.PromoCode
                              join pcr in _db.PromoCodeRedemption on pc.PromoCodeId equals pcr.PromoCodeId
                              where pcr.PromoCodeRedemptionGuid == Guid.Parse(promoCodeRedemptionGuid)
@@ -88,6 +95,7 @@ namespace UpDiddyApi.Controllers
                 promoCodeToUpdate.ModifyGuid = Guid.NewGuid();
                 promoCodeToUpdate.NumberOfRedemptions += 1;
                 _db.Attach<PromoCode>(promoCodeToUpdate);
+
                 _db.SaveChanges();
             }
 
@@ -134,7 +142,7 @@ namespace UpDiddyApi.Controllers
                     .Include(pcr => pcr.RedemptionStatus)
                     .Where(pcr => pcr.PromoCodeId == promoCode.PromoCodeId && pcr.IsDeleted == 0 && pcr.RedemptionStatus.Name == "In Process")
                     .Count();
-                if (promoCode.NumberOfRedemptions + inProgressRedemptionsForThisCode >= promoCode.MaxAllowedNumberOfRedemptions)
+                if (promoCode.NumberOfRedemptions >= promoCode.MaxAllowedNumberOfRedemptions || promoCode.NumberOfRedemptions + inProgressRedemptionsForThisCode > promoCode.NumberOfRedemptions)
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has exceeded its allowed number of redemptions." });
 
                 Guid parsedCourseGuid;

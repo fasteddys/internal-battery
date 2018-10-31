@@ -52,16 +52,6 @@ namespace UpDiddyApi.Controllers
             {
                 Enrollment Enrollment = _mapper.Map<Enrollment>(EnrollmentDto);
                 _db.Enrollment.Add(Enrollment);
-                if (EnrollmentDto.PromoCodeRedemptionGuid.HasValue)
-                {
-                    //var promoCodeRedemption = _db.PromoCodeRedemption.Where(pcr => pcr.PromoCodeRedemptionGuid == EnrollmentDto.PromoCodeRedemptionGuid).FirstOrDefault();
-                    //promoCodeRedemption.ModifyDate = DateTime.UtcNow;
-                    //promoCodeRedemption.ModifyGuid = Guid.NewGuid();
-                    //promoCodeRedemption.RedemptionStatusId = 2; // completed
-
-                    // todo: decrement the field in PromoCodes that keeps track of how many codes have been used
-                    //_db.Attach<PromoCodeRedemption>(promoCodeRedemption);
-                }
                 _db.SaveChanges();
                 BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString()));
                 return Ok(Enrollment.EnrollmentGuid);
@@ -71,6 +61,24 @@ namespace UpDiddyApi.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest, ex);
             }
 
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("api/[controller]/EnrollmentLog")]
+        public IActionResult Post([FromBody] EnrollmentLogDto EnrollmentLogDto)
+        {
+            try
+            {
+                EnrollmentLog EnrollmentLog = _mapper.Map<EnrollmentLog>(EnrollmentLogDto);
+                _db.EnrollmentLog.Add(EnrollmentLog);
+                _db.SaveChanges();
+                return Ok(EnrollmentLog.EnrollmentGuid);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, ex);
+            }
         }
 
         [Authorize]

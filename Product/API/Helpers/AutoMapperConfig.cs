@@ -39,6 +39,7 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.FinalCost, opt => opt.Ignore())
                 .ForMember(x => x.PromoCodeRedemptionGuid, opt => opt.Ignore())
                 .ReverseMap();
+            CreateMap<EnrollmentLog, EnrollmentLogDto>().ReverseMap();
         }
     }
 }
