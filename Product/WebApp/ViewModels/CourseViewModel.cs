@@ -2,6 +2,7 @@
 using UpDiddyLib.Dto;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddy.ViewModels
 {
@@ -12,6 +13,7 @@ namespace UpDiddy.ViewModels
         public SubscriberDto Subscriber { get; set; }
         public WozTermsOfServiceDto TermsOfService { get; set; }
         public WozCourseScheduleDto WozCourseSchedule { get; set; }
+        public Dictionary<CountryDto, List<StateDto>> CountryStateMapping { get; set; }
         public Boolean IsInstructorLed { get; set; }
         public Decimal SelfPacedPrice { get; set; }
         public Decimal InstructorLedPrice { get; set; }
@@ -34,10 +36,11 @@ namespace UpDiddy.ViewModels
         public Int64 DateOfInstructorLedSection { get; set; }
 
         public CourseViewModel(
-            IConfiguration _configuration,
-            CourseDto course,
-            SubscriberDto subscriber,
+            IConfiguration _configuration, 
+            CourseDto course, 
+            SubscriberDto subscriber, 
             TopicDto parentTopic,
+            IList<CountryStateDto> CountryStateList,
             WozTermsOfServiceDto tos,
             WozCourseScheduleDto wcsdto)
         {
@@ -48,21 +51,34 @@ namespace UpDiddy.ViewModels
             this.Course = course;
             this.WozCourseSchedule = wcsdto;
             // todo: refactor this after go-live
-            foreach (Tuple<int, string, decimal> tuple in wcsdto.VariantToPrice)
+            if (wcsdto.VariantToPrice != null)
             {
-                switch (tuple.Item2)
+                foreach (Tuple<int, string, decimal> tuple in wcsdto.VariantToPrice)
                 {
-                    case "selfpaced":
-                        this.SelfPacedPrice = tuple.Item3;
-                        this.SelfPacedCourseVariantId = tuple.Item1;
-                        break;
-                    case "instructor":
-                        this.InstructorLedPrice = tuple.Item3;
-                        this.InstructorLedCourseVariantId = tuple.Item1;
-                        break;
+                    switch (tuple.Item2)
+                    {
+                        case "selfpaced":
+                            this.SelfPacedPrice = tuple.Item3;
+                            this.SelfPacedCourseVariantId = tuple.Item1;
+                            break;
+                        case "instructor":
+                            this.InstructorLedPrice = tuple.Item3;
+                            this.InstructorLedCourseVariantId = tuple.Item1;
+                            break;
+                    }
                 }
             }
-            this.IsInstructorLed = wcsdto.StartDatesUTC.Count > 0;
+            else
+            {
+                this.IsInstructorLed = false;
+            }
+
+            if (wcsdto.StartDatesUTC != null)
+                this.IsInstructorLed = wcsdto.StartDatesUTC.Count > 0;
+            else
+                this.IsInstructorLed = false;
+
+            this.CountryStateMapping = Utils.InitializeCountryStateMapping(CountryStateList);
         }
     }
 }

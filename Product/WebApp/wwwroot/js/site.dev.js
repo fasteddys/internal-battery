@@ -12221,8 +12221,8 @@ $(document).ready(function () {
         }
     });
 
-
-
+    // Uncheck checkbox on page load.
+    $('#TermsOfServiceCheckbox').prop('checked', false);
     $("#TermsOfServiceCheckbox").change(function () {
         if (this.checked) {
             $('#EnrollmentSubmitButton').prop('disabled', false);
@@ -12347,12 +12347,12 @@ $(document).ready(function () {
         }
     });
 
-    $('#UpdatedCountry').change(function () {
+    $('.country-select').change(function () {
         var country = $(this).val();
         var states = locationsList[country];
-        $("#UpdatedStateInput").html("");
+        $(".state-select").html("");
         for (i = 0; i < states.length; i++) {
-            $('<option>').val(states[i].id).text(states[i].name).appendTo('#UpdatedStateInput');
+            $('<option>').val(states[i].id).text(states[i].name).appendTo('.state-select');
         }
     });
 

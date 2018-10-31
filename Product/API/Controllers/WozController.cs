@@ -101,6 +101,8 @@ namespace UpDiddyApi.Controllers
                 VarToPrice.Add(new Tuple<int, string, Decimal>(variant.CourseVariantId, variant.VariantType, variant.Price));
             }
 
+            WozCourseScheduleDto CourseSchedule = new WozCourseScheduleDto();
+
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
@@ -113,17 +115,21 @@ namespace UpDiddyApi.Controllers
                 }
                 catch{}
 
-                WozCourseScheduleDto CourseSchedule = new WozCourseScheduleDto()
-                {                     
-                    CourseCode = CourseCode,
-                    StartDatesUTC = CourseStartDatesUtc,
-                    VariantToPrice = VarToPrice
-                };
+
+                CourseSchedule.CourseCode = CourseCode;
+                CourseSchedule.StartDatesUTC = CourseStartDatesUtc;
+                CourseSchedule.VariantToPrice = VarToPrice;
 
                 return Ok(CourseSchedule);
             }
             else
-                return StatusCode((int)response.StatusCode);
+            {
+                CourseSchedule.CourseCode = string.Empty;
+                CourseSchedule.StartDatesUTC = null;
+                CourseSchedule.VariantToPrice = null;
+                return Ok(CourseSchedule);
+            }
+
         }
 
 

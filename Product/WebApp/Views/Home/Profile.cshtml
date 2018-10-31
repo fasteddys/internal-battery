@@ -5,15 +5,15 @@
 @using System;
 @model ProfileViewModel
 @{ 
-    List<string> countries = Model.CountryStateMapping.Keys.ToList();
-    countries.Sort();
-    countries.Remove("US");
-    countries.Insert(0, "US");
+    List<CountryDto> countries = Model.CountryStateMapping.Keys.ToList();
+    //countries.Sort();
+    //countries.Remove("US");
+    //countries.Insert(0, "US");
 }
 <script type="text/javascript">
     var locationsList = {};
     
-    @foreach (string country in Model.CountryStateMapping.Keys)
+    @foreach (CountryDto country in Model.CountryStateMapping.Keys)
     {
         <text>
             var states = [];
@@ -25,7 +25,7 @@
             </text>
         }
         <text>
-            locationsList["@country"] = states;
+            locationsList["@country.Code2"] = states;
         </text>
     }
 
@@ -88,7 +88,7 @@
                                 <ul class="courses-in-progress-list-desktop">
                                     @foreach (WozCourseProgress enrollment in Model.CurrentEnrollments)
                                     {
-                                        double percentComplete = 50;// Math.Floor((double)enrollment.ActivitiesCompleted/enrollment.ActivitiesTotal);
+                                        double percentComplete = 70;// Math.Floor((double)enrollment.ActivitiesCompleted/enrollment.ActivitiesTotal);
                                         string classFormatter = "";
                                         if(percentComplete < 50)
                                         {
@@ -119,14 +119,6 @@
                                                                 @(percentComplete)%
                                                             </div>
                                                         </div>
-                                                        @{
-                                                            if (percentComplete != 100)
-                                                            {
-                                                                <div class="course-continue-anchor">
-
-                                                                </div>
-                                                            }
-                                                        }
 
                                                     </div>
 
@@ -212,30 +204,30 @@
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedCountry">Country</label>
-                                                <select class="form-control" id="UpdatedCountry">
+                                                <select class="form-control country-select" id="UpdatedCountry">
                                                     @{
-                                                        foreach (string country in countries)
+                                                        foreach (CountryDto country in countries)
                                                         {
                                                             if (Model.Country.DisplayName != "")
                                                             {
-                                                                if (country.Equals(Model.Country.DisplayName))
+                                                                if (country.DisplayName.Equals(Model.Country.DisplayName))
                                                                 {
-                                                                    <option selected="selected">@country</option>
+                                                                    <option selected="selected">@country.DisplayName</option>
                                                                 }
                                                                 else
                                                                 {
-                                                                    <option>@country</option>
+                                                                    <option>@country.DisplayName</option>
                                                                 }
                                                             }
                                                             else
                                                             {
                                                                 if (country.Equals("US"))
                                                                 {
-                                                                    <option selected="selected">@country</option>
+                                                                    <option selected="selected">@country.DisplayName</option>
                                                                 }
                                                                 else
                                                                 {
-                                                                    <option>@country</option>
+                                                                    <option>@country.DisplayName</option>
                                                                 }
                                                             }
 
@@ -245,7 +237,7 @@
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedStateInput">State</label>
-                                                <select class="form-control" id="UpdatedStateInput"></select>
+                                                <select class="form-control state-select" id="UpdatedStateInput"></select>
                                             </div>
 
 
@@ -278,7 +270,7 @@
         {
             <text>
             var dropdown = document.getElementById("UpdatedStateInput");
-            var country = "@Model.Country.DisplayName";
+            var country = "@Model.Country.Code2";
             var state = "@Model.State.Name";
             var states = locationsList[country];
             for (i = 0; i < states.length; i++)

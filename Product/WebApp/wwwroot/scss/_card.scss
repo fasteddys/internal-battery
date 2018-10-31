@@ -5,7 +5,12 @@
     .card-column {
         padding-top: 10px;
         padding-bottom: 10px;
-
+        a{
+            color: $color-secondary;
+            &:hover{
+                color: $color-primary;
+            }
+        }
         .card {
             border: 0;
 

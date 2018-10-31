@@ -89,6 +89,11 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        public IActionResult FAQ()
+        {
+            return View();
+        }
+
         public IActionResult Profile()
         {
             GetSubscriber(true);

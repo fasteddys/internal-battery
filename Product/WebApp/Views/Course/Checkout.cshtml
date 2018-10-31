@@ -3,11 +3,31 @@
 @using UpDiddyLib.Helpers;
 @using System.Collections;
 @model CourseViewModel
-
+@{
+    List<CountryDto> countries = Model.CountryStateMapping.Keys.ToList();
+    //countries.Sort();
+    //countries.Remove("US");
+    //countries.Insert(0, "US");
+}
 <script type="text/javascript">
     var selfPacedPrice = @Model.SelfPacedPrice;
     var instructorLedPrice = @Model.InstructorLedPrice;
-
+    var locationsList = {};
+    @foreach (CountryDto country in Model.CountryStateMapping.Keys)
+    {
+        <text>
+            var states = [];
+        </text>
+        foreach (StateDto state in Model.CountryStateMapping[country])
+        {
+            <text>
+                states.push({"id" : "@state.StateId", "name" : "@state.Name"});
+            </text>
+        }
+        <text>
+            locationsList["@country.Code2"] = states;
+        </text>
+    }
 </script>
 
 <div class="checkout-page-container">
@@ -62,7 +82,7 @@
                                                             Instructor Led
                                                         </label>
                                                     </div>
-                                                    <select class="form-control" id="InstructorLedInputField" asp-for="DateOfInstructorLedSection">
+                                                    <select class="form-control" id="InstructorLedInputField" asp-for="DateOfInstructorLedSection" disabled>
                                                         @foreach (long datetime in Model.WozCourseSchedule.StartDatesUTC)
                                                         {
                                                             <option value="@datetime">@Utils.UnixMillisecondsToLocalDatetime(datetime)</option>
@@ -120,9 +140,9 @@
                                 <div class="form-group col-md-12 billing-info-header-container">
                                     <div class="billing-info-header"><h3>Billing Information</h3></div>
                                     <!--<div class="form-check same-as-above">
-                <input type="checkbox" class="form-check-input" id="SameAsAboveCheckbox" asp-for="SameAsAboveCheckbox">
-                <label class="form-check-label" for="sameAsAboveCheckbox">Same as above</label>
-            </div>-->
+            <input type="checkbox" class="form-check-input" id="SameAsAboveCheckbox" asp-for="SameAsAboveCheckbox">
+            <label class="form-check-label" for="sameAsAboveCheckbox">Same as above</label>
+        </div>-->
                                 </div>
                                 <div class="form-group col-md-3">
                                     <input type="text" class="form-control" name="BillingFirstName" id="BillingFirstName" asp-for="BillingFirstName" placeholder="First Name" required>
@@ -137,18 +157,30 @@
                                     <input type="text" class="form-control" name="BillingCity" id="BillingCity" asp-for="BillingCity" placeholder="City" required>
                                 </div>
                                 <div class="form-group col-md-3">
-                                    <select class="form-control" id="BillingState" name="BillingState" asp-for="BillingState" required>
-                                        <option selected>State</option>
-                                        <option>MD</option>
-                                    </select>
-                                </div>
-                                <div class="form-group col-md-3">
                                     <input type="text" class="form-control" name="BillingZipCode" id="BillingZipCode" asp-for="BillingZipCode" placeholder="Zip Code" required>
                                 </div>
                                 <div class="form-group col-md-3">
-                                    <select class="form-control" id="BillingCountry" name="BillingCountry" asp-for="BillingCountry" required>
-                                        <option selected>Country</option>
-                                        <option>US</option>
+                                    <select class="form-control country-select" id="BillingCountry" name="BillingCountry" asp-for="BillingCountry" required>
+                                        @{
+                                            bool isFirst = true;
+                                            foreach (CountryDto country in countries)
+                                            {
+
+                                                if (country.DisplayName.Equals("US"))
+                                                {
+                                                    <option value="@country.Code2" selected="selected">@country.DisplayName</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@country.Code2">@country.DisplayName</option>
+                                                }
+                                                isFirst = false;
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <select class="form-control state-select" id="BillingState" name="BillingState" asp-for="BillingState" required>
                                     </select>
                                 </div>
                             </div>
@@ -252,11 +284,30 @@
                     console.log('Error', err);
                     return;
                 }
-                
+
                 // Add the nonce to the form and submit
                  $('#BraintreeNonce').val(payload.nonce);
                  form.submit();
             });
         });
     });
+</script>
+<script>
+    @{
+        
+            <text>
+            var dropdown = document.getElementById("BillingState");
+            var country = "US";
+            var states = locationsList[country];
+            for (i = 0; i < states.length; i++)
+            {
+                var option = document.createElement("option");
+                option.text = states[i].name;
+                option.value = states[i].id;
+                dropdown.appendChild(option);
+            }
+            </text>
+        
+    }
+
 </script>

@@ -60,9 +60,9 @@
                         overflow: hidden;
                         box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
                         -webkit-box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
-                        transition: all .2s ease-in-out;
-                        -o-transition: all .2s ease-in-out;
-                        -webkit-transition: all .2s ease-in-out;
+                        transition: all 0s ease-in-out;
+                        -o-transition: all 0s ease-in-out;
+                        -webkit-transition: all 0s ease-in-out;
 
                         h3 {
                             font-size: 1.25rem;
@@ -72,10 +72,7 @@
                             color: $color-white;
                         }
 
-                        &:hover {
-                            box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
-                            -webkit-box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
-                        }
+
 
                         .course-in-progress {
                             border: 0.25rem solid $color-secondary;
@@ -115,11 +112,11 @@
                                     .course-completion-percentage {
                                         position: absolute;
                                         top: 8px;
-                                        left: 8px;
+                                        right: -40px;
                                         font-size: 1rem;
                                         font-family: $opensans-bold;
                                         z-index: 999;
-                                        color: $color-white;
+                                        color: $color-secondary;
                                     }
                                 }
 
@@ -161,6 +158,24 @@
                                             color: $color-tertiary-light-gray;
                                         }
                                     }
+                                }
+                            }
+                        }
+
+                        &:hover {
+                            border: 1px solid $color-primary;
+                            background-image: url('../images/light_blue_background.jpg');
+                            box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+                            -webkit-box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+
+                            .course-in-progress {
+                                border: 0.25rem solid $color-secondary;
+                            }
+
+                            .progress {
+                                border-radius: 0;
+                                .progress-bar {
+                                    background-color: $color-secondary;
                                 }
                             }
                         }

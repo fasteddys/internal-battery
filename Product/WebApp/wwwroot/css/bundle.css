@@ -281,6 +281,10 @@ body {
   .card-column {
     padding-top: 10px;
     padding-bottom: 10px; }
+    .card-column a {
+      color: #03264A; }
+      .card-column a:hover {
+        color: #4089A0; }
     .card-column .card {
       border: 0; }
       .card-column .card .card-img-top {
@@ -369,7 +373,6 @@ body {
   .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm button:hover {
     background-color: #03264A; }
   .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm button:disabled {
-    color: #4089A0;
     background-color: #808080;
     cursor: default; }
 .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .same-as-above,
@@ -590,7 +593,6 @@ body {
           right: 0;
           transform: translateY(-50%); }
         .checkout-page-container .enrollment-success-content .enrollment-success-video-container .enrollment-success-video .enrollment-success-video-thumbnail {
-          background-image: url("../images/cyber-security-dii.jpg");
           height: 100%;
           width: 100%;
           background-size: cover;
@@ -710,16 +712,13 @@ body {
           overflow: hidden;
           box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
           -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
-          transition: all .2s ease-in-out;
-          -o-transition: all .2s ease-in-out;
-          -webkit-transition: all .2s ease-in-out; }
+          transition: all 0s ease-in-out;
+          -o-transition: all 0s ease-in-out;
+          -webkit-transition: all 0s ease-in-out; }
           .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li h3 {
             font-size: 1.25rem; }
           .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li > a {
             color: #fff; }
-          .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li:hover {
-            box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
-            -webkit-box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15); }
           .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .course-in-progress {
             border: 0.25rem solid #03264A;
             max-height: 3rem;
@@ -748,11 +747,11 @@ body {
               .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress.less-than-50 .progress-bar .course-completion-percentage {
                 position: absolute;
                 top: 8px;
-                left: 8px;
+                right: -40px;
                 font-size: 1rem;
                 font-family: "OpenSans-Bold";
                 z-index: 999;
-                color: #fff; }
+                color: #03264A; }
             .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress.less-than-50 .course-continue-anchor {
               position: absolute;
               right: 1rem;
@@ -779,6 +778,17 @@ body {
                 color: #fff; }
                 .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .progress.more-than-50 .course-continue-anchor a:hover {
                   color: #F3F3F3; }
+          .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li:hover {
+            border: 1px solid #4089A0;
+            background-image: url("../images/light_blue_background.jpg");
+            box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+            -webkit-box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15); }
+            .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li:hover .course-in-progress {
+              border: 0.25rem solid #03264A; }
+            .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li:hover .progress {
+              border-radius: 0; }
+              .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li:hover .progress .progress-bar {
+                background-color: #03264A; }
     .profile-container .profile-body-container .dashed-line-boxes-container > div {
       border-top: 1px dashed #4089A0;
       padding-top: 2rem; }
@@ -813,6 +823,20 @@ body {
     font-size: 2rem; }
   .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li h3 {
     font-size: 1.75rem; } }
+@media (min-width: 0px) {
+  .faq-page-container div {
+    display: block; }
+  .faq-page-container .faq-hero-band {
+    background-image: url("../images/medium_blue_background.jpg");
+    color: #fff;
+    background-size: cover; }
+    .faq-page-container .faq-hero-band .faq-hero {
+      padding-bottom: 2rem; }
+      .faq-page-container .faq-hero-band .faq-hero .faq-header {
+        font-size: 2rem;
+        padding: 2rem 0; }
+  .faq-page-container .faq-content {
+    padding: 2rem 0; } }
 /* Footer Styles */
 footer {
   font-size: .8125rem;
