@@ -190,25 +190,36 @@
                                         <input type="hidden" asp-for="CurrentSubscriberGuid" value="@(Model.Subscriber.SubscriberGuid)" />
                                         <input type="hidden" asp-for="UpdatedState" value="" />
                                         <div class="form-row">
+                                            <div class="form-group col-md-3">
+                                                <label for="UpdatedFirstName">First Name</label>
+                                                <input type="text" class="form-control" name="UpdatedFirstName" id="UpdatedFirstName" asp-for="UpdatedFirstName" value="@Model.FirstNamePlaceholder">
+                                            </div>
                                             <div class="form-group col-md-6">
-                                                <input type="text" class="form-control" name="UpdatedFirstName" id="UpdatedFirstName" asp-for="UpdatedFirstName" placeholder="@Model.FirstNamePlaceholder">
-                                            </div>
-                                            <div class="form-group col-md-6">
-                                                <input type="text" class="form-control" name="UpdatedLastName" id="UpdatedLastName" asp-for="UpdatedLastName" placeholder="@Model.LastNamePlaceholder">
+                                                <label for="UpdatedLastName">Last Name</label>
+                                                <input type="text" class="form-control" name="UpdatedLastName" id="UpdatedLastName" asp-for="UpdatedLastName" value="@Model.LastNamePlaceholder">
                                             </div>
                                             <div class="form-group col-md-3">
-                                                <input type="text" class="form-control" name="UpdatedAddress" id="UpdatedAddress" asp-for="UpdatedAddress" placeholder="@Model.AddressPlaceholder">
+                                                <label for="UpdatedPhoneNumber">Phone Number</label>
+                                                <input type="text" class="form-control" name="UpdatedPhoneNumber" id="UpdatedPhoneNumber" maxlength="10" asp-for="UpdatedPhoneNumber" value="@Model.PhonePlaceholder">
                                             </div>
                                             <div class="form-group col-md-3">
-                                                <input type="text" class="form-control" name="UpdatedCity" id="UpdatedCity" asp-for="UpdatedCity" placeholder="@Model.CityPlaceholder">
+                                                <label for="UpdatedAddress">Address</label>
+                                                <input type="text" class="form-control" name="UpdatedAddress" id="UpdatedAddress" asp-for="UpdatedAddress" value="@Model.AddressPlaceholder">
                                             </div>
                                             <div class="form-group col-md-3">
+                                                <label for="UpdatedCity">City</label>
+                                                <input type="text" class="form-control" name="UpdatedCity" id="UpdatedCity" asp-for="UpdatedCity" value="@Model.CityPlaceholder">
+                                            </div>
+                                            <div class="form-group col-md-3">
+                                                <label for="UpdatedCountry">Country</label>
                                                 <select class="form-control" id="UpdatedCountry">
                                                     @{
                                                         foreach (string country in countries)
                                                         {
-                                                            if (Model.Country.DisplayName != ""){ 
-                                                                if (country.Equals(Model.Country.DisplayName)){
+                                                            if (Model.Country.DisplayName != "")
+                                                            {
+                                                                if (country.Equals(Model.Country.DisplayName))
+                                                                {
                                                                     <option selected="selected">@country</option>
                                                                 }
                                                                 else
@@ -216,7 +227,8 @@
                                                                     <option>@country</option>
                                                                 }
                                                             }
-                                                            else{
+                                                            else
+                                                            {
                                                                 if (country.Equals("US"))
                                                                 {
                                                                     <option selected="selected">@country</option>
@@ -226,19 +238,16 @@
                                                                     <option>@country</option>
                                                                 }
                                                             }
-                                                            
+
                                                         }
                                                     }
                                                 </select>
                                             </div>
                                             <div class="form-group col-md-3">
-                                                <select class="form-control" id="UpdatedStateInput">
+                                                <label for="UpdatedStateInput">State</label>
+                                                <select class="form-control" id="UpdatedStateInput"></select>
+                                            </div>
 
-                                                </select>
-                                            </div>
-                                            <div class="form-group col-md-6">
-                                                <input type="text" class="form-control" name="UpdatedPhoneNumber" id="UpdatedPhoneNumber" asp-for="UpdatedPhoneNumber" placeholder="@Model.PhonePlaceholder">
-                                            </div>
 
                                         </div>
                                         <div class="row">
@@ -270,11 +279,15 @@
             <text>
             var dropdown = document.getElementById("UpdatedStateInput");
             var country = "@Model.Country.DisplayName";
+            var state = "@Model.State.Name";
             var states = locationsList[country];
             for (i = 0; i < states.length; i++)
             {
                 var option = document.createElement("option");
                 option.text = states[i].name;
+                if (option.text === state) {
+                    option.selected = 'selected';
+                }
                 option.value = states[i].id;
                 dropdown.appendChild(option);
     }
