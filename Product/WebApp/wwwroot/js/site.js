@@ -60,18 +60,15 @@ $(document).ready(function () {
         document.getElementById("EnrollmentSuccessVideo").play();
     });
 
+    //$('.courses-in-progress-list-desktop li').find(".course-listing").animate({ width: '0' });
+   
     $('.courses-in-progress-list-desktop li').each(function () {
-        $(this).hover(
-            function () {
-                $(this).find(".course-listing").animate({ width: '0' });
-                $(this).find(".progress").animate({ width: '100%' });
-            },
-            function () {
-                $(this).find(".course-listing").animate({ width: '98%' });
-                $(this).find(".progress").animate({ width: '0' });
-            }
-        );
+        var progressBar = $(this).find(".progress-bar");
+        var newWidth = $(progressBar).attr('aria-valuenow') + "%";
+        $(progressBar).animate({ width: newWidth});
     });
+
+    
 
     $('#PromoCodeApplyButton').on('click', function () {
         var _promoCode = $('#PromoCodeInput').val();

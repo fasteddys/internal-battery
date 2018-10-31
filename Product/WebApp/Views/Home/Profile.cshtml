@@ -88,7 +88,7 @@
                                 <ul class="courses-in-progress-list-desktop">
                                     @foreach (WozCourseProgress enrollment in Model.CurrentEnrollments)
                                     {
-                                        double percentComplete = 30;// Math.Floor((double)enrollment.ActivitiesCompleted/enrollment.ActivitiesTotal);
+                                        double percentComplete = 70;// Math.Floor((double)enrollment.ActivitiesCompleted/enrollment.ActivitiesTotal);
                                         string classFormatter = "";
                                         if(percentComplete < 50)
                                         {
@@ -98,35 +98,42 @@
                                         {
                                             classFormatter = "more-than-50";
                                         }
-                                        <li class="course-in-progress">
-                                            <div class="progress @(classFormatter)">
-
-                                                <div class="progress-bar" role="progressbar" style="width: @(percentComplete)%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
-                                                    <div class="course-completion-percentage">
-                                                        @(percentComplete)%
-                                                    </div>
-                                                </div>
-                                                @{
-                                                    if (percentComplete != 100)
-                                                    {
-                                                        <div class="course-continue-anchor">
-                                                            <a target="_blank" href="@enrollment.CourseUrl">Continue</a>
+                                        <li class="course-in-progress-li">
+                                            <a target="_blank" href="@enrollment.CourseUrl">
+                                                <div class="course-in-progress-info">
+                                                    <div class="row no-padding">
+                                                        <div class="col-10 no-padding">
+                                                            <h3>@enrollment.CourseName</h3>
                                                         </div>
-                                                    }
-                                                }
-
-                                            </div>
-                                            <div class="course-listing">
-
-                                                <div class="row">
-                                                    <div class="col-12 col-sm-6 course-list-course-name">
-                                                        @enrollment.CourseName
-                                                    </div>
-                                                    <div class="col-sm-6 container-align-right">
-                                                        
+                                                        <div class="col-2 no-padding container-align-right">
+                                                            6/12
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                                <div class="course-in-progress">
+
+                                                    <div class="progress @(classFormatter)">
+
+                                                        <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
+                                                            <div class="course-completion-percentage">
+                                                                @(percentComplete)%
+                                                            </div>
+                                                        </div>
+                                                        @{
+                                                            if (percentComplete != 100)
+                                                            {
+                                                                <div class="course-continue-anchor">
+
+                                                                </div>
+                                                            }
+                                                        }
+
+                                                    </div>
+
+                                                </div>
+                                            </a>
+                                            
+                                            
 
                                         </li>
                                     }
