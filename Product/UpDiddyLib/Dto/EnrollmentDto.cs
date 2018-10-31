@@ -30,5 +30,6 @@ namespace UpDiddyLib.Dto
         public int? TermsOfServiceFlag { get; set; }
         public Int64? SectionStartTimestamp { get; set; }
         public Guid? PromoCodeRedemptionGuid { get; set; }
+        public int? CourseVariantId { get; set; }
     }
 }

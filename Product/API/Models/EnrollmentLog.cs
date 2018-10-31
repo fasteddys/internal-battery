@@ -29,5 +29,6 @@ namespace UpDiddyApi.Models
         public int EnrollmentVendorInvoicePaymentYear { get; set; }
         [Required]
         public int EnrollmentVendorInvoicePaymentMonth { get; set; }
+        public Guid? CourseVariantGuid { get; set; }
     }
 }

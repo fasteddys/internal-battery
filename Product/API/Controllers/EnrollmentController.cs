@@ -11,6 +11,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
 using Braintree;
 using UpDiddyLib.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -50,9 +51,62 @@ namespace UpDiddyApi.Controllers
 
             try
             {
+                // grab the subscriber information we need for the enrollment log, then set the property to null on EnrollmentDto so that ef doesn't try to create the subscriber
+                Guid subscriberGuid = EnrollmentDto.Subscriber.SubscriberGuid.Value;
+                EnrollmentDto.Subscriber = null;
+
                 Enrollment Enrollment = _mapper.Map<Enrollment>(EnrollmentDto);
                 _db.Enrollment.Add(Enrollment);
+
+                /* todo: need to revisit the enrollment log for a number of reasons: 
+                 *      mismatch for "required" between properties of this and related entities (e.g. SubscriberGuid)
+                 *      what does EnrollmentTime mean, how does this differ from SectionStartTimestamp, DateEnrolled, or even just CreateDate
+                 *      does it make sense for PromoApplied to be required?
+                 *      redundancy between CourseVariantGuid and CourseCost - this may cause problems (e.g. CourseCost)
+                 *      currently payment status is fixed because we are processing the BrainTree payment synchronously; this will not be the case in the future
+                 *      the payment month and year is 30 days after the enrollment date for Woz, will be different for other vendors (forcing us to address that when we onboard the next vendor)
+                 */
+                DateTime currentDate = DateTime.UtcNow;
+                var course = _db.Course.Where(c => c.CourseId == EnrollmentDto.CourseId).FirstOrDefault();
+                var vendor = _db.Vendor.Where(v => v.VendorId == course.VendorId.Value).FirstOrDefault(); // why is vendor id nullable on course?
+                var courseVariant = _db.CourseVariant.Where(cv => cv.CourseVariantId == EnrollmentDto.CourseVariantId).FirstOrDefault();
+                var promoCodeRedemption = _db.PromoCodeRedemption
+                    .Include(pcr => pcr.RedemptionStatus)
+                    .Where(pcr => pcr.PromoCodeRedemptionGuid == EnrollmentDto.PromoCodeRedemptionGuid && pcr.RedemptionStatus.Name == "Completed").FirstOrDefault();
+                int paymentMonth = 0;
+                int paymentYear = 0;
+
+                if (vendor == null || vendor.Name == "WozU")
+                {
+                    // calculate vendor invoice payment month and year
+                    paymentMonth = currentDate.AddDays(30).Month;
+                    paymentYear = currentDate.AddDays(30).Year;
+                }
+                else
+                {
+                    // force us to clean this up once we have more vendors
+                    throw new ApplicationException("Unrecognized vendor; cannot calculate vendor invoice payment month and year");
+                }
+
+                _db.EnrollmentLog.Add(new EnrollmentLog()
+                {
+                    CourseCost = (courseVariant != null && courseVariant.Price.HasValue) ? courseVariant.Price.Value : (course.Price.HasValue) ? course.Price.Value : 0,
+                    CourseGuid = course.CourseGuid.HasValue ? course.CourseGuid.Value : Guid.Empty,
+                    CourseVariantGuid = courseVariant.CourseVariantGuid,
+                    CreateDate = currentDate,
+                    CreateGuid = Guid.Empty,
+                    EnrollmentGuid = EnrollmentDto.EnrollmentGuid.Value,
+                    EnrollmentTime = currentDate,
+                    EnrollmentLogGuid = Guid.NewGuid(),
+                    EnrollmentVendorInvoicePaymentMonth = paymentMonth,
+                    EnrollmentVendorInvoicePaymentYear = paymentYear,
+                    PromoApplied = (promoCodeRedemption != null) ? promoCodeRedemption.ValueRedeemed : 0,
+                    SubscriberGuid = subscriberGuid,
+                    EnrollmentVendorPaymentStatusId = 2 
+                });
+
                 _db.SaveChanges();
+
                 BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString()));
                 return Ok(Enrollment.EnrollmentGuid);
             }
