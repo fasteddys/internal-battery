@@ -10,7 +10,7 @@ namespace UpDiddy.ViewModels
     public class ProfileViewModel : BaseViewModel
     {
         public SubscriberDto Subscriber { get; set; }
-        public Dictionary<string, List<StateDto>> CountryStateMapping { get; set; }
+        public Dictionary<CountryDto, List<StateDto>> CountryStateMapping { get; set; }
         public IList<WozCourseProgress> CurrentEnrollments { get; set; }
         public CountryDto Country { get; set; }
         public StateDto State { get; set; }
@@ -51,7 +51,8 @@ namespace UpDiddy.ViewModels
             this.Country = SubscriberCountry;
             this.State = SubscriberState;
             SetProfileDisplayValues();
-            InitializeCountryStateMapping(CountryStateList);
+            this.CountryStateMapping = Utils.InitializeCountryStateMapping(CountryStateList);
+            //InitializeCountryStateMapping(CountryStateList);
         }
 
         private void SetProfileDisplayValues()
@@ -78,6 +79,7 @@ namespace UpDiddy.ViewModels
 
         private void InitializeCountryStateMapping(IList<CountryStateDto> CountryStateList)
         {
+            /*
             string previousCountry = CountryStateList[0].DisplayName;
             List<StateDto> states = new List<StateDto>();
             this.CountryStateMapping = new Dictionary<string, List<StateDto>>();
@@ -102,6 +104,7 @@ namespace UpDiddy.ViewModels
                     });
                 }
             }
+            */
         }
     }
 }

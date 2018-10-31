@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyLib.Helpers
 {
@@ -53,7 +54,48 @@ namespace UpDiddyLib.Helpers
             return PriorDay;
         }
 
+        static public Dictionary<CountryDto, List<StateDto>> InitializeCountryStateMapping(IList<CountryStateDto> CountryStateList)
+        {
+            CountryStateDto countryStateDto = CountryStateList[0];
 
+            // May need this to contain the other info about the country
+            CountryDto previousCountry = new CountryDto
+            {
+                DisplayName = countryStateDto.DisplayName,
+                Code2 = countryStateDto.Code2,
+                Code3 = countryStateDto.Code3
+            };
+            List<StateDto> states = new List<StateDto>();
+            Dictionary<CountryDto, List<StateDto>> CountryStateMapping = new Dictionary<CountryDto, List<StateDto>>();
+            foreach (CountryStateDto csdto in CountryStateList)
+            {
+                if (!(previousCountry.DisplayName).Equals(csdto.DisplayName))
+                {
+                    CountryStateMapping.Add(previousCountry, states);
+                    states = new List<StateDto>();
+                    previousCountry = new CountryDto
+                    {
+                        DisplayName = csdto.DisplayName,
+                        Code2 = csdto.Code2,
+                        Code3 = csdto.Code3
+                    };
+                    states.Add(new StateDto
+                    {
+                        Name = csdto.Name,
+                        StateId = csdto.StateId
+                    });
+                }
+                else
+                {
+                    states.Add(new StateDto
+                    {
+                        Name = csdto.Name,
+                        StateId = csdto.StateId
+                    });
+                }
+            }
+            return CountryStateMapping;
+        }
 
     }
 }

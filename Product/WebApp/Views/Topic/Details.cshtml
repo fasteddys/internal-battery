@@ -62,23 +62,21 @@
                             if (course.Hidden == 0 || course.Hidden == null)
                             {
                                 <div class="col-lg-4 col-md-6 col-sm-6 col-12 card-column">
-                                    <div class="card">
-                                        <img class="card-img-top" src="@(Model.ImageUrl + course.DesktopImage)" alt="Card image cap">
-                                        <div class="card-body">
-                                            <h5 class="card-title">@course.Name</h5>
-                                            <p class="card-text fade-text">@DescriptionBlurb</p>
-                                            <div class="row course-footer">
-                                                <div class="col-6">
-                                                    Cost: $@course.Price
-                                                </div>
-                                                <div class="col-6">
-                                                    <div class="card-footer-cc">
-                                                        <a class="card-anchor-link" href="/Course/Checkout/@(course.Slug)">Enroll <i class="fas fa-check-circle"></i></a>
+                                    <a class="card-hyperlink-container" href="/Course/Checkout/@(course.Slug)">
+                                        <div class="card">
+                                            <img class="card-img-top" src="@(Model.ImageUrl + course.DesktopImage)" alt="Card image cap">
+                                            <div class="card-body">
+                                                <h5 class="card-title">@course.Name</h5>
+                                                <p class="card-text fade-text">@DescriptionBlurb</p>
+                                                <div class="row course-footer">
+                                                    <div class="col-12">
+                                                        Cost: $@course.Price
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </a>
+                                    
                                 </div>
 
                             }

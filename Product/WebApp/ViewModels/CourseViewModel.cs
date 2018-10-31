@@ -2,6 +2,7 @@
 using UpDiddyLib.Dto;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddy.ViewModels
 {
@@ -12,6 +13,7 @@ namespace UpDiddy.ViewModels
         public SubscriberDto Subscriber { get; set; }
         public WozTermsOfServiceDto TermsOfService { get; set; }
         public WozCourseScheduleDto WozCourseSchedule { get; set; }
+        public Dictionary<CountryDto, List<StateDto>> CountryStateMapping { get; set; }
         public Boolean IsInstructorLed { get; set; }
         public Decimal SelfPacedPrice { get; set; }
         public Decimal InstructorLedPrice { get; set; }
@@ -35,7 +37,8 @@ namespace UpDiddy.ViewModels
             IConfiguration _configuration, 
             CourseDto course, 
             SubscriberDto subscriber, 
-            TopicDto parentTopic, 
+            TopicDto parentTopic,
+            IList<CountryStateDto> CountryStateList,
             WozTermsOfServiceDto tos,
             WozCourseScheduleDto wcsdto)
         {
@@ -45,19 +48,32 @@ namespace UpDiddy.ViewModels
             this.Subscriber = subscriber;
             this.Course = course;
             this.WozCourseSchedule = wcsdto;
-            foreach(string key in wcsdto.VariantToPrice.Keys)
+            if(wcsdto.VariantToPrice != null)
             {
-                switch (key)
+                foreach (string key in wcsdto.VariantToPrice.Keys)
                 {
-                    case "selfpaced":
-                        this.SelfPacedPrice = wcsdto.VariantToPrice["selfpaced"];
-                        break;
-                    case "instructor":
-                        this.InstructorLedPrice = wcsdto.VariantToPrice["instructor"];
-                        break;
+                    switch (key)
+                    {
+                        case "selfpaced":
+                            this.SelfPacedPrice = wcsdto.VariantToPrice["selfpaced"];
+                            break;
+                        case "instructor":
+                            this.InstructorLedPrice = wcsdto.VariantToPrice["instructor"];
+                            break;
+                    }
                 }
             }
-            this.IsInstructorLed = wcsdto.StartDatesUTC.Count > 0;
+            else
+            {
+                this.IsInstructorLed = false;
+            }
+
+            if (wcsdto.StartDatesUTC != null)
+                this.IsInstructorLed = wcsdto.StartDatesUTC.Count > 0;
+            else
+                this.IsInstructorLed = false;
+
+            this.CountryStateMapping = Utils.InitializeCountryStateMapping(CountryStateList);
         }
     }
 }

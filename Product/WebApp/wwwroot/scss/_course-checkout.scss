@@ -71,7 +71,6 @@
                 }
 
                 &:disabled {
-                    color: $color-primary;
                     background-color: $color-tertiary-gray;
                     cursor: default;
                 }

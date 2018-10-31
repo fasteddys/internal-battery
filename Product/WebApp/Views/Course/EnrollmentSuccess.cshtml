@@ -30,13 +30,17 @@
                             @{ 
                                 String firstGridViewsize = "sm";
                                 String secondGridViewsize = "md";
+                                int secondBreakpointLeftDiv = 7;
+                                int secondBreakpointRightDiv = 5;
                                 if (Model.Course.Description.Length > 130)
                                 {
                                     firstGridViewsize = "md";
                                     secondGridViewsize = "xl";
+                                    secondBreakpointLeftDiv = 12;
+                                    secondBreakpointRightDiv = 12;
                                 }
                             }
-                            <div class="col-@(firstGridViewsize)-12 col-@(secondGridViewsize)-7 no-padding">
+                            <div class="col-@(firstGridViewsize)-12 col-@(secondGridViewsize)-@(secondBreakpointLeftDiv) no-padding">
                                 <div class="enrollment-success-video">
                                     <video id="EnrollmentSuccessVideo">
                                         <source src="~/images/Career_Circle.mp4" type="video/mp4">
@@ -54,7 +58,7 @@
                                 </div>
 
                             </div>
-                            <div class="col-@(firstGridViewsize)-12 col-@(secondGridViewsize)-5">
+                            <div class="col-@(firstGridViewsize)-12 col-@(secondGridViewsize)-@(secondBreakpointRightDiv)">
                                 <div class="enrollment-success-video-details">
                                     <div class="enrolled-course-name-header">
                                         @Model.Course.Name
