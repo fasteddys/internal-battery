@@ -1077,11 +1077,13 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("PhoneNumber");
 
+                    b.Property<string>("PostalCode");
+
                     b.Property<string>("ProfileImage");
 
                     b.Property<string>("StackOverflowUrl");
 
-                    b.Property<int>("StateId");
+                    b.Property<int?>("StateId");
 
                     b.Property<Guid?>("SubscriberGuid");
 
