@@ -187,8 +187,14 @@ namespace UpDiddy.Controllers
             var from = new EmailAddress(_configuration["Sendgrid:EmailSender"]);
             var subject = _configuration["Sendgrid:EmailSubject"];
             var to = new EmailAddress(_configuration["Sendgrid:EmailRecipient"]);
+
+            string firstName = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsFirstName) ? "No first name enetered." : ContactUsFirstName);
+            string lastName = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsLastName) ? "No last name entered." : ContactUsLastName);
+            string email = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsEmail) ? "No email entered." : ContactUsEmail);
+            string type = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsType) ? "No type entered." : ContactUsType);
             string comment = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsComment) ? "No comment entered." : ContactUsComment);
-            var emailBody = FormatContactEmail(ContactUsFirstName, ContactUsLastName, ContactUsEmail, ContactUsType, comment);
+            
+            var emailBody = FormatContactEmail(firstName, lastName, email, type, comment);
             var plainTextContent = emailBody;
             var htmlContent = emailBody;
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
