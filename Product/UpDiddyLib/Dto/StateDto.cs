@@ -18,6 +18,6 @@ namespace UpDiddyLib.Dto
             get { return (_Name == null ? "" : _Name); }
             set { _Name = value; }
         }
-
+        public int Sequence { get; set; }
     }
 }

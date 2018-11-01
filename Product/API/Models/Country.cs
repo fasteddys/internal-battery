@@ -17,5 +17,6 @@ namespace UpDiddyApi.Models
         public string OfficialName { get; set; }
         [Required]
         public string DisplayName { get; set; }
+        public int Sequence { get; set; }
     }
 }

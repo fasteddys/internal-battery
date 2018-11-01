@@ -282,6 +282,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("OfficialName");
 
+                    b.Property<int>("Sequence");
+
                     b.HasKey("CountryId");
 
                     b.ToTable("Country");
@@ -1022,6 +1024,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired();
+
+                    b.Property<int>("Sequence");
 
                     b.Property<Guid?>("StateGuid");
 
