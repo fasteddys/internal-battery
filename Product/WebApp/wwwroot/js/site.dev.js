@@ -12257,7 +12257,21 @@ $(document).ready(function () {
             url: '/home/UpdateProfileInformation',
             data: $(this).serialize(),
             success: function (html) {
-                location.reload();
+                if (html.statusCode === "200") {
+                    location.reload();
+                }
+                else {
+                    $('#ValidationSummary ul').html('');
+                    var errorMessages = html.description.split(",");
+                    for (i = 0; i < errorMessages.length; i++) {
+                        if (i != errorMessages.length -1) {
+                            var li = document.createElement("li");
+                            li.innerHTML = errorMessages[i];
+                            $('#ValidationSummary ul').append(li);
+                        }
+                        
+                    }
+                }
             }
         });
         e.preventDefault();
@@ -12271,14 +12285,14 @@ $(document).ready(function () {
     });
 
     //$('.courses-in-progress-list-desktop li').find(".course-listing").animate({ width: '0' });
-   
+
     $('.courses-in-progress-list-desktop li').each(function () {
         var progressBar = $(this).find(".progress-bar");
         var newWidth = $(progressBar).attr('aria-valuenow') + "%";
-        $(progressBar).animate({ width: newWidth});
+        $(progressBar).animate({ width: newWidth });
     });
 
-    
+
 
     $('#PromoCodeApplyButton').on('click', function () {
         var _promoCode = $('#PromoCodeInput').val();

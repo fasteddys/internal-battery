@@ -23,6 +23,7 @@ using System.Net.Mail;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace UpDiddy.Controllers
@@ -32,9 +33,9 @@ namespace UpDiddy.Controllers
         AzureAdB2COptions AzureAdB2COptions;
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
-   
 
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration) 
+
+        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration)
             : base(azureAdB2COptions.Value, configuration)
         {
 
@@ -67,14 +68,14 @@ namespace UpDiddy.Controllers
 
         public IActionResult AboutUs()
         {
- 
+
             return View();
         }
 
- 
+
         public IActionResult Privacy()
         {
- 
+
             return View();
         }
 
@@ -86,7 +87,7 @@ namespace UpDiddy.Controllers
         }
 
         public IActionResult About()
-        { 
+        {
             return View();
         }
 
@@ -109,30 +110,31 @@ namespace UpDiddy.Controllers
                 SubscriberState = API.GetSubscriberState(this.subscriber.StateId);
             }
             IList<WozCourseProgress> WozCourseProgressions = new List<WozCourseProgress>();
-            foreach(EnrollmentDto enrollment in CurrentEnrollments)
+            foreach (EnrollmentDto enrollment in CurrentEnrollments)
             {
                 var studentLogin = API.StudentLogin(this.subscriber.SubscriberId);
-                
+
                 try
                 {
-                    WozCourseProgress dto = new WozCourseProgress {
+                    WozCourseProgress dto = new WozCourseProgress
+                    {
                         CourseName = enrollment.Course.Name,
                         CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl,
                         PercentComplete = enrollment.PercentComplete
                     };
-                    
+
                     WozCourseProgressions.Add(dto);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     // Wire up logging for controller exceptions.
                 }
             }
             ProfileViewModel ProfileViewModel = new ProfileViewModel(
-                _configuration, 
-                this.subscriber, 
-                CountryStateList, 
-                WozCourseProgressions, 
+                _configuration,
+                this.subscriber,
+                CountryStateList,
+                WozCourseProgressions,
                 SubscriberCountry,
                 SubscriberState);
             return View(ProfileViewModel);
@@ -140,9 +142,9 @@ namespace UpDiddy.Controllers
 
         [HttpPost]
         public BasicResponseDto UpdateProfileInformation(
-            string UpdatedFirstName, 
-            string UpdatedLastName, 
-            string UpdatedAddress, 
+            string UpdatedFirstName,
+            string UpdatedLastName,
+            string UpdatedAddress,
             string UpdatedPhoneNumber,
             string UpdatedCity,
             string UpdatedFacebookUrl,
@@ -154,34 +156,88 @@ namespace UpDiddy.Controllers
             Guid CurrentSubscriberGuid
             )
         {
-            SubscriberDto Subscriber = new SubscriberDto
+            /* todo: the validation and sanitization logic below is probably the worst code i have written in the last 10 years. 
+             * for the love of god, refactor this to use the following pattern: use IActionResult instead of BasicResponseDto for
+             * return type, use data annotations for validation, simplify view model and pass that to method as a single parameter */
+            this.GetSubscriber(false);
+
+            // scrub fields which do not have strict validation to ensure no html is stored in the db
+            if (UpdatedFirstName != null)
+                UpdatedFirstName = WebUtility.HtmlDecode(Regex.Replace(UpdatedFirstName, "<[^>]*(>|$)", string.Empty));
+            if (UpdatedLastName != null)
+                UpdatedLastName = WebUtility.HtmlDecode(Regex.Replace(UpdatedLastName, "<[^>]*(>|$)", string.Empty));
+            if (UpdatedAddress != null)
+                UpdatedAddress = WebUtility.HtmlDecode(Regex.Replace(UpdatedAddress, "<[^>]*(>|$)", string.Empty));
+            if (UpdatedCity != null)
+                UpdatedCity = WebUtility.HtmlDecode(Regex.Replace(UpdatedCity, "<[^>]*(>|$)", string.Empty));
+            if (UpdatedLinkedInUrl != null)
+                UpdatedLinkedInUrl = WebUtility.HtmlDecode(Regex.Replace(UpdatedLinkedInUrl, "<[^>]*(>|$)", string.Empty));
+            if (UpdatedStackOverflowUrl != null)
+                UpdatedStackOverflowUrl = WebUtility.HtmlDecode(Regex.Replace(UpdatedStackOverflowUrl, "<[^>]*(>|$)", string.Empty));
+            if (UpdatedGithubUrl != null)
+                UpdatedGithubUrl = WebUtility.HtmlDecode(Regex.Replace(UpdatedGithubUrl, "<[^>]*(>|$)", string.Empty));
+            if (UpdatedTwitterUrl != null)
+                UpdatedTwitterUrl = WebUtility.HtmlDecode(Regex.Replace(UpdatedTwitterUrl, "<[^>]*(>|$)", string.Empty));
+            if (UpdatedFacebookUrl != null)
+                UpdatedFacebookUrl = WebUtility.HtmlDecode(Regex.Replace(UpdatedFacebookUrl, "<[^>]*(>|$)", string.Empty));
+
+            StringBuilder validationErrors = new StringBuilder();
+            if (string.IsNullOrWhiteSpace(UpdatedFirstName) && string.IsNullOrWhiteSpace(this.subscriber.FirstName))
+                validationErrors.Append("First name cannot be empty,");
+            if (string.IsNullOrWhiteSpace(UpdatedLastName) && string.IsNullOrWhiteSpace(this.subscriber.LastName))
+                validationErrors.Append("Last name cannot be empty,");
+            if (!string.IsNullOrWhiteSpace(UpdatedLinkedInUrl) && !Regex.Match(UpdatedLinkedInUrl, @"^http(s)?://([\w]+.)?linkedin.com/in/[A-z0-9_]+/?$").Success)
+                validationErrors.Append("The provided LinkedIn URL is not valid,");
+            if (!string.IsNullOrWhiteSpace(UpdatedStackOverflowUrl) && !Regex.Match(UpdatedStackOverflowUrl, @"^http(s)?://([\w]+.)?stackoverflow.com/[A-z0-9_]+/?$").Success)
+                validationErrors.Append("The provided StackOverflow URL is not valid,");
+            if (!string.IsNullOrWhiteSpace(UpdatedGithubUrl) && !Regex.Match(UpdatedGithubUrl, @"^http(s)?://([\w]+.)?github.com/[A-z0-9_]+/?$").Success)
+                validationErrors.Append("The provided GitHub URL is not valid,");
+            if (!string.IsNullOrWhiteSpace(UpdatedTwitterUrl) && !Regex.Match(UpdatedTwitterUrl, @"^http(s)?://([\w]+.)?twitter.com/[A-z0-9_]+/?$").Success)
+                validationErrors.Append("The provided Twitter URL is not valid,");
+            if (!string.IsNullOrWhiteSpace(UpdatedFacebookUrl) && !Regex.Match(UpdatedFacebookUrl, @"^http(s)?://([\w]+.)?facebook.com/[A-z0-9_]+/?$").Success)
+                validationErrors.Append("The provided Facebook URL is not valid,");
+            if (!string.IsNullOrWhiteSpace(UpdatedPhoneNumber) && !Regex.Match(UpdatedPhoneNumber, @"^\d{10}$").Success)
+                validationErrors.Append("The provided phone number must be 10 digits with no formatting,");
+
+            if (validationErrors.Length == 0)
             {
-                FirstName = UpdatedFirstName,
-                LastName = UpdatedLastName,
-                Address = UpdatedAddress,
-                PhoneNumber = UpdatedPhoneNumber,
-                City = UpdatedCity,
-                StateId = UpdatedState,
-                FacebookUrl = UpdatedFacebookUrl,
-                TwitterUrl = UpdatedTwitterUrl,
-                LinkedInUrl = UpdatedLinkedInUrl,
-                StackOverflowUrl = UpdatedStackOverflowUrl,
-                GithubUrl = UpdatedGithubUrl,
-                SubscriberGuid = CurrentSubscriberGuid
-            };
-            API.UpdateProfileInformation(Subscriber);
-            return new BasicResponseDto
+                SubscriberDto Subscriber = new SubscriberDto
+                {
+                    FirstName = UpdatedFirstName,
+                    LastName = UpdatedLastName,
+                    Address = UpdatedAddress,
+                    PhoneNumber = UpdatedPhoneNumber,
+                    City = UpdatedCity,
+                    StateId = UpdatedState,
+                    FacebookUrl = UpdatedFacebookUrl,
+                    TwitterUrl = UpdatedTwitterUrl,
+                    LinkedInUrl = UpdatedLinkedInUrl,
+                    StackOverflowUrl = UpdatedStackOverflowUrl,
+                    GithubUrl = UpdatedGithubUrl,
+                    SubscriberGuid = CurrentSubscriberGuid
+                };
+                API.UpdateProfileInformation(Subscriber);
+                return new BasicResponseDto
+                {
+                    StatusCode = "200",
+                    Description = "OK"
+                };
+            }
+            else
             {
-                StatusCode = "200",
-                Description = "OK"
-            };
+                return new BasicResponseDto
+                {
+                    StatusCode = "400",
+                    Description = validationErrors.ToString()
+                };
+            }
         }
 
         [HttpPost]
-        public IActionResult ContactUs(string ContactUsFirstName, 
-            string ContactUsLastName, 
-            string ContactUsEmail, 
-            string ContactUsType, 
+        public IActionResult ContactUs(string ContactUsFirstName,
+            string ContactUsLastName,
+            string ContactUsEmail,
+            string ContactUsType,
             string ContactUsComment)
         {
             var client = new SendGridClient(_configuration["Sendgrid:ApiKey"]);
@@ -235,7 +291,7 @@ namespace UpDiddy.Controllers
             try
             {
 
-          
+
 
                 // Retrieve the token with the specified scopes
                 var scope = AzureAdB2COptions.ApiScopes.Split(' ');
@@ -276,7 +332,7 @@ namespace UpDiddy.Controllers
                 responseString = $"Error calling API: {ex.Message}";
             }
 
-            ViewData["Payload"] = $"{responseString}";            
+            ViewData["Payload"] = $"{responseString}";
             return View();
         }
 
