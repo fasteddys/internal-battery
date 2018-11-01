@@ -23,6 +23,7 @@ using System.Net.Mail;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using System.Text;
+using System.Web;
 
 namespace UpDiddy.Controllers
 {
@@ -186,7 +187,8 @@ namespace UpDiddy.Controllers
             var from = new EmailAddress(_configuration["Sendgrid:EmailSender"]);
             var subject = _configuration["Sendgrid:EmailSubject"];
             var to = new EmailAddress(_configuration["Sendgrid:EmailRecipient"]);
-            var emailBody = FormatContactEmail(ContactUsFirstName, ContactUsLastName, ContactUsEmail, ContactUsType, ContactUsComment);
+            string comment = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsComment) ? "No comment entered." : ContactUsComment);
+            var emailBody = FormatContactEmail(ContactUsFirstName, ContactUsLastName, ContactUsEmail, ContactUsType, comment);
             var plainTextContent = emailBody;
             var htmlContent = emailBody;
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);

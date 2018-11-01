@@ -93,15 +93,15 @@
                             <form id="ContactUsForm" asp-controller="Home" asp-action="ContactUs">
                                 <div class="form-group">
                                     <label for="ContactUsFirstName">First Name</label>
-                                    <input required type="text" class="form-control" asp-for="ContactUsFirstName">
+                                    <input required type="text" class="form-control" asp-for="ContactUsFirstName" pattern="^([A-Za-z]+[,.]?[ ]?|[A-Za-z]+['-]?)+$">
                                 </div>
                                 <div class="form-group">
                                     <label for="ContactUsLastName">Last Name</label>
-                                    <input required type="text" class="form-control" asp-for="ContactUsLastName">
+                                    <input required type="text" class="form-control" asp-for="ContactUsLastName" pattern="^([A-Za-z]+[,.]?[ ]?|[A-Za-z]+['-]?)+$">
                                 </div>
                                 <div class="form-group">
                                     <label for="ContactUsEmail">Email</label>
-                                    <input required type="email" class="form-control" id="ContactUsEmail" asp-for="ContactUsEmail">
+                                    <input required type="email" class="form-control" id="ContactUsEmail" asp-for="ContactUsEmail" pattern="[a-z0-9._%+-]+@@[a-z0-9.-]+\.[a-z]{2,4}$">
                                 </div>
                                 <div class="form-group">
                                     <label for="ContactUsType">Contact Type</label>
