@@ -100,13 +100,11 @@ namespace UpDiddyApi
             // Add AutoMapper 
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
 
-            // Now here 
-            //var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"];
+            // Configure Hangfire 
             var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"];
             services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
             // Have the workflow monitor run every minute 
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
-            RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.DoWork(), Cron.Minutely);
 
             // PromoCodeRedemption cleanup
             int promoCodeRedemptionCleanupScheduleInMinutes = 5;
