@@ -31,7 +31,7 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
-        private readonly CCQueue _queue = null;
+        //private readonly CCQueue _queue = null;
         private IBraintreeConfiguration braintreeConfiguration;
         public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
@@ -39,7 +39,7 @@ namespace UpDiddyApi.Controllers
             _mapper = mapper;
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
-            _queue = new CCQueue("ccmessagequeue", _queueConnection);
+            //_queue = new CCQueue("ccmessagequeue", _queueConnection);
             braintreeConfiguration = new BraintreeConfiguration(_configuration);
         }
 

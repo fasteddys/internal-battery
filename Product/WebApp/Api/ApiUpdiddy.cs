@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using UpDiddy.Helpers;
 using UpDiddyLib.Dto;
 using System.Net;
-
+using Newtonsoft.Json;
 
 namespace UpDiddy.Api
 {
@@ -78,9 +78,26 @@ namespace UpDiddy.Api
             return Post<Guid>(enrollmentLogDto, "enrollment/EnrollmentLog", true);
         }
 
+        public SubscriberDto CreateSubscriberDeprecated(string SubscriberGuid, string SubscriberEmail)
+        {
+
+
+            return Post<SubscriberDto>("subscriber/addsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail), true);
+        }
+
+
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
         {
-            return Post<SubscriberDto>("subscriber/createsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail),true);
+
+            SubscriberCreateDto SDto = new SubscriberCreateDto
+            {
+                SubscriberGuid = SubscriberGuid,
+                SubscriberEmail = SubscriberEmail
+
+            };
+
+            string jsonToSend = JsonConvert.SerializeObject(SDto);  
+            return Post<SubscriberDto>(SDto, "subscriber/createsubscriber",true);
         }
 
         public PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid, string subscriberGuid)

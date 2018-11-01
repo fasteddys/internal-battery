@@ -95,6 +95,7 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        [Authorize]
         public IActionResult Profile()
         {
             GetSubscriber(true);

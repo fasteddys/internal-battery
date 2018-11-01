@@ -31,7 +31,7 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
-        private readonly CCQueue _queue = null;
+        //private readonly CCQueue _queue = null;
         private readonly string _apiBaseUri = String.Empty;
         private readonly string _accessToken = String.Empty;
         private WozTransactionLog _log = null;
@@ -44,7 +44,7 @@ namespace UpDiddyApi.Controllers
             _mapper = mapper;
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
-            _queue = new CCQueue("ccmessagequeue", _queueConnection);      
+            //_queue = new CCQueue("ccmessagequeue", _queueConnection);      
             _apiBaseUri = _configuration["Woz:ApiUrl"];
             _accessToken = _configuration["WozAccessToken"];            
             _log = new WozTransactionLog();

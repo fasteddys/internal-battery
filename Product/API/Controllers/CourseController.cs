@@ -23,14 +23,14 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
-        private readonly CCQueue _queue = null;
+        //private readonly CCQueue _queue = null;
         public CourseController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
-            _queue = new CCQueue("ccmessagequeue", _queueConnection);
+            //_queue = new CCQueue("ccmessagequeue", _queueConnection);
         }
 
         // GET: api/courses
@@ -88,7 +88,7 @@ namespace UpDiddyApi.Controllers
                 VendorGuid = VendorCode,
                 Nonce = 1030304343.00
             };
-            _queue.EnQueue<EnrollmentMessage>(Msg);
+            //_queue.EnQueue<EnrollmentMessage>(Msg);
 
             return Ok(CourseCode);
         }
