@@ -23,7 +23,7 @@
 
                 h2 {
                     font-size: 1.5rem;
-                } 
+                }
 
                 .intro {
                     h2 {
@@ -91,9 +91,10 @@
                     margin-top: 1rem;
                 }
 
-                .password-label{
+                .password-label {
                     display: inline-block;
                 }
+
                 .entry-item {
                     label {
                         display: none;
@@ -132,6 +133,15 @@
                     margin-top: 2rem;
                 }
             }
+        }
+
+        .tos-container {
+            max-height: 250px;
+            margin-top: 20px;
+            background-color: white;
+            overflow: auto;
+            padding: 16px;
+            border-radius: 1rem;
         }
     }
 }
@@ -177,6 +187,16 @@
                     width: 26rem;
                 }
             }
+        }
+    }
+}
+
+@media (min-width:992px){
+    .login-container {
+        .tos-container {
+            border-radius: 0;
+            border-top-left-radius: 1rem;
+            border-bottom-left-radius: 1rem;
         }
     }
 }

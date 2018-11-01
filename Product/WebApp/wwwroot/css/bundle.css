@@ -539,7 +539,14 @@ body {
           .login-container .container .unified-container #attributeList ul li:last-child .attrEntry {
             margin-top: 0; }
         .login-container .container .unified-container #attributeVerification {
-          margin-top: 2rem; } }
+          margin-top: 2rem; }
+    .login-container .tos-container {
+      max-height: 250px;
+      margin-top: 20px;
+      background-color: white;
+      overflow: auto;
+      padding: 16px;
+      border-radius: 1rem; } }
 @media (min-width: 576px) {
   .login-container {
     padding: 12rem 0; }
@@ -559,6 +566,11 @@ body {
 @media (min-width: 768px) {
   .login-container .container .unified-container input {
     width: 26rem; } }
+@media (min-width: 992px) {
+  .login-container .tos-container {
+    border-radius: 0;
+    border-top-left-radius: 1rem;
+    border-bottom-left-radius: 1rem; } }
 @media (min-width: 0px) {
   .checkout-page-container > div {
     padding: 2rem 0; }
