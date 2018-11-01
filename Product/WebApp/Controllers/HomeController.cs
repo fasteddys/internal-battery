@@ -109,18 +109,16 @@ namespace UpDiddy.Controllers
             IList<WozCourseProgress> WozCourseProgressions = new List<WozCourseProgress>();
             foreach(EnrollmentDto enrollment in CurrentEnrollments)
             {
-                // todo: var dto = API.GetCurrentCourseProgress((Guid)this.subscriber.SubscriberGuid, (Guid)enrollment.EnrollmentGuid);
                 var studentLogin = API.StudentLogin(this.subscriber.SubscriberId);
-                /*WozCourseProgress dto = new WozCourseProgress()
-                {
-                    CourseName = enrollment.Course.Name,
-                    CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl
-                };*/
+                
                 try
                 {
-                    WozCourseProgress dto = API.GetCurrentCourseProgress((Guid)this.subscriber.SubscriberGuid, (Guid)enrollment.EnrollmentGuid);
-                    dto.CourseName = enrollment.Course.Name;
-                    dto.CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl;
+                    WozCourseProgress dto = new WozCourseProgress {
+                        CourseName = enrollment.Course.Name,
+                        CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl,
+                        PercentComplete = enrollment.PercentComplete
+                    };
+                    
                     WozCourseProgressions.Add(dto);
                 }
                 catch(Exception e)

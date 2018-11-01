@@ -108,32 +108,29 @@
                                                     </div>
                                                 </div>
                                                 @{
-                                                    if (enrollment.StatusCode != 500)
+                                                    double percentComplete = enrollment.PercentComplete;
+                                                    string classFormatter = "";
+                                                    if (percentComplete < 50)
                                                     {
-                                                        double percentComplete = Math.Floor((double)enrollment.ActivitiesCompleted/enrollment.ActivitiesTotal);
-                                                        string classFormatter = "";
-                                                        if (percentComplete < 50)
-                                                        {
-                                                            classFormatter = "less-than-50";
-                                                        }
-                                                        else
-                                                        {
-                                                            classFormatter = "more-than-50";
-                                                        }
-                                                        <div class="course-in-progress">
+                                                        classFormatter = "less-than-50";
+                                                    }
+                                                    else
+                                                    {
+                                                        classFormatter = "more-than-50";
+                                                    }
+                                                    <div class="course-in-progress">
 
-                                                            <div class="progress @(classFormatter)">
+                                                        <div class="progress @(classFormatter)">
 
-                                                                <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
-                                                                    <div class="course-completion-percentage">
-                                                                        @(percentComplete)%
-                                                                    </div>
+                                                            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
+                                                                <div class="course-completion-percentage">
+                                                                    @(percentComplete)%
                                                                 </div>
-
                                                             </div>
 
                                                         </div>
-                                                    }
+
+                                                    </div>
                                                 }
 
                                             </a>
@@ -308,22 +305,22 @@
                                                             {
                                                                 if (country.DisplayName.Equals(Model.Country.DisplayName))
                                                                 {
-                                                                    <option selected="selected">@country.DisplayName</option>
+                                                                    <option value="@country.Code2" selected="selected">@country.DisplayName</option>
                                                                 }
                                                                 else
                                                                 {
-                                                                    <option>@country.DisplayName</option>
+                                                                    <option value="@country.Code2">@country.DisplayName</option>
                                                                 }
                                                             }
                                                             else
                                                             {
-                                                                if (country.Equals("US"))
+                                                                if (country.Code2.Equals("US"))
                                                                 {
-                                                                    <option selected="selected">@country.DisplayName</option>
+                                                                    <option value="@country.Code2" selected="selected">@country.DisplayName</option>
                                                                 }
                                                                 else
                                                                 {
-                                                                    <option>@country.DisplayName</option>
+                                                                    <option value="@country.Code2">@country.DisplayName</option>
                                                                 }
                                                             }
 
