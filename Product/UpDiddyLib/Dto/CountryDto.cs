@@ -19,6 +19,6 @@ namespace UpDiddyLib.Dto
             get { return (_DisplayName == null ? "" : _DisplayName); }
             set { _DisplayName = value; }
         }
-
+        public int Sequence { get; set; }
     }
 }
