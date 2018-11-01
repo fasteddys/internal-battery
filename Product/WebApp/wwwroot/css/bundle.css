@@ -1104,6 +1104,9 @@ body .topic-hero-band .brand-button {
     background-color: #4089A0;
     border-color: #4089A0;
   }
+  .profile-container .profile-body-container #ValidationSummary {
+    color: darkred;
+  }
 }
 @media (min-width: 320px) {
   .profile-container h2 {
