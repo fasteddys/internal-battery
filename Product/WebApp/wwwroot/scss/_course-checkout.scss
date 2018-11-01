@@ -35,7 +35,7 @@
                     margin-bottom: 1rem;
                 }
 
-                #InstructorLedInputField{
+                #InstructorLedInputField {
                     width: 15rem;
                 }
             }
@@ -119,6 +119,10 @@
                 span {
                     color: $color-primary;
                 }
+            }
+
+            #ValidationSummary {
+                    color: darkred;
             }
         }
 
