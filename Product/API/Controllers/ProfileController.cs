@@ -66,6 +66,26 @@ namespace UpDiddyApi.Controllers
                     {
                         subscriber.PhoneNumber = Subscriber.PhoneNumber;
                     }
+                    if (!string.IsNullOrEmpty(Subscriber.FacebookUrl))
+                    {
+                        subscriber.FacebookUrl = Subscriber.FacebookUrl;
+                    }
+                    if (!string.IsNullOrEmpty(Subscriber.TwitterUrl))
+                    {
+                        subscriber.TwitterUrl = Subscriber.TwitterUrl;
+                    }
+                    if (!string.IsNullOrEmpty(Subscriber.LinkedInUrl))
+                    {
+                        subscriber.LinkedInUrl = Subscriber.LinkedInUrl;
+                    }
+                    if (!string.IsNullOrEmpty(Subscriber.StackOverflowUrl))
+                    {
+                        subscriber.StackOverflowUrl = Subscriber.StackOverflowUrl;
+                    }
+                    if (!string.IsNullOrEmpty(Subscriber.GithubUrl))
+                    {
+                        subscriber.GithubUrl = Subscriber.GithubUrl;
+                    }
                 }
                 _db.SaveChanges();
             }

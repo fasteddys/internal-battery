@@ -111,13 +111,22 @@ namespace UpDiddy.Controllers
             {
                 // todo: var dto = API.GetCurrentCourseProgress((Guid)this.subscriber.SubscriberGuid, (Guid)enrollment.EnrollmentGuid);
                 var studentLogin = API.StudentLogin(this.subscriber.SubscriberId);
-                WozCourseProgress dto = new WozCourseProgress()
+                /*WozCourseProgress dto = new WozCourseProgress()
                 {
                     CourseName = enrollment.Course.Name,
                     CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl
-                };
-                //WozCourseProgressions.Add(API.GetCurrentCourseProgress((Guid)this.subscriber.SubscriberGuid, (Guid)enrollment.EnrollmentGuid));   
-                WozCourseProgressions.Add(dto);
+                };*/
+                try
+                {
+                    WozCourseProgress dto = API.GetCurrentCourseProgress((Guid)this.subscriber.SubscriberGuid, (Guid)enrollment.EnrollmentGuid);
+                    dto.CourseName = enrollment.Course.Name;
+                    dto.CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl;
+                    WozCourseProgressions.Add(dto);
+                }
+                catch(Exception e)
+                {
+                    // Wire up logging for controller exceptions.
+                }
             }
             ProfileViewModel ProfileViewModel = new ProfileViewModel(
                 _configuration, 
@@ -136,6 +145,11 @@ namespace UpDiddy.Controllers
             string UpdatedAddress, 
             string UpdatedPhoneNumber,
             string UpdatedCity,
+            string UpdatedFacebookUrl,
+            string UpdatedTwitterUrl,
+            string UpdatedLinkedInUrl,
+            string UpdatedStackOverflowUrl,
+            string UpdatedGithubUrl,
             int UpdatedState,
             Guid CurrentSubscriberGuid
             )
@@ -148,6 +162,11 @@ namespace UpDiddy.Controllers
                 PhoneNumber = UpdatedPhoneNumber,
                 City = UpdatedCity,
                 StateId = UpdatedState,
+                FacebookUrl = UpdatedFacebookUrl,
+                TwitterUrl = UpdatedTwitterUrl,
+                LinkedInUrl = UpdatedLinkedInUrl,
+                StackOverflowUrl = UpdatedStackOverflowUrl,
+                GithubUrl = UpdatedGithubUrl,
                 SubscriberGuid = CurrentSubscriberGuid
             };
             API.UpdateProfileInformation(Subscriber);

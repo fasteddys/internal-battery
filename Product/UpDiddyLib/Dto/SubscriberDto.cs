@@ -22,5 +22,10 @@ namespace UpDiddyLib.Dto
         public string ProfileImage { get; set; }
         public string City { get; set; }
         public int StateId { get; set; }
+        public string LinkedInUrl { get; set; }
+        public string FacebookUrl { get; set; }
+        public string TwitterUrl { get; set; }
+        public string StackOverflowUrl { get; set; }
+        public string GithubUrl { get; set; }
     }
 }

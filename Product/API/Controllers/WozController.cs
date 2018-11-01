@@ -172,29 +172,37 @@ namespace UpDiddyApi.Controllers
             if (Enrollment.SubscriberId != CourseSubscriber.SubscriberId)
                 return Unauthorized();
 
-           HttpClient client = new HttpClient();
-           HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"sections/{WozEnrollment.SectionId}/enrollments/{WozEnrollment.WozEnrollmentId}");
-           client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
-           HttpResponseMessage response = await client.SendAsync(request);
-           var ResponseJson = await response.Content.ReadAsStringAsync();
-           if ( response.StatusCode == System.Net.HttpStatusCode.OK)
-           {
+            HttpClient client = new HttpClient();
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"sections/{WozEnrollment.SectionId}/enrollments/{WozEnrollment.WozEnrollmentId}");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            HttpResponseMessage response = await client.SendAsync(request);
+            var ResponseJson = await response.Content.ReadAsStringAsync();
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
                 var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
                 string LetterGrade = WozO.progress.letterGrade;
                 string PercentageGrade = WozO.progress.percentageGrade;
                 string ActivitiesCompleted = WozO.progress.activitiesCompleted;
                 string ActivitiesTotal = WozO.progress.activitiesTotal;
+                int _StatusCode = (int)response.StatusCode;
                 WozCourseProgress CourseProgress = new WozCourseProgress()
                 {
                     LetterGrade = LetterGrade,
                     PercentageGrade = int.Parse(PercentageGrade),
                     ActivitiesCompleted = int.Parse(ActivitiesCompleted),
-                    ActivitiesTotal = int.Parse(ActivitiesTotal)
+                    ActivitiesTotal = int.Parse(ActivitiesTotal),
+                    StatusCode = _StatusCode
                 };
                 return Ok(CourseProgress);
             }
-           else 
-                return StatusCode((int) response.StatusCode);          
+            else {
+                int _StatusCode = (int)response.StatusCode;
+                WozCourseProgress wcp = new WozCourseProgress
+                {
+                    StatusCode = _StatusCode
+                };
+                return Ok(wcp);
+            }
         }
 
 

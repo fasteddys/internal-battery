@@ -12,5 +12,6 @@ namespace UpDiddyLib.Dto
         public int ActivitiesTotal { get; set; }
         public string CourseName { get; set; }
         public string CourseUrl { get; set; }
+        public int StatusCode { get; set; }
     }
 }
