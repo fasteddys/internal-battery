@@ -128,10 +128,13 @@ namespace UpDiddy.Controllers
                 SubscriberId = this.subscriber.SubscriberId,
                 PricePaid = (decimal)Course.Price,
                 PercentComplete = 0,
-                IsRetake = 0, //TODO Make this check DB for existing entry
+                IsRetake = 0, //TODO Make this check DB for existing entry=
                 EnrollmentStatusId = sectionSelectionRadios == "instructorLed" ? (int)EnrollmentStatus.FutureRegisterStudentRequested : (int)EnrollmentStatus.EnrollStudentRequested,
                 SectionStartTimestamp = sectionSelectionRadios == "instructorLed" ? DateOfInstructorLedSection : 0,
-                TermsOfServiceFlag = TermsOfServiceDocId
+                TermsOfServiceFlag = TermsOfServiceDocId ,
+                Subscriber = this.subscriber,
+                // todo: refactor course variant code in model, dto, viewmodel, and ui. it hurts my soul to leave it in this state but there is literally no time
+                 CourseVariantId = (sectionSelectionRadios == "instructorLed") ? CourseViewModel.InstructorLedCourseVariantId : CourseViewModel.SelfPacedCourseVariantId
             };
 
             PromoCodeDto validPromoCode = null;
@@ -148,23 +151,6 @@ namespace UpDiddy.Controllers
                     enrollmentDto.PromoCodeRedemptionGuid = validPromoCode.PromoCodeRedemptionGuid;
                 }
             }
-
-            // create enrollment log after applying promo code
-            EnrollmentLogDto enrollmentLogDto = new EnrollmentLogDto()
-            {
-                CourseCost = enrollmentDto.PricePaid,
-                CourseGuid = Course.CourseGuid.Value,
-                CreateDate = DateTime.UtcNow,
-                CreateGuid = Guid.NewGuid(),
-                EnrollmentGuid = enrollmentDto.EnrollmentGuid.Value,
-                EnrollmentLogGuid = Guid.NewGuid(),
-                EnrollmentTime = DateTime.UtcNow,
-                EnrollmentVendorInvoicePaymentMonth = DateTime.UtcNow.Month,
-                EnrollmentVendorInvoicePaymentYear = DateTime.UtcNow.Year,
-                EnrollmentVendorPaymentStatusId = 1, // todo: we have no entries in this table - what should we use? what goes here?
-                PromoApplied = validPromoCode != null ? validPromoCode.Discount : 0,
-                SubscriberGuid = this.subscriber.SubscriberGuid.Value
-            };
 
             // process payment if price is not zero
             if (enrollmentDto.PricePaid != 0)
@@ -189,7 +175,6 @@ namespace UpDiddy.Controllers
                 if (brdto.WasSuccessful)
                 {
                     API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
-                    //API.WriteToEnrollmentLog(enrollmentLogDto); todo: work in progress
                     return View("EnrollmentSuccess", CourseViewModel);
                 }
                 else
@@ -201,7 +186,6 @@ namespace UpDiddy.Controllers
             {
                 // course is free with promo code
                 API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
-                //API.WriteToEnrollmentLog(enrollmentLogDto); todo: work in progress
                 return View("EnrollmentSuccess", CourseViewModel);
             }
             // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method

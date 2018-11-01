@@ -31,6 +31,8 @@ namespace UpDiddy.ViewModels
         public Guid PromoCodeRedemptionGuid { get; set; }
         public Boolean InstructorLedChosen { get; set; }
         public Boolean SelfPacedChosen { get; set; }
+        public int? SelfPacedCourseVariantId { get; set; }
+        public int? InstructorLedCourseVariantId { get; set; }
         public Int64 DateOfInstructorLedSection { get; set; }
 
         public CourseViewModel(
@@ -48,17 +50,20 @@ namespace UpDiddy.ViewModels
             this.Subscriber = subscriber;
             this.Course = course;
             this.WozCourseSchedule = wcsdto;
-            if(wcsdto.VariantToPrice != null)
+            // todo: refactor this after go-live
+            if (wcsdto.VariantToPrice != null)
             {
-                foreach (string key in wcsdto.VariantToPrice.Keys)
+                foreach (Tuple<int, string, decimal> tuple in wcsdto.VariantToPrice)
                 {
-                    switch (key)
+                    switch (tuple.Item2)
                     {
                         case "selfpaced":
-                            this.SelfPacedPrice = wcsdto.VariantToPrice["selfpaced"];
+                            this.SelfPacedPrice = tuple.Item3;
+                            this.SelfPacedCourseVariantId = tuple.Item1;
                             break;
                         case "instructor":
-                            this.InstructorLedPrice = wcsdto.VariantToPrice["instructor"];
+                            this.InstructorLedPrice = tuple.Item3;
+                            this.InstructorLedCourseVariantId = tuple.Item1;
                             break;
                     }
                 }

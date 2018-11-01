@@ -8,6 +8,7 @@ namespace UpDiddyLib.Dto
     {
         public string CourseCode { get; set; }
         public IList<long> StartDatesUTC { get; set; }
-        public Dictionary<string, Decimal> VariantToPrice { get; set; }
+        // todo: refactor this after go-live
+        public List<Tuple<int, string, Decimal>> VariantToPrice { get; set; }
     }
 }

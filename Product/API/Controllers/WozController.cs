@@ -95,10 +95,10 @@ namespace UpDiddyApi.Controllers
                 .ProjectTo<CourseVariantDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
-            Dictionary<string, Decimal> VarToPrice = new Dictionary<string, Decimal>();
-            foreach(CourseVariantDto variant in Variants)
+            List<Tuple<int, string, Decimal>> VarToPrice = new List<Tuple<int, string, decimal>>();
+            foreach (CourseVariantDto variant in Variants)
             {
-                VarToPrice.Add(variant.VariantType, variant.Price);
+                VarToPrice.Add(new Tuple<int, string, Decimal>(variant.CourseVariantId, variant.VariantType, variant.Price));
             }
 
             WozCourseScheduleDto CourseSchedule = new WozCourseScheduleDto();

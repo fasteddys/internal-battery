@@ -442,6 +442,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("CourseGuid");
 
+                    b.Property<Guid?>("CourseVariantGuid");
+
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
@@ -545,6 +547,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<decimal>("CourseCost");
 
                     b.Property<Guid>("CourseGuid");
+
+                    b.Property<Guid?>("CourseVariantGuid");
 
                     b.Property<DateTime>("CreateDate");
 
