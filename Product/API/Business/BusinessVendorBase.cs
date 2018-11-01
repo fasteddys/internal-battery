@@ -15,7 +15,7 @@ namespace UpDiddyApi.Business
         protected internal IMapper _mapper;
         protected internal Microsoft.Extensions.Configuration.IConfiguration _configuration;
         protected internal string _queueConnection = string.Empty;
-        protected internal CCQueue _queue = null;
+        //protected internal CCQueue _queue = null;
         protected internal string _apiBaseUri = String.Empty;
         protected internal string _accessToken = String.Empty;
         protected internal WozTransactionLog _translog = null;

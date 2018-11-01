@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace UpDiddyLib.MessageQueue
 {
 
-
+    [Obsolete("The resource has been removed from Azure, using HangFire instead.",true)]
     public class CCQueue
     {
         string _connectionString = string.Empty;
