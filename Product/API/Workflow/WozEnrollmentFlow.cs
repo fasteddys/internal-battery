@@ -106,6 +106,7 @@ namespace UpDiddyApi.Workflow
             catch ( Exception ex)
             {
                 RVal.Step = 10;
+                Console.WriteLine("EnrollStudentWorkItem 10 ex.message = " + ex.Message);
                 Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentError);
                 var Msg = ex.Message;
                 Helper.WorkItemError(EnrollmentGuid, RVal);
