@@ -155,9 +155,7 @@ namespace UpDiddy.Controllers
             // process payment if price is not zero
             if (enrollmentDto.PricePaid != 0)
             {
-                ModelState.AddModelError("Course.Price", "Unfortunately, we cannot process payments at this time. Please apply a promo code in order to enroll in a course.");
-                return View(CourseViewModel);
-                /* uncomment once we are able to process payments
+                
                 BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
                 {
                     PaymentAmount = enrollmentDto.PricePaid,
@@ -183,7 +181,7 @@ namespace UpDiddy.Controllers
                 else
                 {
                     return View("EnrollmentFailure", CourseViewModel);
-                }*/
+                }
             }
             else
             {
