@@ -105,6 +105,7 @@ namespace UpDiddyApi
             services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
             // Have the workflow monitor run every minute 
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
+            RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.ReconcileFutureEnrollments(), Cron.Daily);
 
             // PromoCodeRedemption cleanup
             int promoCodeRedemptionCleanupScheduleInMinutes = 5;
@@ -112,9 +113,6 @@ namespace UpDiddyApi
             int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
             int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
             RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
-
-            // TODO Change to Dailt
-            RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.ReconcileFutureEnrollments(), Cron.Minutely);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
