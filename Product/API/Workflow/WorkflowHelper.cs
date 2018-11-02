@@ -28,7 +28,7 @@ namespace UpDiddyApi.Workflow
 
 
         public WorkflowHelper(UpDiddyDbContext context, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog)
-        {       
+        {
             _db = context;
             _sysLog = sysLog;
         }

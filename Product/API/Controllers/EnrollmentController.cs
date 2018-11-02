@@ -35,15 +35,12 @@ namespace UpDiddyApi.Controllers
         private IBraintreeConfiguration braintreeConfiguration;
         public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
-
-            Console.WriteLine("EnrollmentController 1");
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
             //_queue = new CCQueue("ccmessagequeue", _queueConnection);
             braintreeConfiguration = new BraintreeConfiguration(_configuration);
-            Console.WriteLine("EnrollmentController 2");
         }
 
         [Authorize]
