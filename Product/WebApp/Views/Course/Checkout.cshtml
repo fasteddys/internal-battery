@@ -75,8 +75,8 @@
                                                         </label>
                                                     </div>
                                                 </div>
+                                                <!-- not offering instructor led courses until we address design issues FIRST, which should resolve bugs (e.g. switching between course variants and promo codes)
                                                 <div class="col-6 no-padding">
-                                                    <!-- uncomment once we are able to process payments
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="radio" name="sectionSelectionRadios" id="InstructorLedRadio" value="instructorLed" asp-for="InstructorLedChosen">
                                                             <label class="form-check-label" for="InstructorLedRadio">
@@ -89,8 +89,8 @@
                                                                 <option value="@datetime">@Utils.UnixMillisecondsToLocalDatetime(datetime)</option>
                                                             }
                                                         </select>
-    -->
                                                 </div>
+                                                    -->
                                             </div>
 
 
@@ -138,16 +138,15 @@
                                     <input type="text" class="form-control" name="SubscriberLastName" id="SubscriberLastName" asp-for="Subscriber.LastName" placeholder="Last Name" required>
                                 </div>
                             </div>
-
-                            <!-- uncomment once we are able to process payments
-                                <div class="form-row billing-info-container">
-                                    <div class="form-group col-md-12 billing-info-header-container">
-                                        <div class="billing-info-header"><h3>Billing Information</h3></div>
+                            <div class="form-row billing-info-container">
+                                <div class="form-group col-md-12 billing-info-header-container">
+                                    <div class="billing-info-header"><h3>Billing Information</h3></div>
+<!--
                                         <div class="form-check same-as-above">
-                    <input type="checkbox" class="form-check-input" id="SameAsAboveCheckbox" asp-for="SameAsAboveCheckbox">
-                    <label class="form-check-label" for="sameAsAboveCheckbox">Same as above</label>
-                </div>
-</div>
+        <input type="checkbox" class="form-check-input" id="SameAsAboveCheckbox" asp-for="SameAsAboveCheckbox">
+        <label class="form-check-label" for="sameAsAboveCheckbox">Same as above</label>
+    </div>-->
+                                </div>
                                 <div class="form-group col-md-3">
                                     <input type="text" class="form-control" name="BillingFirstName" id="BillingFirstName" asp-for="BillingFirstName" placeholder="First Name" required>
                                 </div>
@@ -197,7 +196,6 @@
                                     <div id="bt-dropin"></div>
                                 </div>
                             </div>
--->
                             <div class="form-row">
                                 <div class="form-group col-md-12">
                                     <div class="terms-of-service-header">
@@ -271,7 +269,6 @@
 <script>
     var client_token = "@ViewBag.ClientToken";
     var form = document.querySelector('#CourseCheckoutForm');
-    /* uncomment once we are able to process payments
     braintree.dropin.create({
         authorization: client_token,
         container: '#bt-dropin'
@@ -297,11 +294,10 @@
             });
         });
     });
-    */
 </script>
 <script>
     @{
-        
+
             <text>
             var dropdown = document.getElementById("BillingState");
             var country = "US";
@@ -314,7 +310,6 @@
                 dropdown.appendChild(option);
             }
             </text>
-        
-    }
 
+    }
 </script>
