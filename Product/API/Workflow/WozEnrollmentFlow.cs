@@ -31,10 +31,12 @@ namespace UpDiddyApi.Workflow
         private int _wozVendorId = 0;
         public WozEnrollmentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration,ISysEmail sysEmail, ISysLog sysLog)
         {
- 
+            Console.WriteLine("WozEnrollmentFlow 1");
             _retrySeconds = int.Parse(configuration["Woz:RetrySeconds"]);
+            Console.WriteLine("WozEnrollmentFlow 2");
             // TODO modify code to work off woz Guid not dumb key 
             _wozVendorId = int.Parse(configuration["Woz:VendorId"]);
+            Console.WriteLine("WozEnrollmentFlow 3");
             _db = dbcontext;
             _mapper = mapper;
             _configuration = configuration;
@@ -48,13 +50,17 @@ namespace UpDiddyApi.Workflow
         public async Task<MessageTransactionResponse> EnrollStudentWorkItem(string EnrollmentGuid)
         {
 
+            Console.WriteLine("EnrollStudentWorkItem 1");
             MessageTransactionResponse RVal = null;
             RVal.Step = 1;
             WorkflowHelper Helper = new WorkflowHelper(_db,_configuration,_sysLog);
+            Console.WriteLine("EnrollStudentWorkItem 2");
             bool IsInstructorLed = false;
             try
             {
+                Console.WriteLine("EnrollStudentWorkItem 3");
                 WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
+                Console.WriteLine("EnrollStudentWorkItem 4");
                 RVal.Step = 2;
                 RVal =  woz.EnrollStudent(EnrollmentGuid, ref IsInstructorLed);
                 RVal.Step = 3;

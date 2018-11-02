@@ -40,6 +40,7 @@ namespace UpDiddyApi.Controllers
         #region Constructor
         public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
+
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
