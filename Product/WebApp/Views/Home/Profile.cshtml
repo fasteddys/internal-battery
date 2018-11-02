@@ -3,16 +3,14 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
+@using Spark;
 @model ProfileViewModel
-@{ 
+@{
     List<CountryDto> countries = Model.CountryStateMapping.Keys.ToList();
-    //countries.Sort();
-    //countries.Remove("US");
-    //countries.Insert(0, "US");
 }
 <script type="text/javascript">
     var locationsList = {};
-    
+
     @foreach (CountryDto country in Model.CountryStateMapping.Keys)
     {
         <text>
@@ -29,7 +27,7 @@
         </text>
     }
 
-    
+
 
 </script>
 
@@ -73,13 +71,12 @@
                 <div class="row">
                     <!--<div class="offset-md-3 col-md-9">-->
                     <div class="col-md-12">
-                       <!--
-                        <div class="course-recommendation-container">
-                            <div class="course-recommendation-header">
-                                <h2>Course Recommendation</h2>
-                            </div>
-                        </div>-->
-                      
+                        <!--
+                         <div class="course-recommendation-container">
+                             <div class="course-recommendation-header">
+                                 <h2>Course Recommendation</h2>
+                             </div>
+                         </div>-->
                         <div class="courses-in-progress-container">
                             <div class="course-in-progress-header">
                                 <h2>Courses in Progress</h2>
@@ -95,51 +92,78 @@
                                     @foreach (WozCourseProgress enrollment in Model.CurrentEnrollments)
                                     {
                                         bool hasProgressInfo = enrollment.StatusCode != 500;
+                                        bool isAvailable = enrollment.DisplayState == 0;
                                         <li class="course-in-progress-li">
-                                            <a target="_blank" href="@enrollment.CourseUrl">
-                                                <div class="course-in-progress-info">
-                                                    <div class="row no-padding">
-                                                        <div class="col-8 no-padding">
-                                                            <h3>@enrollment.CourseName</h3>
-                                                        </div>
-                                                        <div class="col-4 no-padding container-align-right">
-                                                            Continue <i class="fas fa-arrow-right"></i>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                @{
-                                                    double percentComplete = enrollment.PercentComplete;
-                                                    string classFormatter = "";
-                                                    if (percentComplete < 50)
-                                                    {
-                                                        classFormatter = "less-than-50";
-                                                    }
-                                                    else
-                                                    {
-                                                        classFormatter = "more-than-50";
-                                                    }
-                                                    <div class="course-in-progress">
-
-                                                        <div class="progress @(classFormatter)">
-
-                                                            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
-                                                                <div class="course-completion-percentage">
-                                                                    @(percentComplete)%
-                                                                </div>
+                                            @if(enrollment.DisplayState == 0)
+                                            {
+                                                @Html.Raw("<a target=\"_blank\" href=\"" + enrollment.CourseUrl + "\">")
+                                            }
+                                            
+                                                <div class="course-in-progress-anchor-container">
+                                                    <div class="course-in-progress-info">
+                                                        <div class="row no-padding">
+                                                            <div class="col-12 col-sm-8 no-padding">
+                                                                <h3>@enrollment.CourseName</h3>
                                                             </div>
-
+                                                            <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
+                                                                @if (enrollment.DisplayState == -1)
+                                                                {
+                                                                    <text>Enrollment in progress.</text>
+                                                                }
+                                                                else if (enrollment.DisplayState == 0)
+                                                                {
+                                                                    <text>Continue <i class="fas fa-arrow-right"></i></text>
+                                                                }
+                                                            </div>
                                                         </div>
-
                                                     </div>
-                                                }
+                                                    @{
+                                                        @if (enrollment.DisplayState == 0)
+                                                        {
+                                                            double percentComplete = enrollment.PercentComplete;
+                                                            string classFormatter = "";
+                                                            if (percentComplete < 50)
+                                                            {
+                                                                classFormatter = "less-than-50";
+                                                            }
+                                                            else
+                                                            {
+                                                                classFormatter = "more-than-50";
+                                                            }
+                                                            <div class="course-in-progress">
 
-                                            </a>
+                                                                <div class="progress @(classFormatter)">
+
+                                                                    <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
+                                                                        <div class="course-completion-percentage">
+                                                                            @(percentComplete)%
+                                                                        </div>
+                                                                    </div>
+
+                                                                </div>
+
+                                                            </div>
+                                                        }
+                                                        else if (enrollment.DisplayState == 1)
+                                                        {
+                                                            <div class="course-enrollment-failure-container">
+                                                                Unfortunately, an error occurred when attempting to process your enrollment. We have been notified and are working to resolve the issue.
+                                                            </div>
+                                                        }
+
+                                                    }
+                                                </div>
+
+                                             @if(enrollment.DisplayState == 0)
+                                            {
+                                                @Html.Raw("</a>")
+                                            }
                                             
-                                            
+
+
 
                                         </li>
-                                    }
-                                    
+                                     }
                                 </ul>
                             </div>
                         </div>
@@ -159,7 +183,7 @@
 
                                 </div>
                                 <div class="personal-info-display">
-                                    @{ 
+                                    @{
                                         if (!Model.HasAnyInformationToDisplay)
                                         {
                                             <text>No information found. Please press 'Edit' to edit your information.</text>
@@ -263,7 +287,7 @@
                                             }
                                         }
 
-                                        
+
                                     </ul>
                                     <button class="btn btn-primary edit-profile-info-button d-block d-sm-none profile-mobile-view" type="button">
                                         Edit
@@ -381,7 +405,7 @@
 </div>
 
 <script>
-    @{ 
+    @{
         if (!Model.State.Name.Equals(""))
         {
             <text>
@@ -417,5 +441,5 @@
             </text>
         }
     }
-    
+
 </script>

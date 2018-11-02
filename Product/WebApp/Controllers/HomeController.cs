@@ -120,7 +120,9 @@ namespace UpDiddy.Controllers
                     {
                         CourseName = enrollment.Course.Name,
                         CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl,
-                        PercentComplete = enrollment.PercentComplete
+                        PercentComplete = enrollment.PercentComplete,
+                        EnrollmentStatusId = enrollment.EnrollmentStatusId,
+                        DisplayState = enrollment.EnrollmentStatusId
                     };
 
                     WozCourseProgressions.Add(dto);

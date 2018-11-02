@@ -715,24 +715,32 @@ body {
         list-style: none;
         margin-top: 2rem; }
         .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li {
-          background-image: url("../images/medium_blue_background.jpg");
-          background-position: right;
-          background-size: cover;
           border: 1px solid #03264A;
-          padding: 1rem;
           border-radius: 0.5rem;
-          cursor: pointer;
           margin-bottom: 1rem;
           overflow: hidden;
           box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
           -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
           transition: all 0s ease-in-out;
           -o-transition: all 0s ease-in-out;
-          -webkit-transition: all 0s ease-in-out; }
+          -webkit-transition: all 0s ease-in-out;
+          color: #fff; }
           .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li h3 {
             font-size: 1.25rem; }
+          .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .course-in-progress-anchor-container {
+            padding: 1rem;
+            background-image: url("../images/medium_blue_background.jpg");
+            background-position: right;
+            background-size: cover; }
+            .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .course-in-progress-anchor-container .course-in-progress-info {
+              text-align: center; }
+            .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .course-in-progress-anchor-container .course-enrollment-failure-container {
+              text-align: center; }
           .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li > a {
             color: #fff; }
+            .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li > a .course-in-progress-anchor-container:hover {
+              background-image: url("../images/light_blue_background.jpg");
+              cursor: pointer; }
           .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .course-in-progress {
             border: 0.25rem solid #03264A;
             max-height: 3rem;
@@ -794,7 +802,6 @@ body {
                   color: #F3F3F3; }
           .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li:hover {
             border: 1px solid #4089A0;
-            background-image: url("../images/light_blue_background.jpg");
             box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
             -webkit-box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15); }
             .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li:hover .course-in-progress {
@@ -823,13 +830,21 @@ body {
       margin: 0 auto; }
     .profile-container .profile-body-container .btn-primary:not(:disabled):not(.disabled).active, .profile-container .profile-body-container .btn-primary:not(:disabled):not(.disabled):active, .profile-container .profile-body-container .show > .btn-primary.dropdown-toggle {
       background-color: #4089A0;
-      border-color: #4089A0; } }
+      border-color: #4089A0; }
+    .profile-container .profile-body-container #ValidationSummary {
+      color: darkred; } }
 @media (min-width: 320px) {
   .profile-container h2 {
     font-size: 1.5rem; } }
 @media (min-width: 576px) {
   .profile-container h2 {
     font-size: 1.5rem; }
+  .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .course-in-progress-anchor-container .course-in-progress-info {
+    text-align: left; }
+    .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .course-in-progress-anchor-container .course-in-progress-info .cip-progress-indictation {
+      text-align: right; }
+  .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .course-in-progress-anchor-container .course-enrollment-failure-container {
+    text-align: left; }
   .profile-container .profile-body-container .courses-in-progress-container .courses-in-progress-list-desktop li .course-listing .course-list-course-name {
     text-align: left; } }
 @media (min-width: 768px) {
