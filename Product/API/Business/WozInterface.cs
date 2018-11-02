@@ -423,7 +423,39 @@ namespace UpDiddyApi.Business
 
         #region Course Enrollment
 
+        public async Task<WozCourseProgress> GetCourseProgress(int SectionId, int WozEnrollmentId)
+        {
 
+            HttpClient client = new HttpClient();
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"sections/{SectionId}/enrollments/{WozEnrollmentId}");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            HttpResponseMessage response = await client.SendAsync(request);
+            var ResponseJson = await response.Content.ReadAsStringAsync();
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                string LetterGrade = WozO.progress.letterGrade;
+                string PercentageGrade = WozO.progress.percentageGrade;
+                string ActivitiesCompleted = WozO.progress.activitiesCompleted;
+                string ActivitiesTotal = WozO.progress.activitiesTotal;
+                int _StatusCode = (int)response.StatusCode;
+                WozCourseProgress CourseProgress = new WozCourseProgress()
+                {
+                    LetterGrade = LetterGrade,
+                    PercentageGrade = int.Parse(PercentageGrade),
+                    ActivitiesCompleted = int.Parse(ActivitiesCompleted),
+                    ActivitiesTotal = int.Parse(ActivitiesTotal),
+                    StatusCode = _StatusCode
+                };
+                return CourseProgress;
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+        
 
         public MessageTransactionResponse SaveWozCourseEnrollment(string EnrollmentGuid, WozCourseEnrollmentDto WozCourseEnrollmentDto)
         {
@@ -669,8 +701,6 @@ namespace UpDiddyApi.Business
 
         #endregion
 
-
-
   
         #region Scheduled Tasks
         // TODO Add Logging 
@@ -678,9 +708,6 @@ namespace UpDiddyApi.Business
         {
             try
             {
-
-
-
                 _syslog.SysInfo($"ReconcileFutureEnrollment: Starting with EnrollmentGuid =  {EnrollmentGuid}");
                 // Get the Enrollment Object 
                 Enrollment Enrollment = _db.Enrollment
@@ -801,6 +828,9 @@ namespace UpDiddyApi.Business
 
 
         #endregion
+
+
+
 
         #region Utility Functions
 

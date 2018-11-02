@@ -16,6 +16,8 @@ using System.Globalization;
 using Newtonsoft.Json.Linq;
 using UpDiddyLib.Helpers;
 using AutoMapper.QueryableExtensions;
+using UpDiddyApi.Workflow;
+using Hangfire;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -67,6 +69,9 @@ namespace UpDiddyApi.Controllers
             return Ok(ResponseJson);
 
         }
+
+
+
 
 
         [HttpGet]
@@ -134,10 +139,7 @@ namespace UpDiddyApi.Controllers
         }
 
 
-
-
-
-
+        // TODO Deprecate 
         [HttpGet]
         // TODO Authorize [Authorize]
         // TODO Cache to every 10 minutes 
@@ -196,7 +198,8 @@ namespace UpDiddyApi.Controllers
                 };
                 return Ok(CourseProgress);
             }
-            else {
+            else
+            {
                 int _StatusCode = (int)response.StatusCode;
                 WozCourseProgress wcp = new WozCourseProgress
                 {
@@ -204,6 +207,39 @@ namespace UpDiddyApi.Controllers
                 };
                 return Ok(wcp);
             }
+        }
+
+ 
+        // TODO CHange to PUT
+        [HttpGet]
+        // TODO Authorize [Authorize]
+        // TODO Cache to every 10 minutes 
+        [Route("api/[controller]/UpdateCourseStatus/{SubscriberGuid}")]
+        public async Task<IActionResult> UpdateCourseStatus(string SubscriberGuid)
+        {
+            var Enrollments = _db.Enrollment
+             .Join(
+                    _db.Subscriber,
+                     e => e.SubscriberId,
+                     s => s.SubscriberId,
+                     (s, e) => new
+                     {                         
+                         s,e 
+                     }).Where(x => x.e.SubscriberId == x.s.SubscriberId &&
+                                x.s.IsDeleted == 0 && x.e.IsDeleted == 0 && 
+                                x.s.CompletionDate == null && 
+                                x.s.DroppedDate == null && 
+                                x.e.SubscriberGuid == Guid.Parse(SubscriberGuid)
+                              );
+
+            foreach ( var EnrollmentGuid in Enrollments.ToList() )
+            {
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.UpdateWozCourseProgress(EnrollmentGuid.ToString() )) ;
+            }
+            
+    
+
+            return Ok();
         }
 
 
