@@ -12,6 +12,7 @@ namespace UpDiddyLib.MessageQueue
         public TransactionState State { get; set; }
         public string Data { get; set; }
         public string ResponseJson { get; set; }
+        public int Step { get; set; }
 
 
 
@@ -22,6 +23,7 @@ namespace UpDiddyLib.MessageQueue
             RVal += "State" + this.State.ToString()  + "|";
             RVal += "Data" + this.Data + "|";
             RVal += "ResponseJson" + this.ResponseJson + "|";
+            RVal += "Step" + this.Step + "|";
 
             return RVal;
         }

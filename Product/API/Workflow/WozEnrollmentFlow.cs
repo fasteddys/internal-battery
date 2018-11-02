@@ -49,12 +49,15 @@ namespace UpDiddyApi.Workflow
         {
 
             MessageTransactionResponse RVal = null;
+            RVal.Step = 1;
             WorkflowHelper Helper = new WorkflowHelper(_db,_configuration,_sysLog);
             bool IsInstructorLed = false;
             try
             {
                 WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
-                RVal =  woz.EnrollStudent(EnrollmentGuid, ref IsInstructorLed); 
+                RVal.Step = 2;
+                RVal =  woz.EnrollStudent(EnrollmentGuid, ref IsInstructorLed);
+                RVal.Step = 3;
                 switch (RVal.State)
                 {
                     case TransactionState.Error:
@@ -92,9 +95,11 @@ namespace UpDiddyApi.Workflow
                         BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.EnrollStudentCompleteWorkItem(EnrollmentGuid,IsInstructorLed));
                         break;
                 }
+                RVal.Step = 4;
             }
             catch ( Exception ex)
             {
+                RVal.Step = 10;
                 Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentError);
                 var Msg = ex.Message;
                 Helper.WorkItemError(EnrollmentGuid, RVal);
