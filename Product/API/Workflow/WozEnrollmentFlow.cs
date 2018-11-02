@@ -47,7 +47,7 @@ namespace UpDiddyApi.Workflow
 
         public async Task<MessageTransactionResponse> EnrollStudentWorkItem(string EnrollmentGuid)
         {
-           
+
             MessageTransactionResponse RVal = null;
             WorkflowHelper Helper = new WorkflowHelper(_db,_configuration,_sysLog);
             bool IsInstructorLed = false;
@@ -71,13 +71,13 @@ namespace UpDiddyApi.Workflow
                             else
                             {
                                 Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentError);
-                                Helper.WorkItemError(EnrollmentGuid, RVal.ResponseJson);
+                                Helper.WorkItemError(EnrollmentGuid, RVal);
                             }                                
                         }
                         break;
                     case TransactionState.FatalError:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentFatalError);
-                        Helper.WorkItemFatalError(EnrollmentGuid, RVal.ResponseJson);
+                        Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.InProgress:
                         string TransactionId = RVal.Data;
@@ -97,7 +97,7 @@ namespace UpDiddyApi.Workflow
             {
                 Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentError);
                 var Msg = ex.Message;
-                Helper.WorkItemError(EnrollmentGuid, ex.Message);
+                Helper.WorkItemError(EnrollmentGuid, RVal);
             }
             return RVal;           
         }
@@ -115,16 +115,16 @@ namespace UpDiddyApi.Workflow
                 {
                     case TransactionState.Error:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentError);
-                        Helper.WorkItemError(EnrollmentGuid, RVal.InformationalMessage + ":" +  RVal.ResponseJson);
+                        Helper.WorkItemError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.FatalError:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentFatalError);
-                        Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.InProgress:
                         // TransactionStatus should NEVER return InProgress
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentFatalError);
-                        Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);                
+                        Helper.WorkItemFatalError(EnrollmentGuid, RVal);                
                         break;
                     case TransactionState.Complete:                      
                         // Check Status of returned value
@@ -159,7 +159,7 @@ namespace UpDiddyApi.Workflow
                         else
                         {
                             Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentFatalError);
-                            Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                            Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         } 
                         break;
                 }
@@ -167,7 +167,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception ex)
             {
                 var Msg = ex.Message;
-                Helper.WorkItemError(EnrollmentGuid, ex.Message);
+                Helper.WorkItemError(EnrollmentGuid, RVal);
             }
             return RVal;
         }
@@ -231,11 +231,11 @@ namespace UpDiddyApi.Workflow
                 {
                     case TransactionState.Error:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.CreateSectionError);
-                        Helper.WorkItemError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.FatalError:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.CreateSectionFatalError);
-                        Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.InProgress:
                         string TransactionId = RVal.Data;
@@ -251,7 +251,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception ex)
             {
                 var Msg = ex.Message;
-                Helper.WorkItemError(EnrollmentGuid, ex.Message);
+                Helper.WorkItemError(EnrollmentGuid, RVal);
             }
             return RVal;
         }
@@ -269,16 +269,16 @@ namespace UpDiddyApi.Workflow
                 {
                     case TransactionState.Error:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.CreateSectionError);
-                        Helper.WorkItemError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.FatalError:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.CreateSectionFatalError);
-                        Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.InProgress:
                         // TransactionStatus should NEVER return InProgress
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentFatalError);
-                        Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.Complete:
                         int WozTransactionStatus = int.Parse(RVal.Data);
@@ -297,7 +297,7 @@ namespace UpDiddyApi.Workflow
                         else
                         {
                             Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.CreateSectionFatalError);
-                            Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                            Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         }
                         break;                   
                 }
@@ -305,7 +305,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception ex)
             {
                 var Msg = ex.Message;
-                Helper.WorkItemError(EnrollmentGuid, ex.Message);
+                Helper.WorkItemError(EnrollmentGuid, RVal);
             }
             return RVal;
         }
@@ -328,11 +328,11 @@ namespace UpDiddyApi.Workflow
                 {
                     case TransactionState.Error:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.FutureRegisterStudentError);
-                        Helper.WorkItemError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.FatalError:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.FutureRegisterStudentFatalError);
-                        Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.InProgress:
                         string TransactionId = RVal.Data;
@@ -348,7 +348,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception ex)
             {
                 var Msg = ex.Message;
-                Helper.WorkItemError(EnrollmentGuid, ex.Message);
+                Helper.WorkItemError(EnrollmentGuid, RVal);
             }
             return RVal;
 
@@ -370,11 +370,11 @@ namespace UpDiddyApi.Workflow
                 {
                     case TransactionState.Error:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.FutureRegisterStudentError);
-                        Helper.WorkItemError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.FatalError:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.FutureRegisterStudentFatalError);
-                        Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.InProgress:
                         BackgroundJob.Schedule<WozEnrollmentFlow>(wi => wi.RegisterInstructorLedStudentInProgressWorkItem(EnrollmentGuid, TransactionId), TimeSpan.FromSeconds(_retrySeconds));
@@ -393,7 +393,7 @@ namespace UpDiddyApi.Workflow
                         else
                         {
                             Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.FutureRegisterStudentFatalError);
-                            Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                            Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         }
 
                         break;
@@ -403,7 +403,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception ex)
             {
                 var Msg = ex.Message;
-                Helper.WorkItemError(EnrollmentGuid, ex.Message);
+                Helper.WorkItemError(EnrollmentGuid, RVal);
             }
             return RVal;
         }
@@ -426,11 +426,11 @@ namespace UpDiddyApi.Workflow
                 {
                     case TransactionState.Error:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.RegisterStudentError);
-                        Helper.WorkItemError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.FatalError:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.RegisterStudentFatalError);
-                        Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.InProgress:
                         string TransactionId = RVal.Data;
@@ -446,7 +446,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception ex)
             {
                 var Msg = ex.Message;
-                Helper.WorkItemError(EnrollmentGuid, ex.Message);
+                Helper.WorkItemError(EnrollmentGuid, RVal);
             }
             return RVal;
         }
@@ -465,11 +465,11 @@ namespace UpDiddyApi.Workflow
                 {
                     case TransactionState.Error:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.RegisterStudentError);
-                        Helper.WorkItemError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.FatalError:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.RegisterStudentFatalError);
-                        Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                        Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.InProgress:
                         BackgroundJob.Schedule<WozEnrollmentFlow>(wi => wi.RegisterStudentInProgressWorkItem(EnrollmentGuid, TransactionId), TimeSpan.FromSeconds(_retrySeconds));
@@ -494,7 +494,7 @@ namespace UpDiddyApi.Workflow
                         else
                         {
                             Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.RegisterStudentFatalError);
-                            Helper.WorkItemFatalError(EnrollmentGuid, RVal.InformationalMessage + ":" + RVal.ResponseJson);
+                            Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         }
 
                         break;
@@ -504,7 +504,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception ex)
             {
                 var Msg = ex.Message;
-                Helper.WorkItemError(EnrollmentGuid, ex.Message);
+                Helper.WorkItemError(EnrollmentGuid, RVal);
             }
             return RVal;
         }

@@ -36,23 +36,60 @@ namespace UpDiddyApi.Workflow
             _sysLog = sysLog;
         }
 
-        public void WorkItemError(string EnrollmentGuid, string Info)
+        public void WorkItemError(string EnrollmentGuid, MessageTransactionResponse Info)
         {
-             // Log error to system logger 
-             _sysLog.SysError($"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info} ", true);
+            // Log error to system logger 
+            _sysLog.SysError($"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info.ToString()} ", true);
             // Log Error to woz transaction log 
             _log = new WozTransactionLog();
             _log.EndPoint = "Error";
             _log.InputParameters = $"enrollmentGuid={EnrollmentGuid}";
-             if (_log.WozTransactionLogId > 0)
-                _log.WozTransactionLogId = 0;         
+            if (_log.WozTransactionLogId > 0)
+                _log.WozTransactionLogId = 0;
+            _log.ModifyDate = DateTime.Now;
+            _log.CreateDate = DateTime.Now;
+            _log.CreateGuid = Guid.NewGuid();
+            _log.ModifyGuid = Guid.NewGuid();
+            _log.ResponseJson = Info.ToString();
+            _db.WozTransactionLog.Add(_log);
+            _db.SaveChanges();
+        }
+        public void WorkItemFatalError(string EnrollmentGuid, MessageTransactionResponse Info)
+        {
+            // Log error to system logger 
+            _sysLog.SysError($"Error for enrollment {EnrollmentGuid}.  Info: {Info.ToString()} ", true);
+            // Log Error to woz transaction log 
+            _log = new WozTransactionLog();
+            _log.EndPoint = "FatalError";
+            _log.InputParameters = $"enrollmentGuid={EnrollmentGuid}";
+            if (_log.WozTransactionLogId > 0)
+                _log.WozTransactionLogId = 0;
+            _log.ModifyDate = DateTime.Now;
+            _log.CreateDate = DateTime.Now;
+            _log.CreateGuid = Guid.NewGuid();
+            _log.ModifyGuid = Guid.NewGuid();
+            _log.ResponseJson = Info.ToString();
+            _db.WozTransactionLog.Add(_log);
+            _db.SaveChanges();
+        }
+
+        public void WorkItemError(string EnrollmentGuid, string Info)
+        {
+            // Log error to system logger 
+            _sysLog.SysError($"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info} ", true);
+            // Log Error to woz transaction log 
+            _log = new WozTransactionLog();
+            _log.EndPoint = "Error";
+            _log.InputParameters = $"enrollmentGuid={EnrollmentGuid}";
+            if (_log.WozTransactionLogId > 0)
+                _log.WozTransactionLogId = 0;
             _log.ModifyDate = DateTime.Now;
             _log.CreateDate = DateTime.Now;
             _log.CreateGuid = Guid.NewGuid();
             _log.ModifyGuid = Guid.NewGuid();
             _log.ResponseJson = Info;
             _db.WozTransactionLog.Add(_log);
-            _db.SaveChanges();            
+            _db.SaveChanges();
         }
         public void WorkItemFatalError(string EnrollmentGuid, string Info)
         {
@@ -70,8 +107,10 @@ namespace UpDiddyApi.Workflow
             _log.ModifyGuid = Guid.NewGuid();
             _log.ResponseJson = Info;
             _db.WozTransactionLog.Add(_log);
-            _db.SaveChanges();            
+            _db.SaveChanges();
         }
+
+
 
         public async Task<MessageTransactionResponse> DoWorkItem(string ApiAction)
         {
