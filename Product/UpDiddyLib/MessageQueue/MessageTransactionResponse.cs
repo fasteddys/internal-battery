@@ -14,5 +14,17 @@ namespace UpDiddyLib.MessageQueue
         public string ResponseJson { get; set; }
 
 
+
+        public string ToString()
+        {
+
+            string RVal = "InformationMessage" + this.InformationalMessage + "|";
+            RVal += "State" + this.State.ToString()  + "|";
+            RVal += "Data" + this.Data + "|";
+            RVal += "ResponseJson" + this.ResponseJson + "|";
+
+            return RVal;
+        }
+
     }
 }
