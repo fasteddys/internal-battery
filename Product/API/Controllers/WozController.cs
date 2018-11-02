@@ -127,7 +127,7 @@ namespace UpDiddyApi.Controllers
             {
                 CourseSchedule.CourseCode = string.Empty;
                 CourseSchedule.StartDatesUTC = null;
-                CourseSchedule.VariantToPrice = null;
+                CourseSchedule.VariantToPrice = VarToPrice;
                 return Ok(CourseSchedule);
             }
 
