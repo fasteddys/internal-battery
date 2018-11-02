@@ -24,14 +24,11 @@ namespace UpDiddyApi.Workflow
 
         protected internal WozTransactionLog _log = null;
         protected internal UpDiddyDbContext _db = null;
-        protected internal string _apiBaseUri = null;
         protected internal ISysLog _sysLog = null;
 
 
         public WorkflowHelper(UpDiddyDbContext context, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog)
-        {
-            // TODO Get URI from appsetting.json 
-            _apiBaseUri = "http://localhost:5001/api/";   // Is this still neeed      
+        {       
             _db = context;
             _sysLog = sysLog;
         }
@@ -111,17 +108,7 @@ namespace UpDiddyApi.Workflow
         }
 
 
-
-        public async Task<MessageTransactionResponse> DoWorkItem(string ApiAction)
-        {
-            HttpClient Client = ApiClient();
-            HttpRequestMessage Request = ApiGetRequest(ApiAction);
-            HttpResponseMessage Response = await Client.SendAsync(Request);
-            var ResponseJson = await Response.Content.ReadAsStringAsync();
-            MessageTransactionResponse RVal = JsonConvert.DeserializeObject<MessageTransactionResponse>(await Response.Content.ReadAsStringAsync());
-            return RVal;
-        }
-
+ 
 
  
         public string UpdateEnrollmentStatus(string EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus status)
@@ -142,49 +129,7 @@ namespace UpDiddyApi.Workflow
                 return $"Enrollment {EnrollmentGuid} is not found";
         }
 
- 
-
-
-        private HttpRequestMessage ApiPutRequest(string ApiAction, string Content = "")
-        {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, _apiBaseUri + ApiAction);
-
-            if ( Content.Length > 0 )
-            {
-                request.Content = new StringContent(Content);
-                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            }
-                
-            return request;
-        }
-
-        private  HttpRequestMessage ApiPostRequest(string ApiAction, string Content)
-        {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, _apiBaseUri + ApiAction)
-            {
-                Content = new StringContent(Content)
-            };
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            return request;
-        }
-
-        private HttpRequestMessage ApiGetRequest(string ApiAction)
-        {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + ApiAction);
-            return request;
-
-        }
-
-
-        private HttpClient ApiClient()
-        {
-            HttpClient client = new HttpClient();
-            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
-
-            return client;
-
-        }
-
+  
 
     }
 }

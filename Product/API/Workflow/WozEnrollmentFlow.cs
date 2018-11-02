@@ -514,6 +514,8 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception ex)
             {
+
+                Console.WriteLine("EnrollStudentWorkItem 10 ex.message = " + ex.Message);
                 var Msg = ex.Message;
                 Helper.WorkItemError(EnrollmentGuid, RVal);
             }
