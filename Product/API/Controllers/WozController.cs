@@ -210,35 +210,12 @@ namespace UpDiddyApi.Controllers
         }
 
  
-        // TODO CHange to PUT
-        [HttpGet]
-        // TODO Authorize [Authorize]
-        // TODO Cache to every 10 minutes 
-        [Route("api/[controller]/UpdateCourseStatus/{SubscriberGuid}")]
-        public async Task<IActionResult> UpdateCourseStatus(string SubscriberGuid)
-        {
-            var Enrollments = _db.Enrollment
-             .Join(
-                    _db.Subscriber,
-                     e => e.SubscriberId,
-                     s => s.SubscriberId,
-                     (s, e) => new
-                     {                         
-                         s,e 
-                     }).Where(x => x.e.SubscriberId == x.s.SubscriberId &&
-                                x.s.IsDeleted == 0 && x.e.IsDeleted == 0 && 
-                                x.s.CompletionDate == null && 
-                                x.s.DroppedDate == null && 
-                                x.e.SubscriberGuid == Guid.Parse(SubscriberGuid)
-                              );
-
-            foreach ( var EnrollmentGuid in Enrollments.ToList() )
-            {
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.UpdateWozCourseProgress(EnrollmentGuid.ToString() )) ;
-            }
-            
-    
-
+        [HttpPut]
+        [Authorize]
+        [Route("api/[controller]/UpdateStudentCourseStatus/{SubscriberGuid}")]
+        public IActionResult UpdateStudentCourseStatus(string SubscriberGuid)
+        {             
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.UpdateStudentProgress(SubscriberGuid)) ;      
             return Ok();
         }
 

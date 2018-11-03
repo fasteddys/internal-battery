@@ -31,40 +31,56 @@ namespace UpDiddyApi.Workflow
         #region Woz
 
 
-        public bool  UpdateWozCourseProgress(string  EnrollmentGuid)
+        public bool UpdateStudentProgress(string SubscriberGuid)
         {
-            Enrollment e = _db.Enrollment
-                .Where(
-                       t => t.IsDeleted == 0 &&
-                       t.EnrollmentGuid == Guid.Parse(EnrollmentGuid)
-                       )
+            Subscriber subscriber = _db.Subscriber
+            .Where(s => s.IsDeleted == 0 &&  s.SubscriberGuid == Guid.Parse(SubscriberGuid) )
+            .FirstOrDefault();
 
-                .FirstOrDefault();
-            if (e == null)
+            if (subscriber == null)
                 return false;
+
+            IList<Enrollment> enrollments = _db.Enrollment
+                .Where(e => e.IsDeleted == 0 && e.SubscriberId == subscriber.SubscriberId && e.CompletionDate == null && e.DroppedDate == null )
+                .ToList();
+
+            WozCourseProgress wcp = null;
+            bool updatesMade = false;
+
+            foreach ( Enrollment e in enrollments)
+            {
+               wcp = GetWozCourseProgress(e);               
+               if (wcp != null && wcp.ActivitiesCompleted > 0 && wcp.ActivitiesTotal > 0)
+               {
+                    updatesMade = true;
+                    e.PercentComplete = Convert.ToInt32((wcp.ActivitiesCompleted / wcp.ActivitiesTotal) * 100);
+                    e.ModifyDate = DateTime.Now;                    
+               }               
+            }
+            if ( updatesMade )
+                _db.SaveChanges();
+
+            return true;
+        }
+
+
+        public WozCourseProgress GetWozCourseProgress(Enrollment enrollment)
+        {
+        
                         
             WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog);
             WozCourseEnrollment wce = _db.WozCourseEnrollment
             .Where(
                    t => t.IsDeleted == 0 &&
-                   t.EnrollmentGuid == e.EnrollmentGuid 
+                   t.EnrollmentGuid == enrollment.EnrollmentGuid 
                    )
             .FirstOrDefault();
 
             if (wce == null)
-                return false;
+                return null;
 
-            WozCourseProgress Wcp = wi.GetCourseProgress(wce.SectionId, wce.WozEnrollmentId).Result;
-            if (Wcp != null)
-            {
-                if (Wcp.ActivitiesCompleted > 0 && Wcp.ActivitiesTotal > 0)
-                {
-                    e.PercentComplete = Convert.ToInt32((Wcp.ActivitiesCompleted / Wcp.ActivitiesTotal) * 100);
-                    e.ModifyDate = DateTime.Now;
-                    _db.SaveChanges();
-                }        
-            }
-            return true;
+            WozCourseProgress Wcp = wi.GetCourseProgress(wce.SectionId, wce.WozEnrollmentId).Result;           
+            return Wcp;
         }
 
 
