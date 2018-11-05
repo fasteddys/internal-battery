@@ -1,11 +1,7 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
 @model AboutViewModel
-@{
-    string DomainName = Context.Request.Host.ToString();
-    string SSLProtocol = Context.Request.Scheme.ToString();
-    string ProtocolAndHost = SSLProtocol + "://" + DomainName;
-}
+
 <div class="about-us-container">
     <div class="row about-us-hero">
         <div class="col-md-12">
@@ -18,7 +14,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="career-circle-video-container">
-                            <video src="@(ProtocolAndHost)/videos/Career_Circle.mp4" controls frameborder="0" allowfullscreen></video>
+                            <video src="~/videos/Career_Circle.mp4" controls frameborder="0" allowfullscreen></video>
                         </div>
                     </div>
                 </div>

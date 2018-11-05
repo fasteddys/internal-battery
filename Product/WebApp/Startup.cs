@@ -20,14 +20,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
 using System.Net;
 using UpDiddy.Helpers.RewriteRules;
+using Microsoft.Net.Http.Headers;
 
 namespace UpDiddy
 {
     public class Startup
     {
-
-
-
         public Startup(IHostingEnvironment env)
         {
 
@@ -202,7 +200,17 @@ namespace UpDiddy
                 return next.Invoke();
             });
         
-            app.UseStaticFiles();
+            // set the cache-control header to 24 hours
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    const int durationInSeconds = 60 * 60 * 24;
+                    ctx.Context.Response.Headers[HeaderNames.CacheControl] =
+                        "public,max-age=" + durationInSeconds;
+                }
+            });
+
             app.UseSession();
             app.UseAuthentication();
 

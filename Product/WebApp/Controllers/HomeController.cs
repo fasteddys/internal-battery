@@ -25,6 +25,7 @@ using SendGrid.Helpers.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using Microsoft.AspNetCore.Hosting;
 
 namespace UpDiddy.Controllers
 {
@@ -33,13 +34,12 @@ namespace UpDiddy.Controllers
         AzureAdB2COptions AzureAdB2COptions;
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
+        private readonly IHostingEnvironment _env;
 
-
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration)
+        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHostingEnvironment env)
             : base(azureAdB2COptions.Value, configuration)
         {
-
-
+            _env = env;
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
             _configuration = configuration;
@@ -252,7 +252,7 @@ namespace UpDiddy.Controllers
             string email = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsEmail) ? "No email entered." : ContactUsEmail);
             string type = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsType) ? "No type entered." : ContactUsType);
             string comment = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsComment) ? "No comment entered." : ContactUsComment);
-            
+
             var emailBody = FormatContactEmail(firstName, lastName, email, type, comment);
             var plainTextContent = emailBody;
             var htmlContent = emailBody;
@@ -278,6 +278,21 @@ namespace UpDiddy.Controllers
         [AllowAnonymous]
         public IActionResult Unified()
         {
+            /* relative paths to static files cannot be used in this view since the content is served by a third party website.
+             * we have to use absolute paths, but we still want a way to prevent outdated static files from being cached. 
+             * the code below solves for this by adding the referenced file's last modified timestamp as a hash code to the query 
+             * string for all static files referenced.
+             */
+            ViewData["BlueBg"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\images\blue_background_login.jpg").GetHashCode());
+            ViewData["Bootstrap"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\lib\boostrap\css\bootstrap.min.css").GetHashCode());
+            ViewData["Bundle"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\css\Bundle.css").GetHashCode());
+            ViewData["FontAwesome"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\lib\font-awesome\css\all.min.css").GetHashCode());
+            ViewData["Icon20"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\images\Icon-20.png").GetHashCode());
+            ViewData["SiteMin"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\css\site.min.css").GetHashCode());
+            ViewData["Unified"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\css\Unified.css").GetHashCode());
+            ViewData["WhiteLogo"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\images\cc_logo_white.png").GetHashCode());
+
+
             return View();
         }
 

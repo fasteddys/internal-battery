@@ -66,6 +66,7 @@ namespace UpDiddyApi.Controllers
                          && pcr.IsDeleted == 0
                          && c.CourseGuid == Guid.Parse(courseGuid)
                          && s.SubscriberGuid == Guid.Parse(subscriberGuid)
+                         && s.IsDeleted == 0
                          && pcr.PromoCodeRedemptionGuid == Guid.Parse(promoCodeRedemptionGuid)
                          && pc.NumberOfRedemptions < pc.MaxAllowedNumberOfRedemptions
                          select new PromoCodeDto()
@@ -171,7 +172,7 @@ namespace UpDiddyApi.Controllers
                 Guid parsedSubscriberGuid;
                 Guid.TryParse(subscriberGuid, out parsedSubscriberGuid);
                 Subscriber subscriber = _db.Subscriber
-                    .Where(s => s.SubscriberGuid == parsedSubscriberGuid)
+                    .Where(s => s.SubscriberGuid == parsedSubscriberGuid && s.IsDeleted == 0)
                     .FirstOrDefault();
 
                 if (subscriber == null)

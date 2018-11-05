@@ -4,11 +4,6 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @using System.Web
 @inject IViewLocalizer Localizer
-@{ 
-    string DomainName = Context.Request.Host.ToString();
-    string SSLProtocol = Context.Request.Scheme.ToString();
-    string ProtocolAndHost = SSLProtocol + "://" + DomainName;
-}
 
 <!DOCTYPE html>
 <html>
@@ -26,14 +21,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareerCircle</title>
-    <link rel="shortcut icon" href="@(ProtocolAndHost)/images/Icon-20.png" />
+    <link rel="shortcut icon" href="~/images/Icon-20.png" />
     <environment names="Development,DevelopmentLocalApi,DevelopmentLocal">
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/lib/bootstrap/css/bootstrap.min.css" />
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/lib/font-awesome/css/all.min.css" />
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/bundle.css" />
+        <link rel="stylesheet" type="text/css" href="~/lib/bootstrap/css/bootstrap.min.css" asp-append-version="true" />
+        <link rel="stylesheet" type="text/css" href="~/lib/font-awesome/css/all.min.css" asp-append-version="true" />
+        <link rel="stylesheet" type="text/css" href="~/css/bundle.css" asp-append-version="true" />
     </environment>
     <environment names="Staging,Production">
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/site.min.css" />
+        <link rel="stylesheet" type="text/css" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
 
 
@@ -45,8 +40,8 @@
     </noscript>
     <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white">
         <div class="container">
-            <a class="navbar-brand" href="@(ProtocolAndHost)/Home/Index">
-                <img src="@(ProtocolAndHost)/images/cc_logo.png" />
+            <a class="navbar-brand" href="~/Home/Index">
+                <img src="~/images/cc_logo.png" asp-append-version="true" />
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#NavigationItems" aria-controls="NavigationItems" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -88,7 +83,7 @@
         @*<script src="~/js/site.dev.js"></script>
             <script src="~/lib/jquery/dist/jquery.js"></script>
             <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>*@
-        <script type="text/javascript" src="@(ProtocolAndHost)/js/site.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/js/site.js" asp-append-version="true"></script>
     </environment>
     <environment names="Staging,Production">
         <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -97,7 +92,7 @@
         @*<script src="~/js/site.dev.js"></script>
             <script src="~/lib/jquery/dist/jquery.js"></script>
             <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>*@
-        <script type="text/javascript" src="@(ProtocolAndHost)/js/site.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/js/site.js" asp-append-version="true"></script>
         @*<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
                     asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
                     asp-fallback-test="window.jQuery"

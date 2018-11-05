@@ -8,12 +8,6 @@
 @using Microsoft.AspNetCore.Http.Features
 @using System.Web
 @inject IViewLocalizer Localizer
-@{
-    Layout = null;
-    string DomainName = Context.Request.Host.ToString();
-    string SSLProtocol = Context.Request.Scheme.ToString();
-    string ProtocolAndHost = SSLProtocol + "://" + DomainName;
-}
 
 <!doctype html>
 <html>
@@ -21,12 +15,12 @@
     <title>CareerCircle - Coming Soon</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="shortcut icon" href="@(ProtocolAndHost)/images/Icon-20.png" />
+    <link rel="shortcut icon" href="~/images/Icon-20.png" />
     <environment names="Development,DevelopmentLocalApi,DevelopmentLocal">
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/lib/bootstrap/css/bootstrap.min.css" />
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/lib/font-awesome/css/all.min.css" />
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/Unified.css" />
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/bundle.css" />
+        <link rel="stylesheet" type="text/css" href="~/lib/bootstrap/css/bootstrap.min.css" />
+        <link rel="stylesheet" type="text/css" href="~/lib/font-awesome/css/all.min.css" />
+        <link rel="stylesheet" type="text/css" href="~/css/Unified.css" />
+        <link rel="stylesheet" type="text/css" href="~/css/bundle.css" />
     </environment>
     <environment names="Staging,Production">
         <link rel="stylesheet" type="text/css" href="~/css/site.min.css" />

@@ -274,12 +274,6 @@
         container: '#bt-dropin'
     }, function (createErr, instance) {
         form.addEventListener('submit', function (event) {
-            // bypass payment if course cost is zero
-            if ($('#CourseTotal').html() === "$0.00") {
-                HTMLFormElement.prototype.submit.call(form);
-                return;
-            }
-
             event.preventDefault();
 
             instance.requestPaymentMethod(function (err, payload) {
