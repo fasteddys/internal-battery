@@ -133,7 +133,7 @@ namespace SandBox
 
 
 
-        WozStudentDto wz = new WozStudentDto();
+            WozCreateStudentDto wz = new WozCreateStudentDto();
             wz.emailAddress = "email@email.com";
             wz.acceptedTermsOfServiceDocumentId = 1;
             wz.firstName = "Jim";
