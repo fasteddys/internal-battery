@@ -82,7 +82,7 @@ namespace UpDiddyApi.Business
                     return CreateResponse(string.Empty, "Student login found", StudentLogin.VendorLogin, TransactionState.Complete);
 
                 // Call Woz to register student
-                WozStudentDto Student = new WozStudentDto()
+                WozCreateStudentDto Student = new WozCreateStudentDto()
                 {
                     firstName = Enrollment.Subscriber.FirstName,
                     lastName = Enrollment.Subscriber.LastName,
@@ -700,7 +700,6 @@ namespace UpDiddyApi.Business
         }
 
         #endregion
-
   
         #region Scheduled Tasks
         // TODO Add Logging 
@@ -829,8 +828,7 @@ namespace UpDiddyApi.Business
 
         #endregion
 
-
-
+   
 
         #region Utility Functions
 

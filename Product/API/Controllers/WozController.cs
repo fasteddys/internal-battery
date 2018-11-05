@@ -53,9 +53,7 @@ namespace UpDiddyApi.Controllers
             _log = new WozTransactionLog();
         }
         #endregion
-
-         
-
+        
         #region Courses 
         // GET: api/<controller>
         [HttpGet]
@@ -183,6 +181,8 @@ namespace UpDiddyApi.Controllers
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+
+                // Must assign to local variables due to Newtonsoft 
                 string LetterGrade = WozO.progress.letterGrade;
                 string PercentageGrade = WozO.progress.percentageGrade;
                 string ActivitiesCompleted = WozO.progress.activitiesCompleted;
@@ -219,6 +219,72 @@ namespace UpDiddyApi.Controllers
             return Ok();
         }
 
+
+
+        #endregion
+
+        #region Students
+
+
+
+        [HttpGet]
+        // TODO Authorize [Authorize]
+        [Route("api/[controller]/StudentInfo/{ExeterId}")]
+        public async Task<IActionResult> StudentInfo(int ExeterId )
+        {
+
+
+
+            HttpClient client = new HttpClient();
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"users/{ExeterId}");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            HttpResponseMessage response = await client.SendAsync(request);
+            var ResponseJson = await response.Content.ReadAsStringAsync();
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                // Must assign to local variables due to Newtonsoft 
+                int _StatusCode = (int)response.StatusCode;
+                long loginTimestamp = -1;
+                DateTime? LastLogin = null;
+                if (WozO.lastLoginDateUTC != null)
+                {
+                    loginTimestamp = (long)WozO.lastLoginDateUTC;
+                    LastLogin = Utils.UnixMillisecondsToLocalDatetime(loginTimestamp);
+                }
+
+                WozStudentInfoDto StudentInfo = new WozStudentInfoDto()
+                {
+                    ExeterId = ExeterId,
+                    FirstName = (string)WozO.firstName,
+                    LastName = (string)WozO.lastName,
+                    EmailAddress = (string)WozO.emailAddress,
+                    Address1 = (string)WozO.address1,
+                    Address2 = (string)WozO.address2,
+                    City = (string)WozO.city,
+                    State = (string)WozO.state,
+                    Country = (string)WozO.country,
+                    PostalCode = (string)WozO.postalcode,
+                    PhoneNumberPrimary = (string)WozO.phoneNumberPrimary,
+                    PhoneNumberSecondary = (string)WozO.phoneNumberSeconday,
+                    LastLoginDateUTCTimeStamp = loginTimestamp,
+                    LastLoginDate = LastLogin
+                };
+
+          
+                return Ok(StudentInfo);
+            }
+            else
+            {
+                int _StatusCode = (int)response.StatusCode;
+                WozCourseProgress wcp = new WozCourseProgress
+                {
+                    StatusCode = _StatusCode
+                };
+                return Ok(wcp);
+            }
+ 
+        }
 
 
         #endregion

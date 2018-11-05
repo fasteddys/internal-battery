@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-    public class WozStudentDto
+    public class WozCreateStudentDto
     {
         public string firstName { get; set; }
         public string lastName { get; set; }
