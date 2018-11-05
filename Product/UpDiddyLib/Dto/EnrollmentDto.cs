@@ -7,6 +7,7 @@ namespace UpDiddyLib.Dto
 
     public enum EnrollmentStatus
     { 
+         PaymentInitiated = 0, PaymentInProgress = 10, PaymentComplete = 20, PaymentError = 30, PaymentFatalError = 40,
          EnrollStudentRequested = 1, EnrollStudentInProgress = 11, EnrollStudentComplete = 21, EnrollStudentError = 31, EnrollStudentFatalError = 41,
          CreateSectionRequested = 2, CreateSectionInProgress = 12, CreateSectionComplete = 22, CreateSectionError = 32, CreateSectionFatalError = 42,
          RegisterStudentRequested = 3, RegisterStudentInProgress = 13, RegisterStudentComplete = 23, RegisterStudentError = 33, RegisterStudentFatalError = 43,
@@ -31,5 +32,13 @@ namespace UpDiddyLib.Dto
         public Int64? SectionStartTimestamp { get; set; }
         public Guid? PromoCodeRedemptionGuid { get; set; }
         public int? CourseVariantId { get; set; }
+
+        public bool IsError(EnrollmentStatus StatusId)
+        {
+            if ((int)StatusId >= 30) return true;
+            else return false;
+        }
     }
+
+    
 }

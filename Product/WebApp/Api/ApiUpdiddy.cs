@@ -68,9 +68,9 @@ namespace UpDiddy.Api
         {
             return Get<WozTermsOfServiceDto>("woz/TermsOfService/", false);
         }
-        public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentDto enrollmentDto)
+        public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto)
         {
-            return Post<Guid>(enrollmentDto, "enrollment/", true);
+            return Post<Guid>(enrollmentFlowDto, "enrollment/", true);
         }
 
         public Guid WriteToEnrollmentLog(EnrollmentLogDto enrollmentLogDto)
