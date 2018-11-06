@@ -65,7 +65,6 @@ namespace UpDiddyApi.Controllers
             HttpResponseMessage response = await client.SendAsync(request);
             var ResponseJson = await response.Content.ReadAsStringAsync();
             return Ok(ResponseJson);
-
         }
 
 
@@ -212,10 +211,23 @@ namespace UpDiddyApi.Controllers
  
         [HttpPut]
         [Authorize]
-        [Route("api/[controller]/UpdateStudentCourseStatus/{SubscriberGuid}")]
-        public IActionResult UpdateStudentCourseStatus(string SubscriberGuid)
-        {             
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.UpdateStudentProgress(SubscriberGuid)) ;      
+        [Route("api/[controller]/UpdateStudentCourseStatus/{SubscriberGuid}/{FutureSchedule}")]
+        public IActionResult UpdateStudentCourseStatus(string SubscriberGuid, bool FutureSchedule)
+        {
+
+            int AgeThresholdInHours = 6;
+            try
+            {
+                AgeThresholdInHours = int.Parse(_configuration["ProgressUpdateAgeThresholdInHours"]);
+            }
+            catch { }
+
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.UpdateStudentProgress(SubscriberGuid, AgeThresholdInHours)) ;
+       
+            // Queue another update in 6 hours 
+            if ( FutureSchedule )
+                BackgroundJob.Schedule<ScheduledJobs>(j => j.UpdateStudentProgress(SubscriberGuid, AgeThresholdInHours) ,TimeSpan.FromHours(AgeThresholdInHours)  );
+             
             return Ok();
         }
 

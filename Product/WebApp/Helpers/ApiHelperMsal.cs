@@ -25,6 +25,25 @@ namespace UpDiddy.Helpers
         public AzureAdB2COptions AzureOptions { get; set; }
         public HttpContext HttpContext { get; set; }
 
+
+        public T Put<T>(string ApiAction, bool Authorized = false)
+        {
+            Task<string> Response = _PutAsync(ApiAction, Authorized);
+            try
+            {
+                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
+                return rval;
+            }
+            catch (Exception ex)
+            {
+                // TODO instrument with json string and requested type 
+                var msg = ex.Message;
+                return (T)Convert.ChangeType(null, typeof(T));
+            }
+        }
+
+
+
         public T Get<T>(string ApiAction, bool Authorized = false)
         {
             Task<string> Response = _GetAsync(ApiAction, Authorized);
@@ -109,6 +128,50 @@ namespace UpDiddy.Helpers
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, ApiUrl);
                 if (!string.IsNullOrEmpty(Content))
                     request.Content = new StringContent(Content);
+
+                // Add token to the Authorization header and make the request 
+                if (Authorized)
+                    await AddBearerTokenAsync(request);
+
+                HttpResponseMessage response = await client.SendAsync(request);
+                // Handle the response
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        responseString = await response.Content.ReadAsStringAsync();
+                        break;
+                    case HttpStatusCode.Unauthorized:
+                        responseString = $"Please sign in again. {response.ReasonPhrase}";
+                        break;
+                    default:
+                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
+                        break;
+                }
+            }
+            catch (MsalUiRequiredException ex)
+            {
+                responseString = $"Session has expired. Please sign in again. {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                responseString = $"Error calling API: {ex.Message}";
+            }
+
+            return responseString;
+
+        }
+
+
+
+
+        private async Task<string> _PutAsync(string ApiAction, bool Authorized = false)
+        {
+            string responseString = "";
+            try
+            {
+                HttpClient client = new HttpClient();
+                string ApiUrl = _ApiBaseUri + ApiAction;
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, ApiUrl);
 
                 // Add token to the Authorization header and make the request 
                 if (Authorized)
