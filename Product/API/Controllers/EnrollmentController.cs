@@ -108,8 +108,8 @@ namespace UpDiddyApi.Controllers
                 _db.SaveChanges();
 
                 /**
-                 *  This line used to enqueue the enrollment flow. Now, it's enqueuing tthe braintree flow,
-                 *  which will enqueue the enrollment flow if the payment is successful.
+                 *  This line used to enqueue the enrollment flow. Now, it's enqueuing the braintree flow,
+                 *  which will then enqueue the enrollment flow if the payment is successful.
                  */
                 BackgroundJob.Enqueue<BraintreePaymentFlow>(x => x.PaymentWorkItem(EnrollmentFlowDto));
                 return Ok(Enrollment.EnrollmentGuid);

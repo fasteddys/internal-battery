@@ -152,6 +152,11 @@ namespace UpDiddy.Controllers
                 }
             }
 
+            /**
+             *      TODO: Need to implement logic here to ensure billing fields are
+             *      not empty to ensure Braintree gets the values.
+             * */
+
             // process payment if price is not zero
             if (enrollmentDto.PricePaid != 0)
             {
