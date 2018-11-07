@@ -34,6 +34,8 @@ namespace UpDiddyApi.Models
                  VaultClientId,
                  VaultSecret);
 
+            configBuilder.AddUserSecrets<Startup>();
+
             config = configBuilder.Build();
             // Get the connection string from the Azure secret vault
             var SqlConnectionString = config["CareerCircleSqlConnection"];
