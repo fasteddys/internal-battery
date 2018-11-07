@@ -9,5 +9,6 @@ namespace UpDiddyLib.Dto
         // Add Dto objects here is they're needed in the enrollment flow
         public EnrollmentDto EnrollmentDto { get; set; }
         public BraintreePaymentDto BraintreePaymentDto { get; set; }
+        public SubscriberDto SubscriberDto { get; set; }
     }
 }

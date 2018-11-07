@@ -179,7 +179,8 @@ namespace UpDiddy.Controllers
                 EnrollmentFlowDto enrollmentFlowDto = new EnrollmentFlowDto
                 {
                     EnrollmentDto = enrollmentDto,
-                    BraintreePaymentDto = BraintreePaymentDto
+                    BraintreePaymentDto = BraintreePaymentDto,
+                    SubscriberDto = this.subscriber
                 };
 
                 API.EnrollStudentAndObtainEnrollmentGUID(enrollmentFlowDto);
