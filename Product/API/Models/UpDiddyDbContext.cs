@@ -34,6 +34,9 @@ namespace UpDiddyApi.Models
                  VaultClientId,
                  VaultSecret);
 
+            // todo: quick fix to ensure db connection from user secrets is being overridden
+            configBuilder.AddUserSecrets<Startup>();
+
             config = configBuilder.Build();
             // Get the connection string from the Azure secret vault
             var SqlConnectionString = config["CareerCircleSqlConnection"];
@@ -91,6 +94,7 @@ namespace UpDiddyApi.Models
         public DbSet<Country> Country { get; set; }
         public DbSet<State> State { get; set; }
         public DbSet<CourseVariant> CourseVariant { get; set; }
+        public DbSet<CourseVariantType> CourseVariantType { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -152,6 +156,35 @@ namespace UpDiddyApi.Models
                     PromoTypeGuid = Guid.Parse("1DDB91F6-A6E5-4C01-A020-1DEA0AB77E95"),
                     PromoTypeId = 2
                 });
+
+            /* does this get called before or after migrationBuilder during "Update-Database" operation?
+             * should this be done here or in the migration? currently keeping it in the migration since the order of operations is important 
+             * (e.g. first create a column, then populate it with data from the related table, then create the FK, then drop the unused column(s))
+             
+            modelBuilder.Entity<CourseVariantType>().HasData(
+                new CourseVariantType()
+                {
+                    CourseVariantTypeId = 1,
+                    CourseVariantGuid = Guid.Parse("97EFDC73-8295-4C6B-B68A-07F29DE55808"),
+                    CreateDate = DateTime.MinValue,
+                    IsDeleted = 0,
+                    ModifyDate = null,
+                    ModifyGuid = null,
+                    CreateGuid = Guid.Parse("EEA8EC63-0181-4566-A50C-A56271249230"),
+                    Name = "SelfPaced"
+                },
+                new CourseVariantType()
+                {
+                    CourseVariantTypeId = 2,
+                    CourseVariantGuid = Guid.Parse("D4C9E3A1-E24B-4003-8A02-65775056ACF0"),
+                    CreateDate = DateTime.MinValue,
+                    IsDeleted = 0,
+                    ModifyDate = null,
+                    ModifyGuid = null,
+                    CreateGuid = Guid.Parse("6938B064-D1A1-4DE0-B259-53BCAE9F0C9A"),
+                    Name = "InstructorLed"
+                }); 
+             */
 
             // todo: would like to be able to add check constraints here, but it seems it is only possible by editing the migration directly: https://stackoverflow.com/questions/34245449/is-it-possible-to-add-check-constraint-with-fluent-api-in-ef7
         }

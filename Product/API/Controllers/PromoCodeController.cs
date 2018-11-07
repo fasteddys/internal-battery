@@ -105,8 +105,8 @@ namespace UpDiddyApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("api/[controller]/{code}/{courseGuid}/{subscriberGuid}")]
-        public IActionResult PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
+        [Route("api/[controller]/{code}/{courseGuid}/{subscriberGuid}/{courseVariantTypeName}")]
+        public IActionResult PromoCodeValidation(string code, string courseGuid, string subscriberGuid, string courseVariantTypeName)
         {
             try
             {
@@ -184,6 +184,13 @@ namespace UpDiddyApi.Controllers
 
                 if (subscriberRestrictionsForThisPromoCode.Any() && !subscriberRestrictionsForThisPromoCode.Any(spc => spc.SubscriberId == subscriber.SubscriberId))
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this subscriber." });
+
+                // todo: add logic to check for course variant restriction
+                CourseVariant courseVariant = _db.CourseVariant
+                    .Include(cv => cv.CourseVariantType)
+                    .Where(cv => cv.CourseVariantType.Name == courseVariantTypeName && cv.CourseId == course.CourseId)
+                    .FirstOrDefault();
+
                 #endregion
 
                 // check if there is an existing "in process" promo code redemption for this code, course, and subscriber that has not been logically deleted
@@ -201,15 +208,15 @@ namespace UpDiddyApi.Controllers
                     switch (promoCode.PromoType.Name)
                     {
                         case "Dollar Amount":
-                            validPromoCodeDto.Discount = !course.Price.HasValue ? 0 : Math.Max(0, promoCode.PromoValueFactor);
+                            validPromoCodeDto.Discount =  Math.Max(0, promoCode.PromoValueFactor);
                             break;
                         case "Percent Off":
-                            validPromoCodeDto.Discount = !course.Price.HasValue ? 0 : Math.Max(0, Math.Round(course.Price.Value * promoCode.PromoValueFactor, 2, MidpointRounding.ToEven));
+                            validPromoCodeDto.Discount = Math.Max(0, Math.Round(courseVariant.Price * promoCode.PromoValueFactor, 2, MidpointRounding.ToEven));
                             break;
                         default:
                             throw new ApplicationException("Unrecognized promo type!");
                     }
-                    validPromoCodeDto.FinalCost = !course.Price.HasValue ? 0 : course.Price.Value - validPromoCodeDto.Discount;
+                    validPromoCodeDto.FinalCost = courseVariant.Price - validPromoCodeDto.Discount;
                     validPromoCodeDto.PromoCodeRedemptionGuid = Guid.NewGuid();
                     _db.PromoCodeRedemption.Add(new PromoCodeRedemption()
                     {
@@ -231,7 +238,7 @@ namespace UpDiddyApi.Controllers
                     validPromoCodeDto = new PromoCodeDto()
                     {
                         Discount = existingInProgressPromoCodeRedemption.ValueRedeemed,
-                        FinalCost = !existingInProgressPromoCodeRedemption.Course.Price.HasValue ? 0 : existingInProgressPromoCodeRedemption.Course.Price.Value - existingInProgressPromoCodeRedemption.ValueRedeemed,
+                        FinalCost = existingInProgressPromoCodeRedemption.CourseVariant.Price - existingInProgressPromoCodeRedemption.ValueRedeemed,
                         IsValid = true,
                         ValidationMessage = $"The promo code '{existingInProgressPromoCodeRedemption.PromoCode.PromoName}' has been applied successfully! See below for the updated price.",
                         PromoCodeRedemptionGuid = existingInProgressPromoCodeRedemption.PromoCodeRedemptionGuid,

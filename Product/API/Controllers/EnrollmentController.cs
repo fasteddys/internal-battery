@@ -90,7 +90,7 @@ namespace UpDiddyApi.Controllers
 
                 _db.EnrollmentLog.Add(new EnrollmentLog()
                 {
-                    CourseCost = (courseVariant != null && courseVariant.Price.HasValue) ? courseVariant.Price.Value : (course.Price.HasValue) ? course.Price.Value : 0,
+                    CourseCost = course.CourseVariants.Where(c => c.CourseVariantId == EnrollmentDto.CourseVariantId).FirstOrDefault().Price, // todo: need to defend against null ref, change logic to use lookup value rather than id
                     CourseGuid = course.CourseGuid.HasValue ? course.CourseGuid.Value : Guid.Empty,
                     CourseVariantGuid = courseVariant.CourseVariantGuid,
                     CreateDate = currentDate,

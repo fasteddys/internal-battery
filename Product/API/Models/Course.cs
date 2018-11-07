@@ -19,7 +19,6 @@ namespace UpDiddyApi.Models
         public string Slug { get; set; }
         public string Description { get; set; }
         public string Code { get; set; }
-        public Decimal? Price { get; set; }
         public int? TopicId { get; set; }
         public string DesktopImage { get; set; }
         public string TabletImage { get; set; }
@@ -29,6 +28,6 @@ namespace UpDiddyApi.Models
         public int? CourseDeliveryId { get; set; }
         public int? Hidden { get; set; }
         public string VideoUrl { get; set; }
-        
+        public List<CourseVariant> CourseVariants { get; set; }
     }
 }

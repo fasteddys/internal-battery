@@ -96,11 +96,16 @@ namespace UpDiddyApi.Controllers
             var ResponseJson = await response.Content.ReadAsStringAsync();
 
             IList<CourseVariantDto> Variants = null;
-            Variants = _db.CourseVariant
+            /*todo: fix after getting through migration issues
+             * 
+             * Variants = _db.CourseVariant
+                .Join(_db.Course,
+                cv => cv.CourseId,
+                c => c.CourseId)
                 .Where(t => t.IsDeleted == 0 && t.CourseGuid == CourseGuid)
                 .ProjectTo<CourseVariantDto>(_mapper.ConfigurationProvider)
                 .ToList();
-
+                */
             List<Tuple<int, string, Decimal>> VarToPrice = new List<Tuple<int, string, decimal>>();
             foreach (CourseVariantDto variant in Variants)
             {

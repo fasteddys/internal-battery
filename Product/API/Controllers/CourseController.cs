@@ -167,11 +167,12 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/guid/{CourseGuid}/variant/{VariantType}")]
-        public IActionResult GetCourseVariantPrice(Guid? CourseGuid, string VariantType)
+        [Route("api/[controller]/guid/{CourseGuid}")]
+        public IActionResult GetCourseVariantPrice(Guid? CourseGuid)
         {
             CourseVariant courseVariant = _db.CourseVariant
-                .Where(t => t.IsDeleted == 0 && t.CourseGuid == CourseGuid && t.VariantType == VariantType)
+                // todo: fix after getting through migration issues 
+                // .Where(t => t.IsDeleted == 0 && t.CourseGuid == CourseGuid)
                 .FirstOrDefault();
             if (courseVariant == null)
                 return Ok("0");
