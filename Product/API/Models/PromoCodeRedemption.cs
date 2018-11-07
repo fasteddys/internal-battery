@@ -20,8 +20,6 @@ namespace UpDiddyApi.Models
         public virtual PromoCode PromoCode { get; set; }
         public int SubscriberId { get; set; }
         public virtual Subscriber Subscriber { get; set; }
-        public int CourseId { get; set; }
-        public virtual Course Course { get; set; }
         public int CourseVariantId { get; set; }
         public virtual CourseVariant CourseVariant { get; set; }
     }

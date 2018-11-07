@@ -76,7 +76,7 @@ namespace UpDiddyApi.Models
         public DbSet<VendorPromoCode> VendorPromoCode { get; set; }
         public DbSet<PromoCode> PromoCode { get; set; }
         public DbSet<SubscriberPromoCode> SubscriberPromoCode { get; set; }
-        public DbSet<CoursePromoCode> CoursePromoCode { get; set; }
+        public DbSet<CourseVariantPromoCode> CourseVariantPromoCode { get; set; }
         public DbSet<PromoType> PromoType { get; set; }
         public DbSet<Payment> Payment { get; set; }
         public DbSet<PaymentBatch> PaymentBatch { get; set; }
