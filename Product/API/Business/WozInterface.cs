@@ -422,7 +422,7 @@ namespace UpDiddyApi.Business
 
 
         #region Course Enrollment
-
+ 
         public async Task<WozCourseProgress> GetCourseProgress(int SectionId, int WozEnrollmentId)
         {
 

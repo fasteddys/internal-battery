@@ -31,6 +31,7 @@ namespace UpDiddyApi.Controllers
         #region Class Members
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
+        private readonly ISysLog _syslog;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
         //private readonly CCQueue _queue = null;
@@ -40,7 +41,7 @@ namespace UpDiddyApi.Controllers
         #endregion
 
         #region Constructor
-        public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog syslog )
         {
 
             _db = db;
@@ -51,6 +52,7 @@ namespace UpDiddyApi.Controllers
             _apiBaseUri = _configuration["Woz:ApiUrl"];
             _accessToken = _configuration["WozAccessToken"];            
             _log = new WozTransactionLog();
+            _syslog = syslog;
         }
         #endregion
         
@@ -66,6 +68,9 @@ namespace UpDiddyApi.Controllers
             var ResponseJson = await response.Content.ReadAsStringAsync();
             return Ok(ResponseJson);
         }
+
+
+
 
 
 
@@ -301,6 +306,66 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
+        #region Enrollments
+
+        [HttpPut]
+        [Authorize]
+        [Route("api/[controller]/CancelEnrollment/{EnrollmentGuid}")]
+        public async Task<IActionResult> CancelEnrollment(string EnrollmentGuid )
+        { 
+            // Get the Enrollment Object 
+            WozCourseEnrollment WozEnrollment = _db.WozCourseEnrollment
+                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                 .FirstOrDefault();
+
+            if (WozEnrollment == null || WozEnrollment.IsDeleted == 1)
+                return NotFound();
+
+            // Get the Enrollment Object 
+            Enrollment Enrollment = _db.Enrollment
+                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                 .FirstOrDefault();
+
+            if (Enrollment == null || Enrollment.IsDeleted == 1)
+                return NotFound();
+
+            string action = $"sections/{WozEnrollment.SectionId}/enrollments/{WozEnrollment.WozEnrollmentId}";
+            WozUpdateEnrollmentDto updateEnrollmentDto = new WozUpdateEnrollmentDto()
+            {
+                enrollmentStatus = (int) WozEnrollmentStatus.Canceled,
+                enrollmentDateUTC = WozEnrollment.EnrollmentDateUTC,
+                removalDateUTC = Utils.CurrentTimeInUnixMilliseconds()
+            };
+
+            string json = Newtonsoft.Json.JsonConvert.SerializeObject(updateEnrollmentDto);
+            HttpClient client = WozClient();
+            HttpRequestMessage request = WozPutRequest(action, json);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            HttpResponseMessage response = await client.SendAsync(request);
+            var ResponseJson = await response.Content.ReadAsStringAsync();
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                // Mark both records as deleted 
+                WozEnrollment.IsDeleted = 1;
+                WozEnrollment.ModifyDate = DateTime.Now;
+                Enrollment.ModifyDate = DateTime.Now;
+                Enrollment.IsDeleted = 1;
+                _db.SaveChanges();
+                _syslog.SysInfo($"WozController:CancelEnrollment: Woz response for enrollment {EnrollmentGuid} = {ResponseJson}");
+                return Ok();                
+            }
+            else
+            {
+                _syslog.SysError($"WozController:CancelEnrollment: Woz response status code = {response.StatusCode.ToString()} for enrollment {EnrollmentGuid}" );
+                return BadRequest();
+            }          
+        }
+
+        #endregion
+
+
+
         #region Terms Of Service
         [HttpGet]
         [Route("api/[controller]/TermsOfService")]
@@ -385,6 +450,19 @@ namespace UpDiddyApi.Controllers
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             return request;
         }
+
+
+        private HttpRequestMessage WozPutRequest(string ApiAction, string Content)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, _apiBaseUri + ApiAction)
+            {
+                Content = new StringContent(Content)
+            };
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            return request;
+        }
+
+
 
         private HttpRequestMessage WozGetRequest(string ApiAction)
         {
