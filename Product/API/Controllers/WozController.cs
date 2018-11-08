@@ -16,6 +16,8 @@ using System.Globalization;
 using Newtonsoft.Json.Linq;
 using UpDiddyLib.Helpers;
 using AutoMapper.QueryableExtensions;
+using UpDiddyApi.Workflow;
+using Hangfire;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -29,6 +31,7 @@ namespace UpDiddyApi.Controllers
         #region Class Members
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
+        private readonly ISysLog _syslog;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
         //private readonly CCQueue _queue = null;
@@ -38,7 +41,7 @@ namespace UpDiddyApi.Controllers
         #endregion
 
         #region Constructor
-        public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog syslog )
         {
 
             _db = db;
@@ -49,11 +52,10 @@ namespace UpDiddyApi.Controllers
             _apiBaseUri = _configuration["Woz:ApiUrl"];
             _accessToken = _configuration["WozAccessToken"];            
             _log = new WozTransactionLog();
+            _syslog = syslog;
         }
         #endregion
-
-         
-
+        
         #region Courses 
         // GET: api/<controller>
         [HttpGet]
@@ -65,8 +67,13 @@ namespace UpDiddyApi.Controllers
             HttpResponseMessage response = await client.SendAsync(request);
             var ResponseJson = await response.Content.ReadAsStringAsync();
             return Ok(ResponseJson);
-
         }
+
+
+
+
+
+
 
 
         [HttpGet]
@@ -134,10 +141,7 @@ namespace UpDiddyApi.Controllers
         }
 
 
-
-
-
-
+        // TODO Deprecate 
         [HttpGet]
         // TODO Authorize [Authorize]
         // TODO Cache to every 10 minutes 
@@ -181,6 +185,8 @@ namespace UpDiddyApi.Controllers
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+
+                // Must assign to local variables due to Newtonsoft 
                 string LetterGrade = WozO.progress.letterGrade;
                 string PercentageGrade = WozO.progress.percentageGrade;
                 string ActivitiesCompleted = WozO.progress.activitiesCompleted;
@@ -196,7 +202,8 @@ namespace UpDiddyApi.Controllers
                 };
                 return Ok(CourseProgress);
             }
-            else {
+            else
+            {
                 int _StatusCode = (int)response.StatusCode;
                 WozCourseProgress wcp = new WozCourseProgress
                 {
@@ -206,9 +213,158 @@ namespace UpDiddyApi.Controllers
             }
         }
 
+ 
+        [HttpPut]
+        [Authorize]
+        [Route("api/[controller]/UpdateStudentCourseStatus/{SubscriberGuid}/{FutureSchedule}")]
+        public IActionResult UpdateStudentCourseStatus(string SubscriberGuid, bool FutureSchedule)
+        {
+
+            int AgeThresholdInHours = 6;
+            try
+            {
+                AgeThresholdInHours = int.Parse(_configuration["ProgressUpdateAgeThresholdInHours"]);
+            }
+            catch { }
+
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.UpdateStudentProgress(SubscriberGuid, AgeThresholdInHours)) ;
+       
+            // Queue another update in 6 hours 
+            if ( FutureSchedule )
+                BackgroundJob.Schedule<ScheduledJobs>(j => j.UpdateStudentProgress(SubscriberGuid, AgeThresholdInHours) ,TimeSpan.FromHours(AgeThresholdInHours)  );
+             
+            return Ok();
+        }
+
 
 
         #endregion
+
+        #region Students
+
+
+
+        [HttpGet]
+        // TODO Authorize [Authorize]
+        [Route("api/[controller]/StudentInfo/{ExeterId}")]
+        public async Task<IActionResult> StudentInfo(int ExeterId )
+        {
+
+
+
+            HttpClient client = new HttpClient();
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"users/{ExeterId}");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            HttpResponseMessage response = await client.SendAsync(request);
+            var ResponseJson = await response.Content.ReadAsStringAsync();
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                // Must assign to local variables due to Newtonsoft 
+                int _StatusCode = (int)response.StatusCode;
+                long loginTimestamp = -1;
+                DateTime? LastLogin = null;
+                if (WozO.lastLoginDateUTC != null)
+                {
+                    loginTimestamp = (long)WozO.lastLoginDateUTC;
+                    LastLogin = Utils.UnixMillisecondsToLocalDatetime(loginTimestamp);
+                }
+
+                WozStudentInfoDto StudentInfo = new WozStudentInfoDto()
+                {
+                    ExeterId = ExeterId,
+                    FirstName = (string)WozO.firstName,
+                    LastName = (string)WozO.lastName,
+                    EmailAddress = (string)WozO.emailAddress,
+                    Address1 = (string)WozO.address1,
+                    Address2 = (string)WozO.address2,
+                    City = (string)WozO.city,
+                    State = (string)WozO.state,
+                    Country = (string)WozO.country,
+                    PostalCode = (string)WozO.postalcode,
+                    PhoneNumberPrimary = (string)WozO.phoneNumberPrimary,
+                    PhoneNumberSecondary = (string)WozO.phoneNumberSeconday,
+                    LastLoginDateUTCTimeStamp = loginTimestamp,
+                    LastLoginDate = LastLogin
+                };
+
+          
+                return Ok(StudentInfo);
+            }
+            else
+            {
+                int _StatusCode = (int)response.StatusCode;
+                WozCourseProgress wcp = new WozCourseProgress
+                {
+                    StatusCode = _StatusCode
+                };
+                return Ok(wcp);
+            }
+ 
+        }
+
+
+        #endregion
+
+        #region Enrollments
+
+        [HttpPut]
+        [Authorize]
+        [Route("api/[controller]/CancelEnrollment/{EnrollmentGuid}")]
+        public async Task<IActionResult> CancelEnrollment(string EnrollmentGuid )
+        { 
+            // Get the Enrollment Object 
+            WozCourseEnrollment WozEnrollment = _db.WozCourseEnrollment
+                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                 .FirstOrDefault();
+
+            if (WozEnrollment == null || WozEnrollment.IsDeleted == 1)
+                return NotFound();
+
+            // Get the Enrollment Object 
+            Enrollment Enrollment = _db.Enrollment
+                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
+                 .FirstOrDefault();
+
+            if (Enrollment == null || Enrollment.IsDeleted == 1)
+                return NotFound();
+
+            string action = $"sections/{WozEnrollment.SectionId}/enrollments/{WozEnrollment.WozEnrollmentId}";
+            WozUpdateEnrollmentDto updateEnrollmentDto = new WozUpdateEnrollmentDto()
+            {
+                enrollmentStatus = (int) WozEnrollmentStatus.Canceled,
+                enrollmentDateUTC = WozEnrollment.EnrollmentDateUTC,
+                removalDateUTC = Utils.CurrentTimeInUnixMilliseconds()
+            };
+
+            string json = Newtonsoft.Json.JsonConvert.SerializeObject(updateEnrollmentDto);
+            HttpClient client = WozClient();
+            HttpRequestMessage request = WozPutRequest(action, json);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            HttpResponseMessage response = await client.SendAsync(request);
+            var ResponseJson = await response.Content.ReadAsStringAsync();
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                // Mark both records as deleted 
+                WozEnrollment.IsDeleted = 1;
+                WozEnrollment.ModifyDate = DateTime.Now;
+                Enrollment.ModifyDate = DateTime.Now;
+                Enrollment.IsDeleted = 1;
+                _db.SaveChanges();
+                _syslog.SysInfo($"WozController:CancelEnrollment: Woz response for enrollment {EnrollmentGuid} = {ResponseJson}");
+                return Ok();                
+            }
+            else
+            {
+                _syslog.SysError($"WozController:CancelEnrollment: Woz response status code = {response.StatusCode.ToString()} for enrollment {EnrollmentGuid}" );
+                return BadRequest();
+            }          
+        }
+
+        #endregion
+
+
 
         #region Terms Of Service
         [HttpGet]
@@ -294,6 +450,19 @@ namespace UpDiddyApi.Controllers
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             return request;
         }
+
+
+        private HttpRequestMessage WozPutRequest(string ApiAction, string Content)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, _apiBaseUri + ApiAction)
+            {
+                Content = new StringContent(Content)
+            };
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            return request;
+        }
+
+
 
         private HttpRequestMessage WozGetRequest(string ApiAction)
         {

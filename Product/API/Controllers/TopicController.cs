@@ -13,6 +13,9 @@ using Hangfire;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.Business;
 using UpDiddyLib.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Hosting.Internal;
+using System.IO;
 
 namespace UpDiddyApi.Controllers
 {
@@ -30,8 +33,7 @@ namespace UpDiddyApi.Controllers
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
-            _syslog = sysLog;
-         
+            _syslog = sysLog;         
         }
 
 
@@ -53,7 +55,7 @@ namespace UpDiddyApi.Controllers
                 .Where(t => t.IsDeleted == 0)
                 .ProjectTo<TopicDto>(_mapper.ConfigurationProvider)
                 .ToList();
-
+ 
             return Ok(rval);
         }
 

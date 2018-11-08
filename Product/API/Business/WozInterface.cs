@@ -29,8 +29,9 @@ namespace UpDiddyApi.Business
         {
             _db = context;
             _mapper = mapper;
-            _apiBaseUri = configuration["WozApiUrl"];
-            _accessToken = configuration["WozAccessToken"];
+            // TODO: CRITICAL, Azure Key Vault does NOT permit colons. See https://docs.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-2.1
+            _apiBaseUri = configuration["Woz:ApiUrl"];
+            _accessToken = configuration["Woz:AccessToken"];
             _syslog = sysLog;
         }
 
@@ -82,7 +83,7 @@ namespace UpDiddyApi.Business
                     return CreateResponse(string.Empty, "Student login found", StudentLogin.VendorLogin, TransactionState.Complete);
 
                 // Call Woz to register student
-                WozStudentDto Student = new WozStudentDto()
+                WozCreateStudentDto Student = new WozCreateStudentDto()
                 {
                     firstName = Enrollment.Subscriber.FirstName,
                     lastName = Enrollment.Subscriber.LastName,
@@ -422,8 +423,45 @@ namespace UpDiddyApi.Business
 
 
         #region Course Enrollment
+ 
+        public async Task<WozCourseProgress> GetCourseProgress(int SectionId, int WozEnrollmentId)
+        {
 
+            var Url = _apiBaseUri + $"sections/{SectionId}/enrollments/{WozEnrollmentId}";
 
+            HttpClient client = new HttpClient();
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Url);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            HttpResponseMessage response = await client.SendAsync(request);
+            var ResponseJson = await response.Content.ReadAsStringAsync();
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                string LetterGrade = WozO.progress.letterGrade;
+                string PercentageGrade = WozO.progress.percentageGrade;
+                string ActivitiesCompleted = WozO.progress.activitiesCompleted;
+                string ActivitiesTotal = WozO.progress.activitiesTotal;
+                int _StatusCode = (int)response.StatusCode;
+                WozCourseProgress CourseProgress = new WozCourseProgress()
+                {
+                    LetterGrade = LetterGrade,
+                    PercentageGrade = int.Parse(PercentageGrade),
+                    ActivitiesCompleted = int.Parse(ActivitiesCompleted),
+                    ActivitiesTotal = int.Parse(ActivitiesTotal),
+                    StatusCode = _StatusCode
+                };
+                return CourseProgress;
+            }
+            else
+            {
+                _syslog.SysError("WozInterface:GetCourseProgress Returned a status code of " + response.StatusCode.ToString());
+                _syslog.SysError("WozInterface:GetCourseProgress Url =  " + Url);
+                _syslog.SysError("WozInterface:GetCourseProgress AccessToken ends with  " + _accessToken.Substring( _accessToken.Length - 2));
+                return null;
+            }
+
+        }
+        
 
         public MessageTransactionResponse SaveWozCourseEnrollment(string EnrollmentGuid, WozCourseEnrollmentDto WozCourseEnrollmentDto)
         {
@@ -668,9 +706,6 @@ namespace UpDiddyApi.Business
         }
 
         #endregion
-
-
-
   
         #region Scheduled Tasks
         // TODO Add Logging 
@@ -678,9 +713,6 @@ namespace UpDiddyApi.Business
         {
             try
             {
-
-
-
                 _syslog.SysInfo($"ReconcileFutureEnrollment: Starting with EnrollmentGuid =  {EnrollmentGuid}");
                 // Get the Enrollment Object 
                 Enrollment Enrollment = _db.Enrollment
@@ -801,6 +833,8 @@ namespace UpDiddyApi.Business
 
 
         #endregion
+
+   
 
         #region Utility Functions
 

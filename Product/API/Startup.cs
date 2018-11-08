@@ -28,42 +28,26 @@ namespace UpDiddyApi
 
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
-
-
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                // Add in the azure vault entries 
-                .AddConfiguration(configuration);
+                .AddEnvironmentVariables();
 
-            builder.AddEnvironmentVariables();
-
-            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
+            // if environment is set to development then add user secrets
+            if (env.IsDevelopment())
             {
                 builder.AddUserSecrets<Startup>();
             }
 
-            Configuration = builder.Build();
-
-            // Rebuild the configuration now that have included user secrets 
-
-            var builder1 = new ConfigurationBuilder()
-                .AddConfiguration(configuration)
-                .AddAzureKeyVault(
-              Configuration["VaultUrl"],
-              Configuration["VaultClientId"],
-              Configuration["VaultClientSecret"]);
-
-
-            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
+            // if environment is set to staging or production then add vault keys
+            var config = builder.Build();
+            if(env.IsStaging() || env.IsProduction())
             {
-                builder1.AddUserSecrets<Startup>();
+                builder.AddAzureKeyVault(config["VaultUrl"], config["VaultClientId"], config["VaultClientSecret"]);
             }
 
-
-            Configuration = builder1.Build();
-
+            Configuration = builder.Build();
         }
 
         public IConfigurationRoot Configuration { get; set; }
@@ -101,18 +85,18 @@ namespace UpDiddyApi
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
 
             // Configure Hangfire 
-            var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"];
+            var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"]; 
             services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
             // Have the workflow monitor run every minute 
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
-            RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.ReconcileFutureEnrollments(), Cron.Daily);
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ReconcileFutureEnrollments(), Cron.Daily);              
 
             // PromoCodeRedemption cleanup
             int promoCodeRedemptionCleanupScheduleInMinutes = 5;
             int promoCodeRedemptionLookbackInMinutes = 30;
             int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
             int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
-            RecurringJob.AddOrUpdate<WorkFlowMonitor>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

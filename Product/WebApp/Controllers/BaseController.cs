@@ -62,7 +62,8 @@ namespace UpDiddy.Controllers
 
                 string SubscriberJson = "";
                 if(!HardRefresh)
-                    SubscriberJson = HttpContext.Session.GetString(Constants.SubsriberSessionKey);                
+                    SubscriberJson = HttpContext.Session.GetString(Constants.SubsriberSessionKey);   
+                
                 if ( String.IsNullOrEmpty(SubscriberJson)  )
                 {
                     this.subscriber = API.Subscriber(Guid.Parse(objectId));

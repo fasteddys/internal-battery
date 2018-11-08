@@ -96,6 +96,20 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+
+        [Authorize]
+        public IActionResult ProfileLogin()
+        {
+            GetSubscriber(true);
+            // UPdated the subscribers course progress 
+            if (this.subscriber != null)
+                API.UpdateStudentCourseProgress((Guid) this.subscriber.SubscriberGuid, true);
+ 
+            return RedirectToAction("Profile", "Home");
+        }
+
+
+
         [Authorize]
         public IActionResult Profile()
         {
@@ -110,28 +124,33 @@ namespace UpDiddy.Controllers
                 SubscriberState = API.GetSubscriberState(this.subscriber.StateId);
             }
             IList<WozCourseProgress> WozCourseProgressions = new List<WozCourseProgress>();
-            foreach (EnrollmentDto enrollment in CurrentEnrollments)
+            // JAB Added guard again having no enrollments 
+            if ( CurrentEnrollments != null )
             {
-                var studentLogin = API.StudentLogin(this.subscriber.SubscriberId);
-
-                try
+                foreach (EnrollmentDto enrollment in CurrentEnrollments)
                 {
-                    WozCourseProgress dto = new WozCourseProgress
+                    var studentLogin = API.StudentLogin(this.subscriber.SubscriberId);
+
+                    try
                     {
-                        CourseName = enrollment.Course.Name,
-                        CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl,
-                        PercentComplete = enrollment.PercentComplete,
-                        EnrollmentStatusId = enrollment.EnrollmentStatusId,
-                        DisplayState = enrollment.EnrollmentStatusId
-                    };
+                        WozCourseProgress dto = new WozCourseProgress
+                        {
+                            CourseName = enrollment.Course.Name,
+                            CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl,
+                            PercentComplete = enrollment.PercentComplete,
+                            EnrollmentStatusId = enrollment.EnrollmentStatusId,
+                            DisplayState = enrollment.EnrollmentStatusId
+                        };
 
-                    WozCourseProgressions.Add(dto);
-                }
-                catch (Exception e)
-                {
-                    // Wire up logging for controller exceptions.
+                        WozCourseProgressions.Add(dto);
+                    }
+                    catch (Exception e)
+                    {
+                        // Wire up logging for controller exceptions.
+                    }
                 }
             }
+            
             ProfileViewModel ProfileViewModel = new ProfileViewModel(
                 _configuration,
                 this.subscriber,
