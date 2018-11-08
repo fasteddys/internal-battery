@@ -423,12 +423,14 @@ namespace UpDiddyApi.Business
 
 
         #region Course Enrollment
-
+ 
         public async Task<WozCourseProgress> GetCourseProgress(int SectionId, int WozEnrollmentId)
         {
 
+            var Url = _apiBaseUri + $"sections/{SectionId}/enrollments/{WozEnrollmentId}";
+
             HttpClient client = new HttpClient();
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"sections/{SectionId}/enrollments/{WozEnrollmentId}");
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Url);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             HttpResponseMessage response = await client.SendAsync(request);
             var ResponseJson = await response.Content.ReadAsStringAsync();
@@ -452,6 +454,9 @@ namespace UpDiddyApi.Business
             }
             else
             {
+                _syslog.SysError("WozInterface:GetCourseProgress Returned a status code of " + response.StatusCode.ToString());
+                _syslog.SysError("WozInterface:GetCourseProgress Url =  " + Url);
+                _syslog.SysError("WozInterface:GetCourseProgress AccessToken ends with  " + _accessToken.Substring( _accessToken.Length - 2));
                 return null;
             }
 
