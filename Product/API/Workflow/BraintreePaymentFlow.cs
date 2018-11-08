@@ -47,6 +47,7 @@ namespace UpDiddyApi.Workflow
             // Extract the two DTOs from the DTO that's passed in.
             BraintreePaymentDto BraintreePaymentDto = null;
             EnrollmentDto EnrollmentDto = null;
+            SubscriberDto SubscriberDto = null;
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             string ErrorsEmailAddress = _configuration["EmailAddresses:Errors"];
 
@@ -60,10 +61,11 @@ namespace UpDiddyApi.Workflow
             {
                 BraintreePaymentDto = EnrollmentFlowDto.BraintreePaymentDto;
                 EnrollmentDto = EnrollmentFlowDto.EnrollmentDto;
+                SubscriberDto = EnrollmentFlowDto.SubscriberDto;
             }
             catch (Exception e)
             {
-                string ErrorMessage = "BraintreePaymentFlow:PaymentWorkItem -> No Braintree or enrollment dto present; enrollment has been cancelled.";
+                string ErrorMessage = "BraintreePaymentFlow:PaymentWorkItem -> No Braintree, subscriber or enrollment dto present; enrollment has been cancelled.";
                 _sysLog.SysError(ErrorMessage);
                 _sysEmail.SendEmail(ErrorsEmailAddress, "An error has occurred in the enrollment flow", CreateErrorEmail(ErrorMessage, EnrollmentFlowDto));
                 Helper.UpdateEnrollmentStatus(EnrollmentDto.EnrollmentGuid.ToString(), UpDiddyLib.Dto.EnrollmentStatus.PaymentError);
@@ -112,6 +114,9 @@ namespace UpDiddyApi.Workflow
                 {
                     string SuccessfulMessage = "BraintreePaymentFlow:PaymentWorkItem->Braintree payment was successfull.";
                     _sysLog.SysInfo(SuccessfulMessage);
+                    Course course = _db.Course.Where(t => t.IsDeleted == 0 && t.CourseId == EnrollmentDto.CourseId).FirstOrDefault();
+                    EnrollmentLog enrollmentLog = _db.EnrollmentLog.Where(t => t.IsDeleted == 0 && t.EnrollmentGuid == EnrollmentDto.EnrollmentGuid).FirstOrDefault();
+                    _sysEmail.SendPurchaseReceiptEmail(SubscriberDto.Email, "Purchase Receipt For CareerCircle Course", course.Name, enrollmentLog.CourseCost, enrollmentLog.PromoApplied);
                     SetSelfPacedOrInstructorLedStatus(Helper, EnrollmentDto);
                     BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString()));
                     return CreateResponse(CreateResponseJson(SuccessfulMessage), SuccessfulMessage, string.Empty, TransactionState.Complete);

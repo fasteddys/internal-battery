@@ -179,6 +179,21 @@ namespace UpDiddyApi.Controllers
                 return Ok(courseVariant.Price.ToString());
 
         }
+
+        [HttpGet]
+        [Route("api/[controller]/CourseId/{CourseId}")]
+        public IActionResult GetCourseById(int CourseId)
+        {
+
+            Course course = _db.Course
+                .Where(t => t.IsDeleted == 0 && t.CourseId == CourseId)
+                .FirstOrDefault();
+
+            if (course == null)
+                return NotFound();
+            return Ok(_mapper.Map<CourseDto>(course));
+        }
+
     }
 
 }
