@@ -29,8 +29,9 @@ namespace UpDiddyApi.Business
         {
             _db = context;
             _mapper = mapper;
-            _apiBaseUri = configuration["WozApiUrl"];
-            _accessToken = configuration["WozAccessToken"];
+            // TODO: CRITICAL, Azure Key Vault does NOT permit colons. See https://docs.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-2.1
+            _apiBaseUri = configuration["Woz:ApiUrl"];
+            _accessToken = configuration["Woz:AccessToken"];
             _syslog = sysLog;
         }
 
