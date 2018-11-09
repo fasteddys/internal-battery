@@ -106,9 +106,9 @@ namespace UpDiddy.Api
             return Get<PromoCodeDto>("promocode/promocoderedemptionvalidation/" + promoCodeRedemptionGuid + "/" + courseGuid + "/" + subscriberGuid, true);
         }
 
-        public PromoCodeDto PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
+        public PromoCodeDto PromoCodeValidation(string code, string courseVariantGuid, string subscriberGuid)
         {
-            return Get<PromoCodeDto>("promocode/" + code + "/" + courseGuid + "/" + subscriberGuid, true);
+            return Get<PromoCodeDto>("promocode/" + code + "/" + courseVariantGuid + "/" + subscriberGuid, true);
         }
 
         public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
@@ -118,6 +118,10 @@ namespace UpDiddy.Api
         public IList<CountryDto> GetCountries()
         {
             return Get<IList<CountryDto>>("profile/GetCountries", false);
+        }
+        public IList<StateDto> GetStatesByCountry(Guid countryGuid)
+        {
+            return Get<IList<StateDto>>("profile/GetStatesByCountry/" + countryGuid.ToString(), false);
         }
         public IList<CountryStateDto> GetCountryStateList()
         {

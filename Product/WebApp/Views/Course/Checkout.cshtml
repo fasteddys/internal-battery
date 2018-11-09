@@ -2,34 +2,12 @@
 @using UpDiddyLib.Dto
 @using UpDiddyLib.Helpers;
 @using System.Collections;
-@model CourseViewModel
-@{
-    List<CountryDto> countries = Model.CountryStateMapping.Keys.ToList();
-    //countries.Sort();
-    //countries.Remove("US");
-    //countries.Insert(0, "US");
-}
+@model CourseViewModel 
 <script type="text/javascript">
-
-    var locationsList = {};
-    @foreach (CountryDto country in Model.CountryStateMapping.Keys)
-    {
-        <text>
-            var states = [];
-        </text>
-        foreach (StateDto state in Model.CountryStateMapping[country])
-        {
-            <text>
-                states.push({"id" : "@state.StateId", "name" : "@state.Name"});
-            </text>
-        }
-        <text>
-            locationsList["@country.Code3"] = states;
-        </text>
-    }
-
+    
+        var url = '@Url.Action("GetStatesByCountry", "Course")';
+    
 </script>
-
 <div class="checkout-page-container">
     <div class="row checkout-topic-detail-band">
         <div class="col-md-12">
@@ -56,7 +34,6 @@
                             <input type="hidden" id="CourseSlug" value="@Model.Course.Slug" asp-for="Course.Slug" />
                             <input type="hidden" id="BraintreeNonce" name="payment_method_nonce" asp-for="PaymentMethodNonce" />
                             <input type="hidden" id="CourseGuid" name="CourseGuid" value="@Model.Course.CourseGuid" />
-                            <input type="hidden" id="SubscriberGuid" name="SubscriberGuid" value="@Model.Subscriber.SubscriberGuid" />
                             <input type="hidden" id="PromoCodeRedemptionGuid" asp-for="PromoCodeRedemptionGuid" />
 
                             <div class="form-row">
@@ -107,10 +84,10 @@
                                             <div class="billing-info-header"><h3>Your Information</h3></div>
                                         </div>
                                         <div class="form-group col-md-3">
-                                            <input type="text" class="form-control" name="SubscriberFirstName" id="SubscriberFirstName" asp-for="Subscriber.FirstName" placeholder="First Name" required>
+                                            <input type="text" class="form-control" name="SubscriberFirstName" id="SubscriberFirstName" asp-for="SubscriberFirstName" placeholder="First Name" required>
                                         </div>
                                         <div class="form-group col-md-3">
-                                            <input type="text" class="form-control" name="SubscriberLastName" id="SubscriberLastName" asp-for="Subscriber.LastName" placeholder="Last Name" required>
+                                            <input type="text" class="form-control" name="SubscriberLastName" id="SubscriberLastName" asp-for="SubscriberLastName" placeholder="Last Name" required>
                                         </div>
                                     </div>
                                     <div class="form-row billing-info-container">
@@ -138,27 +115,10 @@
                                             <input type="text" class="form-control" name="BillingZipCode" id="BillingZipCode" asp-for="BillingZipCode" placeholder="Zip Code" required>
                                         </div>
                                         <div class="form-group col-md-3">
-                                            <select class="form-control country-select" id="BillingCountry" name="BillingCountry" asp-for="BillingCountry" required>
-                                                @{
-                                                    bool isFirst = true;
-                                                    foreach (CountryDto country in countries)
-                                                    {
-
-                                                        if (country.DisplayName.Equals("USA"))
-                                                        {
-                                                            <option value="@country.Code3" selected="selected">@country.DisplayName</option>
-                                                        }
-                                                        else
-                                                        {
-                                                            <option value="@country.Code3">@country.DisplayName</option>
-                                                        }
-                                                        isFirst = false;
-                                                    }
-                                                }
-                                            </select>
+                                            @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "---", new { @class = "form-control country-select" })
                                         </div>
                                         <div class="form-group col-md-3">
-                                            <select class="form-control state-select" id="BillingState" name="BillingState" asp-for="BillingState" required></select>
+                                            @Html.DropDownListFor(m => m.SelectedState, Model.States, "---", new { @class = "form-control state-select" })
                                         </div>
                                     </div>
                                     <div class="form-row" id="BraintreePaymentContainer">
@@ -269,23 +229,5 @@
                  form.submit();
             });
         });
-    });
-</script>
-<script>
-    @{
-
-            <text>
-            var dropdown = document.getElementById("BillingState");
-            var country = "US";
-            var states = locationsList[country];
-            for (i = 0; i < states.length; i++)
-            {
-                var option = document.createElement("option");
-                option.text = states[i].name;
-                option.value = states[i].id;
-                dropdown.appendChild(option);
-            }
-            </text>
-
-    }
+        });
 </script>

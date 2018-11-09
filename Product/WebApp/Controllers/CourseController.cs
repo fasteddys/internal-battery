@@ -52,6 +52,22 @@ namespace UpDiddy.Controllers
         {
             return Ok(Json(API.GetCountries()));
         }
+        [HttpGet]
+        public IActionResult GetStatesByCountry(Guid countryGuid)
+        {
+            return Ok(Json(API.GetStatesByCountry(countryGuid)));
+        }
+
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Route("/Course/PromoCodeValidation/{code}/{courseVariantGuid}/{subscriberGuid}")]
+        public IActionResult PromoCodeValidation(string code, string courseVariantGuid, string subscriberGuid)
+        {
+            PromoCodeDto promoCodeDto = API.PromoCodeValidation(code, courseVariantGuid, subscriberGuid);
+            return new ObjectResult(promoCodeDto);
+        }
+
 
         [Authorize]
         [HttpGet]
@@ -90,62 +106,66 @@ namespace UpDiddy.Controllers
                 CourseGuid = course.CourseGuid.Value,
                 CourseVariants = courseVariantViewModels,
                 Course = course, // remove this and replace with only the properties we need to display
-                Subscriber = this.subscriber
+
+                SubscriberFirstName = this.subscriber.FirstName,
+                SubscriberLastName = this.subscriber.LastName,
+                SubscriberGuid = this.subscriber.SubscriberGuid.Value,
+
+
+                Countries = API.GetCountries().Select(c => new SelectListItem()
+                {
+                    Text = c.DisplayName,
+                    Value = c.CountryGuid.ToString()
+                }),
+
+                States = new List<StateViewModel>().Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.StateGuid.ToString()
+                })
             };
 
             return View("Checkout", courseViewModel);
         }
 
-        [ValidateAntiForgeryToken]
         [HttpPost]
-        [Route("/Course/PromoCodeValidation/{code}/{courseGuid}/{subscriberGuid}")]
-        public IActionResult PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
-        {
-            PromoCodeDto promoCodeDto = API.PromoCodeValidation(code, courseGuid, subscriberGuid);
-            return new ObjectResult(promoCodeDto);
-        }
-
-        [HttpPost]
-        public IActionResult Checkout(
-            int TermsOfServiceDocId,
-            string CourseSlug,
-            Boolean SameAsAboveCheckbox,
-            string BillingFirstName,
-            string BillingLastName,
-            string BillingZipCode,
-            string BillingState,
-            string BillingCity,
-            string BillingCountry,
-            string BillingAddress,
-            Guid? PromoCodeRedemptionGuid,
-            string sectionSelectionRadios,
-            Int64 DateOfInstructorLedSection,
-            string SubscriberFirstName,
-            string SubscriberLastName)
+        public IActionResult Checkout(CourseViewModel courseViewModel)
         {
             GetSubscriber(false);
 
             // update the subscriber's first name and last name if they do not exist (or if the values are different than what is stored currently). 
             // we must do this here because first and last name are required for the enrollment process for Woz. 
             // todo: refactor this; consider creating a partial view that is shared between the profile page, checkout, and anywhere else where we need to work with the subscriber
-            if (this.subscriber.FirstName == null || !this.subscriber.FirstName.Equals(SubscriberFirstName) || this.subscriber.LastName == null || !this.subscriber.LastName.Equals(SubscriberLastName))
+            if (this.subscriber.FirstName == null || !this.subscriber.FirstName.Equals(courseViewModel.SubscriberFirstName)
+                || this.subscriber.LastName == null || !this.subscriber.LastName.Equals(courseViewModel.SubscriberLastName))
             {
                 API.UpdateProfileInformation(new SubscriberDto()
                 {
-                    SubscriberGuid = this.subscriber.SubscriberGuid,
-                    FirstName = SubscriberFirstName,
-                    LastName = SubscriberLastName
+                    SubscriberGuid = courseViewModel.SubscriberGuid,
+                    FirstName = courseViewModel.SubscriberFirstName,
+                    LastName = courseViewModel.SubscriberLastName
                 });
             }
 
             DateTime currentDate = DateTime.UtcNow;
-            CourseDto Course = API.Course(CourseSlug);
-            WozCourseScheduleDto wcsdto = API.CourseSchedule(Course.Code, (Guid)Course.CourseGuid);
-            TopicDto ParentTopic = API.TopicById(Course.TopicId);
-            WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
-            IList<CountryStateDto> CountryStateList = API.GetCountryStateList();
-            //CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, CountryStateList, WozTOS, wcsdto);
-            CourseViewModel CourseViewModel = null;
+            CourseDto Course = API.Course(courseViewModel.Course.Slug);
+
+            // use course variant type to infer enrollment status and start date
+            int enrollmentStatusId = 0;
+            long? sectionStartTimestamp = null;
+            switch (courseViewModel.SelectedCourseVariant.CourseVariantType)
+            {
+                case "Instructor-Led":
+                    enrollmentStatusId = (int)EnrollmentStatus.FutureRegisterStudentRequested;
+                    if (courseViewModel.SelectedCourseVariant.SelectedStartDate.HasValue)
+                        sectionStartTimestamp = Utils.ToWozTime(courseViewModel.SelectedCourseVariant.SelectedStartDate.Value);
+                    break;
+                case "Self-Paced":
+                    enrollmentStatusId = (int)EnrollmentStatus.RegisterStudentRequested;
+                    break;
+                default:
+                    throw new ApplicationException("Unrecognized course variant; cannot determine enrollment status!");
+            }
 
             EnrollmentDto enrollmentDto = new EnrollmentDto
             {
@@ -160,9 +180,9 @@ namespace UpDiddy.Controllers
                 PricePaid = 0, // replace with course variant price - was: (decimal)Course.Price,
                 PercentComplete = 0,
                 IsRetake = 0, //TODO Make this check DB for existing entry=
-                EnrollmentStatusId = sectionSelectionRadios == "instructorLed" ? (int)EnrollmentStatus.FutureRegisterStudentRequested : (int)EnrollmentStatus.EnrollStudentRequested,
-                SectionStartTimestamp = sectionSelectionRadios == "instructorLed" ? DateOfInstructorLedSection : 0,
-                TermsOfServiceFlag = TermsOfServiceDocId,
+                EnrollmentStatusId = enrollmentStatusId,
+                SectionStartTimestamp = sectionStartTimestamp,
+                TermsOfServiceFlag = courseViewModel.TermsOfServiceDocumentId,
                 Subscriber = this.subscriber
                 // todo: refactor course variant code in model, dto, viewmodel, and ui. it hurts my soul to leave it in this state but there is literally no time
                 //CourseVariantId = (sectionSelectionRadios == "instructorLed") ? CourseViewModel.InstructorLedCourseVariantId : CourseViewModel.SelfPacedCourseVariantId
@@ -170,12 +190,12 @@ namespace UpDiddy.Controllers
 
             PromoCodeDto validPromoCode = null;
             // validate, consume, and apply promo code redemption 
-            if (PromoCodeRedemptionGuid.HasValue && PromoCodeRedemptionGuid.Value != Guid.Empty)
+            if (courseViewModel.PromoCodeRedemptionGuid.HasValue && courseViewModel.PromoCodeRedemptionGuid.Value != Guid.Empty)
             {
-                validPromoCode = API.PromoCodeRedemptionValidation(PromoCodeRedemptionGuid.Value.ToString(), Course.CourseGuid.Value.ToString(), this.subscriber.SubscriberGuid.Value.ToString());
+                validPromoCode = API.PromoCodeRedemptionValidation(courseViewModel.PromoCodeRedemptionGuid.Value.ToString(), Course.CourseGuid.Value.ToString(), this.subscriber.SubscriberGuid.Value.ToString());
 
                 if (validPromoCode == null)
-                    return View("EnrollmentFailure", CourseViewModel);
+                    return View("EnrollmentFailure", courseViewModel);
                 else
                 {
                     enrollmentDto.PricePaid -= validPromoCode.Discount;
@@ -191,15 +211,15 @@ namespace UpDiddy.Controllers
                 {
                     PaymentAmount = enrollmentDto.PricePaid,
                     Nonce = Request.Form["payment_method_nonce"],
-                    FirstName = BillingFirstName,
-                    LastName = BillingLastName,
+                    FirstName = courseViewModel.BillingFirstName,
+                    LastName = courseViewModel.BillingLastName,
                     PhoneNumber = this.subscriber.PhoneNumber,
                     Email = this.subscriber.Email,
-                    Address = BillingAddress,
-                    Region = BillingState,
-                    Locality = BillingCity,
-                    ZipCode = BillingZipCode,
-                    CountryCode = BillingCountry,
+                    Address = courseViewModel.BillingAddress,
+                    Region = courseViewModel.BillingState,
+                    Locality = courseViewModel.BillingCity,
+                    ZipCode = courseViewModel.BillingZipCode,
+                    CountryCode = courseViewModel.BillingCountry,
                     MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID")
                 };
                 BraintreeResponseDto brdto = API.SubmitBraintreePayment(BraintreePaymentDto);
@@ -207,18 +227,18 @@ namespace UpDiddy.Controllers
                 if (brdto.WasSuccessful)
                 {
                     API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
-                    return View("EnrollmentSuccess", CourseViewModel);
+                    return View("EnrollmentSuccess", courseViewModel);
                 }
                 else
                 {
-                    return View("EnrollmentFailure", CourseViewModel);
+                    return View("EnrollmentFailure", courseViewModel);
                 }
             }
             else
             {
                 // course is free with promo code
                 API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
-                return View("EnrollmentSuccess", CourseViewModel);
+                return View("EnrollmentSuccess", courseViewModel);
             }
             // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method
         }

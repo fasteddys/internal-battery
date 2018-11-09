@@ -96,6 +96,7 @@ namespace UpDiddyApi.Controllers
 
         }
 
+        // should we have a "utility" or "shared" API controller for things like this?
         [HttpGet]
         [Route("api/[controller]/GetCountries")]
         public IActionResult GetCountries()
@@ -123,6 +124,7 @@ namespace UpDiddyApi.Controllers
             return Ok(states);
         }
 
+        // todo: mark this as obsolete or delete it once everything is using the methods above
         [HttpGet]
         [Route("api/[controller]/LocationList")]
         public IActionResult LocationList()

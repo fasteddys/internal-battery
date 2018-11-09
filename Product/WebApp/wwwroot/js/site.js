@@ -1,5 +1,29 @@
 ﻿
 $(document).ready(function () {
+
+
+    $('#SelectedCountry').change(function () {
+        var selectedCountry = $("#SelectedCountry").val();
+        var stateSelect = $('#SelectedState');
+        stateSelect.empty();
+        if (selectedCountry != null && selectedCountry != '') {
+            $.getJSON(url, { countryGuid: selectedCountry }, function (states) {
+                if (states != null && !jQuery.isEmptyObject(states)) {
+                    stateSelect.append($('<option/>', {
+                        value: null,
+                        text: "---"
+                    }));
+                    $.each(states.value, function (index, state) {
+                        stateSelect.append($('<option/>', {
+                            value: state.code,
+                            text: state.name
+                        }));
+                    });
+                };
+            });
+        }
+    });
+
     $("#SameAsAboveCheckbox").change(function () {
         if (this.checked) {
             $('.billing-info-container').hide();
@@ -82,7 +106,7 @@ $(document).ready(function () {
         $(progressBar).animate({ width: newWidth });
     });
 
-
+ 
 
     $('#PromoCodeApplyButton').on('click', function () {
         var _promoCode = $('#PromoCodeInput').val();
@@ -130,40 +154,6 @@ $(document).ready(function () {
             $('#ValidationMessageError').show();
         }
     });
-
-    $('.selection-radios-container input').change(function () {
-        if ($('#InstructorLedRadio').is(':checked')) {
-            $('#InstructorLedInputField').prop('disabled', false);;
-        }
-        else {
-            $('#InstructorLedInputField').prop('disabled', true);;
-        }
-    });
-
-    $('.selection-radios-container input').change(function () {
-        if ($(this).attr('id') === "InstructorLedRadio" && $(this).is(':checked')) {
-            $('#CourseTotal').html(instructorLedPrice);
-            $('#InitialCoursePrice').html(instructorLedPrice);
-        }
-        else if ($(this).attr('id') === "SelfPacedRadio" && $(this).is(':checked')) {
-            $('#CourseTotal').html(selfPacedPrice);
-            $('#InitialCoursePrice').html(selfPacedPrice);
-        }
-    });
-
-    $('.country-select').change(function () {
-        var country = $(this).val();
-        var states = locationsList[country];
-        $(".state-select").html("");
-        for (i = 0; i < states.length; i++) {
-            $('<option>').val(states[i].id).text(states[i].name).appendTo('.state-select');
-        }
-    });
-
-    $('#UpdatedStateInput').change(function () {
-        $('#UpdatedState').val($(this).val());
-    });
-
 });
 
 
