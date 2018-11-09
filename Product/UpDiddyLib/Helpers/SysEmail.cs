@@ -33,7 +33,7 @@ namespace UpDiddyLib.Helpers
             return true;
         }
         
-        public async void SendPurchaseReceiptEmail(string email, string subject, string courseName, decimal courseCost, decimal promoApplied)
+        public async void SendPurchaseReceiptEmail(string email, string subject, string courseName, decimal courseCost, decimal promoApplied, Guid enrollmentGuid)
         {
             var client = new SendGridClient(_apiKey);
             var message = new SendGridMessage();
@@ -47,7 +47,8 @@ namespace UpDiddyLib.Helpers
                 Course_Name = courseName,
                 Course_Price = courseCost.ToString(),
                 Discount = promoApplied.ToString(),
-                Final_Price = (courseCost - promoApplied).ToString()
+                Final_Price = (courseCost - promoApplied).ToString(),
+                Enrollment_Guid = enrollmentGuid.ToString()
             };
             message.SetTemplateData(purchaseReceipt);
             var response = await client.SendEmailAsync(message);
@@ -76,6 +77,9 @@ namespace UpDiddyLib.Helpers
 
             [JsonProperty("final_price")]
             public string Final_Price { get; set; }
+
+            [JsonProperty("enrollment_guid")]
+            public string Enrollment_Guid { get; set; }
         }
         #endregion
     }

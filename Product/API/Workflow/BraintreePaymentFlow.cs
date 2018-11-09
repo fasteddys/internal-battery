@@ -116,7 +116,7 @@ namespace UpDiddyApi.Workflow
                     _sysLog.SysInfo(SuccessfulMessage);
                     Course course = _db.Course.Where(t => t.IsDeleted == 0 && t.CourseId == EnrollmentDto.CourseId).FirstOrDefault();
                     EnrollmentLog enrollmentLog = _db.EnrollmentLog.Where(t => t.IsDeleted == 0 && t.EnrollmentGuid == EnrollmentDto.EnrollmentGuid).FirstOrDefault();
-                    _sysEmail.SendPurchaseReceiptEmail(SubscriberDto.Email, "Purchase Receipt For CareerCircle Course", course.Name, enrollmentLog.CourseCost, enrollmentLog.PromoApplied);
+                    _sysEmail.SendPurchaseReceiptEmail(SubscriberDto.Email, "Purchase Receipt For CareerCircle Course", course.Name, enrollmentLog.CourseCost, enrollmentLog.PromoApplied, (Guid)EnrollmentDto.EnrollmentGuid);
                     SetSelfPacedOrInstructorLedStatus(Helper, EnrollmentDto);
                     BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString()));
                     return CreateResponse(CreateResponseJson(SuccessfulMessage), SuccessfulMessage, string.Empty, TransactionState.Complete);
