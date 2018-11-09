@@ -11,8 +11,9 @@ namespace UpDiddy.Api
 {
     public class ApiUpdiddy : ApiHelperMsal
     {
-    
-        public ApiUpdiddy(AzureAdB2COptions Options, HttpContext Context, IConfiguration conifguration) {
+
+        public ApiUpdiddy(AzureAdB2COptions Options, HttpContext Context, IConfiguration conifguration)
+        {
 
             AzureOptions = Options;
             HttpContext = Context;
@@ -61,7 +62,7 @@ namespace UpDiddy.Api
 
         public SubscriberDto Subscriber(Guid SubscriberGuid)
         {
-            return Get<SubscriberDto>("subscriber/" + SubscriberGuid,true);
+            return Get<SubscriberDto>("subscriber/" + SubscriberGuid, true);
         }
 
         public WozTermsOfServiceDto GetWozTermsOfService()
@@ -96,8 +97,8 @@ namespace UpDiddy.Api
 
             };
 
-            string jsonToSend = JsonConvert.SerializeObject(SDto);  
-            return Post<SubscriberDto>(SDto, "subscriber/createsubscriber",true);
+            string jsonToSend = JsonConvert.SerializeObject(SDto);
+            return Post<SubscriberDto>(SDto, "subscriber/createsubscriber", true);
         }
 
         public PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid, string subscriberGuid)
@@ -114,7 +115,10 @@ namespace UpDiddy.Api
         {
             return Post<BasicResponseDto>(Subscriber, "profile/update", false);
         }
-
+        public IList<CountryDto> GetCountries()
+        {
+            return Get<IList<CountryDto>>("profile/GetCountries", false);
+        }
         public IList<CountryStateDto> GetCountryStateList()
         {
             return Get<IList<CountryStateDto>>("profile/LocationList", false);
@@ -122,14 +126,14 @@ namespace UpDiddy.Api
 
         public IList<EnrollmentDto> GetCurrentEnrollmentsForSubscriber(SubscriberDto Subscriber)
         {
-            return Get<IList<EnrollmentDto>>("enrollment/CurrentEnrollments/" + Subscriber.SubscriberId, true); 
+            return Get<IList<EnrollmentDto>>("enrollment/CurrentEnrollments/" + Subscriber.SubscriberId, true);
         }
 
         public WozCourseProgress GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)
         {
             return Get<WozCourseProgress>("woz/CourseStatus/" + SubscriberGuid + "/" + EnrollmentGuid, false);
         }
-        
+
         public CountryDto GetSubscriberCountry(int StateId)
         {
             return Get<CountryDto>("subscriber/CountryFromState/" + StateId, true);

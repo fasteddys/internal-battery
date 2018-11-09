@@ -68,7 +68,7 @@ namespace UpDiddyApi.Controllers
                  */
                 DateTime currentDate = DateTime.UtcNow;
                 var course = _db.Course.Where(c => c.CourseId == EnrollmentDto.CourseId).FirstOrDefault();
-                var vendor = _db.Vendor.Where(v => v.VendorId == course.VendorId.Value).FirstOrDefault(); // why is vendor id nullable on course?
+                var vendor = _db.Vendor.Where(v => v.VendorId == course.VendorId).FirstOrDefault(); // why is vendor id nullable on course?
                 var courseVariant = _db.CourseVariant.Where(cv => cv.CourseVariantId == EnrollmentDto.CourseVariantId).FirstOrDefault();
                 var promoCodeRedemption = _db.PromoCodeRedemption
                     .Include(pcr => pcr.RedemptionStatus)

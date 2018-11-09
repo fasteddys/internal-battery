@@ -11,6 +11,8 @@ using UpDiddyLib.Helpers;
 using Braintree;
 using System.Text;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -45,6 +47,11 @@ namespace UpDiddy.Controllers
         {
             return View();
         }
+        [HttpGet]
+        public IActionResult GetCountries()
+        {
+            return Ok(Json(API.GetCountries()));
+        }
 
         [Authorize]
         [HttpGet]
@@ -54,16 +61,39 @@ namespace UpDiddy.Controllers
 
             GetSubscriber(false);
 
-            CourseDto Course = API.Course(CourseSlug);
-            WozCourseScheduleDto CourseScheduleDto = API.CourseSchedule(Course.Code, (Guid)Course.CourseGuid);
-            TopicDto ParentTopic = API.TopicById(Course.TopicId);
-            WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
-            IList<CountryStateDto> CountryStateList = API.GetCountryStateList();
-            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, CountryStateList, WozTOS, CourseScheduleDto);
+            // todo: this should not be done in the constructor of the view model
+            //this.CountryStateMapping = Utils.InitializeCountryStateMapping(CountryStateList);
+            //IList<CountryStateDto> CountryStateList = API.GetCountryStateList();
+
             var gateway = braintreeConfiguration.GetGateway();
             var clientToken = gateway.ClientToken.Generate();
             ViewBag.ClientToken = clientToken;
-            return View("Checkout", CourseViewModel);
+            var course = API.Course(CourseSlug);
+
+            var courseVariantViewModels = course.CourseVariants.Select(dto => new CourseVariantViewModel()
+            {
+                CourseVariantGuid = dto.CourseVariantGuid,
+                CourseVariantType = dto.CourseVariantType.Name,
+                Price = dto.Price,
+                StartDates = dto.StartDateUTCs?.Select(i => new SelectListItem()
+                {
+                    Text = i.ToShortDateString(),
+                    Value = i.ToString()
+                })
+            });
+
+            CourseViewModel courseViewModel = new CourseViewModel()
+            {
+                Name = course.Name,
+                Description = course.Description,
+                Code = course.Code,
+                CourseGuid = course.CourseGuid.Value,
+                CourseVariants = courseVariantViewModels,
+                Course = course, // remove this and replace with only the properties we need to display
+                Subscriber = this.subscriber
+            };
+
+            return View("Checkout", courseViewModel);
         }
 
         [ValidateAntiForgeryToken]
@@ -114,7 +144,8 @@ namespace UpDiddy.Controllers
             TopicDto ParentTopic = API.TopicById(Course.TopicId);
             WozTermsOfServiceDto WozTOS = API.GetWozTermsOfService();
             IList<CountryStateDto> CountryStateList = API.GetCountryStateList();
-            CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, CountryStateList, WozTOS, wcsdto);
+            //CourseViewModel CourseViewModel = new CourseViewModel(_configuration, Course, this.subscriber, ParentTopic, CountryStateList, WozTOS, wcsdto);
+            CourseViewModel CourseViewModel = null;
 
             EnrollmentDto enrollmentDto = new EnrollmentDto
             {
@@ -126,15 +157,15 @@ namespace UpDiddy.Controllers
                 CourseId = Course.CourseId,
                 EnrollmentGuid = Guid.NewGuid(),
                 SubscriberId = this.subscriber.SubscriberId,
-                PricePaid = (decimal)Course.Price,
+                PricePaid = 0, // replace with course variant price - was: (decimal)Course.Price,
                 PercentComplete = 0,
                 IsRetake = 0, //TODO Make this check DB for existing entry=
                 EnrollmentStatusId = sectionSelectionRadios == "instructorLed" ? (int)EnrollmentStatus.FutureRegisterStudentRequested : (int)EnrollmentStatus.EnrollStudentRequested,
                 SectionStartTimestamp = sectionSelectionRadios == "instructorLed" ? DateOfInstructorLedSection : 0,
-                TermsOfServiceFlag = TermsOfServiceDocId ,
-                Subscriber = this.subscriber,
+                TermsOfServiceFlag = TermsOfServiceDocId,
+                Subscriber = this.subscriber
                 // todo: refactor course variant code in model, dto, viewmodel, and ui. it hurts my soul to leave it in this state but there is literally no time
-                 CourseVariantId = (sectionSelectionRadios == "instructorLed") ? CourseViewModel.InstructorLedCourseVariantId : CourseViewModel.SelfPacedCourseVariantId
+                //CourseVariantId = (sectionSelectionRadios == "instructorLed") ? CourseViewModel.InstructorLedCourseVariantId : CourseViewModel.SelfPacedCourseVariantId
             };
 
             PromoCodeDto validPromoCode = null;
@@ -155,7 +186,7 @@ namespace UpDiddy.Controllers
             // process payment if price is not zero
             if (enrollmentDto.PricePaid != 0)
             {
-                
+
                 BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
                 {
                     PaymentAmount = enrollmentDto.PricePaid,
@@ -172,7 +203,7 @@ namespace UpDiddy.Controllers
                     MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID")
                 };
                 BraintreeResponseDto brdto = API.SubmitBraintreePayment(BraintreePaymentDto);
-                
+
                 if (brdto.WasSuccessful)
                 {
                     API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
@@ -191,7 +222,6 @@ namespace UpDiddy.Controllers
             }
             // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method
         }
-
 
         public IActionResult EnrollmentSuccess()
         {

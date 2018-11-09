@@ -25,12 +25,17 @@ namespace UpDiddyLib.Helpers
             return regex.Replace(Str.Trim(), " ");
 
         }
-
-        static public DateTime UnixMillisecondsToLocalDatetime(long Milliseconds)
+        public static DateTime FromWozTime(long wozTime)
         {
-            DateTimeOffset DatTimeOff = DateTimeOffset.FromUnixTimeMilliseconds(Milliseconds).ToLocalTime();
-            return DatTimeOff.DateTime;
+            return epoch.AddMilliseconds(wozTime);
         }
+
+        public static long ToWozTime(DateTime dateTime)
+        {
+            return (long)(dateTime - epoch).TotalMilliseconds;
+        }
+
+        private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         static public long CurrentTimeInUnixMilliseconds()
         {
@@ -62,7 +67,7 @@ namespace UpDiddyLib.Helpers
             CountryDto previousCountry = new CountryDto
             {
                 DisplayName = countryStateDto.DisplayName,
-                Code2 = countryStateDto.Code2,
+                //Code2 = countryStateDto.Code2,
                 Code3 = countryStateDto.Code3
             };
             List<StateDto> states = new List<StateDto>();
@@ -76,13 +81,13 @@ namespace UpDiddyLib.Helpers
                     previousCountry = new CountryDto
                     {
                         DisplayName = csdto.DisplayName,
-                        Code2 = csdto.Code2,
+                        //Code2 = csdto.Code2,
                         Code3 = csdto.Code3
                     };
                     states.Add(new StateDto
                     {
                         Name = csdto.Name,
-                        StateId = csdto.StateId
+                        StateGuid = null
                     });
                 }
                 else
@@ -90,7 +95,7 @@ namespace UpDiddyLib.Helpers
                     states.Add(new StateDto
                     {
                         Name = csdto.Name,
-                        StateId = csdto.StateId
+                        StateGuid = null
                     });
                 }
             }

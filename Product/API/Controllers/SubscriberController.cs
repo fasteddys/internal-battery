@@ -137,7 +137,5 @@ namespace UpDiddyApi.Controllers
 
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
         }
-
-
     }
 }

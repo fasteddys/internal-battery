@@ -69,11 +69,9 @@ namespace UpDiddyApi.Controllers
             return Ok(ResponseJson);
 
         }
-
-
-
-
-
+       
+               
+        // mark this as obsolete?
         [HttpGet]
         // TODO Authorize [Authorize]
         // TODO Cache to every 10 minutes 
@@ -109,7 +107,8 @@ namespace UpDiddyApi.Controllers
             List<Tuple<int, string, Decimal>> VarToPrice = new List<Tuple<int, string, decimal>>();
             foreach (CourseVariantDto variant in Variants)
             {
-                VarToPrice.Add(new Tuple<int, string, Decimal>(variant.CourseVariantId, variant.VariantType, variant.Price));
+                // todo: well, this is broken now
+               // VarToPrice.Add(new Tuple<int, string, Decimal>(variant.CourseVariantId, variant.VariantType, variant.Price));
             }
 
             WozCourseScheduleDto CourseSchedule = new WozCourseScheduleDto();

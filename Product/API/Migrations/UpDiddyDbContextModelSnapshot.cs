@@ -331,11 +331,13 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int?>("TopicId");
 
-                    b.Property<int?>("VendorId");
+                    b.Property<int>("VendorId");
 
                     b.Property<string>("VideoUrl");
 
                     b.HasKey("CourseId");
+
+                    b.HasIndex("VendorId");
 
                     b.ToTable("Course");
                 });
@@ -368,33 +370,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("CourseDeliveryId");
 
                     b.ToTable("CourseDelivery");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.CoursePromoCode", b =>
-                {
-                    b.Property<int>("CoursePromoCodeId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("CourseId");
-
-                    b.Property<Guid?>("CoursePromoCodeGuid");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("PromoCodeId");
-
-                    b.HasKey("CoursePromoCodeId");
-
-                    b.ToTable("CoursePromoCode");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CourseReview", b =>
@@ -465,6 +440,33 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("CourseVariantTypeId");
 
                     b.ToTable("CourseVariant");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CourseVariantPromoCode", b =>
+                {
+                    b.Property<int>("CourseVariantPromoCodeId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CourseVariantId");
+
+                    b.Property<Guid?>("CourseVariantPromoCodeGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("PromoCodeId");
+
+                    b.HasKey("CourseVariantPromoCodeId");
+
+                    b.ToTable("CourseVariantPromoCode");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CourseVariantType", b =>
@@ -870,8 +872,6 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CourseId");
-
                     b.Property<int>("CourseVariantId");
 
                     b.Property<DateTime>("CreateDate");
@@ -899,8 +899,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<decimal>("ValueRedeemed");
 
                     b.HasKey("PromoCodeRedemptionId");
-
-                    b.HasIndex("CourseId");
 
                     b.HasIndex("CourseVariantId");
 
@@ -1504,6 +1502,14 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("WozTransactionLog");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.Course", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Vendor", "Vendor")
+                        .WithMany()
+                        .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.CourseVariant", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Course", "Course")
@@ -1540,11 +1546,6 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.PromoCodeRedemption", b =>
                 {
-                    b.HasOne("UpDiddyApi.Models.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("UpDiddyApi.Models.CourseVariant", "CourseVariant")
                         .WithMany()
                         .HasForeignKey("CourseVariantId")

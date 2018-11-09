@@ -3,22 +3,30 @@ using UpDiddyLib.Dto;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using UpDiddyLib.Helpers;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddy.ViewModels
 {
-    public class CourseViewModel : BaseViewModel
+    public class CourseViewModel 
     {
-        public TopicDto Parent { get; set; }
+
+        [Required]
+        public CourseVariantViewModel SelectedCourseVariant { get; set; }
+        public IEnumerable<CourseVariantViewModel> CourseVariants { get; set; }
+
+        public Guid CourseGuid { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Code { get; set; }
+        public int TermsOfServiceDocumentId { get; set; }
+        public string TermsOfServiceContent { get; set; }
+
         public CourseDto Course { get; set; }
+
+
         public SubscriberDto Subscriber { get; set; }
-        public WozTermsOfServiceDto TermsOfService { get; set; }
-        public WozCourseScheduleDto WozCourseSchedule { get; set; }
         public Dictionary<CountryDto, List<StateDto>> CountryStateMapping { get; set; }
-        public Boolean IsInstructorLed { get; set; }
-        public Decimal SelfPacedPrice { get; set; }
-        public Decimal InstructorLedPrice { get; set; }
-        public Boolean TermsOfServiceDocId { get; set; }
-        public string CourseSlug { get; set; }
         public string PaymentMethodNonce { get; set; }
         public string BillingFirstName { get; set; }
         public string BillingLastName { get; set; }
@@ -27,58 +35,19 @@ namespace UpDiddy.ViewModels
         public string BillingZipCode { get; set; }
         public string BillingCountry { get; set; }
         public string BillingAddress { get; set; }
+        public StateDto SelectedState { get; set; } // how will this replace "BillingState" and "BillingCountry"
+        //todo: implement this convenient functionality after profile info has been refactored
         public Boolean SameAsAboveCheckbox { get; set; }
         public Guid PromoCodeRedemptionGuid { get; set; }
-        public Boolean InstructorLedChosen { get; set; }
-        public Boolean SelfPacedChosen { get; set; }
-        public int? SelfPacedCourseVariantId { get; set; }
-        public int? InstructorLedCourseVariantId { get; set; }
-        public Int64 DateOfInstructorLedSection { get; set; }
+        // todo: refactor enrollment to accept coursevariantid instead of courseid / courseguid
+    }
 
-        public CourseViewModel(
-            IConfiguration _configuration, 
-            CourseDto course, 
-            SubscriberDto subscriber, 
-            TopicDto parentTopic,
-            IList<CountryStateDto> CountryStateList,
-            WozTermsOfServiceDto tos,
-            WozCourseScheduleDto wcsdto)
-        {
-            this.TermsOfService = tos;
-            this.ImageUrl = _configuration["BaseImageUrl"];
-            this.Parent = parentTopic;
-            this.Subscriber = subscriber;
-            this.Course = course;
-            this.WozCourseSchedule = wcsdto;
-            // todo: refactor this after go-live
-            if (wcsdto.VariantToPrice != null)
-            {
-                foreach (Tuple<int, string, decimal> tuple in wcsdto.VariantToPrice)
-                {
-                    switch (tuple.Item2)
-                    {
-                        case "selfpaced":
-                            this.SelfPacedPrice = tuple.Item3;
-                            this.SelfPacedCourseVariantId = tuple.Item1;
-                            break;
-                        case "instructor":
-                            this.InstructorLedPrice = tuple.Item3;
-                            this.InstructorLedCourseVariantId = tuple.Item1;
-                            break;
-                    }
-                }
-            }
-            else
-            {
-                this.IsInstructorLed = false;
-            }
-
-            if (wcsdto.StartDatesUTC != null)
-                this.IsInstructorLed = wcsdto.StartDatesUTC.Count > 0;
-            else
-                this.IsInstructorLed = false;
-
-            this.CountryStateMapping = Utils.InitializeCountryStateMapping(CountryStateList);
-        }
+    public class CourseVariantViewModel
+    {
+        public DateTime SelectedStartDate { get; set; }
+        public IEnumerable<SelectListItem> StartDates { get; set; }
+        public Guid CourseVariantGuid { get; set; }
+        public Decimal Price { get; set; }
+        public string CourseVariantType { get; set; }
     }
 }

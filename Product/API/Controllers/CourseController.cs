@@ -10,6 +10,9 @@ using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
+using Microsoft.EntityFrameworkCore;
+using UpDiddyApi.Business;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers
 {
@@ -21,16 +24,21 @@ namespace UpDiddyApi.Controllers
 
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
-        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
+        private WozInterface _wozInterface = null;
+        protected internal ISysLog _syslog = null;
+
         //private readonly CCQueue _queue = null;
-        public CourseController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        public CourseController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysLog sysLog)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
+            _syslog = sysLog;
             //_queue = new CCQueue("ccmessagequeue", _queueConnection);
+            _wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog);
         }
 
         // GET: api/courses
@@ -142,27 +150,54 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/slug/{CourseSlug}")]
         public IActionResult GetCourse(string CourseSlug)
         {
-            
+            // retrieve the course data that we store in our system, including course variant and type
             Course course = _db.Course
+                .Include(c => c.Vendor)
+                .Include(c => c.CourseVariants)
+                .ThenInclude(cv => cv.CourseVariantType)
                 .Where(t => t.IsDeleted == 0 && t.Slug == CourseSlug)
                 .FirstOrDefault();
 
             if (course == null)
                 return NotFound();
-            return Ok(_mapper.Map<CourseDto>(course));
+
+            CourseDto courseDto = _mapper.Map<CourseDto>(course);
+
+            // if this is a woz course, get the terms of service and course schedule. 
+            // todo: replace this logic with factory pattern when we add more vendors?
+            if (course.Vendor.Name == "WozU")
+            {
+                // get the terms of service from WozU
+                var tos = _wozInterface.GetTermsOfService();
+                courseDto.TermsOfServiceDocumentId = tos.DocumentId;
+                courseDto.TermsOfServiceContent = tos.TermsOfService;
+
+                // get start dates from WozU
+                var startDateUTCs = _wozInterface.CheckCourseSchedule(course.Code);
+
+                // add them to instrtuctor-led course variants
+                courseDto.CourseVariants
+                    .Where(cv => cv.CourseVariantType.Name == "Instructor-Led")
+                    .ToList()
+                    .ForEach(cv =>
+                    {
+                        cv.StartDateUTCs = startDateUTCs;
+                    });
+            }
+            return Ok(courseDto);
         }
 
         [HttpGet]
         [Route("api/[controller]/guid/{CourseGuid}")]
         public IActionResult GetCourseByGuid(Guid? CourseGuid)
         {
-
             Course course = _db.Course
                 .Where(t => t.IsDeleted == 0 && t.CourseGuid == CourseGuid)
                 .FirstOrDefault();
 
             if (course == null)
                 return NotFound();
+
             return Ok(_mapper.Map<CourseDto>(course));
         }
 

@@ -10,8 +10,7 @@
     //countries.Insert(0, "US");
 }
 <script type="text/javascript">
-    var selfPacedPrice = @Model.SelfPacedPrice;
-    var instructorLedPrice = @Model.InstructorLedPrice;
+
     var locationsList = {};
     @foreach (CountryDto country in Model.CountryStateMapping.Keys)
     {
@@ -25,9 +24,10 @@
             </text>
         }
         <text>
-            locationsList["@country.Code2"] = states;
+            locationsList["@country.Code3"] = states;
         </text>
     }
+
 </script>
 
 <div class="checkout-page-container">
@@ -36,8 +36,8 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-8">
-                        <div class="hero-title">@Model.Course.Name</div>
-                        <div class="hero-subtitle">@Model.Course.Description</div>
+                        <div class="hero-title">@Model.Name</div>
+                        <div class="hero-subtitle">@Model.Description</div>
                     </div>
                     <div class="col-md-4 container-align-right">
                         <img src="~/images/globe.png" />
@@ -52,201 +52,183 @@
                 <div class="row">
                     <div class="col-md-12">
                         <form id="CourseCheckoutForm" asp-controller="Course" asp-action="Checkout" method="post">
-                            <input type="hidden" id="CourseSlug" value="@Model.Course.Slug" asp-for="CourseSlug" />
+                            <!-- todo: do we need hidden inputs for properties that are already in the viewmodel? will they be included automatically on form post? -->
+                            <input type="hidden" id="CourseSlug" value="@Model.Course.Slug" asp-for="Course.Slug" />
                             <input type="hidden" id="BraintreeNonce" name="payment_method_nonce" asp-for="PaymentMethodNonce" />
                             <input type="hidden" id="CourseGuid" name="CourseGuid" value="@Model.Course.CourseGuid" />
                             <input type="hidden" id="SubscriberGuid" name="SubscriberGuid" value="@Model.Subscriber.SubscriberGuid" />
                             <input type="hidden" id="PromoCodeRedemptionGuid" asp-for="PromoCodeRedemptionGuid" />
-                            @if (Model.IsInstructorLed)
-                            {
-                                <div class="form-row">
-                                    <div class="form-group col-12">
-                                        <div class="promotional-code-header"><h3>Section Selection:</h3></div>
-                                    </div>
-                                    <div class="form-group col-12">
-                                        <div class="form-group form-check selection-radios-container no-padding">
-                                            <div class="row">
 
-                                                <div class="col-6 no-padding">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="sectionSelectionRadios" id="SelfPacedRadio" value="selfPaced" asp-for="SelfPacedChosen" checked>
-                                                        <label class="form-check-label" for="SelfPacedRadio">
-                                                            Self-paced
-                                                        </label>
-                                                    </div>
+                            <div class="form-row">
+                                <div class="form-group col-12">
+                                    <div class="promotional-code-header"><h3>Section Selection</h3></div>
+                                    @foreach (var section in Model.CourseVariants)
+                                    {
+                                        @Html.RadioButtonFor(m => m.SelectedCourseVariant, section.CourseVariantGuid, new { id = section.CourseVariantType })
+                                        <label asp-for="SelectedCourseVariant">@(section.CourseVariantType)</label>
+                                        <span>@string.Format("{0:C}", section.Price)</span>
+                                        if (section.StartDates != null)
+                                        {
+                                            <span>Start Dates:</span>
+                                            @Html.DropDownListFor(modelItem => section.SelectedStartDate, section.StartDates);
+                                        }
+                                    }
+
+                                    <div class="form-row">
+                                        <div class="form-group col-md-6">
+                                            <div class="promotional-code-header"><h3>Promotional Code</h3></div>
+                                        </div>
+
+                                        <div class="form-group col-md-6">
+                                            <div class="input-group">
+                                                <input type="text" id="PromoCodeInput" class="form-control" placeholder="Enter a promo code" aria-label="Promo code:" aria-describedby="PromoCodeApplyButton">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-secondary" type="button" id="PromoCodeApplyButton">Apply</button>
                                                 </div>
-                                                <!-- not offering instructor led courses until we address design issues FIRST, which should resolve bugs (e.g. switching between course variants and promo codes)
-                                                <div class="col-6 no-padding">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="radio" name="sectionSelectionRadios" id="InstructorLedRadio" value="instructorLed" asp-for="InstructorLedChosen">
-                                                            <label class="form-check-label" for="InstructorLedRadio">
-                                                                Instructor Led
-                                                            </label>
-                                                        </div>
-                                                        <select class="form-control" id="InstructorLedInputField" asp-for="DateOfInstructorLedSection" disabled>
-                                                            @foreach (long datetime in Model.WozCourseSchedule.StartDatesUTC)
-                                                            {
-                                                                <option value="@datetime">@Utils.UnixMillisecondsToLocalDatetime(datetime)</option>
-                                                            }
-                                                        </select>
+                                            </div>
+                                        </div>
+                                        <div id="ValidationMessageError" class="form-group col-md-12">
+                                            <div class="promotional-code-validation">
+                                                <span>
+                                                    <!-- validation message error messages are added here-->
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div id="ValidationMessageSuccess" class="form-group col-md-12">
+                                            <div class="promotional-code-validation">
+                                                <span>
+                                                    <!-- validation message success messages are added here-->
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-row billing-info-container">
+                                        <div class="form-group col-md-12 billing-info-header-container">
+                                            <div class="billing-info-header"><h3>Your Information</h3></div>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <input type="text" class="form-control" name="SubscriberFirstName" id="SubscriberFirstName" asp-for="Subscriber.FirstName" placeholder="First Name" required>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <input type="text" class="form-control" name="SubscriberLastName" id="SubscriberLastName" asp-for="Subscriber.LastName" placeholder="Last Name" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-row billing-info-container">
+                                        <div class="form-group col-md-12 billing-info-header-container">
+                                            <div class="billing-info-header"><h3>Billing Information</h3></div>
+                                            <!--
+                                                                                <div class="form-check same-as-above">
+                                                <input type = "checkbox" class="form-check-input" id="SameAsAboveCheckbox" asp-for="SameAsAboveCheckbox">
+                                                <label class="form-check-label" for="sameAsAboveCheckbox">Same as above</label>
+                                            </div>-->
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <input type="text" class="form-control" name="BillingFirstName" id="BillingFirstName" asp-for="BillingFirstName" placeholder="First Name" required>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <input type="text" class="form-control" name="BillingLastName" id="BillingLastName" asp-for="BillingLastName" placeholder="Last Name" required>
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <input type="text" class="form-control" name="BillingAddress" id="BillingAddress" asp-for="BillingAddress" placeholder="Address" required>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <input type="text" class="form-control" name="BillingCity" id="BillingCity" asp-for="BillingCity" placeholder="City" required>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <input type="text" class="form-control" name="BillingZipCode" id="BillingZipCode" asp-for="BillingZipCode" placeholder="Zip Code" required>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <select class="form-control country-select" id="BillingCountry" name="BillingCountry" asp-for="BillingCountry" required>
+                                                @{
+                                                    bool isFirst = true;
+                                                    foreach (CountryDto country in countries)
+                                                    {
+
+                                                        if (country.DisplayName.Equals("USA"))
+                                                        {
+                                                            <option value="@country.Code3" selected="selected">@country.DisplayName</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@country.Code3">@country.DisplayName</option>
+                                                        }
+                                                        isFirst = false;
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <select class="form-control state-select" id="BillingState" name="BillingState" asp-for="BillingState" required></select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row" id="BraintreePaymentContainer">
+                                        <div class="form-group col-md-12">
+                                            <div class="payment-info-header">
+                                                <h3>Secure Payment Information</h3>
+                                            </div>
+                                        </div>
+                                        <div class="bt-drop-in-wrapper">
+                                            <div id="bt-dropin">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-12">
+                                            <div class="terms-of-service-header">
+                                                <h3>Terms of Service</h3>
+                                            </div>
+                                            <div class="terms-of-service-scrollview">
+                                                @Model.Course.TermsOfServiceContent
+                                            </div>
+                                            <div class="form-check tos-agree">
+                                                <input type="hidden" asp-for="Course.TermsOfServiceDocumentId" value="@Model.Course.TermsOfServiceDocumentId" />
+                                                <input type="checkbox" class="form-check-input" id="TermsOfServiceCheckbox">
+                                                <label class="form-check-label" for="TermsOfServiceCheckbox">I agree</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group offset-md-6">
+                                            <div class="promotional-code-header"><h3>Total:</h3></div>
+                                        </div>
+                                        <div class="form-group offset-md-6 col-12 col-md-6">
+                                            <div class="row total-container">
+                                                <div class="form-group col-6">
+                                                    @Model.Course.Name
                                                 </div>
-                                                    -->
+                                                <div class="form-group col-6 container-align-right">
+
+                                                    <span id="InitialCoursePrice">
+                                                    </span>
+
+                                                </div>
+                                                <div class="form-group col-6">
+                                                    Promotional Code
+                                                </div>
+                                                <div class="form-group col-6 container-align-right">
+                                                    <span id="PromoCodeTotal">$0.00</span>
+                                                </div>
+                                                <div class="form-group col-6 total-row-item">
+                                                    Total
+                                                </div>
+                                                <div class="form-group col-6 container-align-right total-row-item">
+                                                    <span id="CourseTotal">
+                                                    </span>
+                                                </div>
                                             </div>
 
+                                        </div>
 
+                                    </div>
+                                    <div class="enrollment-submit-container container-align-right">
+                                        <button type="submit" id="EnrollmentSubmitButton" class="brand-button contrast-primary enrollment-submit" disabled>Enroll</button>
+                                    </div>
+                                    <div id="ValidationSummary" class="container-align-right">
 
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                            <div class="form-row">
-                                <div class="form-group col-md-6">
-                                    <div class="promotional-code-header"><h3>Promotional Code</h3></div>
-                                </div>
+                                        @*Html.ValidationMessageFor(x => x.Course.Price)*@
 
-                                <div class="form-group col-md-6">
-                                    <div class="input-group">
-                                        <input type="text" id="PromoCodeInput" class="form-control" placeholder="Enter a promo code" aria-label="Promo code:" aria-describedby="PromoCodeApplyButton">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-outline-secondary" type="button" id="PromoCodeApplyButton">Apply</button>
-                                        </div>
                                     </div>
-                                </div>
-                                <div id="ValidationMessageError" class="form-group col-md-12">
-                                    <div class="promotional-code-validation">
-                                        <span>
-                                            <!-- validation message error messages are added here-->
-                                        </span>
-                                    </div>
-                                </div>
-                                <div id="ValidationMessageSuccess" class="form-group col-md-12">
-                                    <div class="promotional-code-validation">
-                                        <span>
-                                            <!-- validation message success messages are added here-->
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-row billing-info-container">
-                                <div class="form-group col-md-12 billing-info-header-container">
-                                    <div class="billing-info-header"><h3>Your Information</h3></div>
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <input type="text" class="form-control" name="SubscriberFirstName" id="SubscriberFirstName" asp-for="Subscriber.FirstName" placeholder="First Name" required>
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <input type="text" class="form-control" name="SubscriberLastName" id="SubscriberLastName" asp-for="Subscriber.LastName" placeholder="Last Name" required>
-                                </div>
-                            </div>
-                            <div class="form-row billing-info-container">
-                                <div class="form-group col-md-12 billing-info-header-container">
-                                    <div class="billing-info-header"><h3>Billing Information</h3></div>
-<!--
-                                        <div class="form-check same-as-above">
-        <input type="checkbox" class="form-check-input" id="SameAsAboveCheckbox" asp-for="SameAsAboveCheckbox">
-        <label class="form-check-label" for="sameAsAboveCheckbox">Same as above</label>
-    </div>-->
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <input type="text" class="form-control" name="BillingFirstName" id="BillingFirstName" asp-for="BillingFirstName" placeholder="First Name" required>
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <input type="text" class="form-control" name="BillingLastName" id="BillingLastName" asp-for="BillingLastName" placeholder="Last Name" required>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <input type="text" class="form-control" name="BillingAddress" id="BillingAddress" asp-for="BillingAddress" placeholder="Address" required>
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <input type="text" class="form-control" name="BillingCity" id="BillingCity" asp-for="BillingCity" placeholder="City" required>
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <input type="text" class="form-control" name="BillingZipCode" id="BillingZipCode" asp-for="BillingZipCode" placeholder="Zip Code" required>
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <select class="form-control country-select" id="BillingCountry" name="BillingCountry" asp-for="BillingCountry" required>
-                                        @{
-                                            bool isFirst = true;
-                                            foreach (CountryDto country in countries)
-                                            {
-
-                                                if (country.DisplayName.Equals("US"))
-                                                {
-                                                    <option value="@country.Code2" selected="selected">@country.DisplayName</option>
-                                                }
-                                                else
-                                                {
-                                                    <option value="@country.Code2">@country.DisplayName</option>
-                                                }
-                                                isFirst = false;
-                                            }
-                                        }
-                                    </select>
-                                </div>
-                                <div class="form-group col-md-3">
-                                    <select class="form-control state-select" id="BillingState" name="BillingState" asp-for="BillingState" required></select>
-                                </div>
-                            </div>
-                            <div class="form-row" id="BraintreePaymentContainer">
-                                <div class="form-group col-md-12">
-                                    <div class="payment-info-header">
-                                        <h3>Secure Payment Information</h3>
-                                    </div>
-                                </div>
-                                <div class="bt-drop-in-wrapper">
-                                    <div id="bt-dropin"></div>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group col-md-12">
-                                    <div class="terms-of-service-header">
-                                        <h3>Terms of Service</h3>
-                                    </div>
-                                    <div class="terms-of-service-scrollview">
-                                        @Model.TermsOfService.TermsOfService
-                                    </div>
-                                    <div class="form-check tos-agree">
-                                        <input type="hidden" asp-for="TermsOfServiceDocId" value="@Model.TermsOfService.DocumentId" />
-                                        <input type="checkbox" class="form-check-input" id="TermsOfServiceCheckbox">
-                                        <label class="form-check-label" for="TermsOfServiceCheckbox">I agree</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-row">
-                                <div class="form-group offset-md-6">
-                                    <div class="promotional-code-header"><h3>Total:</h3></div>
-                                </div>
-                                <div class="form-group offset-md-6 col-12 col-md-6">
-                                    <div class="row total-container">
-                                        <div class="form-group col-6">
-                                            @Model.Course.Name
-                                        </div>
-                                        <div class="form-group col-6 container-align-right">
-                                            <span id="InitialCoursePrice">@string.Format("{0:C}", Model.Course.Price)</span>
-                                        </div>
-                                        <div class="form-group col-6">
-                                            Promotional Code
-                                        </div>
-                                        <div class="form-group col-6 container-align-right">
-                                            <span id="PromoCodeTotal">$0.00</span>
-                                        </div>
-                                        <div class="form-group col-6 total-row-item">
-                                            Total
-                                        </div>
-                                        <div class="form-group col-6 container-align-right total-row-item">
-                                            <span id="CourseTotal">@string.Format("{0:C}", Model.Course.Price)</span>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                            <div class="enrollment-submit-container container-align-right">
-                                <button type="submit" id="EnrollmentSubmitButton" class="brand-button contrast-primary enrollment-submit" disabled>Enroll</button>
-                            </div>
-                            <div id="ValidationSummary" class="container-align-right">
-                                @Html.ValidationMessageFor(x => x.Course.Price)
-                            </div>
                         </form>
                     </div>
                 </div>

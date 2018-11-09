@@ -97,6 +97,33 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
+        [Route("api/[controller]/GetCountries")]
+        public IActionResult GetCountries()
+        {
+            var countries = _db.Country
+                .Where(c => c.IsDeleted == 0)
+                .OrderBy(c => c.Sequence)
+                .ProjectTo<CountryDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(countries);
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/GetStatesByCountry/{countryGuid}")]
+        public IActionResult GetStatesByCountry(Guid countryGuid)
+        {
+            var states = _db.State
+                .Include(s => s.Country)
+                .Where(s => s.IsDeleted == 0 && s.Country.CountryGuid == countryGuid)
+                .OrderBy(s => s.Sequence)
+                .ProjectTo<StateDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(states);
+        }
+
+        [HttpGet]
         [Route("api/[controller]/LocationList")]
         public IActionResult LocationList()
         {
