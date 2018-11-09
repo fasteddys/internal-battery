@@ -174,7 +174,7 @@ namespace UpDiddy.Controllers
                     Locality = BillingCity,
                     ZipCode = BillingZipCode,
                     CountryCode = BillingCountry,
-                    MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID")
+                    MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("Braintree:MerchantAccountID")
                 };
                 EnrollmentFlowDto enrollmentFlowDto = new EnrollmentFlowDto
                 {

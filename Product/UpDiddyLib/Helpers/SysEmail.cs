@@ -22,8 +22,6 @@ namespace UpDiddyLib.Helpers
 
         public bool SendEmail(string email, string subject, string htmlContent)
         {
-            // TODO put key in vault 
-            // var apiKey = "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";
             var client = new SendGridClient(_apiKey);
             SendGrid.Helpers.Mail.EmailAddress from = new EmailAddress("support@careercircle.com", "CareerCircle Support");
             SendGrid.Helpers.Mail.EmailAddress to = new EmailAddress(email);

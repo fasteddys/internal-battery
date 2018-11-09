@@ -17,6 +17,7 @@ using UpDiddyApi.Workflow;
 using Hangfire.SqlServer;
 using System;
 using UpDiddyLib.Helpers;
+using UpDiddyLib.Shared;
 
 namespace UpDiddyApi
 {
@@ -25,6 +26,7 @@ namespace UpDiddyApi
     {
         public static string ScopeRead;
         public static string ScopeWrite;
+        public IConfigurationRoot Configuration { get; set; }
 
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
@@ -44,13 +46,15 @@ namespace UpDiddyApi
             var config = builder.Build();
             if(env.IsStaging() || env.IsProduction())
             {
-                builder.AddAzureKeyVault(config["VaultUrl"], config["VaultClientId"], config["VaultClientSecret"]);
+                builder.AddAzureKeyVault(config["Vault:Url"], 
+                    config["Vault:ClientId"],
+                    config["Vault:ClientSecret"], 
+                    new KeyVaultSecretManager());
             }
 
             Configuration = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)

@@ -1,24 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc.Razor;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
-using System.Net;
 using UpDiddy.Helpers.RewriteRules;
+using UpDiddyLib.Shared;
 
 
 namespace UpDiddy
@@ -44,7 +38,10 @@ namespace UpDiddy
             var config = builder.Build();
             if (env.IsStaging() || env.IsProduction())
             {
-                builder.AddAzureKeyVault(config["VaultUrl"], config["VaultClientId"], config["VaultClientSecret"]);
+                builder.AddAzureKeyVault(config["Vault:Url"],
+                    config["Vault:ClientId"],
+                    config["Vault:ClientSecret"],
+                    new KeyVaultSecretManager());
             }
 
             Configuration = builder.Build();
