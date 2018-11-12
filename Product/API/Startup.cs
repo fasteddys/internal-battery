@@ -21,6 +21,8 @@ using Polly;
 using Polly.Extensions.Http;
 using System.Net.Http;
 using UpDiddy.Helpers;
+using UpDiddyLib.Shared;
+
 
 namespace UpDiddyApi
 {
@@ -29,48 +31,35 @@ namespace UpDiddyApi
     {
         public static string ScopeRead;
         public static string ScopeWrite;
+        public IConfigurationRoot Configuration { get; set; }
 
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
-
-
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                // Add in the azure vault entries 
-                .AddConfiguration(configuration);
+                .AddEnvironmentVariables();
 
-            builder.AddEnvironmentVariables();
-
-            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
+            // if environment is set to development then add user secrets
+            if (env.IsDevelopment())
             {
                 builder.AddUserSecrets<Startup>();
             }
 
-            Configuration = builder.Build();
-
-            // Rebuild the configuration now that have included user secrets 
-
-            var builder1 = new ConfigurationBuilder()
-                .AddConfiguration(configuration)
-                .AddAzureKeyVault(
-              Configuration["VaultUrl"],
-              Configuration["VaultClientId"],
-              Configuration["VaultClientSecret"]);
-
-
-            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
+            // if environment is set to staging or production then add vault keys
+            var config = builder.Build();
+            if(env.IsStaging() || env.IsProduction())
             {
-                builder1.AddUserSecrets<Startup>();
+                builder.AddAzureKeyVault(config["Vault:Url"], 
+                    config["Vault:ClientId"],
+                    config["Vault:ClientSecret"], 
+                    new KeyVaultSecretManager());
             }
 
-
-            Configuration = builder1.Build();
-
+            Configuration = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)

@@ -1,0 +1,23 @@
+# Build dotnet core project using Azure Pipelines
+
+# build name format
+name: ${System.TeamProject}.WebApp.${Date:yyyyMMdd}.$(Rev:.r)
+pool:
+  vmImage: 'ubuntu-16.04'
+
+variables:
+  buildConfiguration: 'Release'
+
+# trigger CI build for the following branches
+trigger: [ dev ]
+
+# disable CI builds for pull requests for now
+pr: none
+
+steps:
+  - script: |
+    cd 'Product/WebApp'
+    dotnet build --configuration $(buildConfiguration)
+    dotnet publish --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+
+  - task: PublishBuildArtifacts@1

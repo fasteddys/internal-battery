@@ -154,6 +154,11 @@ namespace UpDiddy.Controllers
                 }
             }
 
+            /**
+             *      TODO: Need to implement logic here to ensure billing fields are
+             *      not empty to ensure Braintree gets the values.
+             * */
+
             // process payment if price is not zero
             if (enrollmentDto.PricePaid != 0)
             {
@@ -171,24 +176,31 @@ namespace UpDiddy.Controllers
                     Locality = BillingCity,
                     ZipCode = BillingZipCode,
                     CountryCode = BillingCountry,
-                    MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID")
+                    MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("Braintree:MerchantAccountID")
                 };
-                BraintreeResponseDto brdto = API.SubmitBraintreePayment(BraintreePaymentDto);
-                
-                if (brdto.WasSuccessful)
+                EnrollmentFlowDto enrollmentFlowDto = new EnrollmentFlowDto
                 {
-                    API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
-                    return View("EnrollmentSuccess", CourseViewModel);
-                }
-                else
-                {
-                    return View("EnrollmentFailure", CourseViewModel);
-                }
+                    EnrollmentDto = enrollmentDto,
+                    BraintreePaymentDto = BraintreePaymentDto,
+                    SubscriberDto = this.subscriber
+                };
+
+                API.EnrollStudentAndObtainEnrollmentGUID(enrollmentFlowDto);
+                return View("EnrollmentSuccess", CourseViewModel);
             }
             else
             {
                 // course is free with promo code
-                API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
+                BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
+                {
+                    PaymentAmount = 0
+                };
+                EnrollmentFlowDto enrollmentFlowDto = new EnrollmentFlowDto
+                {
+                    EnrollmentDto = enrollmentDto,
+                    BraintreePaymentDto = BraintreePaymentDto
+                };
+                API.EnrollStudentAndObtainEnrollmentGUID(enrollmentFlowDto);
                 return View("EnrollmentSuccess", CourseViewModel);
             }
             // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method

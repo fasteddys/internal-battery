@@ -7,23 +7,21 @@
       "sslPort": 44316
     }
   },
-  "profiles": {    
-    "WebApp-Dev-Cloud": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "http://localhost:5000",
-      "environmentVariables": {
-        "Key": "Value",
-        "ASPNETCORE_ENVIRONMENT": "DevelopmentCloud"
-      }
-    },
+  "profiles": {
     "WebApp-Dev-Local": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "http://localhost:5000",
       "environmentVariables": {
-        "Key": "Value",
-        "ASPNETCORE_ENVIRONMENT": "DevelopmentLocal"
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "WebApp-Staging": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Staging"
       }
     }
   }
