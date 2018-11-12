@@ -15,9 +15,16 @@
     background-color: $color-secondary;
 }
 
+.f-color-tertiary {
+    color: $color-tertiary;
+}
+
+.bg-color-tertiary {
+    background-color: $color-tertiary;
+}
 
 .f-color-secondary-light {
-    color: $color-secondary-light;
+    color: $color-tertiary;
 }
 
 
@@ -35,6 +42,9 @@
     color: $color-white;
 }
 
+.f-color-black{
+    color: $color-black;
+}
 
 
 /* Font Declarations */
@@ -44,7 +54,9 @@
 }
 
 .opensans-bold{font-family: $opensans-bold}
-
+.f-bold{
+    font-family: OpenSans-Bold;
+}
 @font-face {
     font-family: "OpenSans-Regular";
     src: url('../fonts/OpenSans-Regular.ttf') format('truetype');
@@ -73,6 +85,23 @@
 
     &.font-small{
         font-size: 1rem;
+    }
+}
+
+.brand-button-tertiary {
+    background-color: $color-tertiary;
+    color: $color-white;
+    border-radius: 1rem;
+    padding: 1rem;
+    cursor: pointer;
+    transition: box-shadow 0.1s ease-in-out;
+    font-size: 1.5rem;
+
+    &:hover {
+        box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+    }
+    &.border-white{
+        border: 2px solid $color-white;
     }
 }
 
