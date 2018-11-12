@@ -17,6 +17,10 @@ using UpDiddyApi.Workflow;
 using Hangfire.SqlServer;
 using System;
 using UpDiddyLib.Helpers;
+using Polly;
+using Polly.Extensions.Http;
+using System.Net.Http;
+using UpDiddy.Helpers;
 
 namespace UpDiddyApi
 {
@@ -113,6 +117,36 @@ namespace UpDiddyApi
             int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
             int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
+
+            // Add Polly 
+
+            // Create Policies  
+            int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
+            int PollyBreakDurationInMinutes = int.Parse(Configuration["Polly:BreakDurationInMinutes"]);
+            // Define default api policy with async retries and exponential backoff            
+            var ApiGetPolicy = HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .WaitAndRetryAsync(PollyRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+
+            // Define a policy without retries for non idempotenic operations
+            // FMI: https://www.stevejgordon.co.uk/httpclientfactory-using-polly-for-transient-fault-handling
+            var ApiPostPolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
+            var ApiPutPolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
+            var ApiDeletePolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
+
+            services.AddHttpClient(Constants.HttpGetClientName)
+              .AddPolicyHandler(ApiGetPolicy);
+
+            services.AddHttpClient(Constants.HttpPostClientName)
+                          .AddPolicyHandler(ApiPostPolicy);
+
+            services.AddHttpClient(Constants.HttpPutClientName)
+                          .AddPolicyHandler(ApiPutPolicy);
+
+            services.AddHttpClient(Constants.HttpDeleteClientName)
+              .AddPolicyHandler(ApiDeletePolicy);
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

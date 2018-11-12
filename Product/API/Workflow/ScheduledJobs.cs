@@ -10,13 +10,14 @@ using UpDiddyLib.Helpers;
 using UpDiddyLib.Dto;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Hangfire;
+using System.Net.Http;
 
 namespace UpDiddyApi.Workflow
 {
     public class ScheduledJobs : BusinessVendorBase 
     {
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = context;
             _mapper = mapper;
@@ -25,6 +26,7 @@ namespace UpDiddyApi.Workflow
             _accessToken = configuration["WozAccessToken"];
             _syslog = sysLog;
             _configuration = configuration;
+            _HttpClientFactory = httpClientFactory;
         }
 
 
@@ -86,7 +88,7 @@ namespace UpDiddyApi.Workflow
             try
             {
                 Console.WriteLine($"***** GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for enrollment {enrollment.EnrollmentGuid.ToString()}");
-                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog);
+                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _HttpClientFactory);
                 WozCourseEnrollment wce = _db.WozCourseEnrollment
                 .Where(
                        t => t.IsDeleted == 0 &&
@@ -123,7 +125,7 @@ namespace UpDiddyApi.Workflow
                           .Where(t => t.IsDeleted == 0 && t.EnrollmentStatusId == (int)EnrollmentStatus.FutureRegisterStudentComplete)
                          .ToList<Enrollment>();
 
-                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog);
+                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog,_HttpClientFactory);
                 foreach (Enrollment e in Enrollments)
                 {
                     wi.ReconcileFutureEnrollment(e.EnrollmentGuid.ToString());

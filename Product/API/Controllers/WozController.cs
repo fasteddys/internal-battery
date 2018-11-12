@@ -18,6 +18,7 @@ using UpDiddyLib.Helpers;
 using AutoMapper.QueryableExtensions;
 using UpDiddyApi.Workflow;
 using Hangfire;
+using UpDiddy.Helpers;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -38,10 +39,11 @@ namespace UpDiddyApi.Controllers
         private readonly string _apiBaseUri = String.Empty;
         private readonly string _accessToken = String.Empty;
         private WozTransactionLog _log = null;
+        private IHttpClientFactory _httpClientFactory = null;
         #endregion
 
         #region Constructor
-        public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog syslog )
+        public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog syslog, IHttpClientFactory httpClientFactory)
         {
 
             _db = db;
@@ -53,6 +55,7 @@ namespace UpDiddyApi.Controllers
             _accessToken = _configuration["WozAccessToken"];            
             _log = new WozTransactionLog();
             _syslog = syslog;
+            _httpClientFactory = httpClientFactory;
         }
         #endregion
         
@@ -61,7 +64,7 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            HttpClient client = new HttpClient();
+            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + "courses");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             HttpResponseMessage response = await client.SendAsync(request);
@@ -90,7 +93,7 @@ namespace UpDiddyApi.Controllers
 
             long UTCStartDate = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
             long UTCEndDate = ((DateTimeOffset)DateTime.Now.AddMonths(MonthsLookAhead)).ToUnixTimeMilliseconds();
-            HttpClient client = new HttpClient();
+            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"courses/{CourseCode}/schedule?startDateUTC={UTCStartDate.ToString()}&endDateUTC={UTCEndDate.ToString()}");
  
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
@@ -177,7 +180,7 @@ namespace UpDiddyApi.Controllers
             if (Enrollment.SubscriberId != CourseSubscriber.SubscriberId)
                 return Unauthorized();
 
-            HttpClient client = new HttpClient();
+            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"sections/{WozEnrollment.SectionId}/enrollments/{WozEnrollment.WozEnrollmentId}");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             HttpResponseMessage response = await client.SendAsync(request);
@@ -252,7 +255,7 @@ namespace UpDiddyApi.Controllers
 
 
 
-            HttpClient client = new HttpClient();
+            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"users/{ExeterId}");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             HttpResponseMessage response = await client.SendAsync(request);
@@ -338,7 +341,7 @@ namespace UpDiddyApi.Controllers
             };
 
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(updateEnrollmentDto);
-            HttpClient client = WozClient();
+            HttpClient client = WozPutClient();
             HttpRequestMessage request = WozPutRequest(action, json);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             HttpResponseMessage response = await client.SendAsync(request);
@@ -379,15 +382,13 @@ namespace UpDiddyApi.Controllers
 
             try
             {                
-                HttpClient client = WozClient();
+                HttpClient client = WozGetClient();
                 HttpRequestMessage WozRequest = WozGetRequest("tos");
                 HttpResponseMessage WozResponse = await client.SendAsync(WozRequest);
                 var ResponseJson = await WozResponse.Content.ReadAsStringAsync();
 
                 if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    // dynamic ResponseObject  = System.Web.Helpers.Json.Decode(ResponseJson);
-                    //dynamic ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                {                 
                     var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
 
                     string TermsOfServiceId = ResponseObject.termsOfServiceDocumentId;
@@ -472,11 +473,18 @@ namespace UpDiddyApi.Controllers
         }
 
 
-
-
-        private HttpClient WozClient()
+        private HttpClient WozGetClient()
         {
-            HttpClient client = new HttpClient();
+            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+
+            return client;
+        }
+
+
+            private HttpClient WozPutClient()
+        {
+            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpPutClientName);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
 
             return client;

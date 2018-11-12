@@ -6,31 +6,39 @@ using UpDiddy.Helpers;
 using UpDiddyLib.Dto;
 using System.Net;
 using Newtonsoft.Json;
+using System.Net.Http;
+using Polly.Registry;
+using Polly;
+using System.Collections;
+using System.Threading.Tasks;
 
 namespace UpDiddy.Api
 {
     public class ApiUpdiddy : ApiHelperMsal
     {
     
-        public ApiUpdiddy(AzureAdB2COptions Options, HttpContext Context, IConfiguration conifguration) {
+        public ApiUpdiddy(AzureAdB2COptions Options, HttpContext Context, IConfiguration conifguration, IHttpClientFactory httpClientFactory) {
 
             AzureOptions = Options;
             HttpContext = Context;
             _configuration = conifguration;
             // Set the base URI for API calls 
             _ApiBaseUri = _configuration["Api:ApiUrl"];
+            _HttpClientFactory = httpClientFactory;
+ 
         }
 
         public string Hello()
         {
             return Get<string>("hello", true);
         }
+   
 
-        // TODO add application caching  
         public IList<TopicDto> Topics()
         {
             return Get<IList<TopicDto>>("topic", false);
         }
+
 
         public TopicDto TopicById(int TopicId)
         {

@@ -13,6 +13,9 @@ using Microsoft.AspNetCore.Identity;
 using UpDiddy.Helpers;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+using System.Net.Http;
+using Polly.Registry;
+using System.Collections;
 
 namespace UpDiddy.Controllers
 {
@@ -24,11 +27,15 @@ namespace UpDiddy.Controllers
         private ApiUpdiddy _Api  = null;
         private AzureAdB2COptions _AzureAdB2COptions = null;
         private IConfiguration _configuration = null;
+        private IHttpClientFactory _HttpClientFactory = null;
+ 
 
-        public BaseController(AzureAdB2COptions AzureAdB2COptions, IConfiguration configuration)
+        public BaseController(AzureAdB2COptions AzureAdB2COptions, IConfiguration configuration, IHttpClientFactory httpClientFactory )
         {
             _AzureAdB2COptions = AzureAdB2COptions;
-            _configuration = configuration;                
+            _configuration = configuration;
+            _HttpClientFactory = httpClientFactory;
+    
         }
 
          public ApiUpdiddy API {
@@ -38,7 +45,7 @@ namespace UpDiddy.Controllers
                     return _Api;
                 else
                 {
-                    _Api = new ApiUpdiddy(_AzureAdB2COptions, this.HttpContext, _configuration);
+                    _Api = new ApiUpdiddy(_AzureAdB2COptions, this.HttpContext, _configuration, _HttpClientFactory);
                     return _Api;
                 }
             }

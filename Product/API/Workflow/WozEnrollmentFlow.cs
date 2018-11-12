@@ -29,7 +29,9 @@ namespace UpDiddyApi.Workflow
         private ISysLog _sysLog = null;
         private int _retrySeconds = 0;
         private int _wozVendorId = 0;
-        public WozEnrollmentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration,ISysEmail sysEmail, ISysLog sysLog)
+        private IHttpClientFactory _httpClientFactory = null;
+
+        public WozEnrollmentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration,ISysEmail sysEmail, ISysLog sysLog, IHttpClientFactory httpClientFactory)
         {
             _retrySeconds = int.Parse(configuration["Woz:RetrySeconds"]);
             // TODO modify code to work off woz Guid not dumb key 
@@ -39,6 +41,7 @@ namespace UpDiddyApi.Workflow
             _configuration = configuration;
             _sysEmail = sysEmail;
             _sysLog = sysLog;
+            _httpClientFactory = httpClientFactory;
         }
         #endregion
 
@@ -53,7 +56,7 @@ namespace UpDiddyApi.Workflow
             bool IsInstructorLed = false;
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog, _httpClientFactory);
                
                 RVal =  woz.EnrollStudent(EnrollmentGuid, ref IsInstructorLed);
                 switch (RVal.State)
@@ -111,7 +114,7 @@ namespace UpDiddyApi.Workflow
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog, _httpClientFactory);
                 RVal = woz.TransactionStatus(EnrollmentGuid,TransactionId);
                 switch (RVal.State)
                 {
@@ -227,7 +230,7 @@ namespace UpDiddyApi.Workflow
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog, _httpClientFactory);
                 RVal = woz.GetSectionForEnrollment(EnrollmentGuid);
                 switch (RVal.State)
                 {
@@ -265,7 +268,7 @@ namespace UpDiddyApi.Workflow
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog, _httpClientFactory);
                 RVal = woz.TransactionStatus(EnrollmentGuid, TransactionId);
                 switch (RVal.State)
                 {
@@ -324,7 +327,7 @@ namespace UpDiddyApi.Workflow
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog, _httpClientFactory);
                 RVal = woz.RegisterStudentInstructorLed(EnrollmentGuid);
                 switch (RVal.State)
                 {
@@ -366,7 +369,7 @@ namespace UpDiddyApi.Workflow
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog, _httpClientFactory);
                 RVal = woz.TransactionStatus(EnrollmentGuid, TransactionId);
                 switch (RVal.State)
                 {
@@ -422,7 +425,7 @@ namespace UpDiddyApi.Workflow
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog, _httpClientFactory);
                 RVal = woz.RegisterStudent(EnrollmentGuid);
                 switch (RVal.State)
                 {
@@ -461,7 +464,7 @@ namespace UpDiddyApi.Workflow
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
             try
             {
-                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog);
+                WozInterface woz = new WozInterface(_db, _mapper, _configuration, _sysLog, _httpClientFactory);
                 RVal = woz.TransactionStatus(EnrollmentGuid, TransactionId);
                 switch (RVal.State)
                 {

@@ -78,6 +78,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/slug/{TopicSlug}")]
         public IActionResult Get(string TopicSlug)
         {
+         
             Topic topic = _db.Topic
                 .Where(t => t.IsDeleted == 0 && t.Slug == TopicSlug)
                 .FirstOrDefault();

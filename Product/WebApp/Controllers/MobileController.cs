@@ -2,9 +2,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using Polly.Registry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace UpDiddy.Controllers
@@ -16,7 +18,7 @@ namespace UpDiddy.Controllers
         private readonly IStringLocalizer<MobileController> _localizer;
         private readonly IConfiguration _configuration;
 
-        public MobileController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<MobileController> localizer, IConfiguration configuration) : base(azureAdB2COptions.Value, configuration)
+        public MobileController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<MobileController> localizer, IConfiguration configuration,  IHttpClientFactory httpClientFactory) : base(azureAdB2COptions.Value, configuration, httpClientFactory)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;

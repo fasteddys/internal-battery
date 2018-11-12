@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Localization;
  
-
 namespace WebApp_OpenIDConnect_DotNet.Controllers
 {
     public class HomeController : Controller

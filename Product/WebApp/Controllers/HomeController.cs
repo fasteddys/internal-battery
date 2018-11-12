@@ -25,6 +25,7 @@ using SendGrid.Helpers.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using Polly.Registry;
 
 namespace UpDiddy.Controllers
 {
@@ -33,16 +34,18 @@ namespace UpDiddy.Controllers
         AzureAdB2COptions AzureAdB2COptions;
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _HttpClientFactory;
 
 
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration)
-            : base(azureAdB2COptions.Value, configuration)
+        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory)
+            : base(azureAdB2COptions.Value, configuration, httpClientFactory)
         {
 
 
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
             _configuration = configuration;
+            _HttpClientFactory = httpClientFactory;
         }
 
         public IActionResult Index()
@@ -311,19 +314,14 @@ namespace UpDiddy.Controllers
             string responseString = "";
             try
             {
-
-
-
                 // Retrieve the token with the specified scopes
                 var scope = AzureAdB2COptions.ApiScopes.Split(' ');
                 string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
                 TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
                 ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureAdB2COptions.ClientId, AzureAdB2COptions.Authority, AzureAdB2COptions.RedirectUri, new ClientCredential(AzureAdB2COptions.ClientSecret), userTokenCache, null);
-                // TODO remove debug var
-                var x = cca.Users.FirstOrDefault();
                 AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureAdB2COptions.Authority, false);
 
-                HttpClient client = new HttpClient();
+                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, AzureAdB2COptions.ApiUrl);
 
                 // Add token to the Authorization header and make the request

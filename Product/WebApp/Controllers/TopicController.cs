@@ -9,6 +9,8 @@ using Microsoft.Extensions.Options;
 using UpDiddy.Api;
 using UpDiddyLib.Dto;
 using UpDiddy.ViewModels;
+using System.Net.Http;
+using Polly.Registry;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,17 +22,17 @@ namespace UpDiddy.Controllers
 
         AzureAdB2COptions AzureAdB2COptions;
         private readonly IStringLocalizer<HomeController> _localizer;
-        private readonly IConfiguration _configuration;
-        ApiUpdiddy _Api;
+        private readonly IConfiguration _configuration;       
+        private IHttpClientFactory _HttpClientFactory = null;
 
 
-        public TopicController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration)
-             : base(azureAdB2COptions.Value, configuration)
+        public TopicController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory )
+             : base(azureAdB2COptions.Value, configuration, httpClientFactory)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
             _configuration = configuration;
-            _Api = new ApiUpdiddy(AzureAdB2COptions, this.HttpContext, _configuration);
+            _HttpClientFactory = httpClientFactory;              
         }
 
         [HttpGet]
