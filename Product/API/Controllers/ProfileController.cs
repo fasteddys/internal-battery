@@ -102,6 +102,8 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetCountries()
         {
             var countries = _db.Country
+                .Join(_db.State, c => c.CountryId, s => s.CountryId, (c, s) => c)
+                .Distinct()
                 .Where(c => c.IsDeleted == 0)
                 .OrderBy(c => c.Sequence)
                 .ProjectTo<CountryDto>(_mapper.ConfigurationProvider)
@@ -129,8 +131,6 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/LocationList")]
         public IActionResult LocationList()
         {
-            
-
             IList<CountryStateDto> CountryStates = (
                 from state in _db.State
                 join country in _db.Country on state.CountryId equals country.CountryId
@@ -145,7 +145,6 @@ namespace UpDiddyApi.Controllers
                 }).ProjectTo<CountryStateDto>(_mapper.ConfigurationProvider).ToList();
 
             return Ok(CountryStates);
-
         }
     }
 

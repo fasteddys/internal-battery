@@ -54,7 +54,7 @@ namespace UpDiddyApi.Controllers
                 // grab the subscriber information we need for the enrollment log, then set the property to null on EnrollmentDto so that ef doesn't try to create the subscriber
                 Guid subscriberGuid = EnrollmentDto.Subscriber.SubscriberGuid.Value;
                 EnrollmentDto.Subscriber = null;
-
+                EnrollmentDto.CourseId = _db.Course.Where(c => c.CourseGuid == EnrollmentDto.CourseGuid).Select(c => c.CourseId).FirstOrDefault();
                 Enrollment Enrollment = _mapper.Map<Enrollment>(EnrollmentDto);
                 _db.Enrollment.Add(Enrollment);
 
@@ -69,7 +69,12 @@ namespace UpDiddyApi.Controllers
                 DateTime currentDate = DateTime.UtcNow;
                 var course = _db.Course.Where(c => c.CourseId == EnrollmentDto.CourseId).FirstOrDefault();
                 var vendor = _db.Vendor.Where(v => v.VendorId == course.VendorId).FirstOrDefault(); // why is vendor id nullable on course?
-                var courseVariant = _db.CourseVariant.Where(cv => cv.CourseVariantId == EnrollmentDto.CourseVariantId).FirstOrDefault();
+
+                var originalCoursePrice = _db.CourseVariant
+                    .Where(cv => cv.CourseVariantGuid == EnrollmentDto.CourseVariantGuid)
+                    .Select(cv => cv.Price)
+                    .FirstOrDefault();
+
                 var promoCodeRedemption = _db.PromoCodeRedemption
                     .Include(pcr => pcr.RedemptionStatus)
                     .Where(pcr => pcr.PromoCodeRedemptionGuid == EnrollmentDto.PromoCodeRedemptionGuid && pcr.RedemptionStatus.Name == "Completed").FirstOrDefault();
@@ -90,9 +95,9 @@ namespace UpDiddyApi.Controllers
 
                 _db.EnrollmentLog.Add(new EnrollmentLog()
                 {
-                    CourseCost = course.CourseVariants.Where(c => c.CourseVariantId == EnrollmentDto.CourseVariantId).FirstOrDefault().Price, // todo: need to defend against null ref, change logic to use lookup value rather than id
+                    CourseCost = originalCoursePrice,
                     CourseGuid = course.CourseGuid.HasValue ? course.CourseGuid.Value : Guid.Empty,
-                    CourseVariantGuid = courseVariant.CourseVariantGuid,
+                    CourseVariantGuid = EnrollmentDto.CourseVariantGuid,
                     CreateDate = currentDate,
                     CreateGuid = Guid.Empty,
                     EnrollmentGuid = EnrollmentDto.EnrollmentGuid.Value,

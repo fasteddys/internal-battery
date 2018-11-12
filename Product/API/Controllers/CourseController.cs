@@ -188,11 +188,11 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/guid/{CourseGuid}")]
-        public IActionResult GetCourseByGuid(Guid? CourseGuid)
+        [Route("api/[controller]/GetCourseByGuid/{courseGuid}")]
+        public IActionResult GetCourseByGuid(Guid courseGuid)
         {
             Course course = _db.Course
-                .Where(t => t.IsDeleted == 0 && t.CourseGuid == CourseGuid)
+                .Where(t => t.IsDeleted == 0 && t.CourseGuid == courseGuid)
                 .FirstOrDefault();
 
             if (course == null)
@@ -214,6 +214,20 @@ namespace UpDiddyApi.Controllers
             else
                 return Ok(courseVariant.Price.ToString());
 
+        }
+        [HttpGet]
+        [Route("api/[controller]/GetCourseVariant/{courseVariantGuid}")]
+        public IActionResult GetCourseVariant(Guid courseVariantGuid)
+        {
+            CourseVariant courseVariant = _db.CourseVariant
+                .Include(cv => cv.CourseVariantType)
+                .Where(cv => cv.CourseVariantGuid == courseVariantGuid)
+                .FirstOrDefault();
+
+            if (courseVariant == null)
+                return NotFound();
+            else
+                return Ok(_mapper.Map<CourseVariantDto>(courseVariant));
         }
     }
 

@@ -6,6 +6,7 @@ namespace UpDiddyLib.Dto
 {
     public class StateDto
     {
+        public int StateId { get; set; }
         public Guid? StateGuid { get; set; }
         public string Code { get; set; }
         public string Name { get; set; }

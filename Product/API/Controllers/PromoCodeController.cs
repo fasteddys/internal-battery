@@ -120,7 +120,6 @@ namespace UpDiddyApi.Controllers
                 *   Dto, then we could move all of the validation to:
                 *       IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
                 */
-
                 PromoCode promoCode = _db.PromoCode
                     .Include(p => p.PromoType)
                     .Where(p => p.Code == code)

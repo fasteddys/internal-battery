@@ -2,11 +2,11 @@
 @using UpDiddyLib.Dto
 @using UpDiddyLib.Helpers;
 @using System.Collections;
-@model CourseViewModel 
+@model CourseViewModel
 <script type="text/javascript">
-    
+
         var url = '@Url.Action("GetStatesByCountry", "Course")';
-    
+
 </script>
 <div class="checkout-page-container">
     <div class="row checkout-topic-detail-band">
@@ -30,27 +30,39 @@
                 <div class="row">
                     <div class="col-md-12">
                         <form id="CourseCheckoutForm" asp-controller="Course" asp-action="Checkout" method="post">
-                            <!-- todo: do we need hidden inputs for properties that are already in the viewmodel? will they be included automatically on form post? -->
-                            <input type="hidden" id="CourseSlug" value="@Model.Course.Slug" asp-for="Course.Slug" />
                             <input type="hidden" id="BraintreeNonce" name="payment_method_nonce" asp-for="PaymentMethodNonce" />
-                            <input type="hidden" id="CourseGuid" name="CourseGuid" value="@Model.Course.CourseGuid" />
-                            <input type="hidden" id="PromoCodeRedemptionGuid" asp-for="PromoCodeRedemptionGuid" />
-
+                            <input type="hidden" id="CourseGuid" name="CourseGuid" value="@Model.CourseGuid" />
+                            <input type="hidden" id="PromoCodeRedemptionGuid" asp-for="@Model.PromoCodeRedemptionGuid" />
+                            <input type="hidden" id="SubscriberGuid" asp-for="@Model.SubscriberGuid" />
+                            <input type="hidden" id="Slug" asp-for="@Model.Slug" />
+                            <input type="hidden" id="Name" asp-for="@Model.Name" />
+                            <input type="hidden" id="Description" asp-for="@Model.Description" />
                             <div class="form-row">
                                 <div class="form-group col-12">
-                                    <div class="promotional-code-header"><h3>Section Selection</h3></div>
-                                    @foreach (var section in Model.CourseVariants)
-                                    {
-                                        @Html.RadioButtonFor(m => m.SelectedCourseVariant, section.CourseVariantGuid, new { id = section.CourseVariantType })
-                                        <label asp-for="SelectedCourseVariant">@(section.CourseVariantType)</label>
-                                        <span>@string.Format("{0:C}", section.Price)</span>
-                                        if (section.StartDates != null)
+                                    <div>
+                                        <h3>Section Selection</h3><span>Choose one of the following options:</span>
+                                        @if (Model.CourseVariants != null)
                                         {
-                                            <span>Start Dates:</span>
-                                            @Html.DropDownListFor(modelItem => section.SelectedStartDate, section.StartDates);
-                                        }
-                                    }
+                                            @foreach (var section in Model.CourseVariants)
+                                            {
+                                                <div class="form-group col-md-6">
+                                                    @Html.RadioButtonFor(m => m.SelectedCourseVariant, section.CourseVariantGuid, new { id = section.CourseVariantGuid })
+                                                    <label asp-for="SelectedCourseVariant">@(section.CourseVariantType)</label>
+                                                    <span>Price:</span>
+                                                    <span class="price">@string.Format("{0:C}", section.Price)</span>
+                                                    @if (section.StartDates != null)
+                                                    {
+                                                        <span>Start Dates:</span>
+                                                        @Html.DropDownListFor(modelItem => section.SelectedStartDate, section.StartDates, "Select Date");
+                                                    }
+                                                </div>
 
+
+                                            }
+                                            <span>@Html.ValidationMessageFor(m => m.SelectedCourseVariant, null, new { id = "ValidationSummary" })</span>
+
+                                        }
+                                    </div>
                                     <div class="form-row">
                                         <div class="form-group col-md-6">
                                             <div class="promotional-code-header"><h3>Promotional Code</h3></div>
@@ -115,10 +127,10 @@
                                             <input type="text" class="form-control" name="BillingZipCode" id="BillingZipCode" asp-for="BillingZipCode" placeholder="Zip Code" required>
                                         </div>
                                         <div class="form-group col-md-3">
-                                            @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "---", new { @class = "form-control country-select" })
+                                            @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select" })
                                         </div>
                                         <div class="form-group col-md-3">
-                                            @Html.DropDownListFor(m => m.SelectedState, Model.States, "---", new { @class = "form-control state-select" })
+                                            @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select" })
                                         </div>
                                     </div>
                                     <div class="form-row" id="BraintreePaymentContainer">
@@ -138,10 +150,11 @@
                                                 <h3>Terms of Service</h3>
                                             </div>
                                             <div class="terms-of-service-scrollview">
-                                                @Model.Course.TermsOfServiceContent
+                                                @Model.TermsOfServiceContent
                                             </div>
                                             <div class="form-check tos-agree">
-                                                <input type="hidden" asp-for="Course.TermsOfServiceDocumentId" value="@Model.Course.TermsOfServiceDocumentId" />
+                                                <input type="hidden" asp-for="TermsOfServiceDocumentId" value="@Model.TermsOfServiceDocumentId" />
+                                                <input type="hidden" asp-for="TermsOfServiceContent" value="@Model.TermsOfServiceContent" />
                                                 <input type="checkbox" class="form-check-input" id="TermsOfServiceCheckbox">
                                                 <label class="form-check-label" for="TermsOfServiceCheckbox">I agree</label>
                                             </div>
@@ -155,7 +168,7 @@
                                         <div class="form-group offset-md-6 col-12 col-md-6">
                                             <div class="row total-container">
                                                 <div class="form-group col-6">
-                                                    @Model.Course.Name
+                                                    @Model.Name
                                                 </div>
                                                 <div class="form-group col-6 container-align-right">
 
@@ -184,11 +197,6 @@
                                     <div class="enrollment-submit-container container-align-right">
                                         <button type="submit" id="EnrollmentSubmitButton" class="brand-button contrast-primary enrollment-submit" disabled>Enroll</button>
                                     </div>
-                                    <div id="ValidationSummary" class="container-align-right">
-
-                                        @*Html.ValidationMessageFor(x => x.Course.Price)*@
-
-                                    </div>
                         </form>
                     </div>
                 </div>
@@ -216,6 +224,12 @@
         container: '#bt-dropin'
     }, function (createErr, instance) {
         form.addEventListener('submit', function (event) {
+            // bypass payment if course cost is zero
+            if ($('#CourseTotal').html() === "$0.00") {
+                HTMLFormElement.prototype.submit.call(form);
+                return;
+            }
+
             event.preventDefault();
 
             instance.requestPaymentMethod(function (err, payload) {

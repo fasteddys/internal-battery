@@ -12210,6 +12210,40 @@ if (typeof jQuery === 'undefined') {
 
 
 $(document).ready(function () {
+
+
+    $('#SelectedCountry').change(function () {
+        var selectedCountry = $("#SelectedCountry").val();
+        var stateSelect = $('#SelectedState');
+        stateSelect.empty();
+        if (selectedCountry != null && selectedCountry != '') {
+            $.getJSON(url, { countryGuid: selectedCountry }, function (states) {
+                if (states != null && !jQuery.isEmptyObject(states)) {
+                    stateSelect.append($('<option/>', {
+                        value: null,
+                        text: "---"
+                    }));
+                    $.each(states.value, function (index, state) {
+                        stateSelect.append($('<option/>', {
+                            value: state.stateGuid,
+                            text: state.name
+                        }));
+                    });
+                };
+            });
+        }
+    });
+
+    $("#SelectedCountry option:eq(1)").attr('selected', 'selected');
+    $('#SelectedCountry').change();
+
+    $("input[name='SelectedCourseVariant']").change(function () {
+
+        var selectedCourseVariant = $("input[name='SelectedCourseVariant']:checked");
+        var selectedCourseVariantPrice = $(selectedCourseVariant).nextAll("span").nextAll("span").html();
+        $("#InitialCoursePrice").html(selectedCourseVariantPrice);
+    });
+
     $("#SameAsAboveCheckbox").change(function () {
         if (this.checked) {
             $('.billing-info-container').hide();
@@ -12296,13 +12330,17 @@ $(document).ready(function () {
 
     $('#PromoCodeApplyButton').on('click', function () {
         var _promoCode = $('#PromoCodeInput').val();
-        var _courseGuid = $('#CourseGuid').val();
+        var _courseVariantGuid = $("input[name='SelectedCourseVariant']:checked").val();
         var _subscriberGuid = $('#SubscriberGuid').val();
 
-        if (_promoCode !== undefined && $.trim(_promoCode) !== '') {
+        if (typeof _courseVariantGuid == 'undefined') {
+            $('#ValidationMessageError span').html('A course section must be selected before applying a promo code.');
+            $('#ValidationMessageSuccess').hide();
+            $('#ValidationMessageError').show();
+        } else if (_promoCode !== undefined && $.trim(_promoCode) !== '' && typeof _courseVariantGuid != 'undefined') {
             var form = $('#CourseCheckoutForm');
             var token = $('input[name="__RequestVerificationToken"]', form).val();
-            var postUrl = "/Course/PromoCodeValidation/" + _promoCode + "/" + _courseGuid + "/" + _subscriberGuid;
+            var postUrl = "/Course/PromoCodeValidation/" + _promoCode + "/" + _courseVariantGuid + "/" + _subscriberGuid;
 
             $.ajax({
                 url: postUrl,

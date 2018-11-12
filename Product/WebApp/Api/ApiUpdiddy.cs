@@ -53,11 +53,15 @@ namespace UpDiddy.Api
             CourseDto retVal = Get<CourseDto>("course/slug/" + CourseSlug, false);
             return retVal;
         }
-
         public CourseDto CourseByGuid(Guid CourseGuid)
         {
-            CourseDto retVal = Get<CourseDto>("course/guid/" + CourseGuid, false);
+            CourseDto retVal = Get<CourseDto>("course/GetCourseByGuid/" + CourseGuid, false);
             return retVal;
+        }
+
+        public CourseVariantDto GetCourseVariant(Guid courseVariantGuid)
+        {
+            return Get<CourseVariantDto>("course/GetCourseVariant/" + courseVariantGuid, false);
         }
 
         public SubscriberDto Subscriber(Guid SubscriberGuid)
