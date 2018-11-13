@@ -40,6 +40,16 @@ $(document).ready(function () {
         var selectedCourseVariant = $("input[name='SelectedCourseVariant']:checked");
         var selectedCourseVariantPrice = $(selectedCourseVariant).nextAll("span").nextAll("span").html();
         $("#InitialCoursePrice").html(selectedCourseVariantPrice);
+        if ($("#PromoCodeTotal").html().startsWith("-$")) {
+            var initial = parseFloat($("#InitialCoursePrice").html().replace(",","").split("$")[1]);
+            var discount = Math.min(parseFloat($("#PromoCodeTotal").html().replace(",", "").split("$")[1]), initial);
+            $("#PromoCodeTotal").html("-$" + discount.toFixed(2));
+            $("#CourseTotal").html("$" + ((initial - discount)).toFixed(2));
+        } else {
+            $("#CourseTotal").html(selectedCourseVariantPrice);
+        }
+
+        
     });
 
     $("#SameAsAboveCheckbox").change(function () {

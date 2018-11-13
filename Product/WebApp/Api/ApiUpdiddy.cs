@@ -156,21 +156,6 @@ namespace UpDiddy.Api
         {
             return Get<VendorStudentLoginDto>("enrollment/StudentLogin/" + SubscriberId.ToString(), true);
         }
-
-        public WozCourseScheduleDto CourseSchedule(string CourseCode, Guid CourseGuid)
-        {
-            return Get<WozCourseScheduleDto>("woz/CourseSchedule/" + CourseCode + "/" + CourseGuid, false);
-        }
-
-        public WozCourseScheduleDto InstructorLedPrice(string CourseCode)
-        {
-            return Get<WozCourseScheduleDto>("woz/CourseSchedule/" + CourseCode, false);
-        }
-
-        public double InstructorLedPrice(Guid CourseGuid, string VariantType)
-        {
-            return Get<double>("course/guid/" + CourseGuid + "/variant/" + VariantType, false);
-        }
     }
 }
 

@@ -45,14 +45,14 @@
                                             @foreach (var section in Model.CourseVariants)
                                             {
                                                 <div class="form-group col-md-6">
-                                                    @Html.RadioButtonFor(m => m.SelectedCourseVariant, section.CourseVariantGuid, new { id = section.CourseVariantGuid })
+                                                    @Html.RadioButtonFor(m => m.SelectedCourseVariant, section.CourseVariantGuid, new { id = section.CourseVariantGuid, required = "required" })
                                                     <label asp-for="SelectedCourseVariant">@(section.CourseVariantType)</label>
                                                     <span>Price:</span>
                                                     <span class="price">@string.Format("{0:C}", section.Price)</span>
                                                     @if (section.StartDates != null)
                                                     {
                                                         <span>Start Dates:</span>
-                                                        @Html.DropDownListFor(modelItem => section.SelectedStartDate, section.StartDates, "Select Date");
+                                                        @Html.DropDownListFor(m => m.SelectedStartDate, section.StartDates, "Select Date");
                                                     }
                                                 </div>
 

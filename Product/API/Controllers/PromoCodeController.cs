@@ -165,7 +165,6 @@ namespace UpDiddyApi.Controllers
                     .Where(vpc => vpc.PromoCodeId == promoCode.PromoCodeId)
                     .ToList();
 
-                // todo: not sure this works? if it does, need to clean it up, guard against null refs, etc
                 var course = _db.Course
                     .Include(c => c.CourseVariants)
                     .Where(c => c.CourseVariants

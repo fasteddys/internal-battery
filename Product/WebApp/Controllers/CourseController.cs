@@ -64,7 +64,7 @@ namespace UpDiddy.Controllers
         public IActionResult Get(string CourseSlug)
         {
             GetSubscriber(false);
-            
+
             var gateway = braintreeConfiguration.GetGateway();
             var clientToken = gateway.ClientToken.Generate();
             ViewBag.ClientToken = clientToken;
@@ -130,43 +130,43 @@ namespace UpDiddy.Controllers
                 });
             }
 
-            if (ModelState.IsValid)
+            // get the course variant based on the Guid selected, do not trust Price and Type from user submission
+            CourseVariantViewModel selectedCourseVariant = null;
+            if (courseViewModel.SelectedCourseVariant.HasValue)
             {
-                // get the course variant based on the Guid selected, do not trust Price and Type from user submission
-                CourseVariantViewModel selectedCourseVariant = null;
-                if (courseViewModel.SelectedCourseVariant.HasValue)
+                CourseVariantDto courseVariantDto = null;
+                courseVariantDto = API.GetCourseVariant(courseViewModel.SelectedCourseVariant.Value);
+                selectedCourseVariant = new CourseVariantViewModel()
                 {
-                    CourseVariantDto courseVariantDto = null;
-                    courseVariantDto = API.GetCourseVariant(courseViewModel.SelectedCourseVariant.Value);
-                    selectedCourseVariant = new CourseVariantViewModel()
-                    {
-                        CourseVariantGuid = courseVariantDto.CourseVariantGuid,
-                        CourseVariantType = courseVariantDto.CourseVariantType.Name,
-                        Price = courseVariantDto.Price,
-                        SelectedStartDate = courseViewModel.SelectedStartDate
-                    };
-                }
-                courseViewModel.CourseVariant = selectedCourseVariant;
-                
-                // validate, consume, and apply promo code redemption. consider moving this to CourseViewModel.Validate (using IValidatableObject)
-                PromoCodeDto validPromoCode = null;
-                decimal adjustedPrice = courseViewModel.CourseVariant.Price;
-                if (courseViewModel.PromoCodeRedemptionGuid.HasValue && courseViewModel.PromoCodeRedemptionGuid.Value != Guid.Empty)
+                    CourseVariantGuid = courseVariantDto.CourseVariantGuid,
+                    CourseVariantType = courseVariantDto.CourseVariantType.Name,
+                    Price = courseVariantDto.Price,
+                    SelectedStartDate = courseViewModel.SelectedStartDate
+                };
+            }
+            courseViewModel.CourseVariant = selectedCourseVariant;
+
+            // validate, consume, and apply promo code redemption. consider moving this to CourseViewModel.Validate (using IValidatableObject)
+            PromoCodeDto validPromoCode = null;
+            decimal adjustedPrice = courseViewModel.CourseVariant.Price;
+            if (courseViewModel.PromoCodeRedemptionGuid.HasValue && courseViewModel.PromoCodeRedemptionGuid.Value != Guid.Empty)
+            {
+                validPromoCode = API.PromoCodeRedemptionValidation(courseViewModel.PromoCodeRedemptionGuid.Value.ToString(), courseViewModel.SelectedCourseVariant.ToString(), this.subscriber.SubscriberGuid.Value.ToString());
+
+                if (validPromoCode == null)
+                    ModelState.AddModelError("PromoCodeRedemptionGuid", "The promo code selected is not valid for this course section.");
+                else
                 {
-                    validPromoCode = API.PromoCodeRedemptionValidation(courseViewModel.PromoCodeRedemptionGuid.Value.ToString(), courseViewModel.SelectedCourseVariant.ToString(), this.subscriber.SubscriberGuid.Value.ToString());
-
-                    if (validPromoCode == null)
-                        ModelState.AddModelError("PromoCodeRedemptionGuid", "The promo code selected is not valid for this course section.");
-                    else
-                    {
-                        adjustedPrice -= validPromoCode.Discount;
-                        courseViewModel.PromoCodeRedemptionGuid = validPromoCode.PromoCodeRedemptionGuid;
-                    }
+                    adjustedPrice -= validPromoCode.Discount;
+                    courseViewModel.PromoCodeRedemptionGuid = validPromoCode.PromoCodeRedemptionGuid;
                 }
+            }
 
-                // use course variant type to infer enrollment status and start date
-                int enrollmentStatusId = 0;
-                long? sectionStartTimestamp = null;
+            // use course variant type to infer enrollment status and start date
+            int enrollmentStatusId = 0;
+            long? sectionStartTimestamp = null;
+            if (selectedCourseVariant != null)
+            {
                 switch (selectedCourseVariant.CourseVariantType)
                 {
                     case "Instructor-Led":
@@ -180,7 +180,10 @@ namespace UpDiddy.Controllers
                     default:
                         throw new ApplicationException("Unrecognized course variant; cannot determine enrollment status!");
                 }
+            }
 
+            if (ModelState.IsValid)
+            {
                 // create the enrollment object
                 EnrollmentDto enrollmentDto = new EnrollmentDto
                 {
@@ -274,7 +277,7 @@ namespace UpDiddy.Controllers
                     Text = s.Name,
                     Value = s.StateGuid.ToString()
                 });
-                
+
                 return View(courseViewModel);
             }
         }
