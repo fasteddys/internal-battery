@@ -12236,6 +12236,8 @@ $(document).ready(function () {
 
     $("#SelectedCountry option:eq(1)").attr('selected', 'selected');
     $('#SelectedCountry').change();
+    var savedStateGuid = $("#SavedStateGuid").val();
+    $("#SelectedState").val(savedStateGuid);
 
     $("input[name='SelectedCourseVariant']").change(function () {
 

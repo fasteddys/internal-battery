@@ -26,6 +26,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace UpDiddy.Controllers
 {
@@ -139,6 +140,19 @@ namespace UpDiddy.Controllers
                 WozCourseProgressions,
                 SubscriberCountry,
                 SubscriberState);
+
+            ProfileViewModel.Countries = API.GetCountries().Select(c => new SelectListItem()
+            {
+                Text = c.DisplayName,
+                Value = c.CountryGuid.ToString()
+            });
+
+            ProfileViewModel.States = new List<StateViewModel>().Select(s => new SelectListItem()
+            {
+                Text = s.Name,
+                Value = s.StateGuid.ToString()
+            });
+            ProfileViewModel.SelectedState = SubscriberState.StateGuid.HasValue ? SubscriberState.StateGuid.Value : Guid.Empty;
             return View(ProfileViewModel);
         }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,6 +11,13 @@ namespace UpDiddy.ViewModels
 {
     public class ProfileViewModel : BaseViewModel
     {
+        public IEnumerable<SelectListItem> States { get; set; }
+        public IEnumerable<SelectListItem> Countries { get; set; }
+        [Required(ErrorMessage = "A state must be selected in billing information.")]
+        public Guid SelectedState { get; set; }
+        [Required(ErrorMessage = "A country must be selected in billing information.")]
+        public Guid SelectedCountry { get; set; }
+
         public SubscriberDto Subscriber { get; set; }
         public Dictionary<CountryDto, List<StateDto>> CountryStateMapping { get; set; }
         public IList<WozCourseProgress> CurrentEnrollments { get; set; }

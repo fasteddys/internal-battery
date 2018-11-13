@@ -4,9 +4,8 @@
 @using System.Collections;
 @model CourseViewModel
 <script type="text/javascript">
-
-        var url = '@Url.Action("GetStatesByCountry", "Course")';
-
+    // this must be present for the API call used in site.js
+    var url = '@Url.Action("GetStatesByCountry", "Course")';
 </script>
 <div class="checkout-page-container">
     <div class="row checkout-topic-detail-band">

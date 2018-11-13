@@ -19,6 +19,8 @@ $(document).ready(function () {
                             text: state.name
                         }));
                     });
+                    var savedStateGuid = $("#SavedStateGuid").val();
+                    $("#SelectedState").val(savedStateGuid);
                 };
             });
         }

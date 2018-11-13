@@ -9,6 +9,9 @@
     List<CountryDto> countries = Model.CountryStateMapping.Keys.ToList();
 }
 <script type="text/javascript">
+    // this must be present for the API call used in site.js
+    var url = '@Url.Action("GetStatesByCountry", "Course")';
+    
     var locationsList = {};
 
     @foreach (CountryDto country in Model.CountryStateMapping.Keys)
@@ -298,6 +301,7 @@
                                     <form asp-controller="Home" asp-action="UpdateProfileInformation" id="PersonalInfoForm">
                                         <input type="hidden" asp-for="CurrentSubscriberGuid" value="@(Model.Subscriber.SubscriberGuid)" />
                                         <input type="hidden" asp-for="UpdatedState" value="" />
+                                        <input type="hidden" id="SavedStateGuid" value="@(Model.SelectedState)" />
                                         <div class="form-row">
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedFirstName">First Name</label>
@@ -357,6 +361,14 @@
                                                 <select class="form-control state-select" id="UpdatedStateInput"></select>
                                             </div>
                                             <div class="form-group col-md-3">
+                                                <label for="UpdatedCountryInput2">State</label>
+                                                @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select" })
+                                            </div>
+                                            <div class="form-group col-md-3">
+                                                <label for="UpdatedStateInput2">State</label>
+                                                @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select" })
+                                            </div>
+                                            <div class="form-group col-md-3">
                                                 <label for="UpdatedFacebookUrl">Facebook Profile</label>
                                                 <input type="text" class="form-control" name="UpdatedFacebookUrl" id="UpdatedFacebookUrl" asp-for="UpdatedFacebookUrl" placeholder="@Model.FacebookUrlPlaceholder">
                                             </div>
@@ -406,8 +418,23 @@
 
 <script>
     @{
-        if (!Model.State.Name.Equals(""))
+        if (Model.State == null || Model.State.Name == null || string.IsNullOrWhiteSpace(Model.State.Name))
         {
+            <text>
+            var dropdown = document.getElementById("UpdatedStateInput");
+            var country = "US";
+            var states = locationsList[country];
+            for (i = 0; i < states.length; i++)
+            {
+                var option = document.createElement("option");
+                option.text = states[i].name;
+                option.value = states[i].id;
+                dropdown.appendChild(option);
+    }
+            </text>
+        }
+        else
+        { 
             <text>
             var dropdown = document.getElementById("UpdatedStateInput");
             var country = "@Model.Country.Code2";
@@ -422,22 +449,7 @@
                 }
                 option.value = states[i].id;
                 dropdown.appendChild(option);
-    }
-            </text>
-        }
-        else
-        {
-            <text>
-            var dropdown = document.getElementById("UpdatedStateInput");
-            var country = "US";
-            var states = locationsList[country];
-            for (i = 0; i < states.length; i++)
-            {
-                var option = document.createElement("option");
-                option.text = states[i].name;
-                option.value = states[i].id;
-                dropdown.appendChild(option);
-    }
+            }
             </text>
         }
     }
