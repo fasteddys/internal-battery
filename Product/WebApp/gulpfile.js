@@ -1,12 +1,17 @@
-﻿/// <binding Clean='clean' />
-"use strict";
+﻿"use strict";
 
-var gulp = require("gulp"),
-  fs = require("fs"),
-  sass = require("gulp-sass");
+var gulp = require("gulp");
+var sass = require("gulp-sass");
+var csso = require('gulp-csso');
 
-gulp.task("scss-compile", function () {
-  return gulp.src("wwwroot/scss/index.scss")
-    .pipe(sass())
-    .pipe(gulp.dest("wwwroot/css"));
+sass.compiler = require('node-sass');
+
+gulp.task('sass', function () {
+    return gulp.src("wwwroot/scss/bundle.scss")
+        .pipe(sass().on('error', sass.logError))
+        .pipe(gulp.dest('wwwroot/css'));
+});
+
+gulp.task('sass:watch', function () {
+    gulp.watch('./wwwroot/scss/**/*.scss', ['sass']);
 });

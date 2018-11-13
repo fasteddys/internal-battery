@@ -88,6 +88,7 @@
     }
 }
 
+<<<<<<< HEAD
 .brand-button-tertiary {
     background-color: $color-tertiary;
     color: $color-white;
@@ -102,6 +103,25 @@
     }
     &.border-white{
         border: 2px solid $color-white;
+    }
+}
+
+.banner-button {
+    background-size: cover;
+    color: white;
+    font-size: 2.5em;
+    font-weight: bold;
+    text-align: center;
+    height: 125px;
+    line-height: 125px;
+    margin-bottom: 10px;
+
+    &.green {
+        background-image: url("/images/GreenBlock.png");
+    }
+
+    &.blue {
+        background-image: url("/images/NavyBlock.png");
     }
 }
 
@@ -183,6 +203,10 @@ input {
 
 .hidden{
     display: none;
+}
+
+.w-40 {
+    width: 40%;
 }
 
 a:hover{
