@@ -174,8 +174,15 @@ namespace UpDiddy
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }
 
-            if(env.IsProduction())
-                app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
+            if (env.IsProduction())
+            {
+                string RewriteRulesEnabled = Configuration.GetValue<string>("RewriteRulesEnabled");
+                if (string.IsNullOrEmpty(RewriteRulesEnabled)  || ("true").Equals(RewriteRulesEnabled.ToLower()))
+                {
+                    app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
+                }
+            }
+                
 
             var supportedCultures = new[]
                 {
