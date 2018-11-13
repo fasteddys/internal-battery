@@ -26,6 +26,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using Polly.Registry;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddy.Controllers
 {
@@ -37,8 +38,8 @@ namespace UpDiddy.Controllers
         private readonly IHttpClientFactory _HttpClientFactory;
 
 
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory)
-            : base(azureAdB2COptions.Value, configuration, httpClientFactory)
+        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache)
+            : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache)
         {
 
 

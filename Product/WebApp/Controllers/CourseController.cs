@@ -13,6 +13,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Net.Http;
 using Polly.Registry;
+using Microsoft.Extensions.Caching.Distributed;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -34,7 +35,7 @@ namespace UpDiddy.Controllers
                 TransactionStatus.SUBMITTED_FOR_SETTLEMENT
             };
 
-        public CourseController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory) : base(azureAdB2COptions.Value, configuration, httpClientFactory )
+        public CourseController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache) : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache )
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;

@@ -17,6 +17,7 @@ using System.Text;
 using UpDiddyLib.Dto;
 using Polly.Registry;
 using System.Collections;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddy.Helpers
 {
@@ -28,7 +29,9 @@ namespace UpDiddy.Helpers
         public AzureAdB2COptions AzureOptions { get; set; }
         public HttpContext HttpContext { get; set; }
 
- 
+        public IDistributedCache _cache { get; set; }
+
+
         public T Put<T>(string ApiAction, bool Authorized = false)
         {
             Task<string> Response = _PutAsync(ApiAction, Authorized);

@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using System.Net.Http;
 using Polly.Registry;
 using System.Collections;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddy.Controllers
 {
@@ -28,14 +29,15 @@ namespace UpDiddy.Controllers
         private AzureAdB2COptions _AzureAdB2COptions = null;
         private IConfiguration _configuration = null;
         private IHttpClientFactory _HttpClientFactory = null;
- 
+        private IDistributedCache _cache = null;
 
-        public BaseController(AzureAdB2COptions AzureAdB2COptions, IConfiguration configuration, IHttpClientFactory httpClientFactory )
+
+        public BaseController(AzureAdB2COptions AzureAdB2COptions, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache)
         {
             _AzureAdB2COptions = AzureAdB2COptions;
             _configuration = configuration;
             _HttpClientFactory = httpClientFactory;
-    
+            _cache = cache;    
         }
 
          public ApiUpdiddy API {
@@ -45,7 +47,7 @@ namespace UpDiddy.Controllers
                     return _Api;
                 else
                 {
-                    _Api = new ApiUpdiddy(_AzureAdB2COptions, this.HttpContext, _configuration, _HttpClientFactory);
+                    _Api = new ApiUpdiddy(_AzureAdB2COptions, this.HttpContext, _configuration, _HttpClientFactory, _cache);
                     return _Api;
                 }
             }
