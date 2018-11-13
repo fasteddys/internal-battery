@@ -33,7 +33,6 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/Update")]
         public IActionResult Update([FromBody] SubscriberDto Subscriber)
         {
-
             try
             {
                 Subscriber subscriber = _db.Subscriber
@@ -58,9 +57,14 @@ namespace UpDiddyApi.Controllers
                     {
                         subscriber.City = Subscriber.City;
                     }
-                    if(Subscriber.StateId != 0)
+                    int stateId = 0;
+                    if (Subscriber.SelectedState != Guid.Empty)
                     {
-                        subscriber.StateId = Subscriber.StateId;
+                        stateId = _db.State.Where(s => s.StateGuid.Value == Subscriber.SelectedState).Select(s => s.StateId).FirstOrDefault();
+                    }
+                    if (stateId != 0)
+                    {
+                        subscriber.StateId = stateId;
                     }
                     if (!string.IsNullOrEmpty(Subscriber.PhoneNumber))
                     {
@@ -125,27 +129,5 @@ namespace UpDiddyApi.Controllers
 
             return Ok(states);
         }
-
-        // todo: mark this as obsolete or delete it once everything is using the methods above
-        [HttpGet]
-        [Route("api/[controller]/LocationList")]
-        public IActionResult LocationList()
-        {
-            IList<CountryStateDto> CountryStates = (
-                from state in _db.State
-                join country in _db.Country on state.CountryId equals country.CountryId
-                select new
-                {
-                    country.DisplayName,
-                    country.Code2,
-                    country.Code3,
-                    state.Name,
-                    state.Code,
-                    state.StateId
-                }).ProjectTo<CountryStateDto>(_mapper.ConfigurationProvider).ToList();
-
-            return Ok(CountryStates);
-        }
     }
-
 }

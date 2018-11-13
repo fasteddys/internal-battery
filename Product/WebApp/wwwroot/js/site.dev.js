@@ -12214,14 +12214,15 @@ $(document).ready(function () {
 
     $('#SelectedCountry').change(function () {
         var selectedCountry = $("#SelectedCountry").val();
-        var stateSelect = $('#SelectedState');
+        var stateSelect = $("#SelectedState");
+        
         stateSelect.empty();
         if (selectedCountry != null && selectedCountry != '') {
             $.getJSON(url, { countryGuid: selectedCountry }, function (states) {
                 if (states != null && !jQuery.isEmptyObject(states)) {
                     stateSelect.append($('<option/>', {
-                        value: null,
-                        text: "---"
+                        value: "---",
+                        text: "Select State"
                     }));
                     $.each(states.value, function (index, state) {
                         stateSelect.append($('<option/>', {
@@ -12229,6 +12230,13 @@ $(document).ready(function () {
                             text: state.name
                         }));
                     });
+                    var savedStateGuid = $("#SavedStateGuid").val();                    
+                    if (savedStateGuid === undefined || savedStateGuid === "00000000-0000-0000-0000-000000000000") {
+                        $("#SelectedState").val("---");
+                    }
+                    else {
+                        $("#SelectedState").val(savedStateGuid);
+                    }
                 };
             });
         }
@@ -12236,8 +12244,6 @@ $(document).ready(function () {
 
     $("#SelectedCountry option:eq(1)").attr('selected', 'selected');
     $('#SelectedCountry').change();
-    var savedStateGuid = $("#SavedStateGuid").val();
-    $("#SelectedState").val(savedStateGuid);
 
     $("input[name='SelectedCourseVariant']").change(function () {
 

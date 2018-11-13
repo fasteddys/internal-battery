@@ -127,11 +127,6 @@ namespace UpDiddy.Api
         {
             return Get<IList<StateDto>>("profile/GetStatesByCountry/" + countryGuid.ToString(), false);
         }
-        public IList<CountryStateDto> GetCountryStateList()
-        {
-            return Get<IList<CountryStateDto>>("profile/LocationList", false);
-        }
-
         public IList<EnrollmentDto> GetCurrentEnrollmentsForSubscriber(SubscriberDto Subscriber)
         {
             return Get<IList<EnrollmentDto>>("enrollment/CurrentEnrollments/" + Subscriber.SubscriberId, true);

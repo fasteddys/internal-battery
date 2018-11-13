@@ -19,7 +19,6 @@ namespace UpDiddy.ViewModels
         public Guid SelectedCountry { get; set; }
 
         public SubscriberDto Subscriber { get; set; }
-        public Dictionary<CountryDto, List<StateDto>> CountryStateMapping { get; set; }
         public IList<WozCourseProgress> CurrentEnrollments { get; set; }
         public CountryDto Country { get; set; }
         public StateDto State { get; set; }
@@ -67,7 +66,6 @@ namespace UpDiddy.ViewModels
         public ProfileViewModel(
             IConfiguration _configuration, 
             SubscriberDto subscriber, 
-            IList<CountryStateDto> CountryStateList,
             IList<WozCourseProgress> WozCourseProgressions,
             CountryDto SubscriberCountry,
             StateDto SubscriberState)
@@ -79,8 +77,6 @@ namespace UpDiddy.ViewModels
             this.State = SubscriberState;
             SetProfileDisplayValues();
             SetInformationFlag();
-            this.CountryStateMapping = Utils.InitializeCountryStateMapping(CountryStateList);
-            //InitializeCountryStateMapping(CountryStateList);
         }
 
         private void SetProfileDisplayValues()
@@ -140,36 +136,6 @@ namespace UpDiddy.ViewModels
             {
                 this.HasAnyInformationToDisplay = false;
             }
-        }
-
-        private void InitializeCountryStateMapping(IList<CountryStateDto> CountryStateList)
-        {
-            /*
-            string previousCountry = CountryStateList[0].DisplayName;
-            List<StateDto> states = new List<StateDto>();
-            this.CountryStateMapping = new Dictionary<string, List<StateDto>>();
-            foreach (CountryStateDto csdto in CountryStateList)
-            {
-                if (!(previousCountry).Equals(csdto.DisplayName))
-                {
-                    this.CountryStateMapping.Add(previousCountry, states);
-                    states = new List<StateDto>();
-                    previousCountry = csdto.DisplayName;
-                    states.Add(new StateDto {
-                        Name = csdto.Name,
-                        StateId = csdto.StateId
-                    });
-                }
-                else
-                {
-                    states.Add(new StateDto
-                    {
-                        Name = csdto.Name,
-                        StateId = csdto.StateId
-                    });
-                }
-            }
-            */
         }
     }
 }

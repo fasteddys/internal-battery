@@ -37,6 +37,18 @@ namespace UpDiddy.Controllers
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
 
+        [HttpGet]
+        public IActionResult GetCountries()
+        {
+            return Ok(Json(API.GetCountries()));
+        }
+
+        [HttpGet]
+        public IActionResult GetStatesByCountry(Guid countryGuid)
+        {
+            return Ok(Json(API.GetStatesByCountry(countryGuid)));
+        }
+
         public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHostingEnvironment env)
             : base(azureAdB2COptions.Value, configuration)
         {
@@ -101,7 +113,6 @@ namespace UpDiddy.Controllers
         public IActionResult Profile()
         {
             GetSubscriber(true);
-            IList<CountryStateDto> CountryStateList = API.GetCountryStateList();
             IList<EnrollmentDto> CurrentEnrollments = API.GetCurrentEnrollmentsForSubscriber(this.subscriber);
             CountryDto SubscriberCountry = new CountryDto();
             StateDto SubscriberState = new StateDto();
@@ -136,7 +147,6 @@ namespace UpDiddy.Controllers
             ProfileViewModel ProfileViewModel = new ProfileViewModel(
                 _configuration,
                 this.subscriber,
-                CountryStateList,
                 WozCourseProgressions,
                 SubscriberCountry,
                 SubscriberState);
@@ -169,7 +179,8 @@ namespace UpDiddy.Controllers
             string UpdatedStackOverflowUrl,
             string UpdatedGithubUrl,
             int UpdatedState,
-            Guid CurrentSubscriberGuid
+            Guid CurrentSubscriberGuid,
+            Guid SelectedState
             )
         {
             /* todo: the validation and sanitization logic below is probably the worst code i have written in the last 10 years. 
@@ -224,7 +235,8 @@ namespace UpDiddy.Controllers
                     Address = UpdatedAddress,
                     PhoneNumber = UpdatedPhoneNumber,
                     City = UpdatedCity,
-                    StateId = UpdatedState,
+                    // StateId = UpdatedState,
+                    SelectedState = SelectedState,
                     FacebookUrl = UpdatedFacebookUrl,
                     TwitterUrl = UpdatedTwitterUrl,
                     LinkedInUrl = UpdatedLinkedInUrl,

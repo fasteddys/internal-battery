@@ -48,18 +48,6 @@ namespace UpDiddy.Controllers
             return View();
         }
 
-        [HttpGet]
-        public IActionResult GetCountries()
-        {
-            return Ok(Json(API.GetCountries()));
-        }
-        [HttpGet]
-        public IActionResult GetStatesByCountry(Guid countryGuid)
-        {
-            return Ok(Json(API.GetStatesByCountry(countryGuid)));
-        }
-
-
         [ValidateAntiForgeryToken]
         [HttpPost]
         [Route("/Course/PromoCodeValidation/{code}/{courseVariantGuid}/{subscriberGuid}")]
