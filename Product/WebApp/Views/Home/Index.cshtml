@@ -15,10 +15,13 @@
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-10 offset-md-1 hero-container">
-                        <div class="hero-title">The truth of the matter is that you always know the right thing to do. <span class="hero-bold">The hard part is doing it.</span></div>
-                        <div class="hero-subtext">As the staffing and recruiting industry evolves with the digital world & transformation.  CareerCircle will help you determine your unique UpSkill path to jump start your digital career experience. CareerCircle will align, and create focus for your career by helping you achieve your career goals not only by upskilling, but also by creating mentoring, and coaching opportunities that align to your career goals.</div>
-                        <a asp-controller="Session" asp-action="SignIn"><div class="brand-button contrast-primary">Get Started</div></a>
+                    <div class="col-md-6 offset-md-6 hero-container">
+                        <h1><span class="f-color-black">Stay</span> <span class="f-color-primary f-bold">relevant</span>.</h1>
+                        <h1><span class="f-color-black">Become</span> <span class="f-color-tertiary f-bold">empowered</span>.</h1>
+                        <h1><span class="f-color-black">Control your</span> <span class="f-color-secondary f-bold">career</span>.</h1>
+                        <br />
+                        <h2><i><span class="f-color-black">It's time to</span> <span class="f-color-primary"><strong>Careerskill<sup>TM</sup></strong></span></i></h2>
+                        <a asp-controller="Session" asp-action="SignIn"><div class="btn brand-button-tertiary">Sign Up for CareerCircle Today!</div></a>
                     </div>
                 </div>
             </div>
@@ -28,16 +31,18 @@
         <div class="col-md-12">
             <div class="container">
                 <div class="row home-hero-bottom-cta">
-                    <div class="col-md-6 f-color-white hero-home-bottom-details">
-                        <div class="hero-title hero-bold">Join Career Circle today</div>
-                        <div class="hero-title hero-title-regular">and begin your journey Up</div>
-                        <div class="hero-description">CareerCircle helps you navigate the digital career experience, by aligning you career goals with  upskilling, mentoring, and coaching opportunities.</div>
-                        <div class="brand-button-container">
-                            <a asp-controller="Session" asp-action="SignIn"><div class="brand-button contrast-secondary">Sign Up Today!</div></a>
+                    <div class="col-md-6 f-color-white hero-home-bottom-details d-flex align-items-center">
+                        <div>
+                            <div class="hero-title hero-bold">Join <span class="f-color-primary">CareerCircle<sup>TM</sup></span> Today!</div>
+                            <div class="hero-description pb-4">CareerCircle helps you navigate the digital career experience, by aligning you career goals with  upskilling, mentoring, and coaching opportunities.</div>
+                            <div class="brand-button-container">
+                                <a asp-controller="Session" asp-action="SignIn"><div class="btn brand-button-tertiary border-white">Create your <strong>FREE</strong> CareerCircle Profile</div></a>
+                            </div>
                         </div>
+                        
                     </div>
                     <div class="col-md-6">
-                        <img class="hero-my-circle" src="~/images/career_circle_graphic.png" />
+                        <img class="hero-my-circle" src="~/images/mentoring_careerops_upskilling.png" />
                     </div>
                 </div>
             </div>
@@ -68,17 +73,17 @@
                         DescriptionBlurb = DescriptionBlurb.Substring(0, 130) + "...";
 
                     }
-                    <div class="col-lg-4 col-md-6 col-sm-6 col-xs-12 card-column">
+                    <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 card-column">
                         <a class="card-hyperlink-container" href="/Topic/@(topic.Slug)">
                             <div class="card">
                                 <img class="card-img-top" src="@(Model.ImageUrl + topic.DesktopImage)" alt="Card image cap">
-                                <div class="card-body">
+                                @*<div class="card-body">
                                     <h5 class="card-title">@topic.Name</h5>
                                     <p class="card-text fade-text">@DescriptionBlurb</p>
                                     <!--<div class="card-footer-cc">
                                         <a href="/Topic/@(topic.Slug)" class="view-courses-link">View Courses <i class="fas fa-angle-double-right"></i></a>
                                     </div>-->
-                                </div>
+                                </div>*@
                             </div>
                         </a>
                     </div>
