@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -18,7 +19,7 @@ namespace UpDiddy.Controllers
         private readonly IStringLocalizer<MobileController> _localizer;
         private readonly IConfiguration _configuration;
 
-        public MobileController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<MobileController> localizer, IConfiguration configuration,  IHttpClientFactory httpClientFactory) : base(azureAdB2COptions.Value, configuration, httpClientFactory)
+        public MobileController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<MobileController> localizer, IConfiguration configuration,  IHttpClientFactory httpClientFactory, IDistributedCache cache) : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;

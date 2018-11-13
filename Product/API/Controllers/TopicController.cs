@@ -16,6 +16,7 @@ using UpDiddyLib.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting.Internal;
 using System.IO;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddyApi.Controllers
 {
@@ -28,7 +29,7 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ISysLog _syslog;
-        public TopicController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysLog sysLog)
+        public TopicController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysLog sysLog, IDistributedCache distributedCache)
         {
             _db = db;
             _mapper = mapper;
