@@ -3,7 +3,7 @@
 # build name format
 name: WebApp.${Date:yyyyMMdd}.$(Rev:.r)
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'vs2017-win2016'
 
 variables:
   buildConfiguration: 'Release'
@@ -47,6 +47,4 @@ steps:
     azureSubscription: 'Digital BT (933642d7-459a-499f-acc7-0d9a14ecf604)'
     appType: 'webApp'
     WebAppName: 'CareerCircleWebApp'
-    Package: '$(Build.ArtifactStagingDirectory)'
-    enableCustomDeployment: true
-    deploymentType: 'Kudu REST APIs'
+    Package: '$(System.ArtifactsDirectory)'
