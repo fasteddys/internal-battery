@@ -37,7 +37,7 @@ namespace UpDiddy.Controllers
                 TransactionStatus.SUBMITTED_FOR_SETTLEMENT
             };
 
-        public CourseController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache) : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache )
+        public CourseController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache) : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
@@ -95,6 +95,7 @@ namespace UpDiddy.Controllers
                 CourseVariants = courseVariantViewModels,
                 SubscriberFirstName = this.subscriber.FirstName,
                 SubscriberLastName = this.subscriber.LastName,
+                SubscriberPhoneNumber = this.subscriber.PhoneNumber,
                 SubscriberGuid = this.subscriber.SubscriberGuid.Value,
                 TermsOfServiceContent = course.TermsOfServiceContent,
                 TermsOfServiceDocumentId = course.TermsOfServiceDocumentId,
@@ -118,20 +119,6 @@ namespace UpDiddy.Controllers
         {
             DateTime currentDate = DateTime.UtcNow;
             GetSubscriber(false);
-
-            // update the subscriber's first name and last name if they do not exist (or if the values are different than what is stored currently). 
-            // we must do this here because first and last name are required for the enrollment process for Woz. 
-            // todo: refactor this; consider creating a partial view that is shared between the profile page, checkout, and anywhere else where we need to work with the subscriber
-            if (this.subscriber.FirstName == null || !this.subscriber.FirstName.Equals(courseViewModel.SubscriberFirstName)
-                || this.subscriber.LastName == null || !this.subscriber.LastName.Equals(courseViewModel.SubscriberLastName))
-            {
-                API.UpdateProfileInformation(new SubscriberDto()
-                {
-                    SubscriberGuid = courseViewModel.SubscriberGuid,
-                    FirstName = courseViewModel.SubscriberFirstName,
-                    LastName = courseViewModel.SubscriberLastName
-                });
-            }
 
             // get the course variant based on the Guid selected, do not trust Price and Type from user submission
             CourseVariantViewModel selectedCourseVariant = null;
@@ -176,6 +163,8 @@ namespace UpDiddy.Controllers
                         enrollmentStatusId = (int)EnrollmentStatus.FutureRegisterStudentRequested;
                         if (selectedCourseVariant.SelectedStartDate.HasValue)
                             sectionStartTimestamp = Utils.ToWozTime(selectedCourseVariant.SelectedStartDate.Value);
+                        else
+                            ModelState.AddModelError("SelectedCourseVariant", "A start date must be selected for instructor-led courses.");
                         break;
                     case "Self-Paced":
                         enrollmentStatusId = (int)EnrollmentStatus.RegisterStudentRequested;
@@ -188,6 +177,22 @@ namespace UpDiddy.Controllers
 
             if (ModelState.IsValid)
             {
+                // update the subscriber's first name, last name, and phone number if they do not exist (or if the values are different than what is stored currently). 
+                // we must do this here because first name, last name, and phone number are required for the enrollment process for Woz. 
+                // todo: refactor this; consider creating a partial view that is shared between the profile page, checkout, and anywhere else where we need to work with the subscriber
+                if (this.subscriber.FirstName == null || !this.subscriber.FirstName.Equals(courseViewModel.SubscriberFirstName)
+                    || this.subscriber.LastName == null || !this.subscriber.LastName.Equals(courseViewModel.SubscriberLastName)
+                    || this.subscriber.PhoneNumber == null || !this.subscriber.PhoneNumber.Equals(courseViewModel.SubscriberPhoneNumber))
+                {
+                    API.UpdateProfileInformation(new SubscriberDto()
+                    {
+                        SubscriberGuid = courseViewModel.SubscriberGuid,
+                        FirstName = courseViewModel.SubscriberFirstName,
+                        LastName = courseViewModel.SubscriberLastName,
+                        PhoneNumber = courseViewModel.SubscriberPhoneNumber
+                    });
+                }
+
                 // create the enrollment object
                 EnrollmentDto enrollmentDto = new EnrollmentDto
                 {
@@ -209,24 +214,22 @@ namespace UpDiddy.Controllers
                     CourseVariantGuid = courseViewModel.CourseVariant.CourseVariantGuid,
                     PromoCodeRedemptionGuid = courseViewModel.PromoCodeRedemptionGuid
                 };
-            // process payment if price is not zero
-            if (enrollmentDto.PricePaid != 0)
-            {
-                    BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
-                    {
-                        PaymentAmount = enrollmentDto.PricePaid,
-                        Nonce = Request.Form["payment_method_nonce"],
-                        FirstName = courseViewModel.BillingFirstName,
-                        LastName = courseViewModel.BillingLastName,
-                        PhoneNumber = this.subscriber.PhoneNumber,
-                        Email = this.subscriber.Email,
-                        Address = courseViewModel.BillingAddress,
-                        Region = string.Empty, // todo: fix this by passing the state code (not the StateGuid)
-                        Locality = courseViewModel.BillingCity,
-                        ZipCode = courseViewModel.BillingZipCode,
-                        CountryCode = string.Empty, // todo: fix this by passing the country code (not the CountryGuid)
-                        MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("Braintree:MerchantAccountID")
-                    };
+
+                BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
+                {
+                    PaymentAmount = enrollmentDto.PricePaid,
+                    Nonce = Request.Form["payment_method_nonce"],
+                    FirstName = courseViewModel.BillingFirstName,
+                    LastName = courseViewModel.BillingLastName,
+                    PhoneNumber = this.subscriber.PhoneNumber,
+                    Email = this.subscriber.Email,
+                    Address = courseViewModel.BillingAddress,
+                    Locality = courseViewModel.BillingCity,
+                    ZipCode = courseViewModel.BillingZipCode,
+                    StateGuid = courseViewModel.SelectedState,
+                    CountryGuid = courseViewModel.SelectedCountry,
+                    MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("Braintree:MerchantAccountID")
+                };
 
                 EnrollmentFlowDto enrollmentFlowDto = new EnrollmentFlowDto
                 {
@@ -238,23 +241,6 @@ namespace UpDiddy.Controllers
                 API.EnrollStudentAndObtainEnrollmentGUID(enrollmentFlowDto);
                 return View("EnrollmentSuccess", courseViewModel);
             }
-            else
-            {
-                // course is free with promo code
-                BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
-                {
-                    PaymentAmount = 0
-                };
-                EnrollmentFlowDto enrollmentFlowDto = new EnrollmentFlowDto
-                {
-                    EnrollmentDto = enrollmentDto,
-                    BraintreePaymentDto = BraintreePaymentDto
-                };
-                API.EnrollStudentAndObtainEnrollmentGUID(enrollmentFlowDto);
-                return View("EnrollmentSuccess", courseViewModel);
-            }
-            // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method
-        }
             else
             {
                 // model validation failed; return the view with a validation summary

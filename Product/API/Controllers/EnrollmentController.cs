@@ -116,11 +116,7 @@ namespace UpDiddyApi.Controllers
                  *  This line used to enqueue the enrollment flow. Now, it's enqueuing the braintree flow,
                  *  which will then enqueue the enrollment flow if the payment is successful.
                  */
-                if (EnrollmentFlowDto?.BraintreePaymentDto?.PaymentAmount > 0)
-                {
-                    // only trigger the payment flow if there is a non-zero payment amount
-                    BackgroundJob.Enqueue<BraintreePaymentFlow>(x => x.PaymentWorkItem(EnrollmentFlowDto));
-                }
+                BackgroundJob.Enqueue<BraintreePaymentFlow>(x => x.PaymentWorkItem(EnrollmentFlowDto));
 
                 return Ok(Enrollment.EnrollmentGuid);
             }

@@ -184,6 +184,8 @@ namespace UpDiddy.Controllers
                 Value = s.StateGuid.ToString()
             });
             ProfileViewModel.SelectedState = SubscriberState.StateGuid.HasValue ? SubscriberState.StateGuid.Value : Guid.Empty;
+            ProfileViewModel.SelectedCountry = SubscriberCountry.CountryGuid;
+
             return View(ProfileViewModel);
         }
 

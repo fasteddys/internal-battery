@@ -80,8 +80,8 @@ namespace UpDiddyApi.Workflow
             // Make sure we don't get null object exceptions when referencing DTOs
 
 
-            // Make sure Nonce is present
-            if (string.IsNullOrEmpty(nonce))
+            // Make sure Nonce is present when there is a non-zero payment amount
+            if (string.IsNullOrEmpty(nonce) && BraintreePaymentDto.PaymentAmount > 0)
             {
                 string NullOrEmptyMessage = "BraintreePaymentFlow:PaymentWorkItem -> Braintree nonce is null or empty; enrollment has been cancelled.";
                 _sysLog.SysError(NullOrEmptyMessage);
@@ -106,13 +106,31 @@ namespace UpDiddyApi.Workflow
 
             try
             {
-                Result<Transaction> result = gateway.Transaction.Sale(TransactionRequest);
-                Helper.UpdateEnrollmentStatus(EnrollmentDto.EnrollmentGuid.ToString(), UpDiddyLib.Dto.EnrollmentStatus.PaymentComplete);
-                _sysLog.SysInfo("BraintreePaymentFlow:PaymentWorkItem -> Braintree payment in progress.");
+                // the following variable exists to differentiate between a successful payment and a successful transaction. 
+                // this is necessary because courses can be free with a promo code, in which case no payment is made. 
+                // in this case, the transaction is still successful even though no payment was made.
+                bool isTransactionSuccessful = false;
 
-                if (result.IsSuccess())
+                Result<Transaction> paymentResult = null;
+
+                if (BraintreePaymentDto.PaymentAmount > 0)
                 {
-                    string SuccessfulMessage = "BraintreePaymentFlow:PaymentWorkItem->Braintree payment was successfull.";
+                    paymentResult = gateway.Transaction.Sale(TransactionRequest);
+                    Helper.UpdateEnrollmentStatus(EnrollmentDto.EnrollmentGuid.ToString(), UpDiddyLib.Dto.EnrollmentStatus.PaymentComplete);
+                    _sysLog.SysInfo("BraintreePaymentFlow:PaymentWorkItem -> Braintree payment in progress.");
+                    if (paymentResult.IsSuccess())
+                        isTransactionSuccessful = true;
+                }
+                else
+                {
+                    // payment amount was zero, therefore we do not attempt to process a payment. 
+                    // transaction is considered to be successful.
+                    isTransactionSuccessful = true;
+                }
+
+                if(isTransactionSuccessful)
+                {
+                    string SuccessfulMessage = "BraintreePaymentFlow:PaymentWorkItem->Braintree payment was successful.";
                     _sysLog.SysInfo(SuccessfulMessage);
                     Course course = _db.Course.Where(t => t.IsDeleted == 0 && t.CourseId == EnrollmentDto.CourseId).FirstOrDefault();
                     EnrollmentLog enrollmentLog = _db.EnrollmentLog.Where(t => t.IsDeleted == 0 && t.EnrollmentGuid == EnrollmentDto.EnrollmentGuid).FirstOrDefault();

@@ -91,6 +91,7 @@ namespace UpDiddyApi.Business
                     firstName = Enrollment.Subscriber.FirstName,
                     lastName = Enrollment.Subscriber.LastName,
                     emailAddress = Enrollment.Subscriber.Email,
+                    phoneNumberPrimary = Enrollment.Subscriber.PhoneNumber,
                     acceptedTermsOfServiceDocumentId = Enrollment.TermsOfServiceFlag == null ? 0 : (int)Enrollment.TermsOfServiceFlag,
                     suppressRegistrationEmail = false
                 };
@@ -580,7 +581,8 @@ namespace UpDiddyApi.Business
             {
                 int MonthsLookAhead = 6;
                 int.TryParse(_configuration["Woz:CourseScheduleMonthLookahead"], out MonthsLookAhead);
-                long UTCStartDate = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
+                // setting lower bound to be 2 days into the future to prevent scheduling issues for Woz
+                long UTCStartDate = ((DateTimeOffset)DateTime.Now.Date.AddDays(2)).ToUnixTimeMilliseconds();
                 long UTCEndDate = ((DateTimeOffset)DateTime.Now.AddMonths(MonthsLookAhead)).ToUnixTimeMilliseconds();
                 HttpClient client = new HttpClient();
                 string ResponseJson = string.Empty;

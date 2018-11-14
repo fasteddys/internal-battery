@@ -36,10 +36,13 @@ namespace UpDiddy.ViewModels
 
         public Guid SubscriberGuid { get; set; }
 
-        [Required(ErrorMessage = "A first name be entered for the subscriber.")]
+        [Required(ErrorMessage = "A first name must be entered for the subscriber.")]
         public string SubscriberFirstName { get; set; }
-        [Required(ErrorMessage = "A last name be entered for the subscriber.")]
+        [Required(ErrorMessage = "A last name must be entered for the subscriber.")]
         public string SubscriberLastName { get; set; }
+        [Required(ErrorMessage = "A phone number must be entered for the subscriber.")]
+        [Phone(ErrorMessage = "The phone number provided is not valid.")]
+        public string SubscriberPhoneNumber { get; set; }
         [Required(ErrorMessage = "A course section must be selected.")]
         public Guid? SelectedCourseVariant { get; set; }
         public DateTime? SelectedStartDate { get; set; }

@@ -12215,7 +12215,7 @@ $(document).ready(function () {
     $('#SelectedCountry').change(function () {
         var selectedCountry = $("#SelectedCountry").val();
         var stateSelect = $("#SelectedState");
-        
+
         stateSelect.empty();
         if (selectedCountry != null && selectedCountry != '') {
             $.getJSON(url, { countryGuid: selectedCountry }, function (states) {
@@ -12230,8 +12230,8 @@ $(document).ready(function () {
                             text: state.name
                         }));
                     });
-                    var savedStateGuid = $("#SavedStateGuid").val();                    
-                    if (savedStateGuid === undefined || savedStateGuid === "00000000-0000-0000-0000-000000000000") {
+                    var savedStateGuid = $("#SavedStateGuid").val();
+                    if (savedStateGuid === undefined || savedStateGuid === "00000000-0000-0000-0000-000000000000" || savedStateGuid === "") {
                         $("#SelectedState").val("---");
                     }
                     else {
@@ -12242,7 +12242,13 @@ $(document).ready(function () {
         }
     });
 
-    $("#SelectedCountry option:eq(1)").attr('selected', 'selected');
+    // select the country that is currently associated with the subscriber, otherwise default to USA
+    var savedCountryGuid = $("#SelectedCountry").val();
+    if (savedCountryGuid === undefined || savedCountryGuid === "00000000-0000-0000-0000-000000000000" || savedCountryGuid === "") {
+        $("#SelectedCountry option:eq(1)").attr('selected', 'selected');
+    } else {
+        $("#SelectedCountry").val(savedCountryGuid);
+    }
     $('#SelectedCountry').change();
 
     $("input[name='SelectedCourseVariant']").change(function () {
