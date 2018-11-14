@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using UpDiddyLib.Helpers;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
+using UpDiddy.Helpers;
 
 namespace UpDiddyApi.Business
 {
@@ -25,14 +26,16 @@ namespace UpDiddyApi.Business
         #region Class
 
 
-        public WozInterface(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog)
+        public WozInterface(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = context;
             _mapper = mapper;
-            _apiBaseUri = configuration["WozApiUrl"];
-            _accessToken = configuration["WozAccessToken"];
+            // TODO: CRITICAL, Azure Key Vault does NOT permit colons. See https://docs.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-2.1
+            _apiBaseUri = configuration["Woz:ApiUrl"];
+            _accessToken = configuration["Woz:AccessToken"];
             _syslog = sysLog;
             _configuration = configuration;
+            _HttpClientFactory = httpClientFactory;
         }
 
         #endregion
@@ -83,7 +86,7 @@ namespace UpDiddyApi.Business
                     return CreateResponse(string.Empty, "Student login found", StudentLogin.VendorLogin, TransactionState.Complete);
 
                 // Call Woz to register student
-                WozStudentDto Student = new WozStudentDto()
+                WozCreateStudentDto Student = new WozCreateStudentDto()
                 {
                     firstName = Enrollment.Subscriber.FirstName,
                     lastName = Enrollment.Subscriber.LastName,
@@ -423,12 +426,15 @@ namespace UpDiddyApi.Business
 
 
         #region Course Enrollment
-
+ 
         public async Task<WozCourseProgress> GetCourseProgress(int SectionId, int WozEnrollmentId)
         {
 
-            HttpClient client = new HttpClient();
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"sections/{SectionId}/enrollments/{WozEnrollmentId}");
+            var Url = _apiBaseUri + $"sections/{SectionId}/enrollments/{WozEnrollmentId}";
+
+            
+            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Url);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             HttpResponseMessage response = await client.SendAsync(request);
             var ResponseJson = await response.Content.ReadAsStringAsync();
@@ -452,6 +458,9 @@ namespace UpDiddyApi.Business
             }
             else
             {
+                _syslog.SysError("WozInterface:GetCourseProgress Returned a status code of " + response.StatusCode.ToString());
+                _syslog.SysError("WozInterface:GetCourseProgress Url =  " + Url);
+                _syslog.SysError("WozInterface:GetCourseProgress AccessToken ends with  " + _accessToken.Substring( _accessToken.Length - 2));
                 return null;
             }
 
@@ -898,8 +907,7 @@ namespace UpDiddyApi.Business
 
         #endregion
 
-
-
+   
 
         #region Utility Functions
 
@@ -922,7 +930,7 @@ namespace UpDiddyApi.Business
 
         private HttpResponseMessage ExecuteWozPost(string ApiAction, string Content, ref string ResponseJson)
         {
-            HttpClient client = CreateWozClient();
+            HttpClient client = CreateWozPostClient();
             HttpRequestMessage WozRequest = CreateWozPostRequest(ApiAction, Content);
             HttpResponseMessage WozResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(WozRequest));
             ResponseJson = AsyncHelper.RunSync<string>(() => WozResponse.Content.ReadAsStringAsync());
@@ -933,7 +941,7 @@ namespace UpDiddyApi.Business
         private HttpResponseMessage ExecuteWozGet(string ApiAction, ref string ResponseJson)
         {
 
-            HttpClient client = CreateWozClient();
+            HttpClient client = CreateWozGetClient();
             HttpRequestMessage WozRequest = CreateWozGetRequest(ApiAction);
             HttpResponseMessage WozResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(WozRequest));
             ResponseJson = AsyncHelper.RunSync<string>(() => WozResponse.Content.ReadAsStringAsync());
@@ -957,10 +965,19 @@ namespace UpDiddyApi.Business
             return request;
 
         }
-
-        private HttpClient CreateWozClient()
+        
+        private HttpClient CreateWozPostClient()
         {
-            HttpClient client = new HttpClient();
+            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+
+            return client;
+
+        }
+
+        private HttpClient CreateWozGetClient()
+        {
+            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
 
             return client;

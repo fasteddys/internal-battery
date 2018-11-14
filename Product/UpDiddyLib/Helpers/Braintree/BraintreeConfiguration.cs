@@ -25,10 +25,10 @@ namespace UpDiddyLib.Helpers
         public IBraintreeGateway CreateGateway()
         {
             
-            Environment = GetConfigurationSetting("BraintreeEnvironment");
-            MerchantId = GetConfigurationSetting("BraintreeMerchantID");
-            PublicKey = GetConfigurationSetting("BraintreePublicKey");
-            PrivateKey = GetConfigurationSetting("BraintreePrivateKey");
+            Environment = GetConfigurationSetting("Braintree:Environment");
+            MerchantId = GetConfigurationSetting("Braintree:MerchantID");
+            PublicKey = GetConfigurationSetting("Braintree:PublicKey");
+            PrivateKey = GetConfigurationSetting("Braintree:PrivateKey");
 
             return new BraintreeGateway(Environment, MerchantId, PublicKey, PrivateKey);
         }

@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UpDiddyApi.Controllers
 {
@@ -29,10 +30,12 @@ namespace UpDiddyApi.Controllers
             _configuration = configuration;
         }
 
+        [Authorize]
         [HttpPost]
         [Route("api/[controller]/Update")]
         public IActionResult Update([FromBody] SubscriberDto Subscriber)
         {
+
             try
             {
                 Subscriber subscriber = _db.Subscriber

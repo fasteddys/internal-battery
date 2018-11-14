@@ -11,6 +11,9 @@ using UpDiddyLib.Helpers;
 using Braintree;
 using System.Text;
 using System.Collections.Generic;
+using System.Net.Http;
+using Polly.Registry;
+using Microsoft.Extensions.Caching.Distributed;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -34,7 +37,7 @@ namespace UpDiddy.Controllers
                 TransactionStatus.SUBMITTED_FOR_SETTLEMENT
             };
 
-        public CourseController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration) : base(azureAdB2COptions.Value, configuration)
+        public CourseController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache) : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache )
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
@@ -178,7 +181,8 @@ namespace UpDiddy.Controllers
                         enrollmentStatusId = (int)EnrollmentStatus.RegisterStudentRequested;
                         break;
                     default:
-                        throw new ApplicationException("Unrecognized course variant; cannot determine enrollment status!");
+                        ModelState.AddModelError("SelectedCourseVariant", "A course section must be selected.");
+                        break;
                 }
             }
 
@@ -205,11 +209,9 @@ namespace UpDiddy.Controllers
                     CourseVariantGuid = courseViewModel.CourseVariant.CourseVariantGuid,
                     PromoCodeRedemptionGuid = courseViewModel.PromoCodeRedemptionGuid
                 };
-
-                // process payment if price is not zero
-                if (enrollmentDto.PricePaid != 0)
-                {
-
+            // process payment if price is not zero
+            if (enrollmentDto.PricePaid != 0)
+            {
                     BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
                     {
                         PaymentAmount = enrollmentDto.PricePaid,
@@ -219,31 +221,40 @@ namespace UpDiddy.Controllers
                         PhoneNumber = this.subscriber.PhoneNumber,
                         Email = this.subscriber.Email,
                         Address = courseViewModel.BillingAddress,
-                        Region = string.Empty, // fix this
+                        Region = string.Empty, // todo: fix this by passing the state code (not the StateGuid)
                         Locality = courseViewModel.BillingCity,
                         ZipCode = courseViewModel.BillingZipCode,
-                        CountryCode = string.Empty, // fix this
-                        MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID")
+                        CountryCode = string.Empty, // todo: fix this by passing the country code (not the CountryGuid)
+                        MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("Braintree:MerchantAccountID")
                     };
-                    BraintreeResponseDto brdto = API.SubmitBraintreePayment(BraintreePaymentDto);
 
-                    if (brdto.WasSuccessful)
-                    {
-                        API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
-                        return View("EnrollmentSuccess", courseViewModel);
-                    }
-                    else
-                    {
-                        return View("EnrollmentFailure", courseViewModel);
-                    }
-                }
-                else
+                EnrollmentFlowDto enrollmentFlowDto = new EnrollmentFlowDto
                 {
-                    // course is free with promo code
-                    API.EnrollStudentAndObtainEnrollmentGUID(enrollmentDto);
-                    return View("EnrollmentSuccess", courseViewModel);
-                }
+                    EnrollmentDto = enrollmentDto,
+                    BraintreePaymentDto = BraintreePaymentDto,
+                    SubscriberDto = this.subscriber
+                };
+
+                API.EnrollStudentAndObtainEnrollmentGUID(enrollmentFlowDto);
+                return View("EnrollmentSuccess", courseViewModel);
             }
+            else
+            {
+                // course is free with promo code
+                BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
+                {
+                    PaymentAmount = 0
+                };
+                EnrollmentFlowDto enrollmentFlowDto = new EnrollmentFlowDto
+                {
+                    EnrollmentDto = enrollmentDto,
+                    BraintreePaymentDto = BraintreePaymentDto
+                };
+                API.EnrollStudentAndObtainEnrollmentGUID(enrollmentFlowDto);
+                return View("EnrollmentSuccess", courseViewModel);
+            }
+            // TODO: billing form field validtion using EnsureFormFieldsNotNullOrEmpty method
+        }
             else
             {
                 // model validation failed; return the view with a validation summary

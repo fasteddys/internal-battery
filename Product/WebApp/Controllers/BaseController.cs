@@ -13,6 +13,10 @@ using Microsoft.AspNetCore.Identity;
 using UpDiddy.Helpers;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+using System.Net.Http;
+using Polly.Registry;
+using System.Collections;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddy.Controllers
 {
@@ -24,11 +28,16 @@ namespace UpDiddy.Controllers
         private ApiUpdiddy _Api  = null;
         private AzureAdB2COptions _AzureAdB2COptions = null;
         private IConfiguration _configuration = null;
+        private IHttpClientFactory _HttpClientFactory = null;
+        private IDistributedCache _cache = null;
 
-        public BaseController(AzureAdB2COptions AzureAdB2COptions, IConfiguration configuration)
+
+        public BaseController(AzureAdB2COptions AzureAdB2COptions, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache)
         {
             _AzureAdB2COptions = AzureAdB2COptions;
-            _configuration = configuration;                
+            _configuration = configuration;
+            _HttpClientFactory = httpClientFactory;
+            _cache = cache;    
         }
 
          public ApiUpdiddy API {
@@ -38,7 +47,7 @@ namespace UpDiddy.Controllers
                     return _Api;
                 else
                 {
-                    _Api = new ApiUpdiddy(_AzureAdB2COptions, this.HttpContext, _configuration);
+                    _Api = new ApiUpdiddy(_AzureAdB2COptions, this.HttpContext, _configuration, _HttpClientFactory, _cache);
                     return _Api;
                 }
             }
@@ -62,7 +71,8 @@ namespace UpDiddy.Controllers
 
                 string SubscriberJson = "";
                 if(!HardRefresh)
-                    SubscriberJson = HttpContext.Session.GetString(Constants.SubsriberSessionKey);                
+                    SubscriberJson = HttpContext.Session.GetString(Constants.SubsriberSessionKey);   
+                
                 if ( String.IsNullOrEmpty(SubscriberJson)  )
                 {
                     this.subscriber = API.Subscriber(Guid.Parse(objectId));

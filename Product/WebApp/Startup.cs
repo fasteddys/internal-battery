@@ -1,49 +1,60 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc.Razor;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
-// using UserDetailsClient.Core;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
-using System.Net;
 using UpDiddy.Helpers.RewriteRules;
+using Polly;
+using System.Net.Http;
+using Polly.Extensions.Http;
+using UpDiddy.Helpers;
+using Microsoft.Extensions.Caching.Distributed;
+using Polly.Registry;
+using Polly.Caching;
+using System.Collections;
+using UpDiddyLib.Dto;
+using UpDiddyLib.Shared;
 using Microsoft.Net.Http.Headers;
 
 namespace UpDiddy
 {
     public class Startup
     {
+        public IConfigurationRoot Configuration { get; }
         public Startup(IHostingEnvironment env)
         {
-
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
 
-            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
+            // if environment is set to development then add user secrets
+            if (env.IsDevelopment())
             {
                 builder.AddUserSecrets<Startup>();
             }
 
+            // if environment is set to staging or production then add vault keys
+            var config = builder.Build();
+            if (env.IsStaging() || env.IsProduction())
+            {
+                builder.AddAzureKeyVault(config["Vault:Url"],
+                    config["Vault:ClientId"],
+                    config["Vault:ClientSecret"],
+                    new KeyVaultSecretManager());
+            }
+
             Configuration = builder.Build();
         }
-
-        public IConfigurationRoot Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -60,13 +71,6 @@ namespace UpDiddy
             .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
             .AddCookie();
 
-            /* HTTPS redirect 
-            services.Configure<MvcOptions>(options =>
-            {
-                options.Filters.Add(new RequireHttpsAttribute());
-            });*/
-
-
             #region AddLocalizationß
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -78,7 +82,35 @@ namespace UpDiddy
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
 
+            // Add Polly 
 
+            // Create Policies  
+            int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
+            int PollyBreakDurationInMinutes = int.Parse(Configuration["Polly:BreakDurationInMinutes"]);
+            // Define default api policy with async retries and exponential backoff            
+            var ApiGetPolicy = HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .WaitAndRetryAsync(PollyRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2,retryAttempt)));
+ 
+            // Define a policy without retries for non idempotenic operations
+            // FMI: https://www.stevejgordon.co.uk/httpclientfactory-using-polly-for-transient-fault-handling
+            var ApiPostPolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
+            var ApiPutPolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
+            var ApiDeletePolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
+
+            services.AddHttpClient(Constants.HttpGetClientName)
+              .AddPolicyHandler(ApiGetPolicy);
+
+            services.AddHttpClient(Constants.HttpPostClientName)
+                          .AddPolicyHandler(ApiPostPolicy);
+
+            services.AddHttpClient(Constants.HttpPutClientName)
+                          .AddPolicyHandler(ApiPutPolicy);
+
+            services.AddHttpClient(Constants.HttpDeleteClientName)
+              .AddPolicyHandler(ApiDeletePolicy);
+
+ 
 
             // Configure supported cultures and localization options
             services.Configure<RequestLocalizationOptions>(options =>
@@ -99,33 +131,7 @@ namespace UpDiddy
 
                 // These are the cultures the app supports for UI strings (that we have localized resources for).
                 options.SupportedUICultures = supportedCultures;
-
-
-
-
-                //    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
-                //options.RequestCultureProviders.Insert(0, new CookieRequestCultureProvider());
-
-
-                // You can change which providers are configured to determine the culture for requests, or even add a custom
-                // provider with your own logic. The providers will be asked in order to provide a culture for each request,
-                // and the first to provide a non-null result that is in the configured supported cultures list will be used.
-                // By default, the following built-in providers are configured:
-                // - QueryStringRequestCultureProvider, sets culture via "culture" and "ui-culture" query string values, useful for testing
-                // - CookieRequestCultureProvider, sets culture via "ASPNET_CULTURE" cookie
-                // - AcceptLanguageHeaderRequestCultureProvider, sets culture via the "Accept-Language" request header
-                //
-                //options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(async context =>
-                //{
-                //  // My custom request culture logic
-                //  return new ProviderCultureResult("en");
-                //}));
             });
-
-
-            // Adds a default in-memory implementation of IDistributedCache.
-            //services.AddDistributedMemoryCache();
-
 
             Console.WriteLine("Redis name: " + Configuration.GetValue<string>("redis:name") + ", Redis host: " + Configuration.GetValue<string>("redis:host"));
             Console.WriteLine("B2C Secret: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientSecret") + ", B2C ID: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientId"));
@@ -140,7 +146,6 @@ namespace UpDiddy
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromHours(1);
-                // options.CookieHttpOnly = true;
                 options.Cookie.HttpOnly = true;
             });
 
@@ -158,7 +163,7 @@ namespace UpDiddy
             app.UseRewriter(options);
             */
 
-            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
+            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
@@ -227,12 +232,5 @@ namespace UpDiddy
                 );
             });
         }
-
-
-
-
-
-
-
     }
 }

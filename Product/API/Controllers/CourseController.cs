@@ -13,6 +13,7 @@ using UpDiddyLib.MessageQueue;
 using Microsoft.EntityFrameworkCore;
 using UpDiddyApi.Business;
 using UpDiddyLib.Helpers;
+using System.Net.Http;
 
 namespace UpDiddyApi.Controllers
 {
@@ -28,17 +29,19 @@ namespace UpDiddyApi.Controllers
         private readonly string _queueConnection = string.Empty;
         private WozInterface _wozInterface = null;
         protected internal ISysLog _syslog = null;
+        private IHttpClientFactory _httpClientFactory = null;
 
         //private readonly CCQueue _queue = null;
-        public CourseController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysLog sysLog)
+        public CourseController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
             _syslog = sysLog;
+            _httpClientFactory = httpClientFactory;
             //_queue = new CCQueue("ccmessagequeue", _queueConnection);
-            _wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog);
+            _wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
         }
 
         // GET: api/courses
@@ -78,8 +81,8 @@ namespace UpDiddyApi.Controllers
                 .ToList();
 
             return Ok(rval);
-
         }
+
         // Post: api/course/vendor/coursecode
         // TODO make Authorized 
         // [Authorize]
@@ -100,8 +103,6 @@ namespace UpDiddyApi.Controllers
 
             return Ok(CourseCode);
         }
-
-
 
         // Post: api/course/vendor/coursecode
         // TODO make Authorized 
@@ -142,9 +143,6 @@ namespace UpDiddyApi.Controllers
             // 2) Return OK
             return Ok();
         }
-
-
-
 
         [HttpGet]
         [Route("api/[controller]/slug/{CourseSlug}")]
@@ -215,6 +213,21 @@ namespace UpDiddyApi.Controllers
             else
                 return Ok(_mapper.Map<CourseVariantDto>(courseVariant));
         }
+
+        [HttpGet]
+        [Route("api/[controller]/CourseId/{CourseId}")]
+        public IActionResult GetCourseById(int CourseId)
+        {
+
+            Course course = _db.Course
+                .Where(t => t.IsDeleted == 0 && t.CourseId == CourseId)
+                .FirstOrDefault();
+
+            if (course == null)
+                return NotFound();
+            return Ok(_mapper.Map<CourseDto>(course));
+        }
+
     }
 
 }

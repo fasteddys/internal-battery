@@ -38,7 +38,7 @@ namespace UpDiddy.Controllers
         public IActionResult SignIn()
         {
             SetAzureAdB2CCulture();
-            var redirectUrl = Url.Action(nameof(HomeController.Profile), "Home");        
+            var redirectUrl = Url.Action(nameof(HomeController.ProfileLogin), "Home");        
             return Challenge(
                 new AuthenticationProperties { RedirectUri = redirectUrl},
                 OpenIdConnectDefaults.AuthenticationScheme);

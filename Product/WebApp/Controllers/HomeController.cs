@@ -27,6 +27,8 @@ using System.Text.RegularExpressions;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Polly.Registry;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddy.Controllers
 {
@@ -35,6 +37,7 @@ namespace UpDiddy.Controllers
         AzureAdB2COptions AzureAdB2COptions;
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _HttpClientFactory;
         private readonly IHostingEnvironment _env;
 
         [HttpGet]
@@ -43,21 +46,20 @@ namespace UpDiddy.Controllers
             return Ok(Json(API.GetCountries()));
         }
 
+        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHostingEnvironment env, IHttpClientFactory httpClientFactory, IDistributedCache cache)
+            : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache)        {
+            _env = env;
+            _localizer = localizer;
+            AzureAdB2COptions = azureAdB2COptions.Value;
+            _configuration = configuration;
+            _HttpClientFactory = httpClientFactory;
+        }
         [HttpGet]
         public IActionResult GetStatesByCountry(Guid countryGuid)
         {
             return Ok(Json(API.GetStatesByCountry(countryGuid)));
         }
-
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHostingEnvironment env)
-            : base(azureAdB2COptions.Value, configuration)
-        {
-            _env = env;
-            _localizer = localizer;
-            AzureAdB2COptions = azureAdB2COptions.Value;
-            _configuration = configuration;
-        }
-
+        
         public IActionResult Index()
         {
             // TODO remove test code 
@@ -109,6 +111,20 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+
+        [Authorize]
+        public IActionResult ProfileLogin()
+        {
+            GetSubscriber(true);
+            // UPdated the subscribers course progress 
+            if (this.subscriber != null)
+                API.UpdateStudentCourseProgress((Guid) this.subscriber.SubscriberGuid, true);
+ 
+            return RedirectToAction("Profile", "Home");
+        }
+
+
+
         [Authorize]
         public IActionResult Profile()
         {
@@ -122,28 +138,33 @@ namespace UpDiddy.Controllers
                 SubscriberState = API.GetSubscriberState(this.subscriber.StateId);
             }
             IList<WozCourseProgress> WozCourseProgressions = new List<WozCourseProgress>();
-            foreach (EnrollmentDto enrollment in CurrentEnrollments)
+            // JAB Added guard again having no enrollments 
+            if ( CurrentEnrollments != null )
             {
-                var studentLogin = API.StudentLogin(this.subscriber.SubscriberId);
-
-                try
+                foreach (EnrollmentDto enrollment in CurrentEnrollments)
                 {
-                    WozCourseProgress dto = new WozCourseProgress
+                    var studentLogin = API.StudentLogin(this.subscriber.SubscriberId);
+
+                    try
                     {
-                        CourseName = enrollment.Course.Name,
-                        CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl,
-                        PercentComplete = enrollment.PercentComplete,
-                        EnrollmentStatusId = enrollment.EnrollmentStatusId,
-                        DisplayState = enrollment.EnrollmentStatusId
-                    };
+                        WozCourseProgress dto = new WozCourseProgress
+                        {
+                            CourseName = enrollment.Course.Name,
+                            CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl,
+                            PercentComplete = enrollment.PercentComplete,
+                            EnrollmentStatusId = enrollment.EnrollmentStatusId,
+                            DisplayState = enrollment.EnrollmentStatusId
+                        };
 
-                    WozCourseProgressions.Add(dto);
-                }
-                catch (Exception e)
-                {
-                    // Wire up logging for controller exceptions.
+                        WozCourseProgressions.Add(dto);
+                    }
+                    catch (Exception e)
+                    {
+                        // Wire up logging for controller exceptions.
+                    }
                 }
             }
+            
             ProfileViewModel ProfileViewModel = new ProfileViewModel(
                 _configuration,
                 this.subscriber,
@@ -333,19 +354,14 @@ namespace UpDiddy.Controllers
             string responseString = "";
             try
             {
-
-
-
                 // Retrieve the token with the specified scopes
                 var scope = AzureAdB2COptions.ApiScopes.Split(' ');
                 string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
                 TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
                 ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureAdB2COptions.ClientId, AzureAdB2COptions.Authority, AzureAdB2COptions.RedirectUri, new ClientCredential(AzureAdB2COptions.ClientSecret), userTokenCache, null);
-                // TODO remove debug var
-                var x = cca.Users.FirstOrDefault();
                 AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureAdB2COptions.Authority, false);
 
-                HttpClient client = new HttpClient();
+                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, AzureAdB2COptions.ApiUrl);
 
                 // Add token to the Authorization header and make the request

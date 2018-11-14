@@ -17,6 +17,12 @@ using UpDiddyApi.Workflow;
 using Hangfire.SqlServer;
 using System;
 using UpDiddyLib.Helpers;
+using Polly;
+using Polly.Extensions.Http;
+using System.Net.Http;
+using UpDiddy.Helpers;
+using UpDiddyLib.Shared;
+
 
 namespace UpDiddyApi
 {
@@ -25,6 +31,7 @@ namespace UpDiddyApi
     {
         public static string ScopeRead;
         public static string ScopeWrite;
+        public IConfigurationRoot Configuration { get; set; }
 
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
@@ -32,39 +39,27 @@ namespace UpDiddyApi
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                // Add in the azure vault entries 
-                .AddConfiguration(configuration);
+                .AddEnvironmentVariables();
 
-            builder.AddEnvironmentVariables();
-
-            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
+            // if environment is set to development then add user secrets
+            if (env.IsDevelopment())
             {
                 builder.AddUserSecrets<Startup>();
             }
 
-            Configuration = builder.Build();
-
-            // Rebuild the configuration now that have included user secrets 
-
-            var builder1 = new ConfigurationBuilder()
-                .AddConfiguration(configuration)
-                .AddAzureKeyVault(
-              Configuration["VaultUrl"],
-              Configuration["VaultClientId"],
-              Configuration["VaultClientSecret"]);
-
-
-            if (env.IsEnvironment("DevelopmentLocal") || env.IsDevelopment())
+            // if environment is set to staging or production then add vault keys
+            var config = builder.Build();
+            if(env.IsStaging() || env.IsProduction())
             {
-                builder1.AddUserSecrets<Startup>();
+                builder.AddAzureKeyVault(config["Vault:Url"], 
+                    config["Vault:ClientId"],
+                    config["Vault:ClientSecret"], 
+                    new KeyVaultSecretManager());
             }
 
-
-            Configuration = builder1.Build();
-
+            Configuration = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -99,13 +94,11 @@ namespace UpDiddyApi
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
 
             // Configure Hangfire 
-            var HangFireSqlConnection = Configuration["HangfireBrentDev"];
+            var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"]; 
             services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
             // Have the workflow monitor run every minute 
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ReconcileFutureEnrollments(), Cron.Daily);
-         //   RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.UpdateWozCourses(), Cron.Hourly);
-             
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ReconcileFutureEnrollments(), Cron.Daily);              
 
             // PromoCodeRedemption cleanup
             int promoCodeRedemptionCleanupScheduleInMinutes = 5;
@@ -114,6 +107,36 @@ namespace UpDiddyApi
             int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
             // todo: fix this after dealing with migration issues resulting from changes to course, course variant, course variant type
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
+
+            // Add Polly 
+
+            // Create Policies  
+            int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
+            int PollyBreakDurationInMinutes = int.Parse(Configuration["Polly:BreakDurationInMinutes"]);
+            // Define default api policy with async retries and exponential backoff            
+            var ApiGetPolicy = HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .WaitAndRetryAsync(PollyRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+
+            // Define a policy without retries for non idempotenic operations
+            // FMI: https://www.stevejgordon.co.uk/httpclientfactory-using-polly-for-transient-fault-handling
+            var ApiPostPolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
+            var ApiPutPolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
+            var ApiDeletePolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
+
+            services.AddHttpClient(Constants.HttpGetClientName)
+              .AddPolicyHandler(ApiGetPolicy);
+
+            services.AddHttpClient(Constants.HttpPostClientName)
+                          .AddPolicyHandler(ApiPostPolicy);
+
+            services.AddHttpClient(Constants.HttpPutClientName)
+                          .AddPolicyHandler(ApiPutPolicy);
+
+            services.AddHttpClient(Constants.HttpDeleteClientName)
+              .AddPolicyHandler(ApiDeletePolicy);
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

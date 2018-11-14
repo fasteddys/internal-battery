@@ -58,8 +58,6 @@
 
 
                                             }
-                                            <span>@Html.ValidationMessageFor(m => m.SelectedCourseVariant, null, new { id = "ValidationSummary" })</span>
-
                                         }
                                     </div>
                                     <div class="form-row">
@@ -195,6 +193,9 @@
                                     </div>
                                     <div class="enrollment-submit-container container-align-right">
                                         <button type="submit" id="EnrollmentSubmitButton" class="brand-button contrast-primary enrollment-submit" disabled>Enroll</button>
+                                    </div>
+                                    <div>
+                                        <span>@Html.ValidationSummary("Woops! Your enrollment cannot continue before the following issues are resolved:", new { id = "ValidationSummary" })</span>
                                     </div>
                         </form>
                     </div>

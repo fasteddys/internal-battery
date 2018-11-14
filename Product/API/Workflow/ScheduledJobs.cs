@@ -10,13 +10,14 @@ using UpDiddyLib.Helpers;
 using UpDiddyLib.Dto;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Hangfire;
+using System.Net.Http;
 
 namespace UpDiddyApi.Workflow
 {
     public class ScheduledJobs : BusinessVendorBase 
     {
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = context;
             _mapper = mapper;
@@ -25,89 +26,124 @@ namespace UpDiddyApi.Workflow
             _accessToken = configuration["WozAccessToken"];
             _syslog = sysLog;
             _configuration = configuration;
+            _HttpClientFactory = httpClientFactory;
         }
 
 
         #region Woz
 
 
-        public bool UpdateStudentProgress(string SubscriberGuid)
+        public bool UpdateStudentProgress(string SubscriberGuid, int ProgressUpdateAgeThresholdInHours)
         {
-            Subscriber subscriber = _db.Subscriber
-            .Where(s => s.IsDeleted == 0 &&  s.SubscriberGuid == Guid.Parse(SubscriberGuid) )
-            .FirstOrDefault();
-
-            if (subscriber == null)
-                return false;
-
-            IList<Enrollment> enrollments = _db.Enrollment
-                .Where(e => e.IsDeleted == 0 && e.SubscriberId == subscriber.SubscriberId && e.CompletionDate == null && e.DroppedDate == null )
-                .ToList();
-
-            WozCourseProgress wcp = null;
-            bool updatesMade = false;
-
-            foreach ( Enrollment e in enrollments)
+            try
             {
-               wcp = GetWozCourseProgress(e);               
-               if (wcp != null && wcp.ActivitiesCompleted > 0 && wcp.ActivitiesTotal > 0)
-               {
-                    updatesMade = true;
-                    e.PercentComplete = Convert.ToInt32((wcp.ActivitiesCompleted / wcp.ActivitiesTotal) * 100);
-                    e.ModifyDate = DateTime.Now;                    
-               }               
-            }
-            if ( updatesMade )
-                _db.SaveChanges();
+                Console.WriteLine($"***** UpdateStudentProgress started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
+                Subscriber subscriber = _db.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Guid.Parse(SubscriberGuid))
+                .FirstOrDefault();
 
-            return true;
+                if (subscriber == null)
+                    return false;
+
+
+                IList<Enrollment> enrollments = _db.Enrollment
+                    .Where(e => e.IsDeleted == 0 && e.SubscriberId == subscriber.SubscriberId && e.CompletionDate == null && e.DroppedDate == null)
+                    .ToList();
+
+                WozCourseProgress wcp = null;
+                bool updatesMade = false;
+
+                foreach (Enrollment e in enrollments)
+                {
+                    // Only Call woz if the modify date is null or if the modify date older that progress update age threshold
+                    if (e.ModifyDate == null || ((DateTime)e.ModifyDate).AddHours(ProgressUpdateAgeThresholdInHours) <= DateTime.Now)
+                    {
+                        wcp = GetWozCourseProgress(e);
+                        if (wcp != null && wcp.ActivitiesCompleted > 0 && wcp.ActivitiesTotal > 0)
+                        {
+                            updatesMade = true;
+                            e.PercentComplete = Convert.ToInt32((wcp.ActivitiesCompleted / wcp.ActivitiesTotal) * 100);
+                            e.ModifyDate = DateTime.Now;
+                        }
+                    }
+                }
+                if (updatesMade)
+                    _db.SaveChanges();
+
+                Console.WriteLine($"***** UpdateStudentProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
+                return true;
+            }
+            catch ( Exception e )
+            {
+
+                _syslog.SysError("UpdateStudentProgress:GetWozCourseProgress threw an exception -> " + e.Message);
+                return false;
+            }
+            
         }
 
 
         public WozCourseProgress GetWozCourseProgress(Enrollment enrollment)
-        {
-        
-                        
-            WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog);
-            WozCourseEnrollment wce = _db.WozCourseEnrollment
-            .Where(
-                   t => t.IsDeleted == 0 &&
-                   t.EnrollmentGuid == enrollment.EnrollmentGuid 
-                   )
-            .FirstOrDefault();
+        { 
+            try
+            {
+                Console.WriteLine($"***** GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for enrollment {enrollment.EnrollmentGuid.ToString()}");
+                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _HttpClientFactory);
+                WozCourseEnrollment wce = _db.WozCourseEnrollment
+                .Where(
+                       t => t.IsDeleted == 0 &&
+                       t.EnrollmentGuid == enrollment.EnrollmentGuid
+                       )
+                .FirstOrDefault();
 
-            if (wce == null)
+                if (wce == null)
+                    return null;
+
+                WozCourseProgress Wcp = wi.GetCourseProgress(wce.SectionId, wce.WozEnrollmentId).Result;
+                Console.WriteLine($"***** GetWozCourseProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
+                return Wcp;
+            }
+            catch (Exception e)
+            {
+                _syslog.SysError("ScheduledJobs:GetWozCourseProgress threw an exception -> " + e.Message);
                 return null;
-
-            WozCourseProgress Wcp = wi.GetCourseProgress(wce.SectionId, wce.WozEnrollmentId).Result;           
-            return Wcp;
+            }                         
         }
-
-
-
-        
-
 
 
         public Boolean ReconcileFutureEnrollments()
         {
-            int MaxReconcilesToProcess = 10;
-            int.TryParse(_configuration["Woz:MaxReconcilesToProcess"], out MaxReconcilesToProcess);
 
-            IList<Enrollment> Enrollments = _db.Enrollment
-                      .Where(t => t.IsDeleted == 0 && t.EnrollmentStatusId == (int)EnrollmentStatus.FutureRegisterStudentComplete)
-                     .ToList<Enrollment>();
-
-            WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog);
-            foreach (Enrollment e in Enrollments)
+            bool result = false;
+            try
             {
-                wi.ReconcileFutureEnrollment(e.EnrollmentGuid.ToString());
-                if (--MaxReconcilesToProcess == 0)
-                    break;
-            }
+                Console.WriteLine($"***** ReconcileFutureEnrollments started at: {DateTime.UtcNow.ToLongDateString()}");
+                int MaxReconcilesToProcess = 10;
+                int.TryParse(_configuration["Woz:MaxReconcilesToProcess"], out MaxReconcilesToProcess);
 
-            Console.WriteLine("***** ReconcileFutureEnrollments Doing Work: " + DateTime.Now.ToLongDateString() + " " + DateTime.Now.ToLongTimeString());
-            return true;
+                IList<Enrollment> Enrollments = _db.Enrollment
+                          .Where(t => t.IsDeleted == 0 && t.EnrollmentStatusId == (int)EnrollmentStatus.FutureRegisterStudentComplete)
+                         .ToList<Enrollment>();
+
+                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog,_HttpClientFactory);
+                foreach (Enrollment e in Enrollments)
+                {
+                    wi.ReconcileFutureEnrollment(e.EnrollmentGuid.ToString());
+                    if (--MaxReconcilesToProcess == 0)
+                        break;
+                }
+                result = true;
+            }
+            catch (Exception e)
+            {
+                _syslog.SysError("ScheduledJobs:ReconcileFutureEnrollments threw an exception -> " + e.Message);                
+                throw e;
+            }
+            finally
+            {
+                Console.WriteLine($"***** ReconcileFutureEnrollments completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+            return result;
         }
 
         #endregion
@@ -150,13 +186,12 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                // SysLog? 
+                _syslog.SysError("ScheduledJobs:DoPromoCodeRedemptionCleanup threw an exception -> " + e.Message);
                 throw e;
             }
             finally
             {
                 Console.WriteLine($"***** DoPromoCodeRedemptionCleanup completed at: {DateTime.UtcNow.ToLongDateString()}");
-
             }
             return result;
         }

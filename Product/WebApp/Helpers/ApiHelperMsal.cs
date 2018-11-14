@@ -15,6 +15,9 @@ using System.Text.Encodings;
 using System.IO;
 using System.Text;
 using UpDiddyLib.Dto;
+using Polly.Registry;
+using System.Collections;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddy.Helpers
 {
@@ -22,8 +25,30 @@ namespace UpDiddy.Helpers
     {
         protected IConfiguration _configuration { get; set; }
         protected string _ApiBaseUri = String.Empty;
+        protected IHttpClientFactory _HttpClientFactory { get; set; }
         public AzureAdB2COptions AzureOptions { get; set; }
         public HttpContext HttpContext { get; set; }
+
+        public IDistributedCache _cache { get; set; }
+
+
+        public T Put<T>(string ApiAction, bool Authorized = false)
+        {
+            Task<string> Response = _PutAsync(ApiAction, Authorized);
+            try
+            {
+                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
+                return rval;
+            }
+            catch (Exception ex)
+            {
+                // TODO instrument with json string and requested type 
+                var msg = ex.Message;
+                return (T)Convert.ChangeType(null, typeof(T));
+            }
+        }
+
+ 
 
         public T Get<T>(string ApiAction, bool Authorized = false)
         {
@@ -63,7 +88,7 @@ namespace UpDiddy.Helpers
             Task<string> Response = _GetAsync(ApiAction, Authorized);
             return Response.Result;
         }
-
+ 
         public T Post<T>(BaseDto Body, string ApiAction, bool Authorized = false)
         {
 
@@ -103,12 +128,58 @@ namespace UpDiddy.Helpers
         {
             string responseString = "";
             try
-            {
-                HttpClient client = new HttpClient();
+            {                
+      
+                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
                 string ApiUrl = _ApiBaseUri + ApiAction;
+
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, ApiUrl);
                 if (!string.IsNullOrEmpty(Content))
                     request.Content = new StringContent(Content);
+
+                // Add token to the Authorization header and make the request 
+                if (Authorized)
+                    await AddBearerTokenAsync(request);
+
+                HttpResponseMessage response = await client.SendAsync(request);
+                // Handle the response
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        responseString = await response.Content.ReadAsStringAsync();
+                        break;
+                    case HttpStatusCode.Unauthorized:
+                        responseString = $"Please sign in again. {response.ReasonPhrase}";
+                        break;
+                    default:
+                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
+                        break;
+                }
+            }
+            catch (MsalUiRequiredException ex)
+            {
+                responseString = $"Session has expired. Please sign in again. {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                responseString = $"Error calling API: {ex.Message}";
+            }
+
+            return responseString;
+
+        }
+
+
+
+
+        private async Task<string> _PutAsync(string ApiAction, bool Authorized = false)
+        {
+            string responseString = "";
+            try
+            {
+                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPutClientName);
+                string ApiUrl = _ApiBaseUri + ApiAction;
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, ApiUrl);
 
                 // Add token to the Authorization header and make the request 
                 if (Authorized)
@@ -149,7 +220,7 @@ namespace UpDiddy.Helpers
             string responseString = "";
             try
             {
-                HttpClient client = new HttpClient();
+                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
                 string ApiUrl = _ApiBaseUri + ApiAction;
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
 
@@ -187,11 +258,8 @@ namespace UpDiddy.Helpers
 
         private async Task<string> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
         {
-
-
-
                 string ApiUrl = _ApiBaseUri + ApiAction;
-                var client = new HttpClient();
+                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
                 var request = PostRequest(ApiAction, JsonToSend);
                 // Add token to the Authorization header and make the request 
                 if (Authorized)
@@ -199,8 +267,6 @@ namespace UpDiddy.Helpers
                 var response = await client.SendAsync(request);
                 string responseString = await response.Content.ReadAsStringAsync();
                 return responseString;
-
-
         }
 
         private HttpRequestMessage PostRequest(string ApiAction, string Content)

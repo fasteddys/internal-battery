@@ -32,7 +32,7 @@ namespace UpDiddyApi.Controllers
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
         //private readonly CCQueue _queue = null;
-        private IBraintreeConfiguration braintreeConfiguration;
+
         public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             _db = db;
@@ -40,15 +40,15 @@ namespace UpDiddyApi.Controllers
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
             //_queue = new CCQueue("ccmessagequeue", _queueConnection);
-            braintreeConfiguration = new BraintreeConfiguration(_configuration);
         }
 
         [Authorize]
         [HttpPost]
         [Route("api/[controller]")]
-        public IActionResult Post([FromBody] EnrollmentDto EnrollmentDto)
+        public IActionResult Post([FromBody] EnrollmentFlowDto EnrollmentFlowDto)
         {
-
+            EnrollmentDto EnrollmentDto = EnrollmentFlowDto.EnrollmentDto;
+            BraintreePaymentDto BraintreePaymentDto = EnrollmentFlowDto.BraintreePaymentDto;
             try
             {
                 // grab the subscriber information we need for the enrollment log, then set the property to null on EnrollmentDto so that ef doesn't try to create the subscriber
@@ -107,12 +107,21 @@ namespace UpDiddyApi.Controllers
                     EnrollmentVendorInvoicePaymentYear = paymentYear,
                     PromoApplied = (promoCodeRedemption != null) ? promoCodeRedemption.ValueRedeemed : 0,
                     SubscriberGuid = subscriberGuid,
-                    EnrollmentVendorPaymentStatusId = 2 
+                    EnrollmentVendorPaymentStatusId = 2
                 });
 
                 _db.SaveChanges();
 
-                BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString()));
+                /**
+                 *  This line used to enqueue the enrollment flow. Now, it's enqueuing the braintree flow,
+                 *  which will then enqueue the enrollment flow if the payment is successful.
+                 */
+                if (EnrollmentFlowDto?.BraintreePaymentDto?.PaymentAmount > 0)
+                {
+                    // only trigger the payment flow if there is a non-zero payment amount
+                    BackgroundJob.Enqueue<BraintreePaymentFlow>(x => x.PaymentWorkItem(EnrollmentFlowDto));
+                }
+
                 return Ok(Enrollment.EnrollmentGuid);
             }
             catch (Exception ex)
@@ -145,54 +154,17 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/ProcessBraintreePayment")]
         public BraintreeResponseDto ProcessBraintreePayment([FromBody] BraintreePaymentDto BraintreePaymentDto)
         {
-            var gateway = braintreeConfiguration.GetGateway();
-            var nonce = BraintreePaymentDto.Nonce;
-            AddressRequest addressRequest;
+            return new BraintreeResponseDto();
+            /*
+            BackgroundJob.Enqueue<BraintreePaymentFlow>(x => x.PaymentWorkItem(BraintreePaymentDto));
 
 
-            addressRequest = new AddressRequest
-            {
-                // Assuming form fields are filled in at this point until above TODO is handled
-                FirstName = BraintreePaymentDto.FirstName,
-                LastName = BraintreePaymentDto.LastName,
-                StreetAddress = BraintreePaymentDto.Address,
-                Region = BraintreePaymentDto.Region,
-                Locality = BraintreePaymentDto.Locality,
-                PostalCode = BraintreePaymentDto.ZipCode,
-                CountryCodeAlpha2 = BraintreePaymentDto.CountryCode
 
-            };
-
-            TransactionRequest request = new TransactionRequest
-            {
-                Amount = BraintreePaymentDto.PaymentAmount,
-                MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("BraintreeMerchantAccountID"),
-                PaymentMethodNonce = nonce,
-                Customer = new CustomerRequest
-                {
-                    FirstName = BraintreePaymentDto.FirstName,
-                    LastName = BraintreePaymentDto.LastName,
-                    Phone = BraintreePaymentDto.PhoneNumber,
-                    Email = BraintreePaymentDto.Email
-                },
-                BillingAddress = addressRequest,
-                ShippingAddress = new AddressRequest
-                {
-                    FirstName = BraintreePaymentDto.FirstName,
-                    LastName = BraintreePaymentDto.LastName,
-                    StreetAddress = BraintreePaymentDto.Address
-                },
-                Options = new TransactionOptionsRequest
-                {
-                    SubmitForSettlement = true
-                },
-            };
-
-            Result<Transaction> result = gateway.Transaction.Sale(request);
             return new BraintreeResponseDto
             {
                 WasSuccessful = result.IsSuccess()
             };
+            */
         }
         [Authorize]
         [HttpGet]
