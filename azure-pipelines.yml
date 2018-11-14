@@ -53,6 +53,6 @@ steps:
     azureSubscription: 'Digital BT (933642d7-459a-499f-acc7-0d9a14ecf604)'
     appType: 'webApp'
     WebAppName: 'CareerCircleWebApp'
-    Package: '$(System.ArtifactsDirectory)/webapp-$(Build.BuildId).zip'
+    packageForLinux: '$(System.ArtifactsDirectory)/webapp-$(Build.BuildId).zip'
     enableCustomDeployment: true
     deploymentType: 'zipDeploy'
