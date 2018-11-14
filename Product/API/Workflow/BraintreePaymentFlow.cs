@@ -31,13 +31,13 @@ namespace UpDiddyApi.Workflow
         private ISysLog _sysLog = null;
         private IBraintreeConfiguration _braintreeConfiguration = null;
 
-        public BraintreePaymentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration, ISysEmail sysEmail, ISysLog sysLog)
+        public BraintreePaymentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration, ISysEmail sysEmail, IServiceProvider serviceProvider)
         {
             _db = dbcontext;
             _mapper = mapper;
             _configuration = configuration;
             _sysEmail = sysEmail;
-            _sysLog = sysLog;
+            _sysLog = new SysLog(configuration, sysEmail, serviceProvider);
             _braintreeConfiguration = new BraintreeConfiguration(_configuration);
         }
 
@@ -53,7 +53,7 @@ namespace UpDiddyApi.Workflow
 
             if (string.IsNullOrEmpty(ErrorsEmailAddress))
             {
-                _sysLog.SysError("No error email is supplied in the application settings; error emails will be sent to errors@careercircle.com by default.");
+                _sysLog.Log(LogLevel.Error,"No error email is supplied in the application settings; error emails will be sent to errors@careercircle.com by default.");
                 ErrorsEmailAddress = "errors@careercircle.com";
             }
 
@@ -66,7 +66,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception e)
             {
                 string ErrorMessage = "BraintreePaymentFlow:PaymentWorkItem -> No Braintree, subscriber or enrollment dto present; enrollment has been cancelled.";
-                _sysLog.SysError(ErrorMessage);
+                _sysLog.Log(LogLevel.Error, ErrorMessage);
                 _sysEmail.SendEmail(ErrorsEmailAddress, "An error has occurred in the enrollment flow", CreateErrorEmail(ErrorMessage, EnrollmentFlowDto));
                 Helper.UpdateEnrollmentStatus(EnrollmentDto.EnrollmentGuid.ToString(), UpDiddyLib.Dto.EnrollmentStatus.PaymentError);
                 return CreateResponse(CreateResponseJson(ErrorMessage), ErrorMessage, string.Empty, TransactionState.FatalError);
@@ -77,14 +77,12 @@ namespace UpDiddyApi.Workflow
             string nonce = BraintreePaymentDto.Nonce;
             TransactionRequest TransactionRequest = null;
 
-            // Make sure we don't get null object exceptions when referencing DTOs
-            
-
+            // Make sure we don't get null object exceptions when referencing DTOs            
             // Make sure Nonce is present
             if (string.IsNullOrEmpty(nonce))
             {
                 string NullOrEmptyMessage = "BraintreePaymentFlow:PaymentWorkItem -> Braintree nonce is null or empty; enrollment has been cancelled.";
-                _sysLog.SysError(NullOrEmptyMessage);
+                _sysLog.Log(LogLevel.Error,NullOrEmptyMessage);
                 Helper.UpdateEnrollmentStatus(EnrollmentDto.EnrollmentGuid.ToString(), UpDiddyLib.Dto.EnrollmentStatus.PaymentError);
                 _sysEmail.SendEmail(ErrorsEmailAddress, "An error has occurred in the enrollment flow", CreateErrorEmail(NullOrEmptyMessage, EnrollmentFlowDto));
                 return CreateResponse(CreateResponseJson(NullOrEmptyMessage), NullOrEmptyMessage, string.Empty, TransactionState.FatalError);
@@ -98,7 +96,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception e)
             {
                 string ExceptionString = "BraintreePaymentFlow:PaymentWorkItem -> An error occurred when attempting to create the TransactionRequest.";
-                _sysLog.SysError(ExceptionString + e.Message);
+                _sysLog.Log(LogLevel.Error, ExceptionString + e.Message);
                 Helper.UpdateEnrollmentStatus(EnrollmentDto.EnrollmentGuid.ToString(), UpDiddyLib.Dto.EnrollmentStatus.PaymentError);
                 _sysEmail.SendEmail(ErrorsEmailAddress, "An error has occurred in the enrollment flow", CreateErrorEmail(ExceptionString, EnrollmentFlowDto));
                 return CreateResponse(CreateResponseJson(ExceptionString), ExceptionString, string.Empty, TransactionState.FatalError);
@@ -108,12 +106,12 @@ namespace UpDiddyApi.Workflow
             {
                 Result<Transaction> result = gateway.Transaction.Sale(TransactionRequest);
                 Helper.UpdateEnrollmentStatus(EnrollmentDto.EnrollmentGuid.ToString(), UpDiddyLib.Dto.EnrollmentStatus.PaymentComplete);
-                _sysLog.SysInfo("BraintreePaymentFlow:PaymentWorkItem -> Braintree payment in progress.");
+                _sysLog.Log(LogLevel.Information,"BraintreePaymentFlow:PaymentWorkItem -> Braintree payment in progress.");
 
                 if (result.IsSuccess())
                 {
                     string SuccessfulMessage = "BraintreePaymentFlow:PaymentWorkItem->Braintree payment was successfull.";
-                    _sysLog.SysInfo(SuccessfulMessage);
+                    _sysLog.Log(LogLevel.Information, SuccessfulMessage);
                     Course course = _db.Course.Where(t => t.IsDeleted == 0 && t.CourseId == EnrollmentDto.CourseId).FirstOrDefault();
                     EnrollmentLog enrollmentLog = _db.EnrollmentLog.Where(t => t.IsDeleted == 0 && t.EnrollmentGuid == EnrollmentDto.EnrollmentGuid).FirstOrDefault();
                     _sysEmail.SendPurchaseReceiptEmail(SubscriberDto.Email, "Purchase Receipt For CareerCircle Course", course.Name, enrollmentLog.CourseCost, enrollmentLog.PromoApplied, (Guid)EnrollmentDto.EnrollmentGuid);
@@ -124,7 +122,7 @@ namespace UpDiddyApi.Workflow
                 else
                 {
                     string UnsuccessfulMessage = "BraintreePaymentFlow:PaymentWorkItem->Braintree payment was unsuccessful.";
-                    _sysLog.SysError(UnsuccessfulMessage);
+                    _sysLog.Log(LogLevel.Information, UnsuccessfulMessage);
                     Helper.UpdateEnrollmentStatus(EnrollmentDto.EnrollmentGuid.ToString(), UpDiddyLib.Dto.EnrollmentStatus.PaymentFatalError);
                     _sysEmail.SendEmail(ErrorsEmailAddress, "An error has occurred in the enrollment flow", CreateErrorEmail(UnsuccessfulMessage, EnrollmentFlowDto));
                     return CreateResponse(CreateResponseJson(UnsuccessfulMessage), UnsuccessfulMessage, string.Empty, TransactionState.Error);
@@ -134,7 +132,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception ex)
             {
                 string ExceptionString = "BraintreePaymentFlow:PaymentWorkItem -> An error occurred";
-                _sysLog.SysError(ExceptionString + ex.Message);
+                _sysLog.Log(LogLevel.Error, ExceptionString + ex.Message);
                 _sysEmail.SendEmail(ErrorsEmailAddress, "An error has occurred in the enrollment flow", CreateErrorEmail(ExceptionString, EnrollmentFlowDto));
                 return CreateResponse(CreateResponseJson(ExceptionString), ExceptionString, string.Empty, TransactionState.FatalError);
             }

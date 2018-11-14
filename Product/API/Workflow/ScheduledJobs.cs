@@ -17,14 +17,13 @@ namespace UpDiddyApi.Workflow
     public class ScheduledJobs : BusinessVendorBase 
     {
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IServiceProvider serviceProvider, IHttpClientFactory httpClientFactory)
         {
             _db = context;
             _mapper = mapper;
-            // TODO standardize configuration nameing -> Woz:ApiUrl
-            _apiBaseUri = configuration["WozApiUrl"];
-            _accessToken = configuration["WozAccessToken"];
-            _syslog = sysLog;
+            _apiBaseUri = configuration["Woz:ApiUrl"];
+            _accessToken = configuration["Woz:AccessToken"];
+            _syslog = new SysLog(configuration, sysEmail, serviceProvider);
             _configuration = configuration;
             _HttpClientFactory = httpClientFactory;
         }
@@ -76,7 +75,7 @@ namespace UpDiddyApi.Workflow
             catch ( Exception e )
             {
 
-                _syslog.SysError("UpdateStudentProgress:GetWozCourseProgress threw an exception -> " + e.Message);
+                _syslog.Log(LogLevel.Error, "UpdateStudentProgress:GetWozCourseProgress threw an exception -> " + e.Message);
                 return false;
             }
             
@@ -105,7 +104,7 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.SysError("ScheduledJobs:GetWozCourseProgress threw an exception -> " + e.Message);
+                _syslog.Log(LogLevel.Error,"ScheduledJobs:GetWozCourseProgress threw an exception -> " + e.Message);
                 return null;
             }                         
         }
@@ -136,7 +135,7 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.SysError("ScheduledJobs:ReconcileFutureEnrollments threw an exception -> " + e.Message);                
+                _syslog.Log(LogLevel.Error,"ScheduledJobs:ReconcileFutureEnrollments threw an exception -> " + e.Message);                
                 throw e;
             }
             finally
@@ -186,7 +185,7 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.SysError("ScheduledJobs:DoPromoCodeRedemptionCleanup threw an exception -> " + e.Message);
+                _syslog.Log(LogLevel.Error,"ScheduledJobs:DoPromoCodeRedemptionCleanup threw an exception -> " + e.Message);
                 throw e;
             }
             finally
