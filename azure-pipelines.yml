@@ -40,6 +40,8 @@ steps:
   inputs:
     artifactName: 'webapp'
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    publishLocation: filePath
+    targetPath: $(Build.ArtifactStagingDirectory)
 
 - task: ArchiveFiles@2
   displayName: Archive
