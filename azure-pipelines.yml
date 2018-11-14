@@ -48,3 +48,5 @@ steps:
     appType: 'webApp'
     WebAppName: 'CareerCircleWebApp'
     Package: '$(Build.ArtifactStagingDirectory)'
+    enableCustomDeployment: true
+    deploymentType: 'Kudu REST APIs'
