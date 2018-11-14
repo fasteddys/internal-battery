@@ -40,13 +40,11 @@ steps:
   inputs:
     artifactName: 'webapp'
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    publishLocation: filePath
-    targetPath: $(Build.ArtifactStagingDirectory)
 
 - task: ArchiveFiles@2
   displayName: Archive
   inputs:
-    rootFolderOrFile: $(Build.ArtifactStagingDirectory)/webapp
+    rootFolderOrFile: $(Build.ArtifactStagingDirectory)
     archiveFile: '$(System.ArtifactsDirectory)/webapp-$(Build.BuildId).zip'
 
 - task: AzureRmWebAppDeployment@3
