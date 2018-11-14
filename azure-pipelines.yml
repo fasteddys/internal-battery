@@ -47,12 +47,10 @@ steps:
     rootFolderOrFile: $(Build.ArtifactStagingDirectory)
     archiveFile: '$(System.ArtifactsDirectory)/webapp-$(Build.BuildId).zip'
 
-- task: AzureRmWebAppDeployment@3
+- task: AzureRmWebAppDeployment@4
   displayName: Deploy to Staging Environment
   inputs:
     azureSubscription: 'Digital BT (933642d7-459a-499f-acc7-0d9a14ecf604)'
     appType: 'webApp'
     WebAppName: 'CareerCircleWebApp'
-    packageForLinux: '$(System.ArtifactsDirectory)/webapp-$(Build.BuildId).zip'
-    enableCustomDeployment: true
-    deploymentType: 'zipDeploy'
+    Package: '$(System.ArtifactsDirectory)/webapp-$(Build.BuildId).zip'
