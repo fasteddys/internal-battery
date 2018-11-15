@@ -29,16 +29,16 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ISysLog _syslog;
-        public TopicController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysLog sysLog, IDistributedCache distributedCache)
+
+        public TopicController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysEmail sysemail, IServiceProvider serviceProvider, IDistributedCache distributedCache)
+
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
-            _syslog = sysLog;         
+            _syslog = new SysLog(configuration, sysemail, serviceProvider);
         }
-
-
-
+        
         [HttpGet]
         [Route("api/[controller]/VaultUri")]
         public IActionResult VaultUri()

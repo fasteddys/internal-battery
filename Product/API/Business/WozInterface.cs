@@ -457,9 +457,9 @@ namespace UpDiddyApi.Business
             }
             else
             {
-                _syslog.SysError("WozInterface:GetCourseProgress Returned a status code of " + response.StatusCode.ToString());
-                _syslog.SysError("WozInterface:GetCourseProgress Url =  " + Url);
-                _syslog.SysError("WozInterface:GetCourseProgress AccessToken ends with  " + _accessToken.Substring( _accessToken.Length - 2));
+                _syslog.Log(LogLevel.Error,"WozInterface:GetCourseProgress Returned a status code of " + response.StatusCode.ToString());
+                _syslog.Log(LogLevel.Error, "WozInterface:GetCourseProgress Url =  " + Url);
+                _syslog.Log(LogLevel.Error, "WozInterface:GetCourseProgress AccessToken ends with  " + _accessToken.Substring( _accessToken.Length - 2));
                 return null;
             }
 
@@ -716,7 +716,7 @@ namespace UpDiddyApi.Business
         {
             try
             {
-                _syslog.SysInfo($"ReconcileFutureEnrollment: Starting with EnrollmentGuid =  {EnrollmentGuid}");
+                _syslog.Log(LogLevel.Information,$"ReconcileFutureEnrollment: Starting with EnrollmentGuid =  {EnrollmentGuid}");
                 // Get the Enrollment Object 
                 Enrollment Enrollment = _db.Enrollment
                      .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
@@ -724,7 +724,7 @@ namespace UpDiddyApi.Business
 
                 if (Enrollment == null)
                 {
-                    _syslog.SysInfo($"ReconcileFutureEnrollment: Enrollment {EnrollmentGuid} not found!");
+                    _syslog.Log(LogLevel.Information, $"ReconcileFutureEnrollment: Enrollment {EnrollmentGuid} not found!");
                     return false;
                 }
 
@@ -734,7 +734,7 @@ namespace UpDiddyApi.Business
 
                 if (PriorFriday > DateTime.Now)
                 {
-                    _syslog.SysInfo($"ReconcileFutureEnrollment:  Too early to check for enrollment.  PriorFriday = {PriorFriday.ToLongDateString() } ");
+                    _syslog.Log(LogLevel.Information, $"ReconcileFutureEnrollment:  Too early to check for enrollment.  PriorFriday = {PriorFriday.ToLongDateString() } ");
                     return false;
                 }
 
@@ -745,7 +745,7 @@ namespace UpDiddyApi.Business
                 // Confirm that the enrollment has a status of future 
                 if (Enrollment.EnrollmentStatusId != (int) EnrollmentStatus.FutureRegisterStudentComplete)
                 {                   
-                        _syslog.SysInfo($"ReconcileFutureEnrollment: Enrollment {EnrollmentGuid} is not a FutureRegisterStudentComplete. EnrollmentStatus = {Enrollment.EnrollmentStatusId} ");
+                        _syslog.Log(LogLevel.Information, $"ReconcileFutureEnrollment: Enrollment {EnrollmentGuid} is not a FutureRegisterStudentComplete. EnrollmentStatus = {Enrollment.EnrollmentStatusId} ");
                         return false;
                 }
                     
@@ -759,7 +759,7 @@ namespace UpDiddyApi.Business
 
                 if (StudentLogin == null)
                 {
-                    _syslog.SysInfo($"ReconcileFutureEnrollment: Unable to locate VendorStudentLogin for enrollment {EnrollmentGuid}. SubscriberId = {Enrollment.SubscriberId} VendorId = {Enrollment.Course.VendorId} ");
+                    _syslog.Log(LogLevel.Information, $"ReconcileFutureEnrollment: Unable to locate VendorStudentLogin for enrollment {EnrollmentGuid}. SubscriberId = {Enrollment.SubscriberId} VendorId = {Enrollment.Course.VendorId} ");
                     return false;
                 }
                     
@@ -772,10 +772,10 @@ namespace UpDiddyApi.Business
                   
                
                 string Json = Newtonsoft.Json.JsonConvert.SerializeObject(ActiveOf);
-                _syslog.SysInfo($"ReconcileFutureEnrollment: WozActiveOfRequest =  {Json} ");
+                _syslog.Log(LogLevel.Information,$"ReconcileFutureEnrollment: WozActiveOfRequest =  {Json} ");
                 string ResponseJson = string.Empty;
                 HttpResponseMessage Response  = ExecuteWozPost($"/users/{StudentLogin.VendorLogin}/enrollments", Json, ref ResponseJson);
-                _syslog.SysInfo($"ReconcileFutureEnrollment: Woz Response =  {ResponseJson} ");
+                _syslog.Log(LogLevel.Information,$"ReconcileFutureEnrollment: Woz Response =  {ResponseJson} ");
 
                 var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
 
@@ -799,7 +799,7 @@ namespace UpDiddyApi.Business
                 if (SectionCourseCode == Enrollment.Course.Code)
                 {
 
-                    _syslog.SysInfo($"ReconcileFutureEnrollment: Enrollment found!");
+                    _syslog.Log(LogLevel.Information, $"ReconcileFutureEnrollment: Enrollment found!");
                     // Create woz course entrollment record 
                     WozCourseEnrollment wozCourseEnrollment = new WozCourseEnrollment()
                     {
@@ -820,7 +820,7 @@ namespace UpDiddyApi.Business
                     // Mark the entrollment as complete 
                     Enrollment.EnrollmentStatusId = (int) EnrollmentStatus.RegisterStudentComplete;
                     _db.SaveChanges();
-                    _syslog.SysInfo($"ReconcileFutureEnrollment: Enrollment reconciliation complete !");
+                    _syslog.Log(LogLevel.Information,$"ReconcileFutureEnrollment: Enrollment reconciliation complete !");
 
                 }                    
                 return true;
@@ -828,7 +828,7 @@ namespace UpDiddyApi.Business
             catch ( Exception ex )
             {
                 string msg = ex.Message;
-                _syslog.SysError($"ReconcileFutureEnrollment: Fatal Error! Exception = {ex.Message} ",true );
+                _syslog.Log(LogLevel.Error,$"ReconcileFutureEnrollment: Fatal Error! Exception = {ex.Message} ",true );
                 return false;
             }                
         }
