@@ -3,7 +3,7 @@
 # build name format
 name: WebApp.${Date:yyyyMMdd}.$(Rev:.r)
 pool:
-  vmImage: 'vs2017-win2016'
+  vmImage: 'ubuntu-16.04'
 
 variables:
   buildConfiguration: 'Release'
@@ -34,19 +34,10 @@ steps:
     command: publish
     arguments: --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
     projects: Product/WebApp
+    zipAfterPublish: true
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:
     artifactName: 'webapp'
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-
-- task: AzureRmWebAppDeployment@4
-  displayName: Deploy to Staging Environment
-  inputs:
-    azureSubscription: 'Digital BT (933642d7-459a-499f-acc7-0d9a14ecf604)'
-    appType: 'webApp'
-    WebAppName: 'CareerCircleWebApp'
-    Package: '$(System.ArtifactsDirectory)'
-    deploymentTyupe: 'webDeploy'
-    enableCustomDeployment: true
