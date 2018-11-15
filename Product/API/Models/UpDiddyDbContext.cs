@@ -14,19 +14,35 @@ namespace UpDiddyApi.Models
 
     public class UpDiddyDbContextFactory : IDesignTimeDbContextFactory<UpDiddyDbContext>
     {
-        private IConfiguration configuration;
-
-        public UpDiddyDbContextFactory(IConfiguration configuration)
-        {
-            this.configuration = configuration;
-        }
+        // do not remove this; there must be a parameterless constructor for ef migrations to function
+        public UpDiddyDbContextFactory() { }
 
         public UpDiddyDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<UpDiddyDbContext>();
+            var CurrentDir = System.IO.Directory.GetCurrentDirectory();
+            IConfigurationBuilder configBuilder = new ConfigurationBuilder()
+                   .SetBasePath(CurrentDir)
+                   .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+            IConfiguration config = configBuilder.Build();
+
+            var VaultUrl = config["VaultUrl"];
+            var VaultClientId = config["VaultClientId"];
+            var VaultSecret = config["VaultClientSecret"];
+
+            configBuilder.AddAzureKeyVault(
+                 VaultUrl,
+                 VaultClientId,
+                 VaultSecret);
+
+            // todo: quick fix to ensure db connection from user secrets is being overridden
+            configBuilder.AddUserSecrets<Startup>();
+
+            config = configBuilder.Build();
 
             // Get the connection string from the Azure secret vault
-            var SqlConnectionString = this.configuration["CareerCircleSqlConnection"];
+            var SqlConnectionString = config["CareerCircleSqlConnection"];
             optionsBuilder.UseSqlServer(SqlConnectionString);
             return new UpDiddyDbContext(optionsBuilder.Options);
         }

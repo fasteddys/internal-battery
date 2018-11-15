@@ -1,7 +1,6 @@
 ﻿
 $(document).ready(function () {
-
-
+    
     $('#SelectedCountry').change(function () {
         var selectedCountry = $("#SelectedCountry").val();
         var stateSelect = $("#SelectedState");

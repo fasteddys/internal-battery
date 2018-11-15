@@ -1337,6 +1337,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
+                    b.Property<DateTime?>("LastLoginDate");
+
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");

@@ -12210,8 +12210,7 @@ if (typeof jQuery === 'undefined') {
 
 
 $(document).ready(function () {
-
-
+    
     $('#SelectedCountry').change(function () {
         var selectedCountry = $("#SelectedCountry").val();
         var stateSelect = $("#SelectedState");
@@ -12252,10 +12251,10 @@ $(document).ready(function () {
     $('#SelectedCountry').change();
 
     $("input[name='SelectedCourseVariant']").change(function () {
-
         var selectedCourseVariant = $("input[name='SelectedCourseVariant']:checked");
-        var selectedCourseVariantPrice = $(selectedCourseVariant).nextAll("span").nextAll("span").html();
+        var selectedCourseVariantPrice = $(selectedCourseVariant).parent().next().children(".price").html();
         $("#InitialCoursePrice").html(selectedCourseVariantPrice);
+
         if ($("#PromoCodeTotal").html().startsWith("-$")) {
             var initial = parseFloat($("#InitialCoursePrice").html().replace(",","").split("$")[1]);
             var discount = Math.min(parseFloat($("#PromoCodeTotal").html().replace(",", "").split("$")[1]), initial);
@@ -12265,7 +12264,14 @@ $(document).ready(function () {
             $("#CourseTotal").html(selectedCourseVariantPrice);
         }
 
+        // display any child elements with class "CourseVariantStartDate", hide all sibling child elements with "CourseVariantStartDate"
+        $(selectedCourseVariant).parent().parent().children(".CourseVariantStartDate").show();
+        $(selectedCourseVariant).parent().parent().siblings().children(".CourseVariantStartDate").hide();
         
+        if ($("#CourseTotal").html() === "$0.00")
+            $('#BraintreePaymentContainer').hide();
+        else
+            $('#BraintreePaymentContainer').show();
     });
 
     $("#SameAsAboveCheckbox").change(function () {
