@@ -44,7 +44,7 @@ namespace UpDiddyApi.Workflow
                 if (subscriber == null)
                     return false;
 
-                int WozVendorId = int.Parse(_configuration["Wox:VendorId"]);
+                int WozVendorId = int.Parse(_configuration["Woz:VendorId"]);
                 VendorStudentLogin studentLogin = _db.VendorStudentLogin
                     .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId && s.VendorId == WozVendorId) 
                     .FirstOrDefault();
@@ -52,7 +52,8 @@ namespace UpDiddyApi.Workflow
                 if (studentLogin == null)
                     return false;
 
-                 
+                DateTime? LastLoginDate = GetWozStudentLastLogin(int.Parse(studentLogin.VendorLogin));
+
                     _db.SaveChanges();
 
                 _syslog.Log(LogLevel.Information, $"***** UpdateWozStudentLastLogin completed at: {DateTime.UtcNow.ToLongDateString()}");
@@ -111,7 +112,6 @@ namespace UpDiddyApi.Workflow
             }
             catch ( Exception e )
             {
-
                 _syslog.Log(LogLevel.Error, "UpdateStudentProgress:GetWozCourseProgress threw an exception -> " + e.Message);
                 return false;
             }
@@ -193,12 +193,15 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for enrollment {enrollment.EnrollmentGuid.ToString()}");
+                _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for woz login {exeterId}");
                 WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _HttpClientFactory);
-          
-                WozCourseProgress Wcp = wi.GetCourseProgress(wce.SectionId, wce.WozEnrollmentId).Result;
-                _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
-                return Wcp;
+                WozStudentInfoDto studentLogin = wi.GetStudentLastLogin(exeterId).Result;
+                if (studentLogin == null)
+                    return null;
+                else
+                    return studentLogin.LastLoginDate;
+
+      
             }
             catch (Exception e)
             {

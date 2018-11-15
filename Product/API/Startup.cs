@@ -23,10 +23,17 @@ using Polly.Extensions.Http;
 using System.Net.Http;
 using UpDiddy.Helpers;
 using UpDiddyLib.Shared;
- 
+using Microsoft.ApplicationInsights.SnapshotCollector;
+using Microsoft.Extensions.Options;
+using Microsoft.ApplicationInsights.AspNetCore;
+using Microsoft.ApplicationInsights.Extensibility;
+
 
 namespace UpDiddyApi
 {
+
+
+
 
     public class Startup
     {
@@ -136,6 +143,11 @@ namespace UpDiddyApi
               .AddPolicyHandler(ApiDeletePolicy);
 
 
+            // Configure SnapshotCollector from application settings
+            services.Configure<SnapshotCollectorConfiguration>(Configuration.GetSection(nameof(SnapshotCollectorConfiguration)));
+            // Add SnapshotCollector telemetry processor.
+            services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -175,5 +187,26 @@ namespace UpDiddyApi
             arg.Response.Body.Write(Encoding.UTF8.GetBytes(s), 0, s.Length);
             return Task.FromResult(0);
         }
+
+        private class SnapshotCollectorTelemetryProcessorFactory : ITelemetryProcessorFactory
+        {
+            private readonly IServiceProvider _serviceProvider;
+
+            public SnapshotCollectorTelemetryProcessorFactory(IServiceProvider serviceProvider) =>
+                _serviceProvider = serviceProvider;
+
+            public ITelemetryProcessor Create(ITelemetryProcessor next)
+            {
+                var snapshotConfigurationOptions = _serviceProvider.GetService<IOptions<SnapshotCollectorConfiguration>>();
+                return new SnapshotCollectorTelemetryProcessor(next, configuration: snapshotConfigurationOptions.Value);
+            }
+        }
+
+
     }
+
+  
+     
+   
+
 }
