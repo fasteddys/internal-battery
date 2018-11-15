@@ -31,7 +31,7 @@ namespace UpDiddyApi.Workflow
         private int _wozVendorId = 0;
         private IHttpClientFactory _httpClientFactory = null;
 
-        public WozEnrollmentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration,ISysEmail sysEmail, ISysLog sysLog, IHttpClientFactory httpClientFactory)
+        public WozEnrollmentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration,ISysEmail sysEmail, IServiceProvider serviceProvider, IHttpClientFactory httpClientFactory)
         {
             _retrySeconds = int.Parse(configuration["Woz:RetrySeconds"]);
             // TODO modify code to work off woz Guid not dumb key 
@@ -40,7 +40,7 @@ namespace UpDiddyApi.Workflow
             _mapper = mapper;
             _configuration = configuration;
             _sysEmail = sysEmail;
-            _sysLog = sysLog;
+            _sysLog = new SysLog(configuration, sysEmail, serviceProvider);
             _httpClientFactory = httpClientFactory;
         }
         #endregion

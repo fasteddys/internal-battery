@@ -30,17 +30,15 @@ namespace UpDiddyApi.Controllers
         private WozInterface _wozInterface = null;
         protected internal ISysLog _syslog = null;
         private IHttpClientFactory _httpClientFactory = null;
-
-        //private readonly CCQueue _queue = null;
-        public CourseController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
+        
+        public CourseController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
-            _syslog = sysLog;
+            _syslog = new SysLog(configuration, sysemail, serviceProvider);
             _httpClientFactory = httpClientFactory;
-            //_queue = new CCQueue("ccmessagequeue", _queueConnection);
             _wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
         }
 

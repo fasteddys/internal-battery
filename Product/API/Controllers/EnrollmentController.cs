@@ -12,13 +12,11 @@ using UpDiddyLib.MessageQueue;
 using Braintree;
 using UpDiddyLib.Helpers;
 using Microsoft.EntityFrameworkCore;
-
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 using AutoMapper.QueryableExtensions;
 using UpDiddyApi.Workflow;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using System.Net.Http;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddyApi.Controllers
@@ -31,13 +29,14 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
-        //private readonly CCQueue _queue = null;
+        protected internal ISysLog _syslog = null;
 
-        public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
+            _syslog = new SysLog(configuration, sysemail, serviceProvider);
             _queueConnection = _configuration["CareerCircleQueueConnection"];
             //_queue = new CCQueue("ccmessagequeue", _queueConnection);
         }

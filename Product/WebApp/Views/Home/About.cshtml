@@ -3,87 +3,66 @@
 @model AboutViewModel
 
 <div class="about-us-container">
-    <div class="row about-us-hero">
-        <div class="col-md-12">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p>
-                            <h3>At CareerCircle, we are not just hiring talent, we are helping create talent to fit the job market.</h3>
-                        </p>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="career-circle-video-container">
-                            <video src="~/videos/Career_Circle.mp4" controls frameborder="0" allowfullscreen></video>
+    <div class="about-us-hero mb-4">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <img class="img-fluid hero-logo mt-4" src="/images/career-circle-header.png"/>
+                    <div class="tagline-wrapper">
+                        <img class="img-fluid arrow" src="/images/arrow.png" />
+                        <div class="row">
+                            <div class="col">
+                                <div class="text-uppercase text-center opensans-bold font-italic tagline f-color-primary">
+                                    Preparing the workforce of today for the <span class="f-color-secondary">opportunities of tomorrow</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row about-us-primary-band">
-        <div class="col-md-12">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-4 col-xs-12">
-                        <div class="content-panel">
-                            <div class="content-panel-header">
-                                Relevance
-                            </div>
-                            <div class="content-panel-body">
-                                Upskill &amp; adapt to remain job-relevant in the digital age with CareerCircle.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-xs-12">
-                        <div class="content-panel">
-                            <div class="content-panel-header">
-                                Skills For Tomorrow
-                            </div>
-                            <div class="content-panel-body">
-                                Striving to make a difference in the world by CareerSkilling to help in solving problems in their communities, empowering their friends, and defining the future or work in our world.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-xs-12">
-                        <div class="content-panel">
-                            <div class="content-panel-header">
-                                Self-Improvement
-                            </div>
-                            <div class="content-panel-body">
-                                Improving your job readiness and competitiveness while creating a career pathway.
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">
+                <img class="img-fluid" src="~/images/RelevantCircle.png" />
+            </div>
+            <div class="col-sm-4">
+                <img class="img-fluid" src="~/images/SkillingCircle.png" />
+            </div>
+            <div class="col-sm-4">
+                <img class="img-fluid" src="~/images/DefineCircle.png" />
             </div>
         </div>
+    </div>
+    <div class="container">
+        <div class="row d-flex align-items-center">
+            <div class="col-md-6">
+                <div class="career-circle-video-container">
+                    <video class="embed-responsive embed-responsive-16by9 mb-3" src="@(ProtocolAndHost)/videos/Career_Circle.mp4" controls frameborder="0" allowfullscreen></video>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <a href="#ContactUsForm">
+                    <div class="banner-button blue">
+                        Contact Us
+                    </div>
+                </a>
+                <a href="https://woz-u.com/" target="_blank">
+                    <div class="banner-button green">
+                        Partner: 
+                        <img class="d-inline-block img-fluid w-40" src="~/images/woz_logo_trans.png" />
+                    </div>
+                </a>
+            </div>
+    </div>
     </div>
 
-    <div class="row about-us-secondary-band">
+    <div class="row about-us-tertiary-band mt-4">
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-12">
-                        <div class="partners-band">
-                            <div class="partners-header font">
-                                Partnering with:
-                            </div>
-                            <div class="partners-body">
-                                <img src="~/images/woz_logo.png" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row about-us-tertiary-band">
-        <div class="col-md-12">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-12 pt-4 pb-4">
                         <div class="contact-us-band">
                             <div class="contact-us-header">Contact Us</div>
                             <form id="ContactUsForm" asp-controller="Home" asp-action="ContactUs">

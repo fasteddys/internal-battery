@@ -13,24 +13,26 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using UpDiddyLib.Helpers;
+using System.Net.Http;
 
 namespace UpDiddyApi.Controllers
 {
 
-
     [ApiController]
     public class PromoCodeController : ControllerBase
     {
-
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
+        protected internal ISysLog _syslog = null;
 
-        public PromoCodeController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        public PromoCodeController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
+            _syslog = new SysLog(configuration, sysemail, serviceProvider);
         }
 
 

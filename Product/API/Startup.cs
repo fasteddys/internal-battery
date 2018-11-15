@@ -14,6 +14,7 @@ using UpDiddyApi.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Hangfire;
 using UpDiddyApi.Workflow;
+using UpDiddyApi.Workflow;
 using Hangfire.SqlServer;
 using System;
 using UpDiddyLib.Helpers;
@@ -22,7 +23,7 @@ using Polly.Extensions.Http;
 using System.Net.Http;
 using UpDiddy.Helpers;
 using UpDiddyLib.Shared;
-
+ 
 
 namespace UpDiddyApi
 {
@@ -32,8 +33,9 @@ namespace UpDiddyApi
         public static string ScopeRead;
         public static string ScopeWrite;
         public IConfigurationRoot Configuration { get; set; }
+ 
 
-        public Startup(IHostingEnvironment env, IConfiguration configuration)
+        public Startup(IHostingEnvironment env, IConfiguration configuration )
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -57,7 +59,7 @@ namespace UpDiddyApi
                     new KeyVaultSecretManager());
             }
 
-            Configuration = builder.Build();
+            Configuration = builder.Build();         
         }
 
 
@@ -85,9 +87,7 @@ namespace UpDiddyApi
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
             // Add System Email   
-            services.AddSingleton<ISysEmail>(new SysEmail(Configuration));
-            // Add System Email   
-            services.AddSingleton<ISysLog>(new SysLog(Configuration, new SysEmail(Configuration)));
+            services.AddSingleton<ISysEmail>(new SysEmail(Configuration));            
             // Add framework services.
             services.AddMvc();
             // Add AutoMapper 
@@ -144,6 +144,8 @@ namespace UpDiddyApi
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+            // Add App Insights Logging
+            loggerFactory.AddApplicationInsights(app.ApplicationServices, Microsoft.Extensions.Logging.LogLevel.Warning);
 
             ScopeRead = Configuration["AzureAdB2C:ScopeRead"];
             ScopeWrite = Configuration["AzureAdB2C:ScopeWrite"];
@@ -160,7 +162,11 @@ namespace UpDiddyApi
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-        }
+         
+
+               
+            
+    }
 
         private Task AuthenticationFailed(AuthenticationFailedContext arg)
         {

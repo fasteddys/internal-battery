@@ -14,8 +14,16 @@
   background-color: #03264A;
 }
 
+.f-color-tertiary {
+  color: #84A550;
+}
+
+.bg-color-tertiary {
+  background-color: #84A550;
+}
+
 .f-color-secondary-light {
-  color: #03264A;
+  color: #84A550;
 }
 
 .f-color-tertiary-gray {
@@ -30,6 +38,10 @@
   color: #fff;
 }
 
+.f-color-black {
+  color: #000;
+}
+
 /* Font Declarations */
 @font-face {
   font-family: "OpenSans-Bold";
@@ -37,6 +49,10 @@
 }
 .opensans-bold {
   font-family: "OpenSans-Bold";
+}
+
+.f-bold {
+  font-family: OpenSans-Bold;
 }
 
 @font-face {
@@ -69,6 +85,39 @@
 }
 .btn-primary.font-small {
   font-size: 1rem;
+}
+
+.brand-button-tertiary {
+  background-color: #84A550;
+  color: #fff;
+  border-radius: 1rem;
+  padding: 1rem;
+  cursor: pointer;
+  transition: box-shadow 0.1s ease-in-out;
+  font-size: 1.5rem;
+}
+.brand-button-tertiary:hover {
+  box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+}
+.brand-button-tertiary.border-white {
+  border: 2px solid #fff;
+}
+
+.banner-button {
+  background-size: cover;
+  color: white;
+  font-size: 2.5em;
+  font-weight: bold;
+  text-align: center;
+  height: 125px;
+  line-height: 125px;
+  margin-bottom: 10px;
+}
+.banner-button.green {
+  background-image: url("/images/GreenBlock.png");
+}
+.banner-button.blue {
+  background-image: url("/images/NavyBlock.png");
 }
 
 .brand-button {
@@ -145,6 +194,10 @@ input {
   display: none;
 }
 
+.w-40 {
+  width: 40%;
+}
+
 a:hover {
   text-decoration: none;
 }
@@ -211,8 +264,12 @@ body .hero-title {
 body .hero-bold {
   font-family: "OpenSans-Bold";
 }
+body .hero-description {
+  margin-top: 1rem;
+  font-size: 1.25rem;
+}
 body .home-container .home-hero-top {
-  background-image: url("../images/city_skyline.jpg");
+  background-image: url("../images/circle-of-circles.png");
   background-position: bottom;
   background-size: cover;
   padding: 5rem 0 10rem 0;
@@ -315,11 +372,10 @@ body .topic-hero-band .brand-button {
     font-size: 1.5rem;
   }
   body .home-container .home-courses .course-categories .career-training-header-container {
-    text-align: left;
     margin-bottom: 2rem;
   }
   body .home-container .home-courses .course-categories .card-column .card img {
-    height: 14rem;
+    height: 8rem;
   }
   body .home-container .home-courses .course-categories > div {
     margin-bottom: 0;
@@ -350,6 +406,9 @@ body .topic-hero-band .brand-button {
   }
   body .home-container .home-courses .course-categories .card-column .card img {
     height: 12rem;
+  }
+  body .home-container .home-courses .course-categories .career-training-header-container {
+    text-align: left;
   }
   body .section-heading {
     font-size: 2.625rem;
@@ -520,6 +579,9 @@ body .topic-hero-band .brand-button {
   background-color: #808080;
   cursor: default;
 }
+.checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm #CourseVariants {
+  padding-bottom: 3em;
+}
 .checkout-page-container .checkout-vendor-info-container #CourseCheckoutForm .CourseVariantStartDate {
   width: 50%;
   display: none;
@@ -564,19 +626,34 @@ body .topic-hero-band .brand-button {
 }
 
 @media (min-width: 0px) {
-  .about-us-container > div {
-    padding: 5rem 0;
-  }
   .about-us-container .about-us-primary-band {
     background-image: linear-gradient(rgba(3, 38, 74, 0.45), rgba(3, 38, 74, 0.45)), url("../images/about-background-2.jpg");
     background-size: cover;
     background-position: top;
-    padding: 8rem 0;
+    padding: 8em 0;
   }
   .about-us-container .about-us-hero {
-    background-image: url("../images/medium_blue_background.jpg");
+    background-image: url("../images/about-us-hero.png");
     color: #fff;
     background-size: cover;
+    background-position: center;
+  }
+  .about-us-container .about-us-hero .hero-logo {
+    max-height: 500px;
+    display: block;
+    margin: auto;
+  }
+  .about-us-container .about-us-hero .arrow {
+    position: relative;
+    top: -75px;
+    max-height: 50px;
+    display: block;
+    margin: auto;
+  }
+  .about-us-container .about-us-hero .tagline {
+    font-size: 1.5em;
+    position: relative;
+    top: -60px;
   }
   .about-us-container .about-us-hero .about-us-header {
     font-size: 1.5rem;
@@ -628,6 +705,33 @@ body .topic-hero-band .brand-button {
   .about-us-container #ContactUsForm .contact-us-button-container button:hover {
     background-color: #03264A;
     box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+  }
+}
+@media (min-width: 320px) {
+  .about-us-container .about-us-hero .tagline {
+    font-size: 0.75em;
+    top: -30px;
+  }
+  .about-us-container .about-us-hero .arrow {
+    top: -25px;
+  }
+}
+@media (min-width: 768px) {
+  .about-us-container .about-us-hero .tagline {
+    top: -60px;
+    font-size: 1em;
+  }
+  .about-us-container .about-us-hero .arrow {
+    top: -50px;
+  }
+}
+@media (min-width: 1200px) {
+  .about-us-container .about-us-hero .tagline {
+    top: -95px;
+    font-size: 1.5em;
+  }
+  .about-us-container .about-us-hero .arrow {
+    top: -75px;
   }
 }
 .contact-us-container > div {

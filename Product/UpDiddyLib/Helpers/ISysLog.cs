@@ -1,8 +1,9 @@
 ﻿namespace UpDiddyLib.Helpers
 {
+
+    public enum LogLevel { Error = 0, Information }
     public interface ISysLog
     {
-        void SysError(string Info, bool SendEmail = false);
-        void SysInfo(string Info, bool SendEmail = false );
+        void Log(LogLevel level, string Info, bool SendEmail = false);        
     }
 }

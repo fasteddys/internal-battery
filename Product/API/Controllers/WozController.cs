@@ -35,7 +35,6 @@ namespace UpDiddyApi.Controllers
         private readonly ISysLog _syslog;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
-        //private readonly CCQueue _queue = null;
         private readonly string _apiBaseUri = String.Empty;
         private readonly string _accessToken = String.Empty;
         private WozTransactionLog _log = null;
@@ -43,18 +42,17 @@ namespace UpDiddyApi.Controllers
         #endregion
 
         #region Constructor
-        public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog syslog, IHttpClientFactory httpClientFactory)
+        public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
         {
-
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
             //_queue = new CCQueue("ccmessagequeue", _queueConnection);      
             _apiBaseUri = _configuration["Woz:ApiUrl"];
-            _accessToken = _configuration["WozAccessToken"];            
+            _accessToken = _configuration["Woz:AccessToken"];            
             _log = new WozTransactionLog();
-            _syslog = syslog;
+            _syslog = new SysLog(configuration, sysemail, serviceProvider);
             _httpClientFactory = httpClientFactory;
         }
         #endregion
@@ -281,12 +279,12 @@ namespace UpDiddyApi.Controllers
                 Enrollment.ModifyDate = DateTime.Now;
                 Enrollment.IsDeleted = 1;
                 _db.SaveChanges();
-                _syslog.SysInfo($"WozController:CancelEnrollment: Woz response for enrollment {EnrollmentGuid} = {ResponseJson}");
+                _syslog.Log(LogLevel.Information,$"WozController:CancelEnrollment: Woz response for enrollment {EnrollmentGuid} = {ResponseJson}");
                 return Ok();                
             }
             else
             {
-                _syslog.SysError($"WozController:CancelEnrollment: Woz response status code = {response.StatusCode.ToString()} for enrollment {EnrollmentGuid}" );
+                _syslog.Log(LogLevel.Error,$"WozController:CancelEnrollment: Woz response status code = {response.StatusCode.ToString()} for enrollment {EnrollmentGuid}" );
                 return BadRequest();
             }          
         }
