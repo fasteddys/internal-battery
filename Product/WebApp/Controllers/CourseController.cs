@@ -120,7 +120,8 @@ namespace UpDiddy.Controllers
             DateTime currentDate = DateTime.UtcNow;
             GetSubscriber(false);
 
-            // get the course variant based on the Guid selected, do not trust Price and Type from user submission
+            // get the course variant based on the Guid selected by the user
+            // normally we would want everything to come back via the view model, but we don't want to trust this because it contains price information
             CourseVariantViewModel selectedCourseVariant = null;
             if (courseViewModel.SelectedCourseVariant.HasValue)
             {

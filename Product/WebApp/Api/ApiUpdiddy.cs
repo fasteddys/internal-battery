@@ -157,9 +157,48 @@ namespace UpDiddy.Api
             return rval;
         }
         
+        public IList<CountryDto> GetCountries()
+        {
+            string cacheKey = $"GetCountries";
+            IList<CountryDto> rval = GetCachedValue<IList<CountryDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetCountries();
+                SetCachedValue<IList<CountryDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+        public IList<StateDto> GetStatesByCountry(Guid countryGuid)
+        {
+            string cacheKey = $"GetStatesByCountry{countryGuid}";
+            IList<StateDto> rval = GetCachedValue<IList<StateDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetStatesByCountry(countryGuid);
+                SetCachedValue<IList<StateDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
         public CourseVariantDto GetCourseVariant(Guid courseVariantGuid)
         {
-            return Get<CourseVariantDto>("course/GetCourseVariant/" + courseVariantGuid, false);
+            string cacheKey = $"GetCourseVariant{courseVariantGuid}";
+            CourseVariantDto rval = GetCachedValue<CourseVariantDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetCourseVariant(courseVariantGuid);
+                SetCachedValue<CourseVariantDto>(cacheKey, rval);
+            }
+            return rval;
         }
 
         public SubscriberDto Subscriber(Guid SubscriberGuid)
@@ -179,11 +218,6 @@ namespace UpDiddy.Api
         public PromoCodeDto PromoCodeValidation(string code, string courseVariantGuid, string subscriberGuid)
         {
             return Get<PromoCodeDto>("promocode/" + code + "/" + courseVariantGuid + "/" + subscriberGuid, true);
-        }
-
-        public double InstructorLedPrice(Guid CourseGuid, string VariantType)
-        {
-            return Get<double>("course/guid/" + CourseGuid + "/variant/" + VariantType, false);
         }
 
         public IList<EnrollmentDto> GetCurrentEnrollmentsForSubscriber(SubscriberDto Subscriber)
@@ -269,11 +303,11 @@ namespace UpDiddy.Api
             return Get<TopicDto>("topic/slug/" + TopicSlug, false);
         }
 
-        public IList<CountryDto> GetCountries()
+        public IList<CountryDto> _GetCountries()
         {
             return Get<IList<CountryDto>>("profile/GetCountries", false);
         }
-        public IList<StateDto> GetStatesByCountry(Guid countryGuid)
+        public IList<StateDto> _GetStatesByCountry(Guid countryGuid)
         {
             return Get<IList<StateDto>>("profile/GetStatesByCountry/" + countryGuid.ToString(), false);
         }
@@ -293,6 +327,10 @@ namespace UpDiddy.Api
         {
             CourseDto retVal = Get<CourseDto>("course/guid/" + CourseGuid, false);
             return retVal;
+        }
+        public CourseVariantDto _GetCourseVariant(Guid courseVariantGuid)
+        {
+            return Get<CourseVariantDto>("course/GetCourseVariant/" + courseVariantGuid, false);
         }
 
         private WozTermsOfServiceDto _GetWozTermsOfService()
