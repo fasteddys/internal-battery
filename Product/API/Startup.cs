@@ -105,7 +105,6 @@ namespace UpDiddyApi
             int promoCodeRedemptionLookbackInMinutes = 30;
             int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
             int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
-            // todo: fix this after dealing with migration issues resulting from changes to course, course variant, course variant type
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
 
             // Add Polly 
