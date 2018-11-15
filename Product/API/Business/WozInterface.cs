@@ -801,7 +801,7 @@ namespace UpDiddyApi.Business
                 }
 
                 // Short circuit if current date >= the Friday before the course is to begin
-                DateTime StartDate = Utils.FromWozTime((long)Enrollment.SectionStartTimestamp);
+                DateTime StartDate = Utils.FromUnixTimeInMilliseconds((long)Enrollment.SectionStartTimestamp);
                 DateTime PriorFriday = Utils.PriorDayOfWeek(StartDate, System.DayOfWeek.Friday);
 
                 if (PriorFriday > DateTime.Now)
@@ -836,7 +836,7 @@ namespace UpDiddyApi.Business
                 }
 
 
-                long UTCNowUnixMilliseconds = Utils.CurrentTimeInUnixMilliseconds();
+                long UTCNowUnixMilliseconds = Utils.ToUnixTimeInMilliseconds(DateTime.UtcNow);
                 WozActiveOfRequestDto ActiveOf = new WozActiveOfRequestDto()
                 {
                     activeAsOfDateUTC = UTCNowUnixMilliseconds

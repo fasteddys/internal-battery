@@ -25,30 +25,17 @@ namespace UpDiddyLib.Helpers
             return regex.Replace(Str.Trim(), " ");
 
         }
-        public static DateTime FromWozTime(long wozTime)
+        public static DateTime FromUnixTimeInMilliseconds(long wozTime)
         {
             return epoch.AddMilliseconds(wozTime);
         }
 
-        public static long ToWozTime(DateTime dateTime)
+        public static long ToUnixTimeInMilliseconds(DateTime dateTime)
         {
             return (long)(dateTime - epoch).TotalMilliseconds;
         }
 
         private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        static public long CurrentTimeInUnixMilliseconds()
-        {
-            long rval = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            return rval;
-        }
-
-        static public long CurrentTimeInUnixSeconds()
-        {
-            long rval = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            return rval;
-        }
-
 
         static public DateTime PriorDayOfWeek(DateTime StartTime, System.DayOfWeek DayOfTheWeek)
         {           

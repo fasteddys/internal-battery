@@ -194,7 +194,7 @@ namespace UpDiddyApi.Controllers
                 if (WozO.lastLoginDateUTC != null)
                 {
                     loginTimestamp = (long)WozO.lastLoginDateUTC;
-                    LastLogin = Utils.FromWozTime(loginTimestamp);
+                    LastLogin = Utils.FromUnixTimeInMilliseconds(loginTimestamp);
                 }
 
                 WozStudentInfoDto StudentInfo = new WozStudentInfoDto()
@@ -261,7 +261,7 @@ namespace UpDiddyApi.Controllers
             {
                 enrollmentStatus = (int) WozEnrollmentStatus.Canceled,
                 enrollmentDateUTC = WozEnrollment.EnrollmentDateUTC,
-                removalDateUTC = Utils.CurrentTimeInUnixMilliseconds()
+                removalDateUTC = Utils.ToUnixTimeInMilliseconds(DateTime.UtcNow)
             };
 
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(updateEnrollmentDto);

@@ -162,7 +162,7 @@ namespace UpDiddy.Controllers
                     case "Instructor-Led":
                         enrollmentStatusId = (int)EnrollmentStatus.FutureRegisterStudentRequested;
                         if (selectedCourseVariant.SelectedStartDate.HasValue)
-                            sectionStartTimestamp = Utils.ToWozTime(selectedCourseVariant.SelectedStartDate.Value);
+                            sectionStartTimestamp = Utils.ToUnixTimeInMilliseconds(selectedCourseVariant.SelectedStartDate.Value);
                         else
                             ModelState.AddModelError("SelectedCourseVariant", "A start date must be selected for instructor-led courses.");
                         break;
