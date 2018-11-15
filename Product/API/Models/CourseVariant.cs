@@ -8,8 +8,10 @@ namespace UpDiddyApi.Models
     {
         public int CourseVariantId { get; set; }
         public Guid? CourseVariantGuid { get; set; }
-        public Guid? CourseGuid { get; set; }
-        public Decimal? Price { get; set; }
-        public string VariantType { get; set; }
+        public Decimal Price { get; set; }
+        public int CourseVariantTypeId { get; set; }
+        public virtual CourseVariantType CourseVariantType { get; set; }
+        public int CourseId { get; set; }
+        public virtual Course Course { get; set; }
     }
 }

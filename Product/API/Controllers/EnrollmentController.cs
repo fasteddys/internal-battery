@@ -12,13 +12,11 @@ using UpDiddyLib.MessageQueue;
 using Braintree;
 using UpDiddyLib.Helpers;
 using Microsoft.EntityFrameworkCore;
-
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 using AutoMapper.QueryableExtensions;
 using UpDiddyApi.Workflow;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using System.Net.Http;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddyApi.Controllers
@@ -31,13 +29,14 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
-        //private readonly CCQueue _queue = null;
-        
-        public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        protected internal ISysLog _syslog = null;
+
+        public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
+            _syslog = new SysLog(configuration, sysemail, serviceProvider);
             _queueConnection = _configuration["CareerCircleQueueConnection"];
             //_queue = new CCQueue("ccmessagequeue", _queueConnection);
         }
@@ -54,7 +53,7 @@ namespace UpDiddyApi.Controllers
                 // grab the subscriber information we need for the enrollment log, then set the property to null on EnrollmentDto so that ef doesn't try to create the subscriber
                 Guid subscriberGuid = EnrollmentDto.Subscriber.SubscriberGuid.Value;
                 EnrollmentDto.Subscriber = null;
-
+                EnrollmentDto.CourseId = _db.Course.Where(c => c.CourseGuid == EnrollmentDto.CourseGuid).Select(c => c.CourseId).FirstOrDefault();
                 Enrollment Enrollment = _mapper.Map<Enrollment>(EnrollmentDto);
                 _db.Enrollment.Add(Enrollment);
 
@@ -68,8 +67,13 @@ namespace UpDiddyApi.Controllers
                  */
                 DateTime currentDate = DateTime.UtcNow;
                 var course = _db.Course.Where(c => c.CourseId == EnrollmentDto.CourseId).FirstOrDefault();
-                var vendor = _db.Vendor.Where(v => v.VendorId == course.VendorId.Value).FirstOrDefault(); // why is vendor id nullable on course?
-                var courseVariant = _db.CourseVariant.Where(cv => cv.CourseVariantId == EnrollmentDto.CourseVariantId).FirstOrDefault();
+                var vendor = _db.Vendor.Where(v => v.VendorId == course.VendorId).FirstOrDefault(); // why is vendor id nullable on course?
+
+                var originalCoursePrice = _db.CourseVariant
+                    .Where(cv => cv.CourseVariantGuid == EnrollmentDto.CourseVariantGuid)
+                    .Select(cv => cv.Price)
+                    .FirstOrDefault();
+
                 var promoCodeRedemption = _db.PromoCodeRedemption
                     .Include(pcr => pcr.RedemptionStatus)
                     .Where(pcr => pcr.PromoCodeRedemptionGuid == EnrollmentDto.PromoCodeRedemptionGuid && pcr.RedemptionStatus.Name == "Completed").FirstOrDefault();
@@ -90,9 +94,9 @@ namespace UpDiddyApi.Controllers
 
                 _db.EnrollmentLog.Add(new EnrollmentLog()
                 {
-                    CourseCost = (courseVariant != null && courseVariant.Price.HasValue) ? courseVariant.Price.Value : (course.Price.HasValue) ? course.Price.Value : 0,
+                    CourseCost = originalCoursePrice,
                     CourseGuid = course.CourseGuid.HasValue ? course.CourseGuid.Value : Guid.Empty,
-                    CourseVariantGuid = courseVariant.CourseVariantGuid,
+                    CourseVariantGuid = EnrollmentDto.CourseVariantGuid,
                     CreateDate = currentDate,
                     CreateGuid = Guid.Empty,
                     EnrollmentGuid = EnrollmentDto.EnrollmentGuid.Value,
@@ -102,7 +106,7 @@ namespace UpDiddyApi.Controllers
                     EnrollmentVendorInvoicePaymentYear = paymentYear,
                     PromoApplied = (promoCodeRedemption != null) ? promoCodeRedemption.ValueRedeemed : 0,
                     SubscriberGuid = subscriberGuid,
-                    EnrollmentVendorPaymentStatusId = 2 
+                    EnrollmentVendorPaymentStatusId = 2
                 });
 
                 _db.SaveChanges();
@@ -112,6 +116,7 @@ namespace UpDiddyApi.Controllers
                  *  which will then enqueue the enrollment flow if the payment is successful.
                  */
                 BackgroundJob.Enqueue<BraintreePaymentFlow>(x => x.PaymentWorkItem(EnrollmentFlowDto));
+
                 return Ok(Enrollment.EnrollmentGuid);
             }
             catch (Exception ex)

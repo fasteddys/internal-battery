@@ -75,6 +75,14 @@
                     cursor: default;
                 }
             }
+            #CourseVariants {
+                padding-bottom: 3em;
+            }
+
+            .CourseVariantStartDate {
+                width: 50%;
+                display: none;
+            }
 
             .billing-info-header-container {
             }
@@ -120,9 +128,13 @@
                     color: $color-primary;
                 }
             }
+        }
 
-            #ValidationSummary {
-                    color: darkred;
+        #ValidationSummary {
+            color: darkred;
+
+            .validation-summary-valid {
+                display: none;
             }
         }
 

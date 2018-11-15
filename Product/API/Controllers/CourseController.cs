@@ -10,6 +10,10 @@ using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
+using Microsoft.EntityFrameworkCore;
+using UpDiddyApi.Business;
+using UpDiddyLib.Helpers;
+using System.Net.Http;
 
 namespace UpDiddyApi.Controllers
 {
@@ -21,16 +25,21 @@ namespace UpDiddyApi.Controllers
 
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
-        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
-        //private readonly CCQueue _queue = null;
-        public CourseController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        private WozInterface _wozInterface = null;
+        protected internal ISysLog _syslog = null;
+        private IHttpClientFactory _httpClientFactory = null;
+        
+        public CourseController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
-            //_queue = new CCQueue("ccmessagequeue", _queueConnection);
+            _syslog = new SysLog(configuration, sysemail, serviceProvider);
+            _httpClientFactory = httpClientFactory;
+            _wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
         }
 
         // GET: api/courses
@@ -70,8 +79,8 @@ namespace UpDiddyApi.Controllers
                 .ToList();
 
             return Ok(rval);
-
         }
+
         // Post: api/course/vendor/coursecode
         // TODO make Authorized 
         // [Authorize]
@@ -92,8 +101,6 @@ namespace UpDiddyApi.Controllers
 
             return Ok(CourseCode);
         }
-
-
 
         // Post: api/course/vendor/coursecode
         // TODO make Authorized 
@@ -135,49 +142,74 @@ namespace UpDiddyApi.Controllers
             return Ok();
         }
 
-
-
-
         [HttpGet]
         [Route("api/[controller]/slug/{CourseSlug}")]
         public IActionResult GetCourse(string CourseSlug)
         {
-            
+            // retrieve the course data that we store in our system, including course variant and type
             Course course = _db.Course
+                .Include(c => c.Vendor)
+                .Include(c => c.CourseVariants)
+                .ThenInclude(cv => cv.CourseVariantType)
                 .Where(t => t.IsDeleted == 0 && t.Slug == CourseSlug)
                 .FirstOrDefault();
 
             if (course == null)
                 return NotFound();
-            return Ok(_mapper.Map<CourseDto>(course));
+
+            CourseDto courseDto = _mapper.Map<CourseDto>(course);
+
+            // if this is a woz course, get the terms of service and course schedule. 
+            // todo: replace this logic with factory pattern when we add more vendors?
+            if (course.Vendor.Name == "WozU")
+            {
+                // get the terms of service from WozU
+                var tos = _wozInterface.GetTermsOfService();
+                courseDto.TermsOfServiceDocumentId = tos.DocumentId;
+                courseDto.TermsOfServiceContent = tos.TermsOfService;
+
+                // get start dates from WozU
+                var startDateUTCs = _wozInterface.CheckCourseSchedule(course.Code);
+
+                // add them to instrtuctor-led course variants
+                courseDto.CourseVariants
+                    .Where(cv => cv.CourseVariantType.Name == "Instructor-Led")
+                    .ToList()
+                    .ForEach(cv =>
+                    {
+                        cv.StartDateUTCs = startDateUTCs;
+                    });
+            }
+            return Ok(courseDto);
         }
 
         [HttpGet]
-        [Route("api/[controller]/guid/{CourseGuid}")]
-        public IActionResult GetCourseByGuid(Guid? CourseGuid)
+        [Route("api/[controller]/GetCourseByGuid/{courseGuid}")]
+        public IActionResult GetCourseByGuid(Guid courseGuid)
         {
-
             Course course = _db.Course
-                .Where(t => t.IsDeleted == 0 && t.CourseGuid == CourseGuid)
+                .Where(t => t.IsDeleted == 0 && t.CourseGuid == courseGuid)
                 .FirstOrDefault();
 
             if (course == null)
                 return NotFound();
+
             return Ok(_mapper.Map<CourseDto>(course));
         }
 
         [HttpGet]
-        [Route("api/[controller]/guid/{CourseGuid}/variant/{VariantType}")]
-        public IActionResult GetCourseVariantPrice(Guid? CourseGuid, string VariantType)
+        [Route("api/[controller]/GetCourseVariant/{courseVariantGuid}")]
+        public IActionResult GetCourseVariant(Guid courseVariantGuid)
         {
             CourseVariant courseVariant = _db.CourseVariant
-                .Where(t => t.IsDeleted == 0 && t.CourseGuid == CourseGuid && t.VariantType == VariantType)
+                .Include(cv => cv.CourseVariantType)
+                .Where(cv => cv.CourseVariantGuid == courseVariantGuid)
                 .FirstOrDefault();
-            if (courseVariant == null)
-                return Ok("0");
-            else
-                return Ok(courseVariant.Price.ToString());
 
+            if (courseVariant == null)
+                return NotFound();
+            else
+                return Ok(_mapper.Map<CourseVariantDto>(courseVariant));
         }
 
         [HttpGet]

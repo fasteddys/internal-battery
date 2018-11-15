@@ -69,79 +69,7 @@ namespace UpDiddyApi.Controllers
             var ResponseJson = await response.Content.ReadAsStringAsync();
             return Ok(ResponseJson);
         }
-
-
-
-
-
-
-
-
-        [HttpGet]
-        // TODO Authorize [Authorize]
-        // TODO Cache to every 10 minutes 
-        [Route("api/[controller]/CourseSchedule/{CourseCode}/{CourseGuid}")]
-        public async Task<IActionResult> CourseSchedule(string CourseCode, Guid CourseGuid)
-        {
-
-            int MonthsLookAhead = 6;
-            if (!(int.TryParse(_configuration["Woz:CourseScheduleMonthLookahead"], out MonthsLookAhead)))
-                MonthsLookAhead = 6;
-            
-
-            long UTCStartDate = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds();
-            long UTCEndDate = ((DateTimeOffset)DateTime.Now.AddMonths(MonthsLookAhead)).ToUnixTimeMilliseconds();
-            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"courses/{CourseCode}/schedule?startDateUTC={UTCStartDate.ToString()}&endDateUTC={UTCEndDate.ToString()}");
- 
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
-            HttpResponseMessage response = await client.SendAsync(request);
-            var ResponseJson = await response.Content.ReadAsStringAsync();
-
-            IList<CourseVariantDto> Variants = null;
-            Variants = _db.CourseVariant
-                .Where(t => t.IsDeleted == 0 && t.CourseGuid == CourseGuid)
-                .ProjectTo<CourseVariantDto>(_mapper.ConfigurationProvider)
-                .ToList();
-
-            List<Tuple<int, string, Decimal>> VarToPrice = new List<Tuple<int, string, decimal>>();
-            foreach (CourseVariantDto variant in Variants)
-            {
-                VarToPrice.Add(new Tuple<int, string, Decimal>(variant.CourseVariantId, variant.VariantType, variant.Price));
-            }
-
-            WozCourseScheduleDto CourseSchedule = new WozCourseScheduleDto();
-
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
-                JArray StartDatesJsonArray = WozO.startDatesUTC;
-
-                IList<long> CourseStartDatesUtc = null;
-                try
-                {
-                    CourseStartDatesUtc = StartDatesJsonArray.Select(jv => (long)jv).ToList();
-                }
-                catch{}
-
-
-                CourseSchedule.CourseCode = CourseCode;
-                CourseSchedule.StartDatesUTC = CourseStartDatesUtc;
-                CourseSchedule.VariantToPrice = VarToPrice;
-
-                return Ok(CourseSchedule);
-            }
-            else
-            {
-                CourseSchedule.CourseCode = string.Empty;
-                CourseSchedule.StartDatesUTC = null;
-                CourseSchedule.VariantToPrice = VarToPrice;
-                return Ok(CourseSchedule);
-            }
-
-        }
-
-
+        
         // TODO Deprecate 
         [HttpGet]
         // TODO Authorize [Authorize]
@@ -186,8 +114,6 @@ namespace UpDiddyApi.Controllers
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
-
-                // Must assign to local variables due to Newtonsoft 
                 string LetterGrade = WozO.progress.letterGrade;
                 string PercentageGrade = WozO.progress.percentageGrade;
                 string ActivitiesCompleted = WozO.progress.activitiesCompleted;
@@ -268,7 +194,7 @@ namespace UpDiddyApi.Controllers
                 if (WozO.lastLoginDateUTC != null)
                 {
                     loginTimestamp = (long)WozO.lastLoginDateUTC;
-                    LastLogin = Utils.UnixMillisecondsToLocalDatetime(loginTimestamp);
+                    LastLogin = Utils.FromUnixTimeInMilliseconds(loginTimestamp);
                 }
 
                 WozStudentInfoDto StudentInfo = new WozStudentInfoDto()
@@ -335,7 +261,7 @@ namespace UpDiddyApi.Controllers
             {
                 enrollmentStatus = (int) WozEnrollmentStatus.Canceled,
                 enrollmentDateUTC = WozEnrollment.EnrollmentDateUTC,
-                removalDateUTC = Utils.CurrentTimeInUnixMilliseconds()
+                removalDateUTC = Utils.ToUnixTimeInMilliseconds(DateTime.UtcNow)
             };
 
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(updateEnrollmentDto);

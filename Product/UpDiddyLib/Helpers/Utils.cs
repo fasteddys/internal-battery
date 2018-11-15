@@ -25,25 +25,17 @@ namespace UpDiddyLib.Helpers
             return regex.Replace(Str.Trim(), " ");
 
         }
-
-        static public DateTime UnixMillisecondsToLocalDatetime(long Milliseconds)
+        public static DateTime FromUnixTimeInMilliseconds(long wozTime)
         {
-            DateTimeOffset DatTimeOff = DateTimeOffset.FromUnixTimeMilliseconds(Milliseconds).ToLocalTime();
-            return DatTimeOff.DateTime;
+            return epoch.AddMilliseconds(wozTime);
         }
 
-        static public long CurrentTimeInUnixMilliseconds()
+        public static long ToUnixTimeInMilliseconds(DateTime dateTime)
         {
-            long rval = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            return rval;
+            return (long)(dateTime - epoch).TotalMilliseconds;
         }
 
-        static public long CurrentTimeInUnixSeconds()
-        {
-            long rval = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            return rval;
-        }
-
+        private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         static public DateTime PriorDayOfWeek(DateTime StartTime, System.DayOfWeek DayOfTheWeek)
         {           
@@ -53,49 +45,5 @@ namespace UpDiddyLib.Helpers
 
             return PriorDay;
         }
-
-        static public Dictionary<CountryDto, List<StateDto>> InitializeCountryStateMapping(IList<CountryStateDto> CountryStateList)
-        {
-            CountryStateDto countryStateDto = CountryStateList[0];
-
-            // May need this to contain the other info about the country
-            CountryDto previousCountry = new CountryDto
-            {
-                DisplayName = countryStateDto.DisplayName,
-                Code2 = countryStateDto.Code2,
-                Code3 = countryStateDto.Code3
-            };
-            List<StateDto> states = new List<StateDto>();
-            Dictionary<CountryDto, List<StateDto>> CountryStateMapping = new Dictionary<CountryDto, List<StateDto>>();
-            foreach (CountryStateDto csdto in CountryStateList)
-            {
-                if (!(previousCountry.DisplayName).Equals(csdto.DisplayName))
-                {
-                    CountryStateMapping.Add(previousCountry, states);
-                    states = new List<StateDto>();
-                    previousCountry = new CountryDto
-                    {
-                        DisplayName = csdto.DisplayName,
-                        Code2 = csdto.Code2,
-                        Code3 = csdto.Code3
-                    };
-                    states.Add(new StateDto
-                    {
-                        Name = csdto.Name,
-                        StateId = csdto.StateId
-                    });
-                }
-                else
-                {
-                    states.Add(new StateDto
-                    {
-                        Name = csdto.Name,
-                        StateId = csdto.StateId
-                    });
-                }
-            }
-            return CountryStateMapping;
-        }
-
     }
 }

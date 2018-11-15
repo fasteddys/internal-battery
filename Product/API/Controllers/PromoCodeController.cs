@@ -13,24 +13,26 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using UpDiddyLib.Helpers;
+using System.Net.Http;
 
 namespace UpDiddyApi.Controllers
 {
 
-
     [ApiController]
     public class PromoCodeController : ControllerBase
     {
-
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
+        protected internal ISysLog _syslog = null;
 
-        public PromoCodeController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        public PromoCodeController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
+            _syslog = new SysLog(configuration, sysemail, serviceProvider);
         }
 
 
@@ -51,21 +53,22 @@ namespace UpDiddyApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("api/[controller]/PromoCodeRedemptionValidation/{promoCodeRedemptionGuid}/{courseGuid}/{subscriberGuid}")]
-        public IActionResult PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid, string subscriberGuid)
+        [Route("api/[controller]/PromoCodeRedemptionValidation/{promoCodeRedemptionGuid}/{courseVariantGuid}/{subscriberGuid}")]
+        public IActionResult PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseVariantGuid, string subscriberGuid)
         {
             // lookup redemption by guid and ensure that the following is true: 
             //  the promo code is still in process
             //  it is being redeemed for the same course and subscriber
             //  we will not exceed the number of allowed redemptions for this code
             var query = (from pcr in _db.PromoCodeRedemption.Include(pcr => pcr.RedemptionStatus)
-                         join c in _db.Course on pcr.CourseId equals c.CourseId
+                         join cv in _db.CourseVariant on pcr.CourseVariantId equals cv.CourseVariantId
                          join s in _db.Subscriber on pcr.SubscriberId equals s.SubscriberId
                          join pc in _db.PromoCode on pcr.PromoCodeId equals pc.PromoCodeId
                          where pcr.RedemptionStatus.Name == "In Process"
                          && pcr.IsDeleted == 0
-                         && c.CourseGuid == Guid.Parse(courseGuid)
+                         && cv.CourseVariantGuid == Guid.Parse(courseVariantGuid)
                          && s.SubscriberGuid == Guid.Parse(subscriberGuid)
+                         && s.IsDeleted == 0
                          && pcr.PromoCodeRedemptionGuid == Guid.Parse(promoCodeRedemptionGuid)
                          && pc.NumberOfRedemptions < pc.MaxAllowedNumberOfRedemptions
                          select new PromoCodeDto()
@@ -104,8 +107,8 @@ namespace UpDiddyApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("api/[controller]/{code}/{courseGuid}/{subscriberGuid}")]
-        public IActionResult PromoCodeValidation(string code, string courseGuid, string subscriberGuid)
+        [Route("api/[controller]/{code}/{courseVariantGuid}/{subscriberGuid}")]
+        public IActionResult PromoCodeValidation(string code, string courseVariantGuid, string subscriberGuid)
         {
             try
             {
@@ -119,7 +122,6 @@ namespace UpDiddyApi.Controllers
                 *   Dto, then we could move all of the validation to:
                 *       IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
                 */
-
                 PromoCode promoCode = _db.PromoCode
                     .Include(p => p.PromoType)
                     .Where(p => p.Code == code)
@@ -145,33 +147,40 @@ namespace UpDiddyApi.Controllers
                 if (promoCode.NumberOfRedemptions >= promoCode.MaxAllowedNumberOfRedemptions || promoCode.NumberOfRedemptions + inProgressRedemptionsForThisCode > promoCode.MaxAllowedNumberOfRedemptions)
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has exceeded its allowed number of redemptions." });
 
-                Guid parsedCourseGuid;
-                Guid.TryParse(courseGuid, out parsedCourseGuid);
-                Course course = _db.Course
-                    .Where(c => c.CourseGuid == parsedCourseGuid)
+                Guid parsedVariantCourseGuid;
+                Guid.TryParse(courseVariantGuid, out parsedVariantCourseGuid);
+                CourseVariant courseVariant = _db.CourseVariant
+                    .Where(cv => cv.CourseVariantGuid == parsedVariantCourseGuid)
                     .FirstOrDefault();
 
-                if (course == null)
+                if (courseVariant == null)
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "The course specified is invalid." });
 
-                List<CoursePromoCode> courseRestrictionsForThisPromoCode = _db.CoursePromoCode
+                List<CourseVariantPromoCode> courseRestrictionsForThisPromoCode = _db.CourseVariantPromoCode
                     .Where(cpc => cpc.PromoCodeId == promoCode.PromoCodeId)
                     .ToList();
 
-                if (courseRestrictionsForThisPromoCode.Any() && !courseRestrictionsForThisPromoCode.Any(r => r.CourseId == course.CourseId))
+                if (courseRestrictionsForThisPromoCode.Any() && !courseRestrictionsForThisPromoCode.Any(r => r.CourseVariantId == courseVariant.CourseVariantId))
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this course." });
 
                 List<VendorPromoCode> vendorRestrictionsForThisPromoCode = _db.VendorPromoCode
                     .Where(vpc => vpc.PromoCodeId == promoCode.PromoCodeId)
                     .ToList();
 
+                var course = _db.Course
+                    .Include(c => c.CourseVariants)
+                    .Where(c => c.CourseVariants
+                        .Where(cv => cv.CourseVariantId == courseVariant.CourseVariantId)
+                        .Any()
+                    ).FirstOrDefault();
+                
                 if (vendorRestrictionsForThisPromoCode.Any() && !vendorRestrictionsForThisPromoCode.Any(vpc => vpc.VendorId == course.VendorId))
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this vendor." });
 
                 Guid parsedSubscriberGuid;
                 Guid.TryParse(subscriberGuid, out parsedSubscriberGuid);
                 Subscriber subscriber = _db.Subscriber
-                    .Where(s => s.SubscriberGuid == parsedSubscriberGuid)
+                    .Where(s => s.SubscriberGuid == parsedSubscriberGuid && s.IsDeleted == 0)
                     .FirstOrDefault();
 
                 if (subscriber == null)
@@ -183,12 +192,13 @@ namespace UpDiddyApi.Controllers
 
                 if (subscriberRestrictionsForThisPromoCode.Any() && !subscriberRestrictionsForThisPromoCode.Any(spc => spc.SubscriberId == subscriber.SubscriberId))
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this subscriber." });
+
                 #endregion
 
                 // check if there is an existing "in process" promo code redemption for this code, course, and subscriber that has not been logically deleted
                 var existingInProgressPromoCodeRedemption = _db.PromoCodeRedemption
                     .Include(pcr => pcr.RedemptionStatus)
-                    .Where(pcr => pcr.PromoCodeId == promoCode.PromoCodeId && pcr.SubscriberId == subscriber.SubscriberId && pcr.CourseId == course.CourseId && pcr.RedemptionStatus.Name == "In Process" && pcr.IsDeleted == 0)
+                    .Where(pcr => pcr.PromoCodeId == promoCode.PromoCodeId && pcr.SubscriberId == subscriber.SubscriberId && pcr.CourseVariantId == courseVariant.CourseVariantId && pcr.RedemptionStatus.Name == "In Process" && pcr.IsDeleted == 0)
                     .FirstOrDefault();
 
                 if (existingInProgressPromoCodeRedemption == null)
@@ -200,15 +210,15 @@ namespace UpDiddyApi.Controllers
                     switch (promoCode.PromoType.Name)
                     {
                         case "Dollar Amount":
-                            validPromoCodeDto.Discount = !course.Price.HasValue ? 0 : Math.Max(0, promoCode.PromoValueFactor);
+                            validPromoCodeDto.Discount =  Math.Max(0, promoCode.PromoValueFactor);
                             break;
                         case "Percent Off":
-                            validPromoCodeDto.Discount = !course.Price.HasValue ? 0 : Math.Max(0, Math.Round(course.Price.Value * promoCode.PromoValueFactor, 2, MidpointRounding.ToEven));
+                            validPromoCodeDto.Discount = Math.Max(0, Math.Round(courseVariant.Price * promoCode.PromoValueFactor, 2, MidpointRounding.ToEven));
                             break;
                         default:
                             throw new ApplicationException("Unrecognized promo type!");
                     }
-                    validPromoCodeDto.FinalCost = !course.Price.HasValue ? 0 : course.Price.Value - validPromoCodeDto.Discount;
+                    validPromoCodeDto.FinalCost = courseVariant.Price - validPromoCodeDto.Discount;
                     validPromoCodeDto.PromoCodeRedemptionGuid = Guid.NewGuid();
                     _db.PromoCodeRedemption.Add(new PromoCodeRedemption()
                     {
@@ -218,7 +228,7 @@ namespace UpDiddyApi.Controllers
                         PromoCodeRedemptionGuid = validPromoCodeDto.PromoCodeRedemptionGuid,
                         RedemptionStatusId = 1, // "In Process"
                         ValueRedeemed = validPromoCodeDto.Discount,
-                        CourseId = course.CourseId,
+                        CourseVariantId = courseVariant.CourseVariantId,
                         PromoCodeId = promoCode.PromoCodeId,
                         SubscriberId = subscriber.SubscriberId
                     });
@@ -230,7 +240,7 @@ namespace UpDiddyApi.Controllers
                     validPromoCodeDto = new PromoCodeDto()
                     {
                         Discount = existingInProgressPromoCodeRedemption.ValueRedeemed,
-                        FinalCost = !existingInProgressPromoCodeRedemption.Course.Price.HasValue ? 0 : existingInProgressPromoCodeRedemption.Course.Price.Value - existingInProgressPromoCodeRedemption.ValueRedeemed,
+                        FinalCost = existingInProgressPromoCodeRedemption.CourseVariant.Price - existingInProgressPromoCodeRedemption.ValueRedeemed,
                         IsValid = true,
                         ValidationMessage = $"The promo code '{existingInProgressPromoCodeRedemption.PromoCode.PromoName}' has been applied successfully! See below for the updated price.",
                         PromoCodeRedemptionGuid = existingInProgressPromoCodeRedemption.PromoCodeRedemptionGuid,

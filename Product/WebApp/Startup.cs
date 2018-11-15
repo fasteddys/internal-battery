@@ -22,7 +22,7 @@ using Polly.Caching;
 using System.Collections;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Shared;
-
+using Microsoft.Net.Http.Headers;
 
 namespace UpDiddy
 {
@@ -202,7 +202,17 @@ namespace UpDiddy
                 return next.Invoke();
             });
         
-            app.UseStaticFiles();
+            // set the cache-control header to 24 hours
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    const int durationInSeconds = 60 * 60 * 24;
+                    ctx.Context.Response.Headers[HeaderNames.CacheControl] =
+                        "public,max-age=" + durationInSeconds;
+                }
+            });
+
             app.UseSession();
             app.UseAuthentication();
 

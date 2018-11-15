@@ -19,16 +19,16 @@ namespace UpDiddyApi.Models
         public string Slug { get; set; }
         public string Description { get; set; }
         public string Code { get; set; }
-        public Decimal? Price { get; set; }
         public int? TopicId { get; set; }
         public string DesktopImage { get; set; }
         public string TabletImage { get; set; }
         public string MobileImage { get; set; }
-        public int? VendorId { get; set; }
+        public int VendorId { get; set; }
+        public Vendor Vendor { get; set; }
         public int? SortOrder { get; set; }
         public int? CourseDeliveryId { get; set; }
         public int? Hidden { get; set; }
         public string VideoUrl { get; set; }
-        
+        public List<CourseVariant> CourseVariants { get; set; }
     }
 }
