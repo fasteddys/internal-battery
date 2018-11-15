@@ -1,7 +1,7 @@
 # Build dotnet core project using Azure Pipelines
 
 # build name format
-name: WebApp.${Date:yyyyMMdd}.$(Rev:.r)
+name: webapp.$(date:yyyyMMdd)$(rev:.r)
 pool:
   vmImage: 'ubuntu-16.04'
 
