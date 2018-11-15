@@ -1,7 +1,7 @@
 # Build dotnet core project using Azure Pipelines
 
 # build name format
-name: ${System.TeamProject}.WebApp.${Date:yyyyMMdd}.$(Rev:.r)
+name: webapp.$(date:yyyyMMdd)$(rev:.r)
 pool:
   vmImage: 'ubuntu-16.04'
 
@@ -15,9 +15,29 @@ trigger: [ dev ]
 pr: none
 
 steps:
-- bash: |
-    cd 'Product/WebApp'
-    dotnet build --configuration $(buildConfiguration)
-    dotnet publish --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+- task: DotNetCoreCLI@2
+  displayName: Restore NuGet Packages
+  inputs:
+    command: restore
+    projects: Product/WebApp
+
+- task: DotNetCoreCLI@2
+  displayName: Compile
+  inputs:
+    command: build 
+    arguments: --configuration $(buildConfiguration)
+    projects: Product/WebApp
+
+- task: DotNetCoreCLI@2
+  displayName: Prepare Publish Files
+  inputs:
+    command: publish
+    arguments: --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+    projects: Product/WebApp
+    zipAfterPublish: true
 
 - task: PublishBuildArtifacts@1
+  displayName: Publish Artifacts
+  inputs:
+    artifactName: 'webapp'
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
