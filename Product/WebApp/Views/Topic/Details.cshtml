@@ -70,7 +70,7 @@
                                                 <p class="card-text fade-text">@DescriptionBlurb</p>
                                                 <div class="row course-footer">
                                                     <div class="col-6">
-                                                        Cost: $@course.Price
+                                                        From @string.Format("{0:C}", course.CourseVariants.OrderBy(cv => cv.Price).Select(cv => cv.Price).FirstOrDefault())
                                                     </div>
                                                     <div class="col-6">
                                                         <div class="card-footer-cc">

@@ -12,5 +12,6 @@ namespace UpDiddyApi.Models
         public int SubscriberId { get; set; }
         public string VendorLogin { get; set; }
         public string RegistrationUrl { get; set; }
+        public DateTime? LastLoginDate { get; set; }
     }
 }

@@ -11,5 +11,6 @@ namespace UpDiddyLib.Dto
         public string emailAddress { get; set; }
         public int acceptedTermsOfServiceDocumentId { get; set; }
         public bool suppressRegistrationEmail { get; set; }
+        public string phoneNumberPrimary { get; set; }
     }
 }

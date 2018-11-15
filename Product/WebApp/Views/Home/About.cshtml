@@ -1,11 +1,7 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
 @model AboutViewModel
-@{
-    string DomainName = Context.Request.Host.ToString();
-    string SSLProtocol = Context.Request.Scheme.ToString();
-    string ProtocolAndHost = SSLProtocol + "://" + DomainName;
-}
+
 <div class="about-us-container">
     <div class="about-us-hero mb-4">
         <div class="container-fluid">
