@@ -32,11 +32,48 @@ namespace UpDiddyApi.Workflow
         #region Woz
 
 
+        public bool UpdateWozStudentLastLogin(string SubscriberGuid )
+        {
+            try
+            {
+                _syslog.Log(LogLevel.Information,$"***** UpdateWozStudentLastLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
+                Subscriber subscriber = _db.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Guid.Parse(SubscriberGuid))
+                .FirstOrDefault();
+
+                if (subscriber == null)
+                    return false;
+
+                int WozVendorId = int.Parse(_configuration["Wox:VendorId"]);
+                VendorStudentLogin studentLogin = _db.VendorStudentLogin
+                    .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId && s.VendorId == WozVendorId) 
+                    .FirstOrDefault();
+
+                if (studentLogin == null)
+                    return false;
+
+                 
+                    _db.SaveChanges();
+
+                _syslog.Log(LogLevel.Information, $"***** UpdateWozStudentLastLogin completed at: {DateTime.UtcNow.ToLongDateString()}");
+                return true;
+            }
+            catch (Exception e)
+            {
+
+                _syslog.Log(LogLevel.Error, "UpdateWozStudentLastLogin:GetWozCourseProgress threw an exception -> " + e.Message);
+                return false;
+            }
+
+        }
+
+
+
         public bool UpdateStudentProgress(string SubscriberGuid, int ProgressUpdateAgeThresholdInHours)
         {
             try
             {
-                Console.WriteLine($"***** UpdateStudentProgress started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
+                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
                 Subscriber subscriber = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Guid.Parse(SubscriberGuid))
                 .FirstOrDefault();
@@ -69,7 +106,7 @@ namespace UpDiddyApi.Workflow
                 if (updatesMade)
                     _db.SaveChanges();
 
-                Console.WriteLine($"***** UpdateStudentProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return true;
             }
             catch ( Exception e )
@@ -82,32 +119,6 @@ namespace UpDiddyApi.Workflow
         }
 
 
-        public WozCourseProgress GetWozCourseProgress(Enrollment enrollment)
-        { 
-            try
-            {
-                Console.WriteLine($"***** GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for enrollment {enrollment.EnrollmentGuid.ToString()}");
-                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _HttpClientFactory);
-                WozCourseEnrollment wce = _db.WozCourseEnrollment
-                .Where(
-                       t => t.IsDeleted == 0 &&
-                       t.EnrollmentGuid == enrollment.EnrollmentGuid
-                       )
-                .FirstOrDefault();
-
-                if (wce == null)
-                    return null;
-
-                WozCourseProgress Wcp = wi.GetCourseProgress(wce.SectionId, wce.WozEnrollmentId).Result;
-                Console.WriteLine($"***** GetWozCourseProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
-                return Wcp;
-            }
-            catch (Exception e)
-            {
-                _syslog.Log(LogLevel.Error,"ScheduledJobs:GetWozCourseProgress threw an exception -> " + e.Message);
-                return null;
-            }                         
-        }
 
 
         public Boolean ReconcileFutureEnrollments()
@@ -116,7 +127,7 @@ namespace UpDiddyApi.Workflow
             bool result = false;
             try
             {
-                Console.WriteLine($"***** ReconcileFutureEnrollments started at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ReconcileFutureEnrollments started at: {DateTime.UtcNow.ToLongDateString()}");
                 int MaxReconcilesToProcess = 10;
                 int.TryParse(_configuration["Woz:MaxReconcilesToProcess"], out MaxReconcilesToProcess);
 
@@ -140,10 +151,63 @@ namespace UpDiddyApi.Workflow
             }
             finally
             {
-                Console.WriteLine($"***** ReconcileFutureEnrollments completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** ReconcileFutureEnrollments completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
             return result;
         }
+
+        #endregion
+
+
+        #region Woz Private Helper Functions
+
+        private WozCourseProgress GetWozCourseProgress(Enrollment enrollment)
+        {
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for enrollment {enrollment.EnrollmentGuid.ToString()}");
+                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _HttpClientFactory);
+                WozCourseEnrollment wce = _db.WozCourseEnrollment
+                .Where(
+                       t => t.IsDeleted == 0 &&
+                       t.EnrollmentGuid == enrollment.EnrollmentGuid
+                       )
+                .FirstOrDefault();
+
+                if (wce == null)
+                    return null;
+
+                WozCourseProgress Wcp = wi.GetCourseProgress(wce.SectionId, wce.WozEnrollmentId).Result;
+                _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
+                return Wcp;
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Error, "ScheduledJobs:GetWozCourseProgress threw an exception -> " + e.Message);
+                return null;
+            }
+        }
+
+
+        private DateTime? GetWozStudentLastLogin(int exeterId)
+        {
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for enrollment {enrollment.EnrollmentGuid.ToString()}");
+                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _HttpClientFactory);
+          
+                WozCourseProgress Wcp = wi.GetCourseProgress(wce.SectionId, wce.WozEnrollmentId).Result;
+                _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
+                return Wcp;
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Error, "ScheduledJobs:GetWozCourseProgress threw an exception -> " + e.Message);
+                return null;
+            }
+        }
+
+
 
         #endregion
 
@@ -154,7 +218,7 @@ namespace UpDiddyApi.Workflow
             bool result = false;
             try
             {
-                Console.WriteLine($"***** DoPromoCodeRedemptionCleanup started at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** DoPromoCodeRedemptionCleanup started at: {DateTime.UtcNow.ToLongDateString()}");
 
                 // todo: this won't perform very well if there are many records being processed. refactor when/if performance becomes an issue
                 var abandonedPromoCodeRedemptions =
@@ -190,7 +254,7 @@ namespace UpDiddyApi.Workflow
             }
             finally
             {
-                Console.WriteLine($"***** DoPromoCodeRedemptionCleanup completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** DoPromoCodeRedemptionCleanup completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
             return result;
         }
