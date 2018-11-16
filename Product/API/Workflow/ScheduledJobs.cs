@@ -32,11 +32,11 @@ namespace UpDiddyApi.Workflow
         #region Woz
 
 
-        public bool UpdateWozStudentLastLogin(string SubscriberGuid )
+        public bool UpdateWozStudentLastLogin(string SubscriberGuid)
         {
             try
             {
-                _syslog.Log(LogLevel.Information,$"***** UpdateWozStudentLastLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
+                _syslog.Log(LogLevel.Information, $"***** UpdateWozStudentLastLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
                 Subscriber subscriber = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Guid.Parse(SubscriberGuid))
                 .FirstOrDefault();
@@ -46,22 +46,24 @@ namespace UpDiddyApi.Workflow
 
                 int WozVendorId = int.Parse(_configuration["Woz:VendorId"]);
                 VendorStudentLogin studentLogin = _db.VendorStudentLogin
-                    .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId && s.VendorId == WozVendorId) 
+                    .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId && s.VendorId == WozVendorId)
                     .FirstOrDefault();
 
                 if (studentLogin == null)
                     return false;
 
                 DateTime? LastLoginDate = GetWozStudentLastLogin(int.Parse(studentLogin.VendorLogin));
-
+                if (LastLoginDate != null &&  (studentLogin.LastLoginDate == null || LastLoginDate > studentLogin.LastLoginDate))
+                {
+                    studentLogin.LastLoginDate = LastLoginDate;
                     _db.SaveChanges();
+                }
 
                 _syslog.Log(LogLevel.Information, $"***** UpdateWozStudentLastLogin completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return true;
             }
             catch (Exception e)
             {
-
                 _syslog.Log(LogLevel.Error, "UpdateWozStudentLastLogin:GetWozCourseProgress threw an exception -> " + e.Message);
                 return false;
             }
@@ -195,7 +197,7 @@ namespace UpDiddyApi.Workflow
             {
                 _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for woz login {exeterId}");
                 WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _HttpClientFactory);
-                WozStudentInfoDto studentLogin = wi.GetStudentLastLogin(exeterId).Result;
+                WozStudentInfoDto studentLogin = wi.GetStudentInfo(exeterId).Result;
                 if (studentLogin == null)
                     return null;
                 else

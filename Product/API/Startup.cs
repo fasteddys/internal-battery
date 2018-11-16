@@ -14,7 +14,6 @@ using UpDiddyApi.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Hangfire;
 using UpDiddyApi.Workflow;
-using UpDiddyApi.Workflow;
 using Hangfire.SqlServer;
 using System;
 using UpDiddyLib.Helpers;
@@ -31,10 +30,6 @@ using Microsoft.ApplicationInsights.Extensibility;
 
 namespace UpDiddyApi
 {
-
-
-
-
     public class Startup
     {
         public static string ScopeRead;
@@ -68,7 +63,6 @@ namespace UpDiddyApi
 
             Configuration = builder.Build();         
         }
-
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -148,6 +142,17 @@ namespace UpDiddyApi
             // Add SnapshotCollector telemetry processor.
             services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
 
+            Console.WriteLine("Redis name: " + Configuration.GetValue<string>("redis:name") + ", Redis host: " + Configuration.GetValue<string>("redis:host"));
+            Console.WriteLine("B2C Secret: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientSecret") + ", B2C ID: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientId"));
+
+            // Add Redis session cahce
+            services.AddDistributedRedisCache(options =>
+            {
+                options.InstanceName = Configuration.GetValue<string>("redis:name");
+                options.Configuration = Configuration.GetValue<string>("redis:host");
+            });
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -172,11 +177,6 @@ namespace UpDiddyApi
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-
-         
-
-               
-            
     }
 
         private Task AuthenticationFailed(AuthenticationFailedContext arg)

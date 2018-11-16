@@ -57,8 +57,6 @@ namespace UpDiddyApi.Controllers
                 .ProjectTo<TopicDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
-            // TODO remove test code 
-            BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateWozStudentLastLogin("71A7156E-173F-4054-83ED-AD6127BAFE87"));
             return Ok(rval);
         }
 

@@ -175,7 +175,7 @@ namespace UpDiddyApi.Controllers
             return Ok(rval);
         }
 
-        // TODO Use SubcriberGuid 
+     
         [Authorize]
         [HttpGet]
         [Route("api/[controller]/StudentLogin/{SubscriberId}")]

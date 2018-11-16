@@ -427,7 +427,7 @@ namespace UpDiddyApi.Business
 
         #region Student login
 
-        public async Task<WozStudentInfoDto> GetStudentLastLogin(int exeterId )
+        public async Task<WozStudentInfoDto> GetStudentInfo(int exeterId )
         {
             var Url = _apiBaseUri + $"users/{exeterId}";
             HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
@@ -448,7 +448,7 @@ namespace UpDiddyApi.Business
                 catch { }
 
                 if ( LastLoginTimestamp  > 0 )                
-                    LastLoginDate = Utils.UnixMillisecondsToLocalDatetime(LastLoginTimestamp);
+                    LastLoginDate = Utils.FromUnixTimeInMilliseconds(LastLoginTimestamp);
                 
                 WozStudentInfoDto studentInfo = new WozStudentInfoDto()
                 {
