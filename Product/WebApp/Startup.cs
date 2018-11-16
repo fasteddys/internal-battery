@@ -163,7 +163,7 @@ namespace UpDiddy
             app.UseRewriter(options);
             */
 
-            if (env.IsDevelopment())
+            if (env.IsDevelopment() || env.IsStaging())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
