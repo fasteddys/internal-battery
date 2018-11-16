@@ -28,7 +28,8 @@ steps:
   displayName: Publish Files
 
 - script: |
-    zip -rm WebApp.zip $(Build.ArtifactStagingDirectory)
+    cd $(Build.ArtifactStagingDirectory)
+    zip -rm WebApp.zip *
   displayName: Packaging
 
 - task: PublishBuildArtifacts@1
