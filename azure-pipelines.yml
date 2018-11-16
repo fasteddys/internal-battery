@@ -15,25 +15,17 @@ trigger: [ dev ]
 pr: none
 
 steps:
-- task: DotNetCoreCLI@2
+- script: |
+    dotnet restore Product/WebApp
   displayName: Restore NuGet Packages
-  inputs:
-    command: restore
-    projects: Product/WebApp
 
-- task: DotNetCoreCLI@2
+- script: |
+    dotnet build Product/WebApp --configuration $(buildConfiguration)
   displayName: Compile
-  inputs:
-    command: build 
-    arguments: --configuration $(buildConfiguration)
-    projects: Product/WebApp
 
-- task: DotNetCoreCLI@2
+- script: |
+    dotnet publish Product/WebApp --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
   displayName: Prepare Publish Files
-  inputs:
-    command: publish
-    arguments: --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
-    projects: Product/WebApp
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
