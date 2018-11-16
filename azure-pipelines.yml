@@ -34,10 +34,8 @@ steps:
     command: publish
     arguments: --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
     projects: Product/WebApp
-    zipAfterPublish: true
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:
     artifactName: 'webapp'
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
