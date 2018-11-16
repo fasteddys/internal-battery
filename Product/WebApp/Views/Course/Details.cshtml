@@ -4,12 +4,12 @@
 @{
     ViewData["Title"] = L["Course Details"];
 }
-<h1> @L[@Model.CourseName]</h1>
+<h1> @L[@Model.Name]</h1>
 <div>
     <ul>
-        Course Details for @Model.CourseName
+        Course Details for @Model.Name
 
 
-        <li><a asp-area="" asp-controller="Course" asp-action="Checkout" asp-route-username='@Model.CourseName'>Buy Now</a></li>
+        <li><a asp-area="" asp-controller="Course" asp-action="Checkout" asp-route-username='@Model.Name'>Buy Now</a></li>
     </ul>
 </div>
