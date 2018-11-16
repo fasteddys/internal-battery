@@ -25,7 +25,11 @@ steps:
 
 - script: |
     dotnet publish Product/WebApp --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
-  displayName: Prepare Publish Files
+  displayName: Publish Files
+
+- script: |
+    zip -rm WebApp.zip $(Build.ArtifactStagingDirectory)
+  displayName: Packaging
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
