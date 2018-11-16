@@ -37,6 +37,7 @@ namespace UpDiddyApi
 
         public Startup(IHostingEnvironment env, IConfiguration configuration )
         {
+            // Note: please refer to UpDiddyDbContext if this logic needs to be updated (configuration)
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
