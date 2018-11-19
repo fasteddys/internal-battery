@@ -131,7 +131,24 @@ namespace UpDiddyApi.Workflow
                     _sysLog.Log(LogLevel.Information, SuccessfulMessage);
                     Course course = _db.Course.Where(t => t.IsDeleted == 0 && t.CourseId == EnrollmentDto.CourseId).FirstOrDefault();
                     EnrollmentLog enrollmentLog = _db.EnrollmentLog.Where(t => t.IsDeleted == 0 && t.EnrollmentGuid == EnrollmentDto.EnrollmentGuid).FirstOrDefault();
-                    _sysEmail.SendPurchaseReceiptEmail(SubscriberDto.Email, "Purchase Receipt For CareerCircle Course", course.Name, enrollmentLog.CourseCost, enrollmentLog.PromoApplied, (Guid)EnrollmentDto.EnrollmentGuid);
+                    CourseVariant courseVariant = _db.CourseVariant.Include(cv => cv.CourseVariantType).Where(cv => cv.IsDeleted == 0 && cv.CourseVariantGuid.Value == enrollmentLog.CourseVariantGuid.Value).FirstOrDefault();
+                    Enrollment enrollment = _db.Enrollment.Where(e => e.IsDeleted == 0 && e.EnrollmentGuid.Value == enrollmentLog.EnrollmentGuid).FirstOrDefault();
+                    string formattedStartDate = enrollment.SectionStartTimestamp.HasValue ? Utils.FromUnixTimeInMilliseconds(enrollment.SectionStartTimestamp.Value).ToShortDateString() : string.Empty;
+                    string templateId = null;
+                    switch (courseVariant.CourseVariantType.Name)
+                    {
+                        case "Self-Paced":
+                            templateId= _configuration["SysEmail:TemplateIds:PurchaseReceipt-SelfPaced"];
+                            break;
+                        case "Instructor-Led":
+                            templateId = _configuration["SysEmail:TemplateIds:PurchaseReceipt-InstructorLed"];
+                            break;
+                        default:
+                            throw new ApplicationException("Unrecognized course variant type.");
+                    }
+                    string profileUrl = _configuration["Environment:BaseUrl"]; // todo: once we aren't using register links from profile page, generate link to Woz course
+                    string courseType = courseVariant.CourseVariantType.Name;
+                    _sysEmail.SendPurchaseReceiptEmail(templateId, profileUrl, SubscriberDto.Email, $"Purchase Receipt For {courseType} CareerCircle Course", course.Name, enrollmentLog.CourseCost, enrollmentLog.PromoApplied, formattedStartDate, (Guid)EnrollmentDto.EnrollmentGuid);
                     SetSelfPacedOrInstructorLedStatus(Helper, EnrollmentDto);
                     BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString()));
                     return CreateResponse(CreateResponseJson(SuccessfulMessage), SuccessfulMessage, string.Empty, TransactionState.Complete);

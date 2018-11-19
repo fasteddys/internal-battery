@@ -63,8 +63,7 @@ namespace UpDiddyApi.Controllers
 
         }
         
-        [HttpGet]
-        [Authorize]
+        [HttpGet] 
         [Route("api/[controller]/CountryFromState/{StateId}")]
         public IActionResult CountryFromState(int StateId)
         {
@@ -84,7 +83,6 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         [Route("api/[controller]/State/{StateId}")]
         public IActionResult State(int StateId)
         {

@@ -14,6 +14,8 @@ using Microsoft.EntityFrameworkCore;
 using UpDiddyApi.Business;
 using UpDiddyLib.Helpers;
 using System.Net.Http;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddyApi.Controllers
 {
@@ -28,10 +30,14 @@ namespace UpDiddyApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
         private WozInterface _wozInterface = null;
-        protected internal ISysLog _syslog = null;
-        private IHttpClientFactory _httpClientFactory = null;
-        
-        public CourseController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
+        protected readonly ISysLog _syslog = null;
+        private readonly IHttpClientFactory _httpClientFactory = null;
+        private readonly ISysEmail _sysemail;
+        private readonly IDistributedCache _distributedCache;
+        private readonly IServiceProvider _serviceProvider;
+
+
+        public CourseController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider, IDistributedCache distributedCache)
         {
             _db = db;
             _mapper = mapper;
@@ -40,6 +46,9 @@ namespace UpDiddyApi.Controllers
             _syslog = new SysLog(configuration, sysemail, serviceProvider);
             _httpClientFactory = httpClientFactory;
             _wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            _sysemail = sysemail;
+            _distributedCache = distributedCache;
+            _serviceProvider = serviceProvider;
         }
 
         // GET: api/courses
@@ -102,45 +111,7 @@ namespace UpDiddyApi.Controllers
             return Ok(CourseCode);
         }
 
-        // Post: api/course/vendor/coursecode
-        // TODO make Authorized 
-        // [Authorize]
-        // TODO make post 
-        [HttpGet]
-        [Route("api/[controller]/EnrollStudent/{EnrollmentGuid}")]
-        public IActionResult EnrollStudent(string EnrollmentGuid)
-        {
 
-            // 1) Call WOZ API if users does not have an exeter ID
-            // 2) Return OK
-            return Ok();
-        }
-
-        // Post: api/course/vendor/coursecode
-        // TODO make Authorized 
-        // [Authorize]
-        // TODO make post 
-        [HttpGet]
-        [Route("api/[controller]/CreateSection/{EnrollmentGuid}")]
-        public IActionResult CreateSection(string EnrollmentGuid)
-        {
-            // 1) Call WOZ to see if section exists if not create it 
-            // 2) Return OK
-            return Ok();
-        }
-
-        // Post: api/course/vendor/coursecode
-        // TODO make Authorized 
-        // [Authorize]
-        // TODO make post 
-        [HttpGet]
-        [Route("api/[controller]/EnrollStudentInSection/{EnrollmentGuid}")]
-        public IActionResult EnrollStudentInSection(string EnrollmentGuid)
-        {
-            // 1) 
-            // 2) Return OK
-            return Ok();
-        }
 
         [HttpGet]
         [Route("api/[controller]/slug/{CourseSlug}")]
@@ -225,6 +196,18 @@ namespace UpDiddyApi.Controllers
                 return NotFound();
             return Ok(_mapper.Map<CourseDto>(course));
         }
+
+        [Authorize]
+        [HttpGet]
+        [Route("api/[controller]/StudentLoginUrl/{SubscriberGuid}/{CourseGuid}/{VendorGuid}")]
+        public IActionResult StudentLoginUrl(Guid SubscriberGuid, Guid CourseGuid, Guid VendorGuid)
+        {
+            var CourseLogin = new CourseFactory(_db, _configuration,_sysemail,_serviceProvider,_distributedCache)
+                .GetCourseLogin(SubscriberGuid, CourseGuid, VendorGuid); 
+            return Ok(CourseLogin);
+        }
+
+
 
     }
 

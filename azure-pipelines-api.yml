@@ -1,7 +1,7 @@
 # Build dotnet core project using Azure Pipelines
 
 # build name format
-name: webapp.$(date:yyyyMMdd)$(rev:.r)
+name: api.$(date:yyyyMMdd)$(rev:.r)
 pool:
   vmImage: 'ubuntu-16.04'
 
@@ -16,32 +16,37 @@ trigger:
   paths:
     include:
       - Product/UpDiddyLib/*
-      - Product/WebApp/*
-    exclude:
       - Product/API/*
+    exclude:
+      - Product/WebApp/*
 
 # disable CI builds for pull requests for now
 pr: none
 
 steps:
 - script: |
-    dotnet restore Product/WebApp
+    dotnet restore Product/API
   displayName: Restore NuGet Packages
 
 - script: |
-    dotnet build Product/WebApp --configuration $(buildConfiguration)
+    dotnet build Product/API --configuration $(buildConfiguration)
   displayName: Compile
 
 - script: |
-    dotnet publish Product/WebApp --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+    dotnet publish Product/API --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
   displayName: Publish Files
 
 - script: |
     cd $(Build.ArtifactStagingDirectory)
-    zip -rm WebApp.zip *
+    zip -rm api.zip *
   displayName: Packaging
+
+- script: |
+    cd Product/API
+    dotnet ef migrations script -i --output $(Build.ArtifactStagingDirectory)/script.sql
+  displayName: Generate SQL Script
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:
-    artifactName: 'webapp'
+    artifactName: 'api'
