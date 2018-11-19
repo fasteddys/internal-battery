@@ -163,7 +163,7 @@ namespace UpDiddy
             app.UseRewriter(options);
             */
 
-            if (env.IsDevelopment())
+            if (env.IsDevelopment() || env.IsStaging())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
@@ -171,7 +171,7 @@ namespace UpDiddy
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
+                //app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }   
 
             var supportedCultures = new[]

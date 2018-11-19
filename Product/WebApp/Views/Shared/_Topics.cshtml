@@ -3,15 +3,15 @@
 @model TopicViewModel
 
 
-@foreach (TopicDto topic in Model.Topics)
+@foreach (CourseDto course in Model.Courses)
 {
 
     <div class="col-lg-4 col-md-6 col-sm-6 col-xs-12 card-column">
         <div class="card">
-            <img class="card-img-top" src="@(Model.ImageUrl + topic.DesktopImage)" alt="Card image cap">
+            <img class="card-img-top" src="@(Model.ImageUrl + course.DesktopImage)" alt="Card image cap">
             <div class="card-body">
-                <h5 class="card-title">@topic.Name</h5>
-                <p class="card-text fade-text">@topic.Description</p>
+                <h5 class="card-title">@course.Name</h5>
+                <p class="card-text fade-text">@course.Description</p>
                 <div class="card-footer-cc">
                     <a href="#" class="view-courses-link">View Courses <i class="fas fa-angle-double-right"></i></a>
                 </div>
