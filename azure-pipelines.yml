@@ -9,7 +9,16 @@ variables:
   buildConfiguration: 'Release'
 
 # trigger CI build for the following branches
-trigger: [ dev ]
+trigger:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - Product/UpDiddyLib/*
+      - Product/WebApp/*
+    exclude:
+      - Product/API/*
 
 # disable CI builds for pull requests for now
 pr: none
