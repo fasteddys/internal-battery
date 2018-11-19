@@ -42,6 +42,7 @@ steps:
   displayName: Packaging
 
 - script: |
+    cd Product/API
     dotnet ef migrations script -i --output $(Build.ArtifactStagingDirectory)/script.sql
   displayName: Generate SQL Script
 
