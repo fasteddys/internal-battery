@@ -73,7 +73,7 @@ namespace UpDiddy
             {
                 options.Cookie.Path = "/";
                 options.SlidingExpiration = false;
-                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
                 options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
             });
 
