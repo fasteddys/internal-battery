@@ -1,0 +1,47 @@
+# Build dotnet core project using Azure Pipelines
+
+# build name format
+name: api.$(date:yyyyMMdd)$(rev:.r)
+pool:
+  vmImage: 'ubuntu-16.04'
+
+variables:
+  buildConfiguration: 'Release'
+
+# trigger CI build for the following branches
+trigger:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - Product/UpDiddyLib/*
+      - Product/API/*
+    exclude:
+      - Product/WebApp/*
+
+# disable CI builds for pull requests for now
+pr: none
+
+steps:
+- script: |
+    dotnet restore Product/API
+  displayName: Restore NuGet Packages
+
+- script: |
+    dotnet build Product/API --configuration $(buildConfiguration)
+  displayName: Compile
+
+- script: |
+    dotnet publish Product/API --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+  displayName: Publish Files
+
+- script: |
+    cd $(Build.ArtifactStagingDirectory)
+    zip -rm api.zip *
+  displayName: Packaging
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifacts
+  inputs:
+    artifactName: 'api'
