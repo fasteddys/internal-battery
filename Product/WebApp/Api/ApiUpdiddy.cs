@@ -201,6 +201,44 @@ namespace UpDiddy.Api
             return rval;
         }
 
+
+
+        public CountryDto GetSubscriberCountry(int StateId)
+        {
+            string cacheKey = $"GetSubscriberCountry{StateId}";
+            CountryDto rval = GetCachedValue<CountryDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetSubscriberCountry(StateId);
+                SetCachedValue<CountryDto>(cacheKey, rval);
+            }
+            return rval;
+
+        }
+
+        public StateDto GetSubscriberState(int StateId)
+        {
+            string cacheKey = $"GetSubscriberState{StateId}";
+            StateDto rval = GetCachedValue<StateDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetSubscriberState(StateId);
+                SetCachedValue<StateDto>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+
+        #endregion
+
+        #region Public UnCached Methods
+
         public SubscriberDto Subscriber(Guid SubscriberGuid)
         {
             return Get<SubscriberDto>("subscriber/" + SubscriberGuid, true);
@@ -224,21 +262,17 @@ namespace UpDiddy.Api
         {
             return Get<IList<EnrollmentDto>>("enrollment/CurrentEnrollments/" + Subscriber.SubscriberId, true);
         }
- 
-        public CountryDto GetSubscriberCountry(int StateId)
-        {
-            return Get<CountryDto>("subscriber/CountryFromState/" + StateId, true);
-        }
-
-        public StateDto GetSubscriberState(int StateId)
-        {
-            return Get<StateDto>("subscriber/State/" + StateId, true);
-        }
 
         public VendorStudentLoginDto StudentLogin(int SubscriberId)
         {
             return Get<VendorStudentLoginDto>("enrollment/StudentLogin/" + SubscriberId.ToString(), true);
         }
+
+        public CourseLoginDto CourseLogin(Guid SubscriberGuid, Guid CourseGuid, Guid VendorGuid)
+        {
+            return Get<CourseLoginDto>($"course/StudentLoginUrl/{SubscriberGuid}/{CourseGuid}/{VendorGuid}", true);
+        }
+
 
         public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
         {
@@ -273,11 +307,11 @@ namespace UpDiddy.Api
             string jsonToSend = JsonConvert.SerializeObject(SDto);
             return Post<SubscriberDto>(SDto, "subscriber/createsubscriber", true);
         }
-        
+
         public WozCourseProgress UpdateStudentCourseProgress(Guid SubscriberGuid, bool FutureSchedule)
         {
 
-            return Put<WozCourseProgress>("woz/UpdateStudentCourseStatus/" + SubscriberGuid + "/" + FutureSchedule.ToString(),  true);
+            return Put<WozCourseProgress>("woz/UpdateStudentCourseStatus/" + SubscriberGuid + "/" + FutureSchedule.ToString(), true);
         }
 
         public BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto)
@@ -342,9 +376,21 @@ namespace UpDiddy.Api
         {
             return Get<WozCourseProgress>("woz/CourseStatus/" + SubscriberGuid + "/" + EnrollmentGuid, false);
         }
-        
+
+
+        public CountryDto _GetSubscriberCountry(int StateId)
+        {
+            return Get<CountryDto>("subscriber/CountryFromState/" + StateId, false);
+        }
+
+        public StateDto _GetSubscriberState(int StateId)
+        {
+            return Get<StateDto>("subscriber/State/" + StateId, false);
+        }
+
+
         #endregion
-        
+
         #region Private Helper Functions
 
         private bool SetCachedValue<T>(string CacheKey, T Value)

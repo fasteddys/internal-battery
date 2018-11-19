@@ -424,9 +424,65 @@ namespace UpDiddyApi.Business
 
         #endregion
 
+        #region Student login
+
+        public async Task<WozStudentInfoDto> GetStudentInfo(int exeterId )
+        {
+            var Url = _apiBaseUri + $"users/{exeterId}";
+            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Url);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            HttpResponseMessage response = await client.SendAsync(request);
+            var ResponseJson = await response.Content.ReadAsStringAsync();
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                DateTime? LastLoginDate = null;
+                long LastLoginTimestamp = -1;
+                try
+                {
+                    LastLoginTimestamp = (long)WozO.lastLoginDateUTC;
+
+                }
+                catch { }
+
+                if ( LastLoginTimestamp  > 0 )                
+                    LastLoginDate = Utils.FromUnixTimeInMilliseconds(LastLoginTimestamp);
+                
+                WozStudentInfoDto studentInfo = new WozStudentInfoDto()
+                {
+                    ExeterId = exeterId,
+                    FirstName = (string) WozO.firstName,
+                    LastName = (string)WozO.lastName,
+                    EmailAddress = (string)WozO.emailAddress,
+                    Address1 = (string)WozO.address1,
+                    Address2 = (string)WozO.address2,
+                    City = (string)WozO.city,
+                    State = (string)WozO.state,
+                    Country = (string)WozO.country,
+                    PostalCode = (string)WozO.postalCode,
+                    PhoneNumberPrimary = (string)WozO.phoneNumberPrimary,
+                    PhoneNumberSecondary = (string)WozO.phoneNumberSecondary,
+                    LastLoginDateUTCTimeStamp = LastLoginTimestamp,
+                    LastLoginDate = LastLoginDate
+                };
+                return studentInfo;
+            }
+            else
+            {
+                _syslog.Log(LogLevel.Error, "WozInterface:GetCourseProgress Returned a status code of " + response.StatusCode.ToString());
+                _syslog.Log(LogLevel.Error, "WozInterface:GetCourseProgress Url =  " + Url);
+                _syslog.Log(LogLevel.Error, "WozInterface:GetCourseProgress AccessToken ends with  " + _accessToken.Substring(_accessToken.Length - 2));
+                return null;
+            }
+        }
+
+        #endregion
+
+
 
         #region Course Enrollment
- 
+
         public async Task<WozCourseProgress> GetCourseProgress(int SectionId, int WozEnrollmentId)
         {
 

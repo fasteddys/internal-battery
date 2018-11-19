@@ -56,7 +56,7 @@ namespace UpDiddyApi.Controllers
                 .Where(t => t.IsDeleted == 0)
                 .ProjectTo<TopicDto>(_mapper.ConfigurationProvider)
                 .ToList();
- 
+
             return Ok(rval);
         }
 
