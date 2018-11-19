@@ -142,9 +142,6 @@ namespace UpDiddyApi
             // Add SnapshotCollector telemetry processor.
             services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
 
-            Console.WriteLine("Redis name: " + Configuration.GetValue<string>("redis:name") + ", Redis host: " + Configuration.GetValue<string>("redis:host"));
-            Console.WriteLine("B2C Secret: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientSecret") + ", B2C ID: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientId"));
-
             // Add Redis session cahce
             services.AddDistributedRedisCache(options =>
             {

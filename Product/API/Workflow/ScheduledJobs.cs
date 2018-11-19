@@ -11,6 +11,7 @@ using UpDiddyLib.Dto;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Hangfire;
 using System.Net.Http;
+using UpDiddy.Helpers;
 
 namespace UpDiddyApi.Workflow
 {
@@ -44,7 +45,14 @@ namespace UpDiddyApi.Workflow
                 if (subscriber == null)
                     return false;
 
-                int WozVendorId = int.Parse(_configuration["Woz:VendorId"]);
+                Vendor woz = _db.Vendor
+                    .Where(v => v.IsDeleted == 0 && v.Name ==  Constants.WozVendorName)
+                    .FirstOrDefault();
+
+                if (woz == null)
+                    return false;
+
+                int WozVendorId = woz.VendorId;
                 VendorStudentLogin studentLogin = _db.VendorStudentLogin
                     .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId && s.VendorId == WozVendorId)
                     .FirstOrDefault();
