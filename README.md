@@ -59,7 +59,28 @@ Give an example
 
 Before deployment - verify that the **Azure Key Vault** is up to date with any new secrets that was added to user secrets or app settings.
 
-CareerCircle WebApp and API will utilize the **Azure Key Vault** for sensitive data such as passwords. All other data can be configured directly in the App Service > Application Settings.
+### WebApp Secrets Checklist
+* Authentication:AzureAdB2C:ClientSecret
+* Braintree:MerchantID
+* Braintree:PublicKey
+* Braintree:PrivateKey
+* redis:host
+* Sendgrid:ApiKey
+* SysEmail:ApiKey
+
+### API Secrets Checklist
+* Braintree:MerchantID
+* Braintree:PublicKey
+* Braintree:PrivateKey
+* SysEmail:ApiKey
+* Woz:AccessToken
+* CareerCircleSqlConnection
+
+### Key Vault Access
+CareerCircle WebApp and API will utilize the **Azure Key Vault** for sensitive data such as passwords.
+
+`Vault:ClientSecret` is **required as an App Setting** for both WebApp and API currently. **TODO** will be to utilize MSI to gain access to Azure Key Vault.
+
 
 Add additional notes about how to deploy this on a live system
 
