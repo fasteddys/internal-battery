@@ -69,7 +69,15 @@ namespace UpDiddy
 
             })
             .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
-            .AddCookie();
+            .AddCookie(options =>
+            {
+                options.Cookie.Path = "/";
+                options.SlidingExpiration = false;
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
+            });
+
+
 
             #region AddLocalizationß
             services.AddLocalization(options => options.ResourcesPath = "Resources");
