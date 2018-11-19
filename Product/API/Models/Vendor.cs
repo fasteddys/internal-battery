@@ -12,5 +12,7 @@ namespace UpDiddyApi.Models
         public Guid? VendorGuid { get; set; }
         [Required]
         public string Name { get; set; }
+
+        public string LoginUrl { get; set; }
     }
 }

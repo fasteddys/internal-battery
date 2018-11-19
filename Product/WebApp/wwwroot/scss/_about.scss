@@ -3,21 +3,39 @@
 // Base Styles
 @media (min-width: 0px) {
     .about-us-container {
-        > div {
-            padding: 5rem 0;
-        }
 
         .about-us-primary-band {
             background-image: linear-gradient( rgba(3, 38, 74, 0.45), rgba(3, 38, 74, 0.45) ), url('../images/about-background-2.jpg');
             background-size: cover;
             background-position: top;
-            padding: 8rem 0;
-        } 
+            padding: 8em 0;
+        }
 
         .about-us-hero {
-            background-image: url('../images/medium_blue_background.jpg');
+            background-image: url('../images/about-us-hero.png');
             color: $color-white;
             background-size: cover;
+            background-position: center;
+
+            .hero-logo {
+                max-height: 500px;
+                display: block;
+                margin: auto;
+            }
+
+            .arrow {
+                position: relative;
+                top: -75px;
+                max-height: 50px;
+                display: block;
+                margin: auto;
+            }
+
+            .tagline {
+                font-size: 1.5em;
+                position: relative;
+                top: -60px;
+            }
 
             .about-us-header {
                 font-size: 1.5rem;
@@ -92,6 +110,17 @@
 
 // Extra Small Styles
 @media (min-width: 320px) {
+    .about-us-container {
+        .about-us-hero {
+            .tagline {
+                font-size: .75em;
+                top: -30px;
+            }
+            .arrow {
+                top: -25px;
+            }
+        }
+    }
 }
 
 // Small Styles
@@ -100,6 +129,18 @@
 
 // Medium Styles
 @media (min-width: 768px) {
+    .about-us-container {
+        .about-us-hero {
+            .tagline {
+                top: -60px;
+                font-size: 1em;
+            }
+
+            .arrow {
+                top: -50px;
+            }
+        }
+    }
 }
 
 // Large Styles
@@ -108,4 +149,16 @@
 
 //Extra Large Styles
 @media (min-width: 1200px) {
+    // todo: refactor to not have to specify for each width
+    .about-us-container {
+        .about-us-hero {
+            .tagline {
+                top: -95px;
+                font-size: 1.5em;
+            }
+            .arrow {
+                top: -75px;
+            }
+        }
+    }
 }

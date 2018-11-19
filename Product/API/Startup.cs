@@ -22,18 +22,22 @@ using Polly.Extensions.Http;
 using System.Net.Http;
 using UpDiddy.Helpers;
 using UpDiddyLib.Shared;
+using Microsoft.ApplicationInsights.SnapshotCollector;
+using Microsoft.Extensions.Options;
+using Microsoft.ApplicationInsights.AspNetCore;
+using Microsoft.ApplicationInsights.Extensibility;
 
 
 namespace UpDiddyApi
 {
-
     public class Startup
     {
         public static string ScopeRead;
         public static string ScopeWrite;
         public IConfigurationRoot Configuration { get; set; }
+ 
 
-        public Startup(IHostingEnvironment env, IConfiguration configuration)
+        public Startup(IHostingEnvironment env, IConfiguration configuration )
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -57,9 +61,8 @@ namespace UpDiddyApi
                     new KeyVaultSecretManager());
             }
 
-            Configuration = builder.Build();
+            Configuration = builder.Build();         
         }
-
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -85,9 +88,7 @@ namespace UpDiddyApi
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
             // Add System Email   
-            services.AddSingleton<ISysEmail>(new SysEmail(Configuration));
-            // Add System Email   
-            services.AddSingleton<ISysLog>(new SysLog(Configuration, new SysEmail(Configuration)));
+            services.AddSingleton<ISysEmail>(new SysEmail(Configuration));            
             // Add framework services.
             services.AddMvc();
             // Add AutoMapper 
@@ -136,6 +137,19 @@ namespace UpDiddyApi
               .AddPolicyHandler(ApiDeletePolicy);
 
 
+            // Configure SnapshotCollector from application settings
+            services.Configure<SnapshotCollectorConfiguration>(Configuration.GetSection(nameof(SnapshotCollectorConfiguration)));
+            // Add SnapshotCollector telemetry processor.
+            services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
+
+            // Add Redis session cahce
+            services.AddDistributedRedisCache(options =>
+            {
+                options.InstanceName = Configuration.GetValue<string>("redis:name");
+                options.Configuration = Configuration.GetValue<string>("redis:host");
+            });
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -143,6 +157,8 @@ namespace UpDiddyApi
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+            // Add App Insights Logging
+            loggerFactory.AddApplicationInsights(app.ApplicationServices, Microsoft.Extensions.Logging.LogLevel.Warning);
 
             ScopeRead = Configuration["AzureAdB2C:ScopeRead"];
             ScopeWrite = Configuration["AzureAdB2C:ScopeWrite"];
@@ -158,8 +174,7 @@ namespace UpDiddyApi
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-
-        }
+    }
 
         private Task AuthenticationFailed(AuthenticationFailedContext arg)
         {
@@ -169,5 +184,26 @@ namespace UpDiddyApi
             arg.Response.Body.Write(Encoding.UTF8.GetBytes(s), 0, s.Length);
             return Task.FromResult(0);
         }
+
+        private class SnapshotCollectorTelemetryProcessorFactory : ITelemetryProcessorFactory
+        {
+            private readonly IServiceProvider _serviceProvider;
+
+            public SnapshotCollectorTelemetryProcessorFactory(IServiceProvider serviceProvider) =>
+                _serviceProvider = serviceProvider;
+
+            public ITelemetryProcessor Create(ITelemetryProcessor next)
+            {
+                var snapshotConfigurationOptions = _serviceProvider.GetService<IOptions<SnapshotCollectorConfiguration>>();
+                return new SnapshotCollectorTelemetryProcessor(next, configuration: snapshotConfigurationOptions.Value);
+            }
+        }
+
+
     }
+
+  
+     
+   
+
 }

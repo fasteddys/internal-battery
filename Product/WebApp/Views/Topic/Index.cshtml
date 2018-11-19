@@ -13,15 +13,15 @@
 <div>
     
     <div class="row">
-        @foreach (TopicDto topic in Model.Topics)
+        @foreach (CourseDto course in Model.Courses)
         {
 
             <div class="col-md-4 card-column">
                 <div class="card">
-                    <img class="card-img-top" src="@(Model.ImageUrl + topic.DesktopImage)" alt="Card image cap">
+                    <img class="card-img-top" src="@(Model.ImageUrl + course.DesktopImage)" alt="Card image cap">
                     <div class="card-body">
-                        <h5 class="card-title">@topic.Name</h5>
-                        <p class="card-text">@topic.Description</p>
+                        <h5 class="card-title">@course.Name</h5>
+                        <p class="card-text">@course.Description</p>
                     </div>
                 </div>
             </div>

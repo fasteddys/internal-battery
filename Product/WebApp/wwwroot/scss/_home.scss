@@ -21,11 +21,16 @@ body {
         font-family: $opensans-bold;
     }
 
+    .hero-description{
+        margin-top: 1rem;
+        font-size: 1.25rem;
+    }
+
     .home-container {
         .home-hero-top{
-            background-image: url('../images/city_skyline.jpg');
+            background-image: url('../images/circle-of-circles.png');
             background-position: bottom;
-            background-size: cover;
+            background-size: cover; 
             padding: 5rem 0 10rem 0;
         }
         .home-hero-bottom{
@@ -121,7 +126,7 @@ body {
 @media (min-width: 0px) {
     body {
         padding-top: 68.42px;
-        .home-container {
+        .home-container { 
 
             .home-courses {
                 margin-top: 2rem;
@@ -190,14 +195,14 @@ body {
                     }
 
                     .career-training-header-container {
-                        text-align: left;
+                        
                         margin-bottom: 2rem;
                     }
 
                     .card-column {
                         .card {
                             img {
-                                height: 14rem;
+                                height: 8rem;
                             }
                         }
                     }
@@ -246,6 +251,10 @@ body {
                                 height: 12rem;
                             }
                         }
+                    }
+
+                    .career-training-header-container {
+                        text-align: left;
                     }
                 }
             }

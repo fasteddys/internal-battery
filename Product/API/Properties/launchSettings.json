@@ -11,20 +11,20 @@
     "Api-Dev-Local": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:5001/api/topic/",
+      "launchUrl": "http://localhost:5002/api/topic/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:5001/"
+      "applicationUrl": "http://localhost:5002/"
     },
     "Api-Staging": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:5001/api/topic/",
+      "launchUrl": "http://localhost:5002/api/topic/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Staging"
       },
-      "applicationUrl": "http://localhost:5001/"
+      "applicationUrl": "http://localhost:5002/"
     },
     "Api-Production": {
       "commandName": "Project",

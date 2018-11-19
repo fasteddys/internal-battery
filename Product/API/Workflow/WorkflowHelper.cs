@@ -36,7 +36,7 @@ namespace UpDiddyApi.Workflow
         public void WorkItemError(string EnrollmentGuid, MessageTransactionResponse Info)
         {
             // Log error to system logger 
-            _sysLog.SysError($"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info.ToString()} ", true);
+            _sysLog.Log(LogLevel.Error, $"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info.ToString()} ", true);
             // Log Error to woz transaction log 
             _log = new WozTransactionLog();
             _log.EndPoint = "Error";
@@ -54,7 +54,7 @@ namespace UpDiddyApi.Workflow
         public void WorkItemFatalError(string EnrollmentGuid, MessageTransactionResponse Info)
         {
             // Log error to system logger 
-            _sysLog.SysError($"Error for enrollment {EnrollmentGuid}.  Info: {Info.ToString()} ", true);
+            _sysLog.Log(LogLevel.Error, $"Error for enrollment {EnrollmentGuid}.  Info: {Info.ToString()} ", true);
             // Log Error to woz transaction log 
             _log = new WozTransactionLog();
             _log.EndPoint = "FatalError";
@@ -73,7 +73,7 @@ namespace UpDiddyApi.Workflow
         public void WorkItemError(string EnrollmentGuid, string Info)
         {
             // Log error to system logger 
-            _sysLog.SysError($"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info} ", true);
+            _sysLog.Log(LogLevel.Error, $"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info} ", true);
             // Log Error to woz transaction log 
             _log = new WozTransactionLog();
             _log.EndPoint = "Error";
@@ -91,7 +91,7 @@ namespace UpDiddyApi.Workflow
         public void WorkItemFatalError(string EnrollmentGuid, string Info)
         {
             // Log error to system logger 
-            _sysLog.SysError($"Error for enrollment {EnrollmentGuid}.  Info: {Info} ", true);
+            _sysLog.Log(LogLevel.Error, $"Error for enrollment {EnrollmentGuid}.  Info: {Info} ", true);
             // Log Error to woz transaction log 
             _log = new WozTransactionLog();
             _log.EndPoint = "FatalError";

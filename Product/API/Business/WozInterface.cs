@@ -1,5 +1,4 @@
-﻿using Android.Content;
-using AutoMapper;
+﻿using AutoMapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +23,7 @@ namespace UpDiddyApi.Business
     {
 
         #region Class
-    
+
 
         public WozInterface(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
         {
@@ -34,6 +33,7 @@ namespace UpDiddyApi.Business
             _apiBaseUri = configuration["Woz:ApiUrl"];
             _accessToken = configuration["Woz:AccessToken"];
             _syslog = sysLog;
+            _configuration = configuration;
             _HttpClientFactory = httpClientFactory;
         }
 
@@ -41,7 +41,7 @@ namespace UpDiddyApi.Business
 
         #region Enroll Student
         public MessageTransactionResponse EnrollStudent(string EnrollmentGuid, ref bool IsInstructorLed)
-        {            
+        {
             _translog = new WozTransactionLog();
             try
             {
@@ -58,7 +58,7 @@ namespace UpDiddyApi.Business
                     return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
 
                 // Determine if the course is instructor led
-                if (Enrollment.EnrollmentStatusId == (int) EnrollmentStatus.FutureRegisterStudentRequested)
+                if (Enrollment.EnrollmentStatusId == (int)EnrollmentStatus.FutureRegisterStudentRequested)
                     IsInstructorLed = true;
 
                 _translog.EnrollmentGuid = Enrollment.EnrollmentGuid;
@@ -90,17 +90,18 @@ namespace UpDiddyApi.Business
                     firstName = Enrollment.Subscriber.FirstName,
                     lastName = Enrollment.Subscriber.LastName,
                     emailAddress = Enrollment.Subscriber.Email,
+                    phoneNumberPrimary = Enrollment.Subscriber.PhoneNumber,
                     acceptedTermsOfServiceDocumentId = Enrollment.TermsOfServiceFlag == null ? 0 : (int)Enrollment.TermsOfServiceFlag,
                     suppressRegistrationEmail = false
                 };
 
-                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(Student);                
+                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(Student);
                 string ResponseJson = string.Empty;
                 HttpResponseMessage WozResponse = ExecuteWozPost("users", Json, ref ResponseJson);
-          
+
                 _translog.WozResponseJson = ResponseJson;
                 if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
-                { 
+                {
                     var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
                     try
                     {
@@ -116,10 +117,10 @@ namespace UpDiddyApi.Business
                 else
                 {
                     return CreateResponse(ResponseJson, WozResponse.StatusCode.ToString() + " Error", string.Empty, TransactionState.Error);
-                } 
+                }
             }
-            catch ( Exception ex )
-            {                
+            catch (Exception ex)
+            {
                 return CreateResponse(string.Empty, ex.Message, string.Empty, TransactionState.FatalError);
 
             }
@@ -145,7 +146,7 @@ namespace UpDiddyApi.Business
             try
             {
                 // Get the Enrollment Object 
-                Enrollment Enrollment = _db.Enrollment 
+                Enrollment Enrollment = _db.Enrollment
                     .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
                      .FirstOrDefault();
 
@@ -206,7 +207,7 @@ namespace UpDiddyApi.Business
                 }
 
                 MessageTransactionResponse Rval = new MessageTransactionResponse();
-                
+
                 string ResponseJson = string.Empty;
                 HttpResponseMessage WozResponse = ExecuteWozGet("transactions/" + TransactionId, ref ResponseJson);
 
@@ -423,9 +424,65 @@ namespace UpDiddyApi.Business
 
         #endregion
 
+        #region Student login
+
+        public async Task<WozStudentInfoDto> GetStudentInfo(int exeterId )
+        {
+            var Url = _apiBaseUri + $"users/{exeterId}";
+            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Url);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+            HttpResponseMessage response = await client.SendAsync(request);
+            var ResponseJson = await response.Content.ReadAsStringAsync();
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                DateTime? LastLoginDate = null;
+                long LastLoginTimestamp = -1;
+                try
+                {
+                    LastLoginTimestamp = (long)WozO.lastLoginDateUTC;
+
+                }
+                catch { }
+
+                if ( LastLoginTimestamp  > 0 )                
+                    LastLoginDate = Utils.FromUnixTimeInMilliseconds(LastLoginTimestamp);
+                
+                WozStudentInfoDto studentInfo = new WozStudentInfoDto()
+                {
+                    ExeterId = exeterId,
+                    FirstName = (string) WozO.firstName,
+                    LastName = (string)WozO.lastName,
+                    EmailAddress = (string)WozO.emailAddress,
+                    Address1 = (string)WozO.address1,
+                    Address2 = (string)WozO.address2,
+                    City = (string)WozO.city,
+                    State = (string)WozO.state,
+                    Country = (string)WozO.country,
+                    PostalCode = (string)WozO.postalCode,
+                    PhoneNumberPrimary = (string)WozO.phoneNumberPrimary,
+                    PhoneNumberSecondary = (string)WozO.phoneNumberSecondary,
+                    LastLoginDateUTCTimeStamp = LastLoginTimestamp,
+                    LastLoginDate = LastLoginDate
+                };
+                return studentInfo;
+            }
+            else
+            {
+                _syslog.Log(LogLevel.Error, "WozInterface:GetCourseProgress Returned a status code of " + response.StatusCode.ToString());
+                _syslog.Log(LogLevel.Error, "WozInterface:GetCourseProgress Url =  " + Url);
+                _syslog.Log(LogLevel.Error, "WozInterface:GetCourseProgress AccessToken ends with  " + _accessToken.Substring(_accessToken.Length - 2));
+                return null;
+            }
+        }
+
+        #endregion
+
+
 
         #region Course Enrollment
- 
+
         public async Task<WozCourseProgress> GetCourseProgress(int SectionId, int WozEnrollmentId)
         {
 
@@ -457,14 +514,14 @@ namespace UpDiddyApi.Business
             }
             else
             {
-                _syslog.SysError("WozInterface:GetCourseProgress Returned a status code of " + response.StatusCode.ToString());
-                _syslog.SysError("WozInterface:GetCourseProgress Url =  " + Url);
-                _syslog.SysError("WozInterface:GetCourseProgress AccessToken ends with  " + _accessToken.Substring( _accessToken.Length - 2));
+                _syslog.Log(LogLevel.Error,"WozInterface:GetCourseProgress Returned a status code of " + response.StatusCode.ToString());
+                _syslog.Log(LogLevel.Error, "WozInterface:GetCourseProgress Url =  " + Url);
+                _syslog.Log(LogLevel.Error, "WozInterface:GetCourseProgress AccessToken ends with  " + _accessToken.Substring( _accessToken.Length - 2));
                 return null;
             }
 
         }
-        
+
 
         public MessageTransactionResponse SaveWozCourseEnrollment(string EnrollmentGuid, WozCourseEnrollmentDto WozCourseEnrollmentDto)
         {
@@ -487,7 +544,7 @@ namespace UpDiddyApi.Business
                     return CreateResponse(string.Empty, $"Enrollment {EnrollmentGuid} was not found.", EnrollmentGuid, TransactionState.FatalError);
 
                 WozCourseEnrollment WozEnrollment = _mapper.Map<WozCourseEnrollment>(WozCourseEnrollmentDto);
-              //  WozEnrollment.EnrollmentId = Enrollment.EnrollmentId;
+                //  WozEnrollment.EnrollmentId = Enrollment.EnrollmentId;
 
                 _db.WozCourseEnrollment.Add(WozEnrollment);
                 _db.SaveChanges();
@@ -543,13 +600,13 @@ namespace UpDiddyApi.Business
             WozFutureEnrollmentDto EnrollmentInfo = new WozFutureEnrollmentDto()
             {
                 exeterId = ExeterId,
-                sectionStartDateUTC = (long) Enrollment.SectionStartTimestamp,
+                sectionStartDateUTC = (long)Enrollment.SectionStartTimestamp,
                 courseCode = Enrollment.Course.Code
             };
 
             string Json = Newtonsoft.Json.JsonConvert.SerializeObject(EnrollmentInfo);
             string ResponseJson = string.Empty;
-            HttpResponseMessage WozResponse = ExecuteWozPost("/enrollments/future", Json, ref ResponseJson);            
+            HttpResponseMessage WozResponse = ExecuteWozPost("/enrollments/future", Json, ref ResponseJson);
             _translog.WozResponseJson = ResponseJson;
 
             if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
@@ -567,14 +624,38 @@ namespace UpDiddyApi.Business
                 }
             }
             else
-            {     
-               return CreateResponse(ResponseJson, WozResponse.StatusCode.ToString() + " Error", string.Empty, TransactionState.Error);
+            {
+                return CreateResponse(ResponseJson, WozResponse.StatusCode.ToString() + " Error", string.Empty, TransactionState.Error);
             }
         }
 
-
-
-
+        public List<DateTime> CheckCourseSchedule(string courseCode)
+        {
+            List<DateTime> Rval = null;
+            try
+            {
+                int MonthsLookAhead = 6;
+                int.TryParse(_configuration["Woz:CourseScheduleMonthLookahead"], out MonthsLookAhead);
+                // setting lower bound to be 2 days into the future to prevent scheduling issues for Woz
+                long UTCStartDate = ((DateTimeOffset)DateTime.Now.Date.AddDays(2)).ToUnixTimeMilliseconds();
+                long UTCEndDate = ((DateTimeOffset)DateTime.Now.AddMonths(MonthsLookAhead)).ToUnixTimeMilliseconds();
+                HttpClient client = new HttpClient();
+                string ResponseJson = string.Empty;
+                ExecuteWozGet($"courses/{courseCode}/schedule?startDateUTC={UTCStartDate.ToString()}&endDateUTC={UTCEndDate.ToString()}", ref ResponseJson);
+                JObject ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                Rval = ResponseObject
+                    .Properties()
+                    .Where(ro => ro.Name == "startDatesUTC")
+                    .Select(ro => ro.Value)
+                    .Values<long>()
+                    .Select(x => FromWozTime(x))
+                    .ToList();
+            }
+            catch (Exception e)
+            {
+            }
+            return Rval;
+        }
 
         // Enroll a student with a vendor 
         public MessageTransactionResponse RegisterStudent(string EnrollmentGuid)
@@ -635,7 +716,7 @@ namespace UpDiddyApi.Business
             // Check to see if the user is alreay enrolled
             WozCourseEnrollment StudentEnrollment = _db.WozCourseEnrollment
                 .Where(v => v.IsDeleted == 0 &&
-                            v.SectionId == Section.Section &&                            
+                            v.SectionId == Section.Section &&
                             v.ExeterId == ExeterId)
                 .FirstOrDefault();
 
@@ -709,14 +790,60 @@ namespace UpDiddyApi.Business
         }
 
         #endregion
-  
+
+        #region Terms of Service
+        
+        public WozTermsOfServiceDto GetTermsOfService()
+        {
+            WozTermsOfServiceDto Rval = new WozTermsOfServiceDto();
+            try
+            {
+                HttpClient client = new HttpClient();
+                string ResponseJson = string.Empty;
+                ExecuteWozGet("tos", ref ResponseJson);
+
+                var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                Rval.DocumentId = ResponseObject.termsOfServiceDocumentId.ToObject<int>();
+                Rval.WozTermsOfServiceId = ResponseObject.termsOfServiceDocumentId.ToObject<int>();
+                Rval.TermsOfService = Utils.RemoveRedundantSpaces(Utils.RemoveNewlines(Utils.RemoveHTML(ResponseObject.termsOfServiceContent.ToObject<string>()))); 
+
+                // See if the latest TOS from woz has been stored to our local DB
+                WozTermsOfService tos = _db.WozTermsOfService
+                    .Where(t => t.IsDeleted == 0 && t.DocumentId == Rval.DocumentId)
+                    .FirstOrDefault();
+
+                // Add the latest version to our database if it's not there 
+                if (tos == null)
+                {
+                    WozTermsOfService NewTermsOfService = _mapper.Map<WozTermsOfService>(Rval);
+                    _db.WozTermsOfService.Add(NewTermsOfService);
+                    _db.SaveChanges();
+                }
+            }
+            catch (Exception e)
+            {
+                // if something goes wrong, get the most recent TOS from our system
+                WozTermsOfService tos = _db.WozTermsOfService
+                    .Where(t => t.IsDeleted == 0)
+                    .OrderByDescending(t => t.DocumentId)
+                    .FirstOrDefault();
+
+                if (tos != null)
+                    Rval = _mapper.Map<WozTermsOfServiceDto>(tos);
+            }
+            return Rval;
+        }
+
+
+        #endregion
+
         #region Scheduled Tasks
         // TODO Add Logging 
         public bool ReconcileFutureEnrollment(string EnrollmentGuid)
         {
             try
             {
-                _syslog.SysInfo($"ReconcileFutureEnrollment: Starting with EnrollmentGuid =  {EnrollmentGuid}");
+                _syslog.Log(LogLevel.Information,$"ReconcileFutureEnrollment: Starting with EnrollmentGuid =  {EnrollmentGuid}");
                 // Get the Enrollment Object 
                 Enrollment Enrollment = _db.Enrollment
                      .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
@@ -724,17 +851,17 @@ namespace UpDiddyApi.Business
 
                 if (Enrollment == null)
                 {
-                    _syslog.SysInfo($"ReconcileFutureEnrollment: Enrollment {EnrollmentGuid} not found!");
+                    _syslog.Log(LogLevel.Information, $"ReconcileFutureEnrollment: Enrollment {EnrollmentGuid} not found!");
                     return false;
                 }
 
                 // Short circuit if current date >= the Friday before the course is to begin
-                DateTime StartDate = Utils.UnixMillisecondsToLocalDatetime((long) Enrollment.SectionStartTimestamp);                   
-                DateTime PriorFriday =  Utils.PriorDayOfWeek(StartDate, System.DayOfWeek.Friday);
+                DateTime StartDate = Utils.FromUnixTimeInMilliseconds((long)Enrollment.SectionStartTimestamp);
+                DateTime PriorFriday = Utils.PriorDayOfWeek(StartDate, System.DayOfWeek.Friday);
 
                 if (PriorFriday > DateTime.Now)
                 {
-                    _syslog.SysInfo($"ReconcileFutureEnrollment:  Too early to check for enrollment.  PriorFriday = {PriorFriday.ToLongDateString() } ");
+                    _syslog.Log(LogLevel.Information, $"ReconcileFutureEnrollment:  Too early to check for enrollment.  PriorFriday = {PriorFriday.ToLongDateString() } ");
                     return false;
                 }
 
@@ -745,11 +872,11 @@ namespace UpDiddyApi.Business
                 // Confirm that the enrollment has a status of future 
                 if (Enrollment.EnrollmentStatusId != (int) EnrollmentStatus.FutureRegisterStudentComplete)
                 {                   
-                        _syslog.SysInfo($"ReconcileFutureEnrollment: Enrollment {EnrollmentGuid} is not a FutureRegisterStudentComplete. EnrollmentStatus = {Enrollment.EnrollmentStatusId} ");
+                        _syslog.Log(LogLevel.Information, $"ReconcileFutureEnrollment: Enrollment {EnrollmentGuid} is not a FutureRegisterStudentComplete. EnrollmentStatus = {Enrollment.EnrollmentStatusId} ");
                         return false;
                 }
-                    
-    
+
+
                 // Check to see if we need to enroll the student with the vendor 
                 VendorStudentLogin StudentLogin = _db.VendorStudentLogin
                      .Where(v => v.IsDeleted == 0 &&
@@ -759,23 +886,23 @@ namespace UpDiddyApi.Business
 
                 if (StudentLogin == null)
                 {
-                    _syslog.SysInfo($"ReconcileFutureEnrollment: Unable to locate VendorStudentLogin for enrollment {EnrollmentGuid}. SubscriberId = {Enrollment.SubscriberId} VendorId = {Enrollment.Course.VendorId} ");
+                    _syslog.Log(LogLevel.Information, $"ReconcileFutureEnrollment: Unable to locate VendorStudentLogin for enrollment {EnrollmentGuid}. SubscriberId = {Enrollment.SubscriberId} VendorId = {Enrollment.Course.VendorId} ");
                     return false;
                 }
-                    
 
-                long UTCNowUnixMilliseconds = Utils.CurrentTimeInUnixMilliseconds();
+
+                long UTCNowUnixMilliseconds = Utils.ToUnixTimeInMilliseconds(DateTime.UtcNow);
                 WozActiveOfRequestDto ActiveOf = new WozActiveOfRequestDto()
                 {
                     activeAsOfDateUTC = UTCNowUnixMilliseconds
                 };
-                  
-               
+
+
                 string Json = Newtonsoft.Json.JsonConvert.SerializeObject(ActiveOf);
-                _syslog.SysInfo($"ReconcileFutureEnrollment: WozActiveOfRequest =  {Json} ");
+                _syslog.Log(LogLevel.Information,$"ReconcileFutureEnrollment: WozActiveOfRequest =  {Json} ");
                 string ResponseJson = string.Empty;
                 HttpResponseMessage Response  = ExecuteWozPost($"/users/{StudentLogin.VendorLogin}/enrollments", Json, ref ResponseJson);
-                _syslog.SysInfo($"ReconcileFutureEnrollment: Woz Response =  {ResponseJson} ");
+                _syslog.Log(LogLevel.Information,$"ReconcileFutureEnrollment: Woz Response =  {ResponseJson} ");
 
                 var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
 
@@ -784,7 +911,7 @@ namespace UpDiddyApi.Business
                 string SectionCourseCode = string.Empty;
                 string EnrollStatus = string.Empty;
 
-                for ( int i = 0; i < ResponseObject.Count; ++i)
+                for (int i = 0; i < ResponseObject.Count; ++i)
                 {
                     SectionId = ResponseObject[i].sectionId.ToString();
                     EnrollmentId = ResponseObject[i].enrollmentId.ToString();
@@ -799,7 +926,7 @@ namespace UpDiddyApi.Business
                 if (SectionCourseCode == Enrollment.Course.Code)
                 {
 
-                    _syslog.SysInfo($"ReconcileFutureEnrollment: Enrollment found!");
+                    _syslog.Log(LogLevel.Information, $"ReconcileFutureEnrollment: Enrollment found!");
                     // Create woz course entrollment record 
                     WozCourseEnrollment wozCourseEnrollment = new WozCourseEnrollment()
                     {
@@ -813,24 +940,24 @@ namespace UpDiddyApi.Business
                         EnrollmentStatus = int.Parse(EnrollStatus),
                         ExeterId = int.Parse(StudentLogin.VendorLogin),
                         EnrollmentDateUTC = UTCNowUnixMilliseconds,
-                        EnrollmentGuid = (Guid) Enrollment.EnrollmentGuid
+                        EnrollmentGuid = (Guid)Enrollment.EnrollmentGuid
                     };
 
                     _db.WozCourseEnrollment.Add(wozCourseEnrollment);
                     // Mark the entrollment as complete 
-                    Enrollment.EnrollmentStatusId = (int) EnrollmentStatus.RegisterStudentComplete;
+                    Enrollment.EnrollmentStatusId = (int)EnrollmentStatus.RegisterStudentComplete;
                     _db.SaveChanges();
-                    _syslog.SysInfo($"ReconcileFutureEnrollment: Enrollment reconciliation complete !");
+                    _syslog.Log(LogLevel.Information,$"ReconcileFutureEnrollment: Enrollment reconciliation complete !");
 
-                }                    
+                }
                 return true;
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 string msg = ex.Message;
-                _syslog.SysError($"ReconcileFutureEnrollment: Fatal Error! Exception = {ex.Message} ",true );
+                _syslog.Log(LogLevel.Error,$"ReconcileFutureEnrollment: Fatal Error! Exception = {ex.Message} ",true );
                 return false;
-            }                
+            }
         }
 
 
@@ -842,7 +969,7 @@ namespace UpDiddyApi.Business
         #region Utility Functions
 
 
-        private string GetCourseCodeFromSection( string SectionId )
+        private string GetCourseCodeFromSection(string SectionId)
         {
             string Rval = string.Empty;
             try
@@ -939,15 +1066,23 @@ namespace UpDiddyApi.Business
             return RVal;
         }
 
+        public static DateTime FromWozTime(long wozTime)
+        {
+            return epoch.AddMilliseconds(wozTime);
+        }
 
-   
+        public static long ToWozTime(DateTime dateTime)
+        {
+            return (long)(dateTime - epoch).TotalMilliseconds;
+        }
 
+        private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     }
 
     #endregion
 
-        #region async helper
+    #region async helper
 
     internal static class xAsyncHelper
     {

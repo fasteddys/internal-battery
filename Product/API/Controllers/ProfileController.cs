@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
+using UpDiddyLib.Helpers;
+using System.Net.Http;
 
 namespace UpDiddyApi.Controllers
 {
@@ -22,12 +24,14 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
-        //private readonly CCQueue _queue = null;
-        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        protected internal ISysLog _syslog = null;
+
+        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
+            _syslog = new SysLog(configuration, sysemail, serviceProvider);
         }
 
         [Authorize]
@@ -60,9 +64,14 @@ namespace UpDiddyApi.Controllers
                     {
                         subscriber.City = Subscriber.City;
                     }
-                    if(Subscriber.StateId != 0)
+                    int stateId = 0;
+                    if (Subscriber.SelectedState != Guid.Empty)
                     {
-                        subscriber.StateId = Subscriber.StateId;
+                        stateId = _db.State.Where(s => s.StateGuid.Value == Subscriber.SelectedState).Select(s => s.StateId).FirstOrDefault();
+                    }
+                    if (stateId != 0)
+                    {
+                        subscriber.StateId = stateId;
                     }
                     if (!string.IsNullOrEmpty(Subscriber.PhoneNumber))
                     {
@@ -98,28 +107,34 @@ namespace UpDiddyApi.Controllers
 
         }
 
+        // should we have a "utility" or "shared" API controller for things like this?
         [HttpGet]
-        [Route("api/[controller]/LocationList")]
-        public IActionResult LocationList()
+        [Route("api/[controller]/GetCountries")]
+        public IActionResult GetCountries()
         {
-            
+            var countries = _db.Country
+                .Join(_db.State, c => c.CountryId, s => s.CountryId, (c, s) => c)
+                .Distinct()
+                .Where(c => c.IsDeleted == 0)
+                .OrderBy(c => c.Sequence)
+                .ProjectTo<CountryDto>(_mapper.ConfigurationProvider)
+                .ToList();
 
-            IList<CountryStateDto> CountryStates = (
-                from state in _db.State
-                join country in _db.Country on state.CountryId equals country.CountryId
-                select new
-                {
-                    country.DisplayName,
-                    country.Code2,
-                    country.Code3,
-                    state.Name,
-                    state.Code,
-                    state.StateId
-                }).ProjectTo<CountryStateDto>(_mapper.ConfigurationProvider).ToList();
+            return Ok(countries);
+        }
 
-            return Ok(CountryStates);
+        [HttpGet]
+        [Route("api/[controller]/GetStatesByCountry/{countryGuid}")]
+        public IActionResult GetStatesByCountry(Guid countryGuid)
+        {
+            var states = _db.State
+                .Include(s => s.Country)
+                .Where(s => s.IsDeleted == 0 && s.Country.CountryGuid == countryGuid)
+                .OrderBy(s => s.Sequence)
+                .ProjectTo<StateDto>(_mapper.ConfigurationProvider)
+                .ToList();
 
+            return Ok(states);
         }
     }
-
 }

@@ -12210,6 +12210,70 @@ if (typeof jQuery === 'undefined') {
 
 
 $(document).ready(function () {
+    
+    $('#SelectedCountry').change(function () {
+        var selectedCountry = $("#SelectedCountry").val();
+        var stateSelect = $("#SelectedState");
+
+        stateSelect.empty();
+        if (selectedCountry != null && selectedCountry != '') {
+            $.getJSON(url, { countryGuid: selectedCountry }, function (states) {
+                if (states != null && !jQuery.isEmptyObject(states)) {
+                    stateSelect.append($('<option/>', {
+                        value: "---",
+                        text: "Select State"
+                    }));
+                    $.each(states.value, function (index, state) {
+                        stateSelect.append($('<option/>', {
+                            value: state.stateGuid,
+                            text: state.name
+                        }));
+                    });
+                    var savedStateGuid = $("#SavedStateGuid").val();
+                    if (savedStateGuid === undefined || savedStateGuid === "00000000-0000-0000-0000-000000000000" || savedStateGuid === "") {
+                        $("#SelectedState").val("---");
+                    }
+                    else {
+                        $("#SelectedState").val(savedStateGuid);
+                    }
+                };
+            });
+        }
+    });
+
+    // select the country that is currently associated with the subscriber, otherwise default to USA
+    var savedCountryGuid = $("#SelectedCountry").val();
+    if (savedCountryGuid === undefined || savedCountryGuid === "00000000-0000-0000-0000-000000000000" || savedCountryGuid === "") {
+        $("#SelectedCountry option:eq(1)").attr('selected', 'selected');
+    } else {
+        $("#SelectedCountry").val(savedCountryGuid);
+    }
+    $('#SelectedCountry').change();
+
+    $("input[name='SelectedCourseVariant']").change(function () {
+        var selectedCourseVariant = $("input[name='SelectedCourseVariant']:checked");
+        var selectedCourseVariantPrice = $(selectedCourseVariant).parent().next().children(".price").html();
+        $("#InitialCoursePrice").html(selectedCourseVariantPrice);
+
+        if ($("#PromoCodeTotal").html().startsWith("-$")) {
+            var initial = parseFloat($("#InitialCoursePrice").html().replace(",","").split("$")[1]);
+            var discount = Math.min(parseFloat($("#PromoCodeTotal").html().replace(",", "").split("$")[1]), initial);
+            $("#PromoCodeTotal").html("-$" + discount.toFixed(2));
+            $("#CourseTotal").html("$" + ((initial - discount)).toFixed(2));
+        } else {
+            $("#CourseTotal").html(selectedCourseVariantPrice);
+        }
+
+        // display any child elements with class "CourseVariantStartDate", hide all sibling child elements with "CourseVariantStartDate"
+        $(selectedCourseVariant).parent().parent().children(".CourseVariantStartDate").show();
+        $(selectedCourseVariant).parent().parent().siblings().children(".CourseVariantStartDate").hide();
+        
+        if ($("#CourseTotal").html() === "$0.00")
+            $('#BraintreePaymentContainer').hide();
+        else
+            $('#BraintreePaymentContainer').show();
+    });
+
     $("#SameAsAboveCheckbox").change(function () {
         if (this.checked) {
             $('.billing-info-container').hide();
@@ -12292,17 +12356,21 @@ $(document).ready(function () {
         $(progressBar).animate({ width: newWidth });
     });
 
-
+ 
 
     $('#PromoCodeApplyButton').on('click', function () {
         var _promoCode = $('#PromoCodeInput').val();
-        var _courseGuid = $('#CourseGuid').val();
+        var _courseVariantGuid = $("input[name='SelectedCourseVariant']:checked").val();
         var _subscriberGuid = $('#SubscriberGuid').val();
 
-        if (_promoCode !== undefined && $.trim(_promoCode) !== '') {
+        if (typeof _courseVariantGuid == 'undefined') {
+            $('#ValidationMessageError span').html('A course section must be selected before applying a promo code.');
+            $('#ValidationMessageSuccess').hide();
+            $('#ValidationMessageError').show();
+        } else if (_promoCode !== undefined && $.trim(_promoCode) !== '' && typeof _courseVariantGuid != 'undefined') {
             var form = $('#CourseCheckoutForm');
             var token = $('input[name="__RequestVerificationToken"]', form).val();
-            var postUrl = "/Course/PromoCodeValidation/" + _promoCode + "/" + _courseGuid + "/" + _subscriberGuid;
+            var postUrl = "/Course/PromoCodeValidation/" + _promoCode + "/" + _courseVariantGuid + "/" + _subscriberGuid;
 
             $.ajax({
                 url: postUrl,
@@ -12340,38 +12408,4 @@ $(document).ready(function () {
             $('#ValidationMessageError').show();
         }
     });
-
-    $('.selection-radios-container input').change(function () {
-        if ($('#InstructorLedRadio').is(':checked')) {
-            $('#InstructorLedInputField').prop('disabled', false);;
-        }
-        else {
-            $('#InstructorLedInputField').prop('disabled', true);;
-        }
-    });
-
-    $('.selection-radios-container input').change(function () {
-        if ($(this).attr('id') === "InstructorLedRadio" && $(this).is(':checked')) {
-            $('#CourseTotal').html(instructorLedPrice);
-            $('#InitialCoursePrice').html(instructorLedPrice);
-        }
-        else if ($(this).attr('id') === "SelfPacedRadio" && $(this).is(':checked')) {
-            $('#CourseTotal').html(selfPacedPrice);
-            $('#InitialCoursePrice').html(selfPacedPrice);
-        }
-    });
-
-    $('.country-select').change(function () {
-        var country = $(this).val();
-        var states = locationsList[country];
-        $(".state-select").html("");
-        for (i = 0; i < states.length; i++) {
-            $('<option>').val(states[i].id).text(states[i].name).appendTo('.state-select');
-        }
-    });
-
-    $('#UpdatedStateInput').change(function () {
-        $('#UpdatedState').val($(this).val());
-    });
-
 });

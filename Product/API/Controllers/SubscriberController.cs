@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers  
 {
@@ -19,11 +21,13 @@ namespace UpDiddyApi.Controllers
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
-        public SubscriberController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration) 
+        protected internal ISysLog _syslog = null;
+
+        public SubscriberController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
         {
             _db = db;
-            _mapper = mapper;        
-
+            _mapper = mapper;
+            _syslog = new SysLog(configuration, sysemail, serviceProvider);
         }
 
         // GET: api/courses
@@ -59,8 +63,7 @@ namespace UpDiddyApi.Controllers
 
         }
         
-        [HttpGet]
-        [Authorize]
+        [HttpGet] 
         [Route("api/[controller]/CountryFromState/{StateId}")]
         public IActionResult CountryFromState(int StateId)
         {
@@ -80,7 +83,6 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         [Route("api/[controller]/State/{StateId}")]
         public IActionResult State(int StateId)
         {
@@ -137,7 +139,5 @@ namespace UpDiddyApi.Controllers
 
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
         }
-
-
     }
 }

@@ -101,5 +101,9 @@ namespace UpDiddyLib.Dto
             get { return _MerchantAccountId; }
             set { _MerchantAccountId = value; }
         }
+
+        public Guid? StateGuid { get; set; }
+
+        public Guid? CountryGuid { get; set; }
     }
 }

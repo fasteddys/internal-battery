@@ -7,6 +7,7 @@
 @using System.Globalization
 @using Microsoft.AspNetCore.Http.Features
 @using System.Web
+@using Microsoft.AspNetCore.Hosting
 @inject IViewLocalizer Localizer
 @{
     Layout = null;
@@ -16,7 +17,7 @@
 }
 <style>
     .login-container {
-        background-image: url('@(SSLProtocol)://@(DomainName)/images/blue_background_login.jpg');
+        background-image: url('@(SSLProtocol)://@(DomainName)/images/blue_background_login.jpg?v=@(ViewData["BlueBg"].ToString())');
     }
     body{
         padding-top: 0 !important;
@@ -32,23 +33,23 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareerCircle</title>
-    <link rel="shortcut icon" href="@(ProtocolAndHost)/images/Icon-20.png" />
+    <link rel="shortcut icon" href="@(ProtocolAndHost)/images/Icon-20.png?v=@(ViewData["Icon20"].ToString())" />
     <environment names="Development,DevelopmentLocalApi,DevelopmentLocal">
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/lib/bootstrap/css/bootstrap.min.css" />
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/lib/font-awesome/css/all.min.css" />
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/Unified.css" />
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/bundle.css" />
+        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/lib/bootstrap/css/bootstrap.min.css?v=@(ViewData["Bootstrap"].ToString())" />
+        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/lib/font-awesome/css/all.min.css?v=@(ViewData["FontAwesome"].ToString())" />
+        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/Unified.css?v=@(ViewData["Unified"].ToString())" />
+        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/bundle.css?v=@(ViewData["Bundle"].ToString())" />
     </environment>
     <environment names="Staging,Production">
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/site.min.css" />
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/Unified.css" />
+        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/site.min.css?v=@(ViewData["SiteMin"].ToString())" />
+        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/Unified.css?v=@(ViewData["Unified"].ToString())" />
     </environment>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-transparent">
         <div class="container">
             <a class="navbar-brand" href="@(ProtocolAndHost)/Home/Index">
-                <img src="@(ProtocolAndHost)/images/cc_logo_white.png" />
+                <img src="@(ProtocolAndHost)/images/cc_logo_white.png?v=@(ViewData["WhiteLogo"].ToString())" />
             </a>
         </div>
     </nav>

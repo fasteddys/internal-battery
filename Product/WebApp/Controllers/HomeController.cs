@@ -25,6 +25,8 @@ using SendGrid.Helpers.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Polly.Registry;
 using Microsoft.Extensions.Caching.Distributed;
 
@@ -36,19 +38,28 @@ namespace UpDiddy.Controllers
         private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _HttpClientFactory;
+        private readonly IHostingEnvironment _env;
 
-
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache)
-            : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache)
+        [HttpGet]
+        public IActionResult GetCountries()
         {
+            return Ok(Json(API.GetCountries()));
+        }
 
-
+        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHostingEnvironment env, IHttpClientFactory httpClientFactory, IDistributedCache cache)
+            : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache)        {
+            _env = env;
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
             _configuration = configuration;
             _HttpClientFactory = httpClientFactory;
         }
-
+        [HttpGet]
+        public IActionResult GetStatesByCountry(Guid countryGuid)
+        {
+            return Ok(Json(API.GetStatesByCountry(countryGuid)));
+        }
+        
         public IActionResult Index()
         {
             // TODO remove test code 
@@ -118,29 +129,34 @@ namespace UpDiddy.Controllers
         public IActionResult Profile()
         {
             GetSubscriber(true);
-            IList<CountryStateDto> CountryStateList = API.GetCountryStateList();
             IList<EnrollmentDto> CurrentEnrollments = API.GetCurrentEnrollmentsForSubscriber(this.subscriber);
             CountryDto SubscriberCountry = new CountryDto();
             StateDto SubscriberState = new StateDto();
             if (this.subscriber.StateId != 0)
             {
+                // JAB: TODO explore "Query Types" as a means to get all of the subscriber information from a view
+                //  https://docs.microsoft.com/en-us/ef/core/modeling/query-types                
                 SubscriberCountry = API.GetSubscriberCountry(this.subscriber.StateId);
                 SubscriberState = API.GetSubscriberState(this.subscriber.StateId);
             }
             IList<WozCourseProgress> WozCourseProgressions = new List<WozCourseProgress>();
-            // JAB Added guard again having no enrollments 
+          
             if ( CurrentEnrollments != null )
             {
+            
                 foreach (EnrollmentDto enrollment in CurrentEnrollments)
-                {
-                    var studentLogin = API.StudentLogin(this.subscriber.SubscriberId);
-
+                {                   
                     try
                     {
+                        Guid CourseGuid = enrollment.Course.CourseGuid ?? default(Guid);
+                        Guid VendorGuid = enrollment.Course.Vendor.VendorGuid ?? default(Guid);
+                        Guid SubscriberGuid = this.subscriber.SubscriberGuid?? default(Guid);
+                        var courseLogin = API.CourseLogin(SubscriberGuid, CourseGuid,VendorGuid);
+
                         WozCourseProgress dto = new WozCourseProgress
                         {
                             CourseName = enrollment.Course.Name,
-                            CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl,
+                            CourseUrl = courseLogin == null ? string.Empty : courseLogin.LoginUrl,
                             PercentComplete = enrollment.PercentComplete,
                             EnrollmentStatusId = enrollment.EnrollmentStatusId,
                             DisplayState = enrollment.EnrollmentStatusId
@@ -158,10 +174,24 @@ namespace UpDiddy.Controllers
             ProfileViewModel ProfileViewModel = new ProfileViewModel(
                 _configuration,
                 this.subscriber,
-                CountryStateList,
                 WozCourseProgressions,
                 SubscriberCountry,
                 SubscriberState);
+
+            ProfileViewModel.Countries = API.GetCountries().Select(c => new SelectListItem()
+            {
+                Text = c.DisplayName,
+                Value = c.CountryGuid.ToString()
+            });
+
+            ProfileViewModel.States = new List<StateViewModel>().Select(s => new SelectListItem()
+            {
+                Text = s.Name,
+                Value = s.StateGuid.ToString()
+            });
+            ProfileViewModel.SelectedState = SubscriberState.StateGuid.HasValue ? SubscriberState.StateGuid.Value : Guid.Empty;
+            ProfileViewModel.SelectedCountry = SubscriberCountry.CountryGuid;
+
             return View(ProfileViewModel);
         }
 
@@ -178,7 +208,8 @@ namespace UpDiddy.Controllers
             string UpdatedStackOverflowUrl,
             string UpdatedGithubUrl,
             int UpdatedState,
-            Guid CurrentSubscriberGuid
+            Guid CurrentSubscriberGuid,
+            Guid SelectedState
             )
         {
             /* todo: the validation and sanitization logic below is probably the worst code i have written in the last 10 years. 
@@ -233,7 +264,8 @@ namespace UpDiddy.Controllers
                     Address = UpdatedAddress,
                     PhoneNumber = UpdatedPhoneNumber,
                     City = UpdatedCity,
-                    StateId = UpdatedState,
+                    // StateId = UpdatedState,
+                    SelectedState = SelectedState,
                     FacebookUrl = UpdatedFacebookUrl,
                     TwitterUrl = UpdatedTwitterUrl,
                     LinkedInUrl = UpdatedLinkedInUrl,
@@ -275,7 +307,7 @@ namespace UpDiddy.Controllers
             string email = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsEmail) ? "No email entered." : ContactUsEmail);
             string type = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsType) ? "No type entered." : ContactUsType);
             string comment = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsComment) ? "No comment entered." : ContactUsComment);
-            
+
             var emailBody = FormatContactEmail(firstName, lastName, email, type, comment);
             var plainTextContent = emailBody;
             var htmlContent = emailBody;
@@ -301,6 +333,21 @@ namespace UpDiddy.Controllers
         [AllowAnonymous]
         public IActionResult Unified()
         {
+            /* relative paths to static files cannot be used in this view since the content is served by a third party website.
+             * we have to use absolute paths, but we still want a way to prevent outdated static files from being cached. 
+             * the code below solves for this by adding the referenced file's last modified timestamp as a hash code to the query 
+             * string for all static files referenced.
+             */
+            ViewData["BlueBg"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\images\blue_background_login.jpg").GetHashCode());
+            ViewData["Bootstrap"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\lib\boostrap\css\bootstrap.min.css").GetHashCode());
+            ViewData["Bundle"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\css\Bundle.css").GetHashCode());
+            ViewData["FontAwesome"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\lib\font-awesome\css\all.min.css").GetHashCode());
+            ViewData["Icon20"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\images\Icon-20.png").GetHashCode());
+            ViewData["SiteMin"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\css\site.min.css").GetHashCode());
+            ViewData["Unified"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\css\Unified.css").GetHashCode());
+            ViewData["WhiteLogo"] = Math.Abs(System.IO.File.GetLastWriteTime(_env.WebRootPath + @"\images\cc_logo_white.png").GetHashCode());
+
+
             return View();
         }
 
