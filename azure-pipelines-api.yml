@@ -42,7 +42,7 @@ steps:
   displayName: Packaging
 
 - script: |
-    dotnet ef migrations script -i > ${Build.ArtifactStagingDirectory}/script.sql
+    dotnet ef migrations script -i --output ${Build.ArtifactStagingDirectory}/script.sql
   displayName: Generate SQL Script
 
 - task: PublishBuildArtifacts@1
