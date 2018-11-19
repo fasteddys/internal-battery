@@ -59,6 +59,8 @@ Give an example
 
 Before deployment - verify that the **Azure Key Vault** is up to date with any new secrets that was added to user secrets or app settings.
 
+Be sure when configuring Key Vault secrets to use `--` as the seperator as `:` are not supported. The Application is setup to substitute out `--` for `:` when retreiving values.
+
 ### WebApp Secrets Checklist
 * Authentication:AzureAdB2C:ClientSecret
 * Braintree:MerchantID
