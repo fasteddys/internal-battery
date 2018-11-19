@@ -108,7 +108,6 @@ namespace UpDiddy.Controllers
 
         public IActionResult FAQ()
         {
-            throw new Exception("CI/CD test Exception, must do to check compiled code deployment");
             return View();
         }
 
