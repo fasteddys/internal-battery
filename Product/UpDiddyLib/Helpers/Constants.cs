@@ -16,5 +16,6 @@ namespace UpDiddy.Helpers
         static public readonly string PollyStringCacheName = "PollyStringCacheName";
         static public readonly int PollyStringCacheTimeInMinutes = 5;
         static public readonly string SysLogLogInformationTrue = "true";
+        static public readonly string WozVendorName = "WozU";
     }
 }

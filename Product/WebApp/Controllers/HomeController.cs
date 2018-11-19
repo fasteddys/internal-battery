@@ -134,23 +134,29 @@ namespace UpDiddy.Controllers
             StateDto SubscriberState = new StateDto();
             if (this.subscriber.StateId != 0)
             {
+                // JAB: TODO explore "Query Types" as a means to get all of the subscriber information from a view
+                //  https://docs.microsoft.com/en-us/ef/core/modeling/query-types                
                 SubscriberCountry = API.GetSubscriberCountry(this.subscriber.StateId);
                 SubscriberState = API.GetSubscriberState(this.subscriber.StateId);
             }
             IList<WozCourseProgress> WozCourseProgressions = new List<WozCourseProgress>();
-            // JAB Added guard again having no enrollments 
+          
             if ( CurrentEnrollments != null )
             {
+            
                 foreach (EnrollmentDto enrollment in CurrentEnrollments)
-                {
-                    var studentLogin = API.StudentLogin(this.subscriber.SubscriberId);
-
+                {                   
                     try
                     {
+                        Guid CourseGuid = enrollment.Course.CourseGuid ?? default(Guid);
+                        Guid VendorGuid = enrollment.Course.Vendor.VendorGuid ?? default(Guid);
+                        Guid SubscriberGuid = this.subscriber.SubscriberGuid?? default(Guid);
+                        var courseLogin = API.CourseLogin(SubscriberGuid, CourseGuid,VendorGuid);
+
                         WozCourseProgress dto = new WozCourseProgress
                         {
                             CourseName = enrollment.Course.Name,
-                            CourseUrl = studentLogin == null ? string.Empty : studentLogin.RegistrationUrl,
+                            CourseUrl = courseLogin == null ? string.Empty : courseLogin.LoginUrl,
                             PercentComplete = enrollment.PercentComplete,
                             EnrollmentStatusId = enrollment.EnrollmentStatusId,
                             DisplayState = enrollment.EnrollmentStatusId
