@@ -28,7 +28,7 @@ namespace UpDiddyApi.Business
             {
                 _syslog.Log(LogLevel.Information, $"***** CourseFactory.GetCourseLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid} for course {CourseGuid} and vendor {VendorGuid}");
                 CourseLoginDto rVal = new CourseLoginDto();
-                rVal.LoginUrl = _configuration["Woz:LoginUrl"];
+                rVal.LoginUrl = string.Empty;
                 if (VendorGuid.ToString() == _configuration["Woz:VendorGuid"])
                     rVal = GetWozCourseLogin(SubscriberGuid, CourseGuid, VendorGuid);
                 else
@@ -75,14 +75,14 @@ namespace UpDiddyApi.Business
             {
                 _syslog.Log(LogLevel.Information, $"***** CourseFactory.GetWozCourseLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid} for course {CourseGuid} and vendor {VendorGuid}");
                 CourseLoginDto rVal = new CourseLoginDto();
-                rVal.LoginUrl = _configuration["Woz:LoginUrl"];
+                rVal.LoginUrl = string.Empty;
 
                 var studentLogin =
                             from vsl in _db.VendorStudentLogin
                             join v in _db.Vendor on vsl.VendorId equals v.VendorId
                             join s in _db.Subscriber on vsl.SubscriberId equals s.SubscriberId
                             where s.SubscriberGuid == SubscriberGuid && vsl.VendorId == v.VendorId
-                            select new { LastLoginDate = vsl.LastLoginDate, SubscriberGuid = s.SubscriberGuid, RegstrationUrl = vsl.RegistrationUrl };
+                            select new { LastLoginDate = vsl.LastLoginDate, SubscriberGuid = s.SubscriberGuid, RegstrationUrl = vsl.RegistrationUrl, LoginUrl = v.LoginUrl };
 
                 if (studentLogin != null && studentLogin.First() != null)
                 {
@@ -107,6 +107,8 @@ namespace UpDiddyApi.Business
                         }
                         rVal.LoginUrl = studentLogin.First().RegstrationUrl;
                     }
+                    else
+                        rVal.LoginUrl = studentLogin.First().LoginUrl;
                 }
                 _syslog.Log(LogLevel.Information, $"***** CourseFactory.GetWozCourseLogin completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return rVal;
