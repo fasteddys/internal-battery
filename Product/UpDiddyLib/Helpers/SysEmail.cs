@@ -31,21 +31,31 @@ namespace UpDiddyLib.Helpers
             return true;
         }
         
-        public async void SendPurchaseReceiptEmail(string email, string subject, string courseName, decimal courseCost, decimal promoApplied, Guid enrollmentGuid)
+        public async void SendPurchaseReceiptEmail(
+            string sendgridTemplateId,
+            string profileUrl,
+            string email, 
+            string subject, 
+            string courseName, 
+            decimal courseCost, 
+            decimal promoApplied, 
+            string formattedStartDate,
+            Guid enrollmentGuid)
         {
             var client = new SendGridClient(_apiKey);
             var message = new SendGridMessage();
             message.SetFrom(new EmailAddress("support@careercircle.com", "CareerCircle Support"));
             message.AddTo(new EmailAddress(email));
-            message.SetTemplateId(_configuration["SysEmail:TemplateIds:PurchaseReceipt"]);
+            message.SetTemplateId(sendgridTemplateId);
             PurchaseReceipt purchaseReceipt = new PurchaseReceipt
             {
                 Subject = subject,
-                Profile_Url = _configuration["Environment:BaseUrl"],
+                Profile_Url = profileUrl,
                 Course_Name = courseName,
                 Course_Price = courseCost.ToString(),
                 Discount = promoApplied.ToString(),
                 Final_Price = (courseCost - promoApplied).ToString(),
+                Start_Date = formattedStartDate,
                 Enrollment_Guid = enrollmentGuid.ToString()
             };
             message.SetTemplateData(purchaseReceipt);
@@ -75,6 +85,9 @@ namespace UpDiddyLib.Helpers
 
             [JsonProperty("final_price")]
             public string Final_Price { get; set; }
+
+            [JsonProperty("start_date")]
+            public string Start_Date { get; set; }
 
             [JsonProperty("enrollment_guid")]
             public string Enrollment_Guid { get; set; }
