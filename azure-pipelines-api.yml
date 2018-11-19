@@ -41,6 +41,10 @@ steps:
     zip -rm api.zip *
   displayName: Packaging
 
+- script: |
+    dotnet ef migrations script -i > ${Build.ArtifactStagingDirectory}/script.sql
+  displayName: Generate SQL Script
+
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:
