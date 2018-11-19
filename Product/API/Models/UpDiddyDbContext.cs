@@ -24,15 +24,16 @@ namespace UpDiddyApi.Models
             
             var CurrentDir = System.IO.Directory.GetCurrentDirectory();
             IConfigurationBuilder configBuilder = new ConfigurationBuilder();
-            string DevSettingsFile = "appsettings.Development.json";
-            bool IsEnvLocal = File.Exists($"{CurrentDir}/{DevSettingsFile}");
+            string Env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            string SettingsFile = $"appsettings.{Env}.json";
+            bool IsEnvLocal = Env == 'Development';
             IConfiguration config;
             // if development file exists then this is being executed locally
             if(IsEnvLocal)
             {
                 configBuilder
                     .SetBasePath(CurrentDir)
-                    .AddJsonFile(DevSettingsFile, optional: false, reloadOnChange: true)
+                    .AddJsonFile(SettingsFile, optional: false, reloadOnChange: true)
                     .AddUserSecrets<Startup>();
 
                 config = configBuilder.Build();
@@ -54,8 +55,7 @@ namespace UpDiddyApi.Models
 
             // Get the connection string from the Azure secret vault
             var SqlConnectionString = config["CareerCircleSqlConnection"];
-            // verifying connection for migrations
-            // Console.WriteLine(string.Format("Connection String: {0}", SqlConnectionString));
+
             optionsBuilder.UseSqlServer(SqlConnectionString);
             return new UpDiddyDbContext(optionsBuilder.Options);
         }
