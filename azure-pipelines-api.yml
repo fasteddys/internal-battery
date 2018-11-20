@@ -45,6 +45,7 @@ steps:
     cd Product/API
     dotnet ef migrations script -i --output $(Build.ArtifactStagingDirectory)/script.sql
   displayName: Generate SQL Script
+  env: { ASPNETCORE_ENVIRONMENT: Development }
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
