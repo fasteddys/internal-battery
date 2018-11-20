@@ -27,6 +27,10 @@ body {
     }
 
     .home-container {
+        .btn{
+            white-space: initial;
+            margin: 1rem 0;
+        }
         .home-hero-top{
             background-image: url('../images/circle-of-circles.png');
             background-position: bottom;
