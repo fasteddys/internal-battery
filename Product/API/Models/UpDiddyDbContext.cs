@@ -40,22 +40,14 @@ namespace UpDiddyApi.Models
             } else
             {
                 // else it is being executed in the cloud and retrieve environmental variables (for now)
-                // todo: utilize certificate instead of direct access to vault password
-                // todo: task to devops the ability to generate scripts as an artifact
                 configBuilder.AddEnvironmentVariables();
-                config = configBuilder.Build();
-                
-                configBuilder.AddAzureKeyVault(config["Vault:Url"], 
-                    config["Vault:ClientId"],
-                    config["Vault:ClientSecret"], 
-                    new KeyVaultSecretManager());
             }
 
             config = configBuilder.Build();
 
             // Get the connection string from the Azure secret vault
             var SqlConnectionString = config["CareerCircleSqlConnection"];
-
+            
             optionsBuilder.UseSqlServer(SqlConnectionString);
             return new UpDiddyDbContext(optionsBuilder.Options);
         }

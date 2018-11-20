@@ -41,11 +41,17 @@ steps:
     zip -rm api.zip *
   displayName: Packaging
 
+- task: AzureKeyVault@1
+  inputs:
+    azureSubscription: 933642d7-459a-499f-acc7-0d9a14ecf604
+    keyVaultName: CareerCircleDev
+  displayName: Acquire ConnectionString
+
 - script: |
     cd Product/API
     dotnet ef migrations script -i --output $(Build.ArtifactStagingDirectory)/script.sql
   displayName: Generate SQL Script
-  env: { ASPNETCORE_ENVIRONMENT: Development }
+  env: { ASPNETCORE_ENVIRONMENT: Staging, CareerCircleSqlConnection: $(CareerCircleSqlConnection) }
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
