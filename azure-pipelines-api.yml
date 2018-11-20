@@ -43,7 +43,7 @@ steps:
 
 - task: AzureKeyVault@1
   inputs:
-    azureSubscription: 933642d7-459a-499f-acc7-0d9a14ecf604
+    azureSubscription: Digital BT (933642d7-459a-499f-acc7-0d9a14ecf604)
     keyVaultName: CareerCircleDev
   displayName: Acquire ConnectionString
 
