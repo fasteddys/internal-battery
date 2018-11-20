@@ -1,0 +1,59 @@
+# Build dotnet core project using Azure Pipelines
+
+# build name format
+name: rc.api.$(date:yyyyMMdd)$(rev:.r)
+pool:
+  vmImage: 'ubuntu-16.04'
+
+variables:
+  buildConfiguration: 'Release'
+
+# trigger CI build for the following branches
+trigger:
+  branches:
+    include:
+      - release/*
+  paths:
+    include:
+      - Product/UpDiddyLib/*
+      - Product/API/*
+    exclude:
+      - Product/WebApp/*
+
+# disable CI builds for pull requests for now
+pr: none
+
+steps:
+- script: |
+    dotnet restore Product/API
+  displayName: Restore NuGet Packages
+
+- script: |
+    dotnet build Product/API --configuration $(buildConfiguration)
+  displayName: Compile
+
+- script: |
+    dotnet publish Product/API --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+  displayName: Publish Files
+
+- script: |
+    cd $(Build.ArtifactStagingDirectory)
+    zip -rm api.zip *
+  displayName: Packaging
+
+- task: AzureKeyVault@1
+  inputs:
+    azureSubscription: Digital BT (933642d7-459a-499f-acc7-0d9a14ecf604)
+    keyVaultName: CareerCircleProd
+  displayName: Acquire ConnectionString
+
+- script: |
+    cd Product/API
+    dotnet ef migrations script -i --output $(Build.ArtifactStagingDirectory)/script.sql
+  displayName: Generate SQL Script
+  env: { ASPNETCORE_ENVIRONMENT: Production, CareerCircleSqlConnection: $(CareerCircleSqlConnection) }
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifacts
+  inputs:
+    artifactName: 'api'
