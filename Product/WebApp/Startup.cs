@@ -166,11 +166,6 @@ namespace UpDiddy
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            /* Implements HTTPS redirect
-            var options = new RewriteOptions().AddRedirectToHttps();
-            app.UseRewriter(options);
-            */
-
             if (env.IsDevelopment() || env.IsStaging())
             {
                 app.UseDeveloperExceptionPage();
@@ -179,7 +174,7 @@ namespace UpDiddy
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                //app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
+                app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }   
 
             var supportedCultures = new[]
