@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.IO;
+using UpDiddyLib.Shared;
 
 namespace UpDiddyApi.Models
 {
@@ -20,32 +21,41 @@ namespace UpDiddyApi.Models
         public UpDiddyDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<UpDiddyDbContext>();
+            
             var CurrentDir = System.IO.Directory.GetCurrentDirectory();
-            IConfigurationBuilder configBuilder = new ConfigurationBuilder()
-                   .SetBasePath(CurrentDir)
-                   .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            IConfigurationBuilder configBuilder = new ConfigurationBuilder();
+            string Env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            string SettingsFile = $"appsettings.{Env}.json";
+            bool IsEnvLocal = Env == 'Development';
+            IConfiguration config;
+            // if development file exists then this is being executed locally
+            if(IsEnvLocal)
+            {
+                configBuilder
+                    .SetBasePath(CurrentDir)
+                    .AddJsonFile(SettingsFile, optional: false, reloadOnChange: true)
+                    .AddUserSecrets<Startup>();
 
-            IConfiguration config = configBuilder.Build();
-
-            var VaultUrl = config["VaultUrl"];
-            var VaultClientId = config["VaultClientId"];
-            var VaultSecret = config["VaultClientSecret"];
-
-
-            configBuilder.AddAzureKeyVault(
-                 VaultUrl,
-                 VaultClientId,
-                 VaultSecret);
-
-            // todo: quick fix to ensure db connection from user secrets is being overridden
-            configBuilder.AddUserSecrets<Startup>();
+                config = configBuilder.Build();
+            } else
+            {
+                // else it is being executed in the cloud and retrieve environmental variables (for now)
+                // todo: utilize certificate instead of direct access to vault password
+                // todo: task to devops the ability to generate scripts as an artifact
+                configBuilder.AddEnvironmentVariables();
+                config = configBuilder.Build();
+                
+                configBuilder.AddAzureKeyVault(config["Vault:Url"], 
+                    config["Vault:ClientId"],
+                    config["Vault:ClientSecret"], 
+                    new KeyVaultSecretManager());
+            }
 
             config = configBuilder.Build();
 
             // Get the connection string from the Azure secret vault
             var SqlConnectionString = config["CareerCircleSqlConnection"];
-            // verifying connection for migrations
-            // Console.WriteLine(string.Format("Connection String: {0}", SqlConnectionString));
+
             optionsBuilder.UseSqlServer(SqlConnectionString);
             return new UpDiddyDbContext(optionsBuilder.Options);
         }
