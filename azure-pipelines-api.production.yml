@@ -1,7 +1,7 @@
 # Build dotnet core project using Azure Pipelines
 
 # build name format
-name: api.$(date:yyyyMMdd)$(rev:.r)
+name: rc.api.$(date:yyyyMMdd)$(rev:.r)
 pool:
   vmImage: 'ubuntu-16.04'
 
@@ -12,7 +12,7 @@ variables:
 trigger:
   branches:
     include:
-      - dev
+      - release/*
   paths:
     include:
       - Product/UpDiddyLib/*
@@ -44,14 +44,14 @@ steps:
 - task: AzureKeyVault@1
   inputs:
     azureSubscription: Digital BT (933642d7-459a-499f-acc7-0d9a14ecf604)
-    keyVaultName: CareerCircleDev
+    keyVaultName: CareerCircleProd
   displayName: Acquire ConnectionString
 
 - script: |
     cd Product/API
     dotnet ef migrations script -i --output $(Build.ArtifactStagingDirectory)/script.sql
   displayName: Generate SQL Script
-  env: { ASPNETCORE_ENVIRONMENT: Staging, CareerCircleSqlConnection: $(CareerCircleSqlConnection) }
+  env: { ASPNETCORE_ENVIRONMENT: Production, CareerCircleSqlConnection: $(CareerCircleSqlConnection) }
 
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
