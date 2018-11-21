@@ -84,7 +84,7 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
+                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress started for subscriber {SubscriberGuid.ToString()} ProgressUpdateAgeThresholdInHours = {ProgressUpdateAgeThresholdInHours}");
                 Subscriber subscriber = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Guid.Parse(SubscriberGuid))
                 .FirstOrDefault();
@@ -102,27 +102,44 @@ namespace UpDiddyApi.Workflow
 
                 foreach (Enrollment e in enrollments)
                 {
+                    _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress looking to update enrollment {e.EnrollmentGuid}");
                     // Only Call woz if the modify date is null or if the modify date older that progress update age threshold
                     if (e.ModifyDate == null || ((DateTime)e.ModifyDate).AddHours(ProgressUpdateAgeThresholdInHours) <= DateTime.Now)
                     {
+                        _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress calling woz for enrollment {e.EnrollmentGuid}");
                         wcp = GetWozCourseProgress(e);
                         if (wcp != null && wcp.ActivitiesCompleted > 0 && wcp.ActivitiesTotal > 0)
                         {
+                            _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress updating enrollment {e.EnrollmentGuid}");
                             updatesMade = true;
                             e.PercentComplete = Convert.ToInt32((wcp.ActivitiesCompleted / wcp.ActivitiesTotal) * 100);
                             e.ModifyDate = DateTime.Now;
                         }
+                        else
+                        {
+                            if ( wcp == null  )
+                                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress GetWozCourseProgress returned null for enrollment {e.EnrollmentGuid}");
+                            else
+                                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress GetWozCourseProgress returned ActivitiesCompleted = {wcp.ActivitiesCompleted} ActivitiesTotal = {wcp.ActivitiesTotal}");
+                        }
+                    }
+                    else
+                    {
+                        DateTime ModifyDate = (DateTime) e.ModifyDate;
+                        DateTime DateThreshold = ((DateTime)e.ModifyDate).AddHours(ProgressUpdateAgeThresholdInHours);
+                        _syslog.Log(LogLevel.Information,
+                            $"***** UpdateStudentProgress skipping  update for enrollment {e.EnrollmentGuid} enrollment Modify date is {ModifyDate.ToLongDateString()} {ModifyDate.ToLongTimeString()} Threshold date is {DateThreshold.ToLongDateString()} {DateThreshold.ToLongTimeString()}");
                     }
                 }
                 if (updatesMade)
                     _db.SaveChanges();
 
-                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
+                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress completed");
                 return true;
             }
             catch ( Exception e )
             {
-                _syslog.Log(LogLevel.Error, "UpdateStudentProgress:GetWozCourseProgress threw an exception -> " + e.Message);
+                _syslog.Log(LogLevel.Error, $"UpdateStudentProgress:GetWozCourseProgress threw an exception -> {e.Message} for subscriber {SubscriberGuid}" );
                 return false;
             }
             
