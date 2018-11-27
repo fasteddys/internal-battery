@@ -158,6 +158,14 @@ input {
 a:hover {
   text-decoration: none; }
 
+.page-hero {
+  background-image: url("../images/medium_blue_background.jpg");
+  color: #fff;
+  background-size: cover; }
+  .page-hero .hero-header {
+    font-size: 2rem;
+    padding: 2rem 0; }
+
 @media (min-width: 992px) {
   .navbar-light .navbar-nav .brand-button-light:hover {
     background-color: #03264A; }

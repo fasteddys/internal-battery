@@ -42,3 +42,6 @@ Thumbs.db
 
 # publish metadata
 *.pubxml
+
+# sass cache
+*.sass-cache/

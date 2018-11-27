@@ -111,6 +111,11 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        public IActionResult LoggingIn()
+        {
+            return View();
+        }
+
 
         [Authorize]
         public IActionResult ProfileLogin()

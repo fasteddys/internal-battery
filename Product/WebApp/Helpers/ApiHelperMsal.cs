@@ -91,21 +91,10 @@ namespace UpDiddy.Helpers
  
         public T Post<T>(BaseDto Body, string ApiAction, bool Authorized = false)
         {
-
-
-            string jsonToSend = "{}";
-            try
-            {
-                jsonToSend = JsonConvert.SerializeObject(Body);
-            }
-            catch (Exception e)
-            {
-
-            }
+            string jsonToSend = JsonConvert.SerializeObject(Body);
             Task<string> Response = _PostAsync(jsonToSend, ApiAction, Authorized);
             T rval = JsonConvert.DeserializeObject<T>(Response.Result);
             return rval;
-
         }
 
         #region Helpers Functions
