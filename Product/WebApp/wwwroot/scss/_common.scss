@@ -211,6 +211,18 @@ input {
 a:hover{
     text-decoration: none;
 }
+
+.page-hero {
+    background-image: url('../images/medium_blue_background.jpg');
+    color: $color-white;
+    background-size: cover;
+
+    
+    .hero-header {
+        font-size: 2rem;
+        padding: 2rem 0;
+    }
+}
 @media (min-width: 992px){
     .navbar-light {
         .navbar-nav {
