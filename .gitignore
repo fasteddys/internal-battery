@@ -42,3 +42,6 @@ Thumbs.db
 
 # publish metadata
 *.pubxml
+
+# vscode files
+.vscode
