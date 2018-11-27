@@ -27,8 +27,8 @@ namespace UpDiddy.Controllers
         private IHttpClientFactory _HttpClientFactory = null;
 
 
-        public TopicController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache)
-             : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache)
+        public TopicController(IApi api, IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache)
+             : base(api)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
@@ -40,8 +40,8 @@ namespace UpDiddy.Controllers
         [Route("/Topic/{TopicSlug}")]
         public IActionResult Get(string TopicSlug)
         {         
-            TopicDto Topic = API.TopicBySlug(TopicSlug);
-            TopicViewModel TopicViewModel = new TopicViewModel(_configuration, API.getCousesByTopicSlug(TopicSlug), Topic);
+            TopicDto Topic = _Api.TopicBySlug(TopicSlug);
+            TopicViewModel TopicViewModel = new TopicViewModel(_configuration, _Api.getCousesByTopicSlug(TopicSlug), Topic);
         
             return View("Details", TopicViewModel);
         }

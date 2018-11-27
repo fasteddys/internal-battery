@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using UpDiddy.Api;
 
 namespace UpDiddy.Controllers
 {
@@ -19,7 +20,7 @@ namespace UpDiddy.Controllers
         private readonly IStringLocalizer<MobileController> _localizer;
         private readonly IConfiguration _configuration;
 
-        public MobileController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<MobileController> localizer, IConfiguration configuration,  IHttpClientFactory httpClientFactory, IDistributedCache cache) : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache)
+        public MobileController(IApi api, IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<MobileController> localizer, IConfiguration configuration,  IHttpClientFactory httpClientFactory, IDistributedCache cache) : base(api)
         {
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;

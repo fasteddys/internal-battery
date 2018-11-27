@@ -43,11 +43,11 @@ namespace UpDiddy.Controllers
         [HttpGet]
         public IActionResult GetCountries()
         {
-            return Ok(Json(API.GetCountries()));
+            return Ok(Json(_Api.GetCountries()));
         }
 
-        public HomeController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHostingEnvironment env, IHttpClientFactory httpClientFactory, IDistributedCache cache)
-            : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache)        {
+        public HomeController(IApi api, IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHostingEnvironment env, IHttpClientFactory httpClientFactory, IDistributedCache cache)
+            : base(api)        {
             _env = env;
             _localizer = localizer;
             AzureAdB2COptions = azureAdB2COptions.Value;
@@ -57,7 +57,7 @@ namespace UpDiddy.Controllers
         [HttpGet]
         public IActionResult GetStatesByCountry(Guid countryGuid)
         {
-            return Ok(Json(API.GetStatesByCountry(countryGuid)));
+            return Ok(Json(_Api.GetStatesByCountry(countryGuid)));
         }
         
         public IActionResult Index()
@@ -65,7 +65,7 @@ namespace UpDiddy.Controllers
             // TODO remove test code 
             GetSubscriber(false);
 
-            HomeViewModel HomeViewModel = new HomeViewModel(_configuration, API.Topics());
+            HomeViewModel HomeViewModel = new HomeViewModel(_configuration, _Api.Topics());
             return View(HomeViewModel);
         }
 
@@ -123,7 +123,7 @@ namespace UpDiddy.Controllers
             GetSubscriber(true);
             // UPdated the subscribers course progress 
             if (this.subscriber != null)
-                API.UpdateStudentCourseProgress((Guid) this.subscriber.SubscriberGuid, true);
+                _Api.UpdateStudentCourseProgress((Guid) this.subscriber.SubscriberGuid, true);
  
             return RedirectToAction("Profile", "Home");
         }
@@ -134,15 +134,15 @@ namespace UpDiddy.Controllers
         public IActionResult Profile()
         {
             GetSubscriber(true);
-            IList<EnrollmentDto> CurrentEnrollments = API.GetCurrentEnrollmentsForSubscriber(this.subscriber);
+            IList<EnrollmentDto> CurrentEnrollments = _Api.GetCurrentEnrollmentsForSubscriber(this.subscriber);
             CountryDto SubscriberCountry = new CountryDto();
             StateDto SubscriberState = new StateDto();
             if (this.subscriber.StateId != 0)
             {
                 // JAB: TODO explore "Query Types" as a means to get all of the subscriber information from a view
                 //  https://docs.microsoft.com/en-us/ef/core/modeling/query-types                
-                SubscriberCountry = API.GetSubscriberCountry(this.subscriber.StateId);
-                SubscriberState = API.GetSubscriberState(this.subscriber.StateId);
+                SubscriberCountry = _Api.GetSubscriberCountry(this.subscriber.StateId);
+                SubscriberState = _Api.GetSubscriberState(this.subscriber.StateId);
             }
             IList<WozCourseProgress> WozCourseProgressions = new List<WozCourseProgress>();
           
@@ -156,7 +156,7 @@ namespace UpDiddy.Controllers
                         Guid CourseGuid = enrollment.Course.CourseGuid ?? default(Guid);
                         Guid VendorGuid = enrollment.Course.Vendor.VendorGuid ?? default(Guid);
                         Guid SubscriberGuid = this.subscriber.SubscriberGuid?? default(Guid);
-                        var courseLogin = API.CourseLogin(SubscriberGuid, CourseGuid,VendorGuid);
+                        var courseLogin = _Api.CourseLogin(SubscriberGuid, CourseGuid,VendorGuid);
 
                         WozCourseProgress dto = new WozCourseProgress
                         {
@@ -183,7 +183,7 @@ namespace UpDiddy.Controllers
                 SubscriberCountry,
                 SubscriberState);
 
-            ProfileViewModel.Countries = API.GetCountries().Select(c => new SelectListItem()
+            ProfileViewModel.Countries = _Api.GetCountries().Select(c => new SelectListItem()
             {
                 Text = c.DisplayName,
                 Value = c.CountryGuid.ToString()
@@ -278,7 +278,7 @@ namespace UpDiddy.Controllers
                     GithubUrl = UpdatedGithubUrl,
                     SubscriberGuid = CurrentSubscriberGuid
                 };
-                API.UpdateProfileInformation(Subscriber);
+                _Api.UpdateProfileInformation(Subscriber);
                 return new BasicResponseDto
                 {
                     StatusCode = "200",
@@ -391,7 +391,7 @@ namespace UpDiddy.Controllers
                         responseString = $"Please sign in again. {response.ReasonPhrase}";
                         break;
                     default:
-                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
+                        responseString = $"Error calling _Api. StatusCode=${response.StatusCode}";
                         break;
                 }
             }
