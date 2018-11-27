@@ -1,25 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Identity.Client;
-using System.Security.Claims;
-using UpDiddy.Models;
-using System.Net.Http.Headers;
-using System.Net.Http;
 using System.Net;
-using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Localization;
 using Microsoft.AspNetCore.Localization;
-using UpDiddy.Helpers;
 using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
-using System.Net.Mail;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using System.Text;
@@ -27,17 +17,12 @@ using System.Text.RegularExpressions;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Polly.Registry;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddy.Controllers
 {
     public class HomeController : BaseController
     {
-        AzureAdB2COptions AzureAdB2COptions;
-        private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
-        private readonly IHttpClientFactory _HttpClientFactory;
         private readonly IHostingEnvironment _env;
 
         [HttpGet]
@@ -46,13 +31,10 @@ namespace UpDiddy.Controllers
             return Ok(Json(_Api.GetCountries()));
         }
 
-        public HomeController(IApi api, IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHostingEnvironment env, IHttpClientFactory httpClientFactory, IDistributedCache cache)
+        public HomeController(IApi api, IConfiguration configuration, IHostingEnvironment env)
             : base(api)        {
             _env = env;
-            _localizer = localizer;
-            AzureAdB2COptions = azureAdB2COptions.Value;
             _configuration = configuration;
-            _HttpClientFactory = httpClientFactory;
         }
         [HttpGet]
         public IActionResult GetStatesByCountry(Guid countryGuid)
@@ -358,53 +340,6 @@ namespace UpDiddy.Controllers
 
         public IActionResult ComingSoon()
         {
-            return View();
-        }
-
-        [Authorize]
-        public async Task<IActionResult> Api()
-        {
-            string responseString = "";
-            try
-            {
-                // Retrieve the token with the specified scopes
-                var scope = AzureAdB2COptions.ApiScopes.Split(' ');
-                string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                TokenCache userTokenCache = new MSALSessionCache(signedInUserID, this.HttpContext).GetMsalCacheInstance();
-                ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureAdB2COptions.ClientId, AzureAdB2COptions.Authority, AzureAdB2COptions.RedirectUri, new ClientCredential(AzureAdB2COptions.ClientSecret), userTokenCache, null);
-                AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureAdB2COptions.Authority, false);
-
-                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, AzureAdB2COptions.ApiUrl);
-
-                // Add token to the Authorization header and make the request
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-                HttpResponseMessage response = await client.SendAsync(request);
-
-                // Handle the response
-                switch (response.StatusCode)
-                {
-                    case HttpStatusCode.OK:
-                        responseString = await response.Content.ReadAsStringAsync();
-                        break;
-                    case HttpStatusCode.Unauthorized:
-                        responseString = $"Please sign in again. {response.ReasonPhrase}";
-                        break;
-                    default:
-                        responseString = $"Error calling _Api. StatusCode=${response.StatusCode}";
-                        break;
-                }
-            }
-            catch (MsalUiRequiredException ex)
-            {
-                responseString = $"Session has expired. Please sign in again. {ex.Message}";
-            }
-            catch (Exception ex)
-            {
-                responseString = $"Error calling API: {ex.Message}";
-            }
-
-            ViewData["Payload"] = $"{responseString}";
             return View();
         }
 

@@ -1,19 +1,13 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Configuration;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers.Braintree;
 using UpDiddyLib.Helpers;
 using Braintree;
-using System.Text;
 using System.Collections.Generic;
-using System.Net.Http;
-using Polly.Registry;
-using Microsoft.Extensions.Caching.Distributed;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using UpDiddy.Api;
@@ -24,8 +18,6 @@ namespace UpDiddy.Controllers
 {
     public class CourseController : BaseController
     {
-        AzureAdB2COptions AzureAdB2COptions;
-        private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
         private IBraintreeConfiguration braintreeConfiguration;
         private static readonly TransactionStatus[] transactionSuccessStatuses = {
@@ -38,10 +30,8 @@ namespace UpDiddy.Controllers
                 TransactionStatus.SUBMITTED_FOR_SETTLEMENT
             };
 
-        public CourseController(IApi api, IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache) : base(api)
+        public CourseController(IApi api, IConfiguration configuration) : base(api)
         {
-            _localizer = localizer;
-            AzureAdB2COptions = azureAdB2COptions.Value;
             _configuration = configuration;
             braintreeConfiguration = new BraintreeConfiguration(_configuration);
 

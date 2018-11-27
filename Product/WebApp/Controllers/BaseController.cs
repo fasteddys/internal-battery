@@ -1,22 +1,12 @@
-﻿using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using UpDiddy.Api;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using UpDiddyLib.Dto;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
-using UpDiddy.Helpers;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
-using System.Net.Http;
-using Polly.Registry;
-using System.Collections;
-using Microsoft.Extensions.Caching.Distributed;
+using System;
+using System.Linq;
+using System.Security.Claims;
+using UpDiddy.Api;
+using UpDiddy.Helpers;
+using UpDiddyLib.Dto;
 
 
 namespace UpDiddy.Controllers

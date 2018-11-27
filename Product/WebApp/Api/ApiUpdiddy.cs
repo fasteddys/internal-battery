@@ -1,29 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using UpDiddy.Helpers;
-using UpDiddyLib.Dto;
+using System.IO;
 using System.Net;
+using System.Text;
+using System.Linq;
+using UpDiddy.Models;
+using UpDiddyLib.Dto;
+using UpDiddy.Helpers;
 using Newtonsoft.Json;
 using System.Net.Http;
-using Polly.Registry;
-using Polly;
-using System.Collections;
 using System.Threading.Tasks;
 using System.Security.Claims;
-using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft;
-using System.Text.Encodings;
-using System.IO;
-using System.Text;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
 using Microsoft.Identity.Client;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
-using UpDiddy.Models;
+using System.Collections.Generic;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddy.Api
 {
@@ -465,8 +458,6 @@ namespace UpDiddy.Api
             }
         }
 
- 
-
         public T Get<T>(string ApiAction, bool Authorized = false)
         {
             Task<string> Response = _GetAsync(ApiAction, Authorized);
@@ -498,7 +489,6 @@ namespace UpDiddy.Api
                 return (T)Convert.ChangeType(null, typeof(T));
             }
         }
-
 
         public string GetAsString(string ApiAction, bool Authorized = false)
         {
@@ -535,7 +525,6 @@ namespace UpDiddy.Api
             string responseString = "";
             try
             {                
-      
                 HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
                 string ApiUrl = _ApiBaseUri + ApiAction;
 
@@ -574,9 +563,6 @@ namespace UpDiddy.Api
             return responseString;
 
         }
-
-
-
 
         private async Task<string> _PutAsync(string ApiAction, bool Authorized = false)
         {
@@ -618,8 +604,6 @@ namespace UpDiddy.Api
             return responseString;
 
         }
-
-
 
         private async Task<string> _GetAsync(string ApiAction, bool Authorized = false)
         {
@@ -712,8 +696,8 @@ namespace UpDiddy.Api
             return httpContent;
         }
 
-
         #endregion
+
         #endregion
     }
 }

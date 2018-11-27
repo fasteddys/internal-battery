@@ -1,8 +1,6 @@
 using System;
 using UpDiddyLib.Dto;
 using System.Collections.Generic;
-using System.Security.Claims;
-using Microsoft.Identity.Client;
 
 namespace UpDiddy.Api
 {
