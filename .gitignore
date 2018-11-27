@@ -45,3 +45,6 @@ Thumbs.db
 
 # sass cache
 *.sass-cache/
+
+# vscode files
+.vscode
