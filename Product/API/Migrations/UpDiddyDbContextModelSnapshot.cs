@@ -15,7 +15,7 @@ namespace UpDiddyApi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.2-rtm-30932")
+                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -667,6 +667,35 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("Gender");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.LinkedInToken", b =>
+                {
+                    b.Property<int>("LinkedInTokenId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("AccessToken");
+
+                    b.Property<DateTime>("AccessTokenExpiry");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("RefreshToken");
+
+                    b.Property<Guid>("SubscriberGuid");
+
+                    b.HasKey("LinkedInTokenId");
+
+                    b.ToTable("LinkedInToken");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.News", b =>
                 {
                     b.Property<int>("NewsId")
@@ -1122,6 +1151,37 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("SubscriberId");
 
                     b.ToTable("Subscriber");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberProfileStagingStore", b =>
+                {
+                    b.Property<int>("SubscriberProfileStagingStoreId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("ProfileData");
+
+                    b.Property<string>("ProfileFormat");
+
+                    b.Property<string>("ProfileSource");
+
+                    b.Property<int>("Status");
+
+                    b.Property<Guid>("SubscriberGuid");
+
+                    b.HasKey("SubscriberProfileStagingStoreId");
+
+                    b.ToTable("SubscriberProfileStagingStore");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberPromoCode", b =>
