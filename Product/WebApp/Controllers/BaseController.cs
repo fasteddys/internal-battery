@@ -40,6 +40,7 @@ namespace UpDiddy.Controllers
             _cache = cache;    
         }
 
+        // todo: can we make this a singleton or a part of DI opposed to creating one in each controller
          public ApiUpdiddy API {
             get
             {
