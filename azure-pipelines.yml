@@ -33,6 +33,10 @@ steps:
   displayName: Compile
 
 - script: |
+    dotnet test Product/UpDiddyLib.Tests
+  displayName: UpDiddyLib Unit Tests'
+  
+- script: |
     dotnet publish Product/WebApp --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
   displayName: Publish Files
 
