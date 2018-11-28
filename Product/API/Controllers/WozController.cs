@@ -42,7 +42,7 @@ namespace UpDiddyApi.Controllers
         #endregion
 
         #region Constructor
-        public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
+        public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog syslog, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;
@@ -52,7 +52,7 @@ namespace UpDiddyApi.Controllers
             _apiBaseUri = _configuration["Woz:ApiUrl"];
             _accessToken = _configuration["Woz:AccessToken"];            
             _log = new WozTransactionLog();
-            _syslog = new SysLog(configuration, sysemail, serviceProvider);
+            _syslog = syslog;
             _httpClientFactory = httpClientFactory;
         }
         #endregion

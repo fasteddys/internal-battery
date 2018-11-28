@@ -17,6 +17,12 @@ namespace UpDiddyLib.Helpers
             return Regex.Replace(Str, "<.*?>", String.Empty);
         }
 
+        static public string RemoveQueryStringFromUrl(string url)
+        {
+            return url.Substring(0, url.IndexOf("?") );
+        }
+
+
         static public string RemoveNewlines(string Str)
         {
             return Regex.Replace(Str, "\r\n", String.Empty);

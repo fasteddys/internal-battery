@@ -8,9 +8,9 @@ namespace UpDiddyApi.Models
     public class LinkedInToken : BaseModel
     {
         public int LinkedInTokenId { get; set; }
-        public Guid SubscriberGuid { get; set; }
+        public int SubscriberId { get; set; }
+        public virtual Subscriber Subscriber { get; set; }
         public string AccessToken { get; set; }
-        public string RefreshToken { get; set; }
         public DateTime AccessTokenExpiry { get; set; }
     }
 }

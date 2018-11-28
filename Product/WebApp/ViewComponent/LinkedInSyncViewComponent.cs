@@ -36,7 +36,6 @@ namespace UpDiddy.ViewComponents
             _configuration = configuration;
             _HttpClientFactory = httpClientFactory;
             _cache = cache; 
-
         }
 
         // todo: replace with DI when API is refactored in BaseController
@@ -56,10 +55,12 @@ namespace UpDiddy.ViewComponents
         public async Task<IViewComponentResult> InvokeAsync(Guid SubscriberGuid)
         {
             var responseQuery = _httpContextAccessor.HttpContext.Request.Query;
+            var returnUrl = UriHelper.GetDisplayUrl(_httpContextAccessor.HttpContext.Request);
+         
             // if true then send code to API
-            if(CheckGetParams(responseQuery))
+            if (CheckGetParams(responseQuery))
             {
-                BasicResponseDto apiResponse = API.SyncLinkedInAccount(SubscriberGuid, responseQuery["code"]);
+                BasicResponseDto apiResponse = API.SyncLinkedInAccount(SubscriberGuid, responseQuery["code"], returnUrl);
 
                 // todo: perhaps display error in some way if this failed
                 // if error then they will need to get another authcode and try again
@@ -67,7 +68,7 @@ namespace UpDiddy.ViewComponents
                     return View(LinkedInSyncViewComponent.SYNCING_VIEW);
             }
 
-            return View(LinkedInSyncViewComponent.DEFAULT_VIEW, GetLinkedInRequestAuthCodeUrl());
+            return View(LinkedInSyncViewComponent.DEFAULT_VIEW, GetLinkedInRequestAuthCodeUrl() );
         }
 
         /// <summary>
@@ -86,13 +87,14 @@ namespace UpDiddy.ViewComponents
         {
             UriBuilder uriBuilder = new UriBuilder("https://www.linkedin.com/oauth/v2/authorization");
             var query = HttpUtility.ParseQueryString(uriBuilder.Query);
-            query["response_type"] = "code";
-            query["client_id"] = "78v0k3ylkrh325";
+            query["response_type"] = _configuration["LinkedIn:ResponseType"];
+            query["client_id"] = _configuration["LinkedIn:ClientId"];
+            // For now can only be used on home/profile since the API get the linked in URI from a app settings.
+            // TODO in the future try passing the url to our API via a querystring parameter
             query["redirect_uri"] = UriHelper.GetDisplayUrl(_httpContextAccessor.HttpContext.Request);
-            query["state"] = "random123"; // todo: CSRF check per LinkedIn recommendation
-            query["scope"] = "r_basicprofile";
+            query["state"] = _configuration["LinkedIn:State"];
+            query["scope"] = _configuration["LinkedIn:Scope"];
             uriBuilder.Query = query.ToString();
-
             return uriBuilder.ToString();
         }
     }

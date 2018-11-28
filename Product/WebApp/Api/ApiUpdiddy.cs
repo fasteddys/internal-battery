@@ -275,9 +275,9 @@ namespace UpDiddy.Api
             return Post<BasicResponseDto>(Subscriber, "profile/update", true);
         }
 
-        public BasicResponseDto SyncLinkedInAccount(Guid SubscriberGuid, string linkedInCode)
+        public BasicResponseDto SyncLinkedInAccount(Guid SubscriberGuid, string linkedInCode, string returnUrl)
         {
-            return Get<BasicResponseDto>($"/linkedin/SyncProfile/{SubscriberGuid}/{linkedInCode}");
+            return Get<BasicResponseDto>($"linkedin/SyncProfile/{SubscriberGuid}/{linkedInCode}?returnUrl={returnUrl}",true);
         }
 
         public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto)

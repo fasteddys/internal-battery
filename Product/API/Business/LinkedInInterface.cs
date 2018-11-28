@@ -1,21 +1,13 @@
 ﻿using AutoMapper;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
 using UpDiddyApi.Models;
-using UpDiddyLib.Dto;
-using UpDiddyLib.MessageQueue;
-using SendGrid.Helpers.Mail;
-using SendGrid;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json.Linq;
 using UpDiddyLib.Helpers;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using UpDiddy.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace UpDiddyApi.Business
 {
@@ -40,16 +32,17 @@ namespace UpDiddyApi.Business
 
         #region Acquire Profile Data 
 
-        public int ImportProfile(Guid SubscriberGuid )
+        public int ImportProfile(Guid subscriberGuid )
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.ImportProfile started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
+                _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.ImportProfile started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {subscriberGuid.ToString()}");
 
                 int rVal = 0;
                 LinkedInToken lit = _db.LinkedInToken
-                   .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == SubscriberGuid)
-                   .FirstOrDefault();
+                          .Include(l => l.Subscriber)
+                          .Where(l => l.IsDeleted == 0 && l.Subscriber.SubscriberGuid == subscriberGuid)
+                          .FirstOrDefault();
 
                 if (lit == null)
                     return (int)ProfileDataStatus.AccountNotFound;
@@ -64,17 +57,26 @@ namespace UpDiddyApi.Business
                 {
 
                     SubscriberProfileStagingStore sps = _db.SubscriberProfileStagingStore
-                         .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == SubscriberGuid && t.ProfileSource == Constants.LinkedInProfile)
+                         .Include( s=> s.Subscriber)
+                         .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid && s.ProfileSource == Constants.LinkedInProfile)
                      .FirstOrDefault();
 
                     bool spsExists = sps != null;
                     // Create a new profile staging record 
                     if (!spsExists)
                     {
+
+                        var Subscriber = _db.Subscriber
+                        .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                          .FirstOrDefault();
+
+                        if (Subscriber == null)
+                            throw new Exception($"LinkedInInterface:ImportProfile Subscriber not found for {subscriberGuid}");
+
                         sps = new SubscriberProfileStagingStore();
                         sps.CreateDate = DateTime.Now;
                         sps.ModifyGuid = Guid.NewGuid();
-                        sps.SubscriberGuid = SubscriberGuid;
+                        sps.SubscriberId = Subscriber.SubscriberId;
                         sps.ProfileSource = Constants.LinkedInProfile;
                         sps.IsDeleted = 0;
                         sps.ProfileFormat = Constants.DataFormatJson;
@@ -109,19 +111,22 @@ namespace UpDiddyApi.Business
 
         #region Acquire Bearer Token
 
-        public int AcquireBearerToken(Guid SubscriberGuid, string Code, LinkedInToken lit  )
+        public int AcquireBearerToken(Guid subscriberGuid, string code, string returnUrl, LinkedInToken lit  )
         {
             try
             {
                 int rval = 0;
-                _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.AcquireAccessToken started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
-   
-                string redirectUrl = _configuration["LinkedIn:RedirectUrl"];
+                _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.AcquireAccessToken started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {subscriberGuid.ToString()}");
+
+                // Remove the querystring portion of the url so it will pass linkedIn's redirect uri validation.
+                // The redirect uri must case match a uri that is specified for the app on linkedIn's developer site
+                returnUrl = Utils.RemoveQueryStringFromUrl(returnUrl);
+          
                 string clientId = _configuration["LinkedIn:ClientId"];
                 string clientSecret = _configuration["LinkedIn:ClientSecret"];
 
                 // TODO deal with LinkedIn different API versions
-                string Url = $"https://www.linkedin.com/oauth/v2/accessToken?grant_type=authorization_code&code={Code}&redirect_uri={redirectUrl}&client_id={clientId}&client_secret={clientSecret}";
+                string Url = $"https://www.linkedin.com/oauth/v2/accessToken?grant_type=authorization_code&code={code}&redirect_uri={returnUrl}&client_id={clientId}&client_secret={clientSecret}";
                 HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Url);
                 HttpResponseMessage response = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(request));
@@ -136,10 +141,18 @@ namespace UpDiddyApi.Business
                     bool litExists = (lit != null);
                     if (!litExists)
                     {
+
+                        var Subscriber = _db.Subscriber
+                            .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                            .FirstOrDefault();
+
+                        if (Subscriber == null)
+                            throw new Exception($"LinkedInInterface:AcquireBearerToken Subscriber not found for {subscriberGuid}");
+
                         lit = new LinkedInToken();
                         lit.CreateDate = DateTime.Now;
                         lit.CreateGuid = Guid.NewGuid();
-                        lit.SubscriberGuid = SubscriberGuid;
+                        lit.SubscriberId = Subscriber.SubscriberId;
                         lit.IsDeleted = 0;
                     }
                     lit.ModifyDate = DateTime.Now;
@@ -172,23 +185,24 @@ namespace UpDiddyApi.Business
         #endregion
 
 
-        public int SyncProfile(Guid SubscriberGuid, string Code)
+        public int SyncProfile(Guid subscriberGuid, string code, string returnUrl)
         {
             try
             {
                 int rval = 0;
-                _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.SyncProfile started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
+                _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.SyncProfile started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {subscriberGuid.ToString()}");
                 // Get the Enrollment Object 
                 LinkedInToken lit = _db.LinkedInToken
-                     .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == SubscriberGuid)
+                     .Include( l => l.Subscriber)
+                     .Where(l => l.IsDeleted == 0 && l.Subscriber.SubscriberGuid == subscriberGuid)
                      .FirstOrDefault();
 
                 // if the user does not have a linked in token or their bearer token has expired get them a bearer token
                 if (lit == null || lit.AccessTokenExpiry < DateTime.Now)
-                    rval = AcquireBearerToken(SubscriberGuid, Code, lit);
+                    rval = AcquireBearerToken(subscriberGuid, code, returnUrl, lit);
 
                 if ( rval == (int) ProfileDataStatus.Acquired )
-                    rval = ImportProfile(SubscriberGuid);
+                    rval = ImportProfile(subscriberGuid);
                 else
                     _syslog.Log(LogLevel.Error, "LinkedInInterace:SyncProfile Import proile returned an invalid status " + rval.ToString() );                
 

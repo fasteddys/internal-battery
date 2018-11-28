@@ -687,11 +687,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<string>("RefreshToken");
-
-                    b.Property<Guid>("SubscriberGuid");
+                    b.Property<int>("SubscriberId");
 
                     b.HasKey("LinkedInTokenId");
+
+                    b.HasIndex("SubscriberId");
 
                     b.ToTable("LinkedInToken");
                 });
@@ -1177,9 +1177,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("Status");
 
-                    b.Property<Guid>("SubscriberGuid");
+                    b.Property<int>("SubscriberId");
 
                     b.HasKey("SubscriberProfileStagingStoreId");
+
+                    b.HasIndex("SubscriberId");
 
                     b.ToTable("SubscriberProfileStagingStore");
                 });
@@ -1600,6 +1602,14 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.LinkedInToken", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.PromoCode", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.PromoType", "PromoType")
@@ -1636,6 +1646,14 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Country", "Country")
                         .WithMany()
                         .HasForeignKey("CountryId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberProfileStagingStore", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618

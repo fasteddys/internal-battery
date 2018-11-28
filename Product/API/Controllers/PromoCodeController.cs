@@ -27,12 +27,12 @@ namespace UpDiddyApi.Controllers
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         protected internal ISysLog _syslog = null;
 
-        public PromoCodeController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
+        public PromoCodeController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
-            _syslog = new SysLog(configuration, sysemail, serviceProvider);
+            _syslog = sysLog;
         }
 
 

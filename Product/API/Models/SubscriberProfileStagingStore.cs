@@ -8,7 +8,8 @@ namespace UpDiddyApi.Models
     public class SubscriberProfileStagingStore : BaseModel
     {
         public int SubscriberProfileStagingStoreId { get; set; }
-        public Guid SubscriberGuid { get; set; }
+        public int SubscriberId { get; set; }
+        public virtual Subscriber Subscriber { get; set; }        
         public string ProfileData { get; set; }
         public string ProfileSource { get; set; }
         public string ProfileFormat { get; set; }

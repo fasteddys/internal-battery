@@ -89,7 +89,11 @@ namespace UpDiddyApi
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
             // Add System Email   
-            services.AddSingleton<ISysEmail>(new SysEmail(Configuration));            
+            services.AddSingleton<ISysEmail>(new SysEmail(Configuration));
+
+            // Add syslog
+            services.AddScoped<ISysLog, SysLog>();
+
             // Add framework services.
             services.AddMvc();
             // Add AutoMapper 

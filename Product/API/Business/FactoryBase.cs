@@ -18,11 +18,11 @@ namespace UpDiddyApi.Business
         protected readonly ISysLog _syslog;
         protected readonly IDistributedCache _cache;
 
-        public FactoryBase(UpDiddyDbContext db, IConfiguration configuration, ISysEmail sysemail, IServiceProvider serviceProvider, IDistributedCache distributedCache)
+        public FactoryBase(UpDiddyDbContext db, IConfiguration configuration, ISysLog syslog, IDistributedCache distributedCache)
         {
             _db = db;
             _configuration = configuration;
-            _syslog = new SysLog(configuration, sysemail, serviceProvider);
+            _syslog = syslog;
             _cache = distributedCache;
         }
 

@@ -34,21 +34,21 @@ namespace UpDiddyApi.Controllers
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ISysEmail _sysemail;
         private readonly IDistributedCache _distributedCache;
-        private readonly IServiceProvider _serviceProvider;
+ 
 
 
-        public CourseController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider, IDistributedCache distributedCache)
+        public CourseController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, ISysLog syslog, IDistributedCache distributedCache)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
-            _syslog = new SysLog(configuration, sysemail, serviceProvider);
+            _syslog = syslog;
             _httpClientFactory = httpClientFactory;
             _wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
             _sysemail = sysemail;
             _distributedCache = distributedCache;
-            _serviceProvider = serviceProvider;
+            
         }
 
         // GET: api/courses
@@ -202,7 +202,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/StudentLoginUrl/{SubscriberGuid}/{CourseGuid}/{VendorGuid}")]
         public IActionResult StudentLoginUrl(Guid SubscriberGuid, Guid CourseGuid, Guid VendorGuid)
         {
-            var CourseLogin = new CourseFactory(_db, _configuration,_sysemail,_serviceProvider,_distributedCache)
+            var CourseLogin = new CourseFactory(_db, _configuration,_syslog,_distributedCache)
                 .GetCourseLogin(SubscriberGuid, CourseGuid, VendorGuid); 
             return Ok(CourseLogin);
         }
