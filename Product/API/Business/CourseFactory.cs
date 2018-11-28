@@ -15,8 +15,8 @@ namespace UpDiddyApi.Business
     public class CourseFactory : FactoryBase
     {
         #region constructor
-        public CourseFactory(UpDiddyDbContext db, IConfiguration configuration, ISysEmail sysemail, IServiceProvider serviceProvider, IDistributedCache distributedCache) :
-            base(db,configuration,sysemail,serviceProvider,distributedCache)
+        public CourseFactory(UpDiddyDbContext db, IConfiguration configuration, ISysLog syslog, IDistributedCache distributedCache) :
+            base(db,configuration, syslog, distributedCache)
         {
         }
         #endregion

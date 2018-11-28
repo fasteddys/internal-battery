@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.MessageQueue;
 using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
@@ -26,12 +25,12 @@ namespace UpDiddyApi.Controllers
         private readonly string _queueConnection = string.Empty;
         protected internal ISysLog _syslog = null;
 
-        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
+        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
-            _syslog = new SysLog(configuration, sysemail, serviceProvider);
+            _syslog = sysLog;
         }
 
         [Authorize]

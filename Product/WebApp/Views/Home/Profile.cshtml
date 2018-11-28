@@ -48,14 +48,14 @@
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
-                    <!--<div class="offset-md-3 col-md-9">-->
                     <div class="col-md-12">
-                        <!--
-                         <div class="course-recommendation-container">
-                             <div class="course-recommendation-header">
-                                 <h2>Course Recommendation</h2>
-                             </div>
-                         </div>-->
+                        <div class="mb-2">
+                            @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.Subscriber.SubscriberGuid})
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
                         <div class="courses-in-progress-container">
                             <div class="course-in-progress-header">
                                 <h2>Courses in Progress</h2>

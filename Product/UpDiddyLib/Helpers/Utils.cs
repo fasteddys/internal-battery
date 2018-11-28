@@ -6,12 +6,22 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddyLib.Helpers
 {
+
+
+     public enum ProfileDataStatus { Acquired = 0, Processing, Processed, Deleted, AccountNotFound, AcquistionError};
+
     static public class Utils
     {
         static public string RemoveHTML(string Str)
         {
             return Regex.Replace(Str, "<.*?>", String.Empty);
         }
+
+        static public string RemoveQueryStringFromUrl(string url)
+        {
+            return url.Substring(0, url.IndexOf("?") );
+        }
+
 
         static public string RemoveNewlines(string Str)
         {

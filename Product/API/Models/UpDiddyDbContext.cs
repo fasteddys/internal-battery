@@ -25,6 +25,8 @@ namespace UpDiddyApi.Models
             var CurrentDir = System.IO.Directory.GetCurrentDirectory();
             IConfigurationBuilder configBuilder = new ConfigurationBuilder();
             string Env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (string.IsNullOrEmpty(Env))
+                Env = "Development";
             string SettingsFile = $"appsettings.{Env}.json";
             bool IsEnvLocal = Env == "Development";
             IConfiguration config;
@@ -103,6 +105,8 @@ namespace UpDiddyApi.Models
         public DbSet<State> State { get; set; }
         public DbSet<CourseVariant> CourseVariant { get; set; }
         public DbSet<CourseVariantType> CourseVariantType { get; set; }
+        public DbSet<LinkedInToken> LinkedInToken { get; set; }
+        public DbSet<SubscriberProfileStagingStore> SubscriberProfileStagingStore { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

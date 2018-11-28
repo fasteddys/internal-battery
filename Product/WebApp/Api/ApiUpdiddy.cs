@@ -256,10 +256,6 @@ namespace UpDiddy.Api
             return Get<SubscriberDto>("subscriber/" + SubscriberGuid, true);
         }
 
-        public string Hello()
-        {
-            return Get<string>("hello", true);
-        }
         public PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid, string subscriberGuid)
         {
             return Get<PromoCodeDto>("promocode/promocoderedemptionvalidation/" + promoCodeRedemptionGuid + "/" + courseGuid + "/" + subscriberGuid, true);
@@ -289,6 +285,11 @@ namespace UpDiddy.Api
         public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
         {
             return Post<BasicResponseDto>(Subscriber, "profile/update", true);
+        }
+
+        public BasicResponseDto SyncLinkedInAccount(Guid SubscriberGuid, string linkedInCode, string returnUrl)
+        {
+            return Get<BasicResponseDto>($"linkedin/SyncProfile/{SubscriberGuid}/{linkedInCode}?returnUrl={returnUrl}",true);
         }
 
         public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto)

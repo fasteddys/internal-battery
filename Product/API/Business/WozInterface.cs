@@ -34,7 +34,7 @@ namespace UpDiddyApi.Business
             _accessToken = configuration["Woz:AccessToken"];
             _syslog = sysLog;
             _configuration = configuration;
-            _HttpClientFactory = httpClientFactory;
+            _httpClientFactory = httpClientFactory;
         }
 
         #endregion
@@ -429,7 +429,7 @@ namespace UpDiddyApi.Business
         public async Task<WozStudentInfoDto> GetStudentInfo(int exeterId )
         {
             var Url = _apiBaseUri + $"users/{exeterId}";
-            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
+            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Url);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             HttpResponseMessage response = await client.SendAsync(request);
@@ -489,7 +489,7 @@ namespace UpDiddyApi.Business
             var Url = _apiBaseUri + $"sections/{SectionId}/enrollments/{WozEnrollmentId}";
 
             
-            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
+            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, Url);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
             HttpResponseMessage response = await client.SendAsync(request);
@@ -1025,7 +1025,7 @@ namespace UpDiddyApi.Business
         
         private HttpClient CreateWozPostClient()
         {
-            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
+            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpPostClientName);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
 
             return client;
@@ -1034,7 +1034,7 @@ namespace UpDiddyApi.Business
 
         private HttpClient CreateWozGetClient()
         {
-            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
+            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
 
             return client;
@@ -1081,37 +1081,7 @@ namespace UpDiddyApi.Business
     }
 
     #endregion
-
-    #region async helper
-
-    internal static class xAsyncHelper
-    {
-        private static readonly TaskFactory _myTaskFactory = new
-          TaskFactory(CancellationToken.None,
-                      TaskCreationOptions.None,
-                      TaskContinuationOptions.None,
-                      TaskScheduler.Default);
-
-        public static TResult RunSync<TResult>(Func<Task<TResult>> func)
-        {
-            return xAsyncHelper._myTaskFactory
-              .StartNew<Task<TResult>>(func)
-              .Unwrap<TResult>()
-              .GetAwaiter()
-              .GetResult();
-        }
-
-        public static void RunSync(Func<Task> func)
-        {
-            xAsyncHelper._myTaskFactory
-              .StartNew<Task>(func)
-              .Unwrap()
-              .GetAwaiter()
-              .GetResult();
-        }
-    }
-
-    #endregion
+ 
 
 
 }

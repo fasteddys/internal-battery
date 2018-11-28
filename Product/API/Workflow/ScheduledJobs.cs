@@ -26,7 +26,7 @@ namespace UpDiddyApi.Workflow
             _accessToken = configuration["Woz:AccessToken"];
             _syslog = new SysLog(configuration, sysEmail, serviceProvider);
             _configuration = configuration;
-            _HttpClientFactory = httpClientFactory;
+            _httpClientFactory = httpClientFactory;
         }
 
 
@@ -163,7 +163,7 @@ namespace UpDiddyApi.Workflow
                           .Where(t => t.IsDeleted == 0 && t.EnrollmentStatusId == (int)EnrollmentStatus.FutureRegisterStudentComplete)
                          .ToList<Enrollment>();
 
-                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog,_HttpClientFactory);
+                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog,_httpClientFactory);
                 foreach (Enrollment e in Enrollments)
                 {
                     wi.ReconcileFutureEnrollment(e.EnrollmentGuid.ToString());
@@ -194,7 +194,7 @@ namespace UpDiddyApi.Workflow
             try
             {
                 _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for enrollment {enrollment.EnrollmentGuid.ToString()}");
-                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _HttpClientFactory);
+                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
                 WozCourseEnrollment wce = _db.WozCourseEnrollment
                 .Where(
                        t => t.IsDeleted == 0 &&
@@ -222,7 +222,7 @@ namespace UpDiddyApi.Workflow
             try
             {
                 _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress started at: {DateTime.UtcNow.ToLongDateString()} for woz login {exeterId}");
-                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _HttpClientFactory);
+                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
                 WozStudentInfoDto studentLogin = wi.GetStudentInfo(exeterId).Result;
                 if (studentLogin == null)
                     return null;

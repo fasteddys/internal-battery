@@ -22,7 +22,7 @@ namespace UpDiddy.Controllers
         {
             this._Api = api;
         }
-    
+
         public void GetSubscriber(bool HardRefresh)
         {
  

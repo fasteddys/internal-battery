@@ -23,11 +23,11 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         protected internal ISysLog _syslog = null;
 
-        public SubscriberController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
+        public SubscriberController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;
-            _syslog = new SysLog(configuration, sysemail, serviceProvider);
+            _syslog = sysLog;
         }
 
         // GET: api/courses

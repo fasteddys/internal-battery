@@ -27,18 +27,15 @@ namespace UpDiddyApi.Controllers
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
-        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
-        private readonly string _queueConnection = string.Empty;
+        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;       
         protected internal ISysLog _syslog = null;
 
-        public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
+        public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
-            _syslog = new SysLog(configuration, sysemail, serviceProvider);
-            _queueConnection = _configuration["CareerCircleQueueConnection"];
-            //_queue = new CCQueue("ccmessagequeue", _queueConnection);
+            _syslog = sysLog;      
         }
 
         [Authorize]
