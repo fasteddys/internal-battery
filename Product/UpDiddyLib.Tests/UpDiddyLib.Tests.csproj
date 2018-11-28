@@ -13,4 +13,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\UpDiddyLib\UpDiddyLib.csproj" />
+  </ItemGroup>
+
 </Project>

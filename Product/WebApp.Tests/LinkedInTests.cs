@@ -14,6 +14,7 @@ namespace WebApp.Tests
              * - do we need to rewrite our classes/methods so that unit tests can be written for it?
              */
 
+            // make happy noises
             Assert.True(true);
         }
     }
