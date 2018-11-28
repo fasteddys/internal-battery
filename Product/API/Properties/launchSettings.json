@@ -8,6 +8,15 @@
     }
   },
   "profiles": {
+    "Api-Dev-Open-Network": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "launchUrl": "http://0.0.0.0:5002/api/topic/",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://0.0.0.0:5002/"
+    },    
     "Api-Dev-Local": {
       "commandName": "Project",
       "launchBrowser": true,

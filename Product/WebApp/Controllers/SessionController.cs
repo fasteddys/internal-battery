@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Localization;
 
@@ -38,7 +32,11 @@ namespace UpDiddy.Controllers
         public IActionResult SignIn()
         {
             SetAzureAdB2CCulture();
-            var redirectUrl = Url.Action(nameof(HomeController.ProfileLogin), "Home");        
+            /** 
+             * Due to iOS issues, we need to introduce a landing page so that the call to
+             * our profile page is coming from the same HTTPcontext session as our site.
+             * */
+            var redirectUrl = Url.Action(nameof(HomeController.LoggingIn), "Home");        
             return Challenge(
                 new AuthenticationProperties { RedirectUri = redirectUrl},
                 OpenIdConnectDefaults.AuthenticationScheme);

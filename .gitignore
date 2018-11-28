@@ -42,3 +42,9 @@ Thumbs.db
 
 # publish metadata
 *.pubxml
+
+# sass cache
+*.sass-cache/
+
+# vscode files
+.vscode

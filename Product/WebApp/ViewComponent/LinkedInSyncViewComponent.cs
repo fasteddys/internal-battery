@@ -23,33 +23,14 @@ namespace UpDiddy.ViewComponents
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         // todo: part of refactor of API updiddy
-        private ApiUpdiddy _Api  = null;
-        private AzureAdB2COptions _AzureAdB2COptions = null;
+        private IApi _Api  = null;
         private IConfiguration _configuration = null;
-        private IHttpClientFactory _HttpClientFactory = null;
-        private IDistributedCache _cache = null;
 
-        public LinkedInSyncViewComponent(IHttpContextAccessor httpContextAccessor, IOptions<AzureAdB2COptions> azureAdB2COptions, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache)
+        public LinkedInSyncViewComponent(IApi api, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
-            _httpContextAccessor = httpContextAccessor;
-            _AzureAdB2COptions = azureAdB2COptions.Value;
+            _Api = api;
             _configuration = configuration;
-            _HttpClientFactory = httpClientFactory;
-            _cache = cache; 
-        }
-
-        // todo: replace with DI when API is refactored in BaseController
-        public ApiUpdiddy API {
-            get
-            {
-                if (_Api != null)
-                    return _Api;
-                else
-                {
-                    _Api = new ApiUpdiddy(_AzureAdB2COptions, _httpContextAccessor.HttpContext,  _configuration, _HttpClientFactory, _cache);
-                    return _Api;
-                }
-            }
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<IViewComponentResult> InvokeAsync(Guid SubscriberGuid)
@@ -60,7 +41,7 @@ namespace UpDiddy.ViewComponents
             // if true then send code to API
             if (CheckGetParams(responseQuery))
             {
-                BasicResponseDto apiResponse = API.SyncLinkedInAccount(SubscriberGuid, responseQuery["code"], returnUrl);
+                BasicResponseDto apiResponse = _Api.SyncLinkedInAccount(SubscriberGuid, responseQuery["code"], returnUrl);
 
                 // todo: perhaps display error in some way if this failed
                 // if error then they will need to get another authcode and try again
