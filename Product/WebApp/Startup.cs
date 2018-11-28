@@ -23,6 +23,7 @@ using System.Collections;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Shared;
 using Microsoft.Net.Http.Headers;
+using UpDiddy.Api;
 
 namespace UpDiddy
 {
@@ -77,8 +78,6 @@ namespace UpDiddy
                 options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
             });
 
-
-
             #region AddLocalizationß
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -118,8 +117,6 @@ namespace UpDiddy
             services.AddHttpClient(Constants.HttpDeleteClientName)
               .AddPolicyHandler(ApiDeletePolicy);
 
- 
-
             // Configure supported cultures and localization options
             services.Configure<RequestLocalizationOptions>(options =>
             {
@@ -141,9 +138,6 @@ namespace UpDiddy
                 options.SupportedUICultures = supportedCultures;
             });
 
-            Console.WriteLine("Redis name: " + Configuration.GetValue<string>("redis:name") + ", Redis host: " + Configuration.GetValue<string>("redis:host"));
-            Console.WriteLine("B2C Secret: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientSecret") + ", B2C ID: " + Configuration.GetValue<string>("Authentication:AzureAdB2C:ClientId"));
-
             // Add Redis session cahce
             services.AddDistributedRedisCache(options =>
             {
@@ -157,7 +151,8 @@ namespace UpDiddy
                 options.Cookie.HttpOnly = true;
             });
 
-
+            // Add Api
+            services.AddScoped<IApi, ApiUpdiddy>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

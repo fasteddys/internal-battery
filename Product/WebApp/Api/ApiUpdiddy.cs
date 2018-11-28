@@ -1,28 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using UpDiddy.Helpers;
-using UpDiddyLib.Dto;
+using System.IO;
 using System.Net;
+using System.Text;
+using System.Linq;
+using UpDiddy.Models;
+using UpDiddyLib.Dto;
+using UpDiddy.Helpers;
 using Newtonsoft.Json;
 using System.Net.Http;
-using Polly.Registry;
-using Polly;
-using System.Collections;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using System.Net.Http.Headers;
+using Microsoft.Identity.Client;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddy.Api
 {
-    public class ApiUpdiddy : ApiHelperMsal
+    public class ApiUpdiddy : IApi
     {
+        protected IConfiguration _configuration { get; set; }
+        protected string _ApiBaseUri = String.Empty;
+        protected IHttpClientFactory _HttpClientFactory { get; set; }
+        public AzureAdB2COptions AzureOptions { get; set; }
+        private IHttpContextAccessor _contextAccessor { get; set; }
+
+        public IDistributedCache _cache { get; set; }
 
         #region Constructor
-        public ApiUpdiddy(AzureAdB2COptions Options, HttpContext Context, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache) {
+        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache) {
 
-            AzureOptions = Options;
-            HttpContext = Context;
+            AzureOptions = azureAdB2COptions.Value;
+            _contextAccessor = contextAccessor;
             _configuration = conifguration;
             // Set the base URI for API calls 
             _ApiBaseUri = _configuration["Api:ApiUrl"];
@@ -426,6 +438,265 @@ namespace UpDiddy.Api
                 return (T)Convert.ChangeType(null, typeof(T));
             }
         }
+
+        #endregion
+
+        #region ApiHelperMsal
+        public T Put<T>(string ApiAction, bool Authorized = false)
+        {
+            Task<string> Response = _PutAsync(ApiAction, Authorized);
+            try
+            {
+                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
+                return rval;
+            }
+            catch (Exception ex)
+            {
+                // TODO instrument with json string and requested type 
+                var msg = ex.Message;
+                return (T)Convert.ChangeType(null, typeof(T));
+            }
+        }
+
+        public T Get<T>(string ApiAction, bool Authorized = false)
+        {
+            Task<string> Response = _GetAsync(ApiAction, Authorized);
+            try
+            {
+                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
+                return rval;
+            }
+            catch (Exception ex)
+            {
+                // TODO instrument with json string and requested type 
+                var msg = ex.Message;
+                return (T)Convert.ChangeType(null, typeof(T));
+            }
+        }
+
+        public T Post<T>(string ApiAction, bool Authorized = false, string Content = null)
+        {
+            Task<string> Response = _PostAsync(ApiAction, Authorized, Content);
+            try
+            {
+                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
+                return rval;
+            }
+            catch (Exception ex)
+            {
+                // TODO instrument with json string and requested type 
+                var msg = ex.Message;
+                return (T)Convert.ChangeType(null, typeof(T));
+            }
+        }
+
+        public string GetAsString(string ApiAction, bool Authorized = false)
+        {
+            Task<string> Response = _GetAsync(ApiAction, Authorized);
+            return Response.Result;
+        }
+ 
+        public T Post<T>(BaseDto Body, string ApiAction, bool Authorized = false)
+        {
+            string jsonToSend = "{}";
+            jsonToSend = JsonConvert.SerializeObject(Body);
+            Task<string> Response = _PostAsync(jsonToSend, ApiAction, Authorized);
+            T rval = JsonConvert.DeserializeObject<T>(Response.Result);
+            return rval;
+
+        }
+
+        #region Helpers Functions
+
+        private async Task AddBearerTokenAsync(HttpRequestMessage request)
+        {
+            // Retrieve the token with the specified scopes
+            var scope = AzureOptions.ApiScopes.Split(' ');
+            string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).GetMsalCacheInstance();
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureOptions.ClientId, AzureOptions.Authority, AzureOptions.RedirectUri, new ClientCredential(AzureOptions.ClientSecret), userTokenCache, null);
+            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureOptions.Authority, false);
+            // Add Bearer Token for MSAL authenticatiopn
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+        }
+
+        private async Task<string> _PostAsync(string ApiAction, bool Authorized, string Content)
+        {
+            string responseString = "";
+            try
+            {                
+                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
+                string ApiUrl = _ApiBaseUri + ApiAction;
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, ApiUrl);
+                if (!string.IsNullOrEmpty(Content))
+                    request.Content = new StringContent(Content);
+
+                // Add token to the Authorization header and make the request 
+                if (Authorized)
+                    await AddBearerTokenAsync(request);
+
+                HttpResponseMessage response = await client.SendAsync(request);
+                // Handle the response
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        responseString = await response.Content.ReadAsStringAsync();
+                        break;
+                    case HttpStatusCode.Unauthorized:
+                        responseString = $"Please sign in again. {response.ReasonPhrase}";
+                        break;
+                    default:
+                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
+                        break;
+                }
+            }
+            catch (MsalUiRequiredException ex)
+            {
+                responseString = $"Session has expired. Please sign in again. {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                responseString = $"Error calling API: {ex.Message}";
+            }
+
+            return responseString;
+
+        }
+
+        private async Task<string> _PutAsync(string ApiAction, bool Authorized = false)
+        {
+            string responseString = "";
+            try
+            {
+                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPutClientName);
+                string ApiUrl = _ApiBaseUri + ApiAction;
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, ApiUrl);
+
+                // Add token to the Authorization header and make the request 
+                if (Authorized)
+                    await AddBearerTokenAsync(request);
+
+                HttpResponseMessage response = await client.SendAsync(request);
+                // Handle the response
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        responseString = await response.Content.ReadAsStringAsync();
+                        break;
+                    case HttpStatusCode.Unauthorized:
+                        responseString = $"Please sign in again. {response.ReasonPhrase}";
+                        break;
+                    default:
+                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
+                        break;
+                }
+            }
+            catch (MsalUiRequiredException ex)
+            {
+                responseString = $"Session has expired. Please sign in again. {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                responseString = $"Error calling API: {ex.Message}";
+            }
+
+            return responseString;
+
+        }
+
+        private async Task<string> _GetAsync(string ApiAction, bool Authorized = false)
+        {
+            string responseString = "";
+            try
+            {
+                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
+                string ApiUrl = _ApiBaseUri + ApiAction;
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
+
+                // Add token to the Authorization header and make the request 
+                if (Authorized)
+                    await AddBearerTokenAsync(request);
+
+                HttpResponseMessage response = await client.SendAsync(request);
+                // Handle the response
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        responseString = await response.Content.ReadAsStringAsync();
+                        break;
+                    case HttpStatusCode.Unauthorized:
+                        responseString = $"Please sign in again. {response.ReasonPhrase}";
+                        break;
+                    default:
+                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
+                        break;
+                }
+            }
+            catch (MsalUiRequiredException ex)
+            {
+                responseString = $"Session has expired. Please sign in again. {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                responseString = $"Error calling API: {ex.Message}";
+            }
+
+            return responseString;
+
+        }
+
+        private async Task<string> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
+        {
+                string ApiUrl = _ApiBaseUri + ApiAction;
+                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
+                var request = PostRequest(ApiAction, JsonToSend);
+                // Add token to the Authorization header and make the request 
+                if (Authorized)
+                    await AddBearerTokenAsync(request);
+                var response = await client.SendAsync(request);
+                string responseString = await response.Content.ReadAsStringAsync();
+                return responseString;
+        }
+
+        private HttpRequestMessage PostRequest(string ApiAction, string Content)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, _ApiBaseUri + ApiAction)
+            {
+                Content = new StringContent(Content)
+            };
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            return request;
+        }
+
+        public static void SerializeJsonIntoStream(object value, Stream stream)
+        {
+            using (var sw = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
+            using (var jtw = new JsonTextWriter(sw) { Formatting = Formatting.None })
+            {
+                var js = new JsonSerializer();
+                js.Serialize(jtw, value);
+                jtw.Flush();
+            }
+        }
+
+        private static HttpContent CreateHttpContent(object content)
+        {
+            HttpContent httpContent = null;
+
+            if (content != null)
+            {
+                var ms = new MemoryStream();
+                SerializeJsonIntoStream(content, ms);
+                ms.Seek(0, SeekOrigin.Begin);
+                httpContent = new StreamContent(ms);
+                httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            }
+
+            return httpContent;
+        }
+
+        #endregion
 
         #endregion
     }

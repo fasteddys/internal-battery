@@ -1,21 +1,16 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Configuration;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers.Braintree;
 using UpDiddyLib.Helpers;
 using Braintree;
-using System.Text;
 using System.Collections.Generic;
-using System.Net.Http;
-using Polly.Registry;
-using Microsoft.Extensions.Caching.Distributed;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using UpDiddy.Api;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -23,8 +18,6 @@ namespace UpDiddy.Controllers
 {
     public class CourseController : BaseController
     {
-        AzureAdB2COptions AzureAdB2COptions;
-        private readonly IStringLocalizer<HomeController> _localizer;
         private readonly IConfiguration _configuration;
         private IBraintreeConfiguration braintreeConfiguration;
         private static readonly TransactionStatus[] transactionSuccessStatuses = {
@@ -37,10 +30,8 @@ namespace UpDiddy.Controllers
                 TransactionStatus.SUBMITTED_FOR_SETTLEMENT
             };
 
-        public CourseController(IOptions<AzureAdB2COptions> azureAdB2COptions, IStringLocalizer<HomeController> localizer, IConfiguration configuration, IHttpClientFactory httpClientFactory, IDistributedCache cache) : base(azureAdB2COptions.Value, configuration, httpClientFactory, cache)
+        public CourseController(IApi api, IConfiguration configuration) : base(api)
         {
-            _localizer = localizer;
-            AzureAdB2COptions = azureAdB2COptions.Value;
             _configuration = configuration;
             braintreeConfiguration = new BraintreeConfiguration(_configuration);
 
@@ -56,7 +47,7 @@ namespace UpDiddy.Controllers
         [Route("/Course/PromoCodeValidation/{code}/{courseVariantGuid}/{subscriberGuid}")]
         public IActionResult PromoCodeValidation(string code, string courseVariantGuid, string subscriberGuid)
         {
-            PromoCodeDto promoCodeDto = API.PromoCodeValidation(code, courseVariantGuid, subscriberGuid);
+            PromoCodeDto promoCodeDto = _Api.PromoCodeValidation(code, courseVariantGuid, subscriberGuid);
             return new ObjectResult(promoCodeDto);
         }
 
@@ -71,7 +62,7 @@ namespace UpDiddy.Controllers
             var gateway = braintreeConfiguration.GetGateway();
             var clientToken = gateway.ClientToken.Generate();
             ViewBag.ClientToken = clientToken;
-            var course = API.Course(CourseSlug);
+            var course = _Api.Course(CourseSlug);
 
             var courseVariantViewModels = course.CourseVariants.Select(dto => new CourseVariantViewModel()
             {
@@ -99,7 +90,7 @@ namespace UpDiddy.Controllers
                 SubscriberGuid = this.subscriber.SubscriberGuid.Value,
                 TermsOfServiceContent = course.TermsOfServiceContent,
                 TermsOfServiceDocumentId = course.TermsOfServiceDocumentId,
-                Countries = API.GetCountries().Select(c => new SelectListItem()
+                Countries = _Api.GetCountries().Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
                     Value = c.CountryGuid.ToString()
@@ -126,7 +117,7 @@ namespace UpDiddy.Controllers
             if (courseViewModel.SelectedCourseVariant.HasValue)
             {
                 CourseVariantDto courseVariantDto = null;
-                courseVariantDto = API.GetCourseVariant(courseViewModel.SelectedCourseVariant.Value);
+                courseVariantDto = _Api.GetCourseVariant(courseViewModel.SelectedCourseVariant.Value);
                 selectedCourseVariant = new CourseVariantViewModel()
                 {
                     CourseVariantGuid = courseVariantDto.CourseVariantGuid,
@@ -142,7 +133,7 @@ namespace UpDiddy.Controllers
             decimal adjustedPrice = courseViewModel.CourseVariant.Price;
             if (courseViewModel.PromoCodeRedemptionGuid.HasValue && courseViewModel.PromoCodeRedemptionGuid.Value != Guid.Empty)
             {
-                validPromoCode = API.PromoCodeRedemptionValidation(courseViewModel.PromoCodeRedemptionGuid.Value.ToString(), courseViewModel.SelectedCourseVariant.ToString(), this.subscriber.SubscriberGuid.Value.ToString());
+                validPromoCode = _Api.PromoCodeRedemptionValidation(courseViewModel.PromoCodeRedemptionGuid.Value.ToString(), courseViewModel.SelectedCourseVariant.ToString(), this.subscriber.SubscriberGuid.Value.ToString());
 
                 if (validPromoCode == null)
                     ModelState.AddModelError("PromoCodeRedemptionGuid", "The promo code selected is not valid for this course section.");
@@ -185,7 +176,7 @@ namespace UpDiddy.Controllers
                     || this.subscriber.LastName == null || !this.subscriber.LastName.Equals(courseViewModel.SubscriberLastName)
                     || this.subscriber.PhoneNumber == null || !this.subscriber.PhoneNumber.Equals(courseViewModel.SubscriberPhoneNumber))
                 {
-                    API.UpdateProfileInformation(new SubscriberDto()
+                    _Api.UpdateProfileInformation(new SubscriberDto()
                     {
                         SubscriberGuid = courseViewModel.SubscriberGuid,
                         FirstName = courseViewModel.SubscriberFirstName,
@@ -239,7 +230,7 @@ namespace UpDiddy.Controllers
                     SubscriberDto = this.subscriber
                 };
 
-                API.EnrollStudentAndObtainEnrollmentGUID(enrollmentFlowDto);
+                _Api.EnrollStudentAndObtainEnrollmentGUID(enrollmentFlowDto);
                 return View("EnrollmentSuccess", courseViewModel);
             }
             else
@@ -250,7 +241,7 @@ namespace UpDiddy.Controllers
                 ViewBag.ClientToken = clientToken;
 
                 // need to repopulate course variants since they were not bound in the postback
-                var courseVariantViewModels = API.Course(courseViewModel.Slug).CourseVariants.Select(dto => new CourseVariantViewModel()
+                var courseVariantViewModels = _Api.Course(courseViewModel.Slug).CourseVariants.Select(dto => new CourseVariantViewModel()
                 {
                     CourseVariantGuid = dto.CourseVariantGuid,
                     CourseVariantType = dto.CourseVariantType.Name,
@@ -264,7 +255,7 @@ namespace UpDiddy.Controllers
                 courseViewModel.CourseVariants = courseVariantViewModels;
 
                 // need to repopulate countries since they were not bound in the postback
-                courseViewModel.Countries = API.GetCountries().Select(c => new SelectListItem()
+                courseViewModel.Countries = _Api.GetCountries().Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
                     Value = c.CountryGuid.ToString()
