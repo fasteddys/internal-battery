@@ -37,9 +37,9 @@ steps:
   displayName: UpDiddyLib Unit Tests'
   
 - task: PublishTestResults@2
-    inputs: 
-        testRunner: VSTest
-        testResultsFiles: '**/*.trx' 
+  inputs: 
+    testRunner: VSTest
+    testResultsFiles: '**/*.trx' 
         
 - script: |
     dotnet publish Product/WebApp --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
