@@ -40,7 +40,8 @@ steps:
   inputs: 
     testRunner: VSTest
     testResultsFiles: '**/*.trx' 
-        
+    searchFolder: '$(Agent.TempDirectory)'
+    
 - script: |
     dotnet publish Product/WebApp --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
   displayName: Publish Files
