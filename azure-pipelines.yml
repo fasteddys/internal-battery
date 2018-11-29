@@ -34,11 +34,11 @@ steps:
 
 - script: |
     dotnet test --logger trx --results-directory $(Agent.TempDirectory) Product/UpDiddyLib.Tests
-  displayName: UpDiddyLib Unit Tests'
+  displayName: UpDiddyLib Unit Tests
 
 - script: |
     dotnet test --logger trx --results-directory $(Agent.TempDirectory) Product/WebApp.Tests
-  displayName: UpDiddy Unit Tests'
+  displayName: UpDiddy Unit Tests
   
 - task: PublishTestResults@2
   inputs: 
