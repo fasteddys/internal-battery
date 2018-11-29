@@ -37,7 +37,7 @@ steps:
   displayName: UpDiddyLib Unit Tests'
 
 - script: |
-    dotnet test --logger trx --results-directory $(Agent.TempDirectory) Product/UpDiddy.Tests
+    dotnet test --logger trx --results-directory $(Agent.TempDirectory) Product/WebApp.Tests
   displayName: UpDiddy Unit Tests'
   
 - task: PublishTestResults@2
