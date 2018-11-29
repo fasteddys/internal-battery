@@ -33,9 +33,16 @@ steps:
   displayName: Compile
 
 - script: |
-    dotnet test Product/UpDiddyLib.Tests --logger trx --results-directory $(Agent.TempDirectory)
+    dotnet test --logger trx --results-directory $(Agent.TempDirectory) Product/UpDiddyLib.Tests
   displayName: UpDiddyLib Unit Tests'
-
+  
+- task: PublishTestResults@2
+    displayName: Publish Test Results
+    inputs: 
+        testResultsFormat: VSTest
+        testResultsFiles: '**/TEST-*.trx' 
+        searchFolder: $(Agent.TempDirectory)
+        
 - script: |
     dotnet publish Product/WebApp --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
   displayName: Publish Files
