@@ -38,9 +38,9 @@ steps:
   
 - task: PublishTestResults@2
     inputs: 
-        testResultsFormat: VSTest
+        testResultsFormat: 'VSTest'
         testResultsFiles: '**/TEST-*.trx' 
-        searchFolder: $(Agent.TempDirectory)
+        searchFolder: '$(Agent.TempDirectory)'
         
 - script: |
     dotnet publish Product/WebApp --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
