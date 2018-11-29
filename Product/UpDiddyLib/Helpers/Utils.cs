@@ -19,7 +19,11 @@ namespace UpDiddyLib.Helpers
 
         static public string RemoveQueryStringFromUrl(string url)
         {
-            return url.Substring(0, url.IndexOf("?") );
+            int idx = url.IndexOf("?");
+            if (idx == -1)
+                return url;
+            else
+                return url.Substring(0, idx);
         }
 
 
