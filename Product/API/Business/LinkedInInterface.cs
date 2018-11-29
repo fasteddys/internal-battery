@@ -50,10 +50,8 @@ namespace UpDiddyApi.Business
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    // Get the profile staging store for the user 
-                    SubscriberProfileStagingStore pss = SubscriberProfileStagingStore.GetBySubcriber(_db, subscriberGuid);
                     // Update or create users linked profile data 
-                    SubscriberProfileStagingStore.StoreProfileData(_db, pss, subscriberGuid, ResponseJson); 
+                    SubscriberProfileStagingStore.StoreProfileData(_db,subscriberGuid, ResponseJson); 
                     rVal =  (int)ProfileDataStatus.Acquired;
                 }
                 else

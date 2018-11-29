@@ -46,19 +46,15 @@ namespace UpDiddyApi.Models
         }
 
 
-        public static void StoreProfileData(UpDiddyDbContext db, SubscriberProfileStagingStore pss, Guid subscriberGuid, string ResponseJson )
+        public static void StoreProfileData(UpDiddyDbContext db, Guid subscriberGuid, string ResponseJson )
         {
-
-            bool spsExists = pss != null;
-            // Create a new profile staging record 
-            if (!spsExists)
-                pss = new SubscriberProfileStagingStore(db, subscriberGuid);
+            SubscriberProfileStagingStore pss = new SubscriberProfileStagingStore(db, subscriberGuid);
 
             pss.ModifyDate = DateTime.Now;
             pss.ProfileData = ResponseJson;
             pss.Status = (int)ProfileDataStatus.Acquired;
-            if (!spsExists)
-                db.SubscriberProfileStagingStore.Add(pss);
+            
+            db.SubscriberProfileStagingStore.Add(pss);
             db.SaveChanges();
         }
 
