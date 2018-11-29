@@ -37,7 +37,6 @@ steps:
   displayName: UpDiddyLib Unit Tests'
   
 - task: PublishTestResults@2
-    displayName: Publish Test Results
     inputs: 
         testResultsFormat: VSTest
         testResultsFiles: '**/TEST-*.trx' 
