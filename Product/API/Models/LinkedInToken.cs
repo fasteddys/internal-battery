@@ -5,12 +5,13 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    public class LinkedInToken : BaseModel
+    public partial class LinkedInToken : BaseModel
     {
         public int LinkedInTokenId { get; set; }
         public int SubscriberId { get; set; }
         public virtual Subscriber Subscriber { get; set; }
         public string AccessToken { get; set; }
         public DateTime AccessTokenExpiry { get; set; }
+       
     }
 }
