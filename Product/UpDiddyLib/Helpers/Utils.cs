@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -24,6 +25,38 @@ namespace UpDiddyLib.Helpers
                 return url;
             else
                 return url.Substring(0, idx);
+        }
+
+
+        static public T JTokenConvert<T>(JToken o, T defaultValue) 
+        {
+            try
+            {
+                if (o == null)
+                    return defaultValue;
+                return (T)Convert.ChangeType(o.ToString(), typeof(T));
+                /*
+                if ( typeof(T) == typeof(string))
+                {
+                    return (T)Convert.ChangeType(o.ToString() , typeof(T));
+                }
+                else if (typeof(T) == typeof(int))
+                {
+                    return (T)Convert.ChangeType(o.ToString(), typeof(T));
+                }
+                */
+
+                
+
+
+                   // return defaultValue;
+               
+            }
+            catch
+            {
+                return defaultValue;
+            } 
+
         }
 
 
