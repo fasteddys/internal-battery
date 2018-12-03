@@ -45,13 +45,6 @@ namespace UpDiddyApi.Workflow
             EnrollmentDto EnrollmentDto = null;
             SubscriberDto SubscriberDto = null;
             WorkflowHelper Helper = new WorkflowHelper(_db, _configuration, _sysLog);
-            string ErrorsEmailAddress = _configuration["EmailAddresses:Errors"];
-
-            if (string.IsNullOrEmpty(ErrorsEmailAddress))
-            {
-                _sysLog.Log(LogLevel.Error,"No error email is supplied in the application settings; error emails will be sent to errors@careercircle.com by default.");
-                ErrorsEmailAddress = "errors@careercircle.com";
-            }
 
             try
             {
