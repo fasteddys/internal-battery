@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Controllers  
 {
@@ -21,9 +19,9 @@ namespace UpDiddyApi.Controllers
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
-        protected internal ISysLog _syslog = null;
+        protected internal ILogger _syslog = null;
 
-        public SubscriberController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
+        public SubscriberController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<SubscriberController> sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;

@@ -12,10 +12,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UpDiddyApi.Business;
 using UpDiddyApi.Models;
-//using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.MessageQueue;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Workflow
 {
@@ -24,10 +24,10 @@ namespace UpDiddyApi.Workflow
 
         protected internal WozTransactionLog _log = null;
         protected internal UpDiddyDbContext _db = null;
-        protected internal ISysLog _sysLog = null;
+        protected internal ILogger _sysLog = null;
 
 
-        public WorkflowHelper(UpDiddyDbContext context, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog)
+        public WorkflowHelper(UpDiddyDbContext context, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog)
         {
             _db = context;
             _sysLog = sysLog;
@@ -36,7 +36,7 @@ namespace UpDiddyApi.Workflow
         public void WorkItemError(string EnrollmentGuid, MessageTransactionResponse Info)
         {
             // Log error to system logger 
-            _sysLog.Log(LogLevel.Error, $"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info.ToString()} ", true);
+            _sysLog.Log(LogLevel.Critical, $"Fatal error for enrollment {EnrollmentGuid}.  Info: {Info.ToString()} ");
             // Log Error to woz transaction log 
             _log = new WozTransactionLog();
             _log.EndPoint = "Error";

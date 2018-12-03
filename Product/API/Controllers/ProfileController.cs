@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
-using UpDiddyLib.Helpers;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Controllers
 {
@@ -23,9 +23,9 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
-        protected internal ISysLog _syslog = null;
+        protected internal ILogger _syslog = null;
 
-        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
+        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;

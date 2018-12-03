@@ -16,6 +16,7 @@ using UpDiddyLib.Helpers;
 using System.Net.Http;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Controllers
 {
@@ -30,14 +31,14 @@ namespace UpDiddyApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
         private WozInterface _wozInterface = null;
-        protected readonly ISysLog _syslog = null;
+        protected readonly ILogger _syslog = null;
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ISysEmail _sysemail;
         private readonly IDistributedCache _distributedCache;
  
 
 
-        public CourseController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, ISysLog syslog, IDistributedCache distributedCache)
+        public CourseController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, ILogger<CourseController> syslog, IDistributedCache distributedCache)
         {
             _db = db;
             _mapper = mapper;

@@ -10,6 +10,7 @@ using UpDiddyLib.Helpers;
 using Hangfire;
 using UpDiddyApi.Business;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Controllers
 {
@@ -18,7 +19,7 @@ namespace UpDiddyApi.Controllers
         #region Class Members
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
-        private readonly ISysLog _syslog;
+        private readonly ILogger _syslog;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
         private readonly string _apiBaseUri = String.Empty;
@@ -27,14 +28,13 @@ namespace UpDiddyApi.Controllers
         #endregion
 
         #region Constructor
-        public LinkedInController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,  IHttpClientFactory httpClientFactory, ISysLog sysLog)
+        public LinkedInController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,  IHttpClientFactory httpClientFactory, ILogger<LinkedInController> sysLog)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _apiBaseUri = _configuration["LinkedIn:ApiUrl"]; 
             _log = new WozTransactionLog();
-            //_syslog = new SysLog(configuration, sysemail, serviceProvider);
             _syslog = sysLog;
             _httpClientFactory = httpClientFactory;            
         }
