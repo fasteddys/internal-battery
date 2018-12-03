@@ -44,7 +44,7 @@ namespace UpDiddyApi.Controllers
 
 
 
-       // TODO  [Authorize]
+        [Authorize]
         [HttpGet]
         [Route("api/[controller]/GetProfile/{SubscriberGuid}")]
         public IActionResult GetProfile(Guid subscriberGuid )
