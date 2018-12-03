@@ -10,6 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20181129130503_test of partial.cs" />
+    <Compile Remove="Migrations\20181129130503_test of partial.Designer.cs" />
+    <Compile Remove="Migrations\20181129130559_revert partial test.cs" />
+    <Compile Remove="Migrations\20181129130559_revert partial test.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Connected Services\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
