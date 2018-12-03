@@ -39,7 +39,20 @@ namespace UpDiddyApi.Controllers
             _httpClientFactory = httpClientFactory;            
         }
         #endregion
- 
+
+
+
+
+
+        [Authorize]
+        [HttpGet]
+        [Route("api/[controller]/GetProfile/{SubscriberGuid}")]
+        public IActionResult GetProfile(Guid subscriberGuid )
+        {
+            var rVal = SubscriberProfileStagingStore.GetProfileAsLinkedInDto(_db, subscriberGuid);
+            return Ok(rVal); ;
+        }
+
 
 
         [Authorize]
