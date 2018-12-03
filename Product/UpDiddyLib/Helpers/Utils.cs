@@ -34,23 +34,7 @@ namespace UpDiddyLib.Helpers
             {
                 if (o == null)
                     return defaultValue;
-                return (T)Convert.ChangeType(o.ToString(), typeof(T));
-                /*
-                if ( typeof(T) == typeof(string))
-                {
-                    return (T)Convert.ChangeType(o.ToString() , typeof(T));
-                }
-                else if (typeof(T) == typeof(int))
-                {
-                    return (T)Convert.ChangeType(o.ToString(), typeof(T));
-                }
-                */
-
-                
-
-
-                   // return defaultValue;
-               
+                return (T)Convert.ChangeType(o.ToString(), typeof(T));          
             }
             catch
             {
