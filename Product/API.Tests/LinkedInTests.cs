@@ -5,11 +5,12 @@ using UpDiddyApi.Business;
 using Microsoft.EntityFrameworkCore;
 using UpDiddyApi.Models;
 
+
 namespace API.Tests
 {
     public class LinkedInTests
     {
-        [Fact]
+ 
         public void AcquireBearerToken_InvalidSubscriberGuidProvided()
         {
             /* todo: we need to write unit tests that cover functionality within the API, but this presents the following challenges
