@@ -1,13 +1,9 @@
 ﻿using AutoMapper;
 using Hangfire;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using UpDiddyApi.Business;
 using UpDiddyApi.Models;
@@ -15,6 +11,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.MessageQueue;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Workflow
 {
@@ -26,12 +23,12 @@ namespace UpDiddyApi.Workflow
         private readonly IMapper _mapper;
         private IConfiguration _configuration;
         private ISysEmail _sysEmail = null;
-        private ISysLog _sysLog = null;
+        private ILogger _sysLog = null;
         private int _retrySeconds = 0;
         private int _wozVendorId = 0;
         private IHttpClientFactory _httpClientFactory = null;
 
-        public WozEnrollmentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration,ISysEmail sysEmail, IServiceProvider serviceProvider, IHttpClientFactory httpClientFactory)
+        public WozEnrollmentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration,ISysEmail sysEmail, IServiceProvider serviceProvider, IHttpClientFactory httpClientFactory, ILogger<WozEnrollmentFlow> logger)
         {
             _retrySeconds = int.Parse(configuration["Woz:RetrySeconds"]);
             // TODO modify code to work off woz Guid not dumb key 
@@ -40,7 +37,7 @@ namespace UpDiddyApi.Workflow
             _mapper = mapper;
             _configuration = configuration;
             _sysEmail = sysEmail;
-            _sysLog = new SysLog(configuration, sysEmail, serviceProvider);
+            _sysLog = logger;
             _httpClientFactory = httpClientFactory;
         }
         #endregion

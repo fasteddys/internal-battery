@@ -2,11 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UpDiddyApi.Models;
-using UpDiddyLib.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Business
 {
@@ -15,10 +12,10 @@ namespace UpDiddyApi.Business
 
         protected readonly UpDiddyDbContext _db;
         protected readonly IConfiguration _configuration;
-        protected readonly ISysLog _syslog;
+        protected readonly ILogger _syslog;
         protected readonly IDistributedCache _cache;
 
-        public FactoryBase(UpDiddyDbContext db, IConfiguration configuration, ISysLog syslog, IDistributedCache distributedCache)
+        public FactoryBase(UpDiddyDbContext db, IConfiguration configuration, ILogger syslog, IDistributedCache distributedCache)
         {
             _db = db;
             _configuration = configuration;

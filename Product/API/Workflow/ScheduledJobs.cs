@@ -13,19 +13,20 @@ using Hangfire;
 using System.Net.Http;
 using UpDiddy.Helpers;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Workflow
 {
     public class ScheduledJobs : BusinessVendorBase 
     {
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IServiceProvider serviceProvider, IHttpClientFactory httpClientFactory)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IServiceProvider serviceProvider, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger)
         {
             _db = context;
             _mapper = mapper;
             _apiBaseUri = configuration["Woz:ApiUrl"];
             _accessToken = configuration["Woz:AccessToken"];
-            _syslog = new SysLog(configuration, sysEmail, serviceProvider);
+            _syslog = logger;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
         }
@@ -254,9 +255,8 @@ namespace UpDiddyApi.Workflow
 
  
             bool result = false;
-            try
+            using (_syslog.BeginScope("DoPromoCodeRedemptionCleanup"))
             {
-
                 // TODO remove debug code 
                 Process process = Process.GetCurrentProcess();
                 var WorkingSet64 = process.WorkingSet64; ;
@@ -267,39 +267,36 @@ namespace UpDiddyApi.Workflow
                 _syslog.Log(LogLevel.Information, $"SystemHealth Thread Count: {Threads}");
                 _syslog.Log(LogLevel.Information, $"SystemHealth VirtualMemorySize64: {VirtualMemorySize64}");
 
-
-                _syslog.Log(LogLevel.Information, $"***** DoPromoCodeRedemptionCleanup started at: {DateTime.UtcNow.ToLongDateString()}");
-
-                bool changesMade = false;
-                // todo: this won't perform very well if there are many records being processed. refactor when/if performance becomes an issue
-                var abandonedPromoCodeRedemptions =
-                    _db.PromoCodeRedemption
-                    .Include(pcr => pcr.RedemptionStatus)
-                    .Where(pcr => pcr.IsDeleted == 0 && pcr.RedemptionStatus.Name == "In Process" && pcr.CreateDate.DateDiff(DateTime.UtcNow).TotalMinutes > lookbackPeriodInMinutes)
-                    .ToList();
-
-                foreach (PromoCodeRedemption abandonedPromoCodeRedemption in abandonedPromoCodeRedemptions)
+                _syslog.LogInformation("Initiating promo code redemption cleanup");
+                try
                 {
-                    abandonedPromoCodeRedemption.ModifyDate = DateTime.UtcNow;
-                    abandonedPromoCodeRedemption.ModifyGuid = Guid.NewGuid();
-                    abandonedPromoCodeRedemption.IsDeleted = 1;
-                    _db.Attach(abandonedPromoCodeRedemption);
-                    changesMade = true;
-                }
 
-                if ( changesMade)
+                    // todo: this won't perform very well if there are many records being processed. refactor when/if performance becomes an issue
+                    var abandonedPromoCodeRedemptions =
+                        _db.PromoCodeRedemption
+                        .Include(pcr => pcr.RedemptionStatus)
+                        .Where(pcr => pcr.IsDeleted == 0 && pcr.RedemptionStatus.Name == "In Process" && pcr.CreateDate.DateDiff(DateTime.UtcNow).TotalMinutes > lookbackPeriodInMinutes)
+                        .ToList();
+
+                    foreach (PromoCodeRedemption abandonedPromoCodeRedemption in abandonedPromoCodeRedemptions)
+                    {
+                        abandonedPromoCodeRedemption.ModifyDate = DateTime.UtcNow;
+                        abandonedPromoCodeRedemption.ModifyGuid = Guid.NewGuid();
+                        abandonedPromoCodeRedemption.IsDeleted = 1;
+                        _db.Attach(abandonedPromoCodeRedemption);
+                    }
+
                     _db.SaveChanges();
+                    _syslog.LogInformation("Saved promo code redemption cleanup");
 
-                result = true;
-            }
-            catch (Exception e)
-            {
-                _syslog.Log(LogLevel.Error,"ScheduledJobs:DoPromoCodeRedemptionCleanup threw an exception -> " + e.Message);
-                throw e;
-            }
-            finally
-            {
-                _syslog.Log(LogLevel.Information, $"***** DoPromoCodeRedemptionCleanup completed at: {DateTime.UtcNow.ToLongDateString()}");
+                    result = true;
+                }
+                catch (Exception e)
+                {
+                    // todo: create event ids
+                    _syslog.LogError(default(EventId), e, "Error ocurred during processing");
+                    throw e;
+                }
             }
             return result;
         }

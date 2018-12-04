@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.MessageQueue;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using UpDiddyLib.Helpers;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Controllers
 {
@@ -25,9 +21,9 @@ namespace UpDiddyApi.Controllers
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
-        protected internal ISysLog _syslog = null;
+        protected internal ILogger _syslog = null;
 
-        public PromoCodeController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
+        public PromoCodeController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<PromoCodeController> sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;

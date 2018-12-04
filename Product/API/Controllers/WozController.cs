@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -10,15 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
-using Newtonsoft;
-using System.Reflection;
-using System.Globalization;
-using Newtonsoft.Json.Linq;
 using UpDiddyLib.Helpers;
-using AutoMapper.QueryableExtensions;
 using UpDiddyApi.Workflow;
 using Hangfire;
 using UpDiddy.Helpers;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -33,7 +28,7 @@ namespace UpDiddyApi.Controllers
         #region Class Members
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
-        private readonly ISysLog _syslog;
+        private readonly ILogger _syslog;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
         private readonly string _apiBaseUri = String.Empty;
@@ -43,7 +38,7 @@ namespace UpDiddyApi.Controllers
         #endregion
 
         #region Constructor
-        public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog syslog, IHttpClientFactory httpClientFactory)
+        public WozController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<WozController> syslog, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;
