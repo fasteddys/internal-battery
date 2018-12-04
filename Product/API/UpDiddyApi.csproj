@@ -55,6 +55,10 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.6" />
     <PackageReference Include="Polly" Version="6.1.1" />
     <PackageReference Include="Sendgrid" Version="9.10.0" />
+    <PackageReference Include="Serilog" Version="2.7.1" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
+    <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="2.6.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.2" />
   </ItemGroup>
   <ItemGroup>
@@ -67,5 +71,6 @@
   <ItemGroup>
     <WCFMetadata Include="Connected Services" />
   </ItemGroup>
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>

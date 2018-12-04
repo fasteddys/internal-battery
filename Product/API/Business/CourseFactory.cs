@@ -4,18 +4,17 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Business
 {
     public class CourseFactory : FactoryBase
     {
         #region constructor
-        public CourseFactory(UpDiddyDbContext db, IConfiguration configuration, ISysLog syslog, IDistributedCache distributedCache) :
+        public CourseFactory(UpDiddyDbContext db, IConfiguration configuration, ILogger syslog, IDistributedCache distributedCache) :
             base(db,configuration, syslog, distributedCache)
         {
         }

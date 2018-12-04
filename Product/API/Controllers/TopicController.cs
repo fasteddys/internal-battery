@@ -1,22 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using Hangfire;
-using UpDiddyApi.Workflow;
-using UpDiddyApi.Business;
-using UpDiddyLib.Helpers;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Hosting.Internal;
-using System.IO;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
+using System;
 
 namespace UpDiddyApi.Controllers
 {
@@ -28,22 +20,15 @@ namespace UpDiddyApi.Controllers
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
-        private readonly ISysLog _syslog;
+        private readonly ILogger _syslog;
 
-        public TopicController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysLog sysLog, IDistributedCache distributedCache)
+        public TopicController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<TopicController> sysLog, IDistributedCache distributedCache)
 
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
-        }
-        
-        [HttpGet]
-        [Route("api/[controller]/VaultUri")]
-        public IActionResult VaultUri()
-        {
-            return Ok(_configuration["Vault"]);
         }
 
         // GET: api/topics
@@ -56,7 +41,6 @@ namespace UpDiddyApi.Controllers
                 .Where(t => t.IsDeleted == 0)
                 .ProjectTo<TopicDto>(_mapper.ConfigurationProvider)
                 .ToList();
-
             return Ok(rval);
         }
 

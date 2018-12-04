@@ -4,19 +4,15 @@ using System.Linq;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using UpDiddy.Helpers;
-using UpDiddyLib.Helpers.Braintree;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.MessageQueue;
-using Braintree;
-using UpDiddyLib.Helpers;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper.QueryableExtensions;
 using UpDiddyApi.Workflow;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddyApi.Controllers
@@ -28,9 +24,9 @@ namespace UpDiddyApi.Controllers
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;       
-        protected internal ISysLog _syslog = null;
+        protected internal ILogger _syslog = null;
 
-        public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
+        public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<EnrollmentController> sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;
