@@ -114,8 +114,8 @@ namespace UpDiddyApi
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
 
 
-            // Add Health check 
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SystemHealth(), Cron.MinuteInterval(1));
+            // Add Health check TODO remove this temp code 
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SystemHealth(), Cron.MinuteInterval(5));
 
             // Add Polly 
 
