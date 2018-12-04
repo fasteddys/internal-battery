@@ -39,15 +39,6 @@ namespace UpDiddyApi.Workflow
             try
             {
 
-                // TODO remove debug code 
-                Process process = Process.GetCurrentProcess();
-                var WorkingSet64 = process.WorkingSet64; ;
-                var Threads = process.Threads.Count;
-                var VirtualMemorySize64 = process.VirtualMemorySize64;
-
-                _syslog.Log(LogLevel.Information, $"SystemHealth WorkingSet64: {WorkingSet64.ToString()}");
-                _syslog.Log(LogLevel.Information, $"SystemHealth Thread Count: {Threads}");
-                _syslog.Log(LogLevel.Information, $"SystemHealth VirtualMemorySize64: {VirtualMemorySize64}");
 
 
 
@@ -265,8 +256,21 @@ namespace UpDiddyApi.Workflow
             bool result = false;
             try
             {
+
+                // TODO remove debug code 
+                Process process = Process.GetCurrentProcess();
+                var WorkingSet64 = process.WorkingSet64; ;
+                var Threads = process.Threads.Count;
+                var VirtualMemorySize64 = process.VirtualMemorySize64;
+
+                _syslog.Log(LogLevel.Information, $"SystemHealth WorkingSet64: {WorkingSet64.ToString()}");
+                _syslog.Log(LogLevel.Information, $"SystemHealth Thread Count: {Threads}");
+                _syslog.Log(LogLevel.Information, $"SystemHealth VirtualMemorySize64: {VirtualMemorySize64}");
+
+
                 _syslog.Log(LogLevel.Information, $"***** DoPromoCodeRedemptionCleanup started at: {DateTime.UtcNow.ToLongDateString()}");
 
+                bool changesMade = false;
                 // todo: this won't perform very well if there are many records being processed. refactor when/if performance becomes an issue
                 var abandonedPromoCodeRedemptions =
                     _db.PromoCodeRedemption
@@ -280,17 +284,11 @@ namespace UpDiddyApi.Workflow
                     abandonedPromoCodeRedemption.ModifyGuid = Guid.NewGuid();
                     abandonedPromoCodeRedemption.IsDeleted = 1;
                     _db.Attach(abandonedPromoCodeRedemption);
+                    changesMade = true;
                 }
 
-                //.ForEachAsync(abandonedPromoCodeRedemption =>
-                //{
-                //    abandonedPromoCodeRedemption.ModifyDate = DateTime.UtcNow;
-                //    abandonedPromoCodeRedemption.ModifyGuid = Guid.NewGuid();
-                //    abandonedPromoCodeRedemption.IsDeleted = 1;
-                //    _db.Attach<PromoCodeRedemption>(abandonedPromoCodeRedemption);
-                //});
-
-                _db.SaveChanges();
+                if ( changesMade)
+                    _db.SaveChanges();
 
                 result = true;
             }

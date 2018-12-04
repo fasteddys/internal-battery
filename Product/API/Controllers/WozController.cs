@@ -155,14 +155,8 @@ namespace UpDiddyApi.Controllers
             // Short circuit if the user does not have any enrollments 
             if (NumEnrollments == 0)
                 return Ok();
-
-            int AgeThresholdInHours = 6;
-            try
-            {
-                AgeThresholdInHours = int.Parse(_configuration["ProgressUpdateAgeThresholdInHours"]);
-            }
-            catch { }
-
+     
+            int AgeThresholdInHours = int.Parse(_configuration["ProgressUpdateAgeThresholdInHours"]);
             BackgroundJob.Enqueue<ScheduledJobs>(j => j.UpdateStudentProgress(subscriberGuid, AgeThresholdInHours)) ;
        
             // Queue another update in 6 hours 
