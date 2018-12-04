@@ -14,6 +14,7 @@ using UpDiddyApi.Workflow;
 using Hangfire;
 using UpDiddy.Helpers;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -139,21 +140,23 @@ namespace UpDiddyApi.Controllers
         [HttpPut]
         [Authorize]
         [Route("api/[controller]/UpdateStudentCourseStatus/{SubscriberGuid}/{FutureSchedule}")]
-        public IActionResult UpdateStudentCourseStatus(string SubscriberGuid, bool FutureSchedule)
+        public IActionResult UpdateStudentCourseStatus(string subscriberGuid, bool futureSchedule)
         {
 
-            int AgeThresholdInHours = 6;
-            try
-            {
-                AgeThresholdInHours = int.Parse(_configuration["ProgressUpdateAgeThresholdInHours"]);
-            }
-            catch { }
-
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.UpdateStudentProgress(SubscriberGuid, AgeThresholdInHours)) ;
+            var NumEnrollments = _db.Enrollment
+                 .Include(s => s.Subscriber)
+                 .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid.ToString() == subscriberGuid && s.CompletionDate == null && s.DroppedDate == null)
+                .Count();
+            // Short circuit if the user does not have any enrollments 
+            if (NumEnrollments == 0)
+                return Ok();
+     
+            int AgeThresholdInHours = int.Parse(_configuration["ProgressUpdateAgeThresholdInHours"]);
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.UpdateStudentProgress(subscriberGuid, AgeThresholdInHours)) ;
        
             // Queue another update in 6 hours 
-            if ( FutureSchedule )
-                BackgroundJob.Schedule<ScheduledJobs>(j => j.UpdateStudentProgress(SubscriberGuid, AgeThresholdInHours) ,TimeSpan.FromHours(AgeThresholdInHours)  );
+            if (futureSchedule)
+                BackgroundJob.Schedule<ScheduledJobs>(j => j.UpdateStudentProgress(subscriberGuid, AgeThresholdInHours) ,TimeSpan.FromHours(AgeThresholdInHours)  );
              
             return Ok();
         }

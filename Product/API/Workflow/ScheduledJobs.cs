@@ -12,6 +12,7 @@ using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Hangfire;
 using System.Net.Http;
 using UpDiddy.Helpers;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Workflow
@@ -38,6 +39,10 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
+
+
+
+
                 _syslog.Log(LogLevel.Information, $"***** UpdateWozStudentLastLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
                 Subscriber subscriber = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Guid.Parse(SubscriberGuid))
@@ -247,9 +252,21 @@ namespace UpDiddyApi.Workflow
         #region CareerCircle Jobs 
         public Boolean DoPromoCodeRedemptionCleanup(int? lookbackPeriodInMinutes = 30)
         {
+
+ 
             bool result = false;
             using (_syslog.BeginScope("DoPromoCodeRedemptionCleanup"))
             {
+                // TODO remove debug code 
+                Process process = Process.GetCurrentProcess();
+                var WorkingSet64 = process.WorkingSet64; ;
+                var Threads = process.Threads.Count;
+                var VirtualMemorySize64 = process.VirtualMemorySize64;
+
+                _syslog.Log(LogLevel.Information, $"SystemHealth WorkingSet64: {WorkingSet64.ToString()}");
+                _syslog.Log(LogLevel.Information, $"SystemHealth Thread Count: {Threads}");
+                _syslog.Log(LogLevel.Information, $"SystemHealth VirtualMemorySize64: {VirtualMemorySize64}");
+
                 _syslog.LogInformation("Initiating promo code redemption cleanup");
                 try
                 {
@@ -286,6 +303,7 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
+ 
 
     }
 }
