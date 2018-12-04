@@ -12,6 +12,7 @@ using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Hangfire;
 using System.Net.Http;
 using UpDiddy.Helpers;
+using System.Diagnostics;
 
 namespace UpDiddyApi.Workflow
 {
@@ -246,6 +247,8 @@ namespace UpDiddyApi.Workflow
         #region CareerCircle Jobs 
         public Boolean DoPromoCodeRedemptionCleanup(int? lookbackPeriodInMinutes = 30)
         {
+
+ 
             bool result = false;
             try
             {
@@ -292,6 +295,41 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
+
+        #region system debug
+
+
+        public Boolean SystemHealth()
+        {
+            _syslog.Log(LogLevel.Information, $"***** SystemHealth started at: {DateTime.UtcNow.ToLongDateString()}");
+
+            bool result = false;
+            try
+            {
+                Process  process = Process.GetCurrentProcess();
+                var WorkingSet64 = process.WorkingSet64;                 ;
+                var Threads = process.Threads.Count;
+                var VirtualMemorySize64 = process.VirtualMemorySize64;
+
+                _syslog.Log(LogLevel.Information, $"SystemHealth WorkingSet64: {WorkingSet64.ToString()}");
+                _syslog.Log(LogLevel.Information, $"SystemHealth Thread Count: {Threads}");
+                _syslog.Log(LogLevel.Information, $"SystemHealth VirtualMemorySize64: {VirtualMemorySize64}");
+
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Error, "ScheduledJobs:DoPromoCodeRedemptionCleanup threw an exception -> " + e.Message);
+                throw e;
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** DoPromoCodeRedemptionCleanup completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+            return result;
+        }
+
+
+        #endregion
 
     }
 }

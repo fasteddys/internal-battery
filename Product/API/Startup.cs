@@ -113,6 +113,10 @@ namespace UpDiddyApi
             int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
 
+
+            // Add Health check 
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SystemHealth(), Cron.MinuteInterval(1));
+
             // Add Polly 
 
             // Create Policies  
@@ -143,9 +147,11 @@ namespace UpDiddyApi
 
 
             // Configure SnapshotCollector from application settings
-            services.Configure<SnapshotCollectorConfiguration>(Configuration.GetSection(nameof(SnapshotCollectorConfiguration)));
+            // TODO Uncomment test 
+            //services.Configure<SnapshotCollectorConfiguration>(Configuration.GetSection(nameof(SnapshotCollectorConfiguration)));
             // Add SnapshotCollector telemetry processor.
-            services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
+            // TODO Uncomment test 
+            //services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
 
             // Add Redis session cahce
             services.AddDistributedRedisCache(options =>
