@@ -38,6 +38,19 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
+
+                // TODO remove debug code 
+                Process process = Process.GetCurrentProcess();
+                var WorkingSet64 = process.WorkingSet64; ;
+                var Threads = process.Threads.Count;
+                var VirtualMemorySize64 = process.VirtualMemorySize64;
+
+                _syslog.Log(LogLevel.Information, $"SystemHealth WorkingSet64: {WorkingSet64.ToString()}");
+                _syslog.Log(LogLevel.Information, $"SystemHealth Thread Count: {Threads}");
+                _syslog.Log(LogLevel.Information, $"SystemHealth VirtualMemorySize64: {VirtualMemorySize64}");
+
+
+
                 _syslog.Log(LogLevel.Information, $"***** UpdateWozStudentLastLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
                 Subscriber subscriber = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Guid.Parse(SubscriberGuid))
@@ -295,41 +308,7 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
-
-        #region system debug
-
-
-        public Boolean SystemHealth()
-        {
-            _syslog.Log(LogLevel.Information, $"***** SystemHealth started at: {DateTime.UtcNow.ToLongDateString()}");
-
-            bool result = false;
-            try
-            {
-                Process  process = Process.GetCurrentProcess();
-                var WorkingSet64 = process.WorkingSet64;                 ;
-                var Threads = process.Threads.Count;
-                var VirtualMemorySize64 = process.VirtualMemorySize64;
-
-                _syslog.Log(LogLevel.Information, $"SystemHealth WorkingSet64: {WorkingSet64.ToString()}");
-                _syslog.Log(LogLevel.Information, $"SystemHealth Thread Count: {Threads}");
-                _syslog.Log(LogLevel.Information, $"SystemHealth VirtualMemorySize64: {VirtualMemorySize64}");
-
-            }
-            catch (Exception e)
-            {
-                _syslog.Log(LogLevel.Error, "ScheduledJobs:DoPromoCodeRedemptionCleanup threw an exception -> " + e.Message);
-                throw e;
-            }
-            finally
-            {
-                _syslog.Log(LogLevel.Information, $"***** DoPromoCodeRedemptionCleanup completed at: {DateTime.UtcNow.ToLongDateString()}");
-            }
-            return result;
-        }
-
-
-        #endregion
+ 
 
     }
 }
