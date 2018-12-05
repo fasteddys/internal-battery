@@ -45,8 +45,8 @@ namespace UpDiddy.ViewComponents
 
                 // todo: perhaps display error in some way if this failed
                 // if error then they will need to get another authcode and try again
-                if(int.Parse(apiResponse.StatusCode) == 200)
-                    return View(LinkedInSyncViewComponent.SYNCING_VIEW);
+                if(int.Parse(apiResponse.StatusCode) == 1)
+                    return View(LinkedInSyncViewComponent.SYNCING_VIEW, GetLinkedInRequestAuthCodeUrl());
             }
 
             return View(LinkedInSyncViewComponent.DEFAULT_VIEW, GetLinkedInRequestAuthCodeUrl() );

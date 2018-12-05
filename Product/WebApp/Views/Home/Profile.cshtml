@@ -49,6 +49,13 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
+                        <div class="mb-2">
+                            @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.Subscriber.SubscriberGuid })
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
                         <div class="courses-in-progress-container">
                             <div class="course-in-progress-header">
                                 <h2>Courses in Progress</h2>
@@ -66,76 +73,76 @@
                                         bool hasProgressInfo = enrollment.StatusCode != 500;
                                         bool isAvailable = enrollment.DisplayState == 0;
                                         <li class="course-in-progress-li">
-                                            @if(enrollment.DisplayState == 0)
+                                            @if (enrollment.DisplayState == 0)
                                             {
                                                 @Html.Raw("<a target=\"_blank\" href=\"" + enrollment.CourseUrl + "\">")
                                             }
-                                            
-                                                <div class="course-in-progress-anchor-container">
-                                                    <div class="course-in-progress-info">
-                                                        <div class="row no-padding">
-                                                            <div class="col-12 col-sm-8 no-padding">
-                                                                <h3>@enrollment.CourseName</h3>
-                                                            </div>
-                                                            <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
-                                                                @if (enrollment.DisplayState == -1)
-                                                                {
-                                                                    <text>Enrollment in progress.</text>
-                                                                }
-                                                                else if (enrollment.DisplayState == 0)
-                                                                {
-                                                                    <text>Continue <i class="fas fa-arrow-right"></i></text>
-                                                                }
-                                                            </div>
+
+                                            <div class="course-in-progress-anchor-container">
+                                                <div class="course-in-progress-info">
+                                                    <div class="row no-padding">
+                                                        <div class="col-12 col-sm-8 no-padding">
+                                                            <h3>@enrollment.CourseName</h3>
+                                                        </div>
+                                                        <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
+                                                            @if (enrollment.DisplayState == -1)
+                                                            {
+                                                                <text>Enrollment in progress.</text>
+                                                            }
+                                                            else if (enrollment.DisplayState == 0)
+                                                            {
+                                                                <text>Continue <i class="fas fa-arrow-right"></i></text>
+                                                            }
                                                         </div>
                                                     </div>
-                                                    @{
-                                                        @if (enrollment.DisplayState == 0)
+                                                </div>
+                                                @{
+                                                    @if (enrollment.DisplayState == 0)
+                                                    {
+                                                        double percentComplete = enrollment.PercentComplete;
+                                                        string classFormatter = "";
+                                                        if (percentComplete < 50)
                                                         {
-                                                            double percentComplete = enrollment.PercentComplete;
-                                                            string classFormatter = "";
-                                                            if (percentComplete < 50)
-                                                            {
-                                                                classFormatter = "less-than-50";
-                                                            }
-                                                            else
-                                                            {
-                                                                classFormatter = "more-than-50";
-                                                            }
-                                                            <div class="course-in-progress">
+                                                            classFormatter = "less-than-50";
+                                                        }
+                                                        else
+                                                        {
+                                                            classFormatter = "more-than-50";
+                                                        }
+                                                        <div class="course-in-progress">
 
-                                                                <div class="progress @(classFormatter)">
+                                                            <div class="progress @(classFormatter)">
 
-                                                                    <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
-                                                                        <div class="course-completion-percentage">
-                                                                            @(percentComplete)%
-                                                                        </div>
+                                                                <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
+                                                                    <div class="course-completion-percentage">
+                                                                        @(percentComplete)%
                                                                     </div>
-
                                                                 </div>
 
                                                             </div>
-                                                        }
-                                                        else if (enrollment.DisplayState == 1)
-                                                        {
-                                                            <div class="course-enrollment-failure-container">
-                                                                Unfortunately, an error occurred when attempting to process your enrollment. We have been notified and are working to resolve the issue.
-                                                            </div>
-                                                        }
 
+                                                        </div>
                                                     }
-                                                </div>
+                                                    else if (enrollment.DisplayState == 1)
+                                                    {
+                                                        <div class="course-enrollment-failure-container">
+                                                            Unfortunately, an error occurred when attempting to process your enrollment. We have been notified and are working to resolve the issue.
+                                                        </div>
+                                                    }
 
-                                             @if(enrollment.DisplayState == 0)
+                                                }
+                                            </div>
+
+                                            @if (enrollment.DisplayState == 0)
                                             {
                                                 @Html.Raw("</a>")
                                             }
-                                            
+
 
 
 
                                         </li>
-                                     }
+                                    }
                                 </ul>
                             </div>
                         </div>
