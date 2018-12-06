@@ -8,6 +8,7 @@ using UpDiddyLib.Helpers;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using UpDiddy.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Business
 {
@@ -16,7 +17,7 @@ namespace UpDiddyApi.Business
 
         #region Class
 
-        public LinkedInInterface( UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
+        public LinkedInInterface(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider, ILogger<LinkedInInterface> logger)
         {
             _db = db;
             _mapper = mapper;
@@ -24,7 +25,7 @@ namespace UpDiddyApi.Business
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
             _apiBaseUri = _configuration["LinkedIn:ApiUrl"];
-            _syslog = new SysLog(configuration, sysemail, serviceProvider);
+            _syslog = logger;
         }
         #endregion
 

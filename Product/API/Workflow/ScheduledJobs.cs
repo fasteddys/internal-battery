@@ -12,19 +12,21 @@ using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Hangfire;
 using System.Net.Http;
 using UpDiddy.Helpers;
+using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Workflow
 {
     public class ScheduledJobs : BusinessVendorBase 
     {
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IServiceProvider serviceProvider, IHttpClientFactory httpClientFactory)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IServiceProvider serviceProvider, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger)
         {
             _db = context;
             _mapper = mapper;
             _apiBaseUri = configuration["Woz:ApiUrl"];
             _accessToken = configuration["Woz:AccessToken"];
-            _syslog = new SysLog(configuration, sysEmail, serviceProvider);
+            _syslog = logger;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
         }
@@ -37,6 +39,10 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
+
+
+
+
                 _syslog.Log(LogLevel.Information, $"***** UpdateWozStudentLastLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
                 Subscriber subscriber = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Guid.Parse(SubscriberGuid))
@@ -246,52 +252,58 @@ namespace UpDiddyApi.Workflow
         #region CareerCircle Jobs 
         public Boolean DoPromoCodeRedemptionCleanup(int? lookbackPeriodInMinutes = 30)
         {
+
+ 
             bool result = false;
-            try
+            using (_syslog.BeginScope("DoPromoCodeRedemptionCleanup"))
             {
-                _syslog.Log(LogLevel.Information, $"***** DoPromoCodeRedemptionCleanup started at: {DateTime.UtcNow.ToLongDateString()}");
+                // TODO remove debug code 
+                Process process = Process.GetCurrentProcess();
+                var WorkingSet64 = process.WorkingSet64; ;
+                var Threads = process.Threads.Count;
+                var VirtualMemorySize64 = process.VirtualMemorySize64;
 
-                // todo: this won't perform very well if there are many records being processed. refactor when/if performance becomes an issue
-                var abandonedPromoCodeRedemptions =
-                    _db.PromoCodeRedemption
-                    .Include(pcr => pcr.RedemptionStatus)
-                    .Where(pcr => pcr.IsDeleted == 0 && pcr.RedemptionStatus.Name == "In Process" && pcr.CreateDate.DateDiff(DateTime.UtcNow).TotalMinutes > lookbackPeriodInMinutes)
-                    .ToList();
+                _syslog.Log(LogLevel.Information, $"SystemHealth WorkingSet64: {WorkingSet64.ToString()}");
+                _syslog.Log(LogLevel.Information, $"SystemHealth Thread Count: {Threads}");
+                _syslog.Log(LogLevel.Information, $"SystemHealth VirtualMemorySize64: {VirtualMemorySize64}");
 
-                foreach (PromoCodeRedemption abandonedPromoCodeRedemption in abandonedPromoCodeRedemptions)
+                _syslog.LogInformation("Initiating promo code redemption cleanup");
+                try
                 {
-                    abandonedPromoCodeRedemption.ModifyDate = DateTime.UtcNow;
-                    abandonedPromoCodeRedemption.ModifyGuid = Guid.NewGuid();
-                    abandonedPromoCodeRedemption.IsDeleted = 1;
-                    _db.Attach(abandonedPromoCodeRedemption);
+
+                    // todo: this won't perform very well if there are many records being processed. refactor when/if performance becomes an issue
+                    var abandonedPromoCodeRedemptions =
+                        _db.PromoCodeRedemption
+                        .Include(pcr => pcr.RedemptionStatus)
+                        .Where(pcr => pcr.IsDeleted == 0 && pcr.RedemptionStatus.Name == "In Process" && pcr.CreateDate.DateDiff(DateTime.UtcNow).TotalMinutes > lookbackPeriodInMinutes)
+                        .ToList();
+
+                    foreach (PromoCodeRedemption abandonedPromoCodeRedemption in abandonedPromoCodeRedemptions)
+                    {
+                        abandonedPromoCodeRedemption.ModifyDate = DateTime.UtcNow;
+                        abandonedPromoCodeRedemption.ModifyGuid = Guid.NewGuid();
+                        abandonedPromoCodeRedemption.IsDeleted = 1;
+                        _db.Attach(abandonedPromoCodeRedemption);
+                    }
+
+                    _db.SaveChanges();
+                    _syslog.LogInformation("Saved promo code redemption cleanup");
+
+                    result = true;
                 }
-
-                //.ForEachAsync(abandonedPromoCodeRedemption =>
-                //{
-                //    abandonedPromoCodeRedemption.ModifyDate = DateTime.UtcNow;
-                //    abandonedPromoCodeRedemption.ModifyGuid = Guid.NewGuid();
-                //    abandonedPromoCodeRedemption.IsDeleted = 1;
-                //    _db.Attach<PromoCodeRedemption>(abandonedPromoCodeRedemption);
-                //});
-
-                _db.SaveChanges();
-
-                result = true;
-            }
-            catch (Exception e)
-            {
-                _syslog.Log(LogLevel.Error,"ScheduledJobs:DoPromoCodeRedemptionCleanup threw an exception -> " + e.Message);
-                throw e;
-            }
-            finally
-            {
-                _syslog.Log(LogLevel.Information, $"***** DoPromoCodeRedemptionCleanup completed at: {DateTime.UtcNow.ToLongDateString()}");
+                catch (Exception e)
+                {
+                    // todo: create event ids
+                    _syslog.LogError(default(EventId), e, "Error ocurred during processing");
+                    throw e;
+                }
             }
             return result;
         }
 
         #endregion
 
+ 
 
     }
 }

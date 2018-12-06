@@ -5,11 +5,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{26A8E3F3-3AEE-49E7-9C32-970BED739920}</ProjectGuid>
+    <ProjectGuid>{A7AC5904-2E46-41B6-B76C-0B7EEED30CB3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SeleniumTests</RootNamespace>
-    <AssemblyName>SeleniumTests</AssemblyName>
+    <RootNamespace>SeleniumTestss</RootNamespace>
+    <AssemblyName>SeleniumTestss</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -56,9 +56,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TopicsTest.cs" />
+    <Compile Include="HomePageTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="LinkedInTest.cs" />
+    <Compile Include="TopicsPageTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

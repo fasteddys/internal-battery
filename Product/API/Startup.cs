@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
@@ -26,7 +25,11 @@ using Microsoft.ApplicationInsights.SnapshotCollector;
 using Microsoft.Extensions.Options;
 using Microsoft.ApplicationInsights.AspNetCore;
 using Microsoft.ApplicationInsights.Extensibility;
-
+using Serilog;
+using Serilog.Sinks.ApplicationInsights;
+using UpDiddyLib.Serilog.Sinks;
+using Microsoft.Extensions.Logging;
+using Serilog.Events;
 
 namespace UpDiddyApi
 {
@@ -35,7 +38,10 @@ namespace UpDiddyApi
         public static string ScopeRead;
         public static string ScopeWrite;
         public IConfigurationRoot Configuration { get; set; }
- 
+
+        public Serilog.ILogger Logger { get; } 
+
+        public ISysEmail SysEmail { get; }
 
         public Startup(IHostingEnvironment env, IConfiguration configuration )
         {
@@ -62,12 +68,25 @@ namespace UpDiddyApi
                     new KeyVaultSecretManager());
             }
 
-            Configuration = builder.Build();         
+            Configuration = builder.Build();
+
+            SysEmail = new SysEmail(Configuration);
+
+            // directly add Application Insights and SendGrid to access Key Vault Secrets
+            Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(Configuration)
+                .WriteTo.ApplicationInsightsTraces(Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"])
+                .WriteTo
+                    .SendGrid(LogEventLevel.Fatal, Configuration["SysEmail:ApiKey"], Configuration["SysEmail:SystemErrorEmailAddress"])
+                .Enrich.FromLogContext()
+                .CreateLogger();
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<Serilog.ILogger>(Logger);
+
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -91,9 +110,6 @@ namespace UpDiddyApi
             // Add System Email   
             services.AddSingleton<ISysEmail>(new SysEmail(Configuration));
 
-            // Add syslog
-            services.AddScoped<ISysLog, SysLog>();
-
             // Add framework services.
             services.AddMvc();
             // Add AutoMapper 
@@ -112,6 +128,9 @@ namespace UpDiddyApi
             int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
             int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
+
+
+  
 
             // Add Polly 
 
@@ -143,9 +162,11 @@ namespace UpDiddyApi
 
 
             // Configure SnapshotCollector from application settings
-            services.Configure<SnapshotCollectorConfiguration>(Configuration.GetSection(nameof(SnapshotCollectorConfiguration)));
+            // TODO Uncomment test 
+            //services.Configure<SnapshotCollectorConfiguration>(Configuration.GetSection(nameof(SnapshotCollectorConfiguration)));
             // Add SnapshotCollector telemetry processor.
-            services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
+            // TODO Uncomment test 
+            //services.AddSingleton<ITelemetryProcessorFactory>(sp => new SnapshotCollectorTelemetryProcessorFactory(sp));
 
             // Add Redis session cahce
             services.AddDistributedRedisCache(options =>
@@ -160,10 +181,7 @@ namespace UpDiddyApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-            // Add App Insights Logging
-            loggerFactory.AddApplicationInsights(app.ApplicationServices, Microsoft.Extensions.Logging.LogLevel.Warning);
+            loggerFactory.AddSerilog(Logger);
 
             ScopeRead = Configuration["AzureAdB2C:ScopeRead"];
             ScopeWrite = Configuration["AzureAdB2C:ScopeWrite"];

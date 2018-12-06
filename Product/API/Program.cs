@@ -1,29 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 
 namespace UpDiddyApi
 {
     public class Program
     {
+        public IConfiguration Configuration { get; }
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseApplicationInsights()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .ConfigureAppConfiguration((context, config) =>
+                .ConfigureServices((hostingContext, services) =>
                 {
-                    config.AddEnvironmentVariables();
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);                  
-                    var builtConfig = config.Build();
+                    services.AddApplicationInsightsTelemetry(hostingContext.Configuration);
                 })
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 

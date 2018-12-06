@@ -16,6 +16,7 @@ using Newtonsoft.Json.Linq;
 using UpDiddyLib.Helpers;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using UpDiddy.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Business
 {
@@ -25,7 +26,7 @@ namespace UpDiddyApi.Business
         #region Class
 
 
-        public WozInterface(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysLog sysLog, IHttpClientFactory httpClientFactory)
+        public WozInterface(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = context;
             _mapper = mapper;
@@ -690,7 +691,7 @@ namespace UpDiddyApi.Business
 
             // We need to have a login for the student to proceed 
             if (StudentLogin == null)
-                CreateResponse(string.Empty, "Student not login found", string.Empty, TransactionState.Error);
+                return CreateResponse(string.Empty, "Student not login found", string.Empty, TransactionState.Error);
 
             int ExeterId = int.Parse(StudentLogin.VendorLogin);
 
