@@ -107,9 +107,17 @@ namespace UpDiddyApi.Models
         public DbSet<CourseVariantType> CourseVariantType { get; set; }
         public DbSet<LinkedInToken> LinkedInToken { get; set; }
         public DbSet<SubscriberProfileStagingStore> SubscriberProfileStagingStore { get; set; }
+        public DbSet<Skill> Skill { get; set; }
+        public DbSet<SubscriberSkill> SubscriberSkill { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<Skill>()
+            .HasIndex(u => u.SkillName)
+            .IsUnique();
+
             modelBuilder.Entity<PromoCode>()
                 .Property(pc => pc.NumberOfRedemptions)
                 .HasDefaultValue(0);

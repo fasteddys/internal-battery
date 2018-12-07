@@ -1060,6 +1060,35 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("ReportEnrollmentByVendors");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.Skill", b =>
+                {
+                    b.Property<int>("SkillId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("ONetCode");
+
+                    b.Property<string>("SkillName");
+
+                    b.HasKey("SkillId");
+
+                    b.HasIndex("SkillName")
+                        .IsUnique()
+                        .HasFilter("[SkillName] IS NOT NULL");
+
+                    b.ToTable("Skill");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.State", b =>
                 {
                     b.Property<int>("StateId")
@@ -1211,6 +1240,35 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("SubscriberPromoCodeId");
 
                     b.ToTable("SubscriberPromoCode");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberSkill", b =>
+                {
+                    b.Property<int>("SubscriberSkillId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("SkillId");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("SubscriberSkillId");
+
+                    b.HasIndex("SkillId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("SubscriberSkill");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Tag", b =>
@@ -1651,6 +1709,19 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberProfileStagingStore", b =>
                 {
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberSkill", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Skill", "Skill")
+                        .WithMany()
+                        .HasForeignKey("SkillId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
                         .HasForeignKey("SubscriberId")
