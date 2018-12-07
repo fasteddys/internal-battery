@@ -64,9 +64,9 @@ namespace UpDiddyApi.Controllers
                         subscriber.City = Subscriber.City;
                     }
                     int stateId = 0;
-                    if (Subscriber.SelectedState != Guid.Empty)
+                    if (Subscriber.State.StateGuid.HasValue)
                     {
-                        stateId = _db.State.Where(s => s.StateGuid.Value == Subscriber.SelectedState).Select(s => s.StateId).FirstOrDefault();
+                        stateId = _db.State.Where(s => s.StateGuid.Value == Subscriber.State.StateGuid.Value).Select(s => s.StateId).FirstOrDefault();
                     }
                     if (stateId != 0)
                     {

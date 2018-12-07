@@ -13,7 +13,7 @@ namespace UpDiddy.Api
         CourseDto Course(string CourseSlug);
         CourseDto CourseByGuid(Guid CourseGuid);
         WozTermsOfServiceDto GetWozTermsOfService();
-        WozCourseProgress GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid);
+        WozCourseProgressDto GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid);
         IList<CountryDto> GetCountries();
         IList<StateDto> GetStatesByCountry(Guid countryGuid);
         CourseVariantDto GetCourseVariant(Guid courseVariantGuid);
@@ -22,15 +22,16 @@ namespace UpDiddy.Api
         SubscriberDto Subscriber(Guid SubscriberGuid);
         PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid, string subscriberGuid);
         PromoCodeDto PromoCodeValidation(string code, string courseVariantGuid, string subscriberGuid);
+        [Obsolete("don't need this after refactoring on profile page is complete", false)]
         IList<EnrollmentDto> GetCurrentEnrollmentsForSubscriber(SubscriberDto Subscriber);
         VendorStudentLoginDto StudentLogin(int SubscriberId);
-        CourseLoginDto CourseLogin(Guid SubscriberGuid, Guid CourseGuid, Guid VendorGuid);
+        CourseLoginDto CourseLogin(Guid SubscriberGuid, Guid CourseGuid);
         BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber);
         Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto);
         Guid WriteToEnrollmentLog(EnrollmentLogDto enrollmentLogDto);
         SubscriberDto CreateSubscriberDeprecated(string SubscriberGuid, string SubscriberEmail);
         SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail);
-        WozCourseProgress UpdateStudentCourseProgress(Guid SubscriberGuid, bool FutureSchedule);
+        WozCourseProgressDto UpdateStudentCourseProgress(Guid SubscriberGuid, bool FutureSchedule);
         BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto);
         IList<CountryDto> _GetCountries();
         IList<StateDto> _GetStatesByCountry(Guid countryGuid);

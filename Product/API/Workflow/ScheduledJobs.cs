@@ -103,7 +103,7 @@ namespace UpDiddyApi.Workflow
                     .Where(e => e.IsDeleted == 0 && e.SubscriberId == subscriber.SubscriberId && e.CompletionDate == null && e.DroppedDate == null)
                     .ToList();
 
-                WozCourseProgress wcp = null;
+                WozCourseProgressDto wcp = null;
                 bool updatesMade = false;
 
                 foreach (Enrollment e in enrollments)
@@ -195,7 +195,7 @@ namespace UpDiddyApi.Workflow
 
         #region Woz Private Helper Functions
 
-        private WozCourseProgress GetWozCourseProgress(Enrollment enrollment)
+        private WozCourseProgressDto GetWozCourseProgress(Enrollment enrollment)
         {
             try
             {
@@ -211,7 +211,7 @@ namespace UpDiddyApi.Workflow
                 if (wce == null)
                     return null;
 
-                WozCourseProgress Wcp = wi.GetCourseProgress(wce.SectionId, wce.WozEnrollmentId).Result;
+                WozCourseProgressDto Wcp = wi.GetCourseProgress(wce.SectionId, wce.WozEnrollmentId).Result;
                 _syslog.Log(LogLevel.Information, $"***** GetWozCourseProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return Wcp;
             }

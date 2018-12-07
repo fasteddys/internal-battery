@@ -24,12 +24,12 @@
                             <div class="col-md-8 no-padding">
                                 <div class="career-circle-profile-text">My CareerCircle Profile</div>
                                 <div id="ProfileName" class="career-circle-profile-name">
-                                    <span id="ProfileFirstName">@(string.IsNullOrEmpty(Model.Subscriber.FirstName) ? "CareerCircle User" : Model.Subscriber.FirstName)</span>
-                                    <span id="ProfileLastName">@(string.IsNullOrEmpty(Model.Subscriber.LastName) ? "" : Model.Subscriber.LastName)</span>
+                                    <span id="ProfileFirstName">@(string.IsNullOrEmpty(Model.FirstName) ? "CareerCircle User" : Model.FirstName)</span>
+                                    <span id="ProfileLastName">@(string.IsNullOrEmpty(Model.LastName) ? "" : Model.LastName)</span>
                                 </div>
                                 <div class="career-circle-profile-email">
                                     <i class="fa fa-envelope" aria-hidden="true"></i>
-                                    @Model.Subscriber.Email
+                                    @Model.Email
                                 </div>
                             </div>
                             <!--
@@ -50,7 +50,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="mb-2">
-                            @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.Subscriber.SubscriberGuid })
+                            @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.SubscriberGuid })
                         </div>
                     </div>
                 </div>
@@ -62,18 +62,16 @@
                             </div>
                             <div class="courses-in-progress-list-container">
                                 @{
-                                    if (Model.CurrentEnrollments.Count == 0)
+                                    if (Model.Enrollments.Count == 0)
                                     {
                                         <text>You are not currently enrolled in any courses.</text>
                                     }
                                 }
                                 <ul class="courses-in-progress-list-desktop">
-                                    @foreach (WozCourseProgress enrollment in Model.CurrentEnrollments)
+                                    @foreach (EnrollmentDto enrollment in Model.Enrollments)
                                     {
-                                        bool hasProgressInfo = enrollment.StatusCode != 500;
-                                        bool isAvailable = enrollment.DisplayState == 0;
                                         <li class="course-in-progress-li">
-                                            @if (enrollment.DisplayState == 0)
+                                            @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
                                             {
                                                 @Html.Raw("<a target=\"_blank\" href=\"" + enrollment.CourseUrl + "\">")
                                             }
@@ -82,14 +80,14 @@
                                                 <div class="course-in-progress-info">
                                                     <div class="row no-padding">
                                                         <div class="col-12 col-sm-8 no-padding">
-                                                            <h3>@enrollment.CourseName</h3>
+                                                            <h3>@enrollment.Course</h3>
                                                         </div>
                                                         <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
-                                                            @if (enrollment.DisplayState == -1)
+                                                            @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Pending)
                                                             {
                                                                 <text>Enrollment in progress.</text>
                                                             }
-                                                            else if (enrollment.DisplayState == 0)
+                                                            else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
                                                             {
                                                                 <text>Continue <i class="fas fa-arrow-right"></i></text>
                                                             }
@@ -97,7 +95,7 @@
                                                     </div>
                                                 </div>
                                                 @{
-                                                    @if (enrollment.DisplayState == 0)
+                                                    @if (enrollment.SimplifiedEnrollmentStatus  == SimplifiedEnrollmentStatus.Success)
                                                     {
                                                         double percentComplete = enrollment.PercentComplete;
                                                         string classFormatter = "";
@@ -123,7 +121,7 @@
 
                                                         </div>
                                                     }
-                                                    else if (enrollment.DisplayState == 1)
+                                                    else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Error)
                                                     {
                                                         <div class="course-enrollment-failure-container">
                                                             Unfortunately, an error occurred when attempting to process your enrollment. We have been notified and are working to resolve the issue.
@@ -133,7 +131,7 @@
                                                 }
                                             </div>
 
-                                            @if (enrollment.DisplayState == 0)
+                                            @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
                                             {
                                                 @Html.Raw("</a>")
                                             }
@@ -163,105 +161,105 @@
                                 </div>
                                 <div class="personal-info-display">
                                     @{
-                                        if (!Model.HasAnyInformationToDisplay)
+                                        if (!Model.IsAnyProfileInformationPopulated)
                                         {
                                             <text>No information found. Please press 'Edit' to edit your information.</text>
                                         }
                                     }
                                     <ul>
                                         @{
-                                            if (!string.IsNullOrEmpty(Model.DisplayedFirstName))
+                                            if (!string.IsNullOrEmpty(Model.FirstName))
                                             {
                                                 <li>
-                                                    First name: <span id="ProfileFirstNameDisplay">@Model.DisplayedFirstName</span>
+                                                    First name: <span id="ProfileFirstNameDisplay">@Model.FirstName</span>
                                                 </li>
                                             }
                                         }
                                         @{
-                                            if (!string.IsNullOrEmpty(Model.DisplayedLastName))
+                                            if (!string.IsNullOrEmpty(Model.LastName))
                                             {
                                                 <li>
-                                                    Last name: <span id="ProfileLastNameDisplay">@Model.DisplayedLastName</span>
+                                                    Last name: <span id="ProfileLastNameDisplay">@Model.LastName</span>
                                                 </li>
                                             }
                                         }
                                         @{
-                                            if (!string.IsNullOrEmpty(Model.DisplayedAddress))
+                                            if (!string.IsNullOrEmpty(Model.Address))
                                             {
                                                 <li>
-                                                    Address: <span id="ProfileAddressDisplay">@Model.DisplayedAddress</span>
+                                                    Address: <span id="ProfileAddressDisplay">@Model.Address</span>
                                                 </li>
                                             }
                                         }
                                         @{
-                                            if (!string.IsNullOrEmpty(Model.DisplayedCity))
+                                            if (!string.IsNullOrEmpty(Model.City))
                                             {
                                                 <li>
-                                                    City: <span id="ProfileCityDisplay">@Model.DisplayedCity</span>
+                                                    City: <span id="ProfileCityDisplay">@Model.City</span>
                                                 </li>
                                             }
                                         }
                                         @{
-                                            if (!string.IsNullOrEmpty(Model.DisplayedState))
+                                            if (Model.State != null)
                                             {
                                                 <li>
-                                                    State: <span id="ProfileStateDisplay">@Model.DisplayedState</span>
+                                                    State: <span id="ProfileStateDisplay">@Model.State.Name</span>
                                                 </li>
                                             }
                                         }
                                         @{
-                                            if (!string.IsNullOrEmpty(Model.DisplayedCountry))
+                                            if (Model.State != null)
                                             {
                                                 <li>
-                                                    Country: <span id="ProfileCountryDisplay">@Model.DisplayedCountry</span>
+                                                    Country: <span id="ProfileCountryDisplay">TODO!</span>
                                                 </li>
                                             }
                                         }
                                         @{
-                                            if (!string.IsNullOrEmpty(Model.DisplayedPhone))
+                                            if (!string.IsNullOrEmpty(Model.Phone))
                                             {
                                                 <li>
-                                                    Phone number: <span id="ProfilePhoneNumberDisplay">@Model.DisplayedPhone</span>
+                                                    Phone number: <span id="ProfilePhoneNumberDisplay">@Model.Phone</span>
                                                 </li>
                                             }
                                         }
                                         @{
-                                            if (!string.IsNullOrEmpty(Model.DisplayedFacebookUrl))
+                                            if (!string.IsNullOrEmpty(Model.FacebookUrl))
                                             {
                                                 <li>
-                                                    Facebook: <span id="ProfilePhoneNumberDisplay">@Model.DisplayedFacebookUrl</span>
+                                                    Facebook: <span id="ProfilePhoneNumberDisplay">@Model.FacebookUrl</span>
                                                 </li>
                                             }
                                         }
                                         @{
-                                            if (!string.IsNullOrEmpty(Model.DisplayedTwitterUrl))
+                                            if (!string.IsNullOrEmpty(Model.TwitterUrl))
                                             {
                                                 <li>
-                                                    Twitter: <span id="ProfilePhoneNumberDisplay">@Model.DisplayedTwitterUrl</span>
+                                                    Twitter: <span id="ProfilePhoneNumberDisplay">@Model.TwitterUrl</span>
                                                 </li>
                                             }
                                         }
                                         @{
-                                            if (!string.IsNullOrEmpty(Model.DisplayedLinkedInUrl))
+                                            if (!string.IsNullOrEmpty(Model.LinkedInUrl))
                                             {
                                                 <li>
-                                                    LinkedIn: <span id="ProfilePhoneNumberDisplay">@Model.DisplayedLinkedInUrl</span>
+                                                    LinkedIn: <span id="ProfilePhoneNumberDisplay">@Model.LinkedInUrl</span>
                                                 </li>
                                             }
                                         }
                                         @{
-                                            if (!string.IsNullOrEmpty(Model.DisplayedStackOverflowUrl))
+                                            if (!string.IsNullOrEmpty(Model.StackOverflowUrl))
                                             {
                                                 <li>
-                                                    StackOverflow: <span id="ProfilePhoneNumberDisplay">@Model.DisplayedStackOverflowUrl</span>
+                                                    StackOverflow: <span id="ProfilePhoneNumberDisplay">@Model.StackOverflowUrl</span>
                                                 </li>
                                             }
                                         }
                                         @{
-                                            if (!string.IsNullOrEmpty(Model.DisplayedGithubUrl))
+                                            if (!string.IsNullOrEmpty(Model.GithubUrl))
                                             {
                                                 <li>
-                                                    GitHub: <span id="ProfilePhoneNumberDisplay">@Model.DisplayedGithubUrl</span>
+                                                    GitHub: <span id="ProfilePhoneNumberDisplay">@Model.GithubUrl</span>
                                                 </li>
                                             }
                                         }
@@ -275,57 +273,55 @@
                                 </div>
                                 <div class="personal-info-form hidden" id="PersonalInfoFormContainer">
                                     <form asp-controller="Home" asp-action="UpdateProfileInformation" id="PersonalInfoForm">
-                                        <input type="hidden" asp-for="CurrentSubscriberGuid" value="@(Model.Subscriber.SubscriberGuid)" />
-                                        <input type="hidden" asp-for="UpdatedState" value="" />
-                                        <input type="hidden" id="SavedStateGuid" value="@(Model.SelectedState)" />
+                                        <input type="hidden" asp-for="SubscriberGuid" value="@(Model.SubscriberGuid)" />
                                         <div class="form-row">
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedFirstName">First Name</label>
-                                                <input type="text" class="form-control" name="UpdatedFirstName" id="UpdatedFirstName" asp-for="UpdatedFirstName" placeholder="@Model.FirstNamePlaceholder">
+                                                <input type="text" class="form-control" name="UpdatedFirstName" id="UpdatedFirstName" asp-for="FirstName" />
                                             </div>
                                             <div class="form-group col-md-6">
                                                 <label for="UpdatedLastName">Last Name</label>
-                                                <input type="text" class="form-control" name="UpdatedLastName" id="UpdatedLastName" asp-for="UpdatedLastName" placeholder="@Model.LastNamePlaceholder">
+                                                <input type="text" class="form-control" name="UpdatedLastName" id="UpdatedLastName" asp-for="LastName" />
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedPhoneNumber">Phone Number</label>
-                                                <input type="text" class="form-control" name="UpdatedPhoneNumber" id="UpdatedPhoneNumber" maxlength="10" asp-for="UpdatedPhoneNumber" placeholder="@Model.PhonePlaceholder">
+                                                <input type="text" class="form-control" name="UpdatedPhoneNumber" id="UpdatedPhoneNumber" maxlength="10" asp-for="Phone" />
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedAddress">Address</label>
-                                                <input type="text" class="form-control" name="UpdatedAddress" id="UpdatedAddress" asp-for="UpdatedAddress" placeholder="@Model.AddressPlaceholder">
+                                                <input type="text" class="form-control" name="UpdatedAddress" id="UpdatedAddress" asp-for="Address" />
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedCity">City</label>
-                                                <input type="text" class="form-control" name="UpdatedCity" id="UpdatedCity" asp-for="UpdatedCity" placeholder="@Model.CityPlaceholder">
+                                                <input type="text" class="form-control" name="UpdatedCity" id="UpdatedCity" asp-for="City" />
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedStateInput">State</label>
-                                                @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select" })
+                                                @Html.DropDownListFor(m => m.State, Model.States, "Select State", new { @class = "form-control state-select" })
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedCountryInput">Country</label>
-                                                @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select" })
+                                                @Html.DropDownListFor(m => m.Country, Model.Countries, "Select Country", new { @class = "form-control country-select" })
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedFacebookUrl">Facebook Profile</label>
-                                                <input type="text" class="form-control" name="UpdatedFacebookUrl" id="UpdatedFacebookUrl" asp-for="UpdatedFacebookUrl" placeholder="@Model.FacebookUrlPlaceholder">
+                                                <input type="text" class="form-control" name="UpdatedFacebookUrl" id="UpdatedFacebookUrl" asp-for="FacebookUrl" />
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedTwitterUrl">Twitter Profile</label>
-                                                <input type="text" class="form-control" name="UpdatedTwitterUrl" id="UpdatedTwitterUrl" asp-for="UpdatedTwitterUrl" placeholder="@Model.TwitterUrlPlaceholder">
+                                                <input type="text" class="form-control" name="UpdatedTwitterUrl" id="UpdatedTwitterUrl" asp-for="TwitterUrl" />
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedLinkedInUrl">LinkedIn Profile</label>
-                                                <input type="text" class="form-control" name="UpdatedLinkedInUrl" id="UpdatedLinkedInUrl" asp-for="UpdatedLinkedInUrl" placeholder="@Model.LinkedInUrlPlaceholder">
+                                                <input type="text" class="form-control" name="UpdatedLinkedInUrl" id="UpdatedLinkedInUrl" asp-for="LinkedInUrl" />
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedStackOverflowUrl">StackOverflow Profile</label>
-                                                <input type="text" class="form-control" name="UpdatedStackOverflowUrl" id="UpdatedStackOverflowUrl" asp-for="UpdatedStackOverflowUrl" placeholder="@Model.StackOverflowUrlPlaceholder">
+                                                <input type="text" class="form-control" name="UpdatedStackOverflowUrl" id="UpdatedStackOverflowUrl" asp-for="StackOverflowUrl" />
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedGithubUrl">GitHub Profile</label>
-                                                <input type="text" class="form-control" name="UpdatedGithubUrl" id="UpdatedGithubUrl" asp-for="UpdatedGithubUrl" placeholder="@Model.GithubUrlPlaceholder">
+                                                <input type="text" class="form-control" name="UpdatedGithubUrl" id="UpdatedGithubUrl" asp-for="GithubUrl" />
                                             </div>
                                             <div class="form-row col-12">
                                                 <div id="ValidationSummary">

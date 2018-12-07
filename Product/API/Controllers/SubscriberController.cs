@@ -6,6 +6,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
@@ -51,6 +52,8 @@ namespace UpDiddyApi.Controllers
         public IActionResult Get(Guid SubscriberGuid)
         {
             Subscriber subscriber = _db.Subscriber
+                .Include(s => s.State)
+                .Include(s => s.Enrollments)
                 .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == SubscriberGuid)
                 .FirstOrDefault();
 

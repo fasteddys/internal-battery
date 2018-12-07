@@ -200,11 +200,11 @@ namespace UpDiddyApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("api/[controller]/StudentLoginUrl/{SubscriberGuid}/{CourseGuid}/{VendorGuid}")]
-        public IActionResult StudentLoginUrl(Guid SubscriberGuid, Guid CourseGuid, Guid VendorGuid)
+        [Route("api/[controller]/StudentLoginUrl/{SubscriberGuid}/{CourseGuid}")]
+        public IActionResult StudentLoginUrl(Guid SubscriberGuid, Guid CourseGuid)
         {
             var CourseLogin = new CourseFactory(_db, _configuration,_syslog,_distributedCache)
-                .GetCourseLogin(SubscriberGuid, CourseGuid, VendorGuid); 
+                .GetCourseLogin(SubscriberGuid, CourseGuid); 
             return Ok(CourseLogin);
         }
 

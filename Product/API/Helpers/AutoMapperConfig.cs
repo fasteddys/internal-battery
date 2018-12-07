@@ -26,14 +26,13 @@ namespace UpDiddyApi.Helpers
             CreateMap<Topic, TopicDto>().ReverseMap();
             CreateMap<Vendor, VendorDto>().ReverseMap();
             CreateMap<Enrollment, EnrollmentDto>().ReverseMap();
-            CreateMap<Subscriber, SubscriberDto>().ReverseMap();
             CreateMap<WozCourseEnrollment, WozCourseEnrollmentDto>().ReverseMap();
             CreateMap<Country, CountryDto>().ReverseMap();
             CreateMap<State, StateDto>().ReverseMap();            
             CreateMap<EnrollmentLog, EnrollmentLogDto>().ReverseMap();
             CreateMap<CourseVariantType, CourseVariantTypeDto>().ReverseMap();
             
-            // mapping that ignore properties in the Dto that don't exist in the model object
+            // mappings that ignore properties in the Dto that don't exist in the model object
             CreateMap<PromoCode, PromoCodeDto>()
                 .ForMember(x => x.IsValid, opt => opt.Ignore())
                 .ForMember(x => x.ValidationMessage, opt => opt.Ignore())
@@ -42,13 +41,16 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.PromoCodeRedemptionGuid, opt => opt.Ignore())
                 .ReverseMap();
 
-            // map with child collection of related entities
+            // mappings with child collection of related entities
             CreateMap<Course, CourseDto>()
                 .ForMember(c => c.CourseVariants, opt => opt.MapFrom(src => src.CourseVariants))
                 .ForMember(c => c.Vendor, opt => opt.MapFrom(src => src.Vendor))
                 .ReverseMap();
             CreateMap<CourseVariant, CourseVariantDto>()
                 .ForMember(cv => cv.CourseVariantType, opt => opt.MapFrom(src => src.CourseVariantType))
+                .ReverseMap();
+            CreateMap<Subscriber, SubscriberDto>()
+                .ForMember(s => s.Enrollments, opt => opt.MapFrom(src => src.Enrollments))
                 .ReverseMap();
         }
     }

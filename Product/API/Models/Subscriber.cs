@@ -8,7 +8,7 @@ namespace UpDiddyApi.Models
 {
     public class Subscriber : BaseModel
     {
-        public int SubscriberId { get; set; }         
+        public int SubscriberId { get; set; }
         public Guid? SubscriberGuid { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -22,11 +22,13 @@ namespace UpDiddyApi.Models
         public string ProfileImage { get; set; }
         public string City { get; set; }
         public int? StateId { get; set; }
+        public virtual State State { get; set; }
         public string PostalCode { get; set; }
         public string LinkedInUrl { get; set; }
         public string FacebookUrl { get; set; }
         public string TwitterUrl { get; set; }
         public string StackOverflowUrl { get; set; }
         public string GithubUrl { get; set; }
+        public List<Enrollment> Enrollments { get; set; }
     }
 }

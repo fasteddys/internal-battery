@@ -32,7 +32,8 @@ namespace UpDiddy.Controllers
         }
 
         public HomeController(IApi api, IConfiguration configuration, IHostingEnvironment env)
-            : base(api)        {
+            : base(api)
+        {
             _env = env;
             _configuration = configuration;
         }
@@ -41,7 +42,7 @@ namespace UpDiddy.Controllers
         {
             return Ok(Json(_Api.GetStatesByCountry(countryGuid)));
         }
-        
+
         public IActionResult Index()
         {
             // TODO remove test code 
@@ -61,25 +62,21 @@ namespace UpDiddy.Controllers
 
             return View();
         }
-
-
+        
         public IActionResult AboutUs()
         {
 
             return View();
         }
-
-
+        
         public IActionResult Privacy()
         {
 
             return View();
         }
-
-
+        
         public IActionResult WhatWeAreAbout()
         {
-
             return View();
         }
 
@@ -97,24 +94,70 @@ namespace UpDiddy.Controllers
         {
             return View();
         }
-
-
+        
         [Authorize]
         public IActionResult ProfileLogin()
         {
             GetSubscriber(true);
             // UPdated the subscribers course progress 
             if (this.subscriber != null)
-                _Api.UpdateStudentCourseProgress((Guid) this.subscriber.SubscriberGuid, true);
- 
+                _Api.UpdateStudentCourseProgress((Guid)this.subscriber.SubscriberGuid, true);
+
             return RedirectToAction("Profile", "Home");
         }
-
-
-
+        
         [Authorize]
         public IActionResult Profile()
         {
+            // new
+
+            // don't think we want to change how the subscriber is loaded
+            GetSubscriber(true);
+
+            // hydrate the view model object from the dto
+            ProfileViewModel profileViewModel = new ProfileViewModel()
+            {
+                SubscriberGuid = this.subscriber.SubscriberGuid,
+                FirstName = this.subscriber.FirstName,
+                LastName = this.subscriber.LastName,
+                Phone = this.subscriber.PhoneNumber,
+                Address = this.subscriber.Address,
+                City = this.subscriber.City,
+                State = this.subscriber.State,
+                Country = null,
+                FacebookUrl = this.subscriber.FacebookUrl,
+                GithubUrl = this.subscriber.GithubUrl,
+                ImageUrl = null,
+                LinkedInUrl = this.subscriber.LinkedInUrl,
+                StackOverflowUrl = this.subscriber.StackOverflowUrl,
+                TwitterUrl = this.subscriber.TwitterUrl,
+                Enrollments = this.subscriber.Enrollments,
+                // todo: figure out how to retrieve country and state lists and selected values. need to cleanup the api references which are currently using int instead of guid
+                Countries = _Api.GetCountries().Select(c => new SelectListItem()
+                {
+                    Text = c.DisplayName,
+                    Value = c.CountryGuid.ToString()
+                }),
+                States = new List<StateViewModel>().Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.StateGuid.ToString()
+                })
+            };
+
+            // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
+            // i considered overloading the existing GetSubscriber method to do this, but then that makes CourseController 
+            // a dependency of BaseController. that's more refactoring than i think we want to concern ourselves with now.
+            foreach(var enrollment in profileViewModel.Enrollments)
+            {
+                var courseLogin = _Api.CourseLogin(profileViewModel.SubscriberGuid.Value, enrollment.EnrollmentGuid.Value);
+                enrollment.CourseUrl = courseLogin.LoginUrl;
+            }
+
+            // return view model 
+            return View(profileViewModel);
+
+            /* old
             GetSubscriber(true);
             IList<EnrollmentDto> CurrentEnrollments = _Api.GetCurrentEnrollmentsForSubscriber(this.subscriber);
             CountryDto SubscriberCountry = new CountryDto();
@@ -126,21 +169,21 @@ namespace UpDiddy.Controllers
                 SubscriberCountry = _Api.GetSubscriberCountry(this.subscriber.StateId);
                 SubscriberState = _Api.GetSubscriberState(this.subscriber.StateId);
             }
-            IList<WozCourseProgress> WozCourseProgressions = new List<WozCourseProgress>();
-          
-            if ( CurrentEnrollments != null )
+            IList<WozCourseProgressDto> WozCourseProgressions = new List<WozCourseProgressDto>();
+
+            if (CurrentEnrollments != null)
             {
-            
+
                 foreach (EnrollmentDto enrollment in CurrentEnrollments)
-                {                   
+                {
                     try
                     {
                         Guid CourseGuid = enrollment.Course.CourseGuid ?? default(Guid);
                         Guid VendorGuid = enrollment.Course.Vendor.VendorGuid ?? default(Guid);
-                        Guid SubscriberGuid = this.subscriber.SubscriberGuid?? default(Guid);
-                        var courseLogin = _Api.CourseLogin(SubscriberGuid, CourseGuid,VendorGuid);
+                        Guid SubscriberGuid = this.subscriber.SubscriberGuid ?? default(Guid);
+                        var courseLogin = _Api.CourseLogin(SubscriberGuid, CourseGuid, VendorGuid);
 
-                        WozCourseProgress dto = new WozCourseProgress
+                        WozCourseProgressDto dto = new WozCourseProgressDto
                         {
                             CourseName = enrollment.Course.Name,
                             CourseUrl = courseLogin == null ? string.Empty : courseLogin.LoginUrl,
@@ -157,7 +200,7 @@ namespace UpDiddy.Controllers
                     }
                 }
             }
-            
+
             ProfileViewModel ProfileViewModel = new ProfileViewModel(
                 _configuration,
                 this.subscriber,
@@ -180,6 +223,7 @@ namespace UpDiddy.Controllers
             ProfileViewModel.SelectedCountry = SubscriberCountry.CountryGuid;
 
             return View(ProfileViewModel);
+            */
         }
 
         [HttpPost]
@@ -199,9 +243,12 @@ namespace UpDiddy.Controllers
             Guid SelectedState
             )
         {
-            /* todo: the validation and sanitization logic below is probably the worst code i have written in the last 10 years. 
+            return new BasicResponseDto();
+
+            /* OLD
+             * todo: the validation and sanitization logic below is probably the worst code i have written in the last 10 years. 
              * for the love of god, refactor this to use the following pattern: use IActionResult instead of BasicResponseDto for
-             * return type, use data annotations for validation, simplify view model and pass that to method as a single parameter */
+             * return type, use data annotations for validation, simplify view model and pass that to method as a single parameter 
             this.GetSubscriber(false);
 
             // scrub fields which do not have strict validation to ensure no html is stored in the db
@@ -252,7 +299,7 @@ namespace UpDiddy.Controllers
                     PhoneNumber = UpdatedPhoneNumber,
                     City = UpdatedCity,
                     // StateId = UpdatedState,
-                    SelectedState = SelectedState,
+                    State = SelectedState,
                     FacebookUrl = UpdatedFacebookUrl,
                     TwitterUrl = UpdatedTwitterUrl,
                     LinkedInUrl = UpdatedLinkedInUrl,
@@ -275,6 +322,7 @@ namespace UpDiddy.Controllers
                     Description = validationErrors.ToString()
                 };
             }
+            */
         }
 
         [HttpPost]

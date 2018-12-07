@@ -24,6 +24,7 @@ namespace UpDiddyLib.Dto
         public string TwitterUrl { get; set; }
         public string StackOverflowUrl { get; set; }
         public string GithubUrl { get; set; }
-        public Guid SelectedState { get; set; }
+        public StateDto State { get; set; }
+        public List<EnrollmentDto> Enrollments { get; set; }
     }
 }

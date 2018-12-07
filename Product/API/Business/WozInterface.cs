@@ -484,7 +484,7 @@ namespace UpDiddyApi.Business
 
         #region Course Enrollment
 
-        public async Task<WozCourseProgress> GetCourseProgress(int SectionId, int WozEnrollmentId)
+        public async Task<WozCourseProgressDto> GetCourseProgress(int SectionId, int WozEnrollmentId)
         {
 
             var Url = _apiBaseUri + $"sections/{SectionId}/enrollments/{WozEnrollmentId}";
@@ -503,7 +503,7 @@ namespace UpDiddyApi.Business
                 string ActivitiesCompleted = WozO.progress.activitiesCompleted;
                 string ActivitiesTotal = WozO.progress.activitiesTotal;
                 int _StatusCode = (int)response.StatusCode;
-                WozCourseProgress CourseProgress = new WozCourseProgress()
+                WozCourseProgressDto CourseProgress = new WozCourseProgressDto()
                 {
                     LetterGrade = LetterGrade,
                     PercentageGrade = int.Parse(PercentageGrade),

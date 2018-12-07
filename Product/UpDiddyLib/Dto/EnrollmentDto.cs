@@ -4,7 +4,13 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-
+    public enum SimplifiedEnrollmentStatus
+    {
+        Unknown = 0,
+        Pending = 1,
+        Success = 2, 
+        Error = 3
+    }
     public enum EnrollmentStatus
     { 
          PaymentInitiated = 0, PaymentInProgress = 10, PaymentComplete = 20, PaymentError = 30, PaymentFatalError = 40,
@@ -34,13 +40,20 @@ namespace UpDiddyLib.Dto
         public int? CourseVariantId { get; set; }
         public Guid CourseVariantGuid { get; set; }
         public Guid CourseGuid { get; set; }
+        public string CourseUrl { get; set; }
 
-        public bool IsError(EnrollmentStatus StatusId)
+        public SimplifiedEnrollmentStatus SimplifiedEnrollmentStatus
         {
-            if ((int)StatusId >= 30) return true;
-            else return false;
+            get
+            {
+
+                if (this.EnrollmentStatusId < 23)
+                    return SimplifiedEnrollmentStatus.Pending;
+                else if (this.EnrollmentStatusId < 25)
+                    return SimplifiedEnrollmentStatus.Success;
+                else
+                    return SimplifiedEnrollmentStatus.Error;
+            }
         }
     }
-
-    
 }

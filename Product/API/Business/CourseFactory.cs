@@ -1,6 +1,7 @@
 ﻿using Hangfire;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,23 +14,34 @@ namespace UpDiddyApi.Business
 {
     public class CourseFactory : FactoryBase
     {
+        private readonly UpDiddyDbContext _db = null;
+
         #region constructor
         public CourseFactory(UpDiddyDbContext db, IConfiguration configuration, ILogger syslog, IDistributedCache distributedCache) :
             base(db,configuration, syslog, distributedCache)
         {
+            _db = db;
         }
         #endregion
 
         #region public factory methods 
-        public CourseLoginDto GetCourseLogin(Guid SubscriberGuid, Guid CourseGuid, Guid VendorGuid)
+        public CourseLoginDto GetCourseLogin(Guid SubscriberGuid, Guid CourseGuid)
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** CourseFactory.GetCourseLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid} for course {CourseGuid} and vendor {VendorGuid}");
+                _syslog.Log(LogLevel.Information, $"***** CourseFactory.GetCourseLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid} for course {CourseGuid}");
                 CourseLoginDto rVal = new CourseLoginDto();
+
+                var vendorGuid = _db.Course
+                    .Include(c => c.Vendor)
+                    .Where(c => c.CourseGuid.Value == CourseGuid
+                    && c.IsDeleted == 0)
+                    .FirstOrDefault()
+                    .Vendor.VendorGuid.Value;
+                
                 rVal.LoginUrl = string.Empty;
-                if (VendorGuid.ToString() == _configuration["Woz:VendorGuid"])
-                    rVal = GetWozCourseLogin(SubscriberGuid, CourseGuid, VendorGuid);
+                if (vendorGuid.ToString() == _configuration["Woz:VendorGuid"])
+                    rVal = GetWozCourseLogin(SubscriberGuid, CourseGuid, vendorGuid);
                 else
                     rVal.LoginUrl = "Unknown Vendor";
 
@@ -39,7 +51,7 @@ namespace UpDiddyApi.Business
             catch (Exception ex )
             {
                 _syslog.Log(LogLevel.Error, "CourseFactory.GetCourseLogin threw an exception -> " + ex.Message);
-                _syslog.Log(LogLevel.Error, $"Paremeters subscriber= {SubscriberGuid}  course= {CourseGuid} vendor= {VendorGuid}");
+                _syslog.Log(LogLevel.Error, $"Paremeters subscriber= {SubscriberGuid}  course= {CourseGuid}");
                 return new CourseLoginDto()
                 {
                     LoginUrl = "Error in CourseFactory.GetCourseLogin"
