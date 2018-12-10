@@ -163,7 +163,7 @@ namespace API.Tests
 
             #region Teardown
 
-
+            // Some strangeness here.  Had to bake a new db context to delete the first skill 
             UpDiddyDbContext db1 = new UpDiddyDbContextFactory().CreateDbContext(args);
             var skill3 = db1.Skill
                 .Where(s => s.SkillName == "TestSkill")
