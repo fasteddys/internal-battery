@@ -25,23 +25,27 @@ namespace UpDiddyApi.Business
         #endregion
 
         #region public factory methods 
-        public CourseLoginDto GetCourseLogin(Guid SubscriberGuid, Guid CourseGuid)
+        public CourseLoginDto GetCourseLogin(Guid SubscriberGuid, Guid EnrollmentGuid)
         {
             try
             {
-                _syslog.Log(LogLevel.Information, $"***** CourseFactory.GetCourseLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid} for course {CourseGuid}");
+                _syslog.Log(LogLevel.Information, $"***** CourseFactory.GetCourseLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid} for enrollment {EnrollmentGuid}");
                 CourseLoginDto rVal = new CourseLoginDto();
 
-                var vendorGuid = _db.Course
+                var query = _db.Course
                     .Include(c => c.Vendor)
-                    .Where(c => c.CourseGuid.Value == CourseGuid
-                    && c.IsDeleted == 0)
-                    .FirstOrDefault()
-                    .Vendor.VendorGuid.Value;
+                    .Where(c => c.IsDeleted == 0)
+                    .Join(_db.Enrollment, c => c.CourseId, e => e.CourseId, (c, e) => new { Course = c, Enrollment = e })
+                    .Where(x => x.Enrollment.EnrollmentGuid.Value == EnrollmentGuid)
+                    .FirstOrDefault();
+
+                var courseGuid = query.Course.CourseGuid.Value;
+                var vendorGuid = query.Course.Vendor.VendorGuid.Value;
+                    
                 
                 rVal.LoginUrl = string.Empty;
                 if (vendorGuid.ToString() == _configuration["Woz:VendorGuid"])
-                    rVal = GetWozCourseLogin(SubscriberGuid, CourseGuid, vendorGuid);
+                    rVal = GetWozCourseLogin(SubscriberGuid, courseGuid, vendorGuid);
                 else
                     rVal.LoginUrl = "Unknown Vendor";
 
@@ -51,7 +55,7 @@ namespace UpDiddyApi.Business
             catch (Exception ex )
             {
                 _syslog.Log(LogLevel.Error, "CourseFactory.GetCourseLogin threw an exception -> " + ex.Message);
-                _syslog.Log(LogLevel.Error, $"Paremeters subscriber= {SubscriberGuid}  course= {CourseGuid}");
+                _syslog.Log(LogLevel.Error, $"Paremeters subscriber= {SubscriberGuid}  enrollment= {EnrollmentGuid}");
                 return new CourseLoginDto()
                 {
                     LoginUrl = "Error in CourseFactory.GetCourseLogin"

@@ -111,7 +111,8 @@ namespace UpDiddyApi
             services.AddSingleton<ISysEmail>(new SysEmail(Configuration));
 
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc().AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
             // Add AutoMapper 
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
 

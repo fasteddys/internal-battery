@@ -277,9 +277,9 @@ namespace UpDiddy.Api
             return Get<VendorStudentLoginDto>("enrollment/StudentLogin/" + SubscriberId.ToString(), true);
         }
 
-        public CourseLoginDto CourseLogin(Guid SubscriberGuid, Guid CourseGuid)
+        public CourseLoginDto CourseLogin(Guid SubscriberGuid, Guid EnrollmentGuid)
         {
-            return Get<CourseLoginDto>($"course/StudentLoginUrl/{SubscriberGuid}/{CourseGuid}", true);
+            return Get<CourseLoginDto>($"course/StudentLoginUrl/{SubscriberGuid}/{EnrollmentGuid}", true);
         }
 
 

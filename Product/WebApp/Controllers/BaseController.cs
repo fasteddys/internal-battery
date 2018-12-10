@@ -16,7 +16,7 @@ namespace UpDiddy.Controllers
     {
         public SubscriberDto subscriber;
         protected IApi _Api  = null;
-        
+
         public BaseController(IApi api)
         {
             this._Api = api;

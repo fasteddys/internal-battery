@@ -18,7 +18,6 @@ namespace UpDiddyLib.Dto
         public int? EducationLevelId { get; set; }
         public string ProfileImage { get; set; }
         public string City { get; set; }
-        public int StateId { get; set; }
         public string LinkedInUrl { get; set; }
         public string FacebookUrl { get; set; }
         public string TwitterUrl { get; set; }

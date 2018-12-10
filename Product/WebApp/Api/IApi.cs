@@ -25,7 +25,7 @@ namespace UpDiddy.Api
         [Obsolete("don't need this after refactoring on profile page is complete", false)]
         IList<EnrollmentDto> GetCurrentEnrollmentsForSubscriber(SubscriberDto Subscriber);
         VendorStudentLoginDto StudentLogin(int SubscriberId);
-        CourseLoginDto CourseLogin(Guid SubscriberGuid, Guid CourseGuid);
+        CourseLoginDto CourseLogin(Guid SubscriberGuid, Guid EnrollmentGuid);
         BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber);
         Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto);
         Guid WriteToEnrollmentLog(EnrollmentLogDto enrollmentLogDto);

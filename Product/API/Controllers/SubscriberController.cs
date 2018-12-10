@@ -53,7 +53,9 @@ namespace UpDiddyApi.Controllers
         {
             Subscriber subscriber = _db.Subscriber
                 .Include(s => s.State)
+                .ThenInclude(s => s.Country)
                 .Include(s => s.Enrollments)
+                .ThenInclude(e => e.Course)
                 .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == SubscriberGuid)
                 .FirstOrDefault();
 
@@ -61,9 +63,8 @@ namespace UpDiddyApi.Controllers
                 return NotFound();
 
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
-
         }
-        
+
         [HttpGet] 
         [Route("api/[controller]/CountryFromState/{StateId}")]
         public IActionResult CountryFromState(int StateId)
