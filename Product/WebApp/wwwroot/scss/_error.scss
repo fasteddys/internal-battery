@@ -1,0 +1,51 @@
+﻿@import '_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .error-container {
+        .error-message-container {
+            background-image: url('../images/medium_blue_background.jpg');
+            color: $color-white;
+            background-size: cover;
+            padding: 2rem 0;
+
+            .error-hero {
+                padding-bottom: 2rem;
+
+                .error-header {
+                    font-size: 2rem;
+                }
+
+                .error-sub-header {
+                    a {
+                        color: $color-primary;
+                    }
+
+                    span {
+                        color: $color-tertiary-gray;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+//Extra Large Styles
+@media (min-width: 1200px) {
+}
