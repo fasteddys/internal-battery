@@ -115,7 +115,7 @@ namespace UpDiddyApi.Controllers
                 string ActivitiesCompleted = WozO.progress.activitiesCompleted;
                 string ActivitiesTotal = WozO.progress.activitiesTotal;
                 int _StatusCode = (int)response.StatusCode;
-                WozCourseProgress CourseProgress = new WozCourseProgress()
+                WozCourseProgressDto CourseProgress = new WozCourseProgressDto()
                 {
                     LetterGrade = LetterGrade,
                     PercentageGrade = int.Parse(PercentageGrade),
@@ -128,7 +128,7 @@ namespace UpDiddyApi.Controllers
             else
             {
                 int _StatusCode = (int)response.StatusCode;
-                WozCourseProgress wcp = new WozCourseProgress
+                WozCourseProgressDto wcp = new WozCourseProgressDto
                 {
                     StatusCode = _StatusCode
                 };
@@ -219,7 +219,7 @@ namespace UpDiddyApi.Controllers
             else
             {
                 int _StatusCode = (int)response.StatusCode;
-                WozCourseProgress wcp = new WozCourseProgress
+                WozCourseProgressDto wcp = new WozCourseProgressDto
                 {
                     StatusCode = _StatusCode
                 };

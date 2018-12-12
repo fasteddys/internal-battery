@@ -11,130 +11,79 @@ namespace UpDiddy.ViewModels
 {
     public class ProfileViewModel : BaseViewModel
     {
+        public List<EnrollmentDto> Enrollments { get; set; }
         public IEnumerable<SelectListItem> States { get; set; }
         public IEnumerable<SelectListItem> Countries { get; set; }
-        [Required(ErrorMessage = "A state must be selected in billing information.")]
-        public Guid SelectedState { get; set; }
-        [Required(ErrorMessage = "A country must be selected in billing information.")]
-        public Guid SelectedCountry { get; set; }
-
-        public SubscriberDto Subscriber { get; set; }
-        public IList<WozCourseProgress> CurrentEnrollments { get; set; }
-        public CountryDto Country { get; set; }
-        public StateDto State { get; set; }
-        public Boolean HasAnyInformationToDisplay {get; set;}
-
-        // Strings for display, placeholder, and updating purposes.
-        public string DisplayedFirstName { get; set; }
-        public string FirstNamePlaceholder { get; set; }
-        public string DisplayedLastName { get; set; }
-        public string LastNamePlaceholder { get; set; }
-        public string DisplayedAddress { get; set; }
-        public string AddressPlaceholder { get; set; }
-        public string DisplayedCity { get; set; }
-        public string CityPlaceholder { get; set; }
-        public string DisplayedState { get; set; }
-        public string StatePlaceholder { get; set; }
-        public string DisplayedCountry { get; set; }
-        public string CountryPlaceholder { get; set; }
-        public string DisplayedPhone { get; set; }
-        public string PhonePlaceholder { get; set; }
-        public string DisplayedFacebookUrl { get; set; }
-        public string FacebookUrlPlaceholder { get; set; }
-        public string DisplayedLinkedInUrl { get; set; }
-        public string LinkedInUrlPlaceholder { get; set; }
-        public string DisplayedTwitterUrl { get; set; }
-        public string TwitterUrlPlaceholder { get; set; }
-        public string DisplayedStackOverflowUrl { get; set; }
-        public string StackOverflowUrlPlaceholder { get; set; }
-        public string DisplayedGithubUrl { get; set; }
-        public string GithubUrlPlaceholder { get; set; }
-        public string UpdatedFirstName { get; set; }
-        public string UpdatedLastName { get; set; }
-        public string UpdatedAddress { get; set; }
-        public string UpdatedCity { get; set; }
-        public string UpdatedState { get; set; }
-        public string UpdatedCountry { get; set; }
-        public string UpdatedPhoneNumber { get; set; }
-        public string UpdatedFacebookUrl { get; set; }
-        public string UpdatedLinkedInUrl { get; set; }
-        public string UpdatedTwitterUrl { get; set; }
-        public string UpdatedStackOverflowUrl { get; set; }
-        public string UpdatedGithubUrl { get; set; }
-        public Guid CurrentSubscriberGuid { get; set; }
-
-        public ProfileViewModel(
-            IConfiguration _configuration, 
-            SubscriberDto subscriber, 
-            IList<WozCourseProgress> WozCourseProgressions,
-            CountryDto SubscriberCountry,
-            StateDto SubscriberState)
+        public Guid? SelectedState { get; set; }
+        public Guid? SelectedCountry { get; set; }
+        [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "First name may only contain alphabetic characters, spaces, apostrophes, and hyphens.")]
+        public string FirstName { get; set; }
+        [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "Last name may only contain alphabetic characters, spaces, apostrophes, and hyphens.")]
+        public string LastName { get; set; }
+        [RegularExpression(@"\w+(\s\w+){2,}", ErrorMessage = "Please enter a valid street address.")]
+        public string Address { get; set; }
+        [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "Please enter a valid city.")]
+        public string City { get; set; }
+        private string _FormattedPhone;
+        public string FormattedPhone
         {
-            this.ImageUrl = _configuration["BaseImageUrl"];
-            this.Subscriber = subscriber;
-            this.CurrentEnrollments = WozCourseProgressions;
-            this.Country = SubscriberCountry;
-            this.State = SubscriberState;
-            SetProfileDisplayValues();
-            SetInformationFlag();
-        }
-
-        private void SetProfileDisplayValues()
-        {
-            this.DisplayedFirstName = string.IsNullOrEmpty(this.Subscriber.FirstName) ? Helpers.Constants.EMPTY_STRING : this.Subscriber.FirstName;
-            this.FirstNamePlaceholder = string.IsNullOrEmpty(this.Subscriber.FirstName) ? "First Name" : this.Subscriber.FirstName;
-
-            this.DisplayedLastName = string.IsNullOrEmpty(this.Subscriber.LastName) ? Helpers.Constants.EMPTY_STRING : this.Subscriber.LastName;
-            this.LastNamePlaceholder = string.IsNullOrEmpty(this.Subscriber.LastName) ? "Last Name" : this.Subscriber.LastName;
-
-            this.DisplayedAddress = string.IsNullOrEmpty(this.Subscriber.Address) ? Helpers.Constants.EMPTY_STRING : this.Subscriber.Address;
-            this.AddressPlaceholder = string.IsNullOrEmpty(this.Subscriber.Address) ? "Address" : this.Subscriber.Address;
-            
-            this.DisplayedCity = string.IsNullOrEmpty(this.Subscriber.City) ? Helpers.Constants.EMPTY_STRING : this.Subscriber.City;
-            this.CityPlaceholder = string.IsNullOrEmpty(this.Subscriber.City) ? "City" : this.Subscriber.City;
-
-            this.DisplayedState = string.IsNullOrEmpty(this.State.Name) ? Helpers.Constants.EMPTY_STRING : this.State.Name;
-            this.DisplayedCountry = string.IsNullOrEmpty(this.Country.DisplayName) ? Helpers.Constants.EMPTY_STRING : this.Country.DisplayName;
-
-            this.DisplayedPhone = string.IsNullOrEmpty(this.Subscriber.PhoneNumber) ? Helpers.Constants.EMPTY_STRING : this.Subscriber.PhoneNumber;
-            this.PhonePlaceholder = string.IsNullOrEmpty(this.Subscriber.PhoneNumber) ? "Phone Number" : this.Subscriber.PhoneNumber;
-
-            this.DisplayedFacebookUrl = string.IsNullOrEmpty(this.Subscriber.FacebookUrl) ? Helpers.Constants.EMPTY_STRING : this.Subscriber.FacebookUrl;
-            this.FacebookUrlPlaceholder = string.IsNullOrEmpty(this.Subscriber.FacebookUrl) ? "Facebook Profile" : this.Subscriber.FacebookUrl;
-
-            this.DisplayedLinkedInUrl = string.IsNullOrEmpty(this.Subscriber.LinkedInUrl) ? Helpers.Constants.EMPTY_STRING : this.Subscriber.LinkedInUrl;
-            this.LinkedInUrlPlaceholder = string.IsNullOrEmpty(this.Subscriber.LinkedInUrl) ? "LinkedIn Profile" : this.Subscriber.LinkedInUrl;
-
-            this.DisplayedTwitterUrl = string.IsNullOrEmpty(this.Subscriber.TwitterUrl) ? Helpers.Constants.EMPTY_STRING : this.Subscriber.TwitterUrl;
-            this.TwitterUrlPlaceholder = string.IsNullOrEmpty(this.Subscriber.TwitterUrl) ? "Twitter Profile" : this.Subscriber.TwitterUrl;
-
-            this.DisplayedStackOverflowUrl = string.IsNullOrEmpty(this.Subscriber.StackOverflowUrl) ? Helpers.Constants.EMPTY_STRING : this.Subscriber.StackOverflowUrl;
-            this.StackOverflowUrlPlaceholder = string.IsNullOrEmpty(this.Subscriber.StackOverflowUrl) ? "StackOverflow Profile" : this.Subscriber.StackOverflowUrl;
-
-            this.DisplayedGithubUrl = string.IsNullOrEmpty(this.Subscriber.GithubUrl) ? Helpers.Constants.EMPTY_STRING : this.Subscriber.GithubUrl;
-            this.GithubUrlPlaceholder = string.IsNullOrEmpty(this.Subscriber.GithubUrl) ? "GitHub Profile" : this.Subscriber.GithubUrl;
-        }
-
-        private void SetInformationFlag()
-        {
-            if(!string.IsNullOrEmpty(this.DisplayedFirstName) ||
-                !string.IsNullOrEmpty(this.DisplayedLastName) ||
-                !string.IsNullOrEmpty(this.DisplayedAddress) ||
-                !string.IsNullOrEmpty(this.DisplayedCity) ||
-                !string.IsNullOrEmpty(this.DisplayedState) ||
-                !string.IsNullOrEmpty(this.DisplayedCountry) ||
-                !string.IsNullOrEmpty(this.DisplayedPhone) ||
-                !string.IsNullOrEmpty(this.DisplayedFacebookUrl) ||
-                !string.IsNullOrEmpty(this.DisplayedTwitterUrl) ||
-                !string.IsNullOrEmpty(this.DisplayedLinkedInUrl) ||
-                !string.IsNullOrEmpty(this.DisplayedStackOverflowUrl) ||
-                !string.IsNullOrEmpty(this.DisplayedGithubUrl))
+            get
             {
-                this.HasAnyInformationToDisplay = true;
+                long phone = 0;
+                if (long.TryParse(this._FormattedPhone, out phone))
+                    return String.Format("{0:(###) ###-####}", phone);
+                else
+                    return _FormattedPhone;
             }
-            else
+            set
             {
-                this.HasAnyInformationToDisplay = false;
+                if (value != null)
+                    _FormattedPhone = value.Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+                else
+                    _FormattedPhone = value;
+            }
+        }
+
+        [RegularExpression("^[2-9]{1}[0-9]{9}$", ErrorMessage = "Phone must be 10 digits and may not start with a 0 or 1.")]
+        public string Phone
+        {
+            get
+            {
+                if (this._FormattedPhone != null)
+                    return this.FormattedPhone.Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+                else
+                    return _FormattedPhone;
+            }
+        }
+        // no validation data annotation required for email since this has been validated by MSAL and cannot be modified by the user
+        public string Email { get; set; }
+        [RegularExpression(@"^http(s)?://([\w]+.)?facebook.com/[A-z0-9_]+/?$", ErrorMessage = "The Facebook profile URL is not valid.")]
+        public string FacebookUrl { get; set; }
+        [RegularExpression(@"^http(s)?://([\w]+.)?linkedin.com/in/[A-z0-9_]+/?$", ErrorMessage = "The LinkedIn profile URL is not valid.")]
+        public string LinkedInUrl { get; set; }
+        [RegularExpression(@"^http(s)?://([\w]+.)?twitter.com/[A-z0-9_]+/?$", ErrorMessage = "The Twitter profile URL is not valid.")]
+        public string TwitterUrl { get; set; }
+        [RegularExpression(@"^http(s)?://([\w]+.)?stackoverflow.com/users/[0-9]+/[A-z0-9_]+/?$", ErrorMessage = "The StackOverflow profile URL is not valid.")]
+        public string StackOverflowUrl { get; set; }
+        [RegularExpression(@"^http(s)?://([\w]+.)?github.com/[A-z0-9_]+/?$", ErrorMessage = "The GitHub profile URL is not valid.")]
+        public string GithubUrl { get; set; }
+        public Guid? SubscriberGuid { get; set; }
+        public Boolean IsAnyProfileInformationPopulated
+        {
+            get
+            {
+                return
+                    !string.IsNullOrWhiteSpace(this.FirstName) ||
+                    !string.IsNullOrWhiteSpace(this.LastName) ||
+                    !string.IsNullOrWhiteSpace(this.Address) ||
+                    !string.IsNullOrWhiteSpace(this.City) ||
+                    !string.IsNullOrWhiteSpace(this.Phone) ||
+                    !string.IsNullOrWhiteSpace(this.FacebookUrl) ||
+                    !string.IsNullOrWhiteSpace(this.LinkedInUrl) ||
+                    !string.IsNullOrWhiteSpace(this.TwitterUrl) ||
+                    !string.IsNullOrWhiteSpace(this.StackOverflowUrl) ||
+                    !string.IsNullOrWhiteSpace(this.GithubUrl) ||
+                    SelectedState.HasValue;
             }
         }
     }

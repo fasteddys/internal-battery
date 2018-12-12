@@ -1179,6 +1179,8 @@ namespace UpDiddyApi.Migrations
 
                     b.HasKey("SubscriberId");
 
+                    b.HasIndex("StateId");
+
                     b.ToTable("Subscriber");
                 });
 
@@ -1655,7 +1657,7 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
+                        .WithMany("Enrollments")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -1705,6 +1707,13 @@ namespace UpDiddyApi.Migrations
                         .WithMany()
                         .HasForeignKey("CountryId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.Subscriber", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.State", "State")
+                        .WithMany()
+                        .HasForeignKey("StateId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberProfileStagingStore", b =>

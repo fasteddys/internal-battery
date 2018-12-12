@@ -64,9 +64,9 @@ namespace UpDiddyApi.Controllers
                         subscriber.City = Subscriber.City;
                     }
                     int stateId = 0;
-                    if (Subscriber.SelectedState != Guid.Empty)
+                    if (Subscriber.State.StateGuid.HasValue)
                     {
-                        stateId = _db.State.Where(s => s.StateGuid.Value == Subscriber.SelectedState).Select(s => s.StateId).FirstOrDefault();
+                        stateId = _db.State.Where(s => s.StateGuid.Value == Subscriber.State.StateGuid.Value).Select(s => s.StateId).FirstOrDefault();
                     }
                     if (stateId != 0)
                     {
@@ -123,17 +123,26 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/GetStatesByCountry/{countryGuid}")]
-        public IActionResult GetStatesByCountry(Guid countryGuid)
+        [Route("api/[controller]/GetStatesByCountry/{countryGuid?}")]
+        public IActionResult GetStatesByCountry(Guid? countryGuid = null)
         {
-            var states = _db.State
-                .Include(s => s.Country)
-                .Where(s => s.IsDeleted == 0 && s.Country.CountryGuid == countryGuid)
-                .OrderBy(s => s.Sequence)
-                .ProjectTo<StateDto>(_mapper.ConfigurationProvider)
-                .ToList();
+            IQueryable<State> states;
 
-            return Ok(states);
+            if (!countryGuid.HasValue)
+            {
+                // if country is not specified, retrieve the first country according to sequence (USA! USA!)
+                states = _db.State
+                    .Include(s => s.Country)
+                    .Where(s => s.IsDeleted == 0 && s.Country.Sequence == 1);
+            }
+            else
+            {
+                states = _db.State
+                    .Include(s => s.Country)
+                    .Where(s => s.IsDeleted == 0 && s.Country.CountryGuid == countryGuid);
+            }
+
+            return Ok(states.OrderBy(s => s.Sequence).ProjectTo<StateDto>(_mapper.ConfigurationProvider));
         }
     }
 }

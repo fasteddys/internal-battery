@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-   public class WozCourseProgress
+   public class WozCourseProgressDto
     {
         public string LetterGrade { get; set; }
         public int PercentageGrade { get; set; }

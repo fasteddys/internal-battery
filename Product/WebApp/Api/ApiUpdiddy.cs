@@ -154,17 +154,17 @@ namespace UpDiddy.Api
         }
         
 
-        public WozCourseProgress GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)
+        public WozCourseProgressDto GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)
         {
             string cacheKey = $"GetCurrentCourseProgress{SubscriberGuid}{EnrollmentGuid}";
-            WozCourseProgress rval = GetCachedValue<WozCourseProgress>(cacheKey);
+            WozCourseProgressDto rval = GetCachedValue<WozCourseProgressDto>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = _GetCurrentCourseProgress(SubscriberGuid, EnrollmentGuid);
-                SetCachedValue<WozCourseProgress>(cacheKey, rval);
+                SetCachedValue<WozCourseProgressDto>(cacheKey, rval);
             }
             return rval;
         }
@@ -183,7 +183,7 @@ namespace UpDiddy.Api
             }
             return rval;
         }
-        public IList<StateDto> GetStatesByCountry(Guid countryGuid)
+        public IList<StateDto> GetStatesByCountry(Guid? countryGuid)
         {
             string cacheKey = $"GetStatesByCountry{countryGuid}";
             IList<StateDto> rval = GetCachedValue<IList<StateDto>>(cacheKey);
@@ -266,19 +266,14 @@ namespace UpDiddy.Api
             return Get<PromoCodeDto>("promocode/" + code + "/" + courseVariantGuid + "/" + subscriberGuid, true);
         }
 
-        public IList<EnrollmentDto> GetCurrentEnrollmentsForSubscriber(SubscriberDto Subscriber)
-        {
-            return Get<IList<EnrollmentDto>>("enrollment/CurrentEnrollments/" + Subscriber.SubscriberId, true);
-        }
-
         public VendorStudentLoginDto StudentLogin(int SubscriberId)
         {
             return Get<VendorStudentLoginDto>("enrollment/StudentLogin/" + SubscriberId.ToString(), true);
         }
 
-        public CourseLoginDto CourseLogin(Guid SubscriberGuid, Guid CourseGuid, Guid VendorGuid)
+        public CourseLoginDto CourseLogin(Guid SubscriberGuid, Guid EnrollmentGuid)
         {
-            return Get<CourseLoginDto>($"course/StudentLoginUrl/{SubscriberGuid}/{CourseGuid}/{VendorGuid}", true);
+            return Get<CourseLoginDto>($"course/StudentLoginUrl/{SubscriberGuid}/{EnrollmentGuid}", true);
         }
 
 
@@ -302,29 +297,15 @@ namespace UpDiddy.Api
             return Post<Guid>(enrollmentLogDto, "enrollment/EnrollmentLog", true);
         }
 
-        public SubscriberDto CreateSubscriberDeprecated(string SubscriberGuid, string SubscriberEmail)
-        {
-            return Post<SubscriberDto>("subscriber/addsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail), true);
-        }
-
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
         {
-
-            SubscriberCreateDto SDto = new SubscriberCreateDto
-            {
-                SubscriberGuid = SubscriberGuid,
-                SubscriberEmail = SubscriberEmail
-
-            };
-
-            string jsonToSend = JsonConvert.SerializeObject(SDto);
-            return Post<SubscriberDto>(SDto, "subscriber/createsubscriber", true);
+            return Post<SubscriberDto>("subscriber/CreateSubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail), true);
         }
 
-        public WozCourseProgress UpdateStudentCourseProgress(Guid SubscriberGuid, bool FutureSchedule)
+        public WozCourseProgressDto UpdateStudentCourseProgress(Guid SubscriberGuid, bool FutureSchedule)
         {
 
-            return Put<WozCourseProgress>("woz/UpdateStudentCourseStatus/" + SubscriberGuid + "/" + FutureSchedule.ToString(), true);
+            return Put<WozCourseProgressDto>("woz/UpdateStudentCourseStatus/" + SubscriberGuid + "/" + FutureSchedule.ToString(), true);
         }
 
         public BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto)
@@ -354,9 +335,10 @@ namespace UpDiddy.Api
         {
             return Get<IList<CountryDto>>("profile/GetCountries", false);
         }
-        public IList<StateDto> _GetStatesByCountry(Guid countryGuid)
+
+        public IList<StateDto> _GetStatesByCountry(Guid? countryGuid)
         {
-            return Get<IList<StateDto>>("profile/GetStatesByCountry/" + countryGuid.ToString(), false);
+            return Get<IList<StateDto>>("profile/GetStatesByCountry/" + countryGuid?.ToString(), false);
         }
 
         private IList<CourseDto> _getCousesByTopicSlug(string TopicSlug)
@@ -385,9 +367,9 @@ namespace UpDiddy.Api
             return Get<WozTermsOfServiceDto>("woz/TermsOfService/", false);
         }
   
-        private WozCourseProgress _GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)
+        private WozCourseProgressDto _GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)
         {
-            return Get<WozCourseProgress>("woz/CourseStatus/" + SubscriberGuid + "/" + EnrollmentGuid, false);
+            return Get<WozCourseProgressDto>("woz/CourseStatus/" + SubscriberGuid + "/" + EnrollmentGuid, false);
         }
 
 

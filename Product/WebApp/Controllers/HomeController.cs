@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Text.Encodings.Web;
 
 namespace UpDiddy.Controllers
 {
@@ -31,8 +32,11 @@ namespace UpDiddy.Controllers
             return Ok(Json(_Api.GetCountries()));
         }
 
-        public HomeController(IApi api, IConfiguration configuration, IHostingEnvironment env)
-            : base(api)        {
+        public HomeController(IApi api,
+            IConfiguration configuration,
+            IHostingEnvironment env)
+            : base(api)
+        {
             _env = env;
             _configuration = configuration;
         }
@@ -41,7 +45,7 @@ namespace UpDiddy.Controllers
         {
             return Ok(Json(_Api.GetStatesByCountry(countryGuid)));
         }
-        
+
         public IActionResult Index()
         {
             // TODO remove test code 
@@ -62,13 +66,11 @@ namespace UpDiddy.Controllers
             return View();
         }
 
-
         public IActionResult AboutUs()
         {
 
             return View();
         }
-
 
         public IActionResult Privacy()
         {
@@ -76,10 +78,8 @@ namespace UpDiddy.Controllers
             return View();
         }
 
-
         public IActionResult WhatWeAreAbout()
         {
-
             return View();
         }
 
@@ -98,167 +98,85 @@ namespace UpDiddy.Controllers
             return View();
         }
 
-
         [Authorize]
         public IActionResult ProfileLogin()
         {
             GetSubscriber(true);
             // UPdated the subscribers course progress 
             if (this.subscriber != null)
-                _Api.UpdateStudentCourseProgress((Guid) this.subscriber.SubscriberGuid, true);
- 
+                _Api.UpdateStudentCourseProgress((Guid)this.subscriber.SubscriberGuid, true);
+
             return RedirectToAction("Profile", "Home");
         }
-
-
 
         [Authorize]
         public IActionResult Profile()
         {
             GetSubscriber(true);
-            IList<EnrollmentDto> CurrentEnrollments = _Api.GetCurrentEnrollmentsForSubscriber(this.subscriber);
-            CountryDto SubscriberCountry = new CountryDto();
-            StateDto SubscriberState = new StateDto();
-            if (this.subscriber.StateId != 0)
+
+            ProfileViewModel profileViewModel = new ProfileViewModel()
             {
-                // JAB: TODO explore "Query Types" as a means to get all of the subscriber information from a view
-                //  https://docs.microsoft.com/en-us/ef/core/modeling/query-types                
-                SubscriberCountry = _Api.GetSubscriberCountry(this.subscriber.StateId);
-                SubscriberState = _Api.GetSubscriberState(this.subscriber.StateId);
+                SubscriberGuid = this.subscriber?.SubscriberGuid,
+                FirstName = this.subscriber?.FirstName,
+                LastName = this.subscriber?.LastName,
+                FormattedPhone = this.subscriber?.PhoneNumber,
+                Email = this.subscriber?.Email,
+                Address = this.subscriber?.Address,
+                City = this.subscriber?.City,
+                SelectedState = this.subscriber?.State?.StateGuid,
+                SelectedCountry = this.subscriber?.State?.Country?.CountryGuid,
+                FacebookUrl = this.subscriber?.FacebookUrl,
+                GithubUrl = this.subscriber?.GithubUrl,
+                ImageUrl = null,
+                LinkedInUrl = this.subscriber?.LinkedInUrl,
+                StackOverflowUrl = this.subscriber?.StackOverflowUrl,
+                TwitterUrl = this.subscriber?.TwitterUrl,
+                Enrollments = this.subscriber?.Enrollments,
+                Countries = _Api.GetCountries().Select(c => new SelectListItem()
+                {
+                    Text = c.DisplayName,
+                    Value = c.CountryGuid.ToString(),
+                }),
+                States = _Api.GetStatesByCountry(this.subscriber?.State?.Country?.CountryGuid).Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.StateGuid.ToString(),
+                    Selected = s.StateGuid == this.subscriber?.State?.StateGuid
+                })
+            };
+
+            // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
+            // i considered overloading the existing GetSubscriber method to do this, but then that makes CourseController 
+            // a dependency of BaseController. that's more refactoring than i think we want to concern ourselves with now.
+            foreach (var enrollment in profileViewModel.Enrollments)
+            {
+                var courseLogin = _Api.CourseLogin(profileViewModel.SubscriberGuid.Value, enrollment.EnrollmentGuid.Value);
+                enrollment.CourseUrl = courseLogin.LoginUrl;
             }
-            IList<WozCourseProgress> WozCourseProgressions = new List<WozCourseProgress>();
-          
-            if ( CurrentEnrollments != null )
-            {
-            
-                foreach (EnrollmentDto enrollment in CurrentEnrollments)
-                {                   
-                    try
-                    {
-                        Guid CourseGuid = enrollment.Course.CourseGuid ?? default(Guid);
-                        Guid VendorGuid = enrollment.Course.Vendor.VendorGuid ?? default(Guid);
-                        Guid SubscriberGuid = this.subscriber.SubscriberGuid?? default(Guid);
-                        var courseLogin = _Api.CourseLogin(SubscriberGuid, CourseGuid,VendorGuid);
 
-                        WozCourseProgress dto = new WozCourseProgress
-                        {
-                            CourseName = enrollment.Course.Name,
-                            CourseUrl = courseLogin == null ? string.Empty : courseLogin.LoginUrl,
-                            PercentComplete = enrollment.PercentComplete,
-                            EnrollmentStatusId = enrollment.EnrollmentStatusId,
-                            DisplayState = enrollment.EnrollmentStatusId
-                        };
-
-                        WozCourseProgressions.Add(dto);
-                    }
-                    catch (Exception e)
-                    {
-                        // Wire up logging for controller exceptions.
-                    }
-                }
-            }
-            
-            ProfileViewModel ProfileViewModel = new ProfileViewModel(
-                _configuration,
-                this.subscriber,
-                WozCourseProgressions,
-                SubscriberCountry,
-                SubscriberState);
-
-            ProfileViewModel.Countries = _Api.GetCountries().Select(c => new SelectListItem()
-            {
-                Text = c.DisplayName,
-                Value = c.CountryGuid.ToString()
-            });
-
-            ProfileViewModel.States = new List<StateViewModel>().Select(s => new SelectListItem()
-            {
-                Text = s.Name,
-                Value = s.StateGuid.ToString()
-            });
-            ProfileViewModel.SelectedState = SubscriberState.StateGuid.HasValue ? SubscriberState.StateGuid.Value : Guid.Empty;
-            ProfileViewModel.SelectedCountry = SubscriberCountry.CountryGuid;
-
-            return View(ProfileViewModel);
+            return View(profileViewModel);
         }
 
         [HttpPost]
-        public BasicResponseDto UpdateProfileInformation(
-            string UpdatedFirstName,
-            string UpdatedLastName,
-            string UpdatedAddress,
-            string UpdatedPhoneNumber,
-            string UpdatedCity,
-            string UpdatedFacebookUrl,
-            string UpdatedTwitterUrl,
-            string UpdatedLinkedInUrl,
-            string UpdatedStackOverflowUrl,
-            string UpdatedGithubUrl,
-            int UpdatedState,
-            Guid CurrentSubscriberGuid,
-            Guid SelectedState
-            )
+        public BasicResponseDto UpdateProfileInformation(ProfileViewModel profileViewModel)
         {
-            /* todo: the validation and sanitization logic below is probably the worst code i have written in the last 10 years. 
-             * for the love of god, refactor this to use the following pattern: use IActionResult instead of BasicResponseDto for
-             * return type, use data annotations for validation, simplify view model and pass that to method as a single parameter */
-            this.GetSubscriber(false);
 
-            // scrub fields which do not have strict validation to ensure no html is stored in the db
-            if (UpdatedFirstName != null)
-                UpdatedFirstName = WebUtility.HtmlDecode(Regex.Replace(UpdatedFirstName, "<[^>]*(>|$)", string.Empty));
-            if (UpdatedLastName != null)
-                UpdatedLastName = WebUtility.HtmlDecode(Regex.Replace(UpdatedLastName, "<[^>]*(>|$)", string.Empty));
-            if (UpdatedAddress != null)
-                UpdatedAddress = WebUtility.HtmlDecode(Regex.Replace(UpdatedAddress, "<[^>]*(>|$)", string.Empty));
-            if (UpdatedCity != null)
-                UpdatedCity = WebUtility.HtmlDecode(Regex.Replace(UpdatedCity, "<[^>]*(>|$)", string.Empty));
-            if (UpdatedLinkedInUrl != null)
-                UpdatedLinkedInUrl = WebUtility.HtmlDecode(Regex.Replace(UpdatedLinkedInUrl, "<[^>]*(>|$)", string.Empty));
-            if (UpdatedStackOverflowUrl != null)
-                UpdatedStackOverflowUrl = WebUtility.HtmlDecode(Regex.Replace(UpdatedStackOverflowUrl, "<[^>]*(>|$)", string.Empty));
-            if (UpdatedGithubUrl != null)
-                UpdatedGithubUrl = WebUtility.HtmlDecode(Regex.Replace(UpdatedGithubUrl, "<[^>]*(>|$)", string.Empty));
-            if (UpdatedTwitterUrl != null)
-                UpdatedTwitterUrl = WebUtility.HtmlDecode(Regex.Replace(UpdatedTwitterUrl, "<[^>]*(>|$)", string.Empty));
-            if (UpdatedFacebookUrl != null)
-                UpdatedFacebookUrl = WebUtility.HtmlDecode(Regex.Replace(UpdatedFacebookUrl, "<[^>]*(>|$)", string.Empty));
-
-            StringBuilder validationErrors = new StringBuilder();
-            if (string.IsNullOrWhiteSpace(UpdatedFirstName) && string.IsNullOrWhiteSpace(this.subscriber.FirstName))
-                validationErrors.Append("First name cannot be empty,");
-            if (string.IsNullOrWhiteSpace(UpdatedLastName) && string.IsNullOrWhiteSpace(this.subscriber.LastName))
-                validationErrors.Append("Last name cannot be empty,");
-            if (!string.IsNullOrWhiteSpace(UpdatedLinkedInUrl) && !Regex.Match(UpdatedLinkedInUrl, @"^http(s)?://([\w]+.)?linkedin.com/in/[A-z0-9_]+/?$").Success)
-                validationErrors.Append("The provided LinkedIn URL is not valid,");
-            if (!string.IsNullOrWhiteSpace(UpdatedStackOverflowUrl) && !Regex.Match(UpdatedStackOverflowUrl, @"^http(s)?://([\w]+.)?stackoverflow.com/[A-z0-9_]+/?$").Success)
-                validationErrors.Append("The provided StackOverflow URL is not valid,");
-            if (!string.IsNullOrWhiteSpace(UpdatedGithubUrl) && !Regex.Match(UpdatedGithubUrl, @"^http(s)?://([\w]+.)?github.com/[A-z0-9_]+/?$").Success)
-                validationErrors.Append("The provided GitHub URL is not valid,");
-            if (!string.IsNullOrWhiteSpace(UpdatedTwitterUrl) && !Regex.Match(UpdatedTwitterUrl, @"^http(s)?://([\w]+.)?twitter.com/[A-z0-9_]+/?$").Success)
-                validationErrors.Append("The provided Twitter URL is not valid,");
-            if (!string.IsNullOrWhiteSpace(UpdatedFacebookUrl) && !Regex.Match(UpdatedFacebookUrl, @"^http(s)?://([\w]+.)?facebook.com/[A-z0-9_]+/?$").Success)
-                validationErrors.Append("The provided Facebook URL is not valid,");
-            if (!string.IsNullOrWhiteSpace(UpdatedPhoneNumber) && !Regex.Match(UpdatedPhoneNumber, @"^\d{10}$").Success)
-                validationErrors.Append("The provided phone number must be 10 digits with no formatting,");
-
-            if (validationErrors.Length == 0)
+            if (ModelState.IsValid)
             {
                 SubscriberDto Subscriber = new SubscriberDto
                 {
-                    FirstName = UpdatedFirstName,
-                    LastName = UpdatedLastName,
-                    Address = UpdatedAddress,
-                    PhoneNumber = UpdatedPhoneNumber,
-                    City = UpdatedCity,
-                    // StateId = UpdatedState,
-                    SelectedState = SelectedState,
-                    FacebookUrl = UpdatedFacebookUrl,
-                    TwitterUrl = UpdatedTwitterUrl,
-                    LinkedInUrl = UpdatedLinkedInUrl,
-                    StackOverflowUrl = UpdatedStackOverflowUrl,
-                    GithubUrl = UpdatedGithubUrl,
-                    SubscriberGuid = CurrentSubscriberGuid
+                    FirstName = profileViewModel.FirstName,
+                    LastName = profileViewModel.LastName,
+                    Address = profileViewModel.Address,
+                    PhoneNumber = profileViewModel.Phone,
+                    City = profileViewModel.City,
+                    State = new StateDto() { StateGuid = profileViewModel.SelectedState },
+                    FacebookUrl = profileViewModel.FacebookUrl,
+                    TwitterUrl = profileViewModel.TwitterUrl,
+                    LinkedInUrl = profileViewModel.LinkedInUrl,
+                    StackOverflowUrl = profileViewModel.StackOverflowUrl,
+                    GithubUrl = profileViewModel.GithubUrl,
+                    SubscriberGuid = profileViewModel.SubscriberGuid
                 };
                 _Api.UpdateProfileInformation(Subscriber);
                 return new BasicResponseDto
@@ -269,6 +187,17 @@ namespace UpDiddy.Controllers
             }
             else
             {
+                StringBuilder validationErrors = new StringBuilder();
+
+                foreach (var modelState in ModelState.Values)
+                {
+                    foreach (var error in modelState.Errors)
+                    {
+                        validationErrors.Append(error.ErrorMessage);
+                        validationErrors.Append("|");
+                    }
+                }
+
                 return new BasicResponseDto
                 {
                     StatusCode = "400",

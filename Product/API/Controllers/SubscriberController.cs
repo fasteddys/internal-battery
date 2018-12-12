@@ -6,6 +6,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
@@ -51,6 +52,10 @@ namespace UpDiddyApi.Controllers
         public IActionResult Get(Guid SubscriberGuid)
         {
             Subscriber subscriber = _db.Subscriber
+                .Include(s => s.State)
+                .ThenInclude(s => s.Country)
+                .Include(s => s.Enrollments)
+                .ThenInclude(e => e.Course)
                 .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == SubscriberGuid)
                 .FirstOrDefault();
 
@@ -58,9 +63,8 @@ namespace UpDiddyApi.Controllers
                 return NotFound();
 
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
-
         }
-        
+
         [HttpGet] 
         [Route("api/[controller]/CountryFromState/{StateId}")]
         public IActionResult CountryFromState(int StateId)
@@ -109,28 +113,6 @@ namespace UpDiddyApi.Controllers
             subscriber.ModifyGuid = Guid.NewGuid();
             subscriber.CreateGuid = Guid.NewGuid();
         
-            // Save subscriber to database 
-            _db.Subscriber.Add(subscriber);
-            _db.SaveChanges();
-
-            return Ok(_mapper.Map<SubscriberDto>(subscriber));
-        }
-
-
-        [HttpPost]
-        [Authorize]
-        [Route("api/[controller]/CreateSubscriber")]
-        public IActionResult CreateSubscriber( [FromBody] SubscriberCreateDto NewSubscriber)
-        {
-            Subscriber subscriber = new Subscriber();
-            subscriber.SubscriberGuid = Guid.Parse(NewSubscriber.SubscriberGuid);
-            subscriber.Email = NewSubscriber.SubscriberEmail;
-            subscriber.CreateDate = DateTime.Now;
-            subscriber.ModifyDate = DateTime.Now;
-            subscriber.IsDeleted = 0;
-            subscriber.ModifyGuid = Guid.NewGuid();
-            subscriber.CreateGuid = Guid.NewGuid();
-
             // Save subscriber to database 
             _db.Subscriber.Add(subscriber);
             _db.SaveChanges();
