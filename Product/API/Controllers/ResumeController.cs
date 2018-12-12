@@ -38,6 +38,7 @@ namespace UpDiddyApi.Controllers
         [Route("upload/subscriber/{SubscriberGuid}")]
         public async Task<IActionResult> Upload(Guid SubscriberGuid, IFormFile resume)
         {
+            // todo: research and implement a better way to handle soft deletes then manual checks everywhere
             Subscriber subscriber = _db.Subscriber
                 .Where(s => s.SubscriberGuid == SubscriberGuid && s.IsDeleted == 0)
                 .FirstOrDefault();
@@ -57,7 +58,6 @@ namespace UpDiddyApi.Controllers
             String parsedDocument = await _sovrenApi.SubmitResumeAsync(base64String);
 
             // todo: verify subscriber guid permissions and data
-            // todo: research and implement a better way to handle soft deletes then manual checks everywhere
             SubscriberProfileStagingStore.Save(_db, subscriber, Sovren.Name, SubscriberProfileStagingStore.DataFormatXml, parsedDocument);
             return Ok(parsedDocument);
         }
