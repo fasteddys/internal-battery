@@ -24,8 +24,5 @@ namespace UpDiddyApi.Business
         protected internal ILogger _syslog = null;
         protected IHttpClientFactory _httpClientFactory = null;
         #endregion
-
-
-
     }
 }

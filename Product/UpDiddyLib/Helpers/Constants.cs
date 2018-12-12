@@ -18,9 +18,6 @@ namespace UpDiddy.Helpers
         static public readonly string SysLogLogInformationTrue = "true";
         static public readonly string WozVendorName = "WozU";
 
-        // Profile data sources types
-        static public readonly string DataFormatJson = "Json";
-
         // Profile data sources 
         static public readonly string LinkedInProfile = "LinkedIn";
 

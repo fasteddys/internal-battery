@@ -12,6 +12,9 @@ namespace UpDiddyApi.Models
 {
     public partial class SubscriberProfileStagingStore : BaseModel
     {
+        public const string DataFormatJson = "Json";
+        public const string DataFormatXml = "Xml";
+
         public SubscriberProfileStagingStore()
         {
                 
@@ -19,6 +22,7 @@ namespace UpDiddyApi.Models
 
         public SubscriberProfileStagingStore(UpDiddyDbContext db, Guid subscriberGuid)
         {
+            // todo: see if dotnet has built in behaviors or checks for required fields such as subscriber guid
             var Subscriber = db.Subscriber
             .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
               .FirstOrDefault();
@@ -31,9 +35,8 @@ namespace UpDiddyApi.Models
             this.SubscriberId = Subscriber.SubscriberId;
             this.ProfileSource = Constants.LinkedInProfile;
             this.IsDeleted = 0;
-            this.ProfileFormat = Constants.DataFormatJson;
+            this.ProfileFormat = SubscriberProfileStagingStore.DataFormatJson;
         }
-
 
         // TODO possibly modularize after knowing the complete set of linkedin data that will be available 
         // with the access keys from the lab 
@@ -130,6 +133,23 @@ namespace UpDiddyApi.Models
             pss.Status = (int)ProfileDataStatus.Acquired;
             
             db.SubscriberProfileStagingStore.Add(pss);
+            db.SaveChanges();
+        }
+
+        // todo: maybe we have this interact with interfaces so that it knows how to grab the data, srcName, format, data
+        public static void Save(UpDiddyDbContext db, Subscriber subscriber, string srcName, string format, string data)
+        {
+            SubscriberProfileStagingStore stagingStore = new SubscriberProfileStagingStore();
+            stagingStore.CreateDate = DateTime.Now;
+            stagingStore.ModifyDate = stagingStore.CreateDate;
+            stagingStore.ModifyGuid = subscriber.SubscriberGuid;
+            stagingStore.SubscriberId = subscriber.SubscriberId;
+            stagingStore.ProfileSource = srcName;
+            stagingStore.ProfileFormat = format;
+            stagingStore.ProfileData = data;
+            stagingStore.Status = (int)ProfileDataStatus.Acquired;
+
+            db.SubscriberProfileStagingStore.Add(stagingStore);
             db.SaveChanges();
         }
 

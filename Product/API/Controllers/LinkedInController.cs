@@ -40,10 +40,7 @@ namespace UpDiddyApi.Controllers
         }
         #endregion
 
-
-
-
-
+ 
         [Authorize]
         [HttpGet]
         [Route("api/[controller]/GetProfile/{SubscriberGuid}")]
