@@ -55,7 +55,7 @@ namespace UpDiddyApi.Business
             catch (Exception ex )
             {
                 _syslog.Log(LogLevel.Error, "CourseFactory.GetCourseLogin threw an exception -> " + ex.Message);
-                _syslog.Log(LogLevel.Error, $"Paremeters subscriber= {SubscriberGuid}  enrollment= {EnrollmentGuid}");
+                _syslog.Log(LogLevel.Error, $"Parameters subscriber= {SubscriberGuid}  enrollment= {EnrollmentGuid}");
                 return new CourseLoginDto()
                 {
                     LoginUrl = "Error in CourseFactory.GetCourseLogin"
@@ -145,7 +145,7 @@ namespace UpDiddyApi.Business
             catch (Exception ex)
             {
                 _syslog.Log(LogLevel.Error, $"CourseFactory.GetWozCourseLogin: Exception at step {step} -> {ex.Message}");
-                _syslog.Log(LogLevel.Error, $"CourseFactory.GetWozCourseLogin: Paremeters subscriber= {SubscriberGuid}  course= {CourseGuid} vendor= {VendorGuid}");
+                _syslog.Log(LogLevel.Error, $"CourseFactory.GetWozCourseLogin: Parameters subscriber= {SubscriberGuid}  course= {CourseGuid} vendor= {VendorGuid}");
                 return new CourseLoginDto()
                 {
                     LoginUrl = "Error in CourseFactory.GetWozCourseLogin"

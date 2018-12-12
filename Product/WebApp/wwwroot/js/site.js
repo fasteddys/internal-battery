@@ -95,7 +95,6 @@ $(document).ready(function () {
     } else {
         $("#SelectedCountry").val(savedCountryGuid);
     }
-    //$('#SelectedCountry').change();
 
     $("input[name='SelectedCourseVariant']").change(function () {
         var selectedCourseVariant = $("input[name='SelectedCourseVariant']:checked");
@@ -173,7 +172,7 @@ $(document).ready(function () {
                 }
                 else {
                     $('#ValidationSummary ul').html('');
-                    var errorMessages = html.description.split(",");
+                    var errorMessages = html.description.split("|");
                     for (i = 0; i < errorMessages.length; i++) {
                         if (i != errorMessages.length -1) {
                             var li = document.createElement("li");

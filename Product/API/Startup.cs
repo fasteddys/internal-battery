@@ -111,6 +111,8 @@ namespace UpDiddyApi
             services.AddSingleton<ISysEmail>(new SysEmail(Configuration));
 
             // Add framework services.
+            // the 'ignore' option for reference loop handling was implemented to prevent circular errors during serialization 
+            // (e.g. SubscriberDto contains a collection of EnrollmentDto objects, and the EnrollmentDto object has a reference to a SubscriberDto)
             services.AddMvc().AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             // Add AutoMapper 

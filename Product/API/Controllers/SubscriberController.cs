@@ -119,27 +119,5 @@ namespace UpDiddyApi.Controllers
 
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
         }
-
-
-        [HttpPost]
-        [Authorize]
-        [Route("api/[controller]/CreateSubscriber")]
-        public IActionResult CreateSubscriber( [FromBody] SubscriberCreateDto NewSubscriber)
-        {
-            Subscriber subscriber = new Subscriber();
-            subscriber.SubscriberGuid = Guid.Parse(NewSubscriber.SubscriberGuid);
-            subscriber.Email = NewSubscriber.SubscriberEmail;
-            subscriber.CreateDate = DateTime.Now;
-            subscriber.ModifyDate = DateTime.Now;
-            subscriber.IsDeleted = 0;
-            subscriber.ModifyGuid = Guid.NewGuid();
-            subscriber.CreateGuid = Guid.NewGuid();
-
-            // Save subscriber to database 
-            _db.Subscriber.Add(subscriber);
-            _db.SaveChanges();
-
-            return Ok(_mapper.Map<SubscriberDto>(subscriber));
-        }
     }
 }

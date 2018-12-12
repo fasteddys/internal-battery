@@ -33,7 +33,7 @@ namespace UpDiddy.Controllers
         }
 
         public HomeController(IApi api,
-            IConfiguration configuration, 
+            IConfiguration configuration,
             IHostingEnvironment env)
             : base(api)
         {
@@ -116,32 +116,32 @@ namespace UpDiddy.Controllers
 
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
-                SubscriberGuid = this.subscriber.SubscriberGuid,
-                FirstName = this.subscriber.FirstName,
-                LastName = this.subscriber.LastName,
-                FormattedPhone = this.subscriber.PhoneNumber,
-                Email = this.subscriber.Email,
-                Address = this.subscriber.Address,
-                City = this.subscriber.City,
-                SelectedState = this.subscriber.State.StateGuid,
-                SelectedCountry = this.subscriber.State.Country.CountryGuid,
-                FacebookUrl = this.subscriber.FacebookUrl,
-                GithubUrl = this.subscriber.GithubUrl,
+                SubscriberGuid = this.subscriber?.SubscriberGuid,
+                FirstName = this.subscriber?.FirstName,
+                LastName = this.subscriber?.LastName,
+                FormattedPhone = this.subscriber?.PhoneNumber,
+                Email = this.subscriber?.Email,
+                Address = this.subscriber?.Address,
+                City = this.subscriber?.City,
+                SelectedState = this.subscriber?.State?.StateGuid,
+                SelectedCountry = this.subscriber?.State?.Country?.CountryGuid,
+                FacebookUrl = this.subscriber?.FacebookUrl,
+                GithubUrl = this.subscriber?.GithubUrl,
                 ImageUrl = null,
-                LinkedInUrl = this.subscriber.LinkedInUrl,
-                StackOverflowUrl = this.subscriber.StackOverflowUrl,
-                TwitterUrl = this.subscriber.TwitterUrl,
-                Enrollments = this.subscriber.Enrollments,
+                LinkedInUrl = this.subscriber?.LinkedInUrl,
+                StackOverflowUrl = this.subscriber?.StackOverflowUrl,
+                TwitterUrl = this.subscriber?.TwitterUrl,
+                Enrollments = this.subscriber?.Enrollments,
                 Countries = _Api.GetCountries().Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
                     Value = c.CountryGuid.ToString(),
                 }),
-                States = _Api.GetStatesByCountry(this.subscriber.State.Country.CountryGuid).Select(s => new SelectListItem()
+                States = _Api.GetStatesByCountry(this.subscriber?.State?.Country?.CountryGuid).Select(s => new SelectListItem()
                 {
                     Text = s.Name,
                     Value = s.StateGuid.ToString(),
-                    Selected = s.StateGuid == this.subscriber.State.StateGuid
+                    Selected = s.StateGuid == this.subscriber?.State?.StateGuid
                 })
             };
 
@@ -194,7 +194,7 @@ namespace UpDiddy.Controllers
                     foreach (var error in modelState.Errors)
                     {
                         validationErrors.Append(error.ErrorMessage);
-                        validationErrors.Append(",");
+                        validationErrors.Append("|");
                     }
                 }
 

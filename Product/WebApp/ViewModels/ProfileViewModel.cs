@@ -16,15 +16,14 @@ namespace UpDiddy.ViewModels
         public IEnumerable<SelectListItem> Countries { get; set; }
         public Guid? SelectedState { get; set; }
         public Guid? SelectedCountry { get; set; }
-        [RegularExpression(@"^[a-zA-Z''-'\s]*$", ErrorMessage = "First name may not contain any special characters.")]
+        [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "First name may only contain alphabetic characters, spaces, apostrophes, and hyphens.")]
         public string FirstName { get; set; }
-        [RegularExpression(@"^[a-zA-Z''-'\s]*$", ErrorMessage = "Last name may not contain any special characters.")]
+        [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "Last name may only contain alphabetic characters, spaces, apostrophes, and hyphens.")]
         public string LastName { get; set; }
-        [RegularExpression(@"^[0-9a-zA-Z''-'\s]*$", ErrorMessage = "Address may not contain any special characters.")]
+        [RegularExpression(@"\w+(\s\w+){2,}", ErrorMessage = "Please enter a valid street address.")]
         public string Address { get; set; }
-        [RegularExpression(@"^[0-9a-zA-Z''-'\s]*$", ErrorMessage = "City may not contain any special characters.")]
+        [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "Please enter a valid city.")]
         public string City { get; set; }
-        [RegularExpression("^(?!0+$)(\\+\\d{1,3}[- ]?)?(?!0+$)\\d{10,15}$", ErrorMessage = "Please enter a 10-digit phone number.")]
         private string _FormattedPhone;
         public string FormattedPhone
         {
@@ -38,20 +37,28 @@ namespace UpDiddy.ViewModels
             }
             set
             {
-                _FormattedPhone = value.Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+                if (value != null)
+                    _FormattedPhone = value.Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+                else
+                    _FormattedPhone = value;
             }
         }
+
+        [RegularExpression("^[2-9]{1}[0-9]{9}$", ErrorMessage = "Phone must be 10 digits and may not start with a 0 or 1.")]
         public string Phone
         {
             get
             {
-                return this.FormattedPhone.Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+                if (this._FormattedPhone != null)
+                    return this.FormattedPhone.Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+                else
+                    return _FormattedPhone;
             }
         }
         // no validation data annotation required for email since this has been validated by MSAL and cannot be modified by the user
         public string Email { get; set; }
         [RegularExpression(@"^http(s)?://([\w]+.)?facebook.com/[A-z0-9_]+/?$", ErrorMessage = "The Facebook profile URL is not valid.")]
-        public string FacebookUrl { get; set; }       
+        public string FacebookUrl { get; set; }
         [RegularExpression(@"^http(s)?://([\w]+.)?linkedin.com/in/[A-z0-9_]+/?$", ErrorMessage = "The LinkedIn profile URL is not valid.")]
         public string LinkedInUrl { get; set; }
         [RegularExpression(@"^http(s)?://([\w]+.)?twitter.com/[A-z0-9_]+/?$", ErrorMessage = "The Twitter profile URL is not valid.")]

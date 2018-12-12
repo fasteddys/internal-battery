@@ -183,7 +183,7 @@ namespace UpDiddy.Api
             }
             return rval;
         }
-        public IList<StateDto> GetStatesByCountry(Guid countryGuid)
+        public IList<StateDto> GetStatesByCountry(Guid? countryGuid)
         {
             string cacheKey = $"GetStatesByCountry{countryGuid}";
             IList<StateDto> rval = GetCachedValue<IList<StateDto>>(cacheKey);
@@ -266,12 +266,6 @@ namespace UpDiddy.Api
             return Get<PromoCodeDto>("promocode/" + code + "/" + courseVariantGuid + "/" + subscriberGuid, true);
         }
 
-        [Obsolete("don't need this after refactoring on profile page is complete", false)]
-        public IList<EnrollmentDto> GetCurrentEnrollmentsForSubscriber(SubscriberDto Subscriber)
-        {
-            return Get<IList<EnrollmentDto>>("enrollment/CurrentEnrollments/" + Subscriber.SubscriberId, true);
-        }
-
         public VendorStudentLoginDto StudentLogin(int SubscriberId)
         {
             return Get<VendorStudentLoginDto>("enrollment/StudentLogin/" + SubscriberId.ToString(), true);
@@ -303,23 +297,9 @@ namespace UpDiddy.Api
             return Post<Guid>(enrollmentLogDto, "enrollment/EnrollmentLog", true);
         }
 
-        public SubscriberDto CreateSubscriberDeprecated(string SubscriberGuid, string SubscriberEmail)
-        {
-            return Post<SubscriberDto>("subscriber/addsubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail), true);
-        }
-
-        [Obsolete("why do we need a separate dto for subscriber creation?", false)]
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
         {
-            SubscriberCreateDto SDto = new SubscriberCreateDto
-            {
-                SubscriberGuid = SubscriberGuid,
-                SubscriberEmail = SubscriberEmail
-
-            };
-
-            string jsonToSend = JsonConvert.SerializeObject(SDto);
-            return Post<SubscriberDto>(SDto, "subscriber/createsubscriber", true);
+            return Post<SubscriberDto>("subscriber/CreateSubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail), true);
         }
 
         public WozCourseProgressDto UpdateStudentCourseProgress(Guid SubscriberGuid, bool FutureSchedule)
@@ -355,9 +335,10 @@ namespace UpDiddy.Api
         {
             return Get<IList<CountryDto>>("profile/GetCountries", false);
         }
-        public IList<StateDto> _GetStatesByCountry(Guid countryGuid)
+
+        public IList<StateDto> _GetStatesByCountry(Guid? countryGuid)
         {
-            return Get<IList<StateDto>>("profile/GetStatesByCountry/" + countryGuid.ToString(), false);
+            return Get<IList<StateDto>>("profile/GetStatesByCountry/" + countryGuid?.ToString(), false);
         }
 
         private IList<CourseDto> _getCousesByTopicSlug(string TopicSlug)
