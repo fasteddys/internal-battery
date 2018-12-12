@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace API.Tests
 {
-    public class Task60Tests
+    public class SubscriberSkillTests
     {
         [Fact]
         public void AddSkill()
