@@ -1,12 +1,10 @@
 ﻿using System;
 using Xunit;
-using Moq;
-using UpDiddyApi.Business;
 using Microsoft.EntityFrameworkCore;
 using UpDiddyApi.Models;
 using System.Linq;
 
-namespace API.Tests
+namespace SeleniumTests
 {
     public class SubscriberSkillTests
     {
