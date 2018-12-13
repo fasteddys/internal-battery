@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -7,9 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using UpDiddyApi.Business.Resume;
-using System.Net.Http;
 using UpDiddyApi.Models;
-using System.Security.Claims;
+using UpDiddy.Helpers;
 
 namespace UpDiddyApi.Controllers
 {
@@ -58,7 +56,7 @@ namespace UpDiddyApi.Controllers
             String parsedDocument = await _sovrenApi.SubmitResumeAsync(base64String);
 
             // todo: verify subscriber guid permissions and data
-            SubscriberProfileStagingStore.Save(_db, subscriber, Sovren.Name, SubscriberProfileStagingStore.DataFormatXml, parsedDocument);
+            SubscriberProfileStagingStore.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
             return Ok(parsedDocument);
         }
     }

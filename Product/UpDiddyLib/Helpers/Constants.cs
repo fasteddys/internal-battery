@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 
 namespace UpDiddy.Helpers
 {
-    static public class Constants
+    // todo: consider moving these constants to their respective domains of usage
+    public static class Constants
     {
         static public string  SubsriberSessionKey = "Subscriber";
         static public readonly string EMPTY_STRING = "";
@@ -18,8 +19,18 @@ namespace UpDiddy.Helpers
         static public readonly string SysLogLogInformationTrue = "true";
         static public readonly string WozVendorName = "WozU";
 
-        // Profile data sources 
-        static public readonly string LinkedInProfile = "LinkedIn";
+        public static class DataFormat
+        {
+            public static readonly string Json = "Json";
+            public static readonly string Xml = "Xml";
+        }
+
+        // data sources for subscriber staging store
+        public static class DataSource
+        {
+            public static readonly string Sovren = "Sovren";
+            public static readonly string LinkedIn = "LinkedIn";
+        }
 
     }
 }

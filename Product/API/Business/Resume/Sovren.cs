@@ -14,7 +14,6 @@ namespace UpDiddyApi.Business.Resume
 {
     public class Sovren : ISovrenAPI
     {
-        public const string Name = "Sovren";
         // Typed client: https://docs.microsoft.com/en-us/aspnet/core/fundamentals/http-requests?view=aspnetcore-2.2#typed-clients
         private HttpClient Client { get; }
 

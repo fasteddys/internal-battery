@@ -12,9 +12,6 @@ namespace UpDiddyApi.Models
 {
     public partial class SubscriberProfileStagingStore : BaseModel
     {
-        public const string DataFormatJson = "Json";
-        public const string DataFormatXml = "Xml";
-
         public SubscriberProfileStagingStore()
         {
                 
@@ -33,9 +30,9 @@ namespace UpDiddyApi.Models
             this.CreateDate = DateTime.Now;
             this.ModifyGuid = Guid.NewGuid();
             this.SubscriberId = Subscriber.SubscriberId;
-            this.ProfileSource = Constants.LinkedInProfile;
+            this.ProfileSource = Constants.DataSource.LinkedIn;
             this.IsDeleted = 0;
-            this.ProfileFormat = SubscriberProfileStagingStore.DataFormatJson;
+            this.ProfileFormat = Constants.DataFormat.Json;
         }
 
         // TODO possibly modularize after knowing the complete set of linkedin data that will be available 
@@ -116,7 +113,7 @@ namespace UpDiddyApi.Models
         {
             SubscriberProfileStagingStore pss = db.SubscriberProfileStagingStore
                  .Include(s => s.Subscriber)
-                 .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid && s.ProfileSource == Constants.LinkedInProfile)
+                 .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid && s.ProfileSource == Constants.DataSource.LinkedIn)
                  .OrderByDescending( s => s.ModifyDate)
              .FirstOrDefault();
 
