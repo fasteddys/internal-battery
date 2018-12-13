@@ -303,5 +303,12 @@ namespace UpDiddy.Controllers
             );
             return LocalRedirect(returnUrl);
         }
+
+        [Authorize]
+        [HttpGet]
+        public JsonResult GetSkills()
+        {
+            return new JsonResult(null);
+        }
     }
 }

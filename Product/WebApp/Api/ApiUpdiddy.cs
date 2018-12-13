@@ -213,40 +213,6 @@ namespace UpDiddy.Api
             return rval;
         }
 
-
-
-        public CountryDto GetSubscriberCountry(int StateId)
-        {
-            string cacheKey = $"GetSubscriberCountry{StateId}";
-            CountryDto rval = GetCachedValue<CountryDto>(cacheKey);
-
-            if (rval != null)
-                return rval;
-            else
-            {
-                rval = _GetSubscriberCountry(StateId);
-                SetCachedValue<CountryDto>(cacheKey, rval);
-            }
-            return rval;
-
-        }
-
-        public StateDto GetSubscriberState(int StateId)
-        {
-            string cacheKey = $"GetSubscriberState{StateId}";
-            StateDto rval = GetCachedValue<StateDto>(cacheKey);
-
-            if (rval != null)
-                return rval;
-            else
-            {
-                rval = _GetSubscriberState(StateId);
-                SetCachedValue<StateDto>(cacheKey, rval);
-            }
-            return rval;
-        }
-
-
         #endregion
 
         #region Public UnCached Methods
@@ -371,18 +337,6 @@ namespace UpDiddy.Api
         {
             return Get<WozCourseProgressDto>("woz/CourseStatus/" + SubscriberGuid + "/" + EnrollmentGuid, false);
         }
-
-
-        public CountryDto _GetSubscriberCountry(int StateId)
-        {
-            return Get<CountryDto>("subscriber/CountryFromState/" + StateId, false);
-        }
-
-        public StateDto _GetSubscriberState(int StateId)
-        {
-            return Get<StateDto>("subscriber/State/" + StateId, false);
-        }
-
 
         #endregion
 

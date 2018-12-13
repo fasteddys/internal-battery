@@ -144,5 +144,18 @@ namespace UpDiddyApi.Controllers
 
             return Ok(states.OrderBy(s => s.Sequence).ProjectTo<StateDto>(_mapper.ConfigurationProvider));
         }
+
+        [HttpGet]
+        [Route("api/[controller]/GetSkills")]
+        public IActionResult GetSkills()
+        {
+            var skills = _db.Skill
+                .Where(s => s.IsDeleted == 0)
+                .OrderBy(s => s.SkillName)
+                .ProjectTo<SkillDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(skills);
+        }
     }
 }

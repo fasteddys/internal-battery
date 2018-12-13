@@ -64,41 +64,7 @@ namespace UpDiddyApi.Controllers
 
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
         }
-
-        [HttpGet] 
-        [Route("api/[controller]/CountryFromState/{StateId}")]
-        public IActionResult CountryFromState(int StateId)
-        {
-            State state = _db.State
-                .Where(t => t.IsDeleted == 0 && t.StateId == StateId)
-                .FirstOrDefault();
-
-            Country country = _db.Country
-                .Where(t => t.IsDeleted == 0 && t.CountryId == state.CountryId)
-                .FirstOrDefault();
-
-            if (country == null)
-                return NotFound();
-
-            return Ok(_mapper.Map<CountryDto>(country));
-
-        }
-
-        [HttpGet]
-        [Route("api/[controller]/State/{StateId}")]
-        public IActionResult State(int StateId)
-        {
-            State state = _db.State
-                .Where(t => t.IsDeleted == 0 && t.StateId == StateId)
-                .FirstOrDefault();
-
-            if (state == null)
-                return NotFound();
-
-            return Ok(_mapper.Map<StateDto>(state));
-
-        }
-
+        
         [HttpPost]
         [Authorize]
         [Route("api/[controller]/CreateSubscriber/{SubscriberGuid}/{SubscriberEmail}")]

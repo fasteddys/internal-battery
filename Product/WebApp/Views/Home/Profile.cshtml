@@ -8,6 +8,26 @@
 <script type="text/javascript">
     // this must be present for the API call used in site.js
     var url = '@Url.Action("GetStatesByCountry", "Home")';
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var skills = new Choices('#choices-skills', {
+            removeItems: true,
+            removeItemButton: true,
+            duplicateItemsAllowed: false
+        });
+
+        skills.ajax(function (callback) {
+            fetch('http://localhost:5000/Home/GetSkills')
+                .then(function (response) {
+                    response.json().then(function (data) {
+                        callback(data, 'value', 'label');
+                    });
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        })
+    });
 </script>
 
 <div class="profile-container">
@@ -95,7 +115,7 @@
                                                     </div>
                                                 </div>
                                                 @{
-                                                    @if (enrollment.SimplifiedEnrollmentStatus  == SimplifiedEnrollmentStatus.Success)
+                                                    @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
                                                     {
                                                         double percentComplete = enrollment.PercentComplete;
                                                         string classFormatter = "";
@@ -264,7 +284,10 @@
                                             }
                                         }
 
-
+                                        <li>
+                                            Skills:
+                                            <span id="SkillsDisplay">placeholder for repeater...</span>
+                                        </li>
                                     </ul>
                                     <button class="btn btn-primary edit-profile-info-button d-block d-sm-none profile-mobile-view" type="button">
                                         Edit
@@ -322,6 +345,10 @@
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedGithubUrl">GitHub Profile</label>
                                                 <input type="text" class="form-control" asp-for="GithubUrl" />
+                                            </div>
+                                            <div class="form-group col-md-3">
+                                                <label for="UpdatedSkills">Skills</label>
+                                                <input type="text" class="form-control" id="choices-skills" />
                                             </div>
                                             <div class="form-row col-12">
                                                 <div id="ValidationSummary">
