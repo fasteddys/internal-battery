@@ -133,10 +133,13 @@ namespace UpDiddyApi
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
 
 
-  
+            // TODO Remove Test Code 71A7156E-173F-4054-83ED-AD6127BAFE87
+            Guid testGuid = Guid.Parse("71A7156E-173F-4054-83ED-AD6127BAFE87");
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ImportSubscriberProfileData(testGuid), Cron.MinuteInterval(1));
+
+
 
             // Add Polly 
-
             // Create Policies  
             int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
             int PollyBreakDurationInMinutes = int.Parse(Configuration["Polly:BreakDurationInMinutes"]);

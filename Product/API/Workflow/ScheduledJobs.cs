@@ -20,7 +20,7 @@ namespace UpDiddyApi.Workflow
     public class ScheduledJobs : BusinessVendorBase 
     {
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IServiceProvider serviceProvider, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger)
         {
             _db = context;
             _mapper = mapper;
@@ -250,6 +250,38 @@ namespace UpDiddyApi.Workflow
 
 
         #region CareerCircle Jobs 
+ 
+        public Boolean ImportSubscriberProfileData(Guid subscriberGuid)
+        {
+            try
+            {
+                string errMsg = string.Empty;
+
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {subscriberGuid}");
+
+                // Get the list of profiles that need 
+                List<SubscriberProfileStagingStore> profiles = _db.SubscriberProfileStagingStore
+                .Include(p => p.Subscriber)
+                .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == subscriberGuid)
+                .ToList();
+
+                _ImportSubscriberProfileData(profiles);
+            }
+            catch (Exception e)
+            {
+                // Save any work that has been completed before the exception 
+                _db.SaveChanges();
+                _syslog.Log(LogLevel.Error, "ScheduledJobs:ImportSubscriberProfileData threw an exception -> " + e.Message);
+
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+
+            return true;
+        }
+
         public Boolean DoPromoCodeRedemptionCleanup(int? lookbackPeriodInMinutes = 30)
         {
 
@@ -303,7 +335,62 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
+
+        #region CareerCircle  Helper Functions
+
+        private Boolean _ImportSubscriberProfileData(List<SubscriberProfileStagingStore> profiles)
+        {
+
+            try
+            {
+                string errMsg = string.Empty;
+
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()}");
  
+                foreach (SubscriberProfileStagingStore p in profiles)
+                {
+                    if (p.ProfileSource == Constants.LinkedInProfile)
+                    {
+
+                    }
+                    else if (p.ProfileSource == Constants.SovrenProfile)
+                    {
+                        p.Status = (int)SubscriberSkill.ImportSovren(_db, p, ref errMsg);
+                    }
+                    else
+                    {
+                        // Report on unknown source error
+                        p.Status = (int)ProfileDataStatus.ProcessingError;
+                        errMsg = $"ScheduledJobs:_ImportSubscriberProfileData -> SubscriberProfileStagingStore {p.SubscriberProfileStagingStoreId} has an unknown source of {p.ProfileSource}";
+                    }
+
+                    if (p.Status == (int)ProfileDataStatus.ProcessingError)
+                        _syslog.Log(LogLevel.Error, $"ScheduledJobs:_ImportSubscriberProfileData envountered an error -> {errMsg}");
+                }
+                // Mark profiles as processed 
+                _db.SaveChanges();
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ImportSubscriberProfileData completed at: {DateTime.UtcNow.ToLongDateString()}");
+
+            }
+            catch (Exception e)
+            {
+                // Save any work that has been completed before the exception 
+                _db.SaveChanges();
+                _syslog.Log(LogLevel.Error, "ScheduledJobs:_ImportSubscriberProfileData threw an exception -> " + e.Message);
+
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ImportSubscriberProfileData completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+
+            return true;
+        }
+
+
+        #endregion
+
+
 
     }
 }

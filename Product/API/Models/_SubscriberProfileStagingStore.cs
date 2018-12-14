@@ -10,6 +10,9 @@ using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Models
 {
+
+    public enum ProfileDataStatus { Acquired = 0, Processing, Processed, Deleted, AccountNotFound, AcquistionError, ProcessingError };
+
     public partial class SubscriberProfileStagingStore : BaseModel
     {
         public SubscriberProfileStagingStore()

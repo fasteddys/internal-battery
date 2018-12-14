@@ -23,6 +23,7 @@ namespace UpDiddy.Helpers
 
         // Profile data sources 
         static public readonly string LinkedInProfile = "LinkedIn";
+        static public readonly string SovrenProfile = "Sovren";
 
     }
 }

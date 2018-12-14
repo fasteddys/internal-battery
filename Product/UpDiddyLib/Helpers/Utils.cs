@@ -9,7 +9,7 @@ namespace UpDiddyLib.Helpers
 {
 
 
-     public enum ProfileDataStatus { Acquired = 0, Processing, Processed, Deleted, AccountNotFound, AcquistionError};
+
 
     static public class Utils
     {

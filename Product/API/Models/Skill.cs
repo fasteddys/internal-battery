@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    public class Skill : BaseModel
+    public partial class Skill : BaseModel
     {
         public int SkillId { get; set; }
         public string SkillName { get; set; }
