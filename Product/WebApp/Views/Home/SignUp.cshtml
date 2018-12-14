@@ -5,26 +5,49 @@
 <link rel="stylesheet" type="text/css" href="~/lib/animate/animate.css">
 <script src="~/js/signup-flow.js"></script>
 
-<div class="modal fade" id="WorkHistoryModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="WorkHistoryModal" tabindex="-1" role="dialog" aria-labelledby="WorkHistoryModal" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="exampleFormControlInput1">Job Title</label>
-                    <input type="email" class="form-control" id="exampleFormControlInput1">
+                    <label for="JobTitleInput">Job Title</label>
+                    <input type="text" class="form-control" id="JobTitleInput">
                 </div>
                 <div class="form-group">
-                    <label for="exampleFormControlInput1">Organization</label>
-                    <input type="email" class="form-control" id="exampleFormControlInput1">
+                    <label for="OrganizationInput">Organization</label>
+                    <input type="text" class="form-control" id="OrganizationInput">
                 </div>
                 <div class="form-group">
-                    <label for="exampleFormControlTextarea1">Job Description</label>
-                    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                    <label for="JobDescriptionInput">Job Description</label>
+                    <textarea class="form-control" id="JobDescriptionInput" rows="3"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary save-new-work-history-item">Save changes</button>
+                <span class="work-history-modal-validation hidden">Please enter valid values.</span>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary save-new-work-history-item">Add</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="EducationModal" tabindex="-1" role="dialog" aria-labelledby="EducationModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="InstitutionInput">Institution</label>
+                    <input type="text" class="form-control" id="InstitutionInput">
+                </div>
+                <div class="form-group">
+                    <label for="MajorInput">Major</label>
+                    <input type="text" class="form-control" id="MajorInput">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span class="work-history-modal-validation hidden">Please enter valid values.</span>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary save-new-work-history-item">Add</button>
             </div>
         </div>
     </div>
@@ -39,7 +62,7 @@
                         
                             <div id="SignupFlowCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
                                 <div class="carousel-inner">
-                                    <div class="carousel-item active">
+                                    <div class="carousel-item active carousel-item-first">
                                         <div class="resume-intro-container">
                                             <div>
                                                 <h1 id="TypewriterHeader">Hi there...</h1>
@@ -66,10 +89,10 @@
                                         </div>
 
                                     </div>
-                                    <div class="carousel-item">
+                                    <div class="carousel-item carousel-item-second">
                                         <div class="linked-in-container">
                                             <div>
-                                                <h2>Have a LinkedIn account? Let's sync it with your CareerCircle profile.</h2>
+                                                <h2>Have a LinkedIn account?<br />Let's sync it with your CareerCircle profile.</h2>
                                                 <div class="mt-4 p-4">
                                                     @*Need to make this actionable based on a passed-in subscriber guid*@
                                                     @await Component.InvokeAsync("LinkedInSync")
@@ -83,20 +106,28 @@
                                                 <h2>Let's add your previous and current work experiences.</h2>
                                                 <div class="work-history-log">
                                                     <div class="row">
-                                                        <div class="col-12 col-sm-6 col-md-4">
-                                                            <div class="card">
-                                                                <div class="card-body">
-                                                                    <h5 class="card-title">Software Engineer</h5>
-                                                                    <h6 class="card-subtitle mb-2 text-muted">Allegis Group</h6>
-                                                                    <p class="card-text">Build an application in the .Net Core 2.1 framework.</p>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        @* Work history dynamically added here. *@
                                                     </div>
-                                                    
+
                                                 </div>
-                                                
+
+                                                <div class="mt-3 add-work-history" data-toggle="modal" data-target="#WorkHistoryModal">
+                                                    <i class="fas fa-plus"></i>&nbsp;&nbsp;Add
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="carousel-item">
+                                        <div class="education-container">
+                                            <div>
+                                                <h2>Tell us about your education</h2>
+                                                <div class="work-history-log">
+                                                    <div class="row">
+                                                        @* Work history dynamically added here. *@
+                                                    </div>
+
+                                                </div>
+
                                                 <div class="mt-3 add-work-history" data-toggle="modal" data-target="#WorkHistoryModal">
                                                     <i class="fas fa-plus"></i>&nbsp;&nbsp;Add
                                                 </div>
@@ -104,7 +135,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="previous-container">
+                                <div class="previous-container animated">
                                     <div class="flow-prev-button">
                                         <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
                                     </div>

@@ -4,6 +4,11 @@
 // Base Styles
 @media (min-width: 0px) {
     .signup-flow-container {
+        .modal {
+            .work-history-modal-validation{
+                color: red;
+            }
+        }
 
         .signup-flow-row {
             overflow: hidden;

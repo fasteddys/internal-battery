@@ -962,6 +962,8 @@ body {
   .faq-page-container .faq-content {
     padding: 2rem 0; } }
 @media (min-width: 0px) {
+  .signup-flow-container .modal .work-history-modal-validation {
+    color: red; }
   .signup-flow-container .signup-flow-row {
     overflow: hidden; }
     .signup-flow-container .signup-flow-row .signup-flow-column {
