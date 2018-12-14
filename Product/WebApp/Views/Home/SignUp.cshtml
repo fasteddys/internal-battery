@@ -1,0 +1,127 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model SignupFlowViewModel
+
+<link rel="stylesheet" type="text/css" href="~/lib/animate/animate.css">
+<script src="~/js/signup-flow.js"></script>
+
+<div class="modal fade" id="WorkHistoryModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">Job Title</label>
+                    <input type="email" class="form-control" id="exampleFormControlInput1">
+                </div>
+                <div class="form-group">
+                    <label for="exampleFormControlInput1">Organization</label>
+                    <input type="email" class="form-control" id="exampleFormControlInput1">
+                </div>
+                <div class="form-group">
+                    <label for="exampleFormControlTextarea1">Job Description</label>
+                    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary save-new-work-history-item">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="signup-flow-container">
+    <div class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row signup-flow-row">
+                    <div id="Flow-ResumeColumn" class="col-12 signup-flow-column animated slideInUp">
+                        
+                            <div id="SignupFlowCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
+                                <div class="carousel-inner">
+                                    <div class="carousel-item active">
+                                        <div class="resume-intro-container">
+                                            <div>
+                                                <h1 id="TypewriterHeader">Hi there...</h1>
+                                            </div>
+                                            <div>
+                                                <h2 id="ResumeUploadHeader">Let's get started by uploading your resume!</h2>
+                                            </div>
+                                            <form asp-controller="Home" asp-action="UploadResume" enctype="multipart/form-data" id="ResumeUploadForm">
+
+                                                <div class="form-group">
+                                                    <div id="UploadedResumeText" class="appear-on-resume-attach">
+
+                                                    </div>
+                                                    <label id="UploadedResumeLabel" for="UploadedResume" class="custom-file-upload">
+                                                        <i class="fas fa-file-upload"></i>&nbsp;&nbsp;Choose File
+                                                    </label>
+                                                    <input id="UploadedResume" type="file" asp-for="Resume" />
+                                                    <input type="submit" value="Upload" class="appear-on-resume-attach btn-resume-submit">
+
+                                                </div>
+                                            </form>
+
+
+                                        </div>
+
+                                    </div>
+                                    <div class="carousel-item">
+                                        <div class="linked-in-container">
+                                            <div>
+                                                <h2>Have a LinkedIn account? Let's sync it with your CareerCircle profile.</h2>
+                                                <div class="mt-4 p-4">
+                                                    @*Need to make this actionable based on a passed-in subscriber guid*@
+                                                    @await Component.InvokeAsync("LinkedInSync")
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="carousel-item">
+                                        <div class="work-history-container">
+                                            <div>
+                                                <h2>Let's add your previous and current work experiences.</h2>
+                                                <div class="work-history-log">
+                                                    <div class="row">
+                                                        <div class="col-12 col-sm-6 col-md-4">
+                                                            <div class="card">
+                                                                <div class="card-body">
+                                                                    <h5 class="card-title">Software Engineer</h5>
+                                                                    <h6 class="card-subtitle mb-2 text-muted">Allegis Group</h6>
+                                                                    <p class="card-text">Build an application in the .Net Core 2.1 framework.</p>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                </div>
+                                                
+                                                <div class="mt-3 add-work-history" data-toggle="modal" data-target="#WorkHistoryModal">
+                                                    <i class="fas fa-plus"></i>&nbsp;&nbsp;Add
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="previous-container">
+                                    <div class="flow-prev-button">
+                                        <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                                    </div>
+                                </div>
+                                <div class="skip-next-container">
+                                    @*<div class="skip-flow-screen">
+                                        <a href="#SignupFlowCarousel" role="button" data-slide="next">Skip</a>
+                                    </div>*@
+                                    <div id="SignupFlowNextButton" class="flow-next-button disabled">
+                                        <a role="button" data-slide="next">Next</a>
+                                    </div>
+                                </div>
+                            </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

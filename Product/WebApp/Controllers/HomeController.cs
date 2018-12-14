@@ -60,6 +60,11 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        public IActionResult SignUp()
+        {
+            return View();
+        }
+
         public IActionResult News()
         {
 
@@ -155,6 +160,29 @@ namespace UpDiddy.Controllers
             }
 
             return View(profileViewModel);
+        }
+
+        [HttpPost]
+        public BasicResponseDto UploadResume(IFormFile file)
+        {
+            if (ModelState.IsValid && file != null)
+            {
+                return new BasicResponseDto
+                {
+                    StatusCode = "200",
+                    Description = "OK"
+                };
+            }
+            else
+            {
+                return new BasicResponseDto
+                {
+                    StatusCode = "400",
+                    Description = "Bad Request"
+                };
+            }
+            
+
         }
 
         [HttpPost]

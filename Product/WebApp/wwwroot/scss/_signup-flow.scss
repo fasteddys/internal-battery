@@ -1,0 +1,136 @@
+﻿@import '_variables';
+@import '_mixins';
+
+// Base Styles
+@media (min-width: 0px) {
+    .signup-flow-container {
+
+        .signup-flow-row {
+            overflow: hidden;
+
+
+
+
+            .signup-flow-column {
+                position: relative;
+                text-align: center;
+
+                .carousel {
+                    padding: 15rem 0;
+
+                    .carousel-item {
+                        min-height: 170px;
+
+                        .resume-intro-container {
+
+                            input[type="file"] {
+                                display: none;
+                            }
+
+                            .custom-file-upload {
+                                margin-top: 1rem;
+                                @include button-with-box-shadow;
+                            }
+
+                            .btn-resume-submit {
+                                border: 0;
+                                @include button-with-box-shadow;
+                                display: none;
+
+                                &:focus {
+                                    outline: none;
+                                }
+                            }
+                        }
+
+                        .work-history-container {
+                            .work-history-log {
+                                margin-top: 2rem;
+                                text-align: left;
+
+                                > div {
+                                    > div {
+                                        margin-bottom: 1rem;
+                                    }
+                                }
+                            }
+
+                            .add-work-history {
+                                @include button-with-box-shadow;
+                            }
+                        }
+                    }
+                }
+
+                .previous-container {
+                    position: absolute;
+                    bottom: .5rem;
+                    left: 0;
+
+                    > div {
+                        display: inline-block;
+                        cursor: pointer;
+
+                        a {
+                            color: $color-white;
+                        }
+                    }
+
+                    .flow-prev-button {
+                        @include button-with-box-shadow;
+                    }
+                }
+
+                .skip-next-container {
+                    position: absolute;
+                    bottom: .5rem;
+                    right: 0;
+
+                    a {
+                        color: $color-white;
+                    }
+
+                    > div {
+                        display: inline-block;
+                        cursor: pointer;
+                    }
+
+                    .flow-next-button {
+                        @include button-with-box-shadow;
+                        margin-left: 1rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+    .signup-flow-container {
+    }
+}
+
+// Small Styles
+@media (min-width: 576px) {
+    .signup-flow-container {
+    }
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+    .signup-flow-container {
+    }
+}
+
+// Large Styles
+@media (min-width: 992px) {
+    .signup-flow-container {
+    }
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+    .signup-flow-container {
+    }
+}
