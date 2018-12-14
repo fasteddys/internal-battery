@@ -30,6 +30,7 @@ using Serilog.Sinks.ApplicationInsights;
 using UpDiddyLib.Serilog.Sinks;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
+using UpDiddyApi.Business.Resume;
 
 namespace UpDiddyApi
 {
@@ -163,6 +164,8 @@ namespace UpDiddyApi
             services.AddHttpClient(Constants.HttpDeleteClientName)
               .AddPolicyHandler(ApiDeletePolicy);
 
+            services.AddTransient<ISovrenAPI, Sovren>();
+            services.AddHttpClient<ISovrenAPI,Sovren>();
 
             // Configure SnapshotCollector from application settings
             // TODO Uncomment test 
@@ -224,12 +227,5 @@ namespace UpDiddyApi
                 return new SnapshotCollectorTelemetryProcessor(next, configuration: snapshotConfigurationOptions.Value);
             }
         }
-
-
     }
-
-  
-     
-   
-
 }

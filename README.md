@@ -77,6 +77,7 @@ Be sure when configuring Key Vault secrets to use `--` as the seperator as `:` a
 * SysEmail:ApiKey
 * Woz:AccessToken
 * CareerCircleSqlConnection
+* Sovren:ServiceKey
 
 ### Key Vault Access
 CareerCircle WebApp and API will utilize the **Azure Key Vault** for sensitive data such as passwords.
