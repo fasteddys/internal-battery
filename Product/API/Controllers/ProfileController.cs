@@ -10,6 +10,8 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
+using System.Data.SqlClient;
+using System.Data;
 
 namespace UpDiddyApi.Controllers
 {
@@ -78,68 +80,46 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/Update")]
         public IActionResult Update([FromBody] SubscriberDto Subscriber)
         {
-            Subscriber subscriber = _db.Subscriber
-                 .Where(t => t.IsDeleted == 0 && t.SubscriberGuid.Equals(Subscriber.SubscriberGuid))
-                 // use .SelectMany for Skills?
-                 .FirstOrDefault();
+            var subscriberGuid = new SqlParameter("@SubscriberGuid", Subscriber.SubscriberGuid);
+            var firstName = new SqlParameter("@FirstName", Subscriber.FirstName);
+            var lastName = new SqlParameter("@LastName", Subscriber.LastName);
+            var address = new SqlParameter("@Address", Subscriber.Address);
+            var city = new SqlParameter("@City", Subscriber.City);
+            var stateGuid = new SqlParameter("@StateGuid", Subscriber.State.StateGuid);
+            var phoneNumber = new SqlParameter("@PhoneNumber", Subscriber.PhoneNumber);
+            var facebookUrl = new SqlParameter("@FacebookUrl", Subscriber.FacebookUrl);
+            var twitterUrl = new SqlParameter("@TwitterUrl", Subscriber.TwitterUrl);
+            var linkedInUrl = new SqlParameter("@LinkedInUrl", Subscriber.LinkedInUrl);
+            var stackOverflowUrl = new SqlParameter("@StackOverflowUrl", Subscriber.StackOverflowUrl);
+            var gitHubUrl = new SqlParameter("@GitHubUrl", Subscriber.GithubUrl);
 
-            if (subscriber != null)
+            DataTable table = new DataTable();
+            table.Columns.Add("Guid", typeof(Guid));
+            foreach (var skill in Subscriber.Skills)
             {
-                subscriber.FirstName = Subscriber.FirstName;
-                subscriber.LastName = Subscriber.LastName;
-                subscriber.Address = Subscriber.Address;
-                subscriber.City = Subscriber.City;
-                int stateId = 0;
-                if (Subscriber.State.StateGuid.HasValue)
-                    stateId = _db.State.Where(s => s.StateGuid.Value == Subscriber.State.StateGuid.Value).Select(s => s.StateId).FirstOrDefault();
-                else
-                    subscriber.StateId = null;
-                subscriber.PhoneNumber = Subscriber.PhoneNumber;
-                subscriber.FacebookUrl = Subscriber.FacebookUrl;
-                subscriber.TwitterUrl = Subscriber.TwitterUrl;
-                subscriber.LinkedInUrl = Subscriber.LinkedInUrl;
-                subscriber.StackOverflowUrl = Subscriber.StackOverflowUrl;
-                subscriber.GithubUrl = Subscriber.GithubUrl;
+                table.Rows.Add(skill.SkillGuid);
             }
-            
-            // overwrite anything that currently exists for skills...
-            var updatedSkills = _db.Skill
-                .Where(s => s.IsDeleted == 0)
-                .Join(Subscriber.Skills, e => e.SkillGuid, n => n.SkillGuid, (e, n) => new { e, n })
-                .ToList();
+            var skillGuids = new SqlParameter("@SkillGuids", table);
+            skillGuids.SqlDbType = SqlDbType.Structured;
+            skillGuids.TypeName = "dbo.GuidList";
 
-            foreach(var skill in Subscriber.Skills)
-            {
-                _db.SubscriberSkill.Add(new SubscriberSkill()
-                {
-                     
-                });
-            }
+            var spParams = new object[] { subscriberGuid, firstName, lastName, address, city, stateGuid, phoneNumber, facebookUrl, twitterUrl, linkedInUrl, stackOverflowUrl, gitHubUrl, skillGuids };
 
-            // todo: identify overlap, update existing skills and update them with a new modify date
-            //var existingSkills = _db.SubscriberSkill
-            //    .Where(sk => sk.IsDeleted == 0 && sk.SubscriberId == subscriber.SubscriberId)
-            //    .Join(updatedSkills, sk => sk.SkillId, us => us.SkillId, (sk, us) => sk)
-            //    .ToList();
-
-            //foreach (var skill in existingSkills)
-            //{
-            //    skill.ModifyDate = DateTime.UtcNow;
-            //}
-            // , add anything that is new
-            //var newSkills = updatedSkills
-            //    .GroupJoin(
-            //        _db.SubscriberSkill,
-            //        ns => ns.SkillId,
-            //        ss => ss.SkillId, (ns, ss) => new { ns, ss = ss.DefaultIfEmpty() })
-            //    .SelectMany(x =>
-            //    x.ss.Select(t2 => new { t1 = x.ns, t2 = t2 }));
-
-
-            // , remove anything that doesn't still exist
-
-
-            _db.SaveChanges();
+            var rowsAffected = _db.Database.ExecuteSqlCommand(@"
+                EXEC [dbo].[System_Update_Subscriber] 
+                    @SubscriberGuid,
+                    @FirstName,
+	                @LastName,
+	                @Address,
+	                @City,
+	                @StateGuid,
+                    @PhoneNumber,
+	                @FacebookUrl,
+	                @TwitterUrl,
+	                @LinkedInUrl,
+	                @StackOverflowUrl,
+	                @GithubUrl,
+	                @SkillGuids", spParams);
 
             return Ok();
         }
@@ -202,8 +182,8 @@ namespace UpDiddyApi.Controllers
         {
             var subscriberSkills = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid.Value == subscriberGuid)
-                .Join(_db.SubscriberSkill, s => s.SubscriberId, sk => sk.SubscriberId, (s, sk) => new { sk.SkillId })
-                .Join(_db.Skill, x => x.SkillId, s => s.SkillId, (x, s) => s)
+                .Join(_db.SubscriberSkill.Where(ss => ss.IsDeleted == 0), s => s.SubscriberId, sk => sk.SubscriberId, (s, sk) => new { sk.SkillId })
+                .Join(_db.Skill.Where(s => s.IsDeleted == 0), x => x.SkillId, s => s.SkillId, (x, s) => s)
                 .Distinct()
                 .OrderBy(s => s.SkillName)
                 .ProjectTo<SkillDto>(_mapper.ConfigurationProvider)
@@ -211,6 +191,5 @@ namespace UpDiddyApi.Controllers
 
             return Ok(subscriberSkills);
         }
-
     }
 }

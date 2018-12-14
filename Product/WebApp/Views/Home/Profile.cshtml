@@ -8,6 +8,7 @@
 <script type="text/javascript">
     // this must be present for the API call used in site.js
     var url = '@Url.Action("GetStatesByCountry", "Home")';
+    var subscriberSkills = @Json.Serialize(Model.Skills);
 </script>
 
 <div class="profile-container">
@@ -263,11 +264,26 @@
                                                 </li>
                                             }
                                         }
-
-                                        <li>
-                                            Skills:
-                                            <span id="SkillsDisplay">placeholder for repeater...</span>
-                                        </li>
+                                        @{
+                                            if (Model.Skills != null && Model.Skills.Count > 0)
+                                            {
+                                                <li>
+                                                    Skills:
+                                                    <span id="SkillsDisplay">
+                                                        <ul>
+                                                            @{
+                                                                foreach (var skill in Model.Skills)
+                                                                {
+                                                                    <li>
+                                                                        @Html.DisplayFor(item => skill.SkillName)
+                                                                    </li> // todo: improve upon the presentation, specify a template in DisplayFor?
+                                                                }
+                                                            }
+                                                        </ul>
+                                                    </span>
+                                                </li>
+                                            }
+                                        }
                                     </ul>
                                     <button class="btn btn-primary edit-profile-info-button d-block d-sm-none profile-mobile-view" type="button">
                                         Edit

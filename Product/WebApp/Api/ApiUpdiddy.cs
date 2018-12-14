@@ -359,6 +359,10 @@ namespace UpDiddy.Api
             return Get<IList<SkillDto>>("profile/GetSkills/" + userQuery, true);
         }
 
+        public IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid)
+        {
+            return Get<IList<SkillDto>>("profile/GetSkillsBySubscriber/" + subscriberGuid, true);
+        }
         #endregion
 
         #region Private Helper Functions

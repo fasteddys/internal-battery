@@ -33,5 +33,6 @@ namespace UpDiddy.Api
         CourseVariantDto _GetCourseVariant(Guid courseVariantGuid);
         BasicResponseDto SyncLinkedInAccount(Guid SubscriberGuid, string linkedInCode, string returnUrl);
         IList<SkillDto> GetSkills(string userQuery);
+        IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid);
     }
 }
