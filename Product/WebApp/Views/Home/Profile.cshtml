@@ -8,26 +8,6 @@
 <script type="text/javascript">
     // this must be present for the API call used in site.js
     var url = '@Url.Action("GetStatesByCountry", "Home")';
-
-    document.addEventListener('DOMContentLoaded', function () {
-        var skills = new Choices('#choices-skills', {
-            removeItems: true,
-            removeItemButton: true,
-            duplicateItemsAllowed: false
-        });
-
-        skills.ajax(function (callback) {
-            fetch('http://localhost:5000/Home/GetSkills')
-                .then(function (response) {
-                    response.json().then(function (data) {
-                        callback(data, 'value', 'label');
-                    });
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
-        })
-    });
 </script>
 
 <div class="profile-container">
@@ -348,7 +328,7 @@
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="UpdatedSkills">Skills</label>
-                                                <input type="text" class="form-control" id="choices-skills" />
+                                                <input type="text" asp-for="SelectedSkills" />
                                             </div>
                                             <div class="form-row col-12">
                                                 <div id="ValidationSummary">

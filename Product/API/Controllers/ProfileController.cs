@@ -33,77 +33,115 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
         }
 
+        [HttpGet]
+        [Authorize]
+        [Route("api/[controller]/{SubscriberGuid}")]
+        public IActionResult Get(Guid SubscriberGuid)
+        {
+            Subscriber subscriber = _db.Subscriber
+                .Include(s => s.State)
+                .ThenInclude(s => s.Country)
+                .Include(s => s.Enrollments)
+                .ThenInclude(e => e.Course)
+                .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == SubscriberGuid)
+                .FirstOrDefault();
+
+            if (subscriber == null)
+                return NotFound();
+
+            return Ok(_mapper.Map<SubscriberDto>(subscriber));
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("api/[controller]/CreateSubscriber/{SubscriberGuid}/{SubscriberEmail}")]
+        public IActionResult NewSubscriber(string SubscriberGuid, string SubscriberEmail)
+        {
+            Subscriber subscriber = new Subscriber();
+            subscriber.SubscriberGuid = Guid.Parse(SubscriberGuid);
+            subscriber.Email = SubscriberEmail;
+            subscriber.CreateDate = DateTime.Now;
+            subscriber.ModifyDate = DateTime.Now;
+            subscriber.IsDeleted = 0;
+            subscriber.ModifyGuid = Guid.NewGuid();
+            subscriber.CreateGuid = Guid.NewGuid();
+
+            // Save subscriber to database 
+            _db.Subscriber.Add(subscriber);
+            _db.SaveChanges();
+
+            return Ok(_mapper.Map<SubscriberDto>(subscriber));
+        }
+
         [Authorize]
         [HttpPost]
         [Route("api/[controller]/Update")]
         public IActionResult Update([FromBody] SubscriberDto Subscriber)
         {
+            Subscriber subscriber = _db.Subscriber
+                 .Where(t => t.IsDeleted == 0 && t.SubscriberGuid.Equals(Subscriber.SubscriberGuid))
+                 // use .SelectMany for Skills?
+                 .FirstOrDefault();
 
-            try
+            if (subscriber != null)
             {
-                Subscriber subscriber = _db.Subscriber
-                     .Where(t => t.IsDeleted == 0 && t.SubscriberGuid.Equals(Subscriber.SubscriberGuid))
-                     .FirstOrDefault();
+                subscriber.FirstName = Subscriber.FirstName;
+                subscriber.LastName = Subscriber.LastName;
+                subscriber.Address = Subscriber.Address;
+                subscriber.City = Subscriber.City;
+                int stateId = 0;
+                if (Subscriber.State.StateGuid.HasValue)
+                    stateId = _db.State.Where(s => s.StateGuid.Value == Subscriber.State.StateGuid.Value).Select(s => s.StateId).FirstOrDefault();
+                else
+                    subscriber.StateId = null;
+                subscriber.PhoneNumber = Subscriber.PhoneNumber;
+                subscriber.FacebookUrl = Subscriber.FacebookUrl;
+                subscriber.TwitterUrl = Subscriber.TwitterUrl;
+                subscriber.LinkedInUrl = Subscriber.LinkedInUrl;
+                subscriber.StackOverflowUrl = Subscriber.StackOverflowUrl;
+                subscriber.GithubUrl = Subscriber.GithubUrl;
+            }
+            
+            // overwrite anything that currently exists for skills...
+            var updatedSkills = _db.Skill
+                .Where(s => s.IsDeleted == 0)
+                .Join(Subscriber.Skills, e => e.SkillGuid, n => n.SkillGuid, (e, n) => new { e, n })
+                .ToList();
 
-                if (subscriber != null)
+            foreach(var skill in Subscriber.Skills)
+            {
+                _db.SubscriberSkill.Add(new SubscriberSkill()
                 {
-                    if (!string.IsNullOrEmpty(Subscriber.FirstName))
-                    {
-                        subscriber.FirstName = Subscriber.FirstName;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.LastName))
-                    {
-                        subscriber.LastName = Subscriber.LastName;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.Address))
-                    {
-                        subscriber.Address = Subscriber.Address;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.City))
-                    {
-                        subscriber.City = Subscriber.City;
-                    }
-                    int stateId = 0;
-                    if (Subscriber.State.StateGuid.HasValue)
-                    {
-                        stateId = _db.State.Where(s => s.StateGuid.Value == Subscriber.State.StateGuid.Value).Select(s => s.StateId).FirstOrDefault();
-                    }
-                    if (stateId != 0)
-                    {
-                        subscriber.StateId = stateId;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.PhoneNumber))
-                    {
-                        subscriber.PhoneNumber = Subscriber.PhoneNumber;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.FacebookUrl))
-                    {
-                        subscriber.FacebookUrl = Subscriber.FacebookUrl;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.TwitterUrl))
-                    {
-                        subscriber.TwitterUrl = Subscriber.TwitterUrl;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.LinkedInUrl))
-                    {
-                        subscriber.LinkedInUrl = Subscriber.LinkedInUrl;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.StackOverflowUrl))
-                    {
-                        subscriber.StackOverflowUrl = Subscriber.StackOverflowUrl;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.GithubUrl))
-                    {
-                        subscriber.GithubUrl = Subscriber.GithubUrl;
-                    }
-                }
-                _db.SaveChanges();
+                     
+                });
             }
-            catch (Exception ex)
-            {
-            }
-            return Ok();
 
+            // todo: identify overlap, update existing skills and update them with a new modify date
+            //var existingSkills = _db.SubscriberSkill
+            //    .Where(sk => sk.IsDeleted == 0 && sk.SubscriberId == subscriber.SubscriberId)
+            //    .Join(updatedSkills, sk => sk.SkillId, us => us.SkillId, (sk, us) => sk)
+            //    .ToList();
+
+            //foreach (var skill in existingSkills)
+            //{
+            //    skill.ModifyDate = DateTime.UtcNow;
+            //}
+            // , add anything that is new
+            //var newSkills = updatedSkills
+            //    .GroupJoin(
+            //        _db.SubscriberSkill,
+            //        ns => ns.SkillId,
+            //        ss => ss.SkillId, (ns, ss) => new { ns, ss = ss.DefaultIfEmpty() })
+            //    .SelectMany(x =>
+            //    x.ss.Select(t2 => new { t1 = x.ns, t2 = t2 }));
+
+
+            // , remove anything that doesn't still exist
+
+
+            _db.SaveChanges();
+
+            return Ok();
         }
 
         // should we have a "utility" or "shared" API controller for things like this?
@@ -146,16 +184,33 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/GetSkills")]
-        public IActionResult GetSkills()
+        [Route("api/[controller]/GetSkills/{userQuery}")]
+        public IActionResult GetSkills(string userQuery)
         {
             var skills = _db.Skill
-                .Where(s => s.IsDeleted == 0)
+                .Where(s => s.IsDeleted == 0 && s.SkillName.Contains(userQuery))
                 .OrderBy(s => s.SkillName)
                 .ProjectTo<SkillDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
             return Ok(skills);
         }
+
+        [HttpGet]
+        [Route("api/[controller]/GetSkillsBySubscriber/{subscriberGuid}")]
+        public IActionResult GetSkillsBySubscriber(Guid subscriberGuid)
+        {
+            var subscriberSkills = _db.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid.Value == subscriberGuid)
+                .Join(_db.SubscriberSkill, s => s.SubscriberId, sk => sk.SubscriberId, (s, sk) => new { sk.SkillId })
+                .Join(_db.Skill, x => x.SkillId, s => s.SkillId, (x, s) => s)
+                .Distinct()
+                .OrderBy(s => s.SkillName)
+                .ProjectTo<SkillDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(subscriberSkills);
+        }
+
     }
 }

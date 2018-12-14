@@ -157,6 +157,7 @@ namespace UpDiddy.Controllers
             return View(profileViewModel);
         }
 
+        [Authorize]
         [HttpPost]
         public BasicResponseDto UpdateProfileInformation(ProfileViewModel profileViewModel)
         {
@@ -306,9 +307,10 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet]
-        public JsonResult GetSkills()
+        public JsonResult GetSkills(string userQuery)
         {
-            return new JsonResult(null);
+            var matchedSkills = _Api.GetSkills(userQuery);
+            return new JsonResult(matchedSkills);
         }
     }
 }

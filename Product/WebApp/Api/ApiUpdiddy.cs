@@ -213,13 +213,28 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public IList<SkillDto> GetSkills(string userQuery)
+        {
+            string cacheKey = $"GetSkills{userQuery}";
+            IList<SkillDto> rval = GetCachedValue<IList<SkillDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetSkills(userQuery);
+                SetCachedValue<IList<SkillDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
         #endregion
 
         #region Public UnCached Methods
 
         public SubscriberDto Subscriber(Guid SubscriberGuid)
         {
-            return Get<SubscriberDto>("subscriber/" + SubscriberGuid, true);
+            return Get<SubscriberDto>("profile/" + SubscriberGuid, true);
         }
 
         public PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid, string subscriberGuid)
@@ -265,7 +280,7 @@ namespace UpDiddy.Api
 
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
         {
-            return Post<SubscriberDto>("subscriber/CreateSubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail), true);
+            return Post<SubscriberDto>("profile/CreateSubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail), true);
         }
 
         public WozCourseProgressDto UpdateStudentCourseProgress(Guid SubscriberGuid, bool FutureSchedule)
@@ -292,6 +307,7 @@ namespace UpDiddy.Api
         {
             return Get<TopicDto>($"topic/{TopicId}", false);
         }
+
         private TopicDto _TopicBySlug(string TopicSlug)
         {
             return Get<TopicDto>("topic/slug/" + TopicSlug, false);
@@ -336,6 +352,11 @@ namespace UpDiddy.Api
         private WozCourseProgressDto _GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)
         {
             return Get<WozCourseProgressDto>("woz/CourseStatus/" + SubscriberGuid + "/" + EnrollmentGuid, false);
+        }
+
+        private IList<SkillDto> _GetSkills(string userQuery)
+        {
+            return Get<IList<SkillDto>>("profile/GetSkills/" + userQuery, true);
         }
 
         #endregion

@@ -12211,6 +12211,34 @@ if (typeof jQuery === 'undefined') {
 
 $(document).ready(function () {
 
+    $('#SelectedSkills').selectize({
+        valueField: 'skillGuid',
+        labelField: 'skillName',
+        searchField: 'skillName',
+        persist: false,
+        loadThrottle: 600,
+        create: false,
+        allowEmptyOption: false,
+        delimiter: ',',
+        load: function (query, callback) {
+            if (!query.length) return callback();
+            $.ajax({
+                url: '/Home/GetSkills',
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    userQuery: query
+                },
+                error: function () {
+                    callback();
+                },
+                success: function (res) {
+                    callback(res);
+                }
+            });
+        }
+    })[0].selectize;
+
     $('#phone-number')
 
         .keydown(function (e) {
@@ -12312,7 +12340,7 @@ $(document).ready(function () {
         $("#InitialCoursePrice").html(selectedCourseVariantPrice);
 
         if ($("#PromoCodeTotal").html().startsWith("-$")) {
-            var initial = parseFloat($("#InitialCoursePrice").html().replace(",","").split("$")[1]);
+            var initial = parseFloat($("#InitialCoursePrice").html().replace(",", "").split("$")[1]);
             var discount = Math.min(parseFloat($("#PromoCodeTotal").html().replace(",", "").split("$")[1]), initial);
             $("#PromoCodeTotal").html("-$" + discount.toFixed(2));
             $("#CourseTotal").html("$" + ((initial - discount)).toFixed(2));
@@ -12323,7 +12351,7 @@ $(document).ready(function () {
         // display any child elements with class "CourseVariantStartDate", hide all sibling child elements with "CourseVariantStartDate"
         $(selectedCourseVariant).parent().parent().children(".CourseVariantStartDate").show();
         $(selectedCourseVariant).parent().parent().siblings().children(".CourseVariantStartDate").hide();
-        
+
         if ($("#CourseTotal").html() === "$0.00")
             $('#BraintreePaymentContainer').hide();
         else
@@ -12384,12 +12412,12 @@ $(document).ready(function () {
                     $('#ValidationSummary ul').html('');
                     var errorMessages = html.description.split("|");
                     for (i = 0; i < errorMessages.length; i++) {
-                        if (i != errorMessages.length -1) {
+                        if (i != errorMessages.length - 1) {
                             var li = document.createElement("li");
                             li.innerHTML = errorMessages[i];
                             $('#ValidationSummary ul').append(li);
                         }
-                        
+
                     }
                 }
             }
@@ -12412,7 +12440,7 @@ $(document).ready(function () {
         $(progressBar).animate({ width: newWidth });
     });
 
- 
+
 
     $('#PromoCodeApplyButton').on('click', function () {
         var _promoCode = $('#PromoCodeInput').val();

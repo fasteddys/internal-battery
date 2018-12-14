@@ -32,5 +32,6 @@ namespace UpDiddy.Api
         IList<StateDto> _GetStatesByCountry(Guid? countryGuid);
         CourseVariantDto _GetCourseVariant(Guid courseVariantGuid);
         BasicResponseDto SyncLinkedInAccount(Guid SubscriberGuid, string linkedInCode, string returnUrl);
+        IList<SkillDto> GetSkills(string userQuery);
     }
 }
