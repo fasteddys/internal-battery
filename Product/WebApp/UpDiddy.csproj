@@ -11,12 +11,6 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="wwwroot\lib\bootstrap-tagsinput\**" />
-    <Content Remove="wwwroot\lib\bootstrap-tagsinput\**" />
-    <EmbeddedResource Remove="wwwroot\lib\bootstrap-tagsinput\**" />
-    <None Remove="wwwroot\lib\bootstrap-tagsinput\**" />
-  </ItemGroup>
-  <ItemGroup>
   <!--  <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.1.2" />-->

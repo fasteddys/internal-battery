@@ -12218,6 +12218,7 @@ $(document).ready(function () {
         persist: false,
         loadThrottle: 600,
         create: false,
+        options: subscriberSkills, // initialized on Profile.cshtml
         allowEmptyOption: false,
         delimiter: ',',
         load: function (query, callback) {
@@ -12236,6 +12237,14 @@ $(document).ready(function () {
                     callback(res);
                 }
             });
+        },
+        onInitialize: function () {
+            var selectize = this;
+            var selectedSkills = [];
+            $.each(subscriberSkills, function (i, obj) {
+                selectedSkills.push(obj.skillGuid);
+            });
+            selectize.setValue(selectedSkills);
         }
     });
 
