@@ -1,102 +1,6 @@
 ﻿
 $(document).ready(function () {
 
-    $('#SelectedSkills').selectize({
-        valueField: 'skillGuid',
-        labelField: 'skillName',
-        searchField: 'skillName',
-        persist: false,
-        loadThrottle: 600,
-        create: false,
-        options: subscriberSkills, // initialized on Profile.cshtml
-        allowEmptyOption: false,
-        delimiter: ',',
-        load: function (query, callback) {
-            if (!query.length) return callback();
-            $.ajax({
-                url: '/Home/GetSkills',
-                type: 'GET',
-                dataType: 'json',
-                data: {
-                    userQuery: query
-                },
-                error: function () {
-                    callback();
-                },
-                success: function (res) {
-                    callback(res);
-                }
-            });
-        },
-        onInitialize: function () {
-            var selectize = this;
-            var selectedSkills = [];
-            $.each(subscriberSkills, function (i, obj) {
-                selectedSkills.push(obj.skillGuid);
-            });
-            selectize.setValue(selectedSkills);
-        }
-    });
-
-
-
-    $('#phone-number')
-
-        .keydown(function (e) {
-            var key = e.which || e.charCode || e.keyCode || 0;
-            $phone = $(this);
-
-            // Don't let them remove the starting '('
-            if ($phone.val().length === 1 && (key === 8 || key === 46)) {
-                $phone.val('(');
-                return false;
-            }
-            // Reset if they highlight and type over first char.
-            else if ($phone.val().charAt(0) !== '(') {
-                $phone.val('(' + String.fromCharCode(e.keyCode) + '');
-            }
-
-            // Auto-format- do not expose the mask as the user begins to type
-            if (key !== 8 && key !== 9) {
-                if ($phone.val().length === 4) {
-                    $phone.val($phone.val() + ')');
-                }
-                if ($phone.val().length === 5) {
-                    $phone.val($phone.val() + ' ');
-                }
-                if ($phone.val().length === 9) {
-                    $phone.val($phone.val() + '-');
-                }
-            }
-
-            // Allow numeric (and tab, backspace, delete) keys only
-            return (key == 8 ||
-                key == 9 ||
-                key == 46 ||
-                (key >= 48 && key <= 57) ||
-                (key >= 96 && key <= 105));
-        })
-
-        .bind('focus click', function () {
-            $phone = $(this);
-
-            if ($phone.val().length === 0) {
-                $phone.val('(');
-            }
-            else {
-                var val = $phone.val();
-                $phone.val('').val(val); // Ensure cursor remains at the end
-            }
-        })
-
-        .blur(function () {
-            $phone = $(this);
-
-            if ($phone.val() === '(') {
-                $phone.val('');
-            }
-        });
-
     $('#SelectedCountry').change(function () {
         var selectedCountry = $("#SelectedCountry").val();
         var stateSelect = $("#SelectedState");
@@ -181,51 +85,6 @@ $(document).ready(function () {
         }
     });
 
-
-    $('.edit-profile-info-button').on('click', function () {
-        $('.personal-info-display').slideToggle();
-        $('#PersonalInfoFormContainer').slideToggle();
-        $('.edit-profile-info-button').toggleClass('expanded');
-
-        $('.edit-profile-info-button').each(function () {
-            if ($(this).hasClass("expanded") && !$(this).hasClass('profile-mobile-view')) {
-                $(this).html("Cancel");
-            } else {
-                if (!$(this).hasClass('profile-mobile-cancel')) {
-
-                    $(this).html("Edit");
-                }
-            }
-        });
-
-    });
-
-    $('#PersonalInfoForm').submit(function (e) {
-        $.ajax({
-            type: "POST",
-            url: '/home/UpdateProfileInformation',
-            data: $(this).serialize(),
-            success: function (html) {
-                if (html.statusCode === "200") {
-                    location.reload();
-                }
-                else {
-                    $('#ValidationSummary ul').html('');
-                    var errorMessages = html.description.split("|");
-                    for (i = 0; i < errorMessages.length; i++) {
-                        if (i != errorMessages.length - 1) {
-                            var li = document.createElement("li");
-                            li.innerHTML = errorMessages[i];
-                            $('#ValidationSummary ul').append(li);
-                        }
-
-                    }
-                }
-            }
-        });
-        e.preventDefault();
-
-    });
     $('.play-button').on('click', function () {
         $(this).hide();
         $('.enrollment-success-video-thumbnail').hide();
@@ -233,15 +92,11 @@ $(document).ready(function () {
         document.getElementById("EnrollmentSuccessVideo").play();
     });
 
-    //$('.courses-in-progress-list-desktop li').find(".course-listing").animate({ width: '0' });
-
     $('.courses-in-progress-list-desktop li').each(function () {
         var progressBar = $(this).find(".progress-bar");
         var newWidth = $(progressBar).attr('aria-valuenow') + "%";
         $(progressBar).animate({ width: newWidth });
     });
-
-
 
     $('#PromoCodeApplyButton').on('click', function () {
         var _promoCode = $('#PromoCodeInput').val();
