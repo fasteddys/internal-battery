@@ -14,13 +14,14 @@ using System.Net.Http;
 using UpDiddy.Helpers;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using UpDiddyApi.Business.Resume;
 
 namespace UpDiddyApi.Workflow
 {
     public class ScheduledJobs : BusinessVendorBase 
     {
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi)
         {
             _db = context;
             _mapper = mapper;
@@ -29,6 +30,7 @@ namespace UpDiddyApi.Workflow
             _syslog = logger;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
+            _sovrenApi = sovrenApi;
         }
 
 
@@ -349,14 +351,10 @@ namespace UpDiddyApi.Workflow
  
                 foreach (SubscriberProfileStagingStore p in profiles)
                 {
-                    if (p.ProfileSource == Constants.LinkedInProfile)
-                    {
-
-                    }
-                    else if (p.ProfileSource == Constants.SovrenProfile)
-                    {
-                        p.Status = (int)SubscriberSkill.ImportSovren(_db, p, ref errMsg);
-                    }
+                    if (p.ProfileSource == Constants.DataSource.LinkedIn)                    
+                        p.Status = (int)SubscriberSkill.ImportLinkedIn(_db, _sovrenApi, p, ref errMsg);
+                    else if (p.ProfileSource == Constants.DataSource.Sovren)                    
+                        p.Status = (int)SubscriberSkill.ImportSovren(_db, p, ref errMsg);                    
                     else
                     {
                         // Report on unknown source error

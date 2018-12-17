@@ -30,6 +30,7 @@ using Serilog.Sinks.ApplicationInsights;
 using UpDiddyLib.Serilog.Sinks;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
+using UpDiddyApi.Business.Resume;
 
 namespace UpDiddyApi
 {
@@ -130,15 +131,7 @@ namespace UpDiddyApi
             int promoCodeRedemptionLookbackInMinutes = 30;
             int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
             int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
-
-
-            // TODO Remove Test Code 71A7156E-173F-4054-83ED-AD6127BAFE87
-            Guid testGuid = Guid.Parse("71A7156E-173F-4054-83ED-AD6127BAFE87");
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ImportSubscriberProfileData(testGuid), Cron.MinuteInterval(1));
-
-
-
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));            
             // Add Polly 
             // Create Policies  
             int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
@@ -166,6 +159,8 @@ namespace UpDiddyApi
             services.AddHttpClient(Constants.HttpDeleteClientName)
               .AddPolicyHandler(ApiDeletePolicy);
 
+            services.AddTransient<ISovrenAPI, Sovren>();
+            services.AddHttpClient<ISovrenAPI,Sovren>();
 
             // Configure SnapshotCollector from application settings
             // TODO Uncomment test 
@@ -227,12 +222,5 @@ namespace UpDiddyApi
                 return new SnapshotCollectorTelemetryProcessor(next, configuration: snapshotConfigurationOptions.Value);
             }
         }
-
-
     }
-
-  
-     
-   
-
 }
