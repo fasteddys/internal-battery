@@ -17,8 +17,6 @@ namespace UpDiddy.Api
         IList<CountryDto> GetCountries();
         IList<StateDto> GetStatesByCountry(Guid? countryGuid);
         CourseVariantDto GetCourseVariant(Guid courseVariantGuid);
-        CountryDto GetSubscriberCountry(int StateId);
-        StateDto GetSubscriberState(int StateId);
         SubscriberDto Subscriber(Guid SubscriberGuid);
         PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid, string subscriberGuid);
         PromoCodeDto PromoCodeValidation(string code, string courseVariantGuid, string subscriberGuid);
@@ -33,8 +31,8 @@ namespace UpDiddy.Api
         IList<CountryDto> _GetCountries();
         IList<StateDto> _GetStatesByCountry(Guid? countryGuid);
         CourseVariantDto _GetCourseVariant(Guid courseVariantGuid);
-        CountryDto _GetSubscriberCountry(int StateId);
-        StateDto _GetSubscriberState(int StateId);
         BasicResponseDto SyncLinkedInAccount(Guid SubscriberGuid, string linkedInCode, string returnUrl);
+        IList<SkillDto> GetSkills(string userQuery);
+        IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid);
     }
 }

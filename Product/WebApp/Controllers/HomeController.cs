@@ -142,7 +142,9 @@ namespace UpDiddy.Controllers
                     Text = s.Name,
                     Value = s.StateGuid.ToString(),
                     Selected = s.StateGuid == this.subscriber?.State?.StateGuid
-                })
+                }),
+                // todo: consider refactoring this... include in GetSubscriber (add navigation property)
+                Skills = _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value)
             };
 
             // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
@@ -157,12 +159,28 @@ namespace UpDiddy.Controllers
             return View(profileViewModel);
         }
 
+        [Authorize]
         [HttpPost]
         public BasicResponseDto UpdateProfileInformation(ProfileViewModel profileViewModel)
         {
-
+            IList<SkillDto> skillsDto = null;
             if (ModelState.IsValid)
             {
+                if (profileViewModel.SelectedSkills != null)
+                {
+                    var skills = profileViewModel.SelectedSkills.Split(',');
+                    if (skills.Length > 0)
+                    {
+                        skillsDto = new List<SkillDto>();
+                        foreach (var skill in skills)
+                        {
+                            Guid parsedGuid;
+                            if (Guid.TryParse(skill, out parsedGuid))
+                                skillsDto.Add(new SkillDto() { SkillGuid = parsedGuid });
+                        }
+                    }
+                }
+
                 SubscriberDto Subscriber = new SubscriberDto
                 {
                     FirstName = profileViewModel.FirstName,
@@ -176,7 +194,8 @@ namespace UpDiddy.Controllers
                     LinkedInUrl = profileViewModel.LinkedInUrl,
                     StackOverflowUrl = profileViewModel.StackOverflowUrl,
                     GithubUrl = profileViewModel.GithubUrl,
-                    SubscriberGuid = profileViewModel.SubscriberGuid
+                    SubscriberGuid = profileViewModel.SubscriberGuid,
+                    Skills = skillsDto
                 };
                 _Api.UpdateProfileInformation(Subscriber);
                 return new BasicResponseDto
@@ -302,6 +321,14 @@ namespace UpDiddy.Controllers
                 new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
             );
             return LocalRedirect(returnUrl);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public JsonResult GetSkills(string userQuery)
+        {
+            var matchedSkills = _Api.GetSkills(userQuery);
+            return new JsonResult(matchedSkills);
         }
     }
 }

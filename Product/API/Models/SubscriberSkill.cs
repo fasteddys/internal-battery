@@ -12,6 +12,6 @@ namespace UpDiddyApi.Models
         public virtual Subscriber Subscriber { get; set; }
         public int SkillId { get; set; }
         public virtual Skill Skill { get; set; }
-
+        public Guid? SubscriberSkillGuid { get; set; }
     }
 }

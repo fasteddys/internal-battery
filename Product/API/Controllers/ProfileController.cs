@@ -10,6 +10,8 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
+using System.Data.SqlClient;
+using System.Data;
 
 namespace UpDiddyApi.Controllers
 {
@@ -33,77 +35,93 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
         }
 
+        [HttpGet]
+        [Authorize]
+        [Route("api/[controller]/{SubscriberGuid}")]
+        public IActionResult Get(Guid SubscriberGuid)
+        {
+            Subscriber subscriber = _db.Subscriber
+                .Include(s => s.State)
+                .ThenInclude(s => s.Country)
+                .Include(s => s.Enrollments)
+                .ThenInclude(e => e.Course)
+                .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == SubscriberGuid)
+                .FirstOrDefault();
+
+            if (subscriber == null)
+                return NotFound();
+
+            return Ok(_mapper.Map<SubscriberDto>(subscriber));
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("api/[controller]/CreateSubscriber/{SubscriberGuid}/{SubscriberEmail}")]
+        public IActionResult NewSubscriber(string SubscriberGuid, string SubscriberEmail)
+        {
+            Subscriber subscriber = new Subscriber();
+            subscriber.SubscriberGuid = Guid.Parse(SubscriberGuid);
+            subscriber.Email = SubscriberEmail;
+            subscriber.CreateDate = DateTime.Now;
+            subscriber.ModifyDate = DateTime.Now;
+            subscriber.IsDeleted = 0;
+            subscriber.ModifyGuid = Guid.NewGuid();
+            subscriber.CreateGuid = Guid.NewGuid();
+
+            // Save subscriber to database 
+            _db.Subscriber.Add(subscriber);
+            _db.SaveChanges();
+
+            return Ok(_mapper.Map<SubscriberDto>(subscriber));
+        }
+
         [Authorize]
         [HttpPost]
         [Route("api/[controller]/Update")]
         public IActionResult Update([FromBody] SubscriberDto Subscriber)
         {
+            var subscriberGuid = new SqlParameter("@SubscriberGuid", Subscriber.SubscriberGuid);
+            var firstName = new SqlParameter("@FirstName", Subscriber.FirstName);
+            var lastName = new SqlParameter("@LastName", Subscriber.LastName);
+            var address = new SqlParameter("@Address", Subscriber.Address);
+            var city = new SqlParameter("@City", Subscriber.City);
+            var stateGuid = new SqlParameter("@StateGuid", Subscriber.State.StateGuid);
+            var phoneNumber = new SqlParameter("@PhoneNumber", Subscriber.PhoneNumber);
+            var facebookUrl = new SqlParameter("@FacebookUrl", Subscriber.FacebookUrl);
+            var twitterUrl = new SqlParameter("@TwitterUrl", Subscriber.TwitterUrl);
+            var linkedInUrl = new SqlParameter("@LinkedInUrl", Subscriber.LinkedInUrl);
+            var stackOverflowUrl = new SqlParameter("@StackOverflowUrl", Subscriber.StackOverflowUrl);
+            var gitHubUrl = new SqlParameter("@GitHubUrl", Subscriber.GithubUrl);
 
-            try
+            DataTable table = new DataTable();
+            table.Columns.Add("Guid", typeof(Guid));
+            foreach (var skill in Subscriber.Skills)
             {
-                Subscriber subscriber = _db.Subscriber
-                     .Where(t => t.IsDeleted == 0 && t.SubscriberGuid.Equals(Subscriber.SubscriberGuid))
-                     .FirstOrDefault();
+                table.Rows.Add(skill.SkillGuid);
+            }
+            var skillGuids = new SqlParameter("@SkillGuids", table);
+            skillGuids.SqlDbType = SqlDbType.Structured;
+            skillGuids.TypeName = "dbo.GuidList";
 
-                if (subscriber != null)
-                {
-                    if (!string.IsNullOrEmpty(Subscriber.FirstName))
-                    {
-                        subscriber.FirstName = Subscriber.FirstName;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.LastName))
-                    {
-                        subscriber.LastName = Subscriber.LastName;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.Address))
-                    {
-                        subscriber.Address = Subscriber.Address;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.City))
-                    {
-                        subscriber.City = Subscriber.City;
-                    }
-                    int stateId = 0;
-                    if (Subscriber.State.StateGuid.HasValue)
-                    {
-                        stateId = _db.State.Where(s => s.StateGuid.Value == Subscriber.State.StateGuid.Value).Select(s => s.StateId).FirstOrDefault();
-                    }
-                    if (stateId != 0)
-                    {
-                        subscriber.StateId = stateId;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.PhoneNumber))
-                    {
-                        subscriber.PhoneNumber = Subscriber.PhoneNumber;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.FacebookUrl))
-                    {
-                        subscriber.FacebookUrl = Subscriber.FacebookUrl;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.TwitterUrl))
-                    {
-                        subscriber.TwitterUrl = Subscriber.TwitterUrl;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.LinkedInUrl))
-                    {
-                        subscriber.LinkedInUrl = Subscriber.LinkedInUrl;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.StackOverflowUrl))
-                    {
-                        subscriber.StackOverflowUrl = Subscriber.StackOverflowUrl;
-                    }
-                    if (!string.IsNullOrEmpty(Subscriber.GithubUrl))
-                    {
-                        subscriber.GithubUrl = Subscriber.GithubUrl;
-                    }
-                }
-                _db.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-            }
+            var spParams = new object[] { subscriberGuid, firstName, lastName, address, city, stateGuid, phoneNumber, facebookUrl, twitterUrl, linkedInUrl, stackOverflowUrl, gitHubUrl, skillGuids };
+
+            var rowsAffected = _db.Database.ExecuteSqlCommand(@"
+                EXEC [dbo].[System_Update_Subscriber] 
+                    @SubscriberGuid,
+                    @FirstName,
+	                @LastName,
+	                @Address,
+	                @City,
+	                @StateGuid,
+                    @PhoneNumber,
+	                @FacebookUrl,
+	                @TwitterUrl,
+	                @LinkedInUrl,
+	                @StackOverflowUrl,
+	                @GithubUrl,
+	                @SkillGuids", spParams);
+
             return Ok();
-
         }
 
         // should we have a "utility" or "shared" API controller for things like this?
@@ -143,6 +161,35 @@ namespace UpDiddyApi.Controllers
             }
 
             return Ok(states.OrderBy(s => s.Sequence).ProjectTo<StateDto>(_mapper.ConfigurationProvider));
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/GetSkills/{userQuery}")]
+        public IActionResult GetSkills(string userQuery)
+        {
+            var skills = _db.Skill
+                .Where(s => s.IsDeleted == 0 && s.SkillName.Contains(userQuery))
+                .OrderBy(s => s.SkillName)
+                .ProjectTo<SkillDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(skills);
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/GetSkillsBySubscriber/{subscriberGuid}")]
+        public IActionResult GetSkillsBySubscriber(Guid subscriberGuid)
+        {
+            var subscriberSkills = _db.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid.Value == subscriberGuid)
+                .Join(_db.SubscriberSkill.Where(ss => ss.IsDeleted == 0), s => s.SubscriberId, sk => sk.SubscriberId, (s, sk) => new { sk.SkillId })
+                .Join(_db.Skill.Where(s => s.IsDeleted == 0), x => x.SkillId, s => s.SkillId, (x, s) => s)
+                .Distinct()
+                .OrderBy(s => s.SkillName)
+                .ProjectTo<SkillDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(subscriberSkills);
         }
     }
 }

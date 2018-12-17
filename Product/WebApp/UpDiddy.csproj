@@ -6,8 +6,9 @@
     <UserSecretsId>abef43f4-c788-49be-b1c6-a651a01eea9c</UserSecretsId>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <WarningsAsErrors />
+    <WarningsAsErrors></WarningsAsErrors>
     <WarningLevel>3</WarningLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
   <!--  <PackageReference Include="Microsoft.AspNetCore.App" />

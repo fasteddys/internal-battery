@@ -1076,15 +1076,15 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<string>("ONetCode");
+                    b.Property<Guid?>("SkillGuid");
 
-                    b.Property<string>("SkillName");
+                    b.Property<string>("SkillName")
+                        .IsRequired();
 
                     b.HasKey("SkillId");
 
                     b.HasIndex("SkillName")
-                        .IsUnique()
-                        .HasFilter("[SkillName] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("Skill");
                 });
@@ -1263,6 +1263,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("SkillId");
 
                     b.Property<int>("SubscriberId");
+
+                    b.Property<Guid?>("SubscriberSkillGuid");
 
                     b.HasKey("SubscriberSkillId");
 
