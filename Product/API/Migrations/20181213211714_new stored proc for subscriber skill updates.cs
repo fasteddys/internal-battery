@@ -16,8 +16,10 @@ A simple user-defined table type that supports a list of Guids.
 </description>
 */
 CREATE TYPE [dbo].[GuidList] AS TABLE ([Guid] UNIQUEIDENTIFIER)
-GO
+GO"
+            );
 
+            migrationBuilder.Sql(@"EXEC('
 /*
 <remarks>
 2018.12.13 - Bill Koenig - Created
@@ -58,8 +60,8 @@ BEGIN
 		DECLARE @SubscriberId INT = (SELECT TOP 1 s.SubscriberId FROM Subscriber s WHERE s.SubscriberGuid = @SubscriberGuid)
 
 		-- replace these with meaningful values (once we have a mechanism in place to generate them)
-		DECLARE @CreateGuid UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000000'
-		DECLARE @ModifyGuid UNIQUEIDENTIFIER = '00000000-0000-0000-0000-000000000000'
+		DECLARE @CreateGuid UNIQUEIDENTIFIER = ''00000000-0000-0000-0000-000000000000''
+		DECLARE @ModifyGuid UNIQUEIDENTIFIER = ''00000000-0000-0000-0000-000000000000''
 
 		-- update basic subscriber properties
 		UPDATE Subscriber
@@ -141,16 +143,18 @@ BEGIN
 		COMMIT TRANSACTION;
 
 END
-GO"
-            );
+GO')
+            ");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
 DROP PROCEDURE [dbo].[System_Update_Subscriber]
-GO
+GO"
+            );
 
+            migrationBuilder.Sql(@"
 DROP TYPE [dbo].[GuidList]
 GO"
             );
