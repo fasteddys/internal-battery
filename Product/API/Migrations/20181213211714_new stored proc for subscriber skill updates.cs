@@ -7,6 +7,9 @@ namespace UpDiddyApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
+IF NOT EXISTS (SELECT * FROM sys.types WHERE name = 'GuidList')
+    SET NOEXEC ON
+GO
 /*
 <remarks>
 2018.12.13 - Bill Koenig - Created
@@ -16,10 +19,14 @@ A simple user-defined table type that supports a list of Guids.
 </description>
 */
 CREATE TYPE [dbo].[GuidList] AS TABLE ([Guid] UNIQUEIDENTIFIER)
-GO"
-            );
+GO
+SET NOEXEC OFF
+            ");
 
-            migrationBuilder.Sql(@"EXEC('
+            migrationBuilder.Sql(@"
+IF NOT EXISTS (SELECT * FROM sys.procedures WHERE name = 'System_Update_Subscriber')
+    SET NOEXEC ON
+GO
 /*
 <remarks>
 2018.12.13 - Bill Koenig - Created
@@ -143,7 +150,8 @@ BEGIN
 		COMMIT TRANSACTION;
 
 END
-GO')
+GO
+SET NOEXEC OFF
             ");
         }
 
@@ -151,13 +159,13 @@ GO')
         {
             migrationBuilder.Sql(@"
 DROP PROCEDURE [dbo].[System_Update_Subscriber]
-GO"
-            );
+GO
+            ");
 
             migrationBuilder.Sql(@"
 DROP TYPE [dbo].[GuidList]
-GO"
-            );
+GO
+            ");
         }
     }
 }
