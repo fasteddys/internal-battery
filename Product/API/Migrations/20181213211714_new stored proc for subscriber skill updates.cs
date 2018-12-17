@@ -7,9 +7,7 @@ namespace UpDiddyApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
-IF NOT EXISTS (SELECT * FROM sys.types WHERE name = 'GuidList')
-    SET NOEXEC ON
-GO
+EXEC(''
 /*
 <remarks>
 2018.12.13 - Bill Koenig - Created
@@ -21,12 +19,12 @@ A simple user-defined table type that supports a list of Guids.
 CREATE TYPE [dbo].[GuidList] AS TABLE ([Guid] UNIQUEIDENTIFIER)
 GO
 SET NOEXEC OFF
+'')
+
             ");
 
             migrationBuilder.Sql(@"
-IF NOT EXISTS (SELECT * FROM sys.procedures WHERE name = 'System_Update_Subscriber')
-    SET NOEXEC ON
-GO
+EXEC('
 /*
 <remarks>
 2018.12.13 - Bill Koenig - Created
@@ -37,10 +35,10 @@ Handles updates to a subscriber (and related entities).
 <example>
 DECLARE @SkillGuids AS [dbo].[GuidList]
 INSERT INTO @SkillGuids
-VALUES ('3E15B292-6E44-40AA-A1FC-C2106291A286') -- existing skill
+VALUES (''3E15B292-6E44-40AA-A1FC-C2106291A286'') -- existing skill
 INSERT INTO @SkillGuids
-VALUES ('3B0BE2F1-3A52-4671-B9AB-54C42507B4EA') -- new skill
-EXEC [dbo].[System_Update_Subscriber] @SubscriberGuid = '47568E38-A8D5-440E-B613-1C0C75787E90', @FirstName = 'Test1', @LastName = 'Test2', @Address = '123 Main St', @City = 'Baltimore', @StateGuid = '0B3CB9E2-02CB-4F46-A1DE-A46FF51C2993', @PhoneNumber = '4105559999', @SkillGuids = @SkillGuids
+VALUES (''3B0BE2F1-3A52-4671-B9AB-54C42507B4EA'') -- new skill
+EXEC [dbo].[System_Update_Subscriber] @SubscriberGuid = ''47568E38-A8D5-440E-B613-1C0C75787E90'', @FirstName = ''Test1'', @LastName = ''Test2'', @Address = ''123 Main St'', @City = ''Baltimore'', @StateGuid = ''0B3CB9E2-02CB-4F46-A1DE-A46FF51C2993'', @PhoneNumber = ''4105559999'', @SkillGuids = @SkillGuids
 </example>
 */
 CREATE PROCEDURE [dbo].[System_Update_Subscriber] (
@@ -151,7 +149,7 @@ BEGIN
 
 END
 GO
-SET NOEXEC OFF
+')
             ");
         }
 
