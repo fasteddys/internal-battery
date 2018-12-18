@@ -962,17 +962,44 @@ body {
   .faq-page-container .faq-content {
     padding: 2rem 0; } }
 @media (min-width: 0px) {
-  .signup-flow-container .modal .work-history-modal-validation {
+  .modal .validation {
     color: red; }
+  .modal input {
+    border: 0;
+    border-bottom: 1px solid #03264A;
+    border-radius: 0; }
+    .modal input:focus {
+      outline: none;
+      border: 0;
+      border-bottom: 1px solid #03264A;
+      box-shadow: none; }
+  .modal textarea {
+    border-color: #03264A; }
+    .modal textarea:focus {
+      border-color: #03264A;
+      outline: 0;
+      box-shadow: none; }
+
   .signup-flow-container .signup-flow-row {
     overflow: hidden; }
     .signup-flow-container .signup-flow-row .signup-flow-column {
       position: relative;
       text-align: center; }
       .signup-flow-container .signup-flow-row .signup-flow-column .carousel {
-        padding: 15rem 0; }
+        padding-top: 15rem; }
         .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item {
           min-height: 170px; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .first-name-container input {
+            border: 0;
+            border-bottom: 2px solid #03264A;
+            padding: .5rem;
+            text-align: center;
+            font-size: 2.5rem;
+            color: #03264A; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .first-name-container input:focus {
+              outline: 0;
+              border: 0;
+              border-bottom: 2px solid #03264A; }
           .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container input[type="file"] {
             display: none; }
           .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload {
@@ -1036,10 +1063,32 @@ body {
               cursor: default; }
               .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history.disabled a {
                 cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .education-history-log {
+            text-align: left;
+            margin-top: 2rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: #fff;
+            background-color: #03264A;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history:hover {
+              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history.disabled {
+              box-shadow: none;
+              background-color: #808080;
+              cursor: default; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history.disabled a {
+                cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item > .container {
+            margin-top: 15rem; }
       .signup-flow-container .signup-flow-row .signup-flow-column .previous-container {
         position: absolute;
         bottom: .5rem;
-        left: 0; }
+        left: 1rem; }
         .signup-flow-container .signup-flow-row .signup-flow-column .previous-container > div {
           display: inline-block;
           cursor: pointer; }
@@ -1065,7 +1114,7 @@ body {
       .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container {
         position: absolute;
         bottom: .5rem;
-        right: 0; }
+        right: 1rem; }
         .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container a {
           color: #fff; }
         .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container > div {
@@ -1088,7 +1137,27 @@ body {
             background-color: #808080;
             cursor: default; }
             .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button.disabled a {
-              cursor: default; } }
+              cursor: default; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit {
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          color: #fff;
+          background-color: #03264A;
+          display: inline-block;
+          padding: 6px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          border: 0; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit:hover {
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit.disabled {
+            box-shadow: none;
+            background-color: #808080;
+            cursor: default; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit.disabled a {
+              cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit:focus {
+            outline: none; } }
 /* Footer Styles */
 footer {
   font-size: .8125rem;

@@ -1,4 +1,4 @@
-﻿var workHistory = [];
+﻿var workHistory = {};
 class WorkHistoryItem {
     constructor(_title, _org, _description) {
         this.title = _title;
@@ -7,7 +7,7 @@ class WorkHistoryItem {
     }
 }
 
-var education = [];
+var education = {};
 class Education {
     constructor(_institution, _major) {
         this.institution = _institution;
@@ -37,14 +37,31 @@ $(document).ready(function () {
         var description = $('#JobDescriptionInput').val();
         if (jobTitle && organization && description) {
             $('#WorkHistoryModal').modal("hide");
-            workHistory.push(new WorkHistoryItem(jobTitle, organization, description));
+            workHistory["WorkHistoryItem" + objectSize(workHistory)] = new WorkHistoryItem(jobTitle, organization, description);
             $(".work-history-log .row").append('<div class="col-12 col-sm-6 col-md-4"><div class="card"><div class= "card-body"><h5 class="card-title">' + jobTitle + '</h5><h6 class="card-subtitle mb-2 text-muted">' + organization + '</h6><p class="card-text">' + description + '</p></div></div></div>');
             clearWorkHistoryModal();
+            $('#WorkHistoryInput').val(JSON.stringify(workHistory));
         }
         else {
             $('.work-history-modal-validation').show();
         }
         
+    });
+
+    $('.save-new-education-item').on("click", function () {
+        var institution = $('#InstitutionInput').val();
+        var major = $('#MajorInput').val();
+        if (institution && major) {
+            $('#EducationModal').modal("hide");
+            education["EducationItem" + objectSize(education)] = new Education(institution, major);
+            $(".education-history-log .row").append('<div class="col-12 col-sm-6 col-md-4"><div class="card"><div class= "card-body"><h5 class="card-title">' + institution + '</h5><h6 class="card-subtitle mb-2 text-muted">' + major + '</h6></div></div></div>');
+            clearEducationModal();
+            $('#EducationInput').val(JSON.stringify(education));
+        }
+        else {
+            $('.education-modal-validation').show();
+        }
+
     });
 
     $('#UploadedResume').change(function () {
@@ -97,6 +114,20 @@ var clearWorkHistoryModal = function () {
 
 };
 
+var clearEducationModal = function () {
+    $('#EducationModal').find("input").val("");
+    $('#EducationModal').find("textarea").val("");
+
+};
+
 var closeModals = function () {
     $('.modal').modal("hide");
+};
+
+var objectSize = function (obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
 };

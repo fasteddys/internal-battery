@@ -163,29 +163,6 @@ namespace UpDiddy.Controllers
         }
 
         [HttpPost]
-        public BasicResponseDto UploadResume(IFormFile file)
-        {
-            if (ModelState.IsValid && file != null)
-            {
-                return new BasicResponseDto
-                {
-                    StatusCode = "200",
-                    Description = "OK"
-                };
-            }
-            else
-            {
-                return new BasicResponseDto
-                {
-                    StatusCode = "400",
-                    Description = "Bad Request"
-                };
-            }
-            
-
-        }
-
-        [HttpPost]
         public BasicResponseDto UpdateProfileInformation(ProfileViewModel profileViewModel)
         {
 
@@ -230,6 +207,50 @@ namespace UpDiddy.Controllers
                 {
                     StatusCode = "400",
                     Description = validationErrors.ToString()
+                };
+            }
+        }
+
+
+
+        [HttpPost]
+        public BasicResponseDto UploadResume(IFormFile file)
+        {
+            if (ModelState.IsValid && file != null)
+            {
+                return new BasicResponseDto
+                {
+                    StatusCode = "200",
+                    Description = "OK"
+                };
+            }
+            else
+            {
+                return new BasicResponseDto
+                {
+                    StatusCode = "400",
+                    Description = "Bad Request"
+                };
+            }
+        }
+
+        [HttpPost]
+        public BasicResponseDto Signup(SignupFlowViewModel signupFlowViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                return new BasicResponseDto
+                {
+                    StatusCode = "200",
+                    Description = "OK"
+                };
+            }
+            else
+            {
+                return new BasicResponseDto
+                {
+                    StatusCode = "400",
+                    Description = "Bad Request"
                 };
             }
         }
