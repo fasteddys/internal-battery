@@ -81,17 +81,17 @@ namespace UpDiddyApi.Controllers
         public IActionResult Update([FromBody] SubscriberDto Subscriber)
         {
             var subscriberGuid = new SqlParameter("@SubscriberGuid", Subscriber.SubscriberGuid);
-            var firstName = new SqlParameter("@FirstName", Subscriber.FirstName);
-            var lastName = new SqlParameter("@LastName", Subscriber.LastName);
-            var address = new SqlParameter("@Address", Subscriber.Address);
-            var city = new SqlParameter("@City", Subscriber.City);
-            var stateGuid = new SqlParameter("@StateGuid", Subscriber.State.StateGuid);
-            var phoneNumber = new SqlParameter("@PhoneNumber", Subscriber.PhoneNumber);
-            var facebookUrl = new SqlParameter("@FacebookUrl", Subscriber.FacebookUrl);
-            var twitterUrl = new SqlParameter("@TwitterUrl", Subscriber.TwitterUrl);
-            var linkedInUrl = new SqlParameter("@LinkedInUrl", Subscriber.LinkedInUrl);
-            var stackOverflowUrl = new SqlParameter("@StackOverflowUrl", Subscriber.StackOverflowUrl);
-            var gitHubUrl = new SqlParameter("@GitHubUrl", Subscriber.GithubUrl);
+            var firstName = new SqlParameter("@FirstName", (object)Subscriber.FirstName ?? DBNull.Value);
+            var lastName = new SqlParameter("@LastName", (object)Subscriber.LastName ?? DBNull.Value);
+            var address = new SqlParameter("@Address", (object)Subscriber.Address ?? DBNull.Value);
+            var city = new SqlParameter("@City", (object)Subscriber.City ?? DBNull.Value);
+            var stateGuid = new SqlParameter("@StateGuid", (object)Subscriber.State.StateGuid ?? DBNull.Value);
+            var phoneNumber = new SqlParameter("@PhoneNumber", (object)Subscriber.PhoneNumber ?? DBNull.Value);
+            var facebookUrl = new SqlParameter("@FacebookUrl", (object)Subscriber.FacebookUrl ?? DBNull.Value);
+            var twitterUrl = new SqlParameter("@TwitterUrl", (object)Subscriber.TwitterUrl ?? DBNull.Value);
+            var linkedInUrl = new SqlParameter("@LinkedInUrl", (object)Subscriber.LinkedInUrl ?? DBNull.Value);
+            var stackOverflowUrl = new SqlParameter("@StackOverflowUrl", (object)Subscriber.StackOverflowUrl ?? DBNull.Value);
+            var gitHubUrl = new SqlParameter("@GitHubUrl", (object)Subscriber.GithubUrl ?? DBNull.Value);
 
             DataTable table = new DataTable();
             table.Columns.Add("Guid", typeof(Guid));
