@@ -15,13 +15,11 @@ namespace UpDiddyLib.Helpers
 
     static public class Utils
     {
-
+      
         static public List<string> ParseSkillsFromHrXML(string xml)
         {
             List<string> rVal = new List<String>();
-            try
-            {
-
+ 
                 XElement theXML = XElement.Parse(xml);
                 // Get list of skill found by Sovren
                 var skills = theXML.Descendants()
@@ -31,8 +29,6 @@ namespace UpDiddyLib.Helpers
                 foreach (XElement node in skills)
                     rVal.Add(node.Attribute("name").Value.Trim());
 
-            }
-            catch { };
             return rVal;
 
         }
