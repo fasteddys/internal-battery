@@ -8,6 +8,8 @@ using System.IO;
 using UpDiddyApi.Business.Resume;
 using UpDiddyApi.Models;
 using UpDiddy.Helpers;
+using Hangfire;
+using UpDiddyApi.Workflow;
 
 namespace UpDiddyApi.Controllers
 {
@@ -57,6 +59,11 @@ namespace UpDiddyApi.Controllers
 
             // todo: verify subscriber guid permissions and data
             SubscriberProfileStagingStore.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
+ 
+            // run job to import user profile data 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(SubscriberGuid));
+
+
             return Ok(parsedDocument);
         }
     }

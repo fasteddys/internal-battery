@@ -10,6 +10,13 @@
     <None Remove="appsettings.json" />
     <None Remove="appsettings.Production.json" />
     <None Remove="appsettings.Staging.json" />
+    <None Remove="TestFiles\example-hrxml_48_skills.xml" />
+    <None Remove="TestFiles\example-hrxml_bad_xml.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\example-hrxml_bad_xml.xml" />
+    <EmbeddedResource Include="TestFiles\example-hrxml_48_skills.xml" />
   </ItemGroup>
 
   <ItemGroup>

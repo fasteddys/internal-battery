@@ -1,18 +1,39 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyLib.Helpers
 {
 
 
-     public enum ProfileDataStatus { Acquired = 0, Processing, Processed, Deleted, AccountNotFound, AcquistionError};
+
 
     static public class Utils
     {
+      
+        static public List<string> ParseSkillsFromHrXML(string xml)
+        {
+            List<string> rVal = new List<String>();
+ 
+                XElement theXML = XElement.Parse(xml);
+                // Get list of skill found by Sovren
+                var skills = theXML.Descendants()
+                     .Where(e => e.Name.LocalName == "Skill")
+                     .ToList();
+                // Iterate over their skills 
+                foreach (XElement node in skills)
+                    rVal.Add(node.Attribute("name").Value.Trim());
+
+            return rVal;
+
+        }
+
+
         static public string RemoveHTML(string Str)
         {
             return Regex.Replace(Str, "<.*?>", String.Empty);

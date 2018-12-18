@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Resume xml:lang="en" xmlns="http://ns.hr-xml.org/2006-02-28" xmlns:sov="http://sovren.com/hr-xml/2006-02-28">
+	<ResumeId>
+		<IdValue />
+	</ResumeId>
+	<StructuredXMLResume>
+		<ContactInfo>
+			<PersonName>
+				<FormattedName>Christopher McGee</FormattedName>
+				<GivenName>Christopher</GivenName>
+				<FamilyName>McGee</FamilyName>
+			</PersonName>
+			<ContactMethod>
+				<WhenAvailable>anytime</WhenAvailable>
+				<PostalAddress>
+					<CountryCode>US</CountryCode>
+					<PostalCode>21060</PostalCode>
+					<Region>MD</Region>
+					<Municipality>Glen Burnie</Municipality>
+					<DeliveryAddress>
+						<AddressLine>7526 Goldfinch Ct</AddressLine>
+					</DeliveryAddress>
+				</PostalAddress>
+			</ContactMethod>
+			<ContactMethod>
+				<Telephone>
+					<FormattedNumber>(240) 346-1498</FormattedNumber>
+				</Telephone>
+			</ContactMethod>
+			<ContactMethod>
+				<Use>personal</Use>
+				<Location>onPerson</Location>
+				<WhenAvailable>anytime</WhenAvailable>
+				<InternetEmailAddress>cmcgee.csm@gmail.com</InternetEmailAddress>
+			</ContactMethod>
+		</ContactInfo>
+		<EmploymentHistory>
+			<EmployerOrg>
+				<EmployerOrgName>Skyline Technology Solutions</EmployerOrgName>
+				<PositionHistory positionType="directHire" currentEmployer="true">
+					<Title>Web Developer</Title>
+					<OrgName>
+						<OrganizationName>Skyline Technology Solutions</OrganizationName>
+					</OrgName>
+					<Description>Develop and maintain web solutions for clients using open source libraries and frameworks. PHP,
+Javascript, Terraform, HTML, CSS, MySQL/MsSQL.
+●	Contribute to weekly and bi-weekly project and product sprint plannings.
+●	Lead project-requirement gathering sessions with the client.
+●	Reviewing code and mentoring junior developer resources.</Description>
+					<StartDate>
+						<YearMonth>2015-06</YearMonth>
+					</StartDate>
+					<EndDate>
+						<StringDate>current</StringDate>
+					</EndDate>
+					<JobCategory>
+						<TaxonomyName>Skills taxonomy</TaxonomyName>
+						<CategoryCode>Information Technology → Programming</CategoryCode>
+						<Comments>Information Technology describes 88% of this job</Comments>
+					</JobCategory>
+					<JobCategory>
+						<TaxonomyName>Job Level</TaxonomyName>
+						<CategoryCode>Senior (more than 5 years experience)</CategoryCode>
+					</JobCategory>
+					<UserArea>
+						<sov:PositionHistoryUserArea>
+							<sov:Id>POS-1</sov:Id>
+							<sov:CompanyNameProbabilityInterpretation internalUseOnly="BP">Confident</sov:CompanyNameProbabilityInterpretation>
+							<sov:PositionTitleProbabilityInterpretation internalUseOnly="SB">Confident</sov:PositionTitleProbabilityInterpretation>
+							<sov:NormalizedOrganizationName>Skyline Technology Solutions</sov:NormalizedOrganizationName>
+							<sov:NormalizedTitle>Web Developer</sov:NormalizedTitle>
+						</sov:PositionHistoryUserArea>
+					</UserArea>
+				</PositionHistory>
+				<UserArea>
+					<sov:EmployerOrgUserArea>
+						<sov:NormalizedEmployerOrgName>Skyline Technology Solutions</sov:NormalizedEmployerOrgName>
+					</sov:EmployerOrgUserArea>
+				</UserArea>
+			</EmployerOrg>
+			<EmployerOrg>
+				<EmployerOrgName>Mindgrub</EmployerOrgName>
+				<PositionHistory positionType="directHire">
+					<Title>Software Engineer</Title>
+					<OrgName>
+						<OrganizationName>Mindgrub</OrganizationName>
+					</OrgName>
+					<Description>●	Developed plugins for client Wordpress and Drupal sites. PHP, Javascript, HTML, CSS.
+●	Maintained and developed features independently for startup web-app. Java, Javascript, jQuery,</Description>
+					<StartDate>
+						<YearMonth>2014-05</YearMonth>
+					</StartDate>
+					<EndDate>
+						<YearMonth>2015-06</YearMonth>
+					</EndDate>
+					<JobCategory>
+						<TaxonomyName>Skills taxonomy</TaxonomyName>
+						<CategoryCode>Information Technology → Programming</CategoryCode>
+						<Comments>Information Technology describes 86% of this job</Comments>
+					</JobCategory>
+					<JobCategory>
+						<TaxonomyName>Job Level</TaxonomyName>
+						<CategoryCode>Senior (more than 5 years experience)</CategoryCode>
+					</JobCategory>
+					<UserArea>
+						<sov:PositionHistoryUserArea>
+							<sov:Id>POS-2</sov:Id>
+							<sov:CompanyNameProbabilityInterpretation internalUseOnly="BS">Confident</sov:CompanyNameProbabilityInterpretation>
+							<sov:PositionTitleProbabilityInterpretation internalUseOnly="TF">Confident</sov:PositionTitleProbabilityInterpretation>
+							<sov:NormalizedOrganizationName>Mindgrub</sov:NormalizedOrganizationName>
+							<sov:NormalizedTitle>Software Engineer</sov:NormalizedTitle>
+						</sov:PositionHistoryUserArea>
+					</UserArea>
+				</PositionHistory>
+				<UserArea>
+					<sov:EmployerOrgUserArea>
+						<sov:NormalizedEmployerOrgName>Mindgrub</sov:NormalizedEmployerOrgName>
+					</sov:EmployerOrgUserArea>
+				</UserArea>
+			</EmployerOrg>
+			<EmployerOrg>
+				<EmployerOrgName>Stripe</EmployerOrgName>
+				<PositionHistory positionType="internship">
+					<Title>Associate Web Developer</Title>
+					<OrgName>
+						<OrganizationName>Stripe</OrganizationName>
+					</OrgName>
+					<Description></Description>
+					<StartDate>
+						<YearMonth>2013-10</YearMonth>
+					</StartDate>
+					<EndDate>
+						<YearMonth>2014-05</YearMonth>
+					</EndDate>
+					<JobCategory>
+						<TaxonomyName>Job Level</TaxonomyName>
+						<CategoryCode>Senior (more than 5 years experience)</CategoryCode>
+					</JobCategory>
+					<UserArea>
+						<sov:PositionHistoryUserArea>
+							<sov:Id>POS-3</sov:Id>
+							<sov:CompanyNameProbabilityInterpretation internalUseOnly="Q">Probable</sov:CompanyNameProbabilityInterpretation>
+							<sov:PositionTitleProbabilityInterpretation internalUseOnly="SP">Confident</sov:PositionTitleProbabilityInterpretation>
+							<sov:NormalizedOrganizationName>Stripe</sov:NormalizedOrganizationName>
+							<sov:NormalizedTitle>Associate Web Developer</sov:NormalizedTitle>
+						</sov:PositionHistoryUserArea>
+					</UserArea>
+				</PositionHistory>
+				<UserArea>
+					<sov:EmployerOrgUserArea>
+						<sov:NormalizedEmployerOrgName>Stripe</sov:NormalizedEmployerOrgName>
+					</sov:EmployerOrgUserArea>
+				</UserArea>
+			</EmployerOrg>
+			<EmployerOrg>
+				<EmployerOrgName>One Moon Scientific</EmployerOrgName>
+				<PositionHistory positionType="internship">
+					<Title>Software Engineer Intern</Title>
+					<OrgName>
+						<OrganizationName>One Moon Scientific</OrganizationName>
+					</OrgName>
+					<Description>●	Researched machine learning algorithms and concepts.
+●	Implemented supervised learning neural network and Support Vector Machine systems using open
+source libraries. Java.
+●	Visualized machine generated predictions and error statistics using matplotlib. Python.</Description>
+					<StartDate>
+						<YearMonth>2013-06</YearMonth>
+					</StartDate>
+					<EndDate>
+						<YearMonth>2013-08</YearMonth>
+					</EndDate>
+					<JobCategory>
+						<TaxonomyName>Skills taxonomy</TaxonomyName>
+						<CategoryCode>Information Technology → Machine Learning</CategoryCode>
+						<Comments>Information Technology describes 60% of this job</Comments>
+					</JobCategory>
+					<JobCategory>
+						<TaxonomyName>Job Level</TaxonomyName>
+						<CategoryCode>Entry Level</CategoryCode>
+					</JobCategory>
+					<UserArea>
+						<sov:PositionHistoryUserArea>
+							<sov:Id>POS-4</sov:Id>
+							<sov:CompanyNameProbabilityInterpretation internalUseOnly="BP">Confident</sov:CompanyNameProbabilityInterpretation>
+							<sov:PositionTitleProbabilityInterpretation internalUseOnly="TB">Confident</sov:PositionTitleProbabilityInterpretation>
+							<sov:NormalizedOrganizationName>One Moon Scientific</sov:NormalizedOrganizationName>
+							<sov:NormalizedTitle>Software Engineer Intern</sov:NormalizedTitle>
+						</sov:PositionHistoryUserArea>
+					</UserArea>
+				</PositionHistory>
+				<UserArea>
+					<sov:EmployerOrgUserArea>
+						<sov:NormalizedEmployerOrgName>One Moon Scientific</sov:NormalizedEmployerOrgName>
+					</sov:EmployerOrgUserArea>
+				</UserArea>
+			</EmployerOrg>
+		</EmploymentHistory>
+		<EducationHistory>
+			<SchoolOrInstitution schoolType="university">
+				<School>
+					<SchoolName>University of Maryland Baltimore County</SchoolName>
+				</School>
+				<PostalAddress>
+					<CountryCode>US</CountryCode>
+					<Region>Maryland</Region>
+					<Municipality>Baltimore</Municipality>
+				</PostalAddress>
+				<Degree degreeType="bachelors">
+					<DegreeName>B.S. of Computer Science</DegreeName>
+					<DegreeDate>
+						<YearMonth>2015-03</YearMonth>
+					</DegreeDate>
+					<DegreeMajor>
+						<Name>Database Management Systems</Name>
+					</DegreeMajor>
+					<DegreeMeasure>
+						<EducationalMeasure>
+							<MeasureSystem>GPA</MeasureSystem>
+							<MeasureValue>
+								<StringValue>3.95</StringValue>
+							</MeasureValue>
+							<LowestPossibleValue>
+								<StringValue>0</StringValue>
+							</LowestPossibleValue>
+							<HighestPossibleValue>
+								<StringValue>4</StringValue>
+							</HighestPossibleValue>
+						</EducationalMeasure>
+					</DegreeMeasure>
+					<DatesOfAttendance>
+						<StartDate>
+							<YearMonth>2012-09</YearMonth>
+						</StartDate>
+						<EndDate>
+							<YearMonth>2015-03</YearMonth>
+						</EndDate>
+					</DatesOfAttendance>
+					<Comments>University of Maryland Baltimore County  -  B.S. of Computer Science
+FALL 2012 - Spring 2015
+GPA: 3.95
+Coursework: Algorithms, Data Structures, Operating Systems, Cryptology, Database Management Systems,
+Scripting Languages, Software Design and Development</Comments>
+					<UserArea>
+						<sov:DegreeUserArea>
+							<sov:Id>DEG-1</sov:Id>
+							<sov:NormalizedGPA>0.988</sov:NormalizedGPA>
+							<sov:NormalizedDegreeName>BSc</sov:NormalizedDegreeName>
+							<sov:NormalizedDegreeType>BSc</sov:NormalizedDegreeType>
+						</sov:DegreeUserArea>
+					</UserArea>
+				</Degree>
+				<UserArea>
+					<sov:SchoolOrInstitutionTypeUserArea>
+						<sov:NormalizedSchoolName>University of Maryland</sov:NormalizedSchoolName>
+					</sov:SchoolOrInstitutionTypeUserArea>
+				</UserArea>
+			</SchoolOrInstitution>
+		</EducationHistory>
+		<Qualifications>
+			<QualificationSummary>SKILLS
+Technical: PHP, Javascript, MySql, CSS/SASS, HTML, Linux/Unix, Git, Docker, Angular, Terraform, AWS, Azure,
+Java, C#, Python, Ruby. (In order by usage frequency)</QualificationSummary>
+		</Qualifications>
+		<Languages>
+			<Language>
+				<LanguageCode>en</LanguageCode>
+				<Read>true</Read>
+				<Write>true</Write>
+				<Speak>true</Speak>
+				<Comments>[RESUME_LANGUAGE]</Comments>
+			</Language>
+		</Languages>
+		<RevisionDate>2018-12-11</RevisionDate>
+	</StructuredXMLResume>
+	<NonXMLResume>
+		<TextResume>7526 Goldfinch Ct.
+Glen Burnie, MD 21060
+
+Christopher McGee
+(240) 346-1498
+cmcgee.csm@gmail.com
+
+
+SKILLS
+Technical: PHP, Javascript, MySql, CSS/SASS, HTML, Linux/Unix, Git, Docker, Angular, Terraform, AWS, Azure,
+Java, C#, Python, Ruby. (In order by usage frequency)
+
+
+EXPERIENCE
+Skyline Technology Solutions  -  Web Developer
+June 2015 - PRESENT
+●	Develop and maintain web solutions for clients using open source libraries and frameworks. PHP,
+Javascript, Terraform, HTML, CSS, MySQL/MsSQL.
+●	Contribute to weekly and bi-weekly project and product sprint plannings.
+●	Lead project-requirement gathering sessions with the client.
+●	Reviewing code and mentoring junior developer resources.
+
+Mindgrub  -  Software Engineer
+May 2014 - June 2015
+●	Developed plugins for client Wordpress and Drupal sites. PHP, Javascript, HTML, CSS.
+●	Maintained and developed features independently for startup web-app. Java, Javascript, jQuery,
+Stripe, HTML, CSS.
+●	Associate Web Developer (Intern) Oct 2013 - May 2014
+
+One Moon Scientific  -  Software Engineer Intern
+Summer 2013
+●	Researched machine learning algorithms and concepts.
+●	Implemented supervised learning neural network and Support Vector Machine systems using open
+source libraries. Java.
+●	Visualized machine generated predictions and error statistics using matplotlib. Python.
+
+
+EDUCATION
+University of Maryland Baltimore County  -  B.S. of Computer Science
+FALL 2012 - Spring 2015
+GPA: 3.95
+Coursework: Algorithms, Data Structures, Operating Systems, Cryptology, Database Management Systems,
+Scripting Languages, Software Design and Development
+
+
+PROJECTS
+●	Public Portal (Present) - Angular draggable widget based frontend with google maps, communicates
+with custom administrative backend via websockets and Restful HTTP requests. Angular, Yii2,
+Google, AWS (MQ, S3, RDS), Terraform.
+●	Custom Benefits Enrollment Portal (2016) - Custom benefits enrollment portal for yearly and life
+event enrollments with RBAC permissions system, single sign-on, and transaction workflow. Yii2,
+Angular, Azure, ADFS, SSO, MsSql.</TextResume>
+	</NonXMLResume>
+	<UserArea>
+		<sov:ResumeUserArea>
+			<sov:Culture>
+				<sov:Language>en</sov:Language>
+				<sov:Country>US</sov:Country>
+				<sov:CultureInfo>en-US</sov:CultureInfo>
+			</sov:Culture>
+			<sov:ExperienceSummary>
+				<sov:Description>Christopher McGee's experience appears to be strongly concentrated in Information Technology (mostly Programming), and slightly concentrated in Engineering (mostly Surveying). Christopher McGee has 5 years of work experience.</sov:Description>
+				<sov:MonthsOfWorkExperience>65</sov:MonthsOfWorkExperience>
+				<sov:AverageMonthsPerEmployer>16</sov:AverageMonthsPerEmployer>
+				<sov:FulltimeDirectHirePredictiveIndex>25</sov:FulltimeDirectHirePredictiveIndex>
+				<sov:MonthsOfManagementExperience>0</sov:MonthsOfManagementExperience>
+				<sov:HighestManagementScore>0</sov:HighestManagementScore>
+				<sov:ExecutiveType>none</sov:ExecutiveType>
+				<sov:ManagementStory />
+				<sov:SkillsTaxonomyOutput>
+					<sov:TaxonomyRoot name="Sovren">
+						<sov:Taxonomy name="Information Technology" id="10" percentOfOverall="86">
+							<sov:Subtaxonomy name="Programming" id="204" percentOfOverall="44" percentOfParentTaxonomy="51">
+								<sov:Skill name="C#" id="012275" existsInText="true" whereFound="Found in SKILLS"></sov:Skill>
+								<sov:Skill name="DOCKER" id="3391147" existsInText="true" whereFound="Found in SKILLS"></sov:Skill>
+								<sov:Skill name="Git" id="1004755" existsInText="true" whereFound="Found in SKILLS"></sov:Skill>
+								<sov:Skill name="HTML" id="019115" existsInText="true" totalMonths="62" lastUsed="2018-12-11" whereFound="Found in SKILLS; WORK HISTORY; POS-1; POS-2; POS-3"></sov:Skill>
+								<sov:Skill name="JAVASCRIPT" id="025394" existsInText="true" totalMonths="55" lastUsed="2018-12-11" whereFound="Found in SKILLS; WORK HISTORY; POS-1; POS-2"></sov:Skill>
+								<sov:Skill name="PHP" id="004736" existsInText="true" totalMonths="55" lastUsed="2018-12-11" whereFound="Found in SKILLS; WORK HISTORY; POS-1; POS-2"></sov:Skill>
+								<sov:Skill name="PYTHON" id="006120" existsInText="true" totalMonths="3" lastUsed="2013-08-31" whereFound="Found in SKILLS; WORK HISTORY; POS-4" childrenTotalMonths="3" childrenLastUsed="2013-08-31">
+									<sov:ChildSkill name="MATPLOTLIB" id="3391120" existsInText="true" totalMonths="3" lastUsed="2013-08-31" whereFound="Found in WORK HISTORY; POS-4"></sov:ChildSkill>
+								</sov:Skill>
+								<sov:Skill name="Ruby" id="1004736" existsInText="true" whereFound="Found in SKILLS"></sov:Skill>
+								<sov:Skill name="SCRIPTING" id="024873" existsInText="true" whereFound="Found in EDUCATION"></sov:Skill>
+								<sov:Skill name="SOFTWARE ENGINEER" id="008220" existsInText="true" totalMonths="16" lastUsed="2015-06-01" whereFound="Found in WORK HISTORY; POS-2; POS-4"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Internet" id="196" percentOfOverall="18" percentOfParentTaxonomy="21">
+								<sov:Skill name="CSS" id="014705" existsInText="true" totalMonths="62" lastUsed="2018-12-11" whereFound="Found in SKILLS; WORK HISTORY; POS-1; POS-2; POS-3"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Java" id="339" percentOfOverall="8" percentOfParentTaxonomy="9">
+								<sov:Skill name="JAVA" id="023328" existsInText="true" totalMonths="16" lastUsed="2015-06-01" whereFound="Found in SKILLS; WORK HISTORY; POS-2; POS-4">
+									<sov:ChildSkill name="SPRING" id="3391126" existsInText="true" whereFound="Found in EDUCATION"></sov:ChildSkill>
+								</sov:Skill>
+								<sov:Skill name="jQuery" id="339048" existsInText="true" totalMonths="13" lastUsed="2015-06-01" whereFound="Found in WORK HISTORY; POS-2"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Database" id="193" percentOfOverall="4" percentOfParentTaxonomy="5">
+								<sov:Skill name="DATABASES" id="026777" existsInText="false">
+									<sov:ChildSkill name="DATABASE" id="022486" existsInText="true" whereFound="Found in EDUCATION"></sov:ChildSkill>
+								</sov:Skill>
+								<sov:Skill name="MYSQL" id="003243" existsInText="true" totalMonths="42" lastUsed="2018-12-11" whereFound="Found in SKILLS; WORK HISTORY; POS-1"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Machine Learning" id="720" percentOfOverall="3" percentOfParentTaxonomy="3">
+								<sov:Skill name="MACHINE LEARNING" id="7200149" existsInText="true" totalMonths="3" lastUsed="2013-08-31" whereFound="Found in WORK HISTORY; POS-4"></sov:Skill>
+								<sov:Skill name="SUPERVISED LEARNING" id="7200062" existsInText="true" totalMonths="3" lastUsed="2013-08-31" whereFound="Found in WORK HISTORY; POS-4"></sov:Skill>
+								<sov:Skill name="SUPPORT VECTOR MACHINE" id="7200063" existsInText="true" totalMonths="3" lastUsed="2013-08-31" whereFound="Found in WORK HISTORY; POS-4"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Protocols and Standards" id="253" percentOfOverall="3" percentOfParentTaxonomy="3">
+								<sov:Skill name="HTTP" id="019117" existsInText="true" whereFound="Found in PROJECT_HEADERS"></sov:Skill>
+								<sov:Skill name="OPEN SOURCE" id="003842" existsInText="true" totalMonths="42" lastUsed="2018-12-11" whereFound="Found in WORK HISTORY; POS-1"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Architecture" id="201" percentOfOverall="3" percentOfParentTaxonomy="3">
+								<sov:Skill name="REQUIREMENT GATHERING" id="006830" existsInText="true" totalMonths="42" lastUsed="2018-12-11" whereFound="Found in WORK HISTORY; POS-1"></sov:Skill>
+								<sov:Skill name="SOFTWARE DESIGN" id="025845" existsInText="true" whereFound="Found in EDUCATION"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Security" id="338" percentOfOverall="1" percentOfParentTaxonomy="1">
+								<sov:Skill name="CRYPTOLOGY" id="014682" existsInText="true" whereFound="Found in EDUCATION"></sov:Skill>
+								<sov:Skill name="MACHINE LEARNING" id="3380002" existsInText="true" totalMonths="3" lastUsed="2013-08-31" whereFound="Found in WORK HISTORY; POS-4"></sov:Skill>
+								<sov:Skill name="SINGLE SIGN ON" id="3380021" existsInText="false">
+									<sov:ChildSkill name="SSO" id="3380022" existsInText="true" whereFound="Found in PROJECT_HEADERS"></sov:ChildSkill>
+								</sov:Skill>
+								<sov:Skill name="SSO" id="008513" existsInText="true" whereFound="Found in PROJECT_HEADERS"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Big Data" id="553" percentOfOverall="1" percentOfParentTaxonomy="1">
+								<sov:Skill name="ADFS" id="5530900" existsInText="true" whereFound="Found in PROJECT_HEADERS"></sov:Skill>
+								<sov:Skill name="MACHINE LEARNING" id="5531016" existsInText="true" totalMonths="3" lastUsed="2013-08-31" whereFound="Found in WORK HISTORY; POS-4"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Distributed Systems" id="718" percentOfOverall="0" percentOfParentTaxonomy="0">
+								<sov:Skill name="DATA STRUCTURES" id="6180000" existsInText="true" whereFound="Found in EDUCATION"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="UNIX and LINUX" id="203" percentOfOverall="0" percentOfParentTaxonomy="0">
+								<sov:Skill name="LINUX" id="023925" existsInText="true" whereFound="Found in SKILLS">
+									<sov:ChildSkill name="LINUX/UNIX" id="020798" existsInText="true" whereFound="Found in SKILLS"></sov:ChildSkill>
+								</sov:Skill>
+								<sov:Skill name="UNIX" id="01026309" existsInText="true" whereFound="Found in SKILLS"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Mobile Applications" id="552" percentOfOverall="0" percentOfParentTaxonomy="0">
+								<sov:Skill name="SASS" id="5520599" existsInText="true" whereFound="Found in SKILLS"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Privacy and Data Security" id="556" percentOfOverall="0" percentOfParentTaxonomy="0">
+								<sov:Skill name="SINGLE SIGN-ON" id="5551244" existsInText="true" whereFound="Found in PROJECT_HEADERS"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Workflow and Imaging" id="342" percentOfOverall="0" percentOfParentTaxonomy="0">
+								<sov:Skill name="WORKFLOW" id="024213" existsInText="true" whereFound="Found in PROJECT_HEADERS"></sov:Skill>
+							</sov:Subtaxonomy>
+						</sov:Taxonomy>
+						<sov:Taxonomy name="Engineering" id="5" percentOfOverall="4">
+							<sov:Subtaxonomy name="Surveying" id="298" percentOfOverall="2" percentOfParentTaxonomy="54">
+								<sov:Skill name="ALGORITHMS" id="024338" existsInText="true" totalMonths="3" lastUsed="2013-08-31" whereFound="Found in EDUCATION; WORK HISTORY; POS-4"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Computer Hardware" id="144" percentOfOverall="2" percentOfParentTaxonomy="38">
+								<sov:Skill name="LINUX" id="023926" existsInText="true" whereFound="Found in SKILLS">
+									<sov:ChildSkill name="LINUX/UNIX" id="02392601" existsInText="true" whereFound="Found in SKILLS"></sov:ChildSkill>
+								</sov:Skill>
+								<sov:Skill name="NEURAL NETWORK" id="003431" existsInText="true" totalMonths="3" lastUsed="2013-08-31" whereFound="Found in WORK HISTORY; POS-4"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="General Engineering" id="307" percentOfOverall="0" percentOfParentTaxonomy="4">
+								<sov:Skill name="ENGINEER" id="080540" existsInText="true" totalMonths="16" lastUsed="2015-06-01" whereFound="Found in WORK HISTORY; POS-2; POS-4"></sov:Skill>
+								<sov:Skill name="SOFTWARE DESIGN" id="080405" existsInText="true" whereFound="Found in EDUCATION"></sov:Skill>
+							</sov:Subtaxonomy>
+							<sov:Subtaxonomy name="Design" id="134" percentOfOverall="0" percentOfParentTaxonomy="4">
+								<sov:Skill name="SOFTWARE DESIGN" id="080910" existsInText="true" whereFound="Found in EDUCATION"></sov:Skill>
+							</sov:Subtaxonomy>
+						</sov:Taxonomy>
+						<sov:Taxonomy name="Knowledge and Learning Management" id="92" percentOfOverall="4">
+							<sov:Subtaxonomy name="General Knowledge and Learning Management" id="903" percentOfOverall="4" percentOfParentTaxonomy="100">
+								<sov:Skill name="MENTORING" id="200051" existsInText="true" totalMonths="42" lastUsed="2018-12-11" whereFound="Found in WORK HISTORY; POS-1"></sov:Skill>
+								<sov:Skill name="NEURAL" id="200040" existsInText="true" totalMonths="3" lastUsed="2013-08-31" whereFound="Found in WORK HISTORY; POS-4" childrenTotalMonths="3" childrenLastUsed="2013-08-31">
+									<sov:ChildSkill name="NEURAL NETWORK" id="200038" existsInText="true" totalMonths="3" lastUsed="2013-08-31" whereFound="Found in WORK HISTORY; POS-4"></sov:ChildSkill>
+								</sov:Skill>
+							</sov:Subtaxonomy>
+						</sov:Taxonomy>
+						<sov:Taxonomy name="Sales" id="20" percentOfOverall="2">
+							<sov:Subtaxonomy name="Entry Level" id="500" percentOfOverall="2" percentOfParentTaxonomy="100">
+								<sov:Skill name="ASSOCIATE" id="004917" existsInText="true" totalMonths="7" lastUsed="2014-05-01" whereFound="Found in WORK HISTORY; POS-3"></sov:Skill>
+							</sov:Subtaxonomy>
+						</sov:Taxonomy>
+						<sov:Taxonomy name="User Experience" id="93" percentOfOverall="2">
+							<sov:Subtaxonomy name="Web Design" id="571" percentOfOverall="2" percentOfParentTaxonomy="100">
+								<sov:Skill name="WORDPRESS" id="3391111" existsInText="true" totalMonths="13" lastUsed="2015-06-01" whereFound="Found in WORK HISTORY; POS-2"></sov:Skill>
+							</sov:Subtaxonomy>
+						</sov:Taxonomy>
+						<sov:Taxonomy name="Business Operations and General Business" id="34" percentOfOverall="1">
+							<sov:Subtaxonomy name="General Skills and Activities" id="437" percentOfOverall="1" percentOfParentTaxonomy="100">
+								<sov:Skill name="STATISTICS" id="008585" existsInText="true" totalMonths="3" lastUsed="2013-08-31" whereFound="Found in WORK HISTORY; POS-4"></sov:Skill>
+							</sov:Subtaxonomy>
+						</sov:Taxonomy>
+						<sov:Taxonomy name="Human Resources" id="9" percentOfOverall="0">
+							<sov:Subtaxonomy name="Benefits" id="183" percentOfOverall="0" percentOfParentTaxonomy="100">
+								<sov:Skill name="BENEFITS" id="022748" existsInText="true" whereFound="Found in PROJECT_HEADERS"></sov:Skill>
+							</sov:Subtaxonomy>
+						</sov:Taxonomy>
+						<sov:Taxonomy name="Clinical" id="28" percentOfOverall="0">
+							<sov:Subtaxonomy name="Claims and Billing" id="269" percentOfOverall="0" percentOfParentTaxonomy="100">
+								<sov:Skill name="BENEFITS" id="011256" existsInText="true" whereFound="Found in PROJECT_HEADERS"></sov:Skill>
+							</sov:Subtaxonomy>
+						</sov:Taxonomy>
+						<sov:Taxonomy name="Administrative or Clerical" id="1" percentOfOverall="0">
+							<sov:Subtaxonomy name="Computer Related" id="115" percentOfOverall="0" percentOfParentTaxonomy="100">
+								<sov:Skill name="DATABASE MANAGEMENT" id="015035" existsInText="true" whereFound="Found in EDUCATION"></sov:Skill>
+							</sov:Subtaxonomy>
+						</sov:Taxonomy>
+					</sov:TaxonomyRoot>
+				</sov:SkillsTaxonomyOutput>
+			</sov:ExperienceSummary>
+			<sov:Sections>
+				<sov:Section starts="8" ends="12" sectionType="SKILLS">SKILLS</sov:Section>
+				<sov:Section starts="13" ends="36" sectionType="WORK HISTORY">EXPERIENCE</sov:Section>
+				<sov:Section starts="37" ends="44" sectionType="EDUCATION">EDUCATION</sov:Section>
+				<sov:Section starts="45" ends="51" sectionType="PROJECT_HEADERS">PROJECTS</sov:Section>
+			</sov:Sections>
+			<sov:ReservedData>
+				<sov:Phones>
+					<sov:Phone>(240) 346-1498</sov:Phone>
+				</sov:Phones>
+				<sov:Names>
+					<sov:Name>Christopher McGee</sov:Name>
+				</sov:Names>
+				<sov:EmailAddresses>
+					<sov:EmailAddress>cmcgee.csm@gmail.com</sov:EmailAddress>
+				</sov:EmailAddresses>
+				<sov:OtherData>
+					<sov:OtherDatum>7526 Goldfinch Ct</sov:OtherDatum>
+				</sov:OtherData>
+			</sov:ReservedData>
+			<sov:ParsedTextLength>2063</sov:ParsedTextLength>
+			<sov:ParseTime>3734</sov:ParseTime>
+			<sov:ResumeQuality>
+				<sov:Assessments>
+					<sov:Assessment>
+						<sov:Level>Suggested Improvements</sov:Level>
+						<sov:Findings>
+							<sov:Information>The following section was identified as a skills section type: 'SKILLS'. Skills should not be in a separate section, but instead included in the descriptions of work history or education.</sov:Information>
+						</sov:Findings>
+					</sov:Assessment>
+				</sov:Assessments>
+			</sov:ResumeQuality>
+			<sov:LicenseSerialNumber>63a4af7f-daa9-406a-9431-9e6a45344d5c</sov:LicenseSerialNumber>
+			<sov:ParserConfigurationString>Coverage.PersonalAttributes = True; Coverage.Training = True; Culture.CountryCodeForUnitedKingdomIsUK = True; Culture.DefaultCountryCode = US; Culture.Language = English; Culture.PreferEnglishVersionIfTwoLanguagesInDocument = False; Data.UserDefinedParsing = False; OutputFormat.AssumeCompanyNameFromPrecedingJob = False; OutputFormat.ContactMethod.PackStyle = Split; OutputFormat.DateOutputStyle = ExplicitlyKnownDateInfoOnly; OutputFormat.NestJobsBasedOnDateRanges = True; OutputFormat.NormalizeRegions = False; OutputFormat.SkillsStyle = Default; OutputFormat.StripParsedDataFromPositionHistoryDescription = True; OutputFormat.TelcomNumber.Style = Raw; OutputFormat.XmlFormat = HrXmlResume25</sov:ParserConfigurationString>
+			<sov:ParserVersion>8.3.0.0</sov:ParserVersion>
+		</sov:ResumeUserArea>
+	</UserArea>
+</Resume>

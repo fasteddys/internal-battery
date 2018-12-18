@@ -7,6 +7,7 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.MessageQueue;
 using Microsoft.Extensions.Logging;
+using UpDiddyApi.Business.Resume;
 
 namespace UpDiddyApi.Business
 {
@@ -23,6 +24,7 @@ namespace UpDiddyApi.Business
         protected internal WozTransactionLog _translog = null;
         protected internal ILogger _syslog = null;
         protected IHttpClientFactory _httpClientFactory = null;
+        protected internal ISovrenAPI _sovrenApi;
         #endregion
     }
 }
