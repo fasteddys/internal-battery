@@ -1153,6 +1153,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("GithubUrl");
 
+                    b.Property<int>("HasOnboarded");
+
                     b.Property<int>("IsDeleted");
 
                     b.Property<string>("LastName");
