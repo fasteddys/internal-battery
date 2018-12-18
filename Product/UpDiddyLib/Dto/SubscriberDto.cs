@@ -25,5 +25,6 @@ namespace UpDiddyLib.Dto
         public string GithubUrl { get; set; }
         public StateDto State { get; set; }
         public List<EnrollmentDto> Enrollments { get; set; }
+        public IList<SkillDto> Skills { get; set; }
     }
 }

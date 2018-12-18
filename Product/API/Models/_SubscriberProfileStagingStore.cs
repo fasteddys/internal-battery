@@ -1,15 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddy.Helpers;
+using UpDiddyApi.Controllers;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Models
 {
+
+    public enum ProfileDataStatus { Acquired = 0, Processing, Processed, Deleted, AccountNotFound, AcquistionError, ProcessingError };
+
     public partial class SubscriberProfileStagingStore : BaseModel
     {
         public SubscriberProfileStagingStore()
@@ -19,6 +24,7 @@ namespace UpDiddyApi.Models
 
         public SubscriberProfileStagingStore(UpDiddyDbContext db, Guid subscriberGuid)
         {
+            // todo: see if dotnet has built in behaviors or checks for required fields such as subscriber guid
             var Subscriber = db.Subscriber
             .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
               .FirstOrDefault();
@@ -29,15 +35,14 @@ namespace UpDiddyApi.Models
             this.CreateDate = DateTime.Now;
             this.ModifyGuid = Guid.NewGuid();
             this.SubscriberId = Subscriber.SubscriberId;
-            this.ProfileSource = Constants.LinkedInProfile;
+            this.ProfileSource = Constants.DataSource.LinkedIn;
             this.IsDeleted = 0;
-            this.ProfileFormat = Constants.DataFormatJson;
+            this.ProfileFormat = Constants.DataFormat.Json;
         }
-
 
         // TODO possibly modularize after knowing the complete set of linkedin data that will be available 
         // with the access keys from the lab 
-        public LinkedInProfileDto ToLinkedInDto()
+        public LinkedInProfileDto ToLinkedInDto(ILogger sysLog)
         {
             LinkedInProfileDto rVal = null;
 
@@ -91,21 +96,20 @@ namespace UpDiddyApi.Models
             }
             catch (Exception e)
             {
-               // TODO Add logging after Chris's new logging update
-               // do nothing and return what we have 
+                sysLog.LogError("SubscriberProfileStagingStore.ToLinkedInDto threw and exception -> " + e.Message, this);
             }
             return rVal;
         }
 
         #region Factory Methods 
 
-        public static LinkedInProfileDto GetProfileAsLinkedInDto(UpDiddyDbContext db, Guid subscriberGuid)
+        public static LinkedInProfileDto GetProfileAsLinkedInDto(UpDiddyDbContext db, Guid subscriberGuid, ILogger sysLog)
         {
             SubscriberProfileStagingStore pss = GetBySubcriber(db, subscriberGuid);
             if (pss == null)
                 return null;
             else
-                return pss.ToLinkedInDto();
+                return pss.ToLinkedInDto(sysLog);
         }
 
 
@@ -113,7 +117,7 @@ namespace UpDiddyApi.Models
         {
             SubscriberProfileStagingStore pss = db.SubscriberProfileStagingStore
                  .Include(s => s.Subscriber)
-                 .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid && s.ProfileSource == Constants.LinkedInProfile)
+                 .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid && s.ProfileSource == Constants.DataSource.LinkedIn)
                  .OrderByDescending( s => s.ModifyDate)
              .FirstOrDefault();
 
@@ -130,6 +134,23 @@ namespace UpDiddyApi.Models
             pss.Status = (int)ProfileDataStatus.Acquired;
             
             db.SubscriberProfileStagingStore.Add(pss);
+            db.SaveChanges();
+        }
+
+        // todo: maybe we have this interact with interfaces so that it knows how to grab the data, srcName, format, data
+        public static void Save(UpDiddyDbContext db, Subscriber subscriber, string srcName, string format, string data)
+        {
+            SubscriberProfileStagingStore stagingStore = new SubscriberProfileStagingStore();
+            stagingStore.CreateDate = DateTime.Now;
+            stagingStore.ModifyDate = stagingStore.CreateDate;
+            stagingStore.ModifyGuid = subscriber.SubscriberGuid;
+            stagingStore.SubscriberId = subscriber.SubscriberId;
+            stagingStore.ProfileSource = srcName;
+            stagingStore.ProfileFormat = format;
+            stagingStore.ProfileData = data;
+            stagingStore.Status = (int)ProfileDataStatus.Acquired;
+
+            db.SubscriberProfileStagingStore.Add(stagingStore);
             db.SaveChanges();
         }
 

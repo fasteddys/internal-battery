@@ -25,6 +25,8 @@ namespace UpDiddyApi.Models
         
             this.CreateDate = DateTime.Now;
             this.CreateGuid = Guid.NewGuid();
+            this.ModifyDate = DateTime.Now;
+            this.ModifyGuid = Guid.NewGuid();
             this.SubscriberId = Subscriber.SubscriberId;
             this.IsDeleted = 0;
         }
