@@ -5,8 +5,9 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-    class ResumeDto : BaseDto
+    public class ResumeDto
     {
-        public IFormFile Resume { get; set; } 
+        public Guid SubscriberGuid { get; set; }
+        public string Base64EncodedResume { get; set; }
     }
 }

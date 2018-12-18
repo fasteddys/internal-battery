@@ -57,10 +57,10 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Authorize]
         [Route("api/[controller]/CreateSubscriber/{SubscriberGuid}/{SubscriberEmail}")]
-        public IActionResult NewSubscriber(string SubscriberGuid, string SubscriberEmail)
+        public IActionResult NewSubscriber(Guid SubscriberGuid, string SubscriberEmail)
         {
             Subscriber subscriber = new Subscriber();
-            subscriber.SubscriberGuid = Guid.Parse(SubscriberGuid);
+            subscriber.SubscriberGuid = SubscriberGuid;
             subscriber.Email = SubscriberEmail;
             subscriber.CreateDate = DateTime.Now;
             subscriber.ModifyDate = DateTime.Now;

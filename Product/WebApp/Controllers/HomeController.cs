@@ -18,6 +18,7 @@ using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Text.Encodings.Web;
+using System.IO;
 
 namespace UpDiddy.Controllers
 {
@@ -231,26 +232,46 @@ namespace UpDiddy.Controllers
         }
 
 
-
+        [Authorize]
         [HttpPost]
-        public BasicResponseDto UploadResume(IFormFile file)
+        public BasicResponseDto UploadResume(ResumeViewModel resumeViewModel)
         {
-            if (ModelState.IsValid && file != null)
+            try
             {
-                return new BasicResponseDto
+                if (ModelState.IsValid)
                 {
-                    StatusCode = "200",
-                    Description = "OK"
-                };
+                    string base64String = null;
+                    // replace with helper method to do the encoding. look in dot net first but if one doesnt exist create it and put it in our library
+                    using (var stream = new MemoryStream())
+                    {
+                        resumeViewModel.Resume.CopyTo(stream);
+                        var fileBytes = stream.ToArray();
+                        base64String = Convert.ToBase64String(fileBytes);
+                    }
+                    ResumeDto resumeDto = new ResumeDto()
+                    {
+                        SubscriberGuid = this.GetSubscriberGuid(),
+                         Base64EncodedResume = base64String
+                    };
+
+                    // move this
+                    return new BasicResponseDto
+                    {
+                        StatusCode = "200",
+                        Description = "OK"
+                    };
+                }
+                else
+                {
+                    // handle invalid model state - what status code?
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return new BasicResponseDto
-                {
-                    StatusCode = "400",
-                    Description = "Bad Request"
-                };
+
             }
+
+            throw new NotImplementedException();
         }
 
         [HttpPost]

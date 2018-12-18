@@ -78,7 +78,7 @@ $(document).ready(function () {
     $('#ResumeUploadForm').on('submit', function (e) {
         e.preventDefault();
         var formData = new FormData();
-        formData.append('file', $('#UploadedResume')[0].files[0]); // myFile is the input type="file" control
+        formData.append('Resume', $('#UploadedResume')[0].files[0]); // myFile is the input type="file" control
 
         var _url = $(this).attr('action');
 
