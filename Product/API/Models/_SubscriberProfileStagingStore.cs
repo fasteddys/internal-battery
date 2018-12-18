@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddy.Helpers;
+using UpDiddyApi.Controllers;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
@@ -37,7 +39,7 @@ namespace UpDiddyApi.Models
 
         // TODO possibly modularize after knowing the complete set of linkedin data that will be available 
         // with the access keys from the lab 
-        public LinkedInProfileDto ToLinkedInDto()
+        public LinkedInProfileDto ToLinkedInDto(ILogger sysLog)
         {
             LinkedInProfileDto rVal = null;
 
@@ -91,21 +93,20 @@ namespace UpDiddyApi.Models
             }
             catch (Exception e)
             {
-               // TODO Add logging after Chris's new logging update
-               // do nothing and return what we have 
+                sysLog.LogError("SubscriberProfileStagingStore.ToLinkedInDto threw and exception -> " + e.Message, this);
             }
             return rVal;
         }
 
         #region Factory Methods 
 
-        public static LinkedInProfileDto GetProfileAsLinkedInDto(UpDiddyDbContext db, Guid subscriberGuid)
+        public static LinkedInProfileDto GetProfileAsLinkedInDto(UpDiddyDbContext db, Guid subscriberGuid, ILogger sysLog)
         {
             SubscriberProfileStagingStore pss = GetBySubcriber(db, subscriberGuid);
             if (pss == null)
                 return null;
             else
-                return pss.ToLinkedInDto();
+                return pss.ToLinkedInDto(sysLog);
         }
 
 

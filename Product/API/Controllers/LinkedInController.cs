@@ -46,7 +46,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/GetProfile/{SubscriberGuid}")]
         public IActionResult GetProfile(Guid subscriberGuid )
         {
-            var rVal = SubscriberProfileStagingStore.GetProfileAsLinkedInDto(_db, subscriberGuid);
+            var rVal = SubscriberProfileStagingStore.GetProfileAsLinkedInDto(_db, subscriberGuid,_syslog);
             return Ok(rVal); ;
         }
 
