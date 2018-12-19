@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -16,6 +18,20 @@ namespace UpDiddyLib.Helpers
     static public class Utils
     {
       
+        public static string ToBase64EncodedString(IFormFile file)
+        {
+            string base64EncodedString = null;
+
+            using (var stream = new MemoryStream())
+            {
+                file.CopyTo(stream);
+                var fileBytes = stream.ToArray();
+                base64EncodedString = Convert.ToBase64String(fileBytes);
+            }
+
+            return base64EncodedString;
+        }
+
         static public List<string> ParseSkillsFromHrXML(string xml)
         {
             List<string> rVal = new List<String>();

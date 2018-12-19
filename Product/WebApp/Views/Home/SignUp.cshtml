@@ -7,6 +7,9 @@
 <script src="~/js/selectize-handling.js"></script>
 <script>var url = '@Url.Action("GetStatesByCountry", "Home")'; var subscriberSkills = @Json.Serialize(Model.Skills);</script>
 
+<div class="overlay">
+    <div id="loading-img"></div>
+</div>
 <div class="modal fade" id="WorkHistoryModal" tabindex="-1" role="dialog" aria-labelledby="WorkHistoryModal" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">

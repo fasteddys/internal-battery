@@ -18,6 +18,8 @@ using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Text.Encodings.Web;
+using System.IO;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddy.Controllers
 {
@@ -247,26 +249,33 @@ namespace UpDiddy.Controllers
         }
 
 
-
+        [Authorize]
         [HttpPost]
-        public BasicResponseDto UploadResume(IFormFile file)
+        public IActionResult UploadResume(ResumeViewModel resumeViewModel)
         {
-            if (ModelState.IsValid && file != null)
+            BasicResponseDto basicResponseDto = null;
+
+            try
             {
-                return new BasicResponseDto
+                if (ModelState.IsValid)
                 {
-                    StatusCode = "200",
-                    Description = "OK"
-                };
+                    basicResponseDto = _Api.UploadResume(new ResumeDto()
+                    {
+                        SubscriberGuid = this.GetSubscriberGuid(),
+                        Base64EncodedResume = Utils.ToBase64EncodedString(resumeViewModel.Resume),
+                    });
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return new BasicResponseDto
-                {
-                    StatusCode = "400",
-                    Description = "Bad Request"
-                };
+                return Error(ex.Message);
             }
+
+            return Ok(basicResponseDto);
         }
 
         [HttpPost]

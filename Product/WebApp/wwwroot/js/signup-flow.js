@@ -15,7 +15,34 @@ class Education {
     }
 }
 
+$(document).ajaxStart(function () { 
+    timer = setTimeout(function () { $('.overlay').show(); }, 200);
+}).ajaxStop(function () {
+    clearTimeout(timer);
+    $('.overlay').hide();
+});
+
 $(document).ready(function () {
+    $('.overlay').hide();
+
+        var toastrOptions = {
+            "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": false,
+        "positionClass": "toast-top-full-width",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "3000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+
     $(".add-work-history").on("click", function () {
         //$('.work-history-log').append('<div class="form-row"><div class="form-group col-md-6" ><input type="text" class="form-control" placeholder="Job Title"></div><div class="form-group col-md-6"><input type="text" class="form-control" placeholder="Organization"></div></div>');
     });
@@ -81,7 +108,7 @@ $(document).ready(function () {
     $('#ResumeUploadForm').on('submit', function (e) {
         e.preventDefault();
         var formData = new FormData();
-        formData.append('file', $('#UploadedResume')[0].files[0]); // myFile is the input type="file" control
+        formData.append('Resume', $('#UploadedResume')[0].files[0]); // myFile is the input type="file" control
         var _url = $(this).attr('action');
         $.ajax({
             url: _url,
@@ -90,20 +117,22 @@ $(document).ready(function () {
             processData: false,  // tell jQuery not to process the data
             contentType: false,  // tell jQuery not to set contentType
             success: function (result) {
-                var code = parseInt(result.statusCode);
-                switch (code) {
-                    case 200:
+                switch (result.statusCode) {
+                    // update behavior based on revamped status codes
+                    case 'Processing':
                         $('#ResumeNextButton').removeClass('disabled');
                         $('#ResumeNextButton a').attr("href", "#SignupFlowCarousel");
                         $('.skip-resume').hide();
                         removeSkipFunctionalityOnResumeUpload();
+                        toastr.success('We are processing your resume now. The information we are able to extract will be displayed on your profile page.', 'Success!', toastrOptions);
                         break;
-                    case 400:
+                    default:
+                        toastr.warning('We were not able to process this file. Please select another file and try again. Alternatively, you can skip this and move to the next step.', 'Warning!', toastrOptions);
                         break;
                 }
             },
             error: function (jqXHR) {
-                alert("failure.");
+                toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions);
             },
             complete: function (jqXHR, status) {
             }
