@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Text.Encodings.Web;
 using System.IO;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddy.Controllers
 {
@@ -234,44 +235,31 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpPost]
-        public BasicResponseDto UploadResume(ResumeViewModel resumeViewModel)
+        public IActionResult UploadResume(ResumeViewModel resumeViewModel)
         {
+            BasicResponseDto basicResponseDto = null;
+
             try
             {
                 if (ModelState.IsValid)
                 {
-                    string base64String = null;
-                    // replace with helper method to do the encoding. look in dot net first but if one doesnt exist create it and put it in our library
-                    using (var stream = new MemoryStream())
-                    {
-                        resumeViewModel.Resume.CopyTo(stream);
-                        var fileBytes = stream.ToArray();
-                        base64String = Convert.ToBase64String(fileBytes);
-                    }
-                    ResumeDto resumeDto = new ResumeDto()
+                    basicResponseDto = _Api.UploadResume(new ResumeDto()
                     {
                         SubscriberGuid = this.GetSubscriberGuid(),
-                         Base64EncodedResume = base64String
-                    };
-
-                    // move this
-                    return new BasicResponseDto
-                    {
-                        StatusCode = "200",
-                        Description = "OK"
-                    };
+                        Base64EncodedResume = Utils.ToBase64EncodedString(resumeViewModel.Resume),
+                    });
                 }
                 else
                 {
-                    // handle invalid model state - what status code?
+                    return BadRequest();
                 }
             }
             catch (Exception ex)
             {
-
+                return Error(ex.Message);
             }
 
-            throw new NotImplementedException();
+            return Ok(basicResponseDto);
         }
 
         [HttpPost]

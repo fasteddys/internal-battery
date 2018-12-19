@@ -37,17 +37,20 @@ namespace UpDiddyApi.Controllers
         /// <returns></returns>
         [Authorize]
         [HttpPost]
-        [Route("api/[controller]/Upload")]
-        public async Task<IActionResult> Upload(ResumeDto resumeDto)
+        [Route("upload")]
+        public async Task<IActionResult> Upload([FromBody] ResumeDto resumeDto)
         {
-            string message = null;
-            int statusCode = StatusCodes.Status100Continue;
+            BasicResponseDto basicResponseDto = new BasicResponseDto()
+            {
+                StatusCode = "100",
+                Description = "Initialized"
+            };
 
             try
             {
                 if (resumeDto != null && resumeDto.SubscriberGuid != Guid.Empty && !string.IsNullOrWhiteSpace(resumeDto.Base64EncodedResume))
                 {
-                    
+
                     // todo: research and implement a better way to handle soft deletes then manual checks everywhere
                     Subscriber subscriber = _db.Subscriber
                         .Where(s => s.SubscriberGuid == resumeDto.SubscriberGuid && s.IsDeleted == 0)
@@ -65,28 +68,30 @@ namespace UpDiddyApi.Controllers
                         BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(resumeDto.SubscriberGuid));
 
                         // indicate that a background job is being processed
-                        statusCode = StatusCodes.Status102Processing;
-                        message = "Scheduled job to import profile data is being processed.";
+                        basicResponseDto.StatusCode = "Processing";
+                        basicResponseDto.Description = "Scheduled job to import profile data is being processed.";
                     }
                     else
                     {
-                        statusCode = StatusCodes.Status404NotFound;
-                        message = "Subscriber does not exist.";
+                        basicResponseDto.StatusCode = "NotFound";
+                        basicResponseDto.Description = "Subscriber does not exist.";
                     }
                 }
                 else
                 {
-                    statusCode = StatusCodes.Status400BadRequest;
-                    message = "The parameter supplied is invalid.";
+                    basicResponseDto.StatusCode = "BadRequest";
+                    basicResponseDto.Description = "The parameter supplied is invalid.";
                 }
             }
             catch (Exception ex)
             {
-                statusCode = StatusCodes.Status500InternalServerError;
+
+                basicResponseDto.StatusCode = "InternalServerError";
+                basicResponseDto.Description = ex.Message;
                 _syslog.Log(LogLevel.Error, $"ResumeController.Upload: Parameters subscriber= {(resumeDto == null ? string.Empty : resumeDto.SubscriberGuid.ToString())} resume= {(resumeDto == null ? string.Empty : resumeDto.Base64EncodedResume)} ");
             }
 
-            return StatusCode(statusCode, message);
+            return Ok(basicResponseDto);
         }
     }
 }

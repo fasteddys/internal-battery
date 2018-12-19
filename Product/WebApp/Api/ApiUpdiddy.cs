@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.AspNetCore.Mvc;
 
 namespace UpDiddy.Api
 {
@@ -295,11 +296,10 @@ namespace UpDiddy.Api
             return Post<BraintreeResponseDto>(BraintreePaymentDto, "enrollment/ProcessBraintreePayment", true);
         }
 
-        public BasicResponseDto ResumeUpload(Guid subscriberGuid, IFormFile resume)
+        public BasicResponseDto UploadResume(ResumeDto resumeDto)
         {
-            throw new NotImplementedException();//  return Post<BasicResponseDto>(resume, "resume/upload/subscriber/" + subscriberGuid, true);
+            return Post<BasicResponseDto>(resumeDto, "resume/upload", true);
         }
-
         #endregion
 
         #region Cache Helper Functions
