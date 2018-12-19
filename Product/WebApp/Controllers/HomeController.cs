@@ -18,6 +18,8 @@ using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Text.Encodings.Web;
+using System.IO;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddy.Controllers
 {
@@ -58,6 +60,27 @@ namespace UpDiddy.Controllers
         public IActionResult TermsOfService()
         {
             return View();
+        }
+
+        public IActionResult SignUp()
+        {
+            // GetSubscriber(false);
+            SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
+            {
+                Countries = _Api.GetCountries().Select(c => new SelectListItem()
+                {
+                    Text = c.DisplayName,
+                    Value = c.CountryGuid.ToString(),
+                }),
+                States = _Api.GetStatesByCountry(this.subscriber?.State?.Country?.CountryGuid).Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.StateGuid.ToString(),
+                    Selected = s.StateGuid == this.subscriber?.State?.StateGuid
+                }),
+                Skills = new List<SkillDto>()// _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value)
+            };
+            return View(signupFlowViewModel);
         }
 
         public IActionResult News()
@@ -221,6 +244,57 @@ namespace UpDiddy.Controllers
                 {
                     StatusCode = "400",
                     Description = validationErrors.ToString()
+                };
+            }
+        }
+
+
+        [Authorize]
+        [HttpPost]
+        public IActionResult UploadResume(ResumeViewModel resumeViewModel)
+        {
+            BasicResponseDto basicResponseDto = null;
+
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    basicResponseDto = _Api.UploadResume(new ResumeDto()
+                    {
+                        SubscriberGuid = this.GetSubscriberGuid(),
+                        Base64EncodedResume = Utils.ToBase64EncodedString(resumeViewModel.Resume),
+                    });
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Error(ex.Message);
+            }
+
+            return Ok(basicResponseDto);
+        }
+
+        [HttpPost]
+        public BasicResponseDto Signup(SignupFlowViewModel signupFlowViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                return new BasicResponseDto
+                {
+                    StatusCode = "200",
+                    Description = "OK"
+                };
+            }
+            else
+            {
+                return new BasicResponseDto
+                {
+                    StatusCode = "400",
+                    Description = "Bad Request"
                 };
             }
         }

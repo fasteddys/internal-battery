@@ -1,0 +1,335 @@
+﻿@import '_variables';
+@import '_mixins';
+
+// Base Styles
+@media (min-width: 0px) {
+    .overlay {
+        background: #fff;
+        position: absolute;
+        top: 50px;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        opacity: 0.5;
+        height: 100%;
+        z-index: 999;
+    }
+
+    #loading-img {
+        background: url('../images/spinner.gif');
+        height: 100%;
+        background-repeat: no-repeat;
+        background-position: top;
+        z-index: 1000;
+    }
+    .modal {
+        .validation {
+            color: red;
+        }
+
+        input {
+            border: 0;
+            border-bottom: 1px solid #03264A;
+            border-radius: 0;
+
+            &:focus {
+                outline: none;
+                border: 0;
+                border-bottom: 1px solid #03264A;
+                box-shadow: none;
+            }
+        }
+
+        textarea {
+            border-color: #03264A;
+
+            &:focus {
+                border-color: #03264A;
+                outline: 0;
+                box-shadow: none;
+            }
+        }
+    }
+    .signup-flow-container {
+
+
+        .signup-flow-row {
+            overflow: hidden;
+
+
+
+
+            .signup-flow-column {
+                position: relative;
+                text-align: center;
+
+                .carousel {
+                    padding-top: 15rem;
+
+                    .carousel-item {
+                        min-height: 170px;
+
+                        .first-name-container,
+                        .last-name-container,
+                        .phone-number-container,
+                        .address-container {
+                            input {
+                                border: 0;
+                                border-bottom: 2px solid $color-secondary-light;
+                                padding: .5rem;
+                                text-align: center;
+                                font-size: 2rem;
+                                color: $color-secondary;
+                                border-radius: 0;
+
+                                &:focus {
+                                    outline: 0;
+                                    border: 0;
+                                    border-bottom: 2px solid $color-secondary;
+                                }
+                            }
+                        }
+
+                        .address-format-container {
+                            margin-top: 2rem;
+                            max-width: 40rem;
+                            margin: 0 auto;
+
+                            .row {
+                                margin-top: 1rem;
+
+                                input {
+                                    height: initial;
+
+                                    &:focus {
+                                        outline: 0;
+                                        box-shadow: none;
+                                    }
+                                }
+
+                                select {
+                                    border: 2px solid $color-secondary;
+                                    height: 3rem;
+                                    color: $color-secondary;
+                                    font-size: 1.3rem;
+
+                                    &:focus {
+                                        border: 2px solid $color-secondary;
+                                        outline: none;
+                                        box-shadow: none;
+                                    }
+                                }
+                            }
+                        }
+
+                        .skills-container {
+                            .selectize-input {
+                                width: 25rem;
+                                margin-top: 3rem;
+                                border: 2px solid $color-secondary;
+
+                                > div {
+                                    background-color: $color-secondary;
+                                    background-image: none;
+                                    border: 1px solid $color-secondary;
+                                    padding: .5rem 1rem;
+                                    font-size: 1rem;
+                                }
+                            }
+                        }
+
+                        .phone-number-input-container {
+                            font-size: 2.5rem;
+
+                            input {
+                                width: 80px;
+
+                                &:focus {
+                                }
+
+                                &:last-child {
+                                    width: 110px;
+                                }
+                            }
+                        }
+
+                        .resume-intro-container {
+
+                            input[type="file"] {
+                                display: none;
+                            }
+
+                            #ChangeResumeLabel {
+                                display: none;
+                            }
+
+                            #RemoveResume {
+                                @include button-with-box-shadow;
+                                display: none;
+                            }
+
+                            #ResumeUploadDisclaimer {
+                                padding: 1rem;
+                                border-radius: 1rem;
+                                display: none;
+                                margin-top: 6rem;
+                                border: 2px solid $color-secondary;
+                            }
+
+                            .custom-file-upload {
+                                margin-top: 1rem;
+                                @include button-with-box-shadow;
+                            }
+
+                            .btn-resume-submit {
+                                border: 0;
+                                @include button-with-box-shadow;
+                                display: none;
+
+                                &:focus {
+                                    outline: none;
+                                }
+                            }
+                        }
+
+                        #SkipResumeSlide {
+                            &.disabled {
+                                cursor: default;
+
+                                a {
+                                    color: $color-tertiary-gray;
+                                }
+                            }
+                        }
+
+                        .work-history-container {
+                            .work-history-log {
+                                margin-top: 2rem;
+                                text-align: left;
+
+                                > div {
+                                    > div {
+                                        margin-bottom: 1rem;
+                                    }
+                                }
+                            }
+
+                            .add-work-history {
+                                @include button-with-box-shadow;
+                            }
+                        }
+
+                        .education-history-container {
+                            .education-history-log {
+                                text-align: left;
+                                margin-top: 2rem;
+                            }
+
+                            .add-education-history {
+                                @include button-with-box-shadow;
+                            }
+                        }
+
+                        > .container {
+                            margin-top: 15rem;
+                        }
+                    }
+                }
+
+                .previous-container {
+                    position: absolute;
+                    bottom: .5rem;
+                    left: 1rem;
+
+                    > div {
+                        display: inline-block;
+                        cursor: pointer;
+
+                        a {
+                            color: $color-white;
+                        }
+                    }
+
+                    .flow-prev-button {
+                        @include button-with-box-shadow;
+                        padding: 6px 0;
+
+                        a {
+                            padding: 7px 12px;
+                        }
+                    }
+                }
+
+                .skip-next-container {
+                    position: absolute;
+                    bottom: .5rem;
+                    right: 1rem;
+
+                    a {
+                        color: $color-white;
+                    }
+
+                    > div {
+                        display: inline-block;
+                        cursor: pointer;
+                    }
+
+                    .flow-next-button {
+                        @include button-with-box-shadow;
+                        padding: 6px 0;
+                        margin-left: 1rem;
+
+                        a {
+                            padding: 7px 12px;
+                        }
+                    }
+
+                    .btn-signup-submit {
+                        @include button-with-box-shadow;
+                        border: 0;
+
+                        &:focus {
+                            outline: none;
+                        }
+                    }
+
+                    .skip-container {
+                        a {
+                            color: $color-secondary;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+    .signup-flow-container {
+    }
+}
+
+// Small Styles
+@media (min-width: 576px) {
+    .signup-flow-container {
+    }
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+    .signup-flow-container {
+    }
+}
+
+// Large Styles
+@media (min-width: 992px) {
+    .signup-flow-container {
+    }
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+    .signup-flow-container {
+    }
+}

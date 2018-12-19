@@ -1,6 +1,7 @@
 using System;
 using UpDiddyLib.Dto;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 
 namespace UpDiddy.Api
 {
@@ -25,7 +26,7 @@ namespace UpDiddy.Api
         BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber);
         Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto);
         Guid WriteToEnrollmentLog(EnrollmentLogDto enrollmentLogDto);
-        SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail);
+        SubscriberDto CreateSubscriber(Guid SubscriberGuid, string SubscriberEmail);
         WozCourseProgressDto UpdateStudentCourseProgress(Guid SubscriberGuid, bool FutureSchedule);
         BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto);
         IList<CountryDto> _GetCountries();
@@ -34,5 +35,6 @@ namespace UpDiddy.Api
         BasicResponseDto SyncLinkedInAccount(Guid SubscriberGuid, string linkedInCode, string returnUrl);
         IList<SkillDto> GetSkills(string userQuery);
         IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid);
+        BasicResponseDto UploadResume(ResumeDto resumeDto);
     }
 }

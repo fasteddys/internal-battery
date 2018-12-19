@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.AspNetCore.Mvc;
 
 namespace UpDiddy.Api
 {
@@ -31,7 +32,8 @@ namespace UpDiddy.Api
         public IDistributedCache _cache { get; set; }
 
         #region Constructor
-        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache) {
+        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache)
+        {
 
             AzureOptions = azureAdB2COptions.Value;
             _contextAccessor = contextAccessor;
@@ -40,7 +42,7 @@ namespace UpDiddy.Api
             _ApiBaseUri = _configuration["Api:ApiUrl"];
             _HttpClientFactory = httpClientFactory;
             _cache = cache;
- 
+
         }
         #endregion
 
@@ -88,7 +90,7 @@ namespace UpDiddy.Api
                 rval = _TopicBySlug(TopicSlug);
                 SetCachedValue<TopicDto>(cacheKey, rval);
             }
-            return rval;            
+            return rval;
         }
 
         public IList<CourseDto> getCousesByTopicSlug(string TopicSlug)
@@ -137,7 +139,7 @@ namespace UpDiddy.Api
             }
             return rval;
         }
- 
+
         public WozTermsOfServiceDto GetWozTermsOfService()
         {
             string cacheKey = $"GetWozTermsOfService";
@@ -152,7 +154,7 @@ namespace UpDiddy.Api
             }
             return rval;
         }
-        
+
 
         public WozCourseProgressDto GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)
         {
@@ -168,7 +170,7 @@ namespace UpDiddy.Api
             }
             return rval;
         }
-        
+
         public IList<CountryDto> GetCountries()
         {
             string cacheKey = $"GetCountries";
@@ -265,7 +267,7 @@ namespace UpDiddy.Api
 
         public BasicResponseDto SyncLinkedInAccount(Guid SubscriberGuid, string linkedInCode, string returnUrl)
         {
-            return Get<BasicResponseDto>($"linkedin/SyncProfile/{SubscriberGuid}/{linkedInCode}?returnUrl={returnUrl}",true);
+            return Get<BasicResponseDto>($"linkedin/SyncProfile/{SubscriberGuid}/{linkedInCode}?returnUrl={returnUrl}", true);
         }
 
         public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto)
@@ -278,7 +280,7 @@ namespace UpDiddy.Api
             return Post<Guid>(enrollmentLogDto, "enrollment/EnrollmentLog", true);
         }
 
-        public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
+        public SubscriberDto CreateSubscriber(Guid SubscriberGuid, string SubscriberEmail)
         {
             return Post<SubscriberDto>("profile/CreateSubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail), true);
         }
@@ -294,6 +296,10 @@ namespace UpDiddy.Api
             return Post<BraintreeResponseDto>(BraintreePaymentDto, "enrollment/ProcessBraintreePayment", true);
         }
 
+        public BasicResponseDto UploadResume(ResumeDto resumeDto)
+        {
+            return Post<BasicResponseDto>(resumeDto, "resume/upload", true);
+        }
         #endregion
 
         #region Cache Helper Functions
@@ -348,7 +354,7 @@ namespace UpDiddy.Api
         {
             return Get<WozTermsOfServiceDto>("woz/TermsOfService/", false);
         }
-  
+
         private WozCourseProgressDto _GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)
         {
             return Get<WozCourseProgressDto>("woz/CourseStatus/" + SubscriberGuid + "/" + EnrollmentGuid, false);
@@ -381,19 +387,19 @@ namespace UpDiddy.Api
                 return false;
             }
         }
-        
-        private T GetCachedValue <T>(string CacheKey)
+
+        private T GetCachedValue<T>(string CacheKey)
         {
             try
             {
                 string existingValue = _cache.GetString(CacheKey);
-                if ( string.IsNullOrEmpty(existingValue) )
-                    return(T)Convert.ChangeType(null, typeof(T));
+                if (string.IsNullOrEmpty(existingValue))
+                    return (T)Convert.ChangeType(null, typeof(T));
                 else
                 {
                     T rval = JsonConvert.DeserializeObject<T>(existingValue);
                     return rval;
-                }                
+                }
             }
             catch (Exception ex)
             {
@@ -457,7 +463,7 @@ namespace UpDiddy.Api
             Task<string> Response = _GetAsync(ApiAction, Authorized);
             return Response.Result;
         }
- 
+
         public T Post<T>(BaseDto Body, string ApiAction, bool Authorized = false)
         {
             string jsonToSend = "{}";
@@ -486,7 +492,7 @@ namespace UpDiddy.Api
         {
             string responseString = "";
             try
-            {                
+            {
                 HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
                 string ApiUrl = _ApiBaseUri + ApiAction;
 
@@ -610,15 +616,15 @@ namespace UpDiddy.Api
 
         private async Task<string> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
         {
-                string ApiUrl = _ApiBaseUri + ApiAction;
-                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
-                var request = PostRequest(ApiAction, JsonToSend);
-                // Add token to the Authorization header and make the request 
-                if (Authorized)
-                    await AddBearerTokenAsync(request);
-                var response = await client.SendAsync(request);
-                string responseString = await response.Content.ReadAsStringAsync();
-                return responseString;
+            string ApiUrl = _ApiBaseUri + ApiAction;
+            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
+            var request = PostRequest(ApiAction, JsonToSend);
+            // Add token to the Authorization header and make the request 
+            if (Authorized)
+                await AddBearerTokenAsync(request);
+            var response = await client.SendAsync(request);
+            string responseString = await response.Content.ReadAsStringAsync();
+            return responseString;
         }
 
         private HttpRequestMessage PostRequest(string ApiAction, string Content)
@@ -663,6 +669,6 @@ namespace UpDiddy.Api
         #endregion
     }
 }
- 
+
 
 
