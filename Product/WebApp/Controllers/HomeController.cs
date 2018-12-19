@@ -62,7 +62,23 @@ namespace UpDiddy.Controllers
 
         public IActionResult SignUp()
         {
-            return View();
+            // GetSubscriber(false);
+            SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
+            {
+                Countries = _Api.GetCountries().Select(c => new SelectListItem()
+                {
+                    Text = c.DisplayName,
+                    Value = c.CountryGuid.ToString(),
+                }),
+                States = _Api.GetStatesByCountry(this.subscriber?.State?.Country?.CountryGuid).Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.StateGuid.ToString(),
+                    Selected = s.StateGuid == this.subscriber?.State?.StateGuid
+                }),
+                Skills = new List<SkillDto>()// _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value)
+            };
+            return View(signupFlowViewModel);
         }
 
         public IActionResult News()

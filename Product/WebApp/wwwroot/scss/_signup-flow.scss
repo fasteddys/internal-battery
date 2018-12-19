@@ -50,18 +50,86 @@
                     .carousel-item {
                         min-height: 170px;
 
-                        .first-name-container {
+                        .first-name-container,
+                        .last-name-container,
+                        .phone-number-container,
+                        .address-container {
                             input {
                                 border: 0;
                                 border-bottom: 2px solid $color-secondary-light;
                                 padding: .5rem;
                                 text-align: center;
-                                font-size: 2.5rem;
+                                font-size: 2rem;
                                 color: $color-secondary;
-                                &:focus{
+                                border-radius: 0;
+
+                                &:focus {
                                     outline: 0;
                                     border: 0;
                                     border-bottom: 2px solid $color-secondary;
+                                }
+                            }
+                        }
+
+                        .address-format-container {
+                            margin-top: 2rem;
+                            max-width: 40rem;
+                            margin: 0 auto;
+
+                            .row {
+                                margin-top: 1rem;
+
+                                input {
+                                    height: initial;
+
+                                    &:focus {
+                                        outline: 0;
+                                        box-shadow: none;
+                                    }
+                                }
+
+                                select {
+                                    border: 2px solid $color-secondary;
+                                    height: 3rem;
+                                    color: $color-secondary;
+                                    font-size: 1.3rem;
+
+                                    &:focus {
+                                        border: 2px solid $color-secondary;
+                                        outline: none;
+                                        box-shadow: none;
+                                    }
+                                }
+                            }
+                        }
+
+                        .skills-container {
+                            .selectize-input {
+                                width: 25rem;
+                                margin-top: 3rem;
+                                border: 2px solid $color-secondary;
+
+                                > div {
+                                    background-color: $color-secondary;
+                                    background-image: none;
+                                    border: 1px solid $color-secondary;
+                                    padding: .5rem 1rem;
+                                    font-size: 1rem;
+                                }
+                            }
+                        }
+
+                        .phone-number-input-container {
+                            font-size: 2.5rem;
+
+                            input {
+                                width: 80px;
+
+                                &:focus {
+                                }
+
+                                &:last-child {
+                                    width: 110px;
                                 }
                             }
                         }
@@ -70,6 +138,23 @@
 
                             input[type="file"] {
                                 display: none;
+                            }
+
+                            #ChangeResumeLabel {
+                                display: none;
+                            }
+
+                            #RemoveResume {
+                                @include button-with-box-shadow;
+                                display: none;
+                            }
+
+                            #ResumeUploadDisclaimer {
+                                padding: 1rem;
+                                border-radius: 1rem;
+                                display: none;
+                                margin-top: 6rem;
+                                border: 2px solid $color-secondary;
                             }
 
                             .custom-file-upload {
@@ -84,6 +169,16 @@
 
                                 &:focus {
                                     outline: none;
+                                }
+                            }
+                        }
+
+                        #SkipResumeSlide {
+                            &.disabled {
+                                cursor: default;
+
+                                a {
+                                    color: $color-tertiary-gray;
                                 }
                             }
                         }
@@ -138,6 +233,11 @@
 
                     .flow-prev-button {
                         @include button-with-box-shadow;
+                        padding: 6px 0;
+
+                        a {
+                            padding: 7px 12px;
+                        }
                     }
                 }
 
@@ -157,7 +257,12 @@
 
                     .flow-next-button {
                         @include button-with-box-shadow;
+                        padding: 6px 0;
                         margin-left: 1rem;
+
+                        a {
+                            padding: 7px 12px;
+                        }
                     }
 
                     .btn-signup-submit {
@@ -166,6 +271,12 @@
 
                         &:focus {
                             outline: none;
+                        }
+                    }
+
+                    .skip-container {
+                        a {
+                            color: $color-secondary;
                         }
                     }
                 }

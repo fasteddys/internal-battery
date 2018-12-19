@@ -64,24 +64,25 @@ $(document).ready(function () {
 
     });
 
+
     $('#UploadedResume').change(function () {
         var file = $(this)[0].files[0];
         if (file) {
             $('#UploadedResumeText').html("<strong>You've attached:</strong> " + file.name);
             $('.appear-on-resume-attach').show();
-            $('#SignupFlowNextButton').addClass('disabled');
-            $('#SignupFlowNextButton a').removeAttr("href");
+            $('#ResumeNextButton').addClass('disabled');
+            $('#ResumeNextButton a').removeAttr("href");
+            $('#ResumeUploadDisclaimer').css("display", "inline-block");
         }
-        $('#UploadedResumeLabel').html('<i class="fas fa-exchange-alt"></i>&nbsp;&nbsp;Change');
+        $('#UploadedResumeLabel').hide();
+        $('#ChangeResumeLabel').show();
     });
 
     $('#ResumeUploadForm').on('submit', function (e) {
         e.preventDefault();
         var formData = new FormData();
         formData.append('file', $('#UploadedResume')[0].files[0]); // myFile is the input type="file" control
-
         var _url = $(this).attr('action');
-
         $.ajax({
             url: _url,
             type: 'POST',
@@ -92,8 +93,10 @@ $(document).ready(function () {
                 var code = parseInt(result.statusCode);
                 switch (code) {
                     case 200:
-                        $('#SignupFlowNextButton').removeClass('disabled');
-                        $('#SignupFlowNextButton a').attr("href", "#SignupFlowCarousel");
+                        $('#ResumeNextButton').removeClass('disabled');
+                        $('#ResumeNextButton a').attr("href", "#SignupFlowCarousel");
+                        $('.skip-resume').hide();
+                        removeSkipFunctionalityOnResumeUpload();
                         break;
                     case 400:
                         break;
@@ -107,6 +110,12 @@ $(document).ready(function () {
         });
     });
 });
+
+var goToNextPhoneNumberInput = function(thisInputField, nextInputField){
+    if ($('#' + thisInputField).val().length === 3) {
+        $('#' + nextInputField).focus();
+    }
+};
 
 var clearWorkHistoryModal = function () {
     $('#WorkHistoryModal').find("input").val("");
@@ -130,4 +139,20 @@ var objectSize = function (obj) {
         if (obj.hasOwnProperty(key)) size++;
     }
     return size;
+};
+
+var removeSkipFunctionalityOnResumeUpload = function () {
+    $('#SkipResumeSlide').addClass('disabled');
+    $('#SkipResumeSlide a').removeAttr("href");
+    $('#SkipResumeSlide a').removeAttr("onclick");
+};
+
+var clearInputForResumeSlide = function () {
+    $('#UploadedResume').val("");
+    $('.appear-on-resume-attach').hide();
+    $('#UploadedResumeLabel').show();
+    $('#ChangeResumeLabel').hide();
+    $('#ResumeNextButton').addClass('disabled');
+    $('#ResumeNextButton a').removeAttr("href");
+    $('#ResumeUploadDisclaimer').css("display", "none");
 };
