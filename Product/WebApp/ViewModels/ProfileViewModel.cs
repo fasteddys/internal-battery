@@ -11,7 +11,9 @@ namespace UpDiddy.ViewModels
 {
     public class ProfileViewModel : BaseViewModel
     {
-        public List<EnrollmentDto> Enrollments { get; set; }
+        public IList<SkillDto> Skills { get; set; }
+        public string SelectedSkills { get; set; }
+        public IList<EnrollmentDto> Enrollments { get; set; }
         public IEnumerable<SelectListItem> States { get; set; }
         public IEnumerable<SelectListItem> Countries { get; set; }
         public Guid? SelectedState { get; set; }
@@ -68,6 +70,7 @@ namespace UpDiddy.ViewModels
         [RegularExpression(@"^http(s)?://([\w]+.)?github.com/[A-z0-9_]+/?$", ErrorMessage = "The GitHub profile URL is not valid.")]
         public string GithubUrl { get; set; }
         public Guid? SubscriberGuid { get; set; }
+
         public Boolean IsAnyProfileInformationPopulated
         {
             get

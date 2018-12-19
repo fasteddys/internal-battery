@@ -213,39 +213,20 @@ namespace UpDiddy.Api
             return rval;
         }
 
-
-
-        public CountryDto GetSubscriberCountry(int StateId)
+        public IList<SkillDto> GetSkills(string userQuery)
         {
-            string cacheKey = $"GetSubscriberCountry{StateId}";
-            CountryDto rval = GetCachedValue<CountryDto>(cacheKey);
+            string cacheKey = $"GetSkills{userQuery}";
+            IList<SkillDto> rval = GetCachedValue<IList<SkillDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
-                rval = _GetSubscriberCountry(StateId);
-                SetCachedValue<CountryDto>(cacheKey, rval);
-            }
-            return rval;
-
-        }
-
-        public StateDto GetSubscriberState(int StateId)
-        {
-            string cacheKey = $"GetSubscriberState{StateId}";
-            StateDto rval = GetCachedValue<StateDto>(cacheKey);
-
-            if (rval != null)
-                return rval;
-            else
-            {
-                rval = _GetSubscriberState(StateId);
-                SetCachedValue<StateDto>(cacheKey, rval);
+                rval = _GetSkills(userQuery);
+                SetCachedValue<IList<SkillDto>>(cacheKey, rval);
             }
             return rval;
         }
-
 
         #endregion
 
@@ -253,7 +234,7 @@ namespace UpDiddy.Api
 
         public SubscriberDto Subscriber(Guid SubscriberGuid)
         {
-            return Get<SubscriberDto>("subscriber/" + SubscriberGuid, true);
+            return Get<SubscriberDto>("profile/" + SubscriberGuid, true);
         }
 
         public PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid, string subscriberGuid)
@@ -299,7 +280,7 @@ namespace UpDiddy.Api
 
         public SubscriberDto CreateSubscriber(string SubscriberGuid, string SubscriberEmail)
         {
-            return Post<SubscriberDto>("subscriber/CreateSubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail), true);
+            return Post<SubscriberDto>("profile/CreateSubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail), true);
         }
 
         public WozCourseProgressDto UpdateStudentCourseProgress(Guid SubscriberGuid, bool FutureSchedule)
@@ -326,6 +307,7 @@ namespace UpDiddy.Api
         {
             return Get<TopicDto>($"topic/{TopicId}", false);
         }
+
         private TopicDto _TopicBySlug(string TopicSlug)
         {
             return Get<TopicDto>("topic/slug/" + TopicSlug, false);
@@ -372,18 +354,15 @@ namespace UpDiddy.Api
             return Get<WozCourseProgressDto>("woz/CourseStatus/" + SubscriberGuid + "/" + EnrollmentGuid, false);
         }
 
-
-        public CountryDto _GetSubscriberCountry(int StateId)
+        private IList<SkillDto> _GetSkills(string userQuery)
         {
-            return Get<CountryDto>("subscriber/CountryFromState/" + StateId, false);
+            return Get<IList<SkillDto>>("profile/GetSkills/" + userQuery, true);
         }
 
-        public StateDto _GetSubscriberState(int StateId)
+        public IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid)
         {
-            return Get<StateDto>("subscriber/State/" + StateId, false);
+            return Get<IList<SkillDto>>("profile/GetSkillsBySubscriber/" + subscriberGuid, true);
         }
-
-
         #endregion
 
         #region Private Helper Functions

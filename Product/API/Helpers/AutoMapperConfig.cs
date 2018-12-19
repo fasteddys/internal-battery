@@ -30,7 +30,8 @@ namespace UpDiddyApi.Helpers
             CreateMap<Country, CountryDto>().ReverseMap();       
             CreateMap<EnrollmentLog, EnrollmentLogDto>().ReverseMap();
             CreateMap<CourseVariantType, CourseVariantTypeDto>().ReverseMap();
-            
+            CreateMap<Skill, SkillDto>().ReverseMap();
+
             // mappings that ignore properties in the Dto that don't exist in the model object
             CreateMap<PromoCode, PromoCodeDto>()
                 .ForMember(x => x.IsValid, opt => opt.Ignore())
