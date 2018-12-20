@@ -38,7 +38,7 @@ namespace API.Tests
         [Fact]
         public void BadXML()
         {
-
+            bool rVal = false;
             var assembly = Assembly.GetExecutingAssembly();
             var resourceName = "API.Tests.TestFiles.example-hrxml_bad_xml.xml";
             string sampleXML = string.Empty;
@@ -48,12 +48,16 @@ namespace API.Tests
                 sampleXML = reader.ReadToEnd();
             }
 
-            List<string> skills = Utils.ParseSkillsFromHrXML(sampleXML);
-
-            if (skills.Count == 0)
-                Assert.True(true);
-            else
-                Assert.True(false);
+            try
+            {
+                List<string> skills = Utils.ParseSkillsFromHrXML(sampleXML);
+            }
+            catch
+            {
+                rVal = true;
+            }   
+            
+            Assert.True(rVal);     
         }
 
 

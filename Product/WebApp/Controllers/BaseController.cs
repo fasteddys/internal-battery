@@ -22,20 +22,22 @@ namespace UpDiddy.Controllers
             this._Api = api;
         }
 
+        public Guid GetSubscriberGuid()
+        {
+            Guid subscriberGuid;
+            var objectId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            if (Guid.TryParse(objectId, out subscriberGuid))
+                return subscriberGuid;
+            else
+                return Guid.Empty;
+        }
+
         public void GetSubscriber(bool HardRefresh)
         {
  
             if (User.Identity.IsAuthenticated)
             {
-                Claim emailClaim = User.Claims.Where(c => c.Type == "emails").FirstOrDefault();
-                string email = string.Empty;
-                if (emailClaim != null)
-                    email = emailClaim.Value;
-                else
-                    throw new Exception("Unable to locate email claim");
-
                 // Try to get the subscriber from session 
-
                 string SubscriberJson = "";
                 if(!HardRefresh)
                     SubscriberJson = HttpContext.Session.GetString(Constants.SubsriberSessionKey);   

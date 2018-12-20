@@ -1,6 +1,7 @@
 using System;
 using UpDiddyLib.Dto;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 
 namespace UpDiddy.Api
 {
@@ -31,5 +32,6 @@ namespace UpDiddy.Api
         BasicResponseDto SyncLinkedInAccount(string linkedInCode, string returnUrl);
         IList<SkillDto> GetSkills(string userQuery);
         IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid);
+        BasicResponseDto UploadResume(ResumeDto resumeDto);
     }
 }

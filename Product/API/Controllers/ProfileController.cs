@@ -109,13 +109,14 @@ namespace UpDiddyApi.Controllers
 
             DataTable table = new DataTable();
             table.Columns.Add("Guid", typeof(Guid));
-            if(Subscriber.Skills != null)
+            if (Subscriber.Skills != null)
             {
                 foreach (var skill in Subscriber.Skills)
                 {
                     table.Rows.Add(skill.SkillGuid);
                 }
             }
+
             var skillGuids = new SqlParameter("@SkillGuids", table);
             skillGuids.SqlDbType = SqlDbType.Structured;
             skillGuids.TypeName = "dbo.GuidList";
