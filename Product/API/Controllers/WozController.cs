@@ -15,12 +15,14 @@ using Hangfire;
 using UpDiddy.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddyApi.Controllers
 {
-    // TODO Use Authorize 
+    // TODO Use Authorize
+    // todo: should this be a service? vs a controller?
     // [Authorize]
     public class WozController : Controller
     {
@@ -44,18 +46,19 @@ namespace UpDiddyApi.Controllers
             _mapper = mapper;
             _configuration = configuration;
             _queueConnection = _configuration["CareerCircleQueueConnection"];
-            //_queue = new CCQueue("ccmessagequeue", _queueConnection);      
             _apiBaseUri = _configuration["Woz:ApiUrl"];
-            _accessToken = _configuration["Woz:AccessToken"];            
+            _accessToken = _configuration["Woz:AccessToken"];
             _log = new WozTransactionLog();
             _syslog = syslog;
             _httpClientFactory = httpClientFactory;
         }
         #endregion
         
-        #region Courses 
+        #region Courses
+        // todo: deprecate or refactor
         // GET: api/<controller>
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Get()
         {
             HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
@@ -66,82 +69,12 @@ namespace UpDiddyApi.Controllers
             return Ok(ResponseJson);
         }
         
-        // TODO Deprecate 
-        [HttpGet]
-        // TODO Authorize [Authorize]
-        // TODO Cache to every 10 minutes 
-        [Route("api/[controller]/CourseStatus/{SubscriberGuid}/{EnrollmentGuid}")]
-        public async Task<IActionResult> CourseStatus(string SubscriberGuid, string EnrollmentGuid)
-        {
-
-            // Get the Enrollment Object 
-            Enrollment Enrollment = _db.Enrollment
-                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
-                 .FirstOrDefault();
-
-            if (Enrollment == null)
-                return NotFound();
-
-            // Get the woz course enrollment 
-            WozCourseEnrollment WozEnrollment = _db.WozCourseEnrollment
-                 .Where(t => t.IsDeleted == 0 && t.EnrollmentGuid.ToString() == EnrollmentGuid)
-                 .FirstOrDefault();
-
-            if (WozEnrollment == null)
-                return NotFound();
-
-
-            // Get the woz course enrollment 
-            Subscriber CourseSubscriber = _db.Subscriber
-                 .Where(t => t.IsDeleted == 0 && t.SubscriberGuid.ToString() == SubscriberGuid)
-                 .FirstOrDefault();
-
-            if (CourseSubscriber == null)
-                return NotFound();
-
-            if (Enrollment.SubscriberId != CourseSubscriber.SubscriberId)
-                return Unauthorized();
-
-            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"sections/{WozEnrollment.SectionId}/enrollments/{WozEnrollment.WozEnrollmentId}");
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
-            HttpResponseMessage response = await client.SendAsync(request);
-            var ResponseJson = await response.Content.ReadAsStringAsync();
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                var WozO = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
-                string LetterGrade = WozO.progress.letterGrade;
-                string PercentageGrade = WozO.progress.percentageGrade;
-                string ActivitiesCompleted = WozO.progress.activitiesCompleted;
-                string ActivitiesTotal = WozO.progress.activitiesTotal;
-                int _StatusCode = (int)response.StatusCode;
-                WozCourseProgressDto CourseProgress = new WozCourseProgressDto()
-                {
-                    LetterGrade = LetterGrade,
-                    PercentageGrade = int.Parse(PercentageGrade),
-                    ActivitiesCompleted = int.Parse(ActivitiesCompleted),
-                    ActivitiesTotal = int.Parse(ActivitiesTotal),
-                    StatusCode = _StatusCode
-                };
-                return Ok(CourseProgress);
-            }
-            else
-            {
-                int _StatusCode = (int)response.StatusCode;
-                WozCourseProgressDto wcp = new WozCourseProgressDto
-                {
-                    StatusCode = _StatusCode
-                };
-                return Ok(wcp);
-            }
-        }
-
- 
         [HttpPut]
         [Authorize]
-        [Route("api/[controller]/UpdateStudentCourseStatus/{SubscriberGuid}/{FutureSchedule}")]
-        public IActionResult UpdateStudentCourseStatus(string subscriberGuid, bool futureSchedule)
+        [Route("api/[controller]/UpdateStudentCourseStatus/{FutureSchedule}")]
+        public IActionResult UpdateStudentCourseStatus(bool futureSchedule)
         {
+            string subscriberGuid = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             var NumEnrollments = _db.Enrollment
                  .Include(s => s.Subscriber)
@@ -168,15 +101,12 @@ namespace UpDiddyApi.Controllers
         #region Students
 
 
-
+        // todo: refactor/deprecate
         [HttpGet]
-        // TODO Authorize [Authorize]
+        [Authorize]
         [Route("api/[controller]/StudentInfo/{ExeterId}")]
         public async Task<IActionResult> StudentInfo(int ExeterId )
         {
-
-
-
             HttpClient client = _httpClientFactory.CreateClient(Constants.HttpGetClientName);
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + $"users/{ExeterId}");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
@@ -232,7 +162,7 @@ namespace UpDiddyApi.Controllers
         #endregion
 
         #region Enrollments
-
+        //todo: refactor/deprecate - when refactoring we should check subscriber guid with new pattern
         [HttpPut]
         [Authorize]
         [Route("api/[controller]/CancelEnrollment/{EnrollmentGuid}")]
@@ -404,7 +334,7 @@ namespace UpDiddyApi.Controllers
         }
 
 
-            private HttpClient WozPutClient()
+        private HttpClient WozPutClient()
         {
             HttpClient client = _httpClientFactory.CreateClient(Constants.HttpPutClientName);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);

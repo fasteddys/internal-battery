@@ -17,6 +17,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace UpDiddyApi.Controllers
 {
@@ -35,7 +36,7 @@ namespace UpDiddyApi.Controllers
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ISysEmail _sysemail;
         private readonly IDistributedCache _distributedCache;
- 
+
 
 
         public CourseController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, ILogger<CourseController> syslog, IDistributedCache distributedCache)
@@ -49,7 +50,7 @@ namespace UpDiddyApi.Controllers
             _wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
             _sysemail = sysemail;
             _distributedCache = distributedCache;
-            
+
         }
 
         // GET: api/courses
@@ -68,7 +69,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/{TopicSlug}")]
+        [Route("api/[controller]/topic/{TopicSlug}")]
         public IActionResult Get(string TopicSlug)
         {
             IList<TopicDto> matchingTopic = _db.Topic
@@ -90,29 +91,6 @@ namespace UpDiddyApi.Controllers
 
             return Ok(rval);
         }
-
-        // Post: api/course/vendor/coursecode
-        // TODO make Authorized 
-        // [Authorize]
-        // TODO make post 
-        [HttpGet]
-        [Route("api/[controller]/PurchaseCourse/{VendorCode}/{CourseCode}")]
-        public IActionResult PurchaseCourse(string VendorCode, string CourseCode)
-        {
-            // 1) Create Enrollment record
-            // 2) Queue Purchase Course Message 
-            var Msg = new EnrollmentMessage
-            {
-                CourseCode = CourseCode,
-                VendorGuid = VendorCode,
-                Nonce = 1030304343.00
-            };
-            //_queue.EnQueue<EnrollmentMessage>(Msg);
-
-            return Ok(CourseCode);
-        }
-
-
 
         [HttpGet]
         [Route("api/[controller]/slug/{CourseSlug}")]
@@ -156,7 +134,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/GetCourseByGuid/{courseGuid}")]
+        [Route("api/[controller]/{courseGuid}")]
         public IActionResult GetCourseByGuid(Guid courseGuid)
         {
             Course course = _db.Course
@@ -170,7 +148,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/GetCourseVariant/{courseVariantGuid}")]
+        [Route("api/[controller]/course-variant/{courseVariantGuid}")]
         public IActionResult GetCourseVariant(Guid courseVariantGuid)
         {
             CourseVariant courseVariant = _db.CourseVariant
@@ -185,7 +163,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/CourseId/{CourseId}")]
+        [Route("api/[controller]/id/{CourseId}")]
         public IActionResult GetCourseById(int CourseId)
         {
 
@@ -197,19 +175,5 @@ namespace UpDiddyApi.Controllers
                 return NotFound();
             return Ok(_mapper.Map<CourseDto>(course));
         }
-
-        [Authorize]
-        [HttpGet]
-        [Route("api/[controller]/StudentLoginUrl/{SubscriberGuid}/{EnrollmentGuid}")]
-        public IActionResult StudentLoginUrl(Guid SubscriberGuid, Guid EnrollmentGuid)
-        {
-            var CourseLogin = new CourseFactory(_db, _configuration,_syslog,_distributedCache)
-                .GetCourseLogin(SubscriberGuid, EnrollmentGuid); 
-            return Ok(CourseLogin);
-        }
-
-
-
     }
-
 }

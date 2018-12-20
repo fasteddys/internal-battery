@@ -11,6 +11,7 @@ using Hangfire;
 using UpDiddyApi.Business;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace UpDiddyApi.Controllers
 {
@@ -43,9 +44,10 @@ namespace UpDiddyApi.Controllers
  
         [Authorize]
         [HttpGet]
-        [Route("api/[controller]/GetProfile/{SubscriberGuid}")]
-        public IActionResult GetProfile(Guid subscriberGuid )
+        [Route("api/[controller]")]
+        public IActionResult GetProfile()
         {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var rVal = SubscriberProfileStagingStore.GetProfileAsLinkedInDto(_db, subscriberGuid,_syslog);
             return Ok(rVal); ;
         }
@@ -53,12 +55,15 @@ namespace UpDiddyApi.Controllers
 
 
         [Authorize]
-        [HttpGet]
-        [Route("api/[controller]/SyncProfile/{SubscriberGuid}/{Code}")]
-        public IActionResult SyncProfile(Guid subscriberGuid, string code )
+        [HttpPut]
+        [Route("api/[controller]/SyncProfile/{Code}")]
+        public IActionResult SyncProfile(string code)
         {
-
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var returnUrl = Request.Query["returnUrl"].ToString();
+            if (String.IsNullOrEmpty(returnUrl))
+                return BadRequest(new { code = 400, message = "Missing return url as get param." });
+
             // Enqueue job and return 
             BackgroundJob.Enqueue<LinkedInInterface>(lif => lif.SyncProfile(subscriberGuid, code, returnUrl) );
             BasicResponseDto rVal = new BasicResponseDto()
@@ -73,10 +78,10 @@ namespace UpDiddyApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("api/[controller]/LastSyncDate/{SubscriberGuid}")]
-        public IActionResult LastSyncDate(Guid subscriberGuid)
+        [Route("api/[controller]/LastSyncDate")]
+        public IActionResult LastSyncDate()
         {
-
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             ValueResponseDto rVal = new ValueResponseDto();
 
             LinkedInToken lit = _db.LinkedInToken

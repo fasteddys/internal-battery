@@ -24,7 +24,7 @@ namespace UpDiddy.Controllers
         public IActionResult Get(string TopicSlug)
         {         
             TopicDto Topic = _Api.TopicBySlug(TopicSlug);
-            TopicViewModel TopicViewModel = new TopicViewModel(_configuration, _Api.getCousesByTopicSlug(TopicSlug), Topic);
+            TopicViewModel TopicViewModel = new TopicViewModel(_configuration, _Api.getCoursesByTopicSlug(TopicSlug), Topic);
         
             return View("Details", TopicViewModel);
         }

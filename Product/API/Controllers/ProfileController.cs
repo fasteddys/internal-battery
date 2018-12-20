@@ -12,6 +12,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using System.Data.SqlClient;
 using System.Data;
+using System.Security.Claims;
 
 namespace UpDiddyApi.Controllers
 {
@@ -37,15 +38,17 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("api/[controller]/{SubscriberGuid}")]
-        public IActionResult Get(Guid SubscriberGuid)
+        [Route("api/[controller]")]
+        public IActionResult Get()
         {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
             Subscriber subscriber = _db.Subscriber
                 .Include(s => s.State)
                 .ThenInclude(s => s.Country)
                 .Include(s => s.Enrollments)
                 .ThenInclude(e => e.Course)
-                .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == SubscriberGuid)
+                .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid)
                 .FirstOrDefault();
 
             if (subscriber == null)
@@ -56,17 +59,24 @@ namespace UpDiddyApi.Controllers
 
         [HttpPost]
         [Authorize]
-        [Route("api/[controller]/CreateSubscriber/{SubscriberGuid}/{SubscriberEmail}")]
-        public IActionResult NewSubscriber(string SubscriberGuid, string SubscriberEmail)
+        [Route("api/[controller]")]
+        public IActionResult NewSubscriber()
         {
-            Subscriber subscriber = new Subscriber();
-            subscriber.SubscriberGuid = Guid.Parse(SubscriberGuid);
-            subscriber.Email = SubscriberEmail;
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefault();
+
+            // Subscriber exists do NOT create a duplicate
+            if (subscriber != null)
+                return BadRequest(new { code = 400, message = "Subscriber is already in the system" });
+
+            subscriber = new Subscriber();
+            subscriber.SubscriberGuid = subscriberGuid;
+            subscriber.Email = HttpContext.User.FindFirst("emails").Value;
             subscriber.CreateDate = DateTime.Now;
             subscriber.ModifyDate = DateTime.Now;
             subscriber.IsDeleted = 0;
-            subscriber.ModifyGuid = Guid.NewGuid();
-            subscriber.CreateGuid = Guid.NewGuid();
+            subscriber.ModifyGuid = subscriberGuid;
+            subscriber.CreateGuid = subscriberGuid;
 
             // Save subscriber to database 
             _db.Subscriber.Add(subscriber);
@@ -76,16 +86,20 @@ namespace UpDiddyApi.Controllers
         }
 
         [Authorize]
-        [HttpPost]
-        [Route("api/[controller]/Update")]
+        [HttpPut]
+        [Route("api/[controller]")]
         public IActionResult Update([FromBody] SubscriberDto Subscriber)
         {
+            Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subsriberGuidClaim != Subscriber.SubscriberGuid)
+                return Unauthorized();
+
             var subscriberGuid = new SqlParameter("@SubscriberGuid", Subscriber.SubscriberGuid);
             var firstName = new SqlParameter("@FirstName", (object)Subscriber.FirstName ?? DBNull.Value);
             var lastName = new SqlParameter("@LastName", (object)Subscriber.LastName ?? DBNull.Value);
             var address = new SqlParameter("@Address", (object)Subscriber.Address ?? DBNull.Value);
             var city = new SqlParameter("@City", (object)Subscriber.City ?? DBNull.Value);
-            var stateGuid = new SqlParameter("@StateGuid", (object)Subscriber.State.StateGuid ?? DBNull.Value);
+            var stateGuid = new SqlParameter("@StateGuid", (Subscriber.State != null ? (object)Subscriber.State.StateGuid : DBNull.Value));
             var phoneNumber = new SqlParameter("@PhoneNumber", (object)Subscriber.PhoneNumber ?? DBNull.Value);
             var facebookUrl = new SqlParameter("@FacebookUrl", (object)Subscriber.FacebookUrl ?? DBNull.Value);
             var twitterUrl = new SqlParameter("@TwitterUrl", (object)Subscriber.TwitterUrl ?? DBNull.Value);
@@ -95,9 +109,12 @@ namespace UpDiddyApi.Controllers
 
             DataTable table = new DataTable();
             table.Columns.Add("Guid", typeof(Guid));
-            foreach (var skill in Subscriber.Skills)
+            if(Subscriber.Skills != null)
             {
-                table.Rows.Add(skill.SkillGuid);
+                foreach (var skill in Subscriber.Skills)
+                {
+                    table.Rows.Add(skill.SkillGuid);
+                }
             }
             var skillGuids = new SqlParameter("@SkillGuids", table);
             skillGuids.SqlDbType = SqlDbType.Structured;
@@ -176,6 +193,7 @@ namespace UpDiddyApi.Controllers
             return Ok(skills);
         }
 
+        // todo: lock this endpoint down with authorize when client side is ready to handle token
         [HttpGet]
         [Route("api/[controller]/GetSkillsBySubscriber/{subscriberGuid}")]
         public IActionResult GetSkillsBySubscriber(Guid subscriberGuid)

@@ -10,6 +10,7 @@ using UpDiddyApi.Models;
 using UpDiddy.Helpers;
 using Hangfire;
 using UpDiddyApi.Workflow;
+using System.Security.Claims;
 
 namespace UpDiddyApi.Controllers
 {
@@ -30,17 +31,18 @@ namespace UpDiddyApi.Controllers
         /// Resume Upload Endpoint that takes a resume upload and submits it to sovren to get HRXML and saves it in the
         /// subscriber profile staging store.
         /// </summary>
-        /// <param name="SubscriberGuid">User Subscriber Guid</param>
         /// <param name="resume">File uploaded as part of form-data with key name of "resume"</param>
         /// <returns>string HRXML</returns>
         [Authorize]
         [HttpPost]
-        [Route("upload/subscriber/{SubscriberGuid}")]
-        public async Task<IActionResult> Upload(Guid SubscriberGuid, IFormFile resume)
+        [Route("upload")]
+        public async Task<IActionResult> Upload(IFormFile resume)
         {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
             // todo: research and implement a better way to handle soft deletes then manual checks everywhere
             Subscriber subscriber = _db.Subscriber
-                .Where(s => s.SubscriberGuid == SubscriberGuid && s.IsDeleted == 0)
+                .Where(s => s.SubscriberGuid == subscriberGuid && s.IsDeleted == 0)
                 .FirstOrDefault();
 
             if (subscriber == null)
@@ -59,10 +61,9 @@ namespace UpDiddyApi.Controllers
 
             // todo: verify subscriber guid permissions and data
             SubscriberProfileStagingStore.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
- 
-            // run job to import user profile data 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(SubscriberGuid));
 
+            // run job to import user profile data 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(subscriberGuid));
 
             return Ok(parsedDocument);
         }

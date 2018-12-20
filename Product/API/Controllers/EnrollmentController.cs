@@ -13,25 +13,30 @@ using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
+using UpDiddyApi.Business;
+using Microsoft.Extensions.Caching.Distributed;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddyApi.Controllers
 {
     //TODO [Authorize]
     [ApiController]
-    public class EnrollmentController : Controller
+    public class EnrollmentController : ControllerBase
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;       
         protected internal ILogger _syslog = null;
+        private readonly IDistributedCache _distributedCache;
 
-        public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<EnrollmentController> sysLog, IHttpClientFactory httpClientFactory)
+        public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<EnrollmentController> sysLog, IHttpClientFactory httpClientFactory, IDistributedCache distributedCache)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
-            _syslog = sysLog;      
+            _syslog = sysLog;
+            _distributedCache = distributedCache;
         }
 
         [Authorize]
@@ -41,10 +46,15 @@ namespace UpDiddyApi.Controllers
         {
             EnrollmentDto EnrollmentDto = EnrollmentFlowDto.EnrollmentDto;
             BraintreePaymentDto BraintreePaymentDto = EnrollmentFlowDto.BraintreePaymentDto;
+
+            // check subscriber that is logged in vs passed in via body
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subscriberGuid != EnrollmentDto.Subscriber.SubscriberGuid.Value)
+                return Unauthorized();
+
             try
             {
                 // grab the subscriber information we need for the enrollment log, then set the property to null on EnrollmentDto so that ef doesn't try to create the subscriber
-                Guid subscriberGuid = EnrollmentDto.Subscriber.SubscriberGuid.Value;
                 EnrollmentDto.Subscriber = null;
                 EnrollmentDto.CourseId = _db.Course.Where(c => c.CourseGuid == EnrollmentDto.CourseGuid).Select(c => c.CourseId).FirstOrDefault();
                 Enrollment Enrollment = _mapper.Map<Enrollment>(EnrollmentDto);
@@ -119,6 +129,7 @@ namespace UpDiddyApi.Controllers
 
         }
 
+        // todo: deprecate or refactor to have enrollment write to proper log
         [Authorize]
         [HttpPost]
         [Route("api/[controller]/EnrollmentLog")]
@@ -138,48 +149,14 @@ namespace UpDiddyApi.Controllers
         }
 
         [Authorize]
-        [HttpPost]
-        [Route("api/[controller]/ProcessBraintreePayment")]
-        public BraintreeResponseDto ProcessBraintreePayment([FromBody] BraintreePaymentDto BraintreePaymentDto)
-        {
-            return new BraintreeResponseDto();
-            /*
-            BackgroundJob.Enqueue<BraintreePaymentFlow>(x => x.PaymentWorkItem(BraintreePaymentDto));
-
-
-
-            return new BraintreeResponseDto
-            {
-                WasSuccessful = result.IsSuccess()
-            };
-            */
-        }
-        [Authorize]
         [HttpGet]
-        [Route("api/[controller]/CurrentEnrollments/{SubscriberId}")]
-        public IActionResult GetCurrentEnrollmentsForSubscriber(int SubscriberId)
+        [Route("api/[controller]/{EnrollmentGuid}/StudentLoginUrl")]
+        public IActionResult StudentLoginUrl(Guid EnrollmentGuid)
         {
-            IList<EnrollmentDto> rval = null;
-            rval = _db.Enrollment
-                .Where(t => t.IsDeleted == 0 && t.SubscriberId == SubscriberId)
-                .ProjectTo<EnrollmentDto>(_mapper.ConfigurationProvider)
-                .ToList();
-
-            return Ok(rval);
-        }
-
-     
-        [Authorize]
-        [HttpGet]
-        [Route("api/[controller]/StudentLogin/{SubscriberId}")]
-        public IActionResult StudentLogin(int SubscriberId)
-        {
-            VendorStudentLoginDto rval = null;
-            rval = _db.VendorStudentLogin
-                .Where(t => t.IsDeleted == 0 && t.SubscriberId == SubscriberId)
-                .ProjectTo<VendorStudentLoginDto>(_mapper.ConfigurationProvider)
-                .FirstOrDefault();
-            return Ok(rval);
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var CourseLogin = new CourseFactory(_db, _configuration, _syslog, _distributedCache)
+                .GetCourseLogin(subscriberGuid, EnrollmentGuid);
+            return Ok(CourseLogin);
         }
     }
 }
