@@ -9,6 +9,8 @@ using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using UpDiddy.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using UpDiddyApi.Workflow;
+using Hangfire;
 
 namespace UpDiddyApi.Business
 {
@@ -51,8 +53,10 @@ namespace UpDiddyApi.Business
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    // Update or create users linked profile data 
-                    SubscriberProfileStagingStore.StoreProfileData(_db,subscriberGuid, ResponseJson); 
+                    // Add acquired linked on profile data to the profile data staging store 
+                    SubscriberProfileStagingStore.StoreProfileData(_db,subscriberGuid, ResponseJson);
+                    // Kick off  job to import the subscriber's profile data file from the staging store 
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(subscriberGuid));
                     rVal =  (int)ProfileDataStatus.Acquired;
                 }
                 else

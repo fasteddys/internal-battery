@@ -11,8 +11,6 @@ using UpDiddyLib.Shared;
 
 namespace UpDiddyApi.Models
 {
-
-
     public class UpDiddyDbContextFactory : IDesignTimeDbContextFactory<UpDiddyDbContext>
     {
         // do not remove this; there must be a parameterless constructor for ef migrations to function
@@ -117,7 +115,7 @@ namespace UpDiddyApi.Models
         public DbSet<EducationalDegreeType> EducationalDegreeType { get; set; }
         public DbSet<EducationalDegree> EducationalDegree { get; set; }
 
-
+ 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

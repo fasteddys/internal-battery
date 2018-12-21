@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    public partial class Skill
+    public partial class Company
     {
 
         #region Factory Methods
 
-        public Skill(string skillName)
+        public Company(string companyName)
         {
-            this.SkillName = skillName;
+            this.CompanyName = companyName;
             this.CreateDate = DateTime.Now;
             this.CreateGuid = Guid.NewGuid();
             this.ModifyDate = DateTime.Now;
@@ -20,24 +20,25 @@ namespace UpDiddyApi.Models
             this.IsDeleted = 0;
         }
 
-        static public Skill GetOrAdd(UpDiddyDbContext db, string skillName)
+        static public Company GetOrAdd(UpDiddyDbContext db, string companyName)
         {
-            skillName = skillName.Trim();
+            companyName = companyName.Trim();
 
-            Skill skill = db.Skill
-                .Where(s => s.IsDeleted == 0 && s.SkillName == skillName)
+            Company company = db.Company
+                .Where(c => c.IsDeleted == 0 && c.CompanyName == companyName)
                 .FirstOrDefault();
 
-            if (skill == null)
+            if (company == null)
             {
-                skill = new Skill(skillName);
-                db.Skill.Add(skill);
+                company = new Company(companyName);
+                db.Company.Add(company);
                 db.SaveChanges();
             }
-            return skill;
+            return company;
         }
 
         #endregion
+
 
     }
 }

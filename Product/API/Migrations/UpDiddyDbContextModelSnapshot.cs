@@ -1323,9 +1323,9 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<DateTime>("DegreeDate");
 
-                    b.Property<int>("EducationalDegreeId");
+                    b.Property<int?>("EducationalDegreeId");
 
-                    b.Property<int>("EducationalDegreeTypeId");
+                    b.Property<int?>("EducationalDegreeTypeId");
 
                     b.Property<int>("EducationalInstitutionId");
 
@@ -1453,11 +1453,11 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CompanyId");
+                    b.Property<int?>("CompanyId");
 
                     b.Property<decimal>("Compensation");
 
-                    b.Property<int>("CompensationTypeId");
+                    b.Property<int?>("CompensationTypeId");
 
                     b.Property<DateTime>("CreateDate");
 
@@ -1941,13 +1941,11 @@ namespace UpDiddyApi.Migrations
                 {
                     b.HasOne("UpDiddyApi.Models.EducationalDegree", "EducationalDegree")
                         .WithMany()
-                        .HasForeignKey("EducationalDegreeId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("EducationalDegreeId");
 
                     b.HasOne("UpDiddyApi.Models.EducationalDegreeType", "EducationalDegreeType")
                         .WithMany()
-                        .HasForeignKey("EducationalDegreeTypeId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("EducationalDegreeTypeId");
 
                     b.HasOne("UpDiddyApi.Models.EducationalInstitution", "EducationalInstitution")
                         .WithMany()
@@ -1985,13 +1983,11 @@ namespace UpDiddyApi.Migrations
                 {
                     b.HasOne("UpDiddyApi.Models.Company", "Company")
                         .WithMany()
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("CompanyId");
 
                     b.HasOne("UpDiddyApi.Models.CompensationType", "CompensationType")
                         .WithMany()
-                        .HasForeignKey("CompensationTypeId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("CompensationTypeId");
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()

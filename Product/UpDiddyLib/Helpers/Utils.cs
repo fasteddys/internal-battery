@@ -6,6 +6,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using UpDiddyLib.Dto;
+using System.Xml.XPath;
+using System.Xml;
 
 namespace UpDiddyLib.Helpers
 {
@@ -15,8 +17,41 @@ namespace UpDiddyLib.Helpers
 
     static public class Utils
     {
-      
-        static public List<string> ParseSkillsFromHrXML(string xml)
+
+
+        static public SubscriberContactInfoDto ParseContactInfoFromHrXML(string xml)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            string defaultXlms = doc.DocumentElement.NamespaceURI;
+            XmlNamespaceManager namespaceManager = new XmlNamespaceManager(doc.NameTable);
+            namespaceManager.AddNamespace("hrxml", defaultXlms);
+
+            string firstName = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:StructuredXMLResume/hrxml:ContactInfo/hrxml:PersonName/hrxml:GivenName", namespaceManager));
+            string lastName = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:StructuredXMLResume/hrxml:ContactInfo/hrxml:PersonName/hrxml:FamilyName", namespaceManager));
+            string email = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:StructuredXMLResume/hrxml:ContactInfo/hrxml:ContactMethod/hrxml:InternetEmailAddress", namespaceManager));
+            string phoneNumber = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:StructuredXMLResume/hrxml:ContactInfo/hrxml:ContactMethod/hrxml:Telephone/hrxml:FormattedNumber", namespaceManager));
+            string address = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:StructuredXMLResume/hrxml:ContactInfo/hrxml:ContactMethod/hrxml:PostalAddress/hrxml:DeliveryAddress/hrxml:AddressLine", namespaceManager));
+            string state = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:StructuredXMLResume/hrxml:ContactInfo/hrxml:ContactMethod/hrxml:PostalAddress/hrxml:Region", namespaceManager));
+            string countryCode = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:StructuredXMLResume/hrxml:ContactInfo/hrxml:ContactMethod/hrxml:PostalAddress/hrxml:Country", namespaceManager));
+            string city = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:StructuredXMLResume/hrxml:ContactInfo/hrxml:ContactMethod/hrxml:PostalAddress/hrxml:Municipality", namespaceManager));
+
+            SubscriberContactInfoDto rVal = new SubscriberContactInfoDto()
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                PhoneNumber = phoneNumber,
+                Address = address,
+                State = state,
+                CountryCode = countryCode,
+                City = city
+            };
+
+            return rVal;
+        }
+
+            static public List<string> ParseSkillsFromHrXML(string xml)
         {
             List<string> rVal = new List<String>();
  
@@ -31,6 +66,211 @@ namespace UpDiddyLib.Helpers
 
             return rVal;
 
+        }
+
+
+        static public List<SubscriberEducationHistoryDto> ParseEducationHistoryFromHrXml(string xml)
+        {
+            List<SubscriberEducationHistoryDto> rVal = new List<SubscriberEducationHistoryDto>();
+
+            XElement theXML = XElement.Parse(xml);
+            // Get list of skill found by Sovren
+            var employmentHistory = theXML.Descendants()
+                 .Where(e => e.Name.LocalName == "SchoolOrInstitution")
+                 .ToList();
+
+            // Iterate over their emplyment history  
+            foreach (XElement node in employmentHistory)
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(node.ToString());
+                string defaultXlms = doc.DocumentElement.NamespaceURI;
+                XmlNamespaceManager namespaceManager = new XmlNamespaceManager(doc.NameTable);
+                namespaceManager.AddNamespace("hrxml", defaultXlms);
+                bool isCurrent = false;
+                // Parse attendance start date  
+                DateTime startDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:Degree/hrxml:DatesOfAttendance/hrxml:StartDate", namespaceManager), ref isCurrent);
+                // Parse attendance end date 
+                DateTime endDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:Degree/hrxml:DatesOfAttendance/hrxml:EndDate", namespaceManager), ref isCurrent);
+                // Parse degree date 
+                DateTime degreeDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:Degree/hrxml:DegreeDate", namespaceManager), ref isCurrent);
+                string educationalInstitution = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:School/hrxml:SchoolName", namespaceManager));
+                string educationalDegreeType = HrXmlNodeAttribute(doc.SelectSingleNode("//hrxml:Degree", namespaceManager), "degreeType");
+                string educationalDegree = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:Degree/hrxml:DegreeName", namespaceManager)); ;
+                SubscriberEducationHistoryDto educationHistory = new SubscriberEducationHistoryDto()
+                {
+                    CreateDate = DateTime.Now,
+                    ModifyDate = DateTime.Now,
+                    CreateGuid = Guid.NewGuid(),
+                    ModifyGuid = Guid.NewGuid(),
+                    IsDeleted = 0,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    EducationalInstitution = educationalInstitution,
+                    EducationalDegreeType = educationalDegreeType,
+                    EducationalDegree = educationalDegree     
+                };
+                rVal.Add(educationHistory);
+            }
+            return rVal;
+        }
+
+
+        static public List<SubscriberWorkHistoryDto> ParseWorkHistoryFromHrXml(string xml)
+        {
+            List<SubscriberWorkHistoryDto> rVal = new List<SubscriberWorkHistoryDto>();
+
+            XElement theXML = XElement.Parse(xml);
+            // Get list of skill found by Sovren
+            var employmentHistory = theXML.Descendants()
+                 .Where(e => e.Name.LocalName == "EmployerOrg")
+                 .ToList();
+
+            // Iterate over their emplyment history  
+            foreach (XElement node in employmentHistory)
+            {    
+                XmlDocument doc = new  XmlDocument();
+                doc.LoadXml(node.ToString());                                
+                string defaultXlms = doc.DocumentElement.NamespaceURI;
+                XmlNamespaceManager namespaceManager = new XmlNamespaceManager(doc.NameTable);
+                namespaceManager.AddNamespace("hrxml", defaultXlms);
+                bool isCurrent = false;
+                // Parse position start date  
+                DateTime startDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:PositionHistory/hrxml:StartDate", namespaceManager), ref isCurrent);
+                // Parse position end date 
+                DateTime endDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:PositionHistory/hrxml:EndDate", namespaceManager), ref isCurrent);
+                string jobTitle = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:PositionHistory/hrxml:Title", namespaceManager));
+                string jobDescription = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:PositionHistory/hrxml:Description", namespaceManager));
+                string company = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:EmployerOrgName", namespaceManager));
+                SubscriberWorkHistoryDto workHistory = new SubscriberWorkHistoryDto()
+                {
+                    CreateDate = DateTime.Now,
+                    ModifyDate = DateTime.Now,
+                    CreateGuid = Guid.NewGuid(),
+                    ModifyGuid = Guid.NewGuid(),
+                    IsDeleted = 0,
+                    StartDate = startDate,
+                    EndDate = endDate,
+                    IsCurrent = isCurrent ? 1 : 0,
+                    Company = company,
+                    JobDecription = jobDescription,
+                    Title = jobTitle
+                };
+                rVal.Add(workHistory);
+            }
+            return rVal;
+        }
+
+
+        static public string HrXmlNodeInnerText(XmlNode node)
+        {
+            string rVal = string.Empty;
+            try
+            {
+                if (node != null)
+                {
+                    rVal = node.InnerText;
+                }
+                return rVal;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+
+
+        static public string HrXmlNodeAttribute (XmlNode node, string attribute)
+        {
+            string rVal = string.Empty;
+            try
+            {
+                if ( node != null )
+                {
+                    XmlElement el = node as XmlElement;
+                    if (node.Attributes != null && el.HasAttribute(attribute))
+                        rVal = el.Attributes[attribute].Value;
+                }                
+                return rVal;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        static public DateTime ParseDateFromHrXmlDate(XmlNode hrXMLDate, ref bool isCurrent)
+        {
+            isCurrent = false;
+            string dateString = hrXMLDate.FirstChild.InnerText;
+
+            if (hrXMLDate.FirstChild.Name == "YearMonth")
+                return ParseDateFromHrXmlYearMonthTag(dateString);
+
+            if (hrXMLDate.FirstChild.Name == "StringDate")
+                ParseDateFromHrXmlStringDateTag(dateString, ref isCurrent);
+
+            if (hrXMLDate.FirstChild.Name == "Year")
+                ParseDateFromHrXmlYearTag(dateString);
+
+
+            return DateTime.MinValue;
+        }
+
+
+        static public DateTime ParseDateFromHrXmlStringDateTag(string dateStr, ref bool isCurrent)
+        {
+            try
+            {
+                if (dateStr == "current")
+                {
+                    isCurrent = true;
+                    return DateTime.MinValue;
+                }
+                // Try and parse date from StringDate tag.  This tag does not have a well defined format
+                // so it probably will not parse in most cases
+                return DateTime.Parse(dateStr);
+            }
+            catch
+            {
+                return DateTime.MinValue;
+            }
+        }
+
+
+
+        static public DateTime ParseDateFromHrXmlYearTag(string dateStr)
+        {
+            try
+            {               
+                int year = int.Parse(dateStr);
+
+                return new DateTime(year, 1, 1);
+            }
+            catch
+            {
+                return DateTime.MinValue;
+            }
+        }
+
+
+
+
+        static public DateTime ParseDateFromHrXmlYearMonthTag(string dateStr)
+        {        
+            try
+            {           
+                string[] dateInfo = dateStr.Split('-');
+                int year = int.Parse(dateInfo[0]);
+                int month = int.Parse(dateInfo[1]);
+
+                return new DateTime(year, month, 1);                
+            }
+            catch
+            {
+                return DateTime.MinValue;
+            }
         }
 
 

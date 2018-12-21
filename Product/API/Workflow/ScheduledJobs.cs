@@ -270,11 +270,8 @@ namespace UpDiddyApi.Workflow
                 _ImportSubscriberProfileData(profiles);
             }
             catch (Exception e)
-            {
-                // Save any work that has been completed before the exception 
-                _db.SaveChanges();
+            { 
                 _syslog.Log(LogLevel.Error, "ScheduledJobs:ImportSubscriberProfileData threw an exception -> " + e.Message);
-
             }
             finally
             {
@@ -352,9 +349,9 @@ namespace UpDiddyApi.Workflow
                 foreach (SubscriberProfileStagingStore p in profiles)
                 {
                     if (p.ProfileSource == Constants.DataSource.LinkedIn)                    
-                        p.Status = (int)SubscriberSkill.ImportLinkedIn(_db, _sovrenApi, p, ref errMsg);
+                        p.Status = (int)Subscriber.ImportLinkedIn(_db, _sovrenApi, p, ref errMsg);
                     else if (p.ProfileSource == Constants.DataSource.Sovren)                    
-                        p.Status = (int)SubscriberSkill.ImportSovren(_db, p, ref errMsg);                    
+                        p.Status = (int)Subscriber.ImportSovren(_db, p, ref errMsg, _syslog);                    
                     else
                     {
                         // Report on unknown source error
