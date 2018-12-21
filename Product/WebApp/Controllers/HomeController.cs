@@ -62,9 +62,9 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        [Authorize]
         public IActionResult SignUp()
         {
-            // GetSubscriber(false);
             SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
             {
                 Countries = _Api.GetCountries().Select(c => new SelectListItem()
@@ -279,23 +279,47 @@ namespace UpDiddy.Controllers
         }
 
         [HttpPost]
-        public BasicResponseDto Signup(SignupFlowViewModel signupFlowViewModel)
+        public IActionResult Signup(SignupFlowViewModel signupFlowViewModel)
         {
+            GetSubscriber(false);
+            IList<SkillDto> skillsDto = null;
             if (ModelState.IsValid)
             {
-                return new BasicResponseDto
+                if (signupFlowViewModel.SelectedSkills != null)
                 {
-                    StatusCode = "200",
-                    Description = "OK"
+                    var skills = signupFlowViewModel.SelectedSkills.Split(',');
+                    if (skills.Length > 0)
+                    {
+                        skillsDto = new List<SkillDto>();
+                        foreach (var skill in skills)
+                        {
+                            Guid parsedGuid;
+                            if (Guid.TryParse(skill, out parsedGuid))
+                                skillsDto.Add(new SkillDto() { SkillGuid = parsedGuid });
+                        }
+                    }
+                }
+
+                SubscriberDto Subscriber = new SubscriberDto
+                {
+                    FirstName = signupFlowViewModel.FirstName,
+                    LastName = signupFlowViewModel.LastName,
+                    Address = signupFlowViewModel.Address,
+                    PhoneNumber = signupFlowViewModel.Phone,
+                    City = signupFlowViewModel.City,
+                    State = new StateDto() { StateGuid = signupFlowViewModel.SelectedState },
+                    SubscriberGuid = (Guid)this.subscriber.SubscriberGuid,
+                    Skills = skillsDto
                 };
+                _Api.UpdateProfileInformation(Subscriber);
+                return RedirectToAction("Profile");
             }
             else
             {
-                return new BasicResponseDto
-                {
-                    StatusCode = "400",
-                    Description = "Bad Request"
-                };
+                var errors = ModelState.Select(x => x.Value.Errors)
+                           .Where(y => y.Count > 0)
+                           .ToList();
+                return View();
             }
         }
 

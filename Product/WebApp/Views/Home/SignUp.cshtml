@@ -157,32 +157,10 @@
                     <div class="carousel-item">
                         <div class="first-name-container">
                             <div>
-                                <h2>Tell us a little about yourself. What's your first name?</h2>
+                                <h2>Tell us a little about yourself. What's your name?</h2>
                                 <input form="SignupForm" type="text" id="FirstNameInput" asp-for="FirstName" placeholder="First name" autocomplete="false" />
-                            </div>
-                        </div>
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="previous-container animated">
-                                        <div class="flow-prev-button">
-                                            <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
-                                        </div>
-                                    </div>
-                                    <div class="skip-next-container">
-                                        <div class="flow-next-button signup-flow-next-button">
-                                            <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <div class="last-name-container">
-                            <div>
-                                <h2>How about your last name?</h2>
                                 <input form="SignupForm" type="text" id="LastNameInput" asp-for="LastName" placeholder="Last name" autocomplete="false" />
+
                             </div>
                         </div>
                         <div class="container">
@@ -202,35 +180,13 @@
                             </div>
                         </div>
                     </div>
+                    
                     <div class="carousel-item">
                         <div class="phone-number-container">
                             <div>
                                 <h2>What's the best phone number to reach you?</h2>
                                 <div class="phone-number-input-container">
-                                    (
-                                    <input type="text"
-                                            id="PhoneNumberInputAreaCode"
-                                            form="SignupForm"
-                                            maxlength="3"
-                                            autocomplete="off"
-                                            placeholder="888"
-                                            asp-for="PhoneNumberFirstThree" />
-                                    )
-                                    <input type="text"
-                                            id="PhoneNumberInputMiddleNumbers"
-                                            maxlength="3"
-                                            form="SignupForm"
-                                            autocomplete="off"
-                                            placeholder="123"
-                                            asp-for="PhoneNumberSecondThree" />
-                                    -
-                                    <input type="text"
-                                            id="PhoneNumberInputLastNumbers"
-                                            maxlength="4"
-                                            form="SignupForm"
-                                            autocomplete="off"
-                                            placeholder="4567"
-                                            asp-for="PhoneNumberLastFour" />
+                                    <input form="SignupForm" type="text" id="phone-number" class="form-control" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
                                 </div>
 
                             </div>
@@ -263,8 +219,12 @@
                                                 <div class="col-12">
                                                     <div class="address-format-container">
                                                         <div class="row">
-                                                            <div class="col-12">
+                                                            <div class="col-12 col-sm-8">
                                                                 <input form="SignupForm" type="text" class="form-control" placeholder="Street address" asp-for="Address">
+                                                            </div>
+                                                            <div class="col-12 col-sm-4">
+                                                                <input form="SignupForm" type="text" class="form-control" placeholder="City" asp-for="City">
+
                                                             </div>
                                                         </div>
                                                         <div class="row">
@@ -315,15 +275,17 @@
                                             <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
                                         </div>
                                     </div>
-                                    <div class="skip-next-container">
+                                    <div class="skip-next-container submit">
                                         <div class="flow-next-button signup-flow-next-button">
-                                            <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
+                                            @*<a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>*@
+                                            <input form="SignupForm" type="submit" value="Finish" class="btn-signup-submit">
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    @*
                     <div class="carousel-item">
                         <div class="work-history-container">
                             <div>
@@ -334,7 +296,7 @@
                                             <div class="row">
                                                 <div class="col-12">
                                                     <div class="work-history-log">
-                                                        <div class="row">@* Work history dynamically added here. *@</div>
+                                                        <div class="row">Work history dynamically added here. </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -374,7 +336,7 @@
                                             <div class="row">
                                                 <div class="col-12">
                                                     <div class="education-history-log">
-                                                        <div class="row">@* Work history dynamically added here. *@</div>
+                                                        <div class="row"> Work history dynamically added here. </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -401,7 +363,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div>*@
                     
                 </div>
                 

@@ -46,18 +46,6 @@ $(document).ready(function () {
     $(".add-work-history").on("click", function () {
         //$('.work-history-log').append('<div class="form-row"><div class="form-group col-md-6" ><input type="text" class="form-control" placeholder="Job Title"></div><div class="form-group col-md-6"><input type="text" class="form-control" placeholder="Organization"></div></div>');
     });
-    /*
-    $('#SignupFlowCarousel').bind('slide.bs.carousel', function (e) {
-        if ($('.carousel-item-second').hasClass('active')) {
-            $('.previous-container').removeClass("hidden");
-            $('.previous-container').removeClass("slideInUp");
-            $('.previous-container').addClass("slideOutDown");
-        }
-        else {
-            $('.previous-container').removeClass("slideOutDown");
-            $('.previous-container').addClass("slideInUp");
-        }
-    });*/
     $('.save-new-work-history-item').on("click", function () {
         var jobTitle = $('#JobTitleInput').val();
         var organization = $('#OrganizationInput').val();

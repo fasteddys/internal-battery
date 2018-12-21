@@ -998,302 +998,6 @@ body {
       outline: 0;
       box-shadow: none; }
 
-  .signup-flow-container .signup-flow-row {
-    overflow: hidden; }
-    .signup-flow-container .signup-flow-row .signup-flow-column {
-      position: relative;
-      text-align: center; }
-      .signup-flow-container .signup-flow-row .signup-flow-column .carousel {
-        padding-top: 15rem; }
-        .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item {
-          min-height: 170px; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .first-name-container input,
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .last-name-container input,
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-container input,
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-container input {
-            border: 0;
-            border-bottom: 2px solid #03264A;
-            padding: .5rem;
-            text-align: center;
-            font-size: 2rem;
-            color: #03264A;
-            border-radius: 0; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .first-name-container input:focus,
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .last-name-container input:focus,
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-container input:focus,
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-container input:focus {
-              outline: 0;
-              border: 0;
-              border-bottom: 2px solid #03264A; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container {
-            margin-top: 2rem;
-            max-width: 40rem;
-            margin: 0 auto; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row {
-              margin-top: 1rem; }
-              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row input {
-                height: initial; }
-                .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row input:focus {
-                  outline: 0;
-                  box-shadow: none; }
-              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row select {
-                border: 2px solid #03264A;
-                height: 3rem;
-                color: #03264A;
-                font-size: 1.3rem; }
-                .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row select:focus {
-                  border: 2px solid #03264A;
-                  outline: none;
-                  box-shadow: none; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .skills-container .selectize-input {
-            width: 25rem;
-            margin-top: 3rem;
-            border: 2px solid #03264A; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .skills-container .selectize-input > div {
-              background-color: #03264A;
-              background-image: none;
-              border: 1px solid #03264A;
-              padding: .5rem 1rem;
-              font-size: 1rem; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-input-container {
-            font-size: 2.5rem; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-input-container input {
-              width: 80px; }
-              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-input-container input:last-child {
-                width: 110px; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container input[type="file"] {
-            display: none; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #ChangeResumeLabel {
-            display: none; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #RemoveResume {
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            color: #fff;
-            background-color: #03264A;
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            display: none; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #RemoveResume:hover {
-              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #RemoveResume.disabled {
-              box-shadow: none;
-              background-color: #808080;
-              cursor: default; }
-              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #RemoveResume.disabled a {
-                cursor: default; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #ResumeUploadDisclaimer {
-            padding: 1rem;
-            border-radius: 1rem;
-            display: none;
-            margin-top: 6rem;
-            border: 2px solid #03264A; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload {
-            margin-top: 1rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            color: #fff;
-            background-color: #03264A;
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload:hover {
-              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload.disabled {
-              box-shadow: none;
-              background-color: #808080;
-              cursor: default; }
-              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload.disabled a {
-                cursor: default; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit {
-            border: 0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            color: #fff;
-            background-color: #03264A;
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            display: none; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit:hover {
-              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit.disabled {
-              box-shadow: none;
-              background-color: #808080;
-              cursor: default; }
-              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit.disabled a {
-                cursor: default; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit:focus {
-              outline: none; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item #SkipResumeSlide.disabled {
-            cursor: default; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item #SkipResumeSlide.disabled a {
-              color: #808080; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .work-history-log {
-            margin-top: 2rem;
-            text-align: left; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .work-history-log > div > div {
-              margin-bottom: 1rem; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history {
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            color: #fff;
-            background-color: #03264A;
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history:hover {
-              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history.disabled {
-              box-shadow: none;
-              background-color: #808080;
-              cursor: default; }
-              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history.disabled a {
-                cursor: default; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .education-history-log {
-            text-align: left;
-            margin-top: 2rem; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history {
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            color: #fff;
-            background-color: #03264A;
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history:hover {
-              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
-            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history.disabled {
-              box-shadow: none;
-              background-color: #808080;
-              cursor: default; }
-              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history.disabled a {
-                cursor: default; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item > .container {
-            margin-top: 15rem; }
-      .signup-flow-container .signup-flow-row .signup-flow-column .previous-container {
-        position: absolute;
-        bottom: .5rem;
-        left: 1rem; }
-        .signup-flow-container .signup-flow-row .signup-flow-column .previous-container > div {
-          display: inline-block;
-          cursor: pointer; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .previous-container > div a {
-            color: #fff; }
-        .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button {
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-          color: #fff;
-          background-color: #03264A;
-          display: inline-block;
-          padding: 6px 12px;
-          border-radius: 6px;
-          cursor: pointer;
-          padding: 6px 0; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button:hover {
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
-          .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button.disabled {
-            box-shadow: none;
-            background-color: #808080;
-            cursor: default; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button.disabled a {
-              cursor: default; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button a {
-            padding: 7px 12px; }
-      .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container {
-        position: absolute;
-        bottom: .5rem;
-        right: 1rem; }
-        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container a {
-          color: #fff; }
-        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container > div {
-          display: inline-block;
-          cursor: pointer; }
-        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button {
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-          color: #fff;
-          background-color: #03264A;
-          display: inline-block;
-          padding: 6px 12px;
-          border-radius: 6px;
-          cursor: pointer;
-          padding: 6px 0;
-          margin-left: 1rem; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button:hover {
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
-          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button.disabled {
-            box-shadow: none;
-            background-color: #808080;
-            cursor: default; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button.disabled a {
-              cursor: default; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button a {
-            padding: 7px 12px; }
-        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit {
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-          color: #fff;
-          background-color: #03264A;
-          display: inline-block;
-          padding: 6px 12px;
-          border-radius: 6px;
-          cursor: pointer;
-          border: 0; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit:hover {
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
-          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit.disabled {
-            box-shadow: none;
-            background-color: #808080;
-            cursor: default; }
-            .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit.disabled a {
-              cursor: default; }
-          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit:focus {
-            outline: none; }
-        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .skip-container a {
-          color: #03264A; } }
-@media (min-width: 320px) {
-  .overlay {
-    background: #fff;
-    position: absolute;
-    top: 50px;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    opacity: 0.5;
-    height: 100%;
-    z-index: 999; }
-
-  #loading-img {
-    background: url("../images/spinner.gif");
-    height: 100%;
-    background-repeat: no-repeat;
-    background-position: top;
-    z-index: 1000; }
-
-  .modal .validation {
-    color: red; }
-  .modal input {
-    border: 0;
-    border-bottom: 1px solid #03264A;
-    border-radius: 0; }
-    .modal input:focus {
-      outline: none;
-      border: 0;
-      border-bottom: 1px solid #03264A;
-      box-shadow: none; }
-  .modal textarea {
-    border-color: #03264A; }
-    .modal textarea:focus {
-      border-color: #03264A;
-      outline: 0;
-      box-shadow: none; }
-
   .signup-flow-container h1 {
     font-size: 2rem; }
   .signup-flow-container h2 {
@@ -1325,6 +1029,8 @@ body {
               outline: 0;
               border: 0;
               border-bottom: 2px solid #03264A; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .first-name-container input {
+            margin-top: 1rem; }
           .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container {
             margin-top: 2rem;
             max-width: 40rem;
@@ -1360,9 +1066,8 @@ body {
           .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-input-container {
             font-size: 1.3rem; }
             .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-input-container input {
-              width: 50px; }
-              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-input-container input:last-child {
-                width: 60px; }
+              width: 12.5rem;
+              display: inline-block; }
           .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container input[type="file"] {
             display: none; }
           .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #ChangeResumeLabel {
@@ -1488,6 +1193,623 @@ body {
             padding: 1.25rem; }
           .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item > .container {
             margin-top: 10rem; }
+      .signup-flow-container .signup-flow-row .signup-flow-column .previous-container {
+        position: absolute;
+        bottom: .5rem;
+        left: 1rem; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .previous-container > div {
+          display: inline-block;
+          cursor: pointer; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .previous-container > div a {
+            color: #fff; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button {
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          color: #fff;
+          background-color: #03264A;
+          display: inline-block;
+          padding: 6px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          padding: 6px 0; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button:hover {
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+          .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button.disabled {
+            box-shadow: none;
+            background-color: #808080;
+            cursor: default; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button.disabled a {
+              cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button a {
+            padding: 7px 12px; }
+      .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container {
+        position: absolute;
+        bottom: .5rem;
+        right: 1rem; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container a {
+          color: #fff; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container > div {
+          display: inline-block;
+          cursor: pointer; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button {
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          color: #fff;
+          background-color: #03264A;
+          display: inline-block;
+          padding: 6px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          padding: 6px 0;
+          margin-left: 1rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button:hover {
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button.disabled {
+            box-shadow: none;
+            background-color: #808080;
+            cursor: default; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button.disabled a {
+              cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button a {
+            padding: 7px 12px; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit {
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          color: #fff;
+          background-color: #03264A;
+          display: inline-block;
+          padding: 6px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          border: 0; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit:hover {
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit.disabled {
+            box-shadow: none;
+            background-color: #808080;
+            cursor: default; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit.disabled a {
+              cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit:focus {
+            outline: none; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .skip-container a {
+          color: #03264A; } }
+@media (min-width: 576px) {
+  .overlay {
+    background: #fff;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    opacity: 0.5;
+    height: 100%;
+    z-index: 999; }
+
+  #loading-img {
+    background: url("../images/spinner.gif");
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: top;
+    z-index: 1000; }
+
+  .modal .validation {
+    color: red; }
+  .modal input {
+    border: 0;
+    border-bottom: 1px solid #03264A;
+    border-radius: 0; }
+    .modal input:focus {
+      outline: none;
+      border: 0;
+      border-bottom: 1px solid #03264A;
+      box-shadow: none; }
+  .modal textarea {
+    border-color: #03264A; }
+    .modal textarea:focus {
+      border-color: #03264A;
+      outline: 0;
+      box-shadow: none; }
+
+  .signup-flow-container h1 {
+    font-size: 2rem; }
+  .signup-flow-container h2 {
+    font-size: 1.4rem; }
+  .signup-flow-container .signup-flow-row {
+    overflow: hidden; }
+    .signup-flow-container .signup-flow-row .signup-flow-column {
+      position: relative;
+      text-align: center; }
+      .signup-flow-container .signup-flow-row .signup-flow-column .carousel {
+        padding-top: 5rem; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item {
+          min-height: 170px; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .first-name-container input,
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .last-name-container input,
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-container input,
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-container input {
+            border: 0;
+            border-bottom: 2px solid #03264A;
+            padding: .5rem;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #03264A;
+            border-radius: 0; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .first-name-container input:focus,
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .last-name-container input:focus,
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-container input:focus,
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-container input:focus {
+              outline: 0;
+              border: 0;
+              border-bottom: 2px solid #03264A; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container {
+            margin-top: 2rem;
+            max-width: 40rem;
+            margin: 0 auto; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row {
+              margin-top: 1rem; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row > div {
+                margin-top: 1rem; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row input {
+                height: initial; }
+                .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row input:focus {
+                  outline: 0;
+                  box-shadow: none; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row select {
+                border: 2px solid #03264A;
+                height: 3rem;
+                color: #03264A;
+                font-size: 1.3rem; }
+                .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row select:focus {
+                  border: 2px solid #03264A;
+                  outline: none;
+                  box-shadow: none; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .skills-container .selectize-input {
+            width: 14rem;
+            margin-top: 3rem;
+            border: 2px solid #03264A; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .skills-container .selectize-input > div {
+              background-color: #03264A;
+              background-image: none;
+              border: 1px solid #03264A;
+              padding: .5rem 1rem;
+              font-size: 1rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-input-container {
+            font-size: 1.3rem; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-input-container input {
+              width: 12.5rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container input[type="file"] {
+            display: none; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #ChangeResumeLabel {
+            display: none; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #RemoveResume {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: #fff;
+            background-color: #03264A;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: none; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #RemoveResume:hover {
+              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #RemoveResume.disabled {
+              box-shadow: none;
+              background-color: #808080;
+              cursor: default; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #RemoveResume.disabled a {
+                cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #ResumeUploadDisclaimer {
+            padding: 1rem;
+            border-radius: 1rem;
+            display: none;
+            margin-top: 0rem;
+            border: 2px solid #03264A; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload {
+            margin-top: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: #fff;
+            background-color: #03264A;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload:hover {
+              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload.disabled {
+              box-shadow: none;
+              background-color: #808080;
+              cursor: default; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload.disabled a {
+                cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit {
+            border: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: #fff;
+            background-color: #03264A;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: none; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit:hover {
+              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit.disabled {
+              box-shadow: none;
+              background-color: #808080;
+              cursor: default; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit.disabled a {
+                cursor: default; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit:focus {
+              outline: none; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item #SkipResumeSlide.disabled {
+            cursor: default; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item #SkipResumeSlide.disabled a {
+              color: #808080; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container div {
+            padding: 0; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .col-sm-6,
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .col-md-4 {
+            padding: 0 15px; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .work-history-log {
+            margin-top: 2rem;
+            text-align: left; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .work-history-log > div > div {
+              margin-bottom: 1rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: #fff;
+            background-color: #03264A;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history:hover {
+              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history.disabled {
+              box-shadow: none;
+              background-color: #808080;
+              cursor: default; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history.disabled a {
+                cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .card-body {
+            padding: 1.25rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container div {
+            padding: 0; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .col-sm-6,
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .col-md-4 {
+            padding: 0 15px; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .education-history-log {
+            text-align: left;
+            margin-top: 2rem; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .education-history-log > div > div {
+              margin-bottom: 1rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: #fff;
+            background-color: #03264A;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history:hover {
+              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history.disabled {
+              box-shadow: none;
+              background-color: #808080;
+              cursor: default; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history.disabled a {
+                cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .card-body {
+            padding: 1.25rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item > .container {
+            margin-top: 10rem; }
+      .signup-flow-container .signup-flow-row .signup-flow-column .previous-container {
+        position: absolute;
+        bottom: .5rem;
+        left: 1rem; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .previous-container > div {
+          display: inline-block;
+          cursor: pointer; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .previous-container > div a {
+            color: #fff; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button {
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          color: #fff;
+          background-color: #03264A;
+          display: inline-block;
+          padding: 6px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          padding: 6px 0; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button:hover {
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+          .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button.disabled {
+            box-shadow: none;
+            background-color: #808080;
+            cursor: default; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button.disabled a {
+              cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .previous-container .flow-prev-button a {
+            padding: 7px 12px; }
+      .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container {
+        position: absolute;
+        bottom: .5rem;
+        right: 1rem; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container a {
+          color: #fff; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container > div {
+          display: inline-block;
+          cursor: pointer; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container.submit .flow-next-button {
+          padding: 0; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button {
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          color: #fff;
+          background-color: #03264A;
+          display: inline-block;
+          padding: 6px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          padding: 6px 0;
+          margin-left: 1rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button:hover {
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button.disabled {
+            box-shadow: none;
+            background-color: #808080;
+            cursor: default; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button.disabled a {
+              cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .flow-next-button a {
+            padding: 7px 12px; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit {
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          color: #fff;
+          background-color: #03264A;
+          display: inline-block;
+          padding: 6px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          border: 0; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit:hover {
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit.disabled {
+            box-shadow: none;
+            background-color: #808080;
+            cursor: default; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit.disabled a {
+              cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .btn-signup-submit:focus {
+            outline: none; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .skip-next-container .skip-container a {
+          color: #03264A; } }
+@media (min-width: 768px) {
+  .overlay {
+    background: #fff;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    opacity: 0.5;
+    height: 100%;
+    z-index: 999; }
+
+  #loading-img {
+    background: url("../images/spinner.gif");
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: top;
+    z-index: 1000; }
+
+  .modal .validation {
+    color: red; }
+  .modal input {
+    border: 0;
+    border-bottom: 1px solid #03264A;
+    border-radius: 0; }
+    .modal input:focus {
+      outline: none;
+      border: 0;
+      border-bottom: 1px solid #03264A;
+      box-shadow: none; }
+  .modal textarea {
+    border-color: #03264A; }
+    .modal textarea:focus {
+      border-color: #03264A;
+      outline: 0;
+      box-shadow: none; }
+
+  .signup-flow-container h2 {
+    font-size: 2rem; }
+  .signup-flow-container .signup-flow-row {
+    overflow: hidden; }
+    .signup-flow-container .signup-flow-row .signup-flow-column {
+      position: relative;
+      text-align: center; }
+      .signup-flow-container .signup-flow-row .signup-flow-column .carousel {
+        padding-top: 15rem; }
+        .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item {
+          min-height: 170px; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .first-name-container input,
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .last-name-container input,
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-container input,
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-container input {
+            border: 0;
+            border-bottom: 2px solid #03264A;
+            padding: .5rem;
+            text-align: center;
+            font-size: 1.6rem;
+            color: #03264A;
+            border-radius: 0; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .first-name-container input:focus,
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .last-name-container input:focus,
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-container input:focus,
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-container input:focus {
+              outline: 0;
+              border: 0;
+              border-bottom: 2px solid #03264A; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .first-name-container input {
+            margin-top: 2rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container {
+            margin-top: 2rem;
+            max-width: 40rem;
+            margin: 0 auto; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row {
+              margin-top: 1rem; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row input {
+                height: initial; }
+                .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row input:focus {
+                  outline: 0;
+                  box-shadow: none; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row select {
+                border: 2px solid #03264A;
+                height: 3rem;
+                color: #03264A;
+                font-size: 1.3rem; }
+                .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .address-format-container .row select:focus {
+                  border: 2px solid #03264A;
+                  outline: none;
+                  box-shadow: none; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .skills-container .selectize-input {
+            width: 25rem;
+            margin-top: 3rem;
+            border: 2px solid #03264A; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .skills-container .selectize-input > div {
+              background-color: #03264A;
+              background-image: none;
+              border: 1px solid #03264A;
+              padding: .5rem 1rem;
+              font-size: 1rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-input-container {
+            font-size: 2.5rem; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .phone-number-input-container input {
+              width: 20rem;
+              padding: 2rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container input[type="file"] {
+            display: none; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #ChangeResumeLabel {
+            display: none; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #RemoveResume {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: #fff;
+            background-color: #03264A;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: none; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #RemoveResume:hover {
+              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #RemoveResume.disabled {
+              box-shadow: none;
+              background-color: #808080;
+              cursor: default; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #RemoveResume.disabled a {
+                cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container #ResumeUploadDisclaimer {
+            padding: 1rem;
+            border-radius: 1rem;
+            display: none;
+            margin-top: 6rem;
+            border: 2px solid #03264A; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload {
+            margin-top: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: #fff;
+            background-color: #03264A;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload:hover {
+              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload.disabled {
+              box-shadow: none;
+              background-color: #808080;
+              cursor: default; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .custom-file-upload.disabled a {
+                cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit {
+            border: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: #fff;
+            background-color: #03264A;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: none; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit:hover {
+              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit.disabled {
+              box-shadow: none;
+              background-color: #808080;
+              cursor: default; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit.disabled a {
+                cursor: default; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .resume-intro-container .btn-resume-submit:focus {
+              outline: none; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item #SkipResumeSlide.disabled {
+            cursor: default; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item #SkipResumeSlide.disabled a {
+              color: #808080; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .work-history-log {
+            margin-top: 2rem;
+            text-align: left; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .work-history-log > div > div {
+              margin-bottom: 1rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: #fff;
+            background-color: #03264A;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history:hover {
+              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history.disabled {
+              box-shadow: none;
+              background-color: #808080;
+              cursor: default; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .work-history-container .add-work-history.disabled a {
+                cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .education-history-log {
+            text-align: left;
+            margin-top: 2rem; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: #fff;
+            background-color: #03264A;
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer; }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history:hover {
+              box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); }
+            .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history.disabled {
+              box-shadow: none;
+              background-color: #808080;
+              cursor: default; }
+              .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item .education-history-container .add-education-history.disabled a {
+                cursor: default; }
+          .signup-flow-container .signup-flow-row .signup-flow-column .carousel .carousel-item > .container {
+            margin-top: 15rem; }
       .signup-flow-container .signup-flow-row .signup-flow-column .previous-container {
         position: absolute;
         bottom: .5rem;
