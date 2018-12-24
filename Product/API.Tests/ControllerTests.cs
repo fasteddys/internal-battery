@@ -67,7 +67,7 @@ namespace API.Tests
                 var response = courseController.Get();
                 try
                 {
-                    var x = (List<CourseDto>)(((OkObjectResult)response).Value);
+                    result = (List<CourseDto>)(((OkObjectResult)response).Value);
                 }
                 catch (Exception) { }
 
