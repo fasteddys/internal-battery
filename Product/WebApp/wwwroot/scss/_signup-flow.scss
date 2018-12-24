@@ -75,7 +75,7 @@
                     padding-top: 5rem;
 
                     .carousel-item {
-                        min-height: 170px;
+
 
                         .first-name-container,
                         .last-name-container,
@@ -265,7 +265,10 @@
                         }
 
                         > .container {
-                            margin-top: 10rem;
+                            position: absolute;
+                            bottom: 0;
+                            left: 0;
+                            right: 0;
                         }
                     }
                 }
@@ -308,6 +311,7 @@
                         cursor: pointer;
                     }
 
+
                     .flow-next-button {
                         @include button-with-box-shadow;
                         padding: 6px 0;
@@ -315,6 +319,12 @@
 
                         a {
                             padding: 7px 12px;
+                        }
+                    }
+
+                    &.submit {
+                        .flow-next-button {
+                            padding: 0;
                         }
                     }
 

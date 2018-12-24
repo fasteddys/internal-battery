@@ -79,6 +79,15 @@ $(document).ready(function () {
 
     });
 
+    setCarouselHeight();
+
+    $(window).resize(function () {
+        setCarouselHeight();
+    });
+
+    $('#SignupFlowCarousel').bind('slide.bs.carousel', function (e) {
+        document.body.scrollTop = document.documentElement.scrollTop = 0;
+    });
 
     $('#UploadedResume').change(function () {
         var file = $(this)[0].files[0];
@@ -172,4 +181,34 @@ var clearInputForResumeSlide = function () {
     $('#ResumeNextButton').addClass('disabled');
     $('#ResumeNextButton a').removeAttr("href");
     $('#ResumeUploadDisclaimer').css("display", "none");
+};
+
+var findMaxCarouselItemHeight = function () {
+    var maxHeight = 0;
+    $(".carousel-item").each(function () {
+        if ($(this).height() > maxHeight) {
+            maxHeight = $(this).height();
+        }
+    });
+
+    //add height from top of viewport
+    maxHeight += 150;
+    return maxHeight;
+};
+
+var getHeightOffsetByDeviceWidth = function () {
+    var baseOffset = 168;
+    var deviceDimension = 0;
+    if ($(window).width() > $(window).height()) {
+        deviceDimension = $(window).height();
+    }
+    else {
+        deviceDimension = $(window).width();
+    }
+    return baseOffset + (deviceDimension);
+};
+
+var setCarouselHeight = function () {
+    $('.carousel-item').css("height", 'initial');
+    $('.carousel-item').css("height", findMaxCarouselItemHeight());
 };

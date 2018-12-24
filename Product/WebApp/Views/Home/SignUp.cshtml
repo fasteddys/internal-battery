@@ -126,12 +126,12 @@
                         </div>
                         
                     </div>
+                    @*
                     <div class="carousel-item carousel-item-second">
                         <div class="linked-in-container">
                             <div>
                                 <h2>Have a LinkedIn account?<br />Let's sync it with your CareerCircle profile.</h2>
                                 <div class="mt-4 p-4">
-                                    @*Need to make this actionable based on a passed-in subscriber guid*@
                                     @await Component.InvokeAsync("LinkedInSync")
                                 </div>
                             </div>
@@ -153,7 +153,7 @@
                             </div>
                         </div>
                     </div>
-                    
+                    *@
                     <div class="carousel-item">
                         <div class="first-name-container">
                             <div>
@@ -264,7 +264,7 @@
                         <div class="skills-container">
                             <div>
                                 <h2>What skills could you bring to a team?</h2>
-                                <input form="SignupForm" type="text" asp-for="SelectedSkills"/>
+                                <input form="SignupForm" type="text" asp-for="SelectedSkills" placeholder="Type a skill..."/>
                             </div>
                         </div>
                         <div class="container">
