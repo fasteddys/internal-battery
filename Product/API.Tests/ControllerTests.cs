@@ -30,26 +30,24 @@ namespace API.Tests
         [Fact]
         public void Course_Does_Not_Return_Deleted_Entity()
         {
+            #region refactor this once we have multiple tests that require these objects
             var configuration = new Mock<IConfigurationRoot>();
             configuration.SetupGet(x => x[It.IsAny<string>()]).Returns("any value (not used right now)");
             var dbContextOptions = new DbContextOptionsBuilder<UpDiddyDbContext>()
                 .UseInMemoryDatabase(databaseName: "careerCircleTestDb")
                 .Options;
-
-            //dont think this is being used...
             var mapper = new Mapper(
                 new MapperConfiguration(configure =>
                 {
                     configure.AddProfile<ApiProfile>();
                 })
             );
-
-
             var email = new Mock<SysEmail>(configuration.Object);
             var httpClientFactory = new Mock<IHttpClientFactory>();
             var courseLog = new Mock<ILogger<CourseController>>();
             var topicLog = new Mock<ILogger<TopicController>>();
             var cache = new Mock<IDistributedCache>();
+            #endregion
 
             using (var db = new UpDiddyDbContext(dbContextOptions))
             {
