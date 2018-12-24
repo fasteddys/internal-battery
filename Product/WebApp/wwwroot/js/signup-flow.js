@@ -196,18 +196,6 @@ var findMaxCarouselItemHeight = function () {
     return maxHeight;
 };
 
-var getHeightOffsetByDeviceWidth = function () {
-    var baseOffset = 168;
-    var deviceDimension = 0;
-    if ($(window).width() > $(window).height()) {
-        deviceDimension = $(window).height();
-    }
-    else {
-        deviceDimension = $(window).width();
-    }
-    return baseOffset + (deviceDimension);
-};
-
 var setCarouselHeight = function () {
     $('.carousel-item').css("height", 'initial');
     $('.carousel-item').css("height", findMaxCarouselItemHeight());
