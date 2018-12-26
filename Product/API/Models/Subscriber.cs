@@ -30,5 +30,9 @@ namespace UpDiddyApi.Models
         public string StackOverflowUrl { get; set; }
         public string GithubUrl { get; set; }
         public List<Enrollment> Enrollments { get; set; }
+        public int HasOnboarded { get; set; }
+
     }
+
+
 }
