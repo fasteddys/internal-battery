@@ -30,6 +30,7 @@
     <environment names="Staging,Production">
         <link rel="stylesheet" type="text/css" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
+    <link rel="stylesheet" type="text/css" href="~/lib/mvc-grid/mvc-grid.css">
     <link rel="stylesheet" type="text/css" href="~/lib/toastr.min.css" />
     <link rel="stylesheet" type="text/css" href="~/lib/selectize/selectize.css" />
     <link rel="stylesheet" type="text/css" href="~/lib/selectize/selectize.default.css" />
@@ -38,6 +39,7 @@
     <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
     <script type="text/javascript" src="~/lib/toastr.min.js"></script>
     <script type="text/javascript" src="~/lib/selectize/selectize.js"></script>
+    <script type="text/javascript" src="~/lib/mvc-grid/mvc-grid.js"></script>
 </head>
 <body>
     <noscript>
@@ -60,12 +62,18 @@
                     <!--<li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="News">@Localizer["News"]</a></li>
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="ContactUs">@Localizer["Contact"]</a></li>-->
 
-
                     @if (User.Identity.IsAuthenticated)
                     {
                         <li class="nav-item nav-link-right">
                             <a class="nav-link" id="MyCircleHeaderButton" asp-controller="Home" asp-action="Profile"><i class="fa fa-user-circle" aria-hidden="true"></i> My Circle</a>
                         </li>
+                        // replace with authorization check using claims
+                        if (true)
+                        {
+                            <li>
+                                <a class="nav-link" id="TalentSubscribers" asp-controller="Talent" asp-action="Subscribers">Subscribers</a>
+                            </li>
+                        }
                         <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a></li>
                         <!--<li class="nav-item nav-link"><a class="nav-link" asp-area="" asp-controller="User" asp-action="Dashboard" asp-route-username='@User.Identity.Name'>My Circle</a></li>-->
                     }
