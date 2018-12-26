@@ -125,7 +125,8 @@ namespace UpDiddy.Controllers
         public IActionResult ProfileLogin()
         {
             GetSubscriber(true);
-            // UPdated the subscribers course progress 
+            // todo: consider updating the course status on the API side when a request is made to retrieve the courses or something instead of
+            // logic being determined in web app for managing API data
             if (this.subscriber != null)
                 _Api.UpdateStudentCourseProgress(true);
 

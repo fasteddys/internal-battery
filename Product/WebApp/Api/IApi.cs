@@ -22,7 +22,6 @@ namespace UpDiddy.Api
         CourseLoginDto CourseLogin(Guid EnrollmentGuid);
         BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber);
         Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto);
-        Guid WriteToEnrollmentLog(EnrollmentLogDto enrollmentLogDto);
         SubscriberDto CreateSubscriber();
         WozCourseProgressDto UpdateStudentCourseProgress(bool FutureSchedule);
         BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto);

@@ -144,7 +144,7 @@ namespace UpDiddyApi.Controllers
 
         // should we have a "utility" or "shared" API controller for things like this?
         [HttpGet]
-        [Route("api/[controller]/GetCountries")]
+        [Route("api/country")]
         public IActionResult GetCountries()
         {
             var countries = _db.Country
@@ -159,30 +159,32 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/GetStatesByCountry/{countryGuid?}")]
-        public IActionResult GetStatesByCountry(Guid? countryGuid = null)
+        [Route("api/country/{countryGuid}/state")]
+        public IActionResult GetStatesByCountry(Guid countryGuid)
         {
             IQueryable<State> states;
 
-            if (!countryGuid.HasValue)
-            {
-                // if country is not specified, retrieve the first country according to sequence (USA! USA!)
-                states = _db.State
-                    .Include(s => s.Country)
-                    .Where(s => s.IsDeleted == 0 && s.Country.Sequence == 1);
-            }
-            else
-            {
-                states = _db.State
-                    .Include(s => s.Country)
-                    .Where(s => s.IsDeleted == 0 && s.Country.CountryGuid == countryGuid);
-            }
+            states = _db.State
+                .Include(s => s.Country)
+                .Where(s => s.IsDeleted == 0 && s.Country.CountryGuid == countryGuid);
 
             return Ok(states.OrderBy(s => s.Sequence).ProjectTo<StateDto>(_mapper.ConfigurationProvider));
         }
 
         [HttpGet]
-        [Route("api/[controller]/GetSkills/{userQuery}")]
+        [Route("api/state")]
+        public IActionResult GetStates()
+        {
+            IQueryable<State> states;
+            states = _db.State
+                .Include(s => s.Country)
+                .Where(s => s.IsDeleted == 0 && s.Country.Sequence == 1);
+
+            return Ok(states.OrderBy(s => s.Sequence).ProjectTo<StateDto>(_mapper.ConfigurationProvider));
+        }
+
+        [HttpGet]
+        [Route("api/skill/{userQuery}")]
         public IActionResult GetSkills(string userQuery)
         {
             var skills = _db.Skill
@@ -194,9 +196,9 @@ namespace UpDiddyApi.Controllers
             return Ok(skills);
         }
 
-        // todo: lock this endpoint down with authorize when client side is ready to handle token
+        [Authorize]
         [HttpGet]
-        [Route("api/[controller]/GetSkillsBySubscriber/{subscriberGuid}")]
+        [Route("api/[controller]/{subscriberGuid}/skill")]
         public IActionResult GetSkillsBySubscriber(Guid subscriberGuid)
         {
             var subscriberSkills = _db.Subscriber

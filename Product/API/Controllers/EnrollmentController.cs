@@ -49,8 +49,17 @@ namespace UpDiddyApi.Controllers
 
             // check subscriber that is logged in vs passed in via body
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (subscriberGuid != EnrollmentDto.Subscriber.SubscriberGuid.Value)
-                return Unauthorized();
+
+            
+            // check EnrolmmentDto but if exception occurs then this is a bad request
+            try
+            {
+                if (subscriberGuid != EnrollmentDto.Subscriber.SubscriberGuid.Value)
+                    return Unauthorized();
+            } catch (Exception ex)
+            {
+                return BadRequest(new { code = 400, message = "Missing required data in EnrollmentDto." });
+            }
 
             try
             {
@@ -129,31 +138,14 @@ namespace UpDiddyApi.Controllers
 
         }
 
-        // todo: deprecate or refactor to have enrollment write to proper log
-        [Authorize]
-        [HttpPost]
-        [Route("api/[controller]/EnrollmentLog")]
-        public IActionResult Post([FromBody] EnrollmentLogDto EnrollmentLogDto)
-        {
-            try
-            {
-                EnrollmentLog EnrollmentLog = _mapper.Map<EnrollmentLog>(EnrollmentLogDto);
-                _db.EnrollmentLog.Add(EnrollmentLog);
-                _db.SaveChanges();
-                return Ok(EnrollmentLog.EnrollmentGuid);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status400BadRequest, ex);
-            }
-        }
-
+        // todo: maybe consider making this as part enrollment resource or a query that WebApp can make
         [Authorize]
         [HttpGet]
-        [Route("api/[controller]/{EnrollmentGuid}/StudentLoginUrl")]
+        [Route("api/[controller]/{EnrollmentGuid}/student-login-url")]
         public IActionResult StudentLoginUrl(Guid EnrollmentGuid)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            // todo: course login dto is one property, thus maybe we can add that property as part of the enrollment in general
             var CourseLogin = new CourseFactory(_db, _configuration, _syslog, _distributedCache)
                 .GetCourseLogin(subscriberGuid, EnrollmentGuid);
             return Ok(CourseLogin);

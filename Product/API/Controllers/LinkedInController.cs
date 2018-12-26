@@ -52,11 +52,9 @@ namespace UpDiddyApi.Controllers
             return Ok(rVal); ;
         }
 
-
-
         [Authorize]
         [HttpPut]
-        [Route("api/[controller]/SyncProfile/{Code}")]
+        [Route("api/[controller]/sync-profile/{Code}")]
         public IActionResult SyncProfile(string code)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -78,7 +76,7 @@ namespace UpDiddyApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("api/[controller]/LastSyncDate")]
+        [Route("api/[controller]/last-sync-date")]
         public IActionResult LastSyncDate()
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);

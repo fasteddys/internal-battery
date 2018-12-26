@@ -220,7 +220,7 @@ namespace UpDiddy.Api
 
         public CourseLoginDto CourseLogin(Guid EnrollmentGuid)
         {
-            return Get<CourseLoginDto>($"enrollment/{EnrollmentGuid}/StudentLoginUrl", true);
+            return Get<CourseLoginDto>($"enrollment/{EnrollmentGuid}/student-login-url", true);
         }
 
         public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
@@ -230,17 +230,12 @@ namespace UpDiddy.Api
 
         public BasicResponseDto SyncLinkedInAccount(string linkedInCode, string returnUrl)
         {
-            return Put<BasicResponseDto>($"linkedin/SyncProfile/{linkedInCode}?returnUrl={returnUrl}",true);
+            return Put<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}",true);
         }
 
         public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto)
         {
             return Post<Guid>(enrollmentFlowDto, "enrollment/", true);
-        }
-
-        public Guid WriteToEnrollmentLog(EnrollmentLogDto enrollmentLogDto)
-        {
-            return Post<Guid>(enrollmentLogDto, "enrollment/EnrollmentLog", true);
         }
 
         public SubscriberDto CreateSubscriber()
@@ -250,7 +245,7 @@ namespace UpDiddy.Api
 
         public WozCourseProgressDto UpdateStudentCourseProgress(bool FutureSchedule)
         {
-            return Put<WozCourseProgressDto>("woz/UpdateStudentCourseStatus/" + FutureSchedule.ToString(), true);
+            return Put<WozCourseProgressDto>("woz/update-student-course-status/" + FutureSchedule.ToString(), true);
         }
 
         public BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto)
@@ -283,12 +278,20 @@ namespace UpDiddy.Api
 
         public IList<CountryDto> _GetCountries()
         {
-            return Get<IList<CountryDto>>("profile/GetCountries", false);
+            return Get<IList<CountryDto>>("country", false);
         }
 
         public IList<StateDto> _GetStatesByCountry(Guid? countryGuid)
         {
-            return Get<IList<StateDto>>("profile/GetStatesByCountry/" + countryGuid?.ToString(), false);
+            if (!countryGuid.HasValue)
+                return GetStates();
+
+            return Get<IList<StateDto>>("country/" + countryGuid?.ToString() + "/state", false);
+        }
+
+        public IList<StateDto> GetStates()
+        {
+            return Get<IList<StateDto>>("state/", false);
         }
 
         private IList<CourseDto> _getCoursesByTopicSlug(string TopicSlug)
@@ -312,19 +315,14 @@ namespace UpDiddy.Api
             return Get<CourseVariantDto>("course/course-variant/" + courseVariantGuid, false);
         }
 
-        private WozTermsOfServiceDto _GetWozTermsOfService()
-        {
-            return Get<WozTermsOfServiceDto>("woz/TermsOfService/", false);
-        }
-
         private IList<SkillDto> _GetSkills(string userQuery)
         {
-            return Get<IList<SkillDto>>("profile/GetSkills/" + userQuery, true);
+            return Get<IList<SkillDto>>("skill/" + userQuery, true);
         }
 
         public IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid)
         {
-            return Get<IList<SkillDto>>("profile/GetSkillsBySubscriber/" + subscriberGuid, true);
+            return Get<IList<SkillDto>>("profile/" + subscriberGuid + "/skill", true);
         }
         #endregion
 
