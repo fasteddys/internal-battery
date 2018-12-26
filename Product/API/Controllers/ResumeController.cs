@@ -10,13 +10,14 @@ using UpDiddyApi.Models;
 using UpDiddy.Helpers;
 using Hangfire;
 using UpDiddyApi.Workflow;
+using System.Security.Claims;
 using UpDiddyLib.Dto;
 using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Controllers
 {
     [Route("api/[controller]")]
-    public class ResumeController : Controller
+    public class ResumeController : ControllerBase
     {
         private ISovrenAPI _sovrenApi;
         private UpDiddyDbContext _db;
@@ -46,36 +47,35 @@ namespace UpDiddyApi.Controllers
                 Description = "Initialized"
             };
 
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            // todo: research and implement a better way to handle soft deletes then manual checks everywhere
+            Subscriber subscriber = _db.Subscriber
+                .Where(s => s.SubscriberGuid == subscriberGuid && s.IsDeleted == 0)
+                .FirstOrDefault();
+
+            if (subscriber == null)
+                return NotFound(new { code = 404, message = "Subscriber not found in the system."});
+
+            if (subscriber.SubscriberGuid != resumeDto.SubscriberGuid)
+                return Unauthorized();
+
             try
             {
-                if (resumeDto != null && resumeDto.SubscriberGuid != Guid.Empty && !string.IsNullOrWhiteSpace(resumeDto.Base64EncodedResume))
+                if (resumeDto != null && !string.IsNullOrWhiteSpace(resumeDto.Base64EncodedResume))
                 {
+                    // todo: submit as background job, maybe depends on onboarding flow
+                    String parsedDocument = await _sovrenApi.SubmitResumeAsync(resumeDto.Base64EncodedResume);
 
-                    // todo: research and implement a better way to handle soft deletes then manual checks everywhere
-                    Subscriber subscriber = _db.Subscriber
-                        .Where(s => s.SubscriberGuid == resumeDto.SubscriberGuid && s.IsDeleted == 0)
-                        .FirstOrDefault();
+                    // todo: verify subscriber guid permissions and data
+                    SubscriberProfileStagingStore.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
 
-                    if (subscriber != null)
-                    {
-                        // todo: submit as background job, maybe depends on onboarding flow
-                        String parsedDocument = await _sovrenApi.SubmitResumeAsync(resumeDto.Base64EncodedResume);
+                    // run job to import user profile data 
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(subscriberGuid));
 
-                        // todo: verify subscriber guid permissions and data
-                        SubscriberProfileStagingStore.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
-
-                        // run job to import user profile data 
-                        BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(resumeDto.SubscriberGuid));
-
-                        // indicate that a background job is being processed
-                        basicResponseDto.StatusCode = "Processing";
-                        basicResponseDto.Description = "Scheduled job to import profile data is being processed.";
-                    }
-                    else
-                    {
-                        basicResponseDto.StatusCode = "NotFound";
-                        basicResponseDto.Description = "Subscriber does not exist.";
-                    }
+                    // indicate that a background job is being processed
+                    basicResponseDto.StatusCode = "Processing";
+                    basicResponseDto.Description = "Scheduled job to import profile data is being processed.";
                 }
                 else
                 {

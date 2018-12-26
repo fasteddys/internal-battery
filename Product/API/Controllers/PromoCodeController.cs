@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace UpDiddyApi.Controllers
 {
@@ -49,9 +50,10 @@ namespace UpDiddyApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("api/[controller]/PromoCodeRedemptionValidation/{promoCodeRedemptionGuid}/{courseVariantGuid}/{subscriberGuid}")]
-        public IActionResult PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseVariantGuid, string subscriberGuid)
+        [Route("api/[controller]/redemption-validate/{promoCodeRedemptionGuid}/course-variant/{courseVariantGuid}")]
+        public IActionResult PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseVariantGuid)
         {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             // lookup redemption by guid and ensure that the following is true: 
             //  the promo code is still in process
             //  it is being redeemed for the same course and subscriber
@@ -63,7 +65,7 @@ namespace UpDiddyApi.Controllers
                          where pcr.RedemptionStatus.Name == "In Process"
                          && pcr.IsDeleted == 0
                          && cv.CourseVariantGuid == Guid.Parse(courseVariantGuid)
-                         && s.SubscriberGuid == Guid.Parse(subscriberGuid)
+                         && s.SubscriberGuid == subscriberGuid
                          && s.IsDeleted == 0
                          && pcr.PromoCodeRedemptionGuid == Guid.Parse(promoCodeRedemptionGuid)
                          && pc.NumberOfRedemptions < pc.MaxAllowedNumberOfRedemptions
@@ -100,11 +102,12 @@ namespace UpDiddyApi.Controllers
 
             return Ok(query);
         }
-
+        
+        // todo: refactor errors
         [Authorize]
         [HttpGet]
-        [Route("api/[controller]/{code}/{courseVariantGuid}/{subscriberGuid}")]
-        public IActionResult PromoCodeValidation(string code, string courseVariantGuid, string subscriberGuid)
+        [Route("api/[controller]/validate/{code}/course-variant/{courseVariantGuid}")]
+        public IActionResult PromoCodeValidation(string code, string courseVariantGuid)
         {
             try
             {
@@ -173,10 +176,9 @@ namespace UpDiddyApi.Controllers
                 if (vendorRestrictionsForThisPromoCode.Any() && !vendorRestrictionsForThisPromoCode.Any(vpc => vpc.VendorId == course.VendorId))
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this vendor." });
 
-                Guid parsedSubscriberGuid;
-                Guid.TryParse(subscriberGuid, out parsedSubscriberGuid);
+                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 Subscriber subscriber = _db.Subscriber
-                    .Where(s => s.SubscriberGuid == parsedSubscriberGuid && s.IsDeleted == 0)
+                    .Where(s => s.SubscriberGuid == subscriberGuid && s.IsDeleted == 0)
                     .FirstOrDefault();
 
                 if (subscriber == null)

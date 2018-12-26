@@ -44,10 +44,10 @@ namespace UpDiddy.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        [Route("/Course/PromoCodeValidation/{code}/{courseVariantGuid}/{subscriberGuid}")]
-        public IActionResult PromoCodeValidation(string code, string courseVariantGuid, string subscriberGuid)
+        [Route("/Course/PromoCodeValidation/{code}/{courseVariantGuid}")]
+        public IActionResult PromoCodeValidation(string code, string courseVariantGuid)
         {
-            PromoCodeDto promoCodeDto = _Api.PromoCodeValidation(code, courseVariantGuid, subscriberGuid);
+            PromoCodeDto promoCodeDto = _Api.PromoCodeValidation(code, courseVariantGuid);
             return new ObjectResult(promoCodeDto);
         }
 
@@ -133,7 +133,7 @@ namespace UpDiddy.Controllers
             decimal adjustedPrice = courseViewModel.CourseVariant.Price;
             if (courseViewModel.PromoCodeRedemptionGuid.HasValue && courseViewModel.PromoCodeRedemptionGuid.Value != Guid.Empty)
             {
-                validPromoCode = _Api.PromoCodeRedemptionValidation(courseViewModel.PromoCodeRedemptionGuid.Value.ToString(), courseViewModel.SelectedCourseVariant.ToString(), this.subscriber.SubscriberGuid.Value.ToString());
+                validPromoCode = _Api.PromoCodeRedemptionValidation(courseViewModel.PromoCodeRedemptionGuid.Value.ToString(), courseViewModel.SelectedCourseVariant.ToString());
 
                 if (validPromoCode == null)
                     ModelState.AddModelError("PromoCodeRedemptionGuid", "The promo code selected is not valid for this course section.");

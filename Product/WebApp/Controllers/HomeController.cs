@@ -125,9 +125,10 @@ namespace UpDiddy.Controllers
         public IActionResult ProfileLogin()
         {
             GetSubscriber(true);
-            // UPdated the subscribers course progress 
+            // todo: consider updating the course status on the API side when a request is made to retrieve the courses or something instead of
+            // logic being determined in web app for managing API data
             if (this.subscriber != null)
-                _Api.UpdateStudentCourseProgress((Guid)this.subscriber.SubscriberGuid, true);
+                _Api.UpdateStudentCourseProgress(true);
 
             return RedirectToAction("Profile", "Home");
         }
@@ -175,7 +176,7 @@ namespace UpDiddy.Controllers
             // a dependency of BaseController. that's more refactoring than i think we want to concern ourselves with now.
             foreach (var enrollment in profileViewModel.Enrollments)
             {
-                var courseLogin = _Api.CourseLogin(profileViewModel.SubscriberGuid.Value, enrollment.EnrollmentGuid.Value);
+                var courseLogin = _Api.CourseLogin(enrollment.EnrollmentGuid.Value);
                 enrollment.CourseUrl = courseLogin.LoginUrl;
             }
 
