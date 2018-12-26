@@ -22,6 +22,16 @@ namespace UpDiddy.Controllers
             this._Api = api;
         }
 
+        public Guid GetSubscriberGuid()
+        {
+            Guid subscriberGuid;
+            var objectId = User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
+            if (Guid.TryParse(objectId, out subscriberGuid))
+                return subscriberGuid;
+            else
+                return Guid.Empty;
+        }
+
         public void GetSubscriber(bool HardRefresh)
         {
  
@@ -34,7 +44,7 @@ namespace UpDiddy.Controllers
                 else
                     throw new Exception("Unable to locate email claim");
 
-                string objectId = User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
+                Guid subscriberGuid = this.GetSubscriberGuid();
 
                 // Try to get the subscriber from session 
 
@@ -44,7 +54,7 @@ namespace UpDiddy.Controllers
                 
                 if ( String.IsNullOrEmpty(SubscriberJson)  )
                 {
-                    this.subscriber = _Api.Subscriber(Guid.Parse(objectId));
+                    this.subscriber = _Api.Subscriber(subscriberGuid);
                     if ( this.subscriber != null )
                     HttpContext.Session.SetString(Constants.SubsriberSessionKey, JsonConvert.SerializeObject(this.subscriber));
                 }
@@ -54,7 +64,7 @@ namespace UpDiddy.Controllers
                 // if the user is not a subscriber, create their subscriber record now
                 if ( this.subscriber == null )
                 {
-                    this.subscriber = _Api.CreateSubscriber(objectId, email);
+                    this.subscriber = _Api.CreateSubscriber(subscriberGuid, email);
                     HttpContext.Session.SetString(Constants.SubsriberSessionKey, JsonConvert.SerializeObject(this.subscriber));
                 }
                     
