@@ -126,10 +126,6 @@ namespace UpDiddyApi
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ReconcileFutureEnrollments(), Cron.Daily);
 
-            // TODO JAB Remove test cocde 
-            Guid testGuid = Guid.Parse("71A7156E-173F-4054-83ED-AD6127BAFE87");
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(testGuid));
-
             // PromoCodeRedemption cleanup
             int promoCodeRedemptionCleanupScheduleInMinutes = 5;
             int promoCodeRedemptionLookbackInMinutes = 30;
