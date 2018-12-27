@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddyApi.Models
 {
-    public partial class Subscriber : BaseModel
+    public class Subscriber : BaseModel
     {
         public int SubscriberId { get; set; }
         public Guid? SubscriberGuid { get; set; }

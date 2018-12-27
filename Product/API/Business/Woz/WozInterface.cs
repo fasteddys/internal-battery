@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Business
 {
-    public class WozInterface : BusinessVendorBase
+    public class WozInterface : BusinessVendorBase, IWozInterface
     {
 
         #region Class

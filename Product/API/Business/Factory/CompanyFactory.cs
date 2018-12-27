@@ -2,22 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.Models;
 
-namespace UpDiddyApi.Models
+namespace UpDiddyApi.Business.Factory
 {
-    public partial class Company
+    public class CompanyFactory
     {
 
-        #region Factory Methods
-
-        public Company(string companyName)
+        static public Company CreateCompany(string companyName)
         {
-            this.CompanyName = companyName;
-            this.CreateDate = DateTime.Now;
-            this.CreateGuid = Guid.NewGuid();
-            this.ModifyDate = DateTime.Now;
-            this.ModifyGuid = Guid.NewGuid();
-            this.IsDeleted = 0;
+            Company rVal = new Company();
+            rVal.CompanyName = companyName;
+            rVal.CreateDate = DateTime.Now;
+            rVal.CreateGuid = Guid.NewGuid();
+            rVal.ModifyDate = DateTime.Now;
+            rVal.ModifyGuid = Guid.NewGuid();
+            rVal.IsDeleted = 0;
+            return rVal;
         }
 
         static public Company GetOrAdd(UpDiddyDbContext db, string companyName)
@@ -30,15 +31,12 @@ namespace UpDiddyApi.Models
 
             if (company == null)
             {
-                company = new Company(companyName);
+                company = CreateCompany(companyName);
                 db.Company.Add(company);
                 db.SaveChanges();
             }
             return company;
         }
-
-        #endregion
-
 
     }
 }

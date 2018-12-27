@@ -1,21 +1,19 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UpDiddyApi.Business.Resume;
-using UpDiddyLib.Helpers;
-using System.Xml.XPath;
+using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using Microsoft.Extensions.Logging;
+using UpDiddyLib.Helpers;
 
-namespace UpDiddyApi.Models
+namespace UpDiddyApi.Business.Factory
 {
-    public partial class Subscriber
+    public class SubscriberFactory
     {
-        #region Factory Methods 
-
         public static Subscriber GetSubscriberById(UpDiddyDbContext db, int subscriberId)
         {
             return db.Subscriber
@@ -29,7 +27,7 @@ namespace UpDiddyApi.Models
             try
             {
                 // Get the subscriber 
-                Subscriber subscriber = Subscriber.GetSubscriberById(db, info.SubscriberId);
+                Subscriber subscriber = SubscriberFactory.GetSubscriberById(db, info.SubscriberId);
                 if (subscriber == null)
                 {
                     msg = $"SubscriberSkill:ImportSovren -> Subscriber {info.SubscriberId} was not found";
@@ -55,12 +53,12 @@ namespace UpDiddyApi.Models
 
         }
 
-        public static ProfileDataStatus ImportSovren(UpDiddyDbContext db, SubscriberProfileStagingStore info, ref string msg, ILogger syslog )
+        public static ProfileDataStatus ImportSovren(UpDiddyDbContext db, SubscriberProfileStagingStore info, ref string msg, ILogger syslog)
         {
             try
             {
                 // Get the subscriber 
-                Subscriber subscriber = Subscriber.GetSubscriberById(db, info.SubscriberId);
+                Subscriber subscriber = SubscriberFactory.GetSubscriberById(db, info.SubscriberId);
                 if (subscriber == null)
                 {
                     msg = $"SubscriberSkill:ImportSovren -> Subscriber {info.SubscriberId} was not found";
@@ -86,7 +84,7 @@ namespace UpDiddyApi.Models
         }
 
 
-        #endregion
+ 
 
 
         #region Helper Functions
@@ -94,7 +92,7 @@ namespace UpDiddyApi.Models
         private static bool _ImportSovrenEducationHistory(UpDiddyDbContext db, Subscriber subscriber, string profileData, ILogger syslog)
         {
             try
-            {              
+            {
                 List<SubscriberEducationHistoryDto> eductionHistory = Utils.ParseEducationHistoryFromHrXml(profileData);
                 _AddSubscriberEducationHistory(db, subscriber, eductionHistory);
                 return true;
@@ -131,7 +129,7 @@ namespace UpDiddyApi.Models
             try
             {
                 SubscriberContactInfoDto contactInfo = Utils.ParseContactInfoFromHrXML(profileData);
-               _AddSubscriberContactInfo(db, subscriber, contactInfo);
+                _AddSubscriberContactInfo(db, subscriber, contactInfo);
                 return true;
             }
             catch (Exception e)
@@ -151,7 +149,7 @@ namespace UpDiddyApi.Models
                 _AddSubscriberSkills(db, subscriber, skills);
                 return true;
             }
-            catch ( Exception e)
+            catch (Exception e)
             {
                 syslog.Log(LogLevel.Error, $"Subscriber:_ImportSovrenSkills threw an exception -> {e.Message} for subscriber {subscriber.SubscriberId} profile data = {profileData}");
                 return false;
@@ -186,24 +184,24 @@ namespace UpDiddyApi.Models
         {
             foreach (string skillName in skills)
             {
-                Skill skill = Skill.GetOrAdd(db, skillName);
+                Skill skill = SkillFactory.GetOrAdd(db, skillName);
                 // Check to see if the subscriber already has that skill 
-                SubscriberSkill subscriberSkill = SubscriberSkill.GetSkillForSubscriber (db, subscriber, skill);
+                SubscriberSkill subscriberSkill = SubscriberSkillFactory.GetSkillForSubscriber(db, subscriber, skill);
                 // If the subscriber does not have the skill, add it to their profile 
                 if (subscriberSkill == null)
-                    SubscriberSkill.AddSkillForSubscriber(db, subscriber, skill);
+                    SubscriberSkillFactory.AddSkillForSubscriber(db, subscriber, skill);
             }
         }
 
         private static void _AddSubscriberWorkHistory(UpDiddyDbContext db, Subscriber subscriber, List<SubscriberWorkHistoryDto> workHistoryList)
-        {            
+        {
             foreach (SubscriberWorkHistoryDto wh in workHistoryList)
             {
 
-                Company company = Company.GetOrAdd(db, wh.Company);
-                SubscriberWorkHistory workHistory = SubscriberWorkHistory.GetWorkHistoryForSubscriber(db, subscriber, company, wh.StartDate, wh.EndDate);
+                Company company = CompanyFactory.GetOrAdd(db, wh.Company);
+                SubscriberWorkHistory workHistory = SubscriberWorkHistoryFactory.GetWorkHistoryForSubscriber(db, subscriber, company, wh.StartDate, wh.EndDate);
                 if (workHistory == null)
-                    SubscriberWorkHistory.AddWorkHistoryForSubscriber(db, subscriber, wh,company);
+                    SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(db, subscriber, wh, company);
             }
         }
 
@@ -216,11 +214,11 @@ namespace UpDiddyApi.Models
             subscriber.PhoneNumber = contactInfo.PhoneNumber;
             subscriber.City = contactInfo.City;
             subscriber.Address = contactInfo.Address;
-            State state = State.GetStateByStateCode(db, contactInfo.State);
-            if ( state != null )
+            State state = StateFactory.GetStateByStateCode(db, contactInfo.State);
+            if (state != null)
                 subscriber.StateId = state.StateId;
 
-            db.SaveChanges(); 
+            db.SaveChanges();
         }
 
 
@@ -228,19 +226,15 @@ namespace UpDiddyApi.Models
         {
             foreach (SubscriberEducationHistoryDto eh in educationHistoryList)
             {
-                EducationalInstitution educationalInstitution = EducationalInstitution.GetOrAdd(db, eh.EducationalInstitution);
-                EducationalDegree educationalDegree = EducationalDegree.GetOrAdd(db, eh.EducationalDegree);
-                                           
-                SubscriberEducationHistory educationHistory = SubscriberEducationHistory.GetEducationHistoryForSubscriber(db, subscriber, educationalInstitution, educationalDegree, eh.StartDate, eh.EndDate, eh.DegreeDate);
+                EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(db, eh.EducationalInstitution);
+                EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(db, eh.EducationalDegree);
+
+                SubscriberEducationHistory educationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryForSubscriber(db, subscriber, educationalInstitution, educationalDegree, eh.StartDate, eh.EndDate, eh.DegreeDate);
                 if (educationHistory == null)
-                    SubscriberEducationHistory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree);              
+                    SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree);
             }
         }
 
-
-
         #endregion
-
-
     }
 }

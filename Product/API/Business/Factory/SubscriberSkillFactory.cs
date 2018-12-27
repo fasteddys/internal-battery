@@ -1,23 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Linq;
-using UpDiddyApi.Business.Resume;
 using UpDiddyApi.Models;
-using UpDiddyLib.Helpers;
 
-namespace UpDiddyApi.Models
+namespace UpDiddyApi.Business.Factory
 {
-    public partial class SubscriberSkill : BaseModel
+    public class SubscriberSkillFactory
     {
-
-        #region Factory Methods 
-
         public static bool AddSkillForSubscriber(UpDiddyDbContext db, Subscriber subscriber, Skill skill)
         {
             bool rVal = true;
@@ -40,7 +30,7 @@ namespace UpDiddyApi.Models
             {
                 rVal = false;
             }
-            return rVal;            
+            return rVal;
         }
 
         public static SubscriberSkill GetSkillForSubscriber(UpDiddyDbContext db, Subscriber subscriber, Skill skill)
@@ -49,11 +39,5 @@ namespace UpDiddyApi.Models
                 .Where(ss => ss.IsDeleted == 0 && ss.SkillId == skill.SkillId && ss.SubscriberId == subscriber.SubscriberId)
                 .FirstOrDefault();
         }
-
-
-        #endregion
-
-
-
     }
 }
