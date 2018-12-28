@@ -245,7 +245,7 @@ namespace UpDiddy.Api
 
         public WozCourseProgressDto UpdateStudentCourseProgress(bool FutureSchedule)
         {
-            return Put<WozCourseProgressDto>("woz/update-student-course-status/" + FutureSchedule.ToString(), true);
+            return Put<WozCourseProgressDto>("course/update-student-course-status/" + FutureSchedule.ToString(), true);
         }
 
         public BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto)
