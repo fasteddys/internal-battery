@@ -89,5 +89,41 @@ namespace UpDiddy.ViewModels
                     SelectedState.HasValue;
             }
         }
+
+        public Boolean HasFirstAndLastName
+        {
+            get
+            {
+                return
+                    !string.IsNullOrWhiteSpace(this.FirstName) &&
+                    !string.IsNullOrWhiteSpace(this.LastName);
+            }
+        }
+
+        public Boolean HasFullyQualifiedAddress
+        {
+            get
+            {
+                return
+                    !string.IsNullOrWhiteSpace(this.Address) &&
+                    !string.IsNullOrWhiteSpace(this.City) &&
+                    this.SelectedState != null &&
+                    this.SelectedState != Guid.Empty;
+            }
+        }
+
+        public Boolean HasSuppliedAnySocialLinks
+        {
+            get
+            {
+                return
+                    !string.IsNullOrWhiteSpace(this.FacebookUrl) ||
+                    !string.IsNullOrWhiteSpace(this.TwitterUrl) ||
+                    !string.IsNullOrWhiteSpace(this.LinkedInUrl) ||
+                    !string.IsNullOrWhiteSpace(this.StackOverflowUrl) ||
+                    !string.IsNullOrWhiteSpace(this.GithubUrl);
+
+            }
+        }
     }
 }

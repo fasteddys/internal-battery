@@ -782,6 +782,69 @@ body {
       .error-container .error-message-container .error-hero .error-sub-header span {
         color: #808080; } }
 @media (min-width: 0px) {
+  #NameModal .modal-body .profile-edit-modal-header-container,
+  #ContactInfoModal .modal-body .profile-edit-modal-header-container,
+  #SocialLinksModal .modal-body .profile-edit-modal-header-container,
+  #SkillsModal .modal-body .profile-edit-modal-header-container {
+    border-bottom: 1px solid #03264A;
+    margin-bottom: 2rem; }
+  #NameModal .modal-body .profile-edit-modal-edit-option,
+  #ContactInfoModal .modal-body .profile-edit-modal-edit-option,
+  #SocialLinksModal .modal-body .profile-edit-modal-edit-option,
+  #SkillsModal .modal-body .profile-edit-modal-edit-option {
+    position: relative;
+    border: 1px solid #03264A;
+    border-radius: .5rem;
+    margin-top: 2rem; }
+    #NameModal .modal-body .profile-edit-modal-edit-option .modal-edit-input-label,
+    #ContactInfoModal .modal-body .profile-edit-modal-edit-option .modal-edit-input-label,
+    #SocialLinksModal .modal-body .profile-edit-modal-edit-option .modal-edit-input-label,
+    #SkillsModal .modal-body .profile-edit-modal-edit-option .modal-edit-input-label {
+      position: absolute;
+      top: -10px;
+      left: 1rem;
+      background-color: #fff;
+      color: #03264A;
+      font-size: .75rem;
+      padding: 0 .5rem; }
+    #NameModal .modal-body .profile-edit-modal-edit-option .modal-edit-input,
+    #ContactInfoModal .modal-body .profile-edit-modal-edit-option .modal-edit-input,
+    #SocialLinksModal .modal-body .profile-edit-modal-edit-option .modal-edit-input,
+    #SkillsModal .modal-body .profile-edit-modal-edit-option .modal-edit-input {
+      padding: 2px 0; }
+      #NameModal .modal-body .profile-edit-modal-edit-option .modal-edit-input input,
+      #ContactInfoModal .modal-body .profile-edit-modal-edit-option .modal-edit-input input,
+      #SocialLinksModal .modal-body .profile-edit-modal-edit-option .modal-edit-input input,
+      #SkillsModal .modal-body .profile-edit-modal-edit-option .modal-edit-input input {
+        border: 0;
+        border-radius: .5rem; }
+      #NameModal .modal-body .profile-edit-modal-edit-option .modal-edit-input select,
+      #ContactInfoModal .modal-body .profile-edit-modal-edit-option .modal-edit-input select,
+      #SocialLinksModal .modal-body .profile-edit-modal-edit-option .modal-edit-input select,
+      #SkillsModal .modal-body .profile-edit-modal-edit-option .modal-edit-input select {
+        border: 0; }
+      #NameModal .modal-body .profile-edit-modal-edit-option .modal-edit-input .selectize-control,
+      #ContactInfoModal .modal-body .profile-edit-modal-edit-option .modal-edit-input .selectize-control,
+      #SocialLinksModal .modal-body .profile-edit-modal-edit-option .modal-edit-input .selectize-control,
+      #SkillsModal .modal-body .profile-edit-modal-edit-option .modal-edit-input .selectize-control {
+        padding: .25rem; }
+        #NameModal .modal-body .profile-edit-modal-edit-option .modal-edit-input .selectize-control .selectize-input,
+        #ContactInfoModal .modal-body .profile-edit-modal-edit-option .modal-edit-input .selectize-control .selectize-input,
+        #SocialLinksModal .modal-body .profile-edit-modal-edit-option .modal-edit-input .selectize-control .selectize-input,
+        #SkillsModal .modal-body .profile-edit-modal-edit-option .modal-edit-input .selectize-control .selectize-input {
+          box-shadow: none;
+          border: 0; }
+          #NameModal .modal-body .profile-edit-modal-edit-option .modal-edit-input .selectize-control .selectize-input .item,
+          #ContactInfoModal .modal-body .profile-edit-modal-edit-option .modal-edit-input .selectize-control .selectize-input .item,
+          #SocialLinksModal .modal-body .profile-edit-modal-edit-option .modal-edit-input .selectize-control .selectize-input .item,
+          #SkillsModal .modal-body .profile-edit-modal-edit-option .modal-edit-input .selectize-control .selectize-input .item {
+            background-color: #03264A;
+            background-image: none;
+            border: #03264A;
+            padding: 6px 10px;
+            border-radius: 8px;
+            margin-top: .5rem; }
+
   .profile-container .profile-hero {
     padding: 6.5rem 0 2rem 0;
     background-color: #03264A;
@@ -927,7 +990,49 @@ body {
       background-color: #4089A0;
       border-color: #4089A0; }
     .profile-container .profile-body-container #ValidationSummary {
-      color: darkred; } }
+      color: darkred; }
+  .profile-container .profile-edit-container {
+    background-color: #03264A;
+    padding: 2rem 0; }
+    .profile-container .profile-edit-container #ProfileInformationContainer h2 {
+      color: #fff; }
+    .profile-container .profile-edit-container #ProfileInformationContainer .edit-personal-info-container .options-input-container .edit-container {
+      border-radius: 1rem;
+      margin-top: 2rem;
+      padding: 1rem 0 1rem 1.5rem;
+      background-color: #fff;
+      display: inline-block;
+      width: 100%; }
+      .profile-container .profile-edit-container #ProfileInformationContainer .edit-personal-info-container .options-input-container .edit-container .edit-action {
+        font-size: .75rem;
+        color: #03264A;
+        padding-right: 1.5rem;
+        cursor: pointer; }
+        .profile-container .profile-edit-container #ProfileInformationContainer .edit-personal-info-container .options-input-container .edit-container .edit-action:hover {
+          color: #4089A0; }
+      .profile-container .profile-edit-container #ProfileInformationContainer .edit-personal-info-container .options-input-container .edit-container .options-container .option-header {
+        font-size: .65rem;
+        width: 25%;
+        display: inline-block; }
+      .profile-container .profile-edit-container #ProfileInformationContainer .edit-personal-info-container .options-input-container .edit-container .options-container .option-value {
+        font-size: .75rem; }
+      .profile-container .profile-edit-container #ProfileInformationContainer .edit-personal-info-container .options-input-container .edit-container .options-container > div {
+        border-bottom: 1px solid #03264A;
+        padding: .5rem 0; }
+        .profile-container .profile-edit-container #ProfileInformationContainer .edit-personal-info-container .options-input-container .edit-container .options-container > div:last-child {
+          border-bottom: 0;
+          padding-bottom: 0; }
+      .profile-container .profile-edit-container #ProfileInformationContainer .edit-personal-info-container .options-input-container .edit-container .options-container .skill-pill {
+        background-color: #03264A;
+        padding: .5rem 1rem;
+        font-size: .75rem;
+        border-radius: 20px;
+        color: #fff;
+        display: inline-block;
+        margin-right: .5rem;
+        margin-bottom: .5rem; }
+        .profile-container .profile-edit-container #ProfileInformationContainer .edit-personal-info-container .options-input-container .edit-container .options-container .skill-pill:last-child {
+          padding-bottom: .5rem; } }
 @media (min-width: 320px) {
   .profile-container h2 {
     font-size: 1.5rem; } }
