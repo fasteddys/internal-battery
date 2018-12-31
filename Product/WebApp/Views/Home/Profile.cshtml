@@ -499,17 +499,27 @@
                                                         <span class="edit-action" data-toggle="modal" data-target="#SkillsModal">Edit</span>
                                                     </div>
                                                 </div>
-                                                <div class="options-container">
-                                                    @{
-                                                        foreach (var skill in Model.Skills)
-                                                        {
-                                                            <div class="skill-pill">
-
-                                                                @Html.DisplayFor(item => skill.SkillName)
-                                                            </div>
-                                                        }
+                                                @{ 
+                                                    if(Model.Skills.Count == 0)
+                                                    {
+                                                        <text>No skills have been provided.</text>
                                                     }
-                                                </div>
+                                                    else
+                                                    {
+                                                        <div class="options-container">
+                                                            @{
+                                                                foreach (var skill in Model.Skills)
+                                                                {
+                                                                    <div class="skill-pill">
+
+                                                                        @Html.DisplayFor(item => skill.SkillName)
+                                                                    </div>
+                                                                }
+                                                            }
+                                                        </div>
+                                                    }
+                                                }
+                                                
                                             </div>
                                         </div>
                                     </div>

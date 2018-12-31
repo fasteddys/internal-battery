@@ -97,6 +97,7 @@ $(document).ready(function () {
             $('#ResumeNextButton').addClass('disabled');
             $('#ResumeNextButton a').removeAttr("href");
             $('#ResumeUploadDisclaimer').css("display", "inline-block");
+            setCarouselHeight();
         }
         $('#UploadedResumeLabel').hide();
         $('#ChangeResumeLabel').show();
