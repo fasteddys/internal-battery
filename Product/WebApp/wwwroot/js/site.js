@@ -1,5 +1,4 @@
-﻿
-$(document).ready(function () {
+﻿$(document).ready(function () {
 
     $('#SelectedCountry').change(function () {
         var selectedCountry = $("#SelectedCountry").val();
@@ -150,7 +149,3 @@ $(document).ready(function () {
     });
     
 });
-
-
-
-

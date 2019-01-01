@@ -4,6 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using UpDiddy.Models;
+using Microsoft.Identity.Client;
+using System.Linq;
+using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace UpDiddy.Controllers
 {
@@ -89,6 +96,21 @@ namespace UpDiddy.Controllers
             // Get the current culture and assign it to Azure options so identity screens will be localized
             var requestCulture = HttpContext.Features.Get<IRequestCultureFeature>();
             AzureAdB2COptions.UiLocales = requestCulture.RequestCulture.Culture.Name;
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("[controller]/token")]
+        public async Task<IActionResult> TokenAsync()
+        {
+            // Retrieve the token with the specified scopes
+            var scope = AzureAdB2COptions.ApiScopes.Split(' ');
+            string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, HttpContext).GetMsalCacheInstance();
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureAdB2COptions.ClientId, AzureAdB2COptions.Authority, AzureAdB2COptions.RedirectUri, new ClientCredential(AzureAdB2COptions.ClientSecret), userTokenCache, null);
+            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureAdB2COptions.Authority, false);
+
+            return Ok(JsonConvert.SerializeObject(result));
         }
     }
 }

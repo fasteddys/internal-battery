@@ -5,115 +5,123 @@
 @using System;
 @model ProfileViewModel
 
-<script type="text/javascript">
-    // this must be present for the API call used in site.js
-    var url = '@Url.Action("GetStatesByCountry", "Home")';
-    var subscriberSkills = @Json.Serialize(Model.Skills);
+@section Scripts
+{
+    <script type="text/javascript">
 
-    document.addEventListener("DOMContentLoaded", function (event) {
-
-        $('.edit-profile-info-button').on('click', function () {
-            $('.personal-info-display').slideToggle();
-            $('#PersonalInfoFormContainer').slideToggle();
-            $('.edit-profile-info-button').toggleClass('expanded');
-
-            $('.edit-profile-info-button').each(function () {
-                if ($(this).hasClass("expanded") && !$(this).hasClass('profile-mobile-view')) {
-                    $(this).html("Cancel");
-                } else {
-                    if (!$(this).hasClass('profile-mobile-cancel')) {
-
-                        $(this).html("Edit");
-                    }
-                }
-            });
+        // remove before production - used for testing
+        $(document).ready(function () {
+            CareerCircleAPI.getProfile().then(function (data) { console.log(data) });
         });
+        // this must be present for the API call used in site.js
+        var url = '@Url.Action("GetStatesByCountry", "Home")';
+        var subscriberSkills = @Json.Serialize(Model.Skills);
 
-        $('#PersonalInfoForm').submit(function (e) {
-            $.ajax({
-                type: "POST",
-                url: '/home/UpdateProfileInformation',
-                data: $(this).serialize(),
-                success: function (html) {
-                    if (html.statusCode === "200") {
-                        location.reload();
-                    }
-                    else {
-                        $('#ValidationSummary ul').html('');
-                        var errorMessages = html.description.split("|");
-                        for (i = 0; i < errorMessages.length; i++) {
-                            if (i != errorMessages.length - 1) {
-                                var li = document.createElement("li");
-                                li.innerHTML = errorMessages[i];
-                                $('#ValidationSummary ul').append(li);
-                            }
+        document.addEventListener("DOMContentLoaded", function (event) {
 
+            $('.edit-profile-info-button').on('click', function () {
+                $('.personal-info-display').slideToggle();
+                $('#PersonalInfoFormContainer').slideToggle();
+                $('.edit-profile-info-button').toggleClass('expanded');
+
+                $('.edit-profile-info-button').each(function () {
+                    if ($(this).hasClass("expanded") && !$(this).hasClass('profile-mobile-view')) {
+                        $(this).html("Cancel");
+                    } else {
+                        if (!$(this).hasClass('profile-mobile-cancel')) {
+
+                            $(this).html("Edit");
                         }
                     }
-                }
+                });
             });
-            e.preventDefault();
-        });
+
+            $('#PersonalInfoForm').submit(function (e) {
+                $.ajax({
+                    type: "POST",
+                    url: '/home/UpdateProfileInformation',
+                    data: $(this).serialize(),
+                    success: function (html) {
+                        if (html.statusCode === "200") {
+                            location.reload();
+                        }
+                        else {
+                            $('#ValidationSummary ul').html('');
+                            var errorMessages = html.description.split("|");
+                            for (i = 0; i < errorMessages.length; i++) {
+                                if (i != errorMessages.length - 1) {
+                                    var li = document.createElement("li");
+                                    li.innerHTML = errorMessages[i];
+                                    $('#ValidationSummary ul').append(li);
+                                }
+
+                            }
+                        }
+                    }
+                });
+                e.preventDefault();
+            });
 
         
 
-        $('#phone-number')
-            .keydown(function (e) {
-                var key = e.which || e.charCode || e.keyCode || 0;
-                $phone = $(this);
+            $('#phone-number')
+                .keydown(function (e) {
+                    var key = e.which || e.charCode || e.keyCode || 0;
+                    $phone = $(this);
 
-                // Don't let them remove the starting '('
-                if ($phone.val().length === 1 && (key === 8 || key === 46)) {
-                    $phone.val('(');
-                    return false;
-                }
-                // Reset if they highlight and type over first char.
-                else if ($phone.val().charAt(0) !== '(') {
-                    $phone.val('(' + String.fromCharCode(e.keyCode) + '');
-                }
-
-                // Auto-format- do not expose the mask as the user begins to type
-                if (key !== 8 && key !== 9) {
-                    if ($phone.val().length === 4) {
-                        $phone.val($phone.val() + ')');
+                    // Don't let them remove the starting '('
+                    if ($phone.val().length === 1 && (key === 8 || key === 46)) {
+                        $phone.val('(');
+                        return false;
                     }
-                    if ($phone.val().length === 5) {
-                        $phone.val($phone.val() + ' ');
+                    // Reset if they highlight and type over first char.
+                    else if ($phone.val().charAt(0) !== '(') {
+                        $phone.val('(' + String.fromCharCode(e.keyCode) + '');
                     }
-                    if ($phone.val().length === 9) {
-                        $phone.val($phone.val() + '-');
+
+                    // Auto-format- do not expose the mask as the user begins to type
+                    if (key !== 8 && key !== 9) {
+                        if ($phone.val().length === 4) {
+                            $phone.val($phone.val() + ')');
+                        }
+                        if ($phone.val().length === 5) {
+                            $phone.val($phone.val() + ' ');
+                        }
+                        if ($phone.val().length === 9) {
+                            $phone.val($phone.val() + '-');
+                        }
                     }
-                }
 
-                // Allow numeric (and tab, backspace, delete) keys only
-                return (key == 8 ||
-                    key == 9 ||
-                    key == 46 ||
-                    (key >= 48 && key <= 57) ||
-                    (key >= 96 && key <= 105));
-            })
-            .bind('focus click', function () {
-                $phone = $(this);
+                    // Allow numeric (and tab, backspace, delete) keys only
+                    return (key == 8 ||
+                        key == 9 ||
+                        key == 46 ||
+                        (key >= 48 && key <= 57) ||
+                        (key >= 96 && key <= 105));
+                })
+                .bind('focus click', function () {
+                    $phone = $(this);
 
-                if ($phone.val().length === 0) {
-                    $phone.val('(');
-                }
-                else {
-                    var val = $phone.val();
-                    $phone.val('').val(val); // Ensure cursor remains at the end
-                }
-            })
-            .blur(function () {
-                $phone = $(this);
+                    if ($phone.val().length === 0) {
+                        $phone.val('(');
+                    }
+                    else {
+                        var val = $phone.val();
+                        $phone.val('').val(val); // Ensure cursor remains at the end
+                    }
+                })
+                .blur(function () {
+                    $phone = $(this);
 
-                if ($phone.val() === '(') {
-                    $phone.val('');
-                }
-            });
-    });
+                    if ($phone.val() === '(') {
+                        $phone.val('');
+                    }
+                });
+        });
 
-</script>
-<script src="~/js/selectize-handling.js" ></script>
+    </script>
+    <script type="text/javascript" src="~/js/selectize-handling.js" ></script>
+}
 <div class="profile-container">
     <div class="row profile-hero">
         <div class="col-md-12">

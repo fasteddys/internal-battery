@@ -34,13 +34,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareerCircle</title>
     <link rel="shortcut icon" href="@(ProtocolAndHost)/images/Icon-20.png?v=@(ViewData["Icon20"].ToString())" />
-    <environment names="Development,DevelopmentLocalApi,DevelopmentLocal">
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/lib/bootstrap/css/bootstrap.min.css?v=@(ViewData["Bootstrap"].ToString())" />
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/lib/font-awesome/css/all.min.css?v=@(ViewData["FontAwesome"].ToString())" />
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/Unified.css?v=@(ViewData["Unified"].ToString())" />
-        <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/bundle.css?v=@(ViewData["Bundle"].ToString())" />
-    </environment>
-    <environment names="Staging,Production">
+    <environment names="Development,Staging,Production">
         <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/site.min.css?v=@(ViewData["SiteMin"].ToString())" />
         <link rel="stylesheet" type="text/css" href="@(ProtocolAndHost)/css/Unified.css?v=@(ViewData["Unified"].ToString())" />
     </environment>
