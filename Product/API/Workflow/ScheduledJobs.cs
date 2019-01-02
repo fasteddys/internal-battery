@@ -15,6 +15,7 @@ using UpDiddy.Helpers;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Business.Resume;
+using UpDiddyApi.Business.Factory;
 
 namespace UpDiddyApi.Workflow
 {
@@ -262,7 +263,7 @@ namespace UpDiddyApi.Workflow
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resumeDto.SubscriberGuid}");
 
                 String parsedDocument =  _sovrenApi.SubmitResumeAsync(resumeDto.Base64EncodedResume).Result;
-                SubscriberProfileStagingStore.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
+                SubscriberProfileStagingStoreFactory.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
 
                 // Get the list of profiles that need 
                 List<SubscriberProfileStagingStore> profiles = _db.SubscriberProfileStagingStore
@@ -273,11 +274,8 @@ namespace UpDiddyApi.Workflow
                 _ImportSubscriberProfileData(profiles);
             }
             catch (Exception e)
-            {
-                // Save any work that has been completed before the exception 
-                _db.SaveChanges();
+            { 
                 _syslog.Log(LogLevel.Error, "ScheduledJobs:ImportSubscriberProfileData threw an exception -> " + e.Message);
-
             }
             finally
             {
@@ -355,9 +353,9 @@ namespace UpDiddyApi.Workflow
                 foreach (SubscriberProfileStagingStore p in profiles)
                 {
                     if (p.ProfileSource == Constants.DataSource.LinkedIn)                    
-                        p.Status = (int)SubscriberSkill.ImportLinkedIn(_db, _sovrenApi, p, ref errMsg);
+                        p.Status = (int)SubscriberFactory.ImportLinkedIn(_db, _sovrenApi, p, ref errMsg);
                     else if (p.ProfileSource == Constants.DataSource.Sovren)                    
-                        p.Status = (int)SubscriberSkill.ImportSovren(_db, p, ref errMsg);                    
+                        p.Status = (int)SubscriberFactory.ImportSovren(_db, p, ref errMsg, _syslog);                    
                     else
                     {
                         // Report on unknown source error

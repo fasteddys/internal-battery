@@ -102,7 +102,7 @@ namespace UpDiddyApi.Business
                             select new { LastLoginDate = vsl.LastLoginDate, SubscriberGuid = s.SubscriberGuid, RegstrationUrl = vsl.RegistrationUrl, LoginUrl = v.LoginUrl };
 
                 step = 1;
-                if (studentLogin != null && studentLogin.First() != null)
+                if (studentLogin != null && studentLogin.Any())
                 {
                     DateTime? LastLoginDate = studentLogin.First().LastLoginDate;
                     Guid? subscriberGuid = studentLogin.First().SubscriberGuid;

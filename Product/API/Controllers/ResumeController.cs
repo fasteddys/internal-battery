@@ -57,7 +57,7 @@ namespace UpDiddyApi.Controllers
                         .FirstOrDefault();
 
                     if (subscriber != null)
-                    {           
+                    {
                         // Queue job as background process 
                         BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(resumeDto, subscriber));
 

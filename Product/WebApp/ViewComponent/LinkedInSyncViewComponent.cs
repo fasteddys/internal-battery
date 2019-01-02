@@ -41,7 +41,7 @@ namespace UpDiddy.ViewComponents
             // if true then send code to API
             if (CheckGetParams(responseQuery))
             {
-                BasicResponseDto apiResponse = _Api.SyncLinkedInAccount(SubscriberGuid, responseQuery["code"], returnUrl);
+                BasicResponseDto apiResponse = _Api.SyncLinkedInAccount(responseQuery["code"], returnUrl);
 
                 // todo: perhaps display error in some way if this failed
                 // if error then they will need to get another authcode and try again

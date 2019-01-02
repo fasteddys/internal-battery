@@ -93,7 +93,7 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        public IList<CourseDto> getCousesByTopicSlug(string TopicSlug)
+        public IList<CourseDto> getCoursesByTopicSlug(string TopicSlug)
         {
             string cacheKey = $"getCousesByTopicSlug{TopicSlug}";
             IList<CourseDto> rval = GetCachedValue<IList<CourseDto>>(cacheKey);
@@ -102,7 +102,7 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _getCousesByTopicSlug(TopicSlug);
+                rval = _getCoursesByTopicSlug(TopicSlug);
                 SetCachedValue<IList<CourseDto>>(cacheKey, rval);
             }
             return rval;
@@ -136,37 +136,6 @@ namespace UpDiddy.Api
             {
                 rval = _CourseByGuid(CourseGuid);
                 SetCachedValue<CourseDto>(cacheKey, rval);
-            }
-            return rval;
-        }
-
-        public WozTermsOfServiceDto GetWozTermsOfService()
-        {
-            string cacheKey = $"GetWozTermsOfService";
-            WozTermsOfServiceDto rval = GetCachedValue<WozTermsOfServiceDto>(cacheKey);
-
-            if (rval != null)
-                return rval;
-            else
-            {
-                rval = _GetWozTermsOfService();
-                SetCachedValue<WozTermsOfServiceDto>(cacheKey, rval);
-            }
-            return rval;
-        }
-
-
-        public WozCourseProgressDto GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)
-        {
-            string cacheKey = $"GetCurrentCourseProgress{SubscriberGuid}{EnrollmentGuid}";
-            WozCourseProgressDto rval = GetCachedValue<WozCourseProgressDto>(cacheKey);
-
-            if (rval != null)
-                return rval;
-            else
-            {
-                rval = _GetCurrentCourseProgress(SubscriberGuid, EnrollmentGuid);
-                SetCachedValue<WozCourseProgressDto>(cacheKey, rval);
             }
             return rval;
         }
@@ -234,40 +203,34 @@ namespace UpDiddy.Api
 
         #region Public UnCached Methods
 
-        public SubscriberDto Subscriber(Guid SubscriberGuid)
+        public SubscriberDto Subscriber()
         {
-            return Get<SubscriberDto>("profile/" + SubscriberGuid, true);
+            return Get<SubscriberDto>("profile", true);
         }
 
-        public PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid, string subscriberGuid)
+        public PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid)
         {
-            return Get<PromoCodeDto>("promocode/promocoderedemptionvalidation/" + promoCodeRedemptionGuid + "/" + courseGuid + "/" + subscriberGuid, true);
+            return Get<PromoCodeDto>("promocode/redemption-validate/" + promoCodeRedemptionGuid + "/course-variant/" + courseGuid, true);
         }
 
-        public PromoCodeDto PromoCodeValidation(string code, string courseVariantGuid, string subscriberGuid)
+        public PromoCodeDto PromoCodeValidation(string code, string courseVariantGuid)
         {
-            return Get<PromoCodeDto>("promocode/" + code + "/" + courseVariantGuid + "/" + subscriberGuid, true);
+            return Get<PromoCodeDto>("promocode/validate/" + code + "/course-variant/" + courseVariantGuid, true);
         }
 
-        public VendorStudentLoginDto StudentLogin(int SubscriberId)
+        public CourseLoginDto CourseLogin(Guid EnrollmentGuid)
         {
-            return Get<VendorStudentLoginDto>("enrollment/StudentLogin/" + SubscriberId.ToString(), true);
+            return Get<CourseLoginDto>($"enrollment/{EnrollmentGuid}/student-login-url", true);
         }
-
-        public CourseLoginDto CourseLogin(Guid SubscriberGuid, Guid EnrollmentGuid)
-        {
-            return Get<CourseLoginDto>($"course/StudentLoginUrl/{SubscriberGuid}/{EnrollmentGuid}", true);
-        }
-
 
         public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
         {
-            return Post<BasicResponseDto>(Subscriber, "profile/update", true);
+            return Put<BasicResponseDto>(Subscriber, "profile", true);
         }
 
-        public BasicResponseDto SyncLinkedInAccount(Guid SubscriberGuid, string linkedInCode, string returnUrl)
+        public BasicResponseDto SyncLinkedInAccount(string linkedInCode, string returnUrl)
         {
-            return Get<BasicResponseDto>($"linkedin/SyncProfile/{SubscriberGuid}/{linkedInCode}?returnUrl={returnUrl}", true);
+            return Put<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}",true);
         }
 
         public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto)
@@ -275,20 +238,14 @@ namespace UpDiddy.Api
             return Post<Guid>(enrollmentFlowDto, "enrollment/", true);
         }
 
-        public Guid WriteToEnrollmentLog(EnrollmentLogDto enrollmentLogDto)
+        public SubscriberDto CreateSubscriber()
         {
-            return Post<Guid>(enrollmentLogDto, "enrollment/EnrollmentLog", true);
+            return Post<SubscriberDto>("profile", true);
         }
 
-        public SubscriberDto CreateSubscriber(Guid SubscriberGuid, string SubscriberEmail)
+        public WozCourseProgressDto UpdateStudentCourseProgress(bool FutureSchedule)
         {
-            return Post<SubscriberDto>("profile/CreateSubscriber/" + SubscriberGuid + "/" + Uri.EscapeDataString(SubscriberEmail), true);
-        }
-
-        public WozCourseProgressDto UpdateStudentCourseProgress(Guid SubscriberGuid, bool FutureSchedule)
-        {
-
-            return Put<WozCourseProgressDto>("woz/UpdateStudentCourseStatus/" + SubscriberGuid + "/" + FutureSchedule.ToString(), true);
+            return Put<WozCourseProgressDto>("course/update-student-course-status/" + FutureSchedule.ToString(), true);
         }
 
         public BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto)
@@ -321,17 +278,25 @@ namespace UpDiddy.Api
 
         public IList<CountryDto> _GetCountries()
         {
-            return Get<IList<CountryDto>>("profile/GetCountries", false);
+            return Get<IList<CountryDto>>("country", false);
         }
 
         public IList<StateDto> _GetStatesByCountry(Guid? countryGuid)
         {
-            return Get<IList<StateDto>>("profile/GetStatesByCountry/" + countryGuid?.ToString(), false);
+            if (!countryGuid.HasValue)
+                return GetStates();
+
+            return Get<IList<StateDto>>("country/" + countryGuid?.ToString() + "/state", false);
         }
 
-        private IList<CourseDto> _getCousesByTopicSlug(string TopicSlug)
+        public IList<StateDto> GetStates()
         {
-            return Get<IList<CourseDto>>("course/" + TopicSlug, false);
+            return Get<IList<StateDto>>("state/", false);
+        }
+
+        private IList<CourseDto> _getCoursesByTopicSlug(string TopicSlug)
+        {
+            return Get<IList<CourseDto>>("course/topic/" + TopicSlug, false);
         }
 
         private CourseDto _Course(string CourseSlug)
@@ -342,32 +307,22 @@ namespace UpDiddy.Api
 
         private CourseDto _CourseByGuid(Guid CourseGuid)
         {
-            CourseDto retVal = Get<CourseDto>("course/guid/" + CourseGuid, false);
+            CourseDto retVal = Get<CourseDto>("course/" + CourseGuid, false);
             return retVal;
         }
         public CourseVariantDto _GetCourseVariant(Guid courseVariantGuid)
         {
-            return Get<CourseVariantDto>("course/GetCourseVariant/" + courseVariantGuid, false);
-        }
-
-        private WozTermsOfServiceDto _GetWozTermsOfService()
-        {
-            return Get<WozTermsOfServiceDto>("woz/TermsOfService/", false);
-        }
-
-        private WozCourseProgressDto _GetCurrentCourseProgress(Guid SubscriberGuid, Guid EnrollmentGuid)
-        {
-            return Get<WozCourseProgressDto>("woz/CourseStatus/" + SubscriberGuid + "/" + EnrollmentGuid, false);
+            return Get<CourseVariantDto>("course/course-variant/" + courseVariantGuid, false);
         }
 
         private IList<SkillDto> _GetSkills(string userQuery)
         {
-            return Get<IList<SkillDto>>("profile/GetSkills/" + userQuery, true);
+            return Get<IList<SkillDto>>("skill/" + userQuery, true);
         }
 
         public IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid)
         {
-            return Get<IList<SkillDto>>("profile/GetSkillsBySubscriber/" + subscriberGuid, true);
+            return Get<IList<SkillDto>>("profile/" + subscriberGuid + "/skill", true);
         }
         #endregion
 
@@ -472,6 +427,14 @@ namespace UpDiddy.Api
             T rval = JsonConvert.DeserializeObject<T>(Response.Result);
             return rval;
 
+        }
+
+        public T Put<T>(BaseDto Body, string ApiAction, bool Authorized = false)
+        {
+            string json = JsonConvert.SerializeObject(Body);
+            Task<string> Response = _PutAsync(json, ApiAction, Authorized);
+            T response = JsonConvert.DeserializeObject<T>(Response.Result);
+            return response;
         }
 
         #region Helpers Functions
@@ -627,14 +590,33 @@ namespace UpDiddy.Api
             return responseString;
         }
 
-        private HttpRequestMessage PostRequest(string ApiAction, string Content)
+        private async Task<string> _PutAsync(String json, string ApiAction, bool Authorized = false)
         {
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, _ApiBaseUri + ApiAction)
+            string ApiUrl = _ApiBaseUri + ApiAction;
+            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPutClientName);
+            var request = Request(HttpMethod.Put, ApiAction, json);
+
+            if (Authorized)
+                await AddBearerTokenAsync(request);
+
+            var response = await client.SendAsync(request);
+            string responseString = await response.Content.ReadAsStringAsync();
+            return responseString;
+
+        }
+        private HttpRequestMessage Request(HttpMethod method, string ApiAction, string Content)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(method, _ApiBaseUri + ApiAction)
             {
                 Content = new StringContent(Content)
             };
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             return request;
+        }
+
+        private HttpRequestMessage PostRequest(string ApiAction, string Content)
+        {
+            return Request(HttpMethod.Post, ApiAction, Content);
         }
 
         public static void SerializeJsonIntoStream(object value, Stream stream)

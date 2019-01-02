@@ -25,7 +25,7 @@ namespace UpDiddy.Controllers
         public Guid GetSubscriberGuid()
         {
             Guid subscriberGuid;
-            var objectId = User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;
+            var objectId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             if (Guid.TryParse(objectId, out subscriberGuid))
                 return subscriberGuid;
             else
@@ -37,26 +37,16 @@ namespace UpDiddy.Controllers
  
             if (User.Identity.IsAuthenticated)
             {
-                Claim emailClaim = User.Claims.Where(c => c.Type == "emails").FirstOrDefault();
-                string email = string.Empty;
-                if (emailClaim != null)
-                    email = emailClaim.Value;
-                else
-                    throw new Exception("Unable to locate email claim");
-
-                Guid subscriberGuid = this.GetSubscriberGuid();
-
                 // Try to get the subscriber from session 
-
                 string SubscriberJson = "";
                 if(!HardRefresh)
                     SubscriberJson = HttpContext.Session.GetString(Constants.SubsriberSessionKey);   
                 
                 if ( String.IsNullOrEmpty(SubscriberJson)  )
                 {
-                    this.subscriber = _Api.Subscriber(subscriberGuid);
+                    this.subscriber = _Api.Subscriber();
                     if ( this.subscriber != null )
-                    HttpContext.Session.SetString(Constants.SubsriberSessionKey, JsonConvert.SerializeObject(this.subscriber));
+                        HttpContext.Session.SetString(Constants.SubsriberSessionKey, JsonConvert.SerializeObject(this.subscriber));
                 }
                 else 
                     this.subscriber = JsonConvert.DeserializeObject<SubscriberDto>(SubscriberJson);
@@ -64,7 +54,7 @@ namespace UpDiddy.Controllers
                 // if the user is not a subscriber, create their subscriber record now
                 if ( this.subscriber == null )
                 {
-                    this.subscriber = _Api.CreateSubscriber(subscriberGuid, email);
+                    this.subscriber = _Api.CreateSubscriber();
                     HttpContext.Session.SetString(Constants.SubsriberSessionKey, JsonConvert.SerializeObject(this.subscriber));
                 }
                     

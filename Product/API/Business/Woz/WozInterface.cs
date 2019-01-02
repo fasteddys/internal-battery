@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Business
 {
-    public class WozInterface : BusinessVendorBase
+    public class WozInterface : BusinessVendorBase, IWozInterface
     {
 
         #region Class
@@ -30,7 +30,6 @@ namespace UpDiddyApi.Business
         {
             _db = context;
             _mapper = mapper;
-            // TODO: CRITICAL, Azure Key Vault does NOT permit colons. See https://docs.microsoft.com/en-us/aspnet/core/security/key-vault-configuration?view=aspnetcore-2.1
             _apiBaseUri = configuration["Woz:ApiUrl"];
             _accessToken = configuration["Woz:AccessToken"];
             _syslog = sysLog;

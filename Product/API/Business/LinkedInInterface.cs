@@ -9,6 +9,7 @@ using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using UpDiddy.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using UpDiddyApi.Business.Factory;
 
 namespace UpDiddyApi.Business
 {
@@ -31,16 +32,16 @@ namespace UpDiddyApi.Business
 
         #region Acquire Profile Data 
 
-        public int ImportProfile(Guid subscriberGuid )
+        public int ImportProfile(Guid subscriberGuid)
         {
             try
             {
                 _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.ImportProfile started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {subscriberGuid.ToString()}");
 
                 int rVal = 0;
-                
+
                 // Get the user linked in token 
-                LinkedInToken lit = LinkedInToken.GetBySubcriber(_db, subscriberGuid);
+                LinkedInToken lit = LinkedInTokenFactory.GetBySubcriber(_db, subscriberGuid);
 
                 if (lit == null)
                     return (int)ProfileDataStatus.AccountNotFound;
@@ -52,23 +53,23 @@ namespace UpDiddyApi.Business
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     // Update or create users linked profile data 
-                    SubscriberProfileStagingStore.StoreProfileData(_db,subscriberGuid, ResponseJson); 
-                    rVal =  (int)ProfileDataStatus.Acquired;
+                    SubscriberProfileStagingStoreFactory.StoreProfileData(_db, subscriberGuid, ResponseJson);
+                    rVal = (int)ProfileDataStatus.Acquired;
                 }
                 else
                 {
                     int _StatusCode = (int)response.StatusCode;
-                    rVal =  (int)ProfileDataStatus.AcquistionError;
+                    rVal = (int)ProfileDataStatus.AcquistionError;
                 }
                 _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.ImportProfile completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return rVal;
             }
-            catch ( Exception e)
+            catch (Exception e)
             {
                 _syslog.Log(LogLevel.Error, "LinkedInInterace:ImportProfile threw an exception -> " + e.Message);
                 return (int)ProfileDataStatus.AcquistionError;
             }
-     
+
         }
 
 
@@ -89,7 +90,7 @@ namespace UpDiddyApi.Business
 
         #region Acquire Bearer Token
 
-        public int AcquireBearerToken(Guid subscriberGuid, string authCode, string returnUrl, LinkedInToken lit  )
+        public int AcquireBearerToken(Guid subscriberGuid, string authCode, string returnUrl, LinkedInToken lit)
         {
             try
             {
@@ -106,20 +107,20 @@ namespace UpDiddyApi.Business
                     string accessToken = ResponseObject.access_token;
                     long expires_in_seconds = ResponseObject.expires_in;
                     // Create or update user's lit token
-                    LinkedInToken.StoreToken(_db, lit, subscriberGuid, accessToken, expires_in_seconds);
+                    LinkedInTokenFactory.StoreToken(_db, lit, subscriberGuid, accessToken, expires_in_seconds);
                     rval = (int)ProfileDataStatus.Acquired;
                 }
                 else
-                    rval =  (int)ProfileDataStatus.AcquistionError;
+                    rval = (int)ProfileDataStatus.AcquistionError;
 
                 _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.AcquireAccessToken completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return rval;
             }
-            catch ( Exception e)
-            {                
-                    _syslog.Log(LogLevel.Error, "LinkedInInterace:AcquireAccessToken threw an exception -> " + e.Message);
-                    return (int)ProfileDataStatus.AcquistionError;
-            }           
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Error, "LinkedInInterace:AcquireAccessToken threw an exception -> " + e.Message);
+                return (int)ProfileDataStatus.AcquistionError;
+            }
         }
 
 
@@ -151,20 +152,20 @@ namespace UpDiddyApi.Business
             try
             {
                 int rval = 0;
-                _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.SyncProfile started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {subscriberGuid.ToString()}"); 
+                _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.SyncProfile started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {subscriberGuid.ToString()}");
 
                 // Get the linked in bearer token for the user 
-                LinkedInToken lit = LinkedInToken.GetBySubcriber(_db, subscriberGuid);
+                LinkedInToken lit = LinkedInTokenFactory.GetBySubcriber(_db, subscriberGuid);
 
                 // If the user does not have a linked in token or their bearer token has expired get them a bearer token
                 if (lit == null || lit.AccessTokenExpiry < DateTime.Now)
                     rval = AcquireBearerToken(subscriberGuid, code, returnUrl, lit);
 
                 // Import the user's profile data from linkein
-                if ( rval == (int) ProfileDataStatus.Acquired )
+                if (rval == (int)ProfileDataStatus.Acquired)
                     rval = ImportProfile(subscriberGuid);
                 else
-                    _syslog.Log(LogLevel.Error, "LinkedInInterace:SyncProfile Import proile returned an invalid status " + rval.ToString() );                
+                    _syslog.Log(LogLevel.Error, "LinkedInInterace:SyncProfile Import proile returned an invalid status " + rval.ToString());
 
                 _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.SyncProfile completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return rval;
