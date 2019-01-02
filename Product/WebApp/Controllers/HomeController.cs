@@ -65,6 +65,13 @@ namespace UpDiddy.Controllers
         [Authorize]
         public IActionResult SignUp()
         {
+            GetSubscriber(false);
+
+            // This will check to see if the subscriber has onboarded. If not, it flips the flag.
+            // This means the onboarding flow should only ever work the first time a user logs into their account.
+            if(subscriber.HasOnboarded != 1)
+                _Api.UpdateOnboardingStatus((Guid)subscriber.SubscriberGuid);
+
             SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
             {
                 Countries = _Api.GetCountries().Select(c => new SelectListItem()
@@ -130,7 +137,10 @@ namespace UpDiddy.Controllers
             if (this.subscriber != null)
                 _Api.UpdateStudentCourseProgress(true);
 
-            return RedirectToAction("Profile", "Home");
+            if (this.subscriber.HasOnboarded > 0)
+                return RedirectToAction("Profile", "Home");
+            else
+                return RedirectToAction("Signup", "Home");
         }
 
         [Authorize]

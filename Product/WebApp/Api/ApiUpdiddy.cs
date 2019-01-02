@@ -228,6 +228,11 @@ namespace UpDiddy.Api
             return Put<BasicResponseDto>(Subscriber, "profile", true);
         }
 
+        public BasicResponseDto UpdateOnboardingStatus(Guid SubscriberGuid)
+        {
+            return Put<BasicResponseDto>("profile/onboard/" + SubscriberGuid, true);
+        }
+
         public BasicResponseDto SyncLinkedInAccount(string linkedInCode, string returnUrl)
         {
             return Put<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}",true);

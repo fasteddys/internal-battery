@@ -142,6 +142,22 @@ namespace UpDiddyApi.Controllers
             return Ok();
         }
 
+        [HttpPut]
+        [Route("api/[controller]/onboard/{SubscriberGuid}")]
+        public IActionResult Onboard(Guid SubscriberGuid)
+        {
+            if(SubscriberGuid == null || SubscriberGuid == Guid.Empty)
+                return BadRequest(new { code = 400, message = "No Subscriber found in system." });
+
+            Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == SubscriberGuid).FirstOrDefault();
+
+            subscriber.HasOnboarded = 1;
+            _db.Subscriber.Update(subscriber);
+            _db.SaveChanges();
+
+            return Ok();
+        }
+
         // should we have a "utility" or "shared" API controller for things like this?
         [HttpGet]
         [Route("api/country")]
