@@ -5,6 +5,9 @@
         },
         get: function (key) {
             return JSON.parse(window.sessionStorage.getItem(key));
+        },
+        clear: function () {
+            window.sessionStorage.clear();
         }
     };
 })();

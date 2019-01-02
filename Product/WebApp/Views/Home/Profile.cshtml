@@ -9,10 +9,6 @@
 {
     <script type="text/javascript">
 
-        // remove before production - used for testing
-        $(document).ready(function () {
-            CareerCircleAPI.getProfile().then(function (data) { console.log(data) });
-        });
         // this must be present for the API call used in site.js
         var url = '@Url.Action("GetStatesByCountry", "Home")';
         var subscriberSkills = @Json.Serialize(Model.Skills);

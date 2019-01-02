@@ -1,4 +1,5 @@
-﻿var CareerCircleAPI = (function (apiUrl) {
+﻿// todo: maybe utilize DI SessionStorage
+var CareerCircleAPI = (function (apiUrl) {
     var _session_key = "ccapi";
     var _api_url = apiUrl.trim().replace(/\/$/, "");
 
@@ -34,6 +35,10 @@
         });
     };
 
+    var signOut = function () {
+        SessionStorage.clear();
+    };
+
     // call to webapp to get token
     var retrieveToken = function () {
         return $.ajax({
@@ -50,6 +55,7 @@
     };
 
     return {
-        getProfile: getProfile
+        getProfile: getProfile,
+        signOut: signOut
     };
 })(API_URL);
