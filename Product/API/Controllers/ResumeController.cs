@@ -57,15 +57,9 @@ namespace UpDiddyApi.Controllers
                         .FirstOrDefault();
 
                     if (subscriber != null)
-                    {
-                        // todo: submit as background job, maybe depends on onboarding flow
-                        String parsedDocument = await _sovrenApi.SubmitResumeAsync(resumeDto.Base64EncodedResume);
-
-                        // todo: verify subscriber guid permissions and data
-                        SubscriberProfileStagingStore.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
-
-                        // run job to import user profile data 
-                        BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(resumeDto.SubscriberGuid));
+                    {           
+                        // Queue job as background process 
+                        BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(resumeDto, subscriber));
 
                         // indicate that a background job is being processed
                         basicResponseDto.StatusCode = "Processing";
