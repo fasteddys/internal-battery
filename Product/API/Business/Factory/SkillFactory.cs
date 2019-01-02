@@ -2,22 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.Models;
 
-namespace UpDiddyApi.Models
+namespace UpDiddyApi.Business.Factory
 {
-    public partial class Skill
+    public class SkillFactory
     {
 
-        #region Factory Methods
-
-        public Skill(string skillName)
+        public static  Skill CreateSkill(string skillName)
         {
-            this.SkillName = skillName;
-            this.CreateDate = DateTime.Now;
-            this.CreateGuid = Guid.NewGuid();
-            this.ModifyDate = DateTime.Now;
-            this.ModifyGuid = Guid.NewGuid();
-            this.IsDeleted = 0;
+            Skill rVal = new Skill();
+            rVal.SkillName = skillName;
+            rVal.CreateDate = DateTime.Now;
+            rVal.CreateGuid = Guid.NewGuid();
+            rVal.ModifyDate = DateTime.Now;
+            rVal.ModifyGuid = Guid.NewGuid();
+            rVal.IsDeleted = 0;
+            return rVal;
         }
 
         static public Skill GetOrAdd(UpDiddyDbContext db, string skillName)
@@ -30,14 +31,11 @@ namespace UpDiddyApi.Models
 
             if (skill == null)
             {
-                skill = new Skill(skillName);
+                skill =  CreateSkill(skillName);
                 db.Skill.Add(skill);
                 db.SaveChanges();
             }
             return skill;
         }
-
-        #endregion
-
     }
 }

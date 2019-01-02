@@ -23,6 +23,18 @@
     <Compile Remove="Migrations\20181129130559_revert partial test.Designer.cs" />
     <Compile Remove="Migrations\20181221115844_Fixed ICurrent typo.cs" />
     <Compile Remove="Migrations\20181221115844_Fixed ICurrent typo.Designer.cs" />
+    <Compile Remove="Models\_Company.cs" />
+    <Compile Remove="Models\_Country.cs" />
+    <Compile Remove="Models\_EducationalDegree.cs" />
+    <Compile Remove="Models\_EducationalInstitution.cs" />
+    <Compile Remove="Models\_LinkedInToken.cs" />
+    <Compile Remove="Models\_Skill.cs" />
+    <Compile Remove="Models\_State.cs" />
+    <Compile Remove="Models\_Subscriber.cs" />
+    <Compile Remove="Models\_SubscriberEducationHistory.cs" />
+    <Compile Remove="Models\_SubscriberProfileStagingStore.cs" />
+    <Compile Remove="Models\_SubscriberSkill.cs" />
+    <Compile Remove="Models\_SubscriberWorkHistory.cs" />
   </ItemGroup>
 
   <ItemGroup>

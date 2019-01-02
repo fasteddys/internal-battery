@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.Models;
 
-namespace UpDiddyApi.Models
+namespace UpDiddyApi.Business.Factory
 {
-    public partial class Country
+    public class CountryFactory
     {
         public static Country GetCountryByCountryCode(UpDiddyDbContext db, string countryCode)
         {

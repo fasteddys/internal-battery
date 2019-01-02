@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 
-namespace UpDiddyApi.Models
+namespace UpDiddyApi.Business.Factory
 {
-    public partial class SubscriberWorkHistory
+    public class SubscriberWorkHistoryFactory
     {
         public static SubscriberWorkHistory GetWorkHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, Company company, DateTime startDate, DateTime endDate)
         {
@@ -25,7 +26,7 @@ namespace UpDiddyApi.Models
                 {
                     StartDate = workHistory.StartDate,
                     EndDate = workHistory.EndDate,
-                    CompanyId = company.CompanyId,                
+                    CompanyId = company.CompanyId,
                     SubscriberId = subscriber.SubscriberId,
                     Title = workHistory.Title,
                     JobDecription = workHistory.JobDecription,
@@ -45,12 +46,7 @@ namespace UpDiddyApi.Models
                 rVal = false;
             }
             return rVal;
- 
+
         }
-
-
-
-
-
     }
 }

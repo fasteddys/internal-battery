@@ -2,23 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.Models;
 
-namespace UpDiddyApi.Models
+namespace UpDiddyApi.Business.Factory
 {
-    public partial class EducationalDegree
+    public class EducationalDegreeFactory
     {
-        public EducationalDegree()
+        public static EducationalDegree CreateEducationalDegree(string degree)
         {
-
-        }
-        public EducationalDegree(string degree)
-        {
-            this.Degree = degree;
-            this.CreateDate = DateTime.Now;
-            this.CreateGuid = Guid.NewGuid();
-            this.ModifyDate = DateTime.Now;
-            this.ModifyGuid = Guid.NewGuid();
-            this.IsDeleted = 0;
+            EducationalDegree rVal = new EducationalDegree();
+            rVal.Degree = degree;
+            rVal.CreateDate = DateTime.Now;
+            rVal.CreateGuid = Guid.NewGuid();
+            rVal.ModifyDate = DateTime.Now;
+            rVal.ModifyGuid = Guid.NewGuid();
+            rVal.IsDeleted = 0;
+            return rVal;
         }
 
         static public EducationalDegree GetOrAdd(UpDiddyDbContext db, string degree)
@@ -31,13 +30,12 @@ namespace UpDiddyApi.Models
 
             if (educationalDegree == null)
             {
-                educationalDegree = new EducationalDegree(degree);
+                educationalDegree =  CreateEducationalDegree(degree);
                 db.EducationalDegree.Add(educationalDegree);
                 db.SaveChanges();
             }
             return educationalDegree;
         }
-
 
     }
 }

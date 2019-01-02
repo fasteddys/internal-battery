@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    public partial class LinkedInToken : BaseModel
+    public class LinkedInToken : BaseModel
     {
         public int LinkedInTokenId { get; set; }
         public int SubscriberId { get; set; }

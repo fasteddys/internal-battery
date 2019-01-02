@@ -2,24 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.Models;
 
-namespace UpDiddyApi.Models
+namespace UpDiddyApi.Business.Factory
 {
-    public partial class EducationalInstitution
+    public class EducationalInstitutionFactory
     {
-
-        public EducationalInstitution()
+        static public EducationalInstitution CreateEducationalInstitution(string institutionName)
         {
-
-        }
-        public EducationalInstitution(string institutionName)
-        {
-            this.Name = institutionName;
-            this.CreateDate = DateTime.Now;
-            this.CreateGuid = Guid.NewGuid();
-            this.ModifyDate = DateTime.Now;
-            this.ModifyGuid = Guid.NewGuid();
-            this.IsDeleted = 0;
+            EducationalInstitution rVal = new EducationalInstitution();
+            rVal.Name = institutionName;
+            rVal.CreateDate = DateTime.Now;
+            rVal.CreateGuid = Guid.NewGuid();
+            rVal.ModifyDate = DateTime.Now;
+            rVal.ModifyGuid = Guid.NewGuid();
+            rVal.IsDeleted = 0;
+            return rVal;
         }
 
         static public EducationalInstitution GetOrAdd(UpDiddyDbContext db, string institutionName)
@@ -33,12 +31,11 @@ namespace UpDiddyApi.Models
 
             if (educationalInstitution == null)
             {
-                educationalInstitution = new EducationalInstitution(institutionName);
+                educationalInstitution = CreateEducationalInstitution(institutionName);
                 db.EducationalInstitution.Add(educationalInstitution);
                 db.SaveChanges();
             }
             return educationalInstitution;
         }
-
     }
 }
