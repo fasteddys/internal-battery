@@ -397,6 +397,13 @@ namespace UpDiddy.Api
             }
         }
 
+        #region TalentPortal
+        public IList<SubscriberDto> Subscribers()
+        {
+            return Get<IList<SubscriberDto>>("subscriber", true);
+        }
+        #endregion
+
         public T Post<T>(string ApiAction, bool Authorized = false, string Content = null)
         {
             Task<string> Response = _PostAsync(ApiAction, Authorized, Content);

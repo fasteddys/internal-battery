@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
 
@@ -12,18 +13,17 @@ namespace UpDiddy.Controllers
 {
     public class TalentController : Controller
     {
+        private IApi _api;
+        public TalentController(IApi api)
+        {
+            _api = api;
+        }
+
         // GET: /<controller>/
         public IActionResult Subscribers()
         {
-            List<SubscriberDto> subscribers = new List<SubscriberDto>();
-            for (int i = 0; i < 10; i++)
-            {
-                SubscriberDto subscriber = new SubscriberDto()
-                {
-                    FirstName = "Person_" + i.ToString()
-                };
-                subscribers.Add(subscriber);
-            }
+            IList<SubscriberDto> subscribers = _api.Subscribers();
+
             SubscribersViewModel subscribersViewModel = new SubscribersViewModel() { Subscribers = subscribers };
             return View(subscribersViewModel);
         }
