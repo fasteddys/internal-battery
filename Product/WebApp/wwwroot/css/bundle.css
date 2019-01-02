@@ -31,6 +31,9 @@
 .f-color-black {
   color: #000; }
 
+.invalid-entry {
+  color: red; }
+
 /* Font Declarations */
 @font-face {
   font-family: "OpenSans-Bold";

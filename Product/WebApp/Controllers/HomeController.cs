@@ -253,6 +253,12 @@ namespace UpDiddy.Controllers
         [HttpPost]
         public IActionResult UploadResume(ResumeViewModel resumeViewModel)
         {
+            // Check that the resume is a valid text file
+            if (!Utils.IsValidTextFile(resumeViewModel.Resume.FileName))
+            {
+                return BadRequest();
+            }
+
             BasicResponseDto basicResponseDto = null;
 
             try

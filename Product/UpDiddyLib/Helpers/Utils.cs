@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using UpDiddyLib.Dto;
+using UpDiddy.Helpers;
 
 namespace UpDiddyLib.Helpers
 {
@@ -49,6 +50,18 @@ namespace UpDiddyLib.Helpers
 
         }
 
+        public static Boolean IsValidTextFile(string Filename)
+        {
+            // Ensure the filename string is valid
+            if (Filename == null || string.IsNullOrEmpty(Filename) || !Filename.Contains('.'))
+            {
+                return false;
+            }
+
+            string[] splitFileName = Filename.Split(".");
+            return Constants.ValidTextFileExtensions.Contains(splitFileName[splitFileName.Length - 1]);
+
+        }
 
         static public string RemoveHTML(string Str)
         {

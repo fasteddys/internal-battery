@@ -92,11 +92,20 @@ $(document).ready(function () {
     $('#UploadedResume').change(function () {
         var file = $(this)[0].files[0];
         if (file) {
-            $('#UploadedResumeText').html("<strong>You've attached:</strong> " + file.name);
-            $('.appear-on-resume-attach').show();
-            $('#ResumeNextButton').addClass('disabled');
-            $('#ResumeNextButton a').removeAttr("href");
-            $('#ResumeUploadDisclaimer').css("display", "inline-block");
+            if (IsValidFileType(file.name)) {
+                $('#UploadedResumeText').html("<strong>You've attached:</strong> " + file.name);
+                $('.appear-on-resume-attach').show();
+                $('#ResumeNextButton').addClass('disabled');
+                $('#ResumeNextButton a').removeAttr("href");
+                $('#ResumeUploadDisclaimer').css("display", "inline-block");
+            }
+            else {
+                $('#UploadedResumeText').html("<span class='invalid-entry'>Sorry, unfortunately we do not accept resumes of this file type.</span> <br /> Please upload a file in one of the following file types:  .doc, .docx, .odt, .pdf, .rtf, .tex, .txt, .wks, .wps, or .wpd.");
+                $('#ResumeUploadDisclaimer').css("display", "none");
+                $('#SubmitResumeUpload').hide();
+            }
+            
+            
             setCarouselHeight();
         }
         $('#UploadedResumeLabel').hide();
@@ -137,6 +146,18 @@ $(document).ready(function () {
         });
     });
 });
+
+var IsValidFileType = function (filename) {
+    if (filename === null || filename === "" || !filename.includes('.')) {
+        return false;
+    }
+    var fileExtensions = ["doc", "docx", "odt", "pdf", "rtf", "tex", "txt", "wks", "wps", "wpd"];
+    var splitFileName = filename.split(".");
+    if (fileExtensions.indexOf(splitFileName[splitFileName.length - 1]) > 0) {
+        return true;
+    }
+    return false;
+};
 
 var goToNextPhoneNumberInput = function(thisInputField, nextInputField){
     if ($('#' + thisInputField).val().length === 3) {
