@@ -6,13 +6,35 @@
 @model ProfileViewModel
 @section Scripts
 {
-    <script type="text/javascript">
-        // this must be present for the API call used in site.js
-        var url = '@Url.Action("GetStatesByCountry", "Home")';
-        var subscriberSkills = @Json.Serialize(Model.Skills);
-    </script>
-    <script src="~/js/selectize-handling.js"></script>
-    <script src="~/js/profile.js"></script>
+<script type="text/javascript">
+    // this must be present for the API call used in site.js
+    var url = '@Url.Action("GetStatesByCountry", "Home")';
+    var subscriberSkills = @Json.Serialize(Model.Skills);
+
+    document.addEventListener("DOMContentLoaded", function (event) {
+
+        $('#PersonalInfoForm').submit(function (e) {
+            $.ajax({
+                type: "POST",
+                url: '/home/UpdateProfileInformation',
+                data: $(this).serialize(),
+                success: function (html) {
+                    if (html.statusCode === "200") {
+                        location.reload();
+                    }
+                }
+            });
+            e.preventDefault();
+        });
+
+
+
+
+    });
+
+</script>
+<script src="~/js/selectize-handling.js"></script>
+<script src="~/js/profile.js"></script>
 }
 
 @* Modals for editing *@
