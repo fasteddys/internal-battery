@@ -49,6 +49,7 @@
   <ItemGroup>
     <Folder Include="Resources\" />
     <Folder Include="wwwroot\lib\font-awesome\" />
+    <Folder Include="wwwroot\webfonts\" />
     <Folder Include="wwwroot\videos\" />
   </ItemGroup>
   <ItemGroup>

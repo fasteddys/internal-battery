@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Cors;
 using AutoMapper;
 using UpDiddyLib.Dto;
 using UpDiddyApi.Helpers;
@@ -31,6 +32,7 @@ using UpDiddyLib.Serilog.Sinks;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using UpDiddyApi.Business.Resume;
+using System.Collections.Generic;
 
 namespace UpDiddyApi
 {
@@ -111,6 +113,15 @@ namespace UpDiddyApi
             // Add System Email   
             services.AddSingleton<ISysEmail>(new SysEmail(Configuration));
 
+            List<string> origins = Configuration.GetSection("Cors:Origins").Get<List<string>>();
+            // Shows UseCors with CorsPolicyBuilder.
+            services.AddCors(o => o.AddPolicy("Cors", builder =>
+            {
+                builder.WithOrigins(origins.ToArray())
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            }));
+
             // Add framework services.
             // the 'ignore' option for reference loop handling was implemented to prevent circular errors during serialization 
             // (e.g. SubscriberDto contains a collection of EnrollmentDto objects, and the EnrollmentDto object has a reference to a SubscriberDto)
@@ -188,6 +199,8 @@ namespace UpDiddyApi
             ScopeWrite = Configuration["AzureAdB2C:ScopeWrite"];
 
             app.UseAuthentication();
+
+            app.UseCors("Cors");
 
             app.UseHangfireDashboard("/dashboard");
             app.UseHangfireServer();

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Workflow;
 using Hangfire;
+using UpDiddyApi.Business.Factory;
 
 namespace UpDiddyApi.Business
 {
@@ -42,7 +43,7 @@ namespace UpDiddyApi.Business
                 int rVal = 0;
                 
                 // Get the user linked in token 
-                LinkedInToken lit = LinkedInToken.GetBySubcriber(_db, subscriberGuid);
+                LinkedInToken lit = LinkedInTokenFactory.GetBySubcriber(_db, subscriberGuid);
 
                 if (lit == null)
                     return (int)ProfileDataStatus.AccountNotFound;
@@ -54,7 +55,7 @@ namespace UpDiddyApi.Business
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     // Add acquired linked on profile data to the profile data staging store 
-                    SubscriberProfileStagingStore.StoreProfileData(_db,subscriberGuid, ResponseJson);
+                    SubscriberProfileStagingStoreFactory.StoreProfileData(_db,subscriberGuid, ResponseJson);
                     // Kick off  job to import the subscriber's profile data file from the staging store 
                     BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(subscriberGuid));
                     rVal =  (int)ProfileDataStatus.Acquired;
@@ -110,7 +111,7 @@ namespace UpDiddyApi.Business
                     string accessToken = ResponseObject.access_token;
                     long expires_in_seconds = ResponseObject.expires_in;
                     // Create or update user's lit token
-                    LinkedInToken.StoreToken(_db, lit, subscriberGuid, accessToken, expires_in_seconds);
+                    LinkedInTokenFactory.StoreToken(_db, lit, subscriberGuid, accessToken, expires_in_seconds);
                     rval = (int)ProfileDataStatus.Acquired;
                 }
                 else
@@ -158,7 +159,7 @@ namespace UpDiddyApi.Business
                 _syslog.Log(LogLevel.Information, $"***** LinkedInInterace.SyncProfile started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {subscriberGuid.ToString()}"); 
 
                 // Get the linked in bearer token for the user 
-                LinkedInToken lit = LinkedInToken.GetBySubcriber(_db, subscriberGuid);
+                LinkedInToken lit = LinkedInTokenFactory.GetBySubcriber(_db, subscriberGuid);
 
                 // If the user does not have a linked in token or their bearer token has expired get them a bearer token
                 if (lit == null || lit.AccessTokenExpiry < DateTime.Now)

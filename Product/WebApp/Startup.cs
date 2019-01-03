@@ -78,7 +78,8 @@ namespace UpDiddy
                 options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
             });
 
-            #region AddLocalizationß
+
+            #region AddLocalization
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
             services.AddMvc()

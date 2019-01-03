@@ -12,6 +12,7 @@ using UpDiddyApi.Business;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using UpDiddyApi.Business.Factory;
 
 namespace UpDiddyApi.Controllers
 {
@@ -48,7 +49,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetProfile()
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            var rVal = SubscriberProfileStagingStore.GetProfileAsLinkedInDto(_db, subscriberGuid,_syslog);
+            var rVal = SubscriberProfileStagingStoreFactory.GetProfileAsLinkedInDto(_db, subscriberGuid,_syslog);
             return Ok(rVal); ;
         }
 

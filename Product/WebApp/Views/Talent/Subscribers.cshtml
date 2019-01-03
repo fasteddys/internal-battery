@@ -8,26 +8,29 @@
 <div class="subscribers-container">
     <h1>Talent Portal - Subscribers Grid Example</h1>
     @(Html
-                .Grid(Model.Subscribers)
-                .Build(columns =>
-                {
-                    columns.Add(model => $"<button data-id=\"{model.SubscriberGuid}\">View</button>").Encoded(false);
-                    columns.Add(model => model.FirstName).Titled("First Name");
-                    columns.Add(model => model.LastName).Titled("Last Name");
-                    columns.Add(model => model.Email).Titled("Email");
-                    columns.Add(model => model.PhoneNumber).Titled("Phone");
-                    columns.Add(model => model.City).Titled("City");
-                    columns.Add(model => model.State.Code).Titled("State");
-                })
-                .Empty("No data found")
-                .Filterable()
-                .Sortable()
-                .Pageable(builder => builder.RowsPerPage = 5)
+                        .Grid(Model.Subscribers)
+                        .Build(columns =>
+                        {
+                            columns.Add(model => $"<button data-id=\"{model.SubscriberGuid}\">View</button>").Encoded(false);
+                            columns.Add(model => model.FirstName).Titled("First Name");
+                            columns.Add(model => model.LastName).Titled("Last Name");
+                            columns.Add(model => model.Email).Titled("Email");
+                            columns.Add(model => model.PhoneNumber).Titled("Phone");
+                            columns.Add(model => model.City).Titled("City");
+                            columns.Add(model => model.State.Code).Titled("State");
+                        })
+                        .Empty("No data found")
+                        .Filterable()
+                        .Sortable()
+                        .Pageable(builder => builder.RowsPerPage = 5)
     )
 </div>
 
-<script>
-    [].forEach.call(document.getElementsByClassName('mvc-grid'), function (element) {
-        new MvcGrid(element);
-    });
+@section Scripts
+{
+<script type="text/javascript">
+        [].forEach.call(document.getElementsByClassName('mvc-grid'), function (element) {
+            new MvcGrid(element);
+        });
 </script>
+}

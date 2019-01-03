@@ -18,6 +18,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using Hangfire;
+using UpDiddyApi.Workflow;
 
 namespace UpDiddyApi.Controllers
 {
@@ -52,6 +54,33 @@ namespace UpDiddyApi.Controllers
             _distributedCache = distributedCache;
 
         }
+
+        [HttpPut]
+        [Authorize]
+        [Route("api/[controller]/update-student-course-status/{FutureSchedule}")]
+        public IActionResult UpdateStudentCourseStatus(bool futureSchedule)
+        {
+            string subscriberGuid = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            var NumEnrollments = _db.Enrollment
+                 .Include(s => s.Subscriber)
+                 .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid.ToString() == subscriberGuid && s.CompletionDate == null && s.DroppedDate == null)
+                .Count();
+            // Short circuit if the user does not have any enrollments 
+            if (NumEnrollments == 0)
+                return Ok();
+
+            int AgeThresholdInHours = int.Parse(_configuration["ProgressUpdateAgeThresholdInHours"]);
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.UpdateStudentProgress(subscriberGuid, AgeThresholdInHours));
+
+            // Queue another update in 6 hours 
+            if (futureSchedule)
+                BackgroundJob.Schedule<ScheduledJobs>(j => j.UpdateStudentProgress(subscriberGuid, AgeThresholdInHours), TimeSpan.FromHours(AgeThresholdInHours));
+
+            return Ok();
+        }
+
+
 
         // GET: api/courses
         [HttpGet]
