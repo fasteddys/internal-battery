@@ -99,7 +99,7 @@ namespace UpDiddyApi.Controllers
             var lastName = new SqlParameter("@LastName", (object)Subscriber.LastName ?? DBNull.Value);
             var address = new SqlParameter("@Address", (object)Subscriber.Address ?? DBNull.Value);
             var city = new SqlParameter("@City", (object)Subscriber.City ?? DBNull.Value);
-            var stateGuid = new SqlParameter("@StateGuid", (Subscriber.State != null ? (object)Subscriber.State.StateGuid : DBNull.Value));
+            var stateGuid = new SqlParameter("@StateGuid", (Subscriber?.State?.StateGuid != null ? (object)Subscriber.State.StateGuid : DBNull.Value));
             var phoneNumber = new SqlParameter("@PhoneNumber", (object)Subscriber.PhoneNumber ?? DBNull.Value);
             var facebookUrl = new SqlParameter("@FacebookUrl", (object)Subscriber.FacebookUrl ?? DBNull.Value);
             var twitterUrl = new SqlParameter("@TwitterUrl", (object)Subscriber.TwitterUrl ?? DBNull.Value);

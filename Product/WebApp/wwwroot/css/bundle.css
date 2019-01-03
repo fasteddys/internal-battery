@@ -68,6 +68,24 @@
   border: 0.125rem solid #fff; }
   .btn-primary.font-small {
     font-size: 1rem; }
+  .btn-primary:disabled {
+    background-color: #808080;
+    border-color: #808080; }
+  .btn-primary:hover {
+    background-color: #03264A;
+    border-color: #03264A; }
+  .btn-primary:active {
+    background-color: #03264A;
+    border-color: #03264A; }
+  .btn-primary:focus {
+    background-color: #03264A;
+    border-color: #03264A;
+    box-shadow: none; }
+  .btn-primary:not(:disabled):not(.disabled):active {
+    background-color: #03264A;
+    border-color: #03264A; }
+  .btn-primary:not(:disabled):not(.disabled):active:focus {
+    box-shadow: none; }
 
 .brand-button-tertiary {
   background-color: #84A550;

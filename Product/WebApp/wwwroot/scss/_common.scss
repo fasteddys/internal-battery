@@ -50,6 +50,8 @@
     color: red;
 }
 
+
+
 /* Font Declarations */
 @font-face {
     font-family: "OpenSans-Bold";
@@ -80,14 +82,44 @@
     border: $rem-1 solid $color-secondary;
     padding: .5rem 1.75rem;
     cursor: pointer;
-} 
+}
 
-.btn-primary{
+.btn-primary {
     background-color: $color-secondary;
     border: $rem-2 solid $color-white;
 
-    &.font-small{
+    &.font-small {
         font-size: 1rem;
+    }
+
+    &:disabled {
+        background-color: $color-tertiary-gray;
+        border-color: $color-tertiary-gray;
+    }
+
+    &:hover {
+        background-color: $color-secondary;
+        border-color: $color-secondary;
+    }
+
+    &:active {
+        background-color: $color-secondary;
+        border-color: $color-secondary;
+    }
+
+    &:focus {
+        background-color: $color-secondary;
+        border-color: $color-secondary;
+        box-shadow: none;
+    }
+
+    &:not(:disabled):not(.disabled):active {
+        background-color: $color-secondary;
+        border-color: $color-secondary;
+    }
+
+    &:not(:disabled):not(.disabled):active:focus {
+        box-shadow: none;
     }
 }
 
