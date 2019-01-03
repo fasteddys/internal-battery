@@ -29,6 +29,26 @@ steps:
   displayName: Restore NuGet Packages
 
 - script: |
+    npm install
+  displayName: Install Node Package Dependencies
+  workingDirectory: Product/WebApp
+
+- script: |
+    npm run bower install
+  displayName: Install Client Side Dependencies
+  workingDirectory: Product/WebApp
+
+- script: |
+    npm run gulp sass
+  displayName: Compile Sass
+  workingDirectory: Product/WebApp
+
+- script: |
+    npm run gulp fonts
+  displayName: Copy Fonts
+  workingDirectory: Product/WebApp
+
+- script: |
     dotnet build Product/WebApp --configuration $(buildConfiguration)
   displayName: Compile
 

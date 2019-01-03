@@ -4,65 +4,16 @@
 @using System.Collections.Generic;
 @using System;
 @model ProfileViewModel
-
-<script type="text/javascript">
-    // this must be present for the API call used in site.js
-    var url = '@Url.Action("GetStatesByCountry", "Home")';
-    var subscriberSkills = @Json.Serialize(Model.Skills);
-
-    document.addEventListener("DOMContentLoaded", function (event) {
-
-        $('.edit-profile-info-button').on('click', function () {
-            $('.personal-info-display').slideToggle();
-            $('#PersonalInfoFormContainer').slideToggle();
-            $('.edit-profile-info-button').toggleClass('expanded');
-
-            $('.edit-profile-info-button').each(function () {
-                if ($(this).hasClass("expanded") && !$(this).hasClass('profile-mobile-view')) {
-                    $(this).html("Cancel");
-                } else {
-                    if (!$(this).hasClass('profile-mobile-cancel')) {
-
-                        $(this).html("Edit");
-                    }
-                }
-            });
-        });
-
-        $('#PersonalInfoForm').submit(function (e) {
-            $.ajax({
-                type: "POST",
-                url: '/home/UpdateProfileInformation',
-                data: $(this).serialize(),
-                success: function (html) {
-                    if (html.statusCode === "200") {
-                        location.reload();
-                    }
-                    else {
-                        $('#ValidationSummary ul').html('');
-                        var errorMessages = html.description.split("|");
-                        for (i = 0; i < errorMessages.length; i++) {
-                            if (i != errorMessages.length - 1) {
-                                var li = document.createElement("li");
-                                li.innerHTML = errorMessages[i];
-                                $('#ValidationSummary ul').append(li);
-                            }
-
-                        }
-                    }
-                }
-            });
-            e.preventDefault();
-        });
-
-
-
-
-    });
-
-</script>
-<script src="~/js/selectize-handling.js"></script>
-<script src="~/js/profile.js"></script>
+@section Scripts
+{
+    <script type="text/javascript">
+        // this must be present for the API call used in site.js
+        var url = '@Url.Action("GetStatesByCountry", "Home")';
+        var subscriberSkills = @Json.Serialize(Model.Skills);
+    </script>
+    <script src="~/js/selectize-handling.js"></script>
+    <script src="~/js/profile.js"></script>
+}
 
 @* Modals for editing *@
 <form asp-controller="Home" asp-action="UpdateProfileInformation" id="PersonalInfoForm"></form>

@@ -210,7 +210,6 @@ namespace UpDiddyApi.Business.Factory
         {
             subscriber.FirstName = contactInfo.FirstName;
             subscriber.LastName = contactInfo.LastName;
-            subscriber.Email = contactInfo.Email;
             subscriber.PhoneNumber = contactInfo.PhoneNumber;
             subscriber.City = contactInfo.City;
             subscriber.Address = contactInfo.Address;
