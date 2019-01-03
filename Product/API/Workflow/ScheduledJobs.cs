@@ -254,18 +254,21 @@ namespace UpDiddyApi.Workflow
 
         #region CareerCircle Jobs 
  
-        public Boolean ImportSubscriberProfileData(Guid subscriberGuid)
+        public Boolean ImportSubscriberProfileData(ResumeDto resumeDto,Subscriber subscriber)
         {
             try
             {
                 string errMsg = string.Empty;
 
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {subscriberGuid}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resumeDto.SubscriberGuid}");
+
+                String parsedDocument =  _sovrenApi.SubmitResumeAsync(resumeDto.Base64EncodedResume).Result;
+                SubscriberProfileStagingStoreFactory.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
 
                 // Get the list of profiles that need 
                 List<SubscriberProfileStagingStore> profiles = _db.SubscriberProfileStagingStore
                 .Include(p => p.Subscriber)
-                .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == subscriberGuid)
+                .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == resumeDto.SubscriberGuid)
                 .ToList();
 
                 _ImportSubscriberProfileData(profiles);

@@ -10,15 +10,14 @@ using UpDiddyApi.Models;
 using UpDiddy.Helpers;
 using Hangfire;
 using UpDiddyApi.Workflow;
-using System.Security.Claims;
 using UpDiddyLib.Dto;
 using Microsoft.Extensions.Logging;
-using UpDiddyApi.Business.Factory;
+using System.Security.Claims;
 
 namespace UpDiddyApi.Controllers
 {
     [Route("api/[controller]")]
-    public class ResumeController : ControllerBase
+    public class ResumeController : Controller
     {
         private ISovrenAPI _sovrenApi;
         private UpDiddyDbContext _db;
@@ -56,23 +55,24 @@ namespace UpDiddyApi.Controllers
                 .FirstOrDefault();
 
             if (subscriber == null)
-                return NotFound(new { code = 404, message = "Subscriber not found in the system."});
+                return NotFound(new { code = 404, message = "Subscriber not found in the system." });
 
             if (subscriber.SubscriberGuid != resumeDto.SubscriberGuid)
+            {
+                basicResponseDto.StatusCode = "401";
+                basicResponseDto.Description = "Unauthorized; subscriber's GUID does not match the resume user's GUID.";
                 return Unauthorized();
+            }
+               
 
             try
             {
-                if (resumeDto != null && !string.IsNullOrWhiteSpace(resumeDto.Base64EncodedResume))
+                if (resumeDto != null && resumeDto.SubscriberGuid != Guid.Empty && !string.IsNullOrWhiteSpace(resumeDto.Base64EncodedResume))
                 {
-                    // todo: submit as background job, maybe depends on onboarding flow
-                    String parsedDocument = await _sovrenApi.SubmitResumeAsync(resumeDto.Base64EncodedResume);
 
-                    // todo: verify subscriber guid permissions and data
-                    SubscriberProfileStagingStoreFactory.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
-
-                    // run job to import user profile data 
-                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(subscriberGuid));
+                    // todo: research and implement a better way to handle soft deletes then manual checks everywhere
+                    // Queue job as background process 
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(resumeDto, subscriber));
 
                     // indicate that a background job is being processed
                     basicResponseDto.StatusCode = "Processing";

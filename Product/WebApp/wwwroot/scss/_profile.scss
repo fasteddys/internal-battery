@@ -2,6 +2,72 @@
 
 // Base Styles
 @media (min-width: 0px) {
+    #NameModal,
+    #ContactInfoModal,
+    #SocialLinksModal,
+    #SkillsModal {
+        .modal-body {
+            .profile-edit-modal-header-container {
+                border-bottom: 1px solid $color-secondary;
+                margin-bottom: 2rem;
+            }
+
+            .profile-edit-modal-edit-option {
+                position: relative;
+                border: 1px solid $color-secondary;
+                border-radius: .5rem;
+                margin-top: 2rem;
+
+                &.regex-failure { 
+                    border-color: red;
+                    .modal-edit-input-label{
+                        color: red;
+                    }
+                }
+
+                .modal-edit-input-label {
+                    position: absolute;
+                    top: -10px;
+                    left: 1rem;
+                    background-color: $color-white;
+                    color: $color-secondary;
+                    font-size: .75rem;
+                    padding: 0 .5rem;
+                }
+
+                .modal-edit-input {
+                    padding: 2px 0;
+
+                    input {
+                        border: 0;
+                        border-radius: .5rem;
+                    }
+
+                    select {
+                        border: 0;
+                    }
+
+                    .selectize-control {
+                        padding: .25rem;
+
+                        .selectize-input {
+                            box-shadow: none;
+                            border: 0;
+
+                            .item {
+                                background-color: $color-secondary;
+                                background-image: none;
+                                border: $color-secondary;
+                                padding: 6px 10px;
+                                border-radius: 8px;
+                                margin-top: .5rem;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     .profile-container {
 
         .profile-hero {
@@ -248,6 +314,75 @@
 
             #ValidationSummary {
                 color: darkred;
+            }
+        }
+
+        .profile-edit-container {
+            background-color: $color-secondary;
+            padding: 2rem 0;
+
+            #ProfileInformationContainer {
+
+                h2 {
+                    color: $color-white;
+                }
+
+                .edit-personal-info-container {
+                    .options-input-container {
+                        .edit-container {
+                            border-radius: 1rem;
+                            margin-top: 2rem;
+                            padding: 1rem 0 1rem 1.5rem;
+                            background-color: $color-white;
+                            display: inline-block;
+                            width: 100%;
+                            .edit-action{
+                                font-size: .75rem;
+                                color: $color-secondary;
+                                padding-right: 1.5rem;
+                                cursor: pointer;
+                                &:hover{
+                                    color: $color-primary;
+                                }
+                            }
+                            .options-container {
+                                .option-header {
+                                    font-size: .65rem;
+                                    width: 25%;
+                                    display: inline-block;
+                                }
+                                .option-value{
+                                    font-size: .75rem;
+                                }
+
+                                > div {
+                                    border-bottom: 1px solid $color-secondary;
+                                    padding: .5rem 0;
+
+                                    &:last-child {
+                                        border-bottom: 0;
+                                        padding-bottom: 0;
+                                    }
+                                }
+
+                                .skill-pill {
+                                    background-color: $color-secondary;
+                                    padding: .5rem 1rem;
+                                    font-size: .75rem;
+                                    border-radius: 20px;
+                                    color: $color-white;
+                                    display: inline-block;
+                                    margin-right: .5rem;
+                                    margin-bottom: .5rem;
+
+                                    &:last-child {
+                                        padding-bottom: .5rem;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
