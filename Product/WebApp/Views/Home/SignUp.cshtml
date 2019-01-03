@@ -3,9 +3,12 @@
 @model SignupFlowViewModel
 
 <link rel="stylesheet" type="text/css" href="~/lib/animate/animate.css">
-<script src="~/js/signup-flow.js"></script>
-<script src="~/js/selectize-handling.js"></script>
-<script>var url = '@Url.Action("GetStatesByCountry", "Home")'; var subscriberSkills = @Json.Serialize(Model.Skills);</script>
+@section Scripts{
+    <script src="~/js/signup-flow.js"></script>
+    <script src="~/js/selectize-handling.js"></script>
+    <script>var url = '@Url.Action("GetStatesByCountry", "Home")'; var subscriberSkills = @Json.Serialize(Model.Skills);</script>
+}
+
 
 <div class="overlay">
     <div id="loading-img"></div>
@@ -75,7 +78,7 @@
 <div class="signup-flow-container">
     <div class="row signup-flow-row">
         <div id="Flow-ResumeColumn" class="col-12 signup-flow-column animated slideInUp">
-                        
+
             <div id="SignupFlowCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
                 <div class="carousel-inner">
                     <div class="carousel-item active carousel-item-first">
@@ -98,7 +101,7 @@
                                     <label id="ChangeResumeLabel" for="UploadedResume" class="custom-file-upload">
                                         <i class="fas fa-exchange-alt"></i>&nbsp;&nbsp;Change
                                     </label>
-                                    <input id="UploadedResume" type="file" asp-for="Resume" accept=".doc,.docx,.odt,.pdf,.rtf,.tex,.txt,.wks,.wps,.wpd"/>
+                                    <input id="UploadedResume" type="file" asp-for="Resume" accept=".doc,.docx,.odt,.pdf,.rtf,.tex,.txt,.wks,.wps,.wpd" />
                                     <input id="SubmitResumeUpload" type="submit" value="Upload" class="appear-on-resume-attach btn-resume-submit">
 
                                 </div>
@@ -124,35 +127,35 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                     </div>
                     @*
-                    <div class="carousel-item carousel-item-second">
-                        <div class="linked-in-container">
-                            <div>
-                                <h2>Have a LinkedIn account?<br />Let's sync it with your CareerCircle profile.</h2>
-                                <div class="mt-4 p-4">
-                                    @await Component.InvokeAsync("LinkedInSync")
-                                </div>
-                            </div>
-                        </div>
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="previous-container animated">
-                                        <div class="flow-prev-button">
-                                            <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
-                                        </div>
-                                    </div>
-                                    <div class="skip-next-container">
-                                        <div class="flow-next-button signup-flow-next-button">
-                                            <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
-                                        </div>
+                        <div class="carousel-item carousel-item-second">
+                            <div class="linked-in-container">
+                                <div>
+                                    <h2>Have a LinkedIn account?<br />Let's sync it with your CareerCircle profile.</h2>
+                                    <div class="mt-4 p-4">
+                                        @await Component.InvokeAsync("LinkedInSync")
                                     </div>
                                 </div>
                             </div>
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="previous-container animated">
+                                            <div class="flow-prev-button">
+                                                <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                                            </div>
+                                        </div>
+                                        <div class="skip-next-container">
+                                            <div class="flow-next-button signup-flow-next-button">
+                                                <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
                     *@
                     <div class="carousel-item">
                         <div class="first-name-container">
@@ -180,7 +183,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="carousel-item">
                         <div class="phone-number-container">
                             <div>
@@ -264,7 +267,7 @@
                         <div class="skills-container">
                             <div>
                                 <h2>What skills could you bring to a team?</h2>
-                                <input form="SignupForm" type="text" asp-for="SelectedSkills" placeholder="Type a skill..."/>
+                                <input form="SignupForm" type="text" asp-for="SelectedSkills" placeholder="Type a skill..." />
                             </div>
                         </div>
                         <div class="container">
@@ -286,87 +289,87 @@
                         </div>
                     </div>
                     @*
-                    <div class="carousel-item">
-                        <div class="work-history-container">
-                            <div>
-                                <h2>Let's add your previous and current work experiences.</h2>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="container">
-                                            <div class="row">
-                                                <div class="col-12">
-                                                    <div class="work-history-log">
-                                                        <div class="row">Work history dynamically added here. </div>
+                        <div class="carousel-item">
+                            <div class="work-history-container">
+                                <div>
+                                    <h2>Let's add your previous and current work experiences.</h2>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="container">
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="work-history-log">
+                                                            <div class="row">Work history dynamically added here. </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="mt-3 add-work-history" data-toggle="modal" data-target="#WorkHistoryModal">
-                                    <i class="fas fa-plus"></i>&nbsp;&nbsp;Add
-                                </div>
-                                <input type="hidden" form="SignupForm" id="WorkHistoryInput" asp-for="WorkHistory" />
-                            </div>
-                        </div>
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="previous-container animated">
-                                        <div class="flow-prev-button">
-                                            <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
-                                        </div>
+                                    <div class="mt-3 add-work-history" data-toggle="modal" data-target="#WorkHistoryModal">
+                                        <i class="fas fa-plus"></i>&nbsp;&nbsp;Add
                                     </div>
-                                    <div class="skip-next-container">
-                                        <div class="flow-next-button signup-flow-next-button">
-                                            <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
-                                        </div>
-                                    </div>
+                                    <input type="hidden" form="SignupForm" id="WorkHistoryInput" asp-for="WorkHistory" />
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <div class="education-history-container">
-                            <div>
-                                <h2>Tell us about your education</h2>
+                            <div class="container">
                                 <div class="row">
                                     <div class="col-12">
-                                        <div class="container">
-                                            <div class="row">
-                                                <div class="col-12">
-                                                    <div class="education-history-log">
-                                                        <div class="row"> Work history dynamically added here. </div>
+                                        <div class="previous-container animated">
+                                            <div class="flow-prev-button">
+                                                <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                                            </div>
+                                        </div>
+                                        <div class="skip-next-container">
+                                            <div class="flow-next-button signup-flow-next-button">
+                                                <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <div class="education-history-container">
+                                <div>
+                                    <h2>Tell us about your education</h2>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="container">
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="education-history-log">
+                                                            <div class="row"> Work history dynamically added here. </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="mt-3 add-education-history" data-toggle="modal" data-target="#EducationModal">
+                                        <i class="fas fa-plus"></i>&nbsp;&nbsp;Add
+                                    </div>
+                                    <input type="hidden" form="SignupForm" id="EducationInput" asp-for="EducationHistory" />
                                 </div>
-                                <div class="mt-3 add-education-history" data-toggle="modal" data-target="#EducationModal">
-                                    <i class="fas fa-plus"></i>&nbsp;&nbsp;Add
-                                </div>
-                                <input type="hidden" form="SignupForm" id="EducationInput" asp-for="EducationHistory" />
                             </div>
-                        </div>
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="previous-container animated">
-                                        <div class="flow-prev-button">
-                                            <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="previous-container animated">
+                                            <div class="flow-prev-button">
+                                                <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                                            </div>
+                                        </div>
+                                        <div class="skip-next-container">
+                                            <input  form="SignupForm" type="submit" value="Finish" class="btn-signup-submit">
                                         </div>
                                     </div>
-                                    <div class="skip-next-container">
-                                        <input  form="SignupForm" type="submit" value="Finish" class="btn-signup-submit">
-                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>*@
-                    
+                        </div>*@
+
                 </div>
-                
+
             </div>
         </div>
     </div>
