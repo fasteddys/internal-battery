@@ -12,6 +12,7 @@ using Hangfire;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace UpDiddyApi.Controllers
 {
@@ -46,30 +47,36 @@ namespace UpDiddyApi.Controllers
                 Description = "Initialized"
             };
 
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            // todo: research and implement a better way to handle soft deletes then manual checks everywhere
+            Subscriber subscriber = _db.Subscriber
+                .Where(s => s.SubscriberGuid == subscriberGuid && s.IsDeleted == 0)
+                .FirstOrDefault();
+
+            if (subscriber == null)
+                return NotFound(new { code = 404, message = "Subscriber not found in the system." });
+
+            if (subscriber.SubscriberGuid != resumeDto.SubscriberGuid)
+            {
+                basicResponseDto.StatusCode = "401";
+                basicResponseDto.Description = "Unauthorized; subscriber's GUID does not match the resume user's GUID.";
+                return Unauthorized();
+            }
+               
+
             try
             {
                 if (resumeDto != null && resumeDto.SubscriberGuid != Guid.Empty && !string.IsNullOrWhiteSpace(resumeDto.Base64EncodedResume))
                 {
 
                     // todo: research and implement a better way to handle soft deletes then manual checks everywhere
-                    Subscriber subscriber = _db.Subscriber
-                        .Where(s => s.SubscriberGuid == resumeDto.SubscriberGuid && s.IsDeleted == 0)
-                        .FirstOrDefault();
+                    // Queue job as background process 
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(resumeDto, subscriber));
 
-                    if (subscriber != null)
-                    {
-                        // Queue job as background process 
-                        BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(resumeDto, subscriber));
-
-                        // indicate that a background job is being processed
-                        basicResponseDto.StatusCode = "Processing";
-                        basicResponseDto.Description = "Scheduled job to import profile data is being processed.";
-                    }
-                    else
-                    {
-                        basicResponseDto.StatusCode = "NotFound";
-                        basicResponseDto.Description = "Subscriber does not exist.";
-                    }
+                    // indicate that a background job is being processed
+                    basicResponseDto.StatusCode = "Processing";
+                    basicResponseDto.Description = "Scheduled job to import profile data is being processed.";
                 }
                 else
                 {

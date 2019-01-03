@@ -62,6 +62,7 @@
 
 </script>
 <script src="~/js/selectize-handling.js"></script>
+<script src="~/js/profile.js"></script>
 
 @* Modals for editing *@
 <form asp-controller="Home" asp-action="UpdateProfileInformation" id="PersonalInfoForm"></form>
@@ -76,25 +77,25 @@
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">First name</div>
                     <div class="modal-edit-input">
-                        <input form="PersonalInfoForm" type="text" class="form-control" asp-for="FirstName" />
+                        <input id="FirstNameUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="FirstName" />
                     </div>
                 </div>
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">Last name</div>
                     <div class="modal-edit-input">
-                        <input form="PersonalInfoForm" type="text" class="form-control" asp-for="LastName" />
+                        <input id="LastNameUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="LastName" />
                     </div>
                 </div>
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">Address</div>
                     <div class="modal-edit-input">
-                        <input form="PersonalInfoForm" type="text" class="form-control" asp-for="Address" />
+                        <input id="AddressUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="Address" />
                     </div>
                 </div>
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">City</div>
                     <div class="modal-edit-input">
-                        <input form="PersonalInfoForm" type="text" class="form-control" asp-for="City" />
+                        <input id="CityUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="City" />
                     </div>
                 </div>
                 <div class="profile-edit-modal-edit-option">
@@ -112,7 +113,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
+                <button id="NameModalSaveButton" form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
             </div>
         </div>
     </div>
@@ -128,13 +129,13 @@
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">Phone Number</div>
                     <div class="modal-edit-input">
-                        <input form="PersonalInfoForm" type="text" id="phone-number" class="form-control" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
+                        <input id="PhoneUpdateInput" form="PersonalInfoForm" type="text" id="phone-number" class="form-control" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
+                <button id="ContactInfoModalSaveButton" form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
             </div>
         </div>
     </div>
@@ -150,37 +151,52 @@
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">Facebook</div>
                     <div class="modal-edit-input">
-                        <input form="PersonalInfoForm" type="text" class="form-control" asp-for="FacebookUrl" />
+                        @{ 
+                            string facebookPlaceholder = string.IsNullOrEmpty(Model.FacebookUrl) ? "E.g. http://www.facebook.com/me" : Model.FacebookUrl;
+                        }
+                        <input id="FacebookUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="FacebookUrl" placeholder="@facebookPlaceholder"/>
                     </div>
                 </div>
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">Twitter</div>
                     <div class="modal-edit-input">
-                        <input form="PersonalInfoForm" type="text" class="form-control" asp-for="TwitterUrl" />
+                        @{
+                            string twitterPlaceholder = string.IsNullOrEmpty(Model.TwitterUrl) ? "E.g. https://www.twitter.com/me" : Model.TwitterUrl;
+                        }
+                        <input id="TwitterUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="TwitterUrl" placeholder="@twitterPlaceholder"/>
                     </div>
                 </div>
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">LinkedIn</div>
                     <div class="modal-edit-input">
-                        <input form="PersonalInfoForm" type="text" class="form-control" asp-for="LinkedInUrl" />
+                        @{
+                            string linkedinPlaceholder = string.IsNullOrEmpty(Model.LinkedInUrl) ? "E.g. https://linkedin.com/in/me" : Model.LinkedInUrl;
+                        }
+                        <input id="LinkedInUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="LinkedInUrl" placeholder="@linkedinPlaceholder"/>
                     </div>
                 </div>
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">StackOverflow</div>
                     <div class="modal-edit-input">
-                        <input form="PersonalInfoForm" type="text" class="form-control" asp-for="StackOverflowUrl" />
+                        @{
+                            string stackOverflowPlaceholder = string.IsNullOrEmpty(Model.StackOverflowUrl) ? "E.g. https://stackoverflow.com/users/123456/me" : Model.StackOverflowUrl;
+                        }
+                        <input id="StackOverflowUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="StackOverflowUrl" placeholder="@stackOverflowPlaceholder"/>
                     </div>
                 </div>
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">GitHub</div>
                     <div class="modal-edit-input">
-                        <input form="PersonalInfoForm" type="text" class="form-control" asp-for="GithubUrl" />
+                        @{
+                            string githubPlaceholder = string.IsNullOrEmpty(Model.GithubUrl) ? "E.g. http://github.com/me" : Model.GithubUrl;
+                        }
+                        <input id="GitHubUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="GithubUrl" placeholder="@githubPlaceholder"/>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
+                <button id="SocialLinksModalSaveButton" disabled form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
             </div>
         </div>
     </div>

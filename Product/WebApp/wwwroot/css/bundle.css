@@ -799,6 +799,16 @@ body {
     border: 1px solid #03264A;
     border-radius: .5rem;
     margin-top: 2rem; }
+    #NameModal .modal-body .profile-edit-modal-edit-option.regex-failure,
+    #ContactInfoModal .modal-body .profile-edit-modal-edit-option.regex-failure,
+    #SocialLinksModal .modal-body .profile-edit-modal-edit-option.regex-failure,
+    #SkillsModal .modal-body .profile-edit-modal-edit-option.regex-failure {
+      border-color: red; }
+      #NameModal .modal-body .profile-edit-modal-edit-option.regex-failure .modal-edit-input-label,
+      #ContactInfoModal .modal-body .profile-edit-modal-edit-option.regex-failure .modal-edit-input-label,
+      #SocialLinksModal .modal-body .profile-edit-modal-edit-option.regex-failure .modal-edit-input-label,
+      #SkillsModal .modal-body .profile-edit-modal-edit-option.regex-failure .modal-edit-input-label {
+        color: red; }
     #NameModal .modal-body .profile-edit-modal-edit-option .modal-edit-input-label,
     #ContactInfoModal .modal-body .profile-edit-modal-edit-option .modal-edit-input-label,
     #SocialLinksModal .modal-body .profile-edit-modal-edit-option .modal-edit-input-label,

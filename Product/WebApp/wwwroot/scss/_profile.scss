@@ -18,6 +18,13 @@
                 border-radius: .5rem;
                 margin-top: 2rem;
 
+                &.regex-failure {
+                    border-color: red;
+                    .modal-edit-input-label{
+                        color: red;
+                    }
+                }
+
                 .modal-edit-input-label {
                     position: absolute;
                     top: -10px;
@@ -35,9 +42,11 @@
                         border: 0;
                         border-radius: .5rem;
                     }
-                    select{
+
+                    select {
                         border: 0;
                     }
+
                     .selectize-control {
                         padding: .25rem;
 

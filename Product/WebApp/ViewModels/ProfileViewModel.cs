@@ -61,7 +61,7 @@ namespace UpDiddy.ViewModels
         public string Email { get; set; }
         [RegularExpression(@"^http(s)?://([\w]+.)?facebook.com/[A-z0-9_]+/?$", ErrorMessage = "The Facebook profile URL is not valid.")]
         public string FacebookUrl { get; set; }
-        [RegularExpression(@"^http(s)?://([\w]+.)?linkedin.com/in/[A-z0-9_]+/?$", ErrorMessage = "The LinkedIn profile URL is not valid.")]
+        [RegularExpression(@"^http(s)?://([\w]+.)?linkedin.com/in/[A-z0-9_-]+/?$", ErrorMessage = "The LinkedIn profile URL is not valid.")]
         public string LinkedInUrl { get; set; }
         [RegularExpression(@"^http(s)?://([\w]+.)?twitter.com/[A-z0-9_]+/?$", ErrorMessage = "The Twitter profile URL is not valid.")]
         public string TwitterUrl { get; set; }
