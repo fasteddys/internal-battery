@@ -74,7 +74,7 @@ In order to compile the scss files you must have the following installed:
 ##### Steps to Compile
 1. `cd Product/WebApp`
 2. `npm install`
-3. `npm run sass` or `npm run sass:watch` to trigger on save
+3. `npm run gulp sass` or `npm run gulp sass:watch` to trigger on save
 
 #### Third-Party Libraries
 Third-Party libraries are managed via [bower](https://bower.io/) and [npm](https://www.npmjs.com/). See the `bower.json` and `package.json` for libraries and versions included.

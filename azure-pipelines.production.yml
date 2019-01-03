@@ -44,6 +44,11 @@ steps:
   workingDirectory: Product/WebApp
 
 - script: |
+    npm run gulp fonts
+  displayName: Copy Fonts
+  workingDirectory: Product/WebApp
+
+- script: |
     dotnet build Product/WebApp --configuration $(buildConfiguration)
   displayName: Compile
 
