@@ -15,6 +15,7 @@ using UpDiddy.Helpers;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Business.Resume;
+using UpDiddyApi.Business.Factory;
 
 namespace UpDiddyApi.Workflow
 {
@@ -349,9 +350,9 @@ namespace UpDiddyApi.Workflow
                 foreach (SubscriberProfileStagingStore p in profiles)
                 {
                     if (p.ProfileSource == Constants.DataSource.LinkedIn)                    
-                        p.Status = (int)Subscriber.ImportLinkedIn(_db, _sovrenApi, p, ref errMsg);
+                        p.Status = (int)SubscriberFactory.ImportLinkedIn(_db, _sovrenApi, p, ref errMsg);
                     else if (p.ProfileSource == Constants.DataSource.Sovren)                    
-                        p.Status = (int)Subscriber.ImportSovren(_db, p, ref errMsg, _syslog);                    
+                        p.Status = (int)SubscriberFactory.ImportSovren(_db, p, ref errMsg, _syslog);                    
                     else
                     {
                         // Report on unknown source error

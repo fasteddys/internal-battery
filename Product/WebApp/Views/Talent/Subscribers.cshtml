@@ -31,8 +31,11 @@
     )
 </div>
 
-<script>
-    [].forEach.call(document.getElementsByClassName('mvc-grid'), function (element) {
-        new MvcGrid(element);
-    });
+@section Scripts
+{
+<script type="text/javascript">
+        [].forEach.call(document.getElementsByClassName('mvc-grid'), function (element) {
+            new MvcGrid(element);
+        });
 </script>
+}

@@ -13,6 +13,7 @@ using UpDiddyApi.Workflow;
 using System.Security.Claims;
 using UpDiddyLib.Dto;
 using Microsoft.Extensions.Logging;
+using UpDiddyApi.Business.Factory;
 
 namespace UpDiddyApi.Controllers
 {
@@ -68,7 +69,7 @@ namespace UpDiddyApi.Controllers
                     String parsedDocument = await _sovrenApi.SubmitResumeAsync(resumeDto.Base64EncodedResume);
 
                     // todo: verify subscriber guid permissions and data
-                    SubscriberProfileStagingStore.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
+                    SubscriberProfileStagingStoreFactory.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
 
                     // run job to import user profile data 
                     BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(subscriberGuid));

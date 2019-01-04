@@ -1,3 +1,11 @@
 appsettings.Development.json
 node_modules/*
 bower_components/*
+
+# compiled css
+wwwroot/js/site.dev.js
+wwwroot/js/site.min.js
+wwwroot/js/site.temp.min.js
+wwwroot/css/bundle.css
+wwwroot/css/site.dev.css
+wwwroot/css/site.min.css

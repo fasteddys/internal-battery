@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    public partial  class State : BaseModel
+    public class State : BaseModel
     {
         public int StateId { get; set; }
         public Guid? StateGuid { get; set; }
