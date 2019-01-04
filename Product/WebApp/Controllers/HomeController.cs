@@ -296,7 +296,7 @@ namespace UpDiddy.Controllers
         }
 
         [HttpPost]
-        public IActionResult Signup(SignupFlowViewModel signupFlowViewModel)
+        public IActionResult Onboard(SignupFlowViewModel signupFlowViewModel)
         {
             GetSubscriber(false);
             IList<SkillDto> skillsDto = null;
