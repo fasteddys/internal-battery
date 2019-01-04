@@ -55,7 +55,7 @@ namespace UpDiddyApi.Models
 
         }
 
-        public static ProfileDataStatus ImportSovren(UpDiddyDbContext db, SubscriberProfileStagingStore info, ref string msg, ILogger syslog )
+        public static ProfileDataStatus ImportSovren(UpDiddyDbContext db, SubscriberProfileStagingStore info, ref string msg, ILogger syslog)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace UpDiddyApi.Models
         private static bool _ImportSovrenEducationHistory(UpDiddyDbContext db, Subscriber subscriber, string profileData, ILogger syslog)
         {
             try
-            {              
+            {
                 List<SubscriberEducationHistoryDto> eductionHistory = Utils.ParseEducationHistoryFromHrXml(profileData);
                 _AddSubscriberEducationHistory(db, subscriber, eductionHistory);
                 return true;
@@ -131,7 +131,7 @@ namespace UpDiddyApi.Models
             try
             {
                 SubscriberContactInfoDto contactInfo = Utils.ParseContactInfoFromHrXML(profileData);
-               _AddSubscriberContactInfo(db, subscriber, contactInfo);
+                _AddSubscriberContactInfo(db, subscriber, contactInfo);
                 return true;
             }
             catch (Exception e)
@@ -151,7 +151,7 @@ namespace UpDiddyApi.Models
                 _AddSubscriberSkills(db, subscriber, skills);
                 return true;
             }
-            catch ( Exception e)
+            catch (Exception e)
             {
                 syslog.Log(LogLevel.Error, $"Subscriber:_ImportSovrenSkills threw an exception -> {e.Message} for subscriber {subscriber.SubscriberId} profile data = {profileData}");
                 return false;
@@ -188,22 +188,22 @@ namespace UpDiddyApi.Models
             {
                 Skill skill = Skill.GetOrAdd(db, skillName);
                 // Check to see if the subscriber already has that skill 
-                SubscriberSkill subscriberSkill = SubscriberSkill.GetSkillForSubscriber (db, subscriber, skill);
-                // If the subscriber does not have the skill, add it to their profile 
+                SubscriberSkill subscriberSkill = SubscriberSkill.GetSkillForSubscriber(db, subscriber, skill);
+                // If the subscriber does not have the skill (or it was logically deleted), add it to their profile 
                 if (subscriberSkill == null)
                     SubscriberSkill.AddSkillForSubscriber(db, subscriber, skill);
             }
         }
 
         private static void _AddSubscriberWorkHistory(UpDiddyDbContext db, Subscriber subscriber, List<SubscriberWorkHistoryDto> workHistoryList)
-        {            
+        {
             foreach (SubscriberWorkHistoryDto wh in workHistoryList)
             {
 
                 Company company = Company.GetOrAdd(db, wh.Company);
                 SubscriberWorkHistory workHistory = SubscriberWorkHistory.GetWorkHistoryForSubscriber(db, subscriber, company, wh.StartDate, wh.EndDate);
                 if (workHistory == null)
-                    SubscriberWorkHistory.AddWorkHistoryForSubscriber(db, subscriber, wh,company);
+                    SubscriberWorkHistory.AddWorkHistoryForSubscriber(db, subscriber, wh, company);
             }
         }
 
@@ -217,10 +217,10 @@ namespace UpDiddyApi.Models
             subscriber.City = contactInfo.City;
             subscriber.Address = contactInfo.Address;
             State state = State.GetStateByStateCode(db, contactInfo.State);
-            if ( state != null )
+            if (state != null)
                 subscriber.StateId = state.StateId;
 
-            db.SaveChanges(); 
+            db.SaveChanges();
         }
 
 
@@ -230,10 +230,10 @@ namespace UpDiddyApi.Models
             {
                 EducationalInstitution educationalInstitution = EducationalInstitution.GetOrAdd(db, eh.EducationalInstitution);
                 EducationalDegree educationalDegree = EducationalDegree.GetOrAdd(db, eh.EducationalDegree);
-                                           
+
                 SubscriberEducationHistory educationHistory = SubscriberEducationHistory.GetEducationHistoryForSubscriber(db, subscriber, educationalInstitution, educationalDegree, eh.StartDate, eh.EndDate, eh.DegreeDate);
                 if (educationHistory == null)
-                    SubscriberEducationHistory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree);              
+                    SubscriberEducationHistory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree);
             }
         }
 

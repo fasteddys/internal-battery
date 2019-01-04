@@ -27,7 +27,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<Vendor, VendorDto>().ReverseMap();
             CreateMap<Enrollment, EnrollmentDto>().ReverseMap();
             CreateMap<WozCourseEnrollment, WozCourseEnrollmentDto>().ReverseMap();
-            CreateMap<Country, CountryDto>().ReverseMap();       
+            CreateMap<Country, CountryDto>().ReverseMap();
             CreateMap<EnrollmentLog, EnrollmentLogDto>().ReverseMap();
             CreateMap<CourseVariantType, CourseVariantTypeDto>().ReverseMap();
             CreateMap<Skill, SkillDto>().ReverseMap();
@@ -51,6 +51,7 @@ namespace UpDiddyApi.Helpers
                 .ReverseMap();
             CreateMap<Subscriber, SubscriberDto>()
                 .ForMember(s => s.Enrollments, opt => opt.MapFrom(src => src.Enrollments))
+                .ForMember(s => s.Skills, opt => opt.MapFrom(src => src.SubscriberSkills.Select(s => s.Skill)))
                 .ReverseMap();
             CreateMap<State, StateDto>()
                 .ForMember(s => s.Country, opt => opt.MapFrom(src => src.Country))

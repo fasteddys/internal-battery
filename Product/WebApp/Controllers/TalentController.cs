@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
@@ -19,13 +20,28 @@ namespace UpDiddy.Controllers
             _api = api;
         }
 
-        // GET: /<controller>/
+        [Authorize]
+        [HttpGet]
         public IActionResult Subscribers()
         {
             IList<SubscriberDto> subscribers = _api.Subscribers();
-
             SubscribersViewModel subscribersViewModel = new SubscribersViewModel() { Subscribers = subscribers };
             return View(subscribersViewModel);
+        }
+
+
+        [Authorize]
+        [HttpGet]
+        [Route("/Talent/Subscriber/{subscriberGuid}")]
+        public IActionResult Subscriber(Guid subscriberGuid)
+        {
+            SubscriberDto subscriber = _api.Subscriber(subscriberGuid);
+            SubscriberViewModel subscriberViewModel = new SubscriberViewModel()
+            {
+                 FirstName = subscriber.FirstName,
+                 LastName = subscriber.LastName
+            };
+            return View(subscriberViewModel);
         }
     }
 }

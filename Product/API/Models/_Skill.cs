@@ -13,11 +13,12 @@ namespace UpDiddyApi.Models
         public Skill(string skillName)
         {
             this.SkillName = skillName;
-            this.CreateDate = DateTime.Now;
-            this.CreateGuid = Guid.NewGuid();
-            this.ModifyDate = DateTime.Now;
-            this.ModifyGuid = Guid.NewGuid();
+            this.CreateDate = DateTime.UtcNow;
+            this.CreateGuid = Guid.Empty;
+            this.ModifyDate = DateTime.UtcNow;
+            this.ModifyGuid = Guid.Empty;
             this.IsDeleted = 0;
+            this.SkillGuid = Guid.NewGuid();
         }
 
         static public Skill GetOrAdd(UpDiddyDbContext db, string skillName)

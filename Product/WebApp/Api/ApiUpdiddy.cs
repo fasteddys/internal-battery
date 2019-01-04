@@ -402,6 +402,11 @@ namespace UpDiddy.Api
         {
             return Get<IList<SubscriberDto>>("subscriber", true);
         }
+
+        public SubscriberDto Subscriber(Guid subscriberGuid)
+        {
+            return Get<SubscriberDto>($"subscriber/{subscriberGuid}", true);
+        }
         #endregion
 
         public T Post<T>(string ApiAction, bool Authorized = false, string Content = null)

@@ -26,5 +26,6 @@ namespace UpDiddyLib.Dto
         public StateDto State { get; set; }
         public List<EnrollmentDto> Enrollments { get; set; }
         public IList<SkillDto> Skills { get; set; }
+
     }
 }

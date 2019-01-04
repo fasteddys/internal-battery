@@ -1418,9 +1418,9 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberSkill", b =>
                 {
-                    b.Property<int>("SubscriberSkillId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<int>("SkillId");
+
+                    b.Property<int>("SubscriberId");
 
                     b.Property<DateTime>("CreateDate");
 
@@ -1432,15 +1432,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<int>("SkillId");
-
-                    b.Property<int>("SubscriberId");
-
                     b.Property<Guid?>("SubscriberSkillGuid");
 
-                    b.HasKey("SubscriberSkillId");
+                    b.Property<int>("SubscriberSkillId");
 
-                    b.HasIndex("SkillId");
+                    b.HasKey("SkillId", "SubscriberId");
 
                     b.HasIndex("SubscriberId");
 
@@ -1974,7 +1970,7 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
+                        .WithMany("SubscriberSkills")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

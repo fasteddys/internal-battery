@@ -1,0 +1,19 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model SubscriberViewModel
+
+
+<div class="subscriber-container">
+    <h2>@Model.FirstName @Model.LastName</h2>
+    Contact Details
+    Enrollments
+    Skills
+    
+</div>
+
+<div>
+    <a asp-controller="Talent" asp-action="Subscribers">Back to Subscriber List</a>
+</div>
