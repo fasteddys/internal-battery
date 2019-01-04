@@ -88,6 +88,7 @@ namespace UpDiddyApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+          
             services.AddSingleton<Serilog.ILogger>(Logger);
 
             services.AddAuthentication(options =>
@@ -122,10 +123,14 @@ namespace UpDiddyApi
                        .AllowAnyHeader();
             }));
 
+
             // Add framework services.
             // the 'ignore' option for reference loop handling was implemented to prevent circular errors during serialization 
             // (e.g. SubscriberDto contains a collection of EnrollmentDto objects, and the EnrollmentDto object has a reference to a SubscriberDto)
             services.AddMvc().AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            // Add SignalR
+            services.AddSignalR();
 
             // Add AutoMapper 
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
@@ -211,7 +216,14 @@ namespace UpDiddyApi
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-    }
+
+            // Added for SignalR
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<ClientHub>("/clienthub");
+            });
+
+        }
 
         private Task AuthenticationFailed(AuthenticationFailedContext arg)
         {
