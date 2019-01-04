@@ -20,17 +20,43 @@ namespace UpDiddy.ViewModels
         public String FirstName { get; set; }
         [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "Last name may only contain alphabetic characters, spaces, apostrophes, and hyphens.")]
         public String LastName { get; set; }
-        [RegularExpression(@"^\d$", ErrorMessage = "Please enter a valid phone number.")]    
-        public String PhoneNumberFirstThree { get; set; }
-        [RegularExpression(@"^\d$", ErrorMessage = "Please enter a valid phone number.")]
-        public String PhoneNumberSecondThree { get; set; }
-        [RegularExpression(@"^\d$", ErrorMessage = "Please enter a valid phone number.")]
-        public String PhoneNumberLastFour { get; set; }
         [RegularExpression(@"\w+(\s\w+){2,}", ErrorMessage = "Please enter a valid street address.")]
         public String Address { get; set; }
         public Guid? SelectedState { get; set; }
         public Guid? SelectedCountry { get; set; }
+        public String City { get; set; }
         public IEnumerable<SelectListItem> States { get; set; }
         public IEnumerable<SelectListItem> Countries { get; set; }
+        public Guid SubscriberGuid { get; set; }
+        private string _FormattedPhone;
+        public string FormattedPhone
+        {
+            get
+            {
+                long phone = 0;
+                if (long.TryParse(this._FormattedPhone, out phone))
+                    return String.Format("{0:(###) ###-####}", phone);
+                else
+                    return _FormattedPhone;
+            }
+            set
+            {
+                if (value != null)
+                    _FormattedPhone = value.Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+                else
+                    _FormattedPhone = value;
+            }
+        }
+        [RegularExpression("^[2-9]{1}[0-9]{9}$", ErrorMessage = "Phone must be 10 digits and may not start with a 0 or 1.")]
+        public string Phone
+        {
+            get
+            {
+                if (this._FormattedPhone != null)
+                    return this.FormattedPhone.Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+                else
+                    return _FormattedPhone;
+            }
+        }
     }
 }

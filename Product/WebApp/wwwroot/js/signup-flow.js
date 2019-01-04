@@ -46,18 +46,6 @@ $(document).ready(function () {
     $(".add-work-history").on("click", function () {
         //$('.work-history-log').append('<div class="form-row"><div class="form-group col-md-6" ><input type="text" class="form-control" placeholder="Job Title"></div><div class="form-group col-md-6"><input type="text" class="form-control" placeholder="Organization"></div></div>');
     });
-    /*
-    $('#SignupFlowCarousel').bind('slide.bs.carousel', function (e) {
-        if ($('.carousel-item-second').hasClass('active')) {
-            $('.previous-container').removeClass("hidden");
-            $('.previous-container').removeClass("slideInUp");
-            $('.previous-container').addClass("slideOutDown");
-        }
-        else {
-            $('.previous-container').removeClass("slideOutDown");
-            $('.previous-container').addClass("slideInUp");
-        }
-    });*/
     $('.save-new-work-history-item').on("click", function () {
         var jobTitle = $('#JobTitleInput').val();
         var organization = $('#OrganizationInput').val();
@@ -91,15 +79,41 @@ $(document).ready(function () {
 
     });
 
+    $(window).keydown(function (event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            return false;
+        }
+    });
+
+    setCarouselHeight();
+
+    $(window).resize(function () {
+        setCarouselHeight();
+    });
+
+    $('#SignupFlowCarousel').bind('slide.bs.carousel', function (e) {
+        document.body.scrollTop = document.documentElement.scrollTop = 0;
+    });
 
     $('#UploadedResume').change(function () {
         var file = $(this)[0].files[0];
         if (file) {
-            $('#UploadedResumeText').html("<strong>You've attached:</strong> " + file.name);
-            $('.appear-on-resume-attach').show();
-            $('#ResumeNextButton').addClass('disabled');
-            $('#ResumeNextButton a').removeAttr("href");
-            $('#ResumeUploadDisclaimer').css("display", "inline-block");
+            if (IsValidFileType(file.name)) {
+                $('#UploadedResumeText').html("<strong>You've attached:</strong> " + file.name);
+                $('.appear-on-resume-attach').show();
+                $('#ResumeNextButton').addClass('disabled');
+                $('#ResumeNextButton a').removeAttr("href");
+                $('#ResumeUploadDisclaimer').css("display", "inline-block");
+            }
+            else {
+                $('#UploadedResumeText').html("<span class='invalid-entry'>Sorry, unfortunately we do not accept resumes of this file type.</span> <br /> Please upload a file in one of the following file types:  .doc, .docx, .odt, .pdf, .rtf, .tex, .txt, .wks, .wps, or .wpd.");
+                $('#ResumeUploadDisclaimer').css("display", "none");
+                $('#SubmitResumeUpload').hide();
+            }
+            
+            
+            setCarouselHeight();
         }
         $('#UploadedResumeLabel').hide();
         $('#ChangeResumeLabel').show();
@@ -139,6 +153,18 @@ $(document).ready(function () {
         });
     });
 });
+
+var IsValidFileType = function (filename) {
+    if (filename === null || filename === "" || !filename.includes('.')) {
+        return false;
+    }
+    var fileExtensions = ["doc", "docx", "odt", "pdf", "rtf", "tex", "txt", "wks", "wps", "wpd"];
+    var splitFileName = filename.split(".");
+    if (fileExtensions.indexOf(splitFileName[splitFileName.length - 1]) > 0) {
+        return true;
+    }
+    return false;
+};
 
 var goToNextPhoneNumberInput = function(thisInputField, nextInputField){
     if ($('#' + thisInputField).val().length === 3) {
@@ -184,4 +210,22 @@ var clearInputForResumeSlide = function () {
     $('#ResumeNextButton').addClass('disabled');
     $('#ResumeNextButton a').removeAttr("href");
     $('#ResumeUploadDisclaimer').css("display", "none");
+};
+
+var findMaxCarouselItemHeight = function () {
+    var maxHeight = 0;
+    $(".carousel-item").each(function () {
+        if ($(this).height() > maxHeight) {
+            maxHeight = $(this).height();
+        }
+    });
+
+    //add height from top of viewport
+    maxHeight += 150;
+    return maxHeight;
+};
+
+var setCarouselHeight = function () {
+    $('.carousel-item').css("height", 'initial');
+    $('.carousel-item').css("height", findMaxCarouselItemHeight());
 };

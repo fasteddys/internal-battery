@@ -4,120 +4,199 @@
 @using System.Collections.Generic;
 @using System;
 @model ProfileViewModel
-
 @section Scripts
 {
-    <script type="text/javascript">
+<script type="text/javascript">
+    // this must be present for the API call used in site.js
+    var url = '@Url.Action("GetStatesByCountry", "Home")';
+    var subscriberSkills = @Json.Serialize(Model.Skills);
 
-        // this must be present for the API call used in site.js
-        var url = '@Url.Action("GetStatesByCountry", "Home")';
-        var subscriberSkills = @Json.Serialize(Model.Skills);
+    document.addEventListener("DOMContentLoaded", function (event) {
 
-        document.addEventListener("DOMContentLoaded", function (event) {
-
-            $('.edit-profile-info-button').on('click', function () {
-                $('.personal-info-display').slideToggle();
-                $('#PersonalInfoFormContainer').slideToggle();
-                $('.edit-profile-info-button').toggleClass('expanded');
-
-                $('.edit-profile-info-button').each(function () {
-                    if ($(this).hasClass("expanded") && !$(this).hasClass('profile-mobile-view')) {
-                        $(this).html("Cancel");
-                    } else {
-                        if (!$(this).hasClass('profile-mobile-cancel')) {
-
-                            $(this).html("Edit");
-                        }
+        $('#PersonalInfoForm').submit(function (e) {
+            $.ajax({
+                type: "POST",
+                url: '/home/UpdateProfileInformation',
+                data: $(this).serialize(),
+                success: function (html) {
+                    if (html.statusCode === "200") {
+                        location.reload();
                     }
-                });
+                }
             });
-
-            $('#PersonalInfoForm').submit(function (e) {
-                $.ajax({
-                    type: "POST",
-                    url: '/home/UpdateProfileInformation',
-                    data: $(this).serialize(),
-                    success: function (html) {
-                        if (html.statusCode === "200") {
-                            location.reload();
-                        }
-                        else {
-                            $('#ValidationSummary ul').html('');
-                            var errorMessages = html.description.split("|");
-                            for (i = 0; i < errorMessages.length; i++) {
-                                if (i != errorMessages.length - 1) {
-                                    var li = document.createElement("li");
-                                    li.innerHTML = errorMessages[i];
-                                    $('#ValidationSummary ul').append(li);
-                                }
-
-                            }
-                        }
-                    }
-                });
-                e.preventDefault();
-            });
-
-        
-
-            $('#phone-number')
-                .keydown(function (e) {
-                    var key = e.which || e.charCode || e.keyCode || 0;
-                    $phone = $(this);
-
-                    // Don't let them remove the starting '('
-                    if ($phone.val().length === 1 && (key === 8 || key === 46)) {
-                        $phone.val('(');
-                        return false;
-                    }
-                    // Reset if they highlight and type over first char.
-                    else if ($phone.val().charAt(0) !== '(') {
-                        $phone.val('(' + String.fromCharCode(e.keyCode) + '');
-                    }
-
-                    // Auto-format- do not expose the mask as the user begins to type
-                    if (key !== 8 && key !== 9) {
-                        if ($phone.val().length === 4) {
-                            $phone.val($phone.val() + ')');
-                        }
-                        if ($phone.val().length === 5) {
-                            $phone.val($phone.val() + ' ');
-                        }
-                        if ($phone.val().length === 9) {
-                            $phone.val($phone.val() + '-');
-                        }
-                    }
-
-                    // Allow numeric (and tab, backspace, delete) keys only
-                    return (key == 8 ||
-                        key == 9 ||
-                        key == 46 ||
-                        (key >= 48 && key <= 57) ||
-                        (key >= 96 && key <= 105));
-                })
-                .bind('focus click', function () {
-                    $phone = $(this);
-
-                    if ($phone.val().length === 0) {
-                        $phone.val('(');
-                    }
-                    else {
-                        var val = $phone.val();
-                        $phone.val('').val(val); // Ensure cursor remains at the end
-                    }
-                })
-                .blur(function () {
-                    $phone = $(this);
-
-                    if ($phone.val() === '(') {
-                        $phone.val('');
-                    }
-                });
+            e.preventDefault();
         });
 
-    </script>
-    <script type="text/javascript" src="~/js/selectize-handling.js" ></script>
+
+
+
+    });
+
+</script>
+<script src="~/js/selectize-handling.js"></script>
+<script src="~/js/profile.js"></script>
 }
+
+@* Modals for editing *@
+<form asp-controller="Home" asp-action="UpdateProfileInformation" id="PersonalInfoForm"></form>
+<input type="hidden" form="PersonalInfoForm" value="@Model.SubscriberGuid" asp-for="SubscriberGuid"/>
+<div class="modal fade" id="NameModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="profile-edit-modal-header-container">
+                    <h4>Change Personal Info</h4>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">First name</div>
+                    <div class="modal-edit-input">
+                        <input id="FirstNameUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="FirstName" />
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Last name</div>
+                    <div class="modal-edit-input">
+                        <input id="LastNameUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="LastName" />
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Address</div>
+                    <div class="modal-edit-input">
+                        <input id="AddressUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="Address" />
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">City</div>
+                    <div class="modal-edit-input">
+                        <input id="CityUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="City" />
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">State</div>
+                    <div class="modal-edit-input">
+                        @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select", form = "PersonalInfoForm" })
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">State</div>
+                    <div class="modal-edit-input">
+                        @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select", form = "PersonalInfoForm" })
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="NameModalSaveButton" form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ContactInfoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="profile-edit-modal-header-container">
+                    <h4>Change contact info</h4>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Phone Number</div>
+                    <div class="modal-edit-input">
+                        <input id="PhoneUpdateInput" form="PersonalInfoForm" type="text" id="phone-number" class="form-control" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="ContactInfoModalSaveButton" form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="SocialLinksModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="profile-edit-modal-header-container">
+                    <h4>Change social links</h4>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Facebook</div>
+                    <div class="modal-edit-input">
+                        @{ 
+                            string facebookPlaceholder = string.IsNullOrEmpty(Model.FacebookUrl) ? "E.g. http://www.facebook.com/me" : Model.FacebookUrl;
+                        }
+                        <input id="FacebookUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="FacebookUrl" placeholder="@facebookPlaceholder"/>
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Twitter</div>
+                    <div class="modal-edit-input">
+                        @{
+                            string twitterPlaceholder = string.IsNullOrEmpty(Model.TwitterUrl) ? "E.g. https://www.twitter.com/me" : Model.TwitterUrl;
+                        }
+                        <input id="TwitterUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="TwitterUrl" placeholder="@twitterPlaceholder"/>
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">LinkedIn</div>
+                    <div class="modal-edit-input">
+                        @{
+                            string linkedinPlaceholder = string.IsNullOrEmpty(Model.LinkedInUrl) ? "E.g. https://linkedin.com/in/me" : Model.LinkedInUrl;
+                        }
+                        <input id="LinkedInUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="LinkedInUrl" placeholder="@linkedinPlaceholder"/>
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">StackOverflow</div>
+                    <div class="modal-edit-input">
+                        @{
+                            string stackOverflowPlaceholder = string.IsNullOrEmpty(Model.StackOverflowUrl) ? "E.g. https://stackoverflow.com/users/123456/me" : Model.StackOverflowUrl;
+                        }
+                        <input id="StackOverflowUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="StackOverflowUrl" placeholder="@stackOverflowPlaceholder"/>
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">GitHub</div>
+                    <div class="modal-edit-input">
+                        @{
+                            string githubPlaceholder = string.IsNullOrEmpty(Model.GithubUrl) ? "E.g. http://github.com/me" : Model.GithubUrl;
+                        }
+                        <input id="GitHubUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="GithubUrl" placeholder="@githubPlaceholder"/>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="SocialLinksModalSaveButton" disabled form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="SkillsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="profile-edit-modal-header-container">
+                    <h4>Change skills</h4>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Skills</div>
+                    <div class="modal-edit-input">
+                        <input form="PersonalInfoForm" type="text" asp-for="SelectedSkills" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="profile-container">
     <div class="row profile-hero">
         <div class="col-md-12">
@@ -155,13 +234,6 @@
     <div class="row profile-body-container">
         <div class="col-md-12">
             <div class="container">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="mb-2">
-                            @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.SubscriberGuid })
-                        </div>
-                    </div>
-                </div>
                 <div class="row">
                     <div class="col-md-12">
                         <div class="courses-in-progress-container">
@@ -248,230 +320,199 @@
 
 
                                         </li>
-                                    }
+                                                    }
                                 </ul>
                             </div>
                         </div>
-                        <div class="dashed-line-boxes-container">
+                        
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <div class="profile-edit-container row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div id="ProfileInformationContainer">
                             <div class="edit-personal-info-container">
                                 <div class="personal-info-header">
                                     <div class="row">
-                                        <div class="col-12 col-sm-8 no-padding">
-                                            <h2>Contact Information</h2>
-                                        </div>
-                                        <div class="col-4 d-none d-sm-block container-align-right no-padding">
-                                            <button class="btn btn-primary edit-profile-info-button" type="button">
-                                                Edit
-                                            </button>
+                                        <div class="col-12 no-padding">
+                                            <h2>Profile</h2>
                                         </div>
                                     </div>
-
                                 </div>
-                                <div class="personal-info-display">
-                                    @{
-                                        if (!Model.IsAnyProfileInformationPopulated)
-                                        {
-                                            <text>No information found. Please press 'Edit' to edit your information.</text>
-                                        }
-                                    }
-                                    <ul>
-                                        @{
-                                            if (!string.IsNullOrEmpty(Model.FirstName))
-                                            {
-                                                <li>
-                                                    First name: <span id="ProfileFirstNameDisplay">@Model.FirstName</span>
-                                                </li>
-                                            }
-                                        }
-                                        @{
-                                            if (!string.IsNullOrEmpty(Model.LastName))
-                                            {
-                                                <li>
-                                                    Last name: <span id="ProfileLastNameDisplay">@Model.LastName</span>
-                                                </li>
-                                            }
-                                        }
-                                        @{
-                                            if (!string.IsNullOrEmpty(Model.Address))
-                                            {
-                                                <li>
-                                                    Address: <span id="ProfileAddressDisplay">@Model.Address</span>
-                                                </li>
-                                            }
-                                        }
-                                        @{
-                                            if (!string.IsNullOrEmpty(Model.City))
-                                            {
-                                                <li>
-                                                    City: <span id="ProfileCityDisplay">@Model.City</span>
-                                                </li>
-                                            }
-                                        }
-                                        @{
-                                            if (Model.SelectedState.HasValue)
-                                            {
-                                                <li>
-                                                    State: <span id="ProfileStateDisplay">@Model.States.Where(s => s.Value == Model.SelectedState.Value.ToString()).FirstOrDefault().Text</span>
-                                                </li>
-                                            }
-                                        }
-                                        @{
-                                            if (Model.SelectedCountry.HasValue)
-                                            {
-                                                <li>
-                                                    Country: <span id="ProfileCountryDisplay">@Model.Countries.Where(c => c.Value == Model.SelectedCountry.Value.ToString()).FirstOrDefault().Text</span>
-                                                </li>
-                                            }
-                                        }
-                                        @{
-                                            if (!string.IsNullOrEmpty(Model.FormattedPhone))
-                                            {
-                                                <li>
-                                                    Phone number: <span id="ProfilePhoneNumberDisplay">@Model.FormattedPhone</span>
-                                                </li>
-                                            }
-                                        }
-                                        @{
-                                            if (!string.IsNullOrEmpty(Model.FacebookUrl))
-                                            {
-                                                <li>
-                                                    Facebook: <span id="ProfileFacebookDisplay"><a href="@Model.FacebookUrl" target="_blank">@Model.FacebookUrl</a></span>
-                                                </li>
-                                            }
-                                        }
-                                        @{
-                                            if (!string.IsNullOrEmpty(Model.TwitterUrl))
-                                            {
-                                                <li>
-                                                    Twitter: <span id="ProfileTwitterDisplay"><a href="@Model.TwitterUrl" target="_blank">@Model.TwitterUrl</a></span>
-                                                </li>
-                                            }
-                                        }
-                                        @{
-                                            if (!string.IsNullOrEmpty(Model.LinkedInUrl))
-                                            {
-                                                <li>
-                                                    LinkedIn: <span id="ProfileLinkedInDisplay"><a href="@Model.LinkedInUrl" target="_blank">@Model.LinkedInUrl</a></span>
-                                                </li>
-                                            }
-                                        }
-                                        @{
-                                            if (!string.IsNullOrEmpty(Model.StackOverflowUrl))
-                                            {
-                                                <li>
-                                                    StackOverflow: <span id="ProfileStackOverflowDisplay"><a href="@Model.StackOverflowUrl" target="_blank">@Model.StackOverflowUrl</a></span>
-                                                </li>
-                                            }
-                                        }
-                                        @{
-                                            if (!string.IsNullOrEmpty(Model.GithubUrl))
-                                            {
-                                                <li>
-                                                    GitHub: <span id="ProfileGithubDisplay"><a href="@Model.GithubUrl" target="_blank">@Model.GithubUrl</a></span>
-                                                </li>
-                                            }
-                                        }
-                                        @{
-                                            if (Model.Skills != null && Model.Skills.Count > 0)
-                                            {
-                                                <li>
-                                                    Skills:
-                                                    <span id="SkillsDisplay">
-                                                        <ul>
-                                                            @{
-                                                                foreach (var skill in Model.Skills)
+                                <div class="options-input-container">
+                                    <div class="row">
+                                        <div class="col-12 no-padding">
+                                            <div class="edit-container">
+                                                <div class="row">
+                                                    <div class="col-6 no-padding">
+                                                        <h5>Personal Info</h5>
+                                                    </div>
+                                                    <div class="col-6 no-padding container-align-right">
+                                                        <span class="edit-action" data-toggle="modal" data-target="#NameModal">Edit</span>
+                                                    </div>
+                                                </div>
+                                                @{
+                                                    if (!Model.HasFirstAndLastName && !Model.HasFullyQualifiedAddress)
+                                                    {
+                                                        <text>No personal information has been provided.</text>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="options-container">
+                                                            @{ 
+                                                                if (Model.HasFirstAndLastName)
                                                                 {
-                                                                    <li>
-                                                                        @Html.DisplayFor(item => skill.SkillName)
-                                                                    </li> // todo: improve upon the presentation, specify a template in DisplayFor?
+                                                                    <div class="name-container">
+                                                                        <div class="option-header">Name</div>
+                                                                        <span class="option-value">@Model.FirstName @Model.LastName</span>
+                                                                    </div>
+                                                                }
+                                                                if (Model.HasFullyQualifiedAddress)
+                                                                {
+                                                                    <div class="address-container">
+                                                                        <div class="option-header">Address</div>
+                                                                        <span class="option-value">@Model.Address @Model.City, @Model.States.Where(s => s.Value == Model.SelectedState.Value.ToString()).FirstOrDefault().Text</span>
+                                                                    </div>
                                                                 }
                                                             }
-                                                        </ul>
-                                                    </span>
-                                                </li>
-                                            }
-                                        }
-                                    </ul>
-                                    <button class="btn btn-primary edit-profile-info-button d-block d-sm-none profile-mobile-view" type="button">
-                                        Edit
-                                    </button>
-
-                                </div>
-                                <div class="personal-info-form hidden" id="PersonalInfoFormContainer">
-                                    <form asp-controller="Home" asp-action="UpdateProfileInformation" id="PersonalInfoForm">
-                                        <input type="hidden" asp-for="SubscriberGuid" value="@(Model.SubscriberGuid)" />
-                                        <div class="form-row">
-                                            <div class="form-group col-md-3">
-                                                <label for="UpdatedFirstName">First Name</label>
-                                                <input type="text" class="form-control" asp-for="FirstName" />
+                                                        </div>
+                                                                }
+                                                }
                                             </div>
-                                            <div class="form-group col-md-6">
-                                                <label for="UpdatedLastName">Last Name</label>
-                                                <input type="text" class="form-control" asp-for="LastName" />
-                                            </div>
-                                            <div class="form-group col-md-3">
-                                                <label for="UpdatedPhoneNumber">Phone Number</label>
-                                                <input type="text" id="phone-number" class="form-control" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
-                                            </div>
-                                            <div class="form-group col-md-3">
-                                                <label for="UpdatedAddress">Address</label>
-                                                <input type="text" class="form-control" asp-for="Address" />
-                                            </div>
-                                            <div class="form-group col-md-3">
-                                                <label for="UpdatedCity">City</label>
-                                                <input type="text" class="form-control" asp-for="City" />
-                                            </div>
-                                            <div class="form-group col-md-3">
-                                                <label for="UpdatedStateInput">State</label>
-                                                @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select" })
-                                            </div>
-                                            <div class="form-group col-md-3">
-                                                <label for="UpdatedCountryInput">Country</label>
-                                                @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select" })
-                                            </div>
-                                            <div class="form-group col-md-3">
-                                                <label for="UpdatedFacebookUrl">Facebook Profile</label>
-                                                <input type="text" class="form-control" asp-for="FacebookUrl" />
-                                            </div>
-                                            <div class="form-group col-md-3">
-                                                <label for="UpdatedTwitterUrl">Twitter Profile</label>
-                                                <input type="text" class="form-control" asp-for="TwitterUrl" />
-                                            </div>
-                                            <div class="form-group col-md-3">
-                                                <label for="UpdatedLinkedInUrl">LinkedIn Profile</label>
-                                                <input type="text" class="form-control" asp-for="LinkedInUrl" />
-                                            </div>
-                                            <div class="form-group col-md-3">
-                                                <label for="UpdatedStackOverflowUrl">StackOverflow Profile</label>
-                                                <input type="text" class="form-control" asp-for="StackOverflowUrl" />
-                                            </div>
-                                            <div class="form-group col-md-3">
-                                                <label for="UpdatedGithubUrl">GitHub Profile</label>
-                                                <input type="text" class="form-control" asp-for="GithubUrl" />
-                                            </div>
-                                            <div class="form-group col-md-3">
-                                                <label for="UpdatedSkills">Skills</label>
-                                                <input type="text" asp-for="SelectedSkills" />
-                                            </div>
-                                            <div class="form-row col-12">
-                                                <div id="ValidationSummary">
-                                                    <ul></ul>
+                                        </div>
+                                        <div class="col-12 no-padding">
+                                            <div class="edit-container">
+                                                <div class="row">
+                                                    <div class="col-6 no-padding">
+                                                        <h5>Contact Info</h5>
+                                                    </div>
+                                                    <div class="col-6 no-padding container-align-right">
+                                                        <span class="edit-action" data-toggle="modal" data-target="#ContactInfoModal">Edit</span>
+                                                    </div>
+                                                </div>
+                                                <div class="options-container">
+                                                    @{
+                                                        if (!string.IsNullOrWhiteSpace(Model.FormattedPhone))
+                                                        {
+                                                            <div>
+                                                                <div class="option-header">Phone</div>
+                                                                <span class="option-value">@Model.FormattedPhone</span>
+                                                            </div>
+                                                        }
+                                                    }
+                                                    @*We know this page cannot be accessed unless user has signed up with an email.
+                                                        Therefore, we don't need to check if it exists.*@
+                                                    <div>
+                                                        <div class="option-header">Email</div>
+                                                        <span class="option-value">@Model.Email</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-6 col-sm-12 no-padding container-align-right">
-                                                <button type="submit" id="EditProfileInfoSubmit" class="btn btn-primary">Submit</button>
-                                            </div>
-                                            <div class="col-6 d-block d-sm-none no-padding">
-                                                <button class="btn btn-primary edit-profile-info-button profile-mobile-cancel" type="button">
-                                                    Edit
-                                                </button>
+                                        <div class="col-12 no-padding">
+                                            <div class="edit-container">
+                                                <div class="row">
+                                                    <div class="col-6 no-padding">
+                                                        <h5>Social Links</h5>
+                                                    </div>
+                                                    <div class="col-6 no-padding container-align-right">
+                                                        <span class="edit-action" data-toggle="modal" data-target="#SocialLinksModal">Edit</span>
+                                                    </div>
+                                                </div>
+                                                @{
+                                                    if (!Model.HasSuppliedAnySocialLinks)
+                                                    {
+                                                        <text>No social links have been provided.</text>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="options-container">
+                                                            @{ 
+                                                                if (!string.IsNullOrWhiteSpace(Model.FacebookUrl))
+                                                                { 
+                                                                    <div>
+                                                                        <div class="option-header">Facebook</div>
+                                                                        <span class="option-value">@Model.FacebookUrl</span>
+                                                                    </div>
+                                                                }
+                                                                if (!string.IsNullOrWhiteSpace(Model.GithubUrl))
+                                                                {
+                                                                    <div>
+                                                                        <div class="option-header">GitHub</div>
+                                                                        <span class="option-value">@Model.GithubUrl</span>
+                                                                    </div>
+                                                                }
+                                                                if (!string.IsNullOrWhiteSpace(Model.LinkedInUrl))
+                                                                {
+                                                                    <div>
+                                                                        <div class="option-header">LinkedIn</div>
+                                                                        <span class="option-value">@Model.LinkedInUrl</span>
+                                                                    </div>
+                                                                }
+                                                                if (!string.IsNullOrWhiteSpace(Model.StackOverflowUrl))
+                                                                {
+                                                                    <div>
+                                                                        <div class="option-header">StackOverflow</div>
+                                                                        <span class="option-value">@Model.StackOverflowUrl</span>
+                                                                    </div>
+                                                                }
+                                                                if (!string.IsNullOrWhiteSpace(Model.TwitterUrl))
+                                                                {
+                                                                    <div>
+                                                                        <div class="option-header">Twitter</div>
+                                                                        <span class="option-value">@Model.TwitterUrl</span>
+                                                                    </div>
+                                                                }
+                                                            }
+                                                        </div>
+                                                    }
+                                                }
+
                                             </div>
                                         </div>
-                                    </form>
-                                </div>
+                                        <div class="col-12 no-padding">
+                                            <div class="edit-container">
+                                                <div class="row">
+                                                    <div class="col-6 no-padding">
+                                                        <h5>Skills</h5>
+                                                    </div>
+                                                    <div class="col-6 no-padding container-align-right">
+                                                        <span class="edit-action" data-toggle="modal" data-target="#SkillsModal">Edit</span>
+                                                    </div>
+                                                </div>
+                                                @{ 
+                                                    if(Model.Skills.Count == 0)
+                                                    {
+                                                        <text>No skills have been provided.</text>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="options-container">
+                                                            @{
+                                                                foreach (var skill in Model.Skills)
+                                                                {
+                                                                    <div class="skill-pill">
 
+                                                                        @Html.DisplayFor(item => skill.SkillName)
+                                                                    </div>
+                                                                }
+                                                            }
+                                                        </div>
+                                                    }
+                                                }
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
