@@ -148,7 +148,7 @@
         }
     });
 
-    $('#phone-number')
+    $('.phone-number-input')
         .keydown(function (e) {
             var key = e.which || e.charCode || e.keyCode || 0;
             $phone = $(this);
