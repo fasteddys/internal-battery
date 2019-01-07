@@ -151,12 +151,12 @@ namespace UpDiddy.Controllers
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
                 SubscriberGuid = this.subscriber?.SubscriberGuid,
-                FirstName = this.subscriber?.FirstName,
-                LastName = this.subscriber?.LastName,
+                FirstName = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.FirstName),
+                LastName = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.LastName),
                 FormattedPhone = this.subscriber?.PhoneNumber,
                 Email = this.subscriber?.Email,
-                Address = this.subscriber?.Address,
-                City = this.subscriber?.City,
+                Address = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.Address),
+                City = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.City),
                 SelectedState = this.subscriber?.State?.StateGuid,
                 SelectedCountry = this.subscriber?.State?.Country?.CountryGuid,
                 FacebookUrl = this.subscriber?.FacebookUrl,

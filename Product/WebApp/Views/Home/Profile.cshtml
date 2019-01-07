@@ -22,6 +22,16 @@
                     if (html.statusCode === "200") {
                         location.reload();
                     }
+                    else if (html.statusCode === "400") {
+                        var errorsList = html.description.split("|");
+                        for (var i = 0; i < errorsList.length; i++) {
+                            if (errorsList[i] !== "") {
+                                toastr.warning(errorsList[i], 'Warning!');
+                            }
+                            
+                        }
+                        
+                    }
                 }
             });
             e.preventDefault();
@@ -102,7 +112,7 @@
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">Phone Number</div>
                     <div class="modal-edit-input">
-                        <input id="PhoneUpdateInput" form="PersonalInfoForm" type="text" id="phone-number" class="form-control" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
+                        <input id="PhoneUpdateInput" form="PersonalInfoForm" type="text" class="form-control phone-number-input" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
                     </div>
                 </div>
             </div>

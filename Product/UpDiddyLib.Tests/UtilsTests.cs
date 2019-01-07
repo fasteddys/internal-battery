@@ -166,5 +166,47 @@ namespace UpDiddyLib.Tests
         {
             Assert.False(UpDiddyLib.Helpers.Utils.IsValidTextFile(null));
         }
+
+        [Fact]
+        public void ToTitleCase_EmptyString()
+        {
+            Assert.Equal(string.Empty, UpDiddyLib.Helpers.Utils.ToTitleCase(string.Empty));
+        }
+
+        [Fact]
+        public void ToTitleCase_NullInput()
+        {
+            Assert.Equal(string.Empty, UpDiddyLib.Helpers.Utils.ToTitleCase(null));
+        }
+
+        [Fact]
+        public void ToTitleCase_John()
+        {
+            Assert.Equal("John", UpDiddyLib.Helpers.Utils.ToTitleCase("john"));
+        }
+
+        [Fact]
+        public void ToTitleCase_JohnLowercase()
+        {
+            Assert.NotEqual("john", UpDiddyLib.Helpers.Utils.ToTitleCase("john"));
+        }
+
+        [Fact]
+        public void ToTitleCase_NameWithHyphen()
+        {
+            Assert.Equal("Mary-Beth", UpDiddyLib.Helpers.Utils.ToTitleCase("mary-beth"));
+        }
+
+        [Fact]
+        public void ToTitleCase_NameWithApostrophe()
+        {
+            Assert.Equal("D'Artagnan", UpDiddyLib.Helpers.Utils.ToTitleCase("d'artagnan"));
+        }
+
+        [Fact]
+        public void ToTitleCase_Address()
+        {
+            Assert.Equal("123 Test Drive", UpDiddyLib.Helpers.Utils.ToTitleCase("123 test drive"));
+        }
     }
 }
