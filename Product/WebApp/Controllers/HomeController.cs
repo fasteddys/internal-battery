@@ -295,6 +295,7 @@ namespace UpDiddy.Controllers
             return Ok(basicResponseDto);
         }
 
+        [Authorize]
         [HttpPost]
         public IActionResult Onboard(SignupFlowViewModel signupFlowViewModel)
         {
