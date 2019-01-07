@@ -36,11 +36,28 @@ namespace UpDiddy.Controllers
         public IActionResult Subscriber(Guid subscriberGuid)
         {
             SubscriberDto subscriber = _api.Subscriber(subscriberGuid);
+
             SubscriberViewModel subscriberViewModel = new SubscriberViewModel()
             {
-                 FirstName = subscriber.FirstName,
-                 LastName = subscriber.LastName
+                FirstName = subscriber.FirstName,
+                LastName = subscriber.LastName,
+                Email = subscriber.Email,
+                PhoneNumber = subscriber.PhoneNumber,
+                Address = subscriber.Address,
+                City = subscriber.City,
+                State = subscriber.State?.Name,
+                Country = subscriber.State?.Country?.DisplayName,
+                FacebookUrl = subscriber.FacebookUrl,
+                GithubUrl = subscriber.GithubUrl,
+                LinkedInUrl = subscriber.LinkedInUrl,
+                StackOverflowUrl = subscriber.StackOverflowUrl,
+                TwitterUrl = subscriber.TwitterUrl,
+                WorkHistory = subscriber.WorkHistory,
+                EducationHistory = subscriber.EducationHistory,
+                Skills = subscriber.Skills,
+                Enrollments = subscriber.Enrollments
             };
+
             return View(subscriberViewModel);
         }
     }

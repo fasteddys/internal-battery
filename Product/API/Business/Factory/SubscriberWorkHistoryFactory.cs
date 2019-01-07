@@ -31,10 +31,10 @@ namespace UpDiddyApi.Business.Factory
                     Title = workHistory.Title,
                     JobDecription = workHistory.JobDecription,
                     IsCurrent = workHistory.IsCurrent,
-                    CreateDate = DateTime.Now,
-                    CreateGuid = Guid.NewGuid(),
-                    ModifyDate = DateTime.Now,
-                    ModifyGuid = Guid.NewGuid(),
+                    CreateDate = DateTime.UtcNow,
+                    CreateGuid = Guid.Empty,
+                    ModifyDate = DateTime.UtcNow,
+                    ModifyGuid = Guid.Empty,
                     SubscriberWorkHistoryGuid = Guid.NewGuid(),
                     IsDeleted = 0
                 };

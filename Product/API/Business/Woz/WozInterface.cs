@@ -411,11 +411,11 @@ namespace UpDiddyApi.Business
                 Section = Section,
                 Month = Month,
                 Year = Year,
-                ModifyDate = DateTime.Now,
-                CreateDate = DateTime.Now,
+                ModifyDate = DateTime.UtcNow,
+                CreateDate = DateTime.UtcNow,
                 IsDeleted = 0,
-                CreateGuid = Guid.NewGuid()
-
+                CreateGuid = Guid.Empty,
+                ModifyGuid = Guid.Empty
             };
             return SectionDto;
         }
@@ -637,8 +637,8 @@ namespace UpDiddyApi.Business
                 int MonthsLookAhead = 6;
                 int.TryParse(_configuration["Woz:CourseScheduleMonthLookahead"], out MonthsLookAhead);
                 // setting lower bound to be 2 days into the future to prevent scheduling issues for Woz
-                long UTCStartDate = ((DateTimeOffset)DateTime.Now.Date.AddDays(2)).ToUnixTimeMilliseconds();
-                long UTCEndDate = ((DateTimeOffset)DateTime.Now.AddMonths(MonthsLookAhead)).ToUnixTimeMilliseconds();
+                long UTCStartDate = ((DateTimeOffset)DateTime.UtcNow.Date.AddDays(2)).ToUnixTimeMilliseconds();
+                long UTCEndDate = ((DateTimeOffset)DateTime.UtcNow.AddMonths(MonthsLookAhead)).ToUnixTimeMilliseconds();
                 HttpClient client = new HttpClient();
                 string ResponseJson = string.Empty;
                 ExecuteWozGet($"courses/{courseCode}/schedule?startDateUTC={UTCStartDate.ToString()}&endDateUTC={UTCEndDate.ToString()}", ref ResponseJson);
@@ -695,7 +695,7 @@ namespace UpDiddyApi.Business
             int ExeterId = int.Parse(StudentLogin.VendorLogin);
 
             // Get section for the course 
-            DateTime CurrentDate = DateTime.Now;
+            DateTime CurrentDate = DateTime.UtcNow;
             DateTime CurrentDateUtc = DateTime.SpecifyKind(CurrentDate, DateTimeKind.Utc);
             long EnrollmentDateUtc = ((DateTimeOffset)CurrentDateUtc).ToUnixTimeMilliseconds();
             int Year = CurrentDate.Year;
@@ -780,10 +780,11 @@ namespace UpDiddyApi.Business
                 ExeterId = ExeterId,
                 EnrollmentDateUTC = CourseEnrollmentTimeStamp,
                 EnrollmentGuid = Guid.Parse(EnrollmentGuid),
-                ModifyDate = DateTime.Now,
-                CreateDate = DateTime.Now,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = DateTime.UtcNow,
                 IsDeleted = 0,
-                CreateGuid = Guid.NewGuid()
+                CreateGuid = Guid.Empty,
+                ModifyGuid = Guid.Empty,
 
             };
             return EnrollmentDto;
@@ -859,7 +860,7 @@ namespace UpDiddyApi.Business
                 DateTime StartDate = Utils.FromUnixTimeInMilliseconds((long)Enrollment.SectionStartTimestamp);
                 DateTime PriorFriday = Utils.PriorDayOfWeek(StartDate, System.DayOfWeek.Friday);
 
-                if (PriorFriday > DateTime.Now)
+                if (PriorFriday > DateTime.UtcNow)
                 {
                     _syslog.Log(LogLevel.Information, $"ReconcileFutureEnrollment:  Too early to check for enrollment.  PriorFriday = {PriorFriday.ToLongDateString() } ");
                     return false;
@@ -931,9 +932,10 @@ namespace UpDiddyApi.Business
                     WozCourseEnrollment wozCourseEnrollment = new WozCourseEnrollment()
                     {
                         IsDeleted = 0,
-                        CreateDate = DateTime.Now,
-                        ModifyDate = DateTime.Now,
-                        ModifyGuid = Guid.NewGuid(),
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.Empty,
+                        ModifyDate = DateTime.UtcNow,
+                        ModifyGuid = Guid.Empty,
                         WozCourseEnrollmentId = 0,
                         WozEnrollmentId = int.Parse(EnrollmentId),
                         SectionId = int.Parse(SectionId),
@@ -1055,10 +1057,10 @@ namespace UpDiddyApi.Business
 
             if (_translog.WozTransactionLogId > 0) _translog.WozTransactionLogId = 0;
             _translog.ResponseJson = RValJson;
-            _translog.ModifyDate = DateTime.Now;
-            _translog.CreateDate = DateTime.Now;
-            _translog.CreateGuid = Guid.NewGuid();
-            _translog.ModifyGuid = Guid.NewGuid();
+            _translog.ModifyDate = DateTime.UtcNow;
+            _translog.CreateDate = DateTime.UtcNow;
+            _translog.CreateGuid = Guid.Empty;
+            _translog.ModifyGuid = Guid.Empty;
 
             _db.WozTransactionLog.Add(_translog);
             _db.SaveChanges();

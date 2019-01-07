@@ -48,11 +48,22 @@ namespace UpDiddyApi.Controllers
             return Json(_mapper.Map<List<SubscriberDto>>(subscribers));
         }
 
+        // todo: specify a policy-based authorization check (using roles stored in azure ad b2c if possible)
+        // https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies?view=aspnetcore-2.2
+        // [Authorize] 
         [HttpGet("{subscriberGuid}")]
         public IActionResult Get(Guid subscriberGuid)
         {
             Subscriber subscriber = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                .Include(s => s.State).ThenInclude(c => c.Country)
+                .Include(s => s.SubscriberSkills).ThenInclude(ss => ss.Skill)
+                .Include(s => s.Enrollments).ThenInclude(e => e.Course)
+                .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.Company)
+                .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.CompensationType)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalInstitution)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegreeType)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegree)
                 .FirstOrDefault();
 
             if (subscriber == null)

@@ -197,7 +197,7 @@ namespace UpDiddy.Controllers
         [HttpPost]
         public BasicResponseDto UpdateProfileInformation(ProfileViewModel profileViewModel)
         {
-            IList<SkillDto> skillsDto = null;
+            List<SkillDto> skillsDto = null;
             if (ModelState.IsValid)
             {
                 if (profileViewModel.SelectedSkills != null)
@@ -299,7 +299,7 @@ namespace UpDiddy.Controllers
         public IActionResult Signup(SignupFlowViewModel signupFlowViewModel)
         {
             GetSubscriber(false);
-            IList<SkillDto> skillsDto = null;
+            List<SkillDto> skillsDto = null;
             if (ModelState.IsValid)
             {
                 if (signupFlowViewModel.SelectedSkills != null)

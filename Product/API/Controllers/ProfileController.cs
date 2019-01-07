@@ -72,11 +72,11 @@ namespace UpDiddyApi.Controllers
             subscriber = new Subscriber();
             subscriber.SubscriberGuid = subscriberGuid;
             subscriber.Email = HttpContext.User.FindFirst("emails").Value;
-            subscriber.CreateDate = DateTime.Now;
-            subscriber.ModifyDate = DateTime.Now;
+            subscriber.CreateDate = DateTime.UtcNow;
+            subscriber.ModifyDate = DateTime.UtcNow;
             subscriber.IsDeleted = 0;
-            subscriber.ModifyGuid = subscriberGuid;
-            subscriber.CreateGuid = subscriberGuid;
+            subscriber.ModifyGuid = Guid.Empty;
+            subscriber.CreateGuid = Guid.Empty;
 
             // Save subscriber to database 
             _db.Subscriber.Add(subscriber);

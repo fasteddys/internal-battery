@@ -14,13 +14,8 @@ using UpDiddy.Helpers;
 
 namespace UpDiddyLib.Helpers
 {
-
-
-
-
     static public class Utils
     {
-
         public static string ToBase64EncodedString(IFormFile file)
         {
             string base64EncodedString = null;
@@ -67,18 +62,18 @@ namespace UpDiddyLib.Helpers
             return rVal;
         }
 
-            static public List<string> ParseSkillsFromHrXML(string xml)
+        static public List<string> ParseSkillsFromHrXML(string xml)
         {
             List<string> rVal = new List<String>();
- 
-                XElement theXML = XElement.Parse(xml);
-                // Get list of skill found by Sovren
-                var skills = theXML.Descendants()
-                     .Where(e => e.Name.LocalName == "Skill")
-                     .ToList();
-                // Iterate over their skills 
-                foreach (XElement node in skills)
-                    rVal.Add(node.Attribute("name").Value.Trim());
+
+            XElement theXML = XElement.Parse(xml);
+            // Get list of skill found by Sovren
+            var skills = theXML.Descendants()
+                 .Where(e => e.Name.LocalName == "Skill")
+                 .ToList();
+            // Iterate over their skills 
+            foreach (XElement node in skills)
+                rVal.Add(node.Attribute("name").Value.Trim());
 
             return rVal;
 
@@ -115,16 +110,17 @@ namespace UpDiddyLib.Helpers
                 string educationalDegree = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:Degree/hrxml:DegreeName", namespaceManager)); ;
                 SubscriberEducationHistoryDto educationHistory = new SubscriberEducationHistoryDto()
                 {
-                    CreateDate = DateTime.Now,
-                    ModifyDate = DateTime.Now,
-                    CreateGuid = Guid.NewGuid(),
-                    ModifyGuid = Guid.NewGuid(),
+                    CreateDate = DateTime.UtcNow,
+                    ModifyDate = DateTime.UtcNow,
+                    CreateGuid = Guid.Empty,
+                    ModifyGuid = Guid.Empty,
                     IsDeleted = 0,
                     StartDate = startDate,
                     EndDate = endDate,
                     EducationalInstitution = educationalInstitution,
                     EducationalDegreeType = educationalDegreeType,
-                    EducationalDegree = educationalDegree     
+                    EducationalDegree = educationalDegree,
+                    SubscriberEducationHistoryGuid = Guid.NewGuid()
                 };
                 rVal.Add(educationHistory);
             }
@@ -144,9 +140,9 @@ namespace UpDiddyLib.Helpers
 
             // Iterate over their emplyment history  
             foreach (XElement node in employmentHistory)
-            {    
-                XmlDocument doc = new  XmlDocument();
-                doc.LoadXml(node.ToString());                                
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(node.ToString());
                 string defaultXlms = doc.DocumentElement.NamespaceURI;
                 XmlNamespaceManager namespaceManager = new XmlNamespaceManager(doc.NameTable);
                 namespaceManager.AddNamespace("hrxml", defaultXlms);
@@ -160,10 +156,10 @@ namespace UpDiddyLib.Helpers
                 string company = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:EmployerOrgName", namespaceManager));
                 SubscriberWorkHistoryDto workHistory = new SubscriberWorkHistoryDto()
                 {
-                    CreateDate = DateTime.Now,
-                    ModifyDate = DateTime.Now,
-                    CreateGuid = Guid.NewGuid(),
-                    ModifyGuid = Guid.NewGuid(),
+                    CreateDate = DateTime.UtcNow,
+                    ModifyDate = DateTime.UtcNow,
+                    CreateGuid = Guid.Empty,
+                    ModifyGuid = Guid.Empty,
                     IsDeleted = 0,
                     StartDate = startDate,
                     EndDate = endDate,
@@ -197,17 +193,17 @@ namespace UpDiddyLib.Helpers
 
 
 
-        static public string HrXmlNodeAttribute (XmlNode node, string attribute)
+        static public string HrXmlNodeAttribute(XmlNode node, string attribute)
         {
             string rVal = string.Empty;
             try
             {
-                if ( node != null )
+                if (node != null)
                 {
                     XmlElement el = node as XmlElement;
                     if (node.Attributes != null && el.HasAttribute(attribute))
                         rVal = el.Attributes[attribute].Value;
-                }                
+                }
                 return rVal;
             }
             catch
@@ -259,7 +255,7 @@ namespace UpDiddyLib.Helpers
         static public DateTime ParseDateFromHrXmlYearTag(string dateStr)
         {
             try
-            {               
+            {
                 int year = int.Parse(dateStr);
 
                 return new DateTime(year, 1, 1);
@@ -274,14 +270,14 @@ namespace UpDiddyLib.Helpers
 
 
         static public DateTime ParseDateFromHrXmlYearMonthTag(string dateStr)
-        {        
+        {
             try
-            {           
+            {
                 string[] dateInfo = dateStr.Split('-');
                 int year = int.Parse(dateInfo[0]);
                 int month = int.Parse(dateInfo[1]);
 
-                return new DateTime(year, month, 1);                
+                return new DateTime(year, month, 1);
             }
             catch
             {
@@ -317,18 +313,18 @@ namespace UpDiddyLib.Helpers
         }
 
 
-        static public T JTokenConvert<T>(JToken o, T defaultValue) 
+        static public T JTokenConvert<T>(JToken o, T defaultValue)
         {
             try
             {
                 if (o == null)
                     return defaultValue;
-                return (T)Convert.ChangeType(o.ToString(), typeof(T));          
+                return (T)Convert.ChangeType(o.ToString(), typeof(T));
             }
             catch
             {
                 return defaultValue;
-            } 
+            }
 
         }
 
@@ -358,7 +354,7 @@ namespace UpDiddyLib.Helpers
         private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         static public DateTime PriorDayOfWeek(DateTime StartTime, System.DayOfWeek DayOfTheWeek)
-        {           
+        {
             int DaysApart = StartTime.DayOfWeek - DayOfTheWeek;
             if (DaysApart < 0) DaysApart += 7;
             DateTime PriorDay = StartTime.AddDays(-1 * DaysApart);
