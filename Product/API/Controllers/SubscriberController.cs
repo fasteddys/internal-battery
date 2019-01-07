@@ -10,9 +10,16 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using UpDiddyApi.Authorization;
 using UpDiddyApi.Business.Graph;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using UpDiddyLib.Dto;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers
 {
@@ -21,14 +28,18 @@ namespace UpDiddyApi.Controllers
     public class SubscriberController : Controller
     {
         private readonly UpDiddyDbContext _db = null;
+        private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger _syslog;
         private IB2CGraph _graphClient;
-        private IConfiguration _configuration;
 
-        public SubscriberController(UpDiddyDbContext db, IB2CGraph client, IConfiguration configuration)
+        public SubscriberController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<SubscriberController> sysLog, IDistributedCache distributedCache, IB2CGraph client)
         {
             _db = db;
-            _graphClient = client;
+            _mapper = mapper;
             _configuration = configuration;
+            _syslog = sysLog;
+            _graphClient = client;
         }
 
         [HttpGet("/api/[controller]/me/group")]
@@ -37,7 +48,7 @@ namespace UpDiddyApi.Controllers
             IList<Microsoft.Graph.Group> groups = await _graphClient.GetUserGroupsByObjectId(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             IList<string> response = new List<string>();
 
-            foreach(var group in groups)
+            foreach (var group in groups)
             {
                 ConfigADGroup acceptedGroup = _configuration.GetSection("ADGroups:Values")
                     .Get<List<ConfigADGroup>>()
@@ -50,17 +61,47 @@ namespace UpDiddyApi.Controllers
             return Json(new { groups = response });
         }
 
-        // GET: api/<controller>
+        // todo: specify a policy-based authorization check (using roles stored in azure ad b2c if possible)
+        // https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies?view=aspnetcore-2.2
+        // [Authorize] 
         [HttpGet]
         [Authorize(Policy = "IsRecruiterPolicy")]
         public IActionResult Get()
         {
             List<Subscriber> subscribers = _db.Subscriber
+                .Where(s => s.IsDeleted == 0)
+                .Include(s => s.SubscriberSkills)
+                .ThenInclude(s => s.Skill)
                 .Include(s => s.State)
                 .ThenInclude(s => s.Country)
-                .Where(t => t.IsDeleted == 0).ToList<Subscriber>();
+                .ToList();
 
-            return Json(subscribers);
+            return Json(_mapper.Map<List<SubscriberDto>>(subscribers));
+        }
+
+        // todo: specify a policy-based authorization check (using roles stored in azure ad b2c if possible)
+        // https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies?view=aspnetcore-2.2
+        // [Authorize] 
+        [HttpGet("{subscriberGuid}")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public IActionResult Get(Guid subscriberGuid)
+        {
+            Subscriber subscriber = _db.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                .Include(s => s.State).ThenInclude(c => c.Country)
+                .Include(s => s.SubscriberSkills).ThenInclude(ss => ss.Skill)
+                .Include(s => s.Enrollments).ThenInclude(e => e.Course)
+                .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.Company)
+                .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.CompensationType)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalInstitution)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegreeType)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegree)
+                .FirstOrDefault();
+
+            if (subscriber == null)
+                return NotFound();
+            else
+                return Ok(_mapper.Map<SubscriberDto>(subscriber));
         }
     }
 }

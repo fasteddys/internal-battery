@@ -72,11 +72,11 @@ namespace UpDiddyApi.Controllers
             subscriber = new Subscriber();
             subscriber.SubscriberGuid = subscriberGuid;
             subscriber.Email = HttpContext.User.FindFirst("emails").Value;
-            subscriber.CreateDate = DateTime.Now;
-            subscriber.ModifyDate = DateTime.Now;
+            subscriber.CreateDate = DateTime.UtcNow;
+            subscriber.ModifyDate = DateTime.UtcNow;
             subscriber.IsDeleted = 0;
-            subscriber.ModifyGuid = subscriberGuid;
-            subscriber.CreateGuid = subscriberGuid;
+            subscriber.ModifyGuid = Guid.Empty;
+            subscriber.CreateGuid = Guid.Empty;
 
             // Save subscriber to database 
             _db.Subscriber.Add(subscriber);
@@ -99,7 +99,7 @@ namespace UpDiddyApi.Controllers
             var lastName = new SqlParameter("@LastName", (object)Subscriber.LastName ?? DBNull.Value);
             var address = new SqlParameter("@Address", (object)Subscriber.Address ?? DBNull.Value);
             var city = new SqlParameter("@City", (object)Subscriber.City ?? DBNull.Value);
-            var stateGuid = new SqlParameter("@StateGuid", (Subscriber.State != null ? (object)Subscriber.State.StateGuid : DBNull.Value));
+            var stateGuid = new SqlParameter("@StateGuid", (Subscriber?.State?.StateGuid != null ? (object)Subscriber.State.StateGuid : DBNull.Value));
             var phoneNumber = new SqlParameter("@PhoneNumber", (object)Subscriber.PhoneNumber ?? DBNull.Value);
             var facebookUrl = new SqlParameter("@FacebookUrl", (object)Subscriber.FacebookUrl ?? DBNull.Value);
             var twitterUrl = new SqlParameter("@TwitterUrl", (object)Subscriber.TwitterUrl ?? DBNull.Value);
@@ -138,6 +138,22 @@ namespace UpDiddyApi.Controllers
 	                @StackOverflowUrl,
 	                @GithubUrl,
 	                @SkillGuids", spParams);
+
+            return Ok();
+        }
+
+        [HttpPut]
+        [Route("api/[controller]/onboard/{SubscriberGuid}")]
+        public IActionResult Onboard(Guid SubscriberGuid)
+        {
+            if(SubscriberGuid == null || SubscriberGuid == Guid.Empty)
+                return BadRequest(new { code = 400, message = "No Subscriber found in system." });
+
+            Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == SubscriberGuid).FirstOrDefault();
+
+            subscriber.HasOnboarded = 1;
+            _db.Subscriber.Update(subscriber);
+            _db.SaveChanges();
 
             return Ok();
         }

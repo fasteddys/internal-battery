@@ -61,7 +61,7 @@ namespace UpDiddy.ViewModels
         public string Email { get; set; }
         [RegularExpression(@"^http(s)?://([\w]+.)?facebook.com/[A-z0-9_]+/?$", ErrorMessage = "The Facebook profile URL is not valid.")]
         public string FacebookUrl { get; set; }
-        [RegularExpression(@"^http(s)?://([\w]+.)?linkedin.com/in/[A-z0-9_]+/?$", ErrorMessage = "The LinkedIn profile URL is not valid.")]
+        [RegularExpression(@"^http(s)?://([\w]+.)?linkedin.com/in/[A-z0-9_-]+/?$", ErrorMessage = "The LinkedIn profile URL is not valid.")]
         public string LinkedInUrl { get; set; }
         [RegularExpression(@"^http(s)?://([\w]+.)?twitter.com/[A-z0-9_]+/?$", ErrorMessage = "The Twitter profile URL is not valid.")]
         public string TwitterUrl { get; set; }
@@ -87,6 +87,42 @@ namespace UpDiddy.ViewModels
                     !string.IsNullOrWhiteSpace(this.StackOverflowUrl) ||
                     !string.IsNullOrWhiteSpace(this.GithubUrl) ||
                     SelectedState.HasValue;
+            }
+        }
+
+        public Boolean HasFirstAndLastName
+        {
+            get
+            {
+                return
+                    !string.IsNullOrWhiteSpace(this.FirstName) &&
+                    !string.IsNullOrWhiteSpace(this.LastName);
+            }
+        }
+
+        public Boolean HasFullyQualifiedAddress
+        {
+            get
+            {
+                return
+                    !string.IsNullOrWhiteSpace(this.Address) &&
+                    !string.IsNullOrWhiteSpace(this.City) &&
+                    this.SelectedState != null &&
+                    this.SelectedState != Guid.Empty;
+            }
+        }
+
+        public Boolean HasSuppliedAnySocialLinks
+        {
+            get
+            {
+                return
+                    !string.IsNullOrWhiteSpace(this.FacebookUrl) ||
+                    !string.IsNullOrWhiteSpace(this.TwitterUrl) ||
+                    !string.IsNullOrWhiteSpace(this.LinkedInUrl) ||
+                    !string.IsNullOrWhiteSpace(this.StackOverflowUrl) ||
+                    !string.IsNullOrWhiteSpace(this.GithubUrl);
+
             }
         }
     }

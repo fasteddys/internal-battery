@@ -3,9 +3,12 @@
 @model SignupFlowViewModel
 
 <link rel="stylesheet" type="text/css" href="~/lib/animate/animate.css">
-<script src="~/js/signup-flow.js"></script>
-<script src="~/js/selectize-handling.js"></script>
-<script>var url = '@Url.Action("GetStatesByCountry", "Home")'; var subscriberSkills = @Json.Serialize(Model.Skills);</script>
+@section Scripts{
+    <script src="~/js/signup-flow.js"></script>
+    <script src="~/js/selectize-handling.js"></script>
+    <script>var url = '@Url.Action("GetStatesByCountry", "Home")'; var subscriberSkills = @Json.Serialize(Model.Skills);</script>
+}
+
 
 <div class="overlay">
     <div id="loading-img"></div>
@@ -71,11 +74,11 @@
         </div>
     </div>
 </div>
-
+<form id="SignupForm" asp-controller="Home" asp-action="Signup"></form>
 <div class="signup-flow-container">
     <div class="row signup-flow-row">
         <div id="Flow-ResumeColumn" class="col-12 signup-flow-column animated slideInUp">
-                        
+
             <div id="SignupFlowCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
                 <div class="carousel-inner">
                     <div class="carousel-item active carousel-item-first">
@@ -98,7 +101,7 @@
                                     <label id="ChangeResumeLabel" for="UploadedResume" class="custom-file-upload">
                                         <i class="fas fa-exchange-alt"></i>&nbsp;&nbsp;Change
                                     </label>
-                                    <input id="UploadedResume" type="file" asp-for="Resume" />
+                                    <input id="UploadedResume" type="file" asp-for="Resume" accept=".doc,.docx,.odt,.pdf,.rtf,.tex,.txt,.wks,.wps,.wpd" />
                                     <input id="SubmitResumeUpload" type="submit" value="Upload" class="appear-on-resume-attach btn-resume-submit">
 
                                 </div>
@@ -124,15 +127,122 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                     </div>
-                    <div class="carousel-item carousel-item-second">
-                        <div class="linked-in-container">
+                    @*
+                        <div class="carousel-item carousel-item-second">
+                            <div class="linked-in-container">
+                                <div>
+                                    <h2>Have a LinkedIn account?<br />Let's sync it with your CareerCircle profile.</h2>
+                                    <div class="mt-4 p-4">
+                                        @await Component.InvokeAsync("LinkedInSync")
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="previous-container animated">
+                                            <div class="flow-prev-button">
+                                                <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                                            </div>
+                                        </div>
+                                        <div class="skip-next-container">
+                                            <div class="flow-next-button signup-flow-next-button">
+                                                <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    *@
+                    <div class="carousel-item">
+                        <div class="first-name-container">
                             <div>
-                                <h2>Have a LinkedIn account?<br />Let's sync it with your CareerCircle profile.</h2>
-                                <div class="mt-4 p-4">
-                                    @*Need to make this actionable based on a passed-in subscriber guid*@
-                                    @await Component.InvokeAsync("LinkedInSync")
+                                <h2>Tell us a little about yourself. What's your name?</h2>
+                                <input form="SignupForm" type="text" id="FirstNameInput" asp-for="FirstName" placeholder="First name" autocomplete="false" />
+                                <input form="SignupForm" type="text" id="LastNameInput" asp-for="LastName" placeholder="Last name" autocomplete="false" />
+
+                            </div>
+                        </div>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="previous-container animated">
+                                        <div class="flow-prev-button">
+                                            <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                                        </div>
+                                    </div>
+                                    <div class="skip-next-container">
+                                        <div class="flow-next-button signup-flow-next-button">
+                                            <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="carousel-item">
+                        <div class="phone-number-container">
+                            <div>
+                                <h2>What's the best phone number to reach you?</h2>
+                                <div class="phone-number-input-container">
+                                    <input form="SignupForm" type="text" id="phone-number" class="form-control" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="previous-container animated">
+                                        <div class="flow-prev-button">
+                                            <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                                        </div>
+                                    </div>
+                                    <div class="skip-next-container">
+                                        <div class="flow-next-button signup-flow-next-button">
+                                            <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="address-container">
+                            <div>
+                                <h2>What's your address?</h2>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="container">
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <div class="address-format-container">
+                                                        <div class="row">
+                                                            <div class="col-12 col-sm-8">
+                                                                <input form="SignupForm" type="text" class="form-control" placeholder="Street address" asp-for="Address">
+                                                            </div>
+                                                            <div class="col-12 col-sm-4">
+                                                                <input form="SignupForm" type="text" class="form-control" placeholder="City" asp-for="City">
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-12 col-sm-6">
+                                                                @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select", form = "SignupForm" })
+                                                            </div>
+                                                            <div class="col-12 col-sm-6">
+                                                                @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select", form = "SignupForm" })
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -153,174 +263,32 @@
                             </div>
                         </div>
                     </div>
-                    <form asp-controller="Home" asp-action="Signup">
-                        <div class="carousel-item">
-                            <div class="first-name-container">
-                                <div>
-                                    <h2>Tell us a little about yourself. What's your first name?</h2>
-                                    <input type="text" id="FirstNameInput" asp-for="FirstName" placeholder="First name" autocomplete="false" />
-                                </div>
+                    <div class="carousel-item">
+                        <div class="skills-container">
+                            <div>
+                                <h2>What skills could you bring to a team?</h2>
+                                <input form="SignupForm" type="text" asp-for="SelectedSkills" placeholder="Type a skill..." />
                             </div>
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="previous-container animated">
-                                            <div class="flow-prev-button">
-                                                <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
-                                            </div>
+                        </div>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="previous-container animated">
+                                        <div class="flow-prev-button">
+                                            <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
                                         </div>
-                                        <div class="skip-next-container">
-                                            <div class="flow-next-button signup-flow-next-button">
-                                                <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
-                                            </div>
+                                    </div>
+                                    <div class="skip-next-container submit">
+                                        <div class="flow-next-button signup-flow-next-button">
+                                            @*<a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>*@
+                                            <input form="SignupForm" type="submit" value="Finish" class="btn-signup-submit">
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="carousel-item">
-                            <div class="last-name-container">
-                                <div>
-                                    <h2>How about your last name?</h2>
-                                    <input type="text" id="LastNameInput" asp-for="LastName" placeholder="Last name" autocomplete="false" />
-                                </div>
-                            </div>
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="previous-container animated">
-                                            <div class="flow-prev-button">
-                                                <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
-                                            </div>
-                                        </div>
-                                        <div class="skip-next-container">
-                                            <div class="flow-next-button signup-flow-next-button">
-                                                <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="carousel-item">
-                            <div class="phone-number-container">
-                                <div>
-                                    <h2>What's the best phone number to reach you?</h2>
-                                    <div class="phone-number-input-container">
-                                        (
-                                        <input type="text"
-                                               id="PhoneNumberInputAreaCode"
-                                               maxlength="3"
-                                               autocomplete="off"
-                                               placeholder="888"
-                                               asp-for="PhoneNumberFirstThree" />
-                                        )
-                                        <input type="text"
-                                               id="PhoneNumberInputMiddleNumbers"
-                                               maxlength="3"
-                                               autocomplete="off"
-                                               placeholder="123"
-                                               asp-for="PhoneNumberSecondThree" />
-                                        -
-                                        <input type="text"
-                                               id="PhoneNumberInputLastNumbers"
-                                               maxlength="4"
-                                               autocomplete="off"
-                                               placeholder="4567"
-                                               asp-for="PhoneNumberLastFour" />
-                                    </div>
-
-                                </div>
-                            </div>
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="previous-container animated">
-                                            <div class="flow-prev-button">
-                                                <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
-                                            </div>
-                                        </div>
-                                        <div class="skip-next-container">
-                                            <div class="flow-next-button signup-flow-next-button">
-                                                <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="carousel-item">
-                            <div class="address-container">
-                                <div>
-                                    <h2>What's your address?</h2>
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <div class="container">
-                                                <div class="row">
-                                                    <div class="col-12">
-                                                        <div class="address-format-container">
-                                                            <div class="row">
-                                                                <div class="col-12">
-                                                                    <input type="text" class="form-control" placeholder="Street address" asp-for="Address">
-                                                                </div>
-                                                            </div>
-                                                            <div class="row">
-                                                                <div class="col-6">
-                                                                    @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select" })
-                                                                </div>
-                                                                <div class="col-6">
-                                                                    @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select" })
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="previous-container animated">
-                                            <div class="flow-prev-button">
-                                                <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
-                                            </div>
-                                        </div>
-                                        <div class="skip-next-container">
-                                            <div class="flow-next-button signup-flow-next-button">
-                                                <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="carousel-item">
-                            <div class="skills-container">
-                                <div>
-                                    <h2>What skills could you bring to a team?</h2>
-                                    <input type="text" asp-for="SelectedSkills"/>
-                                </div>
-                            </div>
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="previous-container animated">
-                                            <div class="flow-prev-button">
-                                                <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
-                                            </div>
-                                        </div>
-                                        <div class="skip-next-container">
-                                            <div class="flow-next-button signup-flow-next-button">
-                                                <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    </div>
+                    @*
                         <div class="carousel-item">
                             <div class="work-history-container">
                                 <div>
@@ -331,7 +299,7 @@
                                                 <div class="row">
                                                     <div class="col-12">
                                                         <div class="work-history-log">
-                                                            <div class="row">@* Work history dynamically added here. *@</div>
+                                                            <div class="row">Work history dynamically added here. </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -341,7 +309,7 @@
                                     <div class="mt-3 add-work-history" data-toggle="modal" data-target="#WorkHistoryModal">
                                         <i class="fas fa-plus"></i>&nbsp;&nbsp;Add
                                     </div>
-                                    <input type="hidden" id="WorkHistoryInput" asp-for="WorkHistory" />
+                                    <input type="hidden" form="SignupForm" id="WorkHistoryInput" asp-for="WorkHistory" />
                                 </div>
                             </div>
                             <div class="container">
@@ -371,7 +339,7 @@
                                                 <div class="row">
                                                     <div class="col-12">
                                                         <div class="education-history-log">
-                                                            <div class="row">@* Work history dynamically added here. *@</div>
+                                                            <div class="row"> Work history dynamically added here. </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -381,7 +349,7 @@
                                     <div class="mt-3 add-education-history" data-toggle="modal" data-target="#EducationModal">
                                         <i class="fas fa-plus"></i>&nbsp;&nbsp;Add
                                     </div>
-                                    <input type="hidden" id="EducationInput" asp-for="EducationHistory" />
+                                    <input type="hidden" form="SignupForm" id="EducationInput" asp-for="EducationHistory" />
                                 </div>
                             </div>
                             <div class="container">
@@ -393,16 +361,15 @@
                                             </div>
                                         </div>
                                         <div class="skip-next-container">
-                                            <input type="submit" value="Finish" class="btn-signup-submit">
+                                            <input  form="SignupForm" type="submit" value="Finish" class="btn-signup-submit">
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </form>
-                    
+                        </div>*@
+
                 </div>
-                
+
             </div>
         </div>
     </div>

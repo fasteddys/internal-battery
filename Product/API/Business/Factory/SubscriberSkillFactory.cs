@@ -13,17 +13,33 @@ namespace UpDiddyApi.Business.Factory
             bool rVal = true;
             try
             {
-                SubscriberSkill subscriberSkill = new SubscriberSkill()
+                // check for a matching skill for this subscriber which was logically deleted
+                var deletedSubscriberSkill = db.SubscriberSkill
+                    .Where(ss => ss.IsDeleted == 1 && ss.SubscriberId == subscriber.SubscriberId && ss.SkillId == skill.SkillId)
+                    .FirstOrDefault();
+
+                if (deletedSubscriberSkill != null)
                 {
-                    SkillId = skill.SkillId,
-                    SubscriberId = subscriber.SubscriberId,
-                    CreateDate = DateTime.Now,
-                    CreateGuid = Guid.NewGuid(),
-                    ModifyDate = DateTime.Now,
-                    ModifyGuid = Guid.NewGuid(),
-                    IsDeleted = 0
-                };
-                db.SubscriberSkill.Add(subscriberSkill);
+                    // if the skill was logically deleted, remove that flag and mark it as modified
+                    deletedSubscriberSkill.IsDeleted = 0;
+                    deletedSubscriberSkill.ModifyDate = DateTime.UtcNow;
+                    db.SubscriberSkill.Update(deletedSubscriberSkill);
+                }
+                else
+                {
+                    SubscriberSkill subscriberSkill = new SubscriberSkill()
+                    {
+                        SkillId = skill.SkillId,
+                        SubscriberId = subscriber.SubscriberId,
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.Empty,
+                        ModifyDate = DateTime.UtcNow,
+                        ModifyGuid = Guid.Empty,
+                        IsDeleted = 0,
+                        SubscriberSkillGuid = Guid.NewGuid()
+                    };
+                    db.SubscriberSkill.Add(subscriberSkill);
+                }
                 db.SaveChanges();
             }
             catch
