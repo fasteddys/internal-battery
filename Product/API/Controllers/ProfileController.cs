@@ -109,6 +109,7 @@ namespace UpDiddyApi.Controllers
             var stackOverflowUrl = new SqlParameter("@StackOverflowUrl", (object)Subscriber.StackOverflowUrl ?? DBNull.Value);
             var gitHubUrl = new SqlParameter("@GitHubUrl", (object)Subscriber.GithubUrl ?? DBNull.Value);
 
+            // todo: update stored procedure to be additive so that we don't need to get current subscriber's skills here.
             var subscriberSkills = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Subscriber.SubscriberGuid)
                 .Join(_db.SubscriberSkill.Where(ss => ss.IsDeleted == 0), s => s.SubscriberId, sk => sk.SubscriberId, (s, sk) => new { sk.SkillId })
