@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
@@ -11,6 +12,7 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
 {
+    [Authorize(Policy= "IsRecruiterPolicy")]
     public class TalentController : Controller
     {
         private IApi _api;

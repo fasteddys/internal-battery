@@ -257,6 +257,11 @@ namespace UpDiddy.Api
         {
             return Post<BasicResponseDto>(resumeDto, "resume/upload", true);
         }
+
+        public SubscriberADGroupsDto MyGroups()
+        {
+            return Get<SubscriberADGroupsDto>("subscriber/me/group", true);
+        }
         #endregion
 
         #region Cache Helper Functions
