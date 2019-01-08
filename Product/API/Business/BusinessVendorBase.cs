@@ -8,6 +8,9 @@ using UpDiddyLib.Helpers;
 using UpDiddyLib.MessageQueue;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Business.Resume;
+using Microsoft.AspNetCore.SignalR;
+using UpDiddyApi.Helpers.SignalR;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddyApi.Business
 {
@@ -25,6 +28,8 @@ namespace UpDiddyApi.Business
         protected internal ILogger _syslog = null;
         protected IHttpClientFactory _httpClientFactory = null;
         protected internal ISovrenAPI _sovrenApi;
+        protected internal IHubContext<ClientHub> _hub;
+        protected internal IDistributedCache _cache;
         #endregion
     }
 }

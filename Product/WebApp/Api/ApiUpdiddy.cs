@@ -5,7 +5,7 @@ using System.Text;
 using System.Linq;
 using UpDiddy.Models;
 using UpDiddyLib.Dto;
-using UpDiddy.Helpers;
+using UpDiddyLib.Helpers;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Threading.Tasks;

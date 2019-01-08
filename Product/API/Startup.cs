@@ -20,7 +20,7 @@ using UpDiddyLib.Helpers;
 using Polly;
 using Polly.Extensions.Http;
 using System.Net.Http;
-using UpDiddy.Helpers;
+using UpDiddyLib.Helpers;
 using UpDiddyLib.Shared;
 using Microsoft.ApplicationInsights.SnapshotCollector;
 using Microsoft.Extensions.Options;
@@ -33,6 +33,8 @@ using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using UpDiddyApi.Business.Resume;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.SignalR;
+using UpDiddyApi.Helpers.SignalR;
 
 namespace UpDiddyApi
 {
@@ -119,6 +121,7 @@ namespace UpDiddyApi
             services.AddCors(o => o.AddPolicy("Cors", builder =>
             {
                 builder.WithOrigins(origins.ToArray())
+                       .AllowCredentials()
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
@@ -177,6 +180,7 @@ namespace UpDiddyApi
 
             services.AddTransient<ISovrenAPI, Sovren>();
             services.AddHttpClient<ISovrenAPI,Sovren>();
+ 
 
             // Configure SnapshotCollector from application settings
             // TODO Uncomment test 

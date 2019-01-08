@@ -6,7 +6,6 @@ using System.Net.Http.Headers;
 using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
-using UpDiddy.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Business.Factory;

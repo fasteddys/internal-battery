@@ -1,50 +1,78 @@
 ﻿
-var _session_key = "ccsignalr";
-var _cookie_key = "ccsignalr_connection_id";
-var _signalr_url = 'http://localhost:5002/clienthub/';
-var _signalr_api_url = 'http://localhost:5002/api/clienthub/'; 
+var CareerCircleSignalR = (function (hubUrl) {
+    var _session_key = "ccsignalr";
+    // Important! Must match Constants.SignalR.CookieKey in UpdiddyLib constants
+    var _cookie_key = "ccsignalr_connection_id";
+    var _connection = null;    
+    var _signalr_url = hubUrl;
+    var _subscriberGuid = null;
 
-const connection = new signalR.HubConnectionBuilder()
-    .withUrl(_signalr_url)
-    .build();
-
-connection.start()
-    .then(getHubId)
-    .catch(err => console.error(err.toString()));
+    var _signalr_api_url = 'http://localhost:5002/api/clienthub/';
     
-function getHubId()
-{
-   connection.invoke('getConnectionId')
-       .then(function (connectionId) {
-           // Cache the connection id in browser session
-           SessionStorage.set(_session_key, connectionId);
-           // Expire existing cookie 
-           document.cookie = _cookie_key + "; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
-           // Set new cookie
-           document.cookie = _cookie_key + "=" + connectionId + "; path=/";
-        });
-}
-    
-connection.on('Send', (message) => {
-        alert("SignalR says:" + message);
-});
+    var connectGood = function () {
+        _connection = new signalR.HubConnectionBuilder()
+            .withUrl(_signalr_url)
+            .build();
+
+        _connection.start()
+            .then(setHubId)
+            .catch(err => console.error(err.toString()));         
+    }
+
+    var connect = async (subscriberGuid) => {
+
+        _subscriberGuid = subscriberGuid;
+        _connection = new signalR.HubConnectionBuilder()
+            .withUrl(_signalr_url)
+            .build();
+        await _connection.start()
+            .then(await setHubId)
+            .catch(err => console.error(err.toString()));     
+    }
+  
+    var setHubId = async () => {
+        await _connection.invoke('getConnectionId')           
+            .then(function (connectionId) {
+                // Cache the connection id in browser session
+                SessionStorage.set(_session_key, connectionId);
+                // Expire existing cookie 
+                document.cookie = _cookie_key + "; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
+                // Set new cookie
+                document.cookie = _cookie_key + "=" + connectionId + "; path=/";
+            });
+    }
 
 
- 
+    var getHubIdTODORemove = async () => {
+        return SessionStorage.get(_session_key);
+    }
 
-    
-function AjaxSignalRTest() {
+    var getHubId = function () {    
+        return SessionStorage.get(_session_key);
+    }
 
-    var hubId = SessionStorage.get(_session_key);
-    var url = _signalr_api_url + "test/" + hubId;
+    var listen = async (verb, cb) => {
+        _connection.on(verb, cb);
+        // Inform api which verb the connection is listening for 
+        await _connection.invoke('subscribe', _subscriberGuid, verb);    
 
-    $.ajax({
-       url: url
-    }).done(function () {
-    });
+    }
 
-    event.preventDefault();
-}
+
+    var listenOld = function (verb, cb) {
+        _connection.on(verb, cb); 
+    }
+
+    return {
+        getHubId, getHubId,
+        listen, listen,
+        connect: connect,
+        getHubId: getHubId
+    };
+
+
+
+})(SIGNALR_URL);
 
 
  

@@ -4,11 +4,13 @@
 
 <link rel="stylesheet" type="text/css" href="~/lib/animate/animate.css">
 @section Scripts{
+    <script src="~/js/session-storage.js"></script>
+    <script src="~/lib/signalr/signalr.js"></script>
+    <script src="~/js/career-circle-signalr.js"></script>
     <script src="~/js/signup-flow.js"></script>
     <script src="~/js/selectize-handling.js"></script>
-    <script>var url = '@Url.Action("GetStatesByCountry", "Home")'; var subscriberSkills = @Json.Serialize(Model.Skills);</script>
+    <script>var url = '@Url.Action("GetStatesByCountry", "Home")'; var subscriberSkills = @Json.Serialize(Model.Skills); </script>
 }
-
 
 <div class="overlay">
     <div id="loading-img"></div>
@@ -101,6 +103,8 @@
                                     <label id="ChangeResumeLabel" for="UploadedResume" class="custom-file-upload">
                                         <i class="fas fa-exchange-alt"></i>&nbsp;&nbsp;Change
                                     </label>
+                                    <input id="hdnConnectionId" type="hidden" />
+                                    <input type="hidden" id="hdnSubscriberGuid" value="@Model.SubscriberGuid"  />
                                     <input id="UploadedResume" type="file" asp-for="Resume" accept=".doc,.docx,.odt,.pdf,.rtf,.tex,.txt,.wks,.wps,.wpd" />
                                     <input id="SubmitResumeUpload" type="submit" value="Upload" class="appear-on-resume-attach btn-resume-submit">
 

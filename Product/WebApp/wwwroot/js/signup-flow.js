@@ -1,4 +1,5 @@
-﻿var workHistory = {};
+﻿var resumeUploadInProgress = false;
+var workHistory = {};
 class WorkHistoryItem {
     constructor(_title, _org, _description) {
         this.title = _title;
@@ -22,26 +23,29 @@ $(document).ajaxStart(function () {
     $('.overlay').hide();
 });
 
+var toastrOptions = {
+    "closeButton": true,
+    "debug": false,
+    "newestOnTop": false,
+    "progressBar": false,
+    "positionClass": "toast-top-full-width",
+    "preventDuplicates": false,
+    "onclick": null,
+    "showDuration": "300",
+    "hideDuration": "1000",
+    "timeOut": "3000",
+    "extendedTimeOut": "1000",
+    "showEasing": "swing",
+    "hideEasing": "linear",
+    "showMethod": "fadeIn",
+    "hideMethod": "fadeOut"
+};
+
+
 $(document).ready(function () {
     $('.overlay').hide();
 
-        var toastrOptions = {
-            "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": false,
-        "positionClass": "toast-top-full-width",
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "3000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    };
+        
 
     $(".add-work-history").on("click", function () {
         //$('.work-history-log').append('<div class="form-row"><div class="form-group col-md-6" ><input type="text" class="form-control" placeholder="Job Title"></div><div class="form-group col-md-6"><input type="text" class="form-control" placeholder="Organization"></div></div>');
@@ -110,9 +114,7 @@ $(document).ready(function () {
                 $('#UploadedResumeText').html("<span class='invalid-entry'>Sorry, unfortunately we do not accept resumes of this file type.</span> <br /> Please upload a file in one of the following file types:  .doc, .docx, .odt, .pdf, .rtf, .tex, .txt, .wks, .wps, or .wpd.");
                 $('#ResumeUploadDisclaimer').css("display", "none");
                 $('#SubmitResumeUpload').hide();
-            }
-            
-            
+            }                       
             setCarouselHeight();
         }
         $('#UploadedResumeLabel').hide();
@@ -121,6 +123,10 @@ $(document).ready(function () {
 
     $('#ResumeUploadForm').on('submit', function (e) {
         e.preventDefault();
+        // Set flag to indicate resume upload is in progress 
+        resumeUploadInProgress = true;
+        // Setup a time out to clean things up in case SignalR never calls back 
+        ResumeUploadTimeout();
         var formData = new FormData();
         formData.append('Resume', $('#UploadedResume')[0].files[0]); // myFile is the input type="file" control
         var _url = $(this).attr('action');
@@ -133,26 +139,67 @@ $(document).ready(function () {
             success: function (result) {
                 switch (result.statusCode) {
                     // update behavior based on revamped status codes
-                    case 'Processing':
-                        $('#ResumeNextButton').removeClass('disabled');
-                        $('#ResumeNextButton a').attr("href", "#SignupFlowCarousel");
-                        $('.skip-resume').hide();
+                    case 'Processing':              
                         removeSkipFunctionalityOnResumeUpload();
-                        toastr.success('We are processing your resume now. The information we are able to extract will be displayed on your profile page.', 'Success!', toastrOptions);
+                        toastr.success('Processing, please wait!', 'Success!', toastrOptions);
                         break;
                     default:
+                        EnableResumeNextButton();
                         toastr.warning('We were not able to process this file. Please select another file and try again. Alternatively, you can skip this and move to the next step.', 'Warning!', toastrOptions);
                         break;
                 }
             },
             error: function (jqXHR) {
+                EnableResumeNextButton();
                 toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions);
             },
             complete: function (jqXHR, status) {
             }
         });
     });
+
+    // Wire up SignalR to listen for resume upload completion
+    CareerCircleSignalR.connect($("#hdnSubscriberGuid").val() )
+        .then(result => {
+             CareerCircleSignalR.listen("UploadResume", ResumeUploadComplete);
+        });  
 });
+
+
+
+var EnableResumeNextButton = function () {
+    $('#ResumeNextButton').removeClass('disabled');
+    $('#ResumeNextButton a').attr("href", "#SignupFlowCarousel");
+    $('.skip-resume').hide();
+}
+
+var ResumeUploadComplete = function (message) {
+    // Make sure a resume upload in progress 
+    if (resumeUploadInProgress == true) {
+        toastr.success("All set, let's go!", 'Success!', toastrOptions);
+        // Set flag to indicate resume upload is in complete 
+        resumeUploadInProgress = false;
+        EnableResumeNextButton();
+        // Move to next page 
+        $('.carousel').carousel({}).carousel('next');
+    }
+    else 
+        toastr.success("Sorry, that took a little longer than we had hoped for...", 'Success!', toastrOptions);
+}
+
+// Set timeout in case 
+var ResumeUploadTimeout = function () {
+    setTimeout(function ()
+    {
+        // If the resume upload is still in progress after 10 seconds,
+        // enable the next button
+        if (resumeUploadInProgress == true) {
+            resumeUploadInProgress = false;
+            EnableResumeNextButton();
+        }
+    }, 15000);
+}
+
 
 var IsValidFileType = function (filename) {
     if (filename === null || filename === "" || !filename.includes('.')) {
@@ -219,7 +266,6 @@ var findMaxCarouselItemHeight = function () {
             maxHeight = $(this).height();
         }
     });
-
     //add height from top of viewport
     maxHeight += 150;
     return maxHeight;

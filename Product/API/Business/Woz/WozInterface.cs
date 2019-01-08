@@ -15,7 +15,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using UpDiddyLib.Helpers;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
-using UpDiddy.Helpers;
+using UpDiddyLib.Helpers;
 using Microsoft.Extensions.Logging;
 
 namespace UpDiddyApi.Business

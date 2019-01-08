@@ -20,6 +20,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Text.Encodings.Web;
 using System.IO;
 using UpDiddyLib.Helpers;
+using UpDiddy.Helpers;
+ 
 
 namespace UpDiddy.Controllers
 {
@@ -74,6 +76,7 @@ namespace UpDiddy.Controllers
 
             SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
             {
+                SubscriberGuid = (Guid) subscriber.SubscriberGuid,
                 Countries = _Api.GetCountries().Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
@@ -264,6 +267,8 @@ namespace UpDiddy.Controllers
         [HttpPost]
         public IActionResult UploadResume(ResumeViewModel resumeViewModel)
         {
+            var hubId = Request.Cookies[Constants.SignalR.CookieKey];
+
             // Check that the resume is a valid text file
             if (!Utils.IsValidTextFile(resumeViewModel.Resume.FileName))
             {
