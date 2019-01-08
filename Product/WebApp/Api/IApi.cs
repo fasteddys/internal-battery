@@ -36,7 +36,7 @@ namespace UpDiddy.Api
         BasicResponseDto UploadResume(ResumeDto resumeDto);
 
         #region TalentPortal
-        IList<SubscriberDto> Subscribers();
+        IList<SubscriberDto> SubscriberSearch(string searchQuery);
         #endregion
     }
 }

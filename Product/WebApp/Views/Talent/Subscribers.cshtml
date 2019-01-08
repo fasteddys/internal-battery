@@ -3,39 +3,29 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
-@model SubscribersViewModel
+@model IEnumerable<SubscriberDto>
 
 <div class="subscribers-container">
     <h2>Talent Portal - Subscribers</h2>
-    @(Html
-        .Grid(Model.Subscribers)
-        .Build(columns =>
-        {
-            columns.Add(model => $"<button class=\"btn btn-primary\" onclick=\"document.location.href='Subscriber/{model.SubscriberGuid}';\">View</button>").Encoded(false);
-            columns.Add(model => model.FirstName).Sortable(true).Titled("First Name");
-            columns.Add(model => model.LastName).Sortable(true).Titled("Last Name");
-            columns.Add(model => model.Email).Titled("Email");
-            columns.Add(model => model.PhoneNumber).Titled("Phone");
-            columns.Add(model => model.City).Sortable(true).Filterable(true).Titled("City");
-            columns.Add(model => model.State.Name).Sortable(true).Filterable(true).Titled("State");
-            columns.Add(model => model.ModifyDate).Sortable(true).InitialSort(GridSortOrder.Desc).Formatted("{0: MM/dd/yyyy}").Titled("Last Modified");
-            //columns.Add(model => model.Skills.Select(s => s.SkillName).Aggregate("",(current, next) => current + ", " + next)).Titled("Skills");
-        })
-        .Empty("No data found")
-        .Pageable(pager =>
-        {
-            pager.PageSizes = new Dictionary<Int32, String> { { 0, "All" }, { 10, "10" }, { 100, "100" } };
-            pager.ShowPageSizes = true;
-            pager.RowsPerPage = 10;
-        })
-    )
+    <input id="GridSearch" />
+    @Html.AjaxGrid(Url.Action("SubscriberGrid"))
 </div>
 
-@section Scripts
-{
 <script type="text/javascript">
-        [].forEach.call(document.getElementsByClassName('mvc-grid'), function (element) {
-            new MvcGrid(element);
+    window.onload = function () {
+        var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+        document.getElementById('GridSearch').addEventListener('input', function () {
+            doSearch();
         });
+    }
+    var delayTimer;
+    function doSearch() {
+        clearTimeout(delayTimer);
+        delayTimer = setTimeout(function () {
+            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+            var search = document.getElementById('GridSearch').value;
+            grid.query.set('searchQuery', search);
+            grid.reload();
+        }, 600);
+    }   
 </script>
-}

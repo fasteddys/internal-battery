@@ -403,9 +403,9 @@ namespace UpDiddy.Api
         }
 
         #region TalentPortal
-        public IList<SubscriberDto> Subscribers()
+        public IList<SubscriberDto> SubscriberSearch(string searchQuery)
         {
-            return Get<IList<SubscriberDto>>("subscriber", true);
+            return Get<IList<SubscriberDto>>($"subscriber/search/{searchQuery}", true);
         }
 
         public SubscriberDto Subscriber(Guid subscriberGuid)

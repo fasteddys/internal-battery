@@ -34,8 +34,38 @@ namespace UpDiddyApi.Controllers
         // todo: specify a policy-based authorization check (using roles stored in azure ad b2c if possible)
         // https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies?view=aspnetcore-2.2
         // [Authorize] 
-        [HttpGet]
-        public IActionResult Get()
+        [HttpGet("/api/[controller]/search/{searchQuery}")]
+        public IActionResult Search(string searchQuery)
+        {
+            List<Subscriber> subscribers = _db.Subscriber
+                .Include(s => s.SubscriberSkills)
+                .ThenInclude(s => s.Skill)
+                .Include(s => s.State)
+                .ThenInclude(s => s.Country)
+                .Where(s => s.IsDeleted == 0
+                && (s.Email.Contains(searchQuery)
+                    || s.FirstName.Contains(searchQuery)
+                    || s.LastName.Contains(searchQuery)
+                    || s.PhoneNumber.Contains(searchQuery)
+                    || s.Address.Contains(searchQuery)
+                    || s.City.Contains(searchQuery)
+                    || s.SubscriberSkills.Where(k => k.Skill.SkillName.Contains(searchQuery)).Any()
+                    || s.SubscriberWorkHistory.Where(w => w.JobDecription.Contains(searchQuery)).Any()
+                    || s.SubscriberWorkHistory.Where(w => w.Title.Contains(searchQuery)).Any()
+                    || s.SubscriberWorkHistory.Where(w => w.Company.CompanyName.Contains(searchQuery)).Any()
+                    || s.SubscriberEducationHistory.Where(e => e.EducationalDegree.Degree.Contains(searchQuery)).Any()
+                    || s.SubscriberEducationHistory.Where(e => e.EducationalDegreeType.DegreeType.Contains(searchQuery)).Any()
+                    || s.SubscriberEducationHistory.Where(e => e.EducationalInstitution.Name.Contains(searchQuery)).Any())
+                )
+                .ToList();
+
+            return Json(_mapper.Map<List<SubscriberDto>>(subscribers));
+
+            return View();
+        }
+        
+        [HttpGet("/api/[controller]/search")]
+        public IActionResult Search()
         {
             List<Subscriber> subscribers = _db.Subscriber
                 .Where(s => s.IsDeleted == 0)
@@ -46,6 +76,8 @@ namespace UpDiddyApi.Controllers
                 .ToList();
 
             return Json(_mapper.Map<List<SubscriberDto>>(subscribers));
+
+            return View();
         }
 
         // todo: specify a policy-based authorization check (using roles stored in azure ad b2c if possible)

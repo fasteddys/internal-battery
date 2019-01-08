@@ -8,8 +8,6 @@ using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
 
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace UpDiddy.Controllers
 {
     public class TalentController : Controller
@@ -22,13 +20,18 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult Subscribers()
+        public ViewResult Subscribers()
         {
-            IList<SubscriberDto> subscribers = _api.Subscribers();
-            SubscribersViewModel subscribersViewModel = new SubscribersViewModel() { Subscribers = subscribers };
-            return View(subscribersViewModel);
+            return View();
         }
 
+        [Authorize]
+        [HttpGet]
+        public PartialViewResult SubscriberGrid(String searchQuery)
+        {
+            IList<SubscriberDto> subscribers = _api.SubscriberSearch(searchQuery);
+            return PartialView("_SubscriberGrid", subscribers);
+        }
 
         [Authorize]
         [HttpGet]
