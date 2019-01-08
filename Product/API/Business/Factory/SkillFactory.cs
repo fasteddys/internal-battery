@@ -24,7 +24,7 @@ namespace UpDiddyApi.Business.Factory
 
         static public Skill GetOrAdd(UpDiddyDbContext db, string skillName)
         {
-            skillName = skillName.Trim();
+            skillName = skillName.Trim().ToLower();
 
             Skill skill = db.Skill
                 .Where(s => s.IsDeleted == 0 && s.SkillName == skillName)
