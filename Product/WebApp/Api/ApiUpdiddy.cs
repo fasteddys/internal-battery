@@ -344,7 +344,7 @@ namespace UpDiddy.Api
             {
                 int CacheTTL = int.Parse(_configuration["redis:cacheTTLInMinutes"]);
                 string newValue = Newtonsoft.Json.JsonConvert.SerializeObject(Value);
-                _cache.SetString(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddHours(CacheTTL) });
+                _cache.SetString(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL) });
                 return true;
             }
             catch (Exception ex)

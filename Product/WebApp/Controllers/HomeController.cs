@@ -427,6 +427,12 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        public IActionResult Forbidden()
+        {
+            Response.StatusCode = 401;
+            return View();
+        }
+
         [HttpPost]
         public IActionResult SetLanguage(string culture, string returnUrl)
         {

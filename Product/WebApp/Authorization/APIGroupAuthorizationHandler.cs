@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,28 +16,38 @@ namespace UpDiddy.Authorization
     public class ApiGroupAuthorizationHandler : AuthorizationHandler<GroupRequirement>
     {
         IConfiguration _configuration;
-        IDistributedCache _cache;
         IApi _api;
+        IHttpContextAccessor _accessor;
 
-        public ApiGroupAuthorizationHandler(IApi api, IConfiguration configuration, IDistributedCache distributedCache)
+        public const string CACHE_KEY = "SubscriberGroups";
+
+        public ApiGroupAuthorizationHandler(IApi api, IConfiguration configuration, IHttpContextAccessor contextAccessor)
         {
             _api = api;
             _configuration = configuration;
-            _cache = distributedCache;
+            _accessor = contextAccessor;
         }
 
         private async Task<bool> CheckAuthAsync(string userId, GroupRequirement requirement)
         {
             IList<string> groups = new List<string>();
-            try
+            string cachedGroups = _accessor.HttpContext.Session.GetString(CACHE_KEY + userId);
+            if(cachedGroups != null)
             {
-                SubscriberADGroupsDto dto = _api.MyGroups();
-                groups = dto.groups;
-            }
-            catch (Exception e)
+                groups = JsonConvert.DeserializeObject<List<string>>(cachedGroups);
+            } else
             {
-                // if exception then stop here, assume they don't have access
-                return false;
+                try
+                {
+                    SubscriberADGroupsDto dto = _api.MyGroups();
+                    groups = dto.groups;
+                    _accessor.HttpContext.Session.SetString(CACHE_KEY + userId, JsonConvert.SerializeObject(groups));
+                }
+                catch (Exception e)
+                {
+                    // if exception then stop here, assume they don't have access
+                    return false;
+                }
             }
 
             // if no groups then just not authorized at this point
