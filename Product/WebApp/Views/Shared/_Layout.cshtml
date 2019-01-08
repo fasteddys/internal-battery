@@ -5,6 +5,8 @@
 @using System.Web
 @inject IViewLocalizer Localizer
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration;
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 
 <!DOCTYPE html>
 <html>
@@ -56,8 +58,7 @@
                         <li class="nav-item nav-link-right">
                             <a class="nav-link" id="MyCircleHeaderButton" asp-controller="Home" asp-action="Profile"><i class="fa fa-user-circle" aria-hidden="true"></i> My Circle</a>
                         </li>
-                        // todo: replace with a role check
-                        if (true)
+                        if ((await AuthorizationService.AuthorizeAsync(User, "IsRecruiterPolicy")).Succeeded)
                         {
                             <li>
                                 <a class="nav-link" id="TalentSubscribers" asp-controller="Talent" asp-action="Subscribers">Subscribers</a>

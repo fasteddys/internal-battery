@@ -24,6 +24,8 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Shared;
 using Microsoft.Net.Http.Headers;
 using UpDiddy.Api;
+using UpDiddy.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UpDiddy
 {
@@ -77,6 +79,12 @@ namespace UpDiddy
                 options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
                 options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
             });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement("Recruiter")));
+            });
+            services.AddSingleton<IAuthorizationHandler, ApiGroupAuthorizationHandler>();
 
 
             #region AddLocalization

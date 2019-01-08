@@ -1,7 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using UpDiddyApi.Authorization;
+using UpDiddyApi.Business.Graph;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,25 +24,45 @@ using UpDiddyLib.Helpers;
 namespace UpDiddyApi.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     public class SubscriberController : Controller
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ILogger _syslog;
+        private IB2CGraph _graphClient;
 
-        public SubscriberController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<SubscriberController> sysLog, IDistributedCache distributedCache)
+        public SubscriberController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<SubscriberController> sysLog, IDistributedCache distributedCache, IB2CGraph client)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
+            _graphClient = client;
         }
 
-        // todo: specify a policy-based authorization check (using roles stored in azure ad b2c if possible)
-        // https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies?view=aspnetcore-2.2
-        // [Authorize] 
+        [HttpGet("/api/[controller]/me/group")]
+        public async Task<IActionResult> MyGroupsAsync()
+        {
+            IList<Microsoft.Graph.Group> groups = await _graphClient.GetUserGroupsByObjectId(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            IList<string> response = new List<string>();
+
+            foreach (var group in groups)
+            {
+                ConfigADGroup acceptedGroup = _configuration.GetSection("ADGroups:Values")
+                    .Get<List<ConfigADGroup>>()
+                    .Find(e => e.Id == group.Id);
+
+                if (acceptedGroup != null)
+                    response.Add(acceptedGroup.Name);
+            }
+
+            return Json(new { groups = response });
+        }
+
         [HttpGet("/api/[controller]/search/{searchQuery}")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
         public IActionResult Search(string searchQuery)
         {
             List<Subscriber> subscribers = _db.Subscriber
@@ -65,6 +93,7 @@ namespace UpDiddyApi.Controllers
         }
         
         [HttpGet("/api/[controller]/search")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
         public IActionResult Search()
         {
             List<Subscriber> subscribers = _db.Subscriber
@@ -76,14 +105,10 @@ namespace UpDiddyApi.Controllers
                 .ToList();
 
             return Json(_mapper.Map<List<SubscriberDto>>(subscribers));
-
-            return View();
         }
 
-        // todo: specify a policy-based authorization check (using roles stored in azure ad b2c if possible)
-        // https://docs.microsoft.com/en-us/aspnet/core/security/authorization/policies?view=aspnetcore-2.2
-        // [Authorize] 
         [HttpGet("{subscriberGuid}")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
         public IActionResult Get(Guid subscriberGuid)
         {
             Subscriber subscriber = _db.Subscriber

@@ -10,6 +10,7 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
 {
+    [Authorize(Policy= "IsRecruiterPolicy")]
     public class TalentController : Controller
     {
         private IApi _api;

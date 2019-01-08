@@ -35,6 +35,8 @@ namespace UpDiddy.Api
         IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid);
         BasicResponseDto UploadResume(ResumeDto resumeDto);
 
+        SubscriberADGroupsDto MyGroups();
+
         #region TalentPortal
         IList<SubscriberDto> SubscriberSearch(string searchQuery);
         #endregion
