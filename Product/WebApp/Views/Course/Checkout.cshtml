@@ -225,7 +225,7 @@
         </div>
     </div>
 </div>
-<script src="https://js.braintreegateway.com/web/dropin/1.13.0/js/dropin.min.js"></script>
+@section  Scripts {
 <script>
     var client_token = "@ViewBag.ClientToken";
     var form = document.querySelector('#CourseCheckoutForm');
@@ -255,3 +255,4 @@
         });
         });
 </script>
+}

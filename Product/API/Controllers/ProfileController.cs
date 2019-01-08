@@ -94,18 +94,30 @@ namespace UpDiddyApi.Controllers
             if (subsriberGuidClaim != Subscriber.SubscriberGuid)
                 return Unauthorized();
 
+            Subscriber subscriberFromDb = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == Subscriber.SubscriberGuid).FirstOrDefault();
+
             var subscriberGuid = new SqlParameter("@SubscriberGuid", Subscriber.SubscriberGuid);
-            var firstName = new SqlParameter("@FirstName", (object)Subscriber.FirstName ?? DBNull.Value);
-            var lastName = new SqlParameter("@LastName", (object)Subscriber.LastName ?? DBNull.Value);
-            var address = new SqlParameter("@Address", (object)Subscriber.Address ?? DBNull.Value);
-            var city = new SqlParameter("@City", (object)Subscriber.City ?? DBNull.Value);
-            var stateGuid = new SqlParameter("@StateGuid", (Subscriber?.State?.StateGuid != null ? (object)Subscriber.State.StateGuid : DBNull.Value));
-            var phoneNumber = new SqlParameter("@PhoneNumber", (object)Subscriber.PhoneNumber ?? DBNull.Value);
+            var firstName = new SqlParameter("@FirstName", (object)(Subscriber.FirstName ?? subscriberFromDb.FirstName) ?? DBNull.Value);
+            var lastName = new SqlParameter("@LastName", (object)(Subscriber.LastName ?? subscriberFromDb.LastName) ?? DBNull.Value);
+            var address = new SqlParameter("@Address", (object)(Subscriber.Address ?? subscriberFromDb.Address) ?? DBNull.Value);
+            var city = new SqlParameter("@City", (object)(Subscriber.City ?? subscriberFromDb.City) ?? DBNull.Value);
+            var stateGuid = new SqlParameter("@StateGuid", (Subscriber?.State?.StateGuid != null ? (object)Subscriber.State.StateGuid : (subscriberFromDb.State?.StateGuid != null ? (object)subscriberFromDb.State.StateGuid : DBNull.Value)));
+            var phoneNumber = new SqlParameter("@PhoneNumber", (object)(Subscriber.PhoneNumber ?? subscriberFromDb.PhoneNumber) ?? DBNull.Value);
             var facebookUrl = new SqlParameter("@FacebookUrl", (object)Subscriber.FacebookUrl ?? DBNull.Value);
             var twitterUrl = new SqlParameter("@TwitterUrl", (object)Subscriber.TwitterUrl ?? DBNull.Value);
             var linkedInUrl = new SqlParameter("@LinkedInUrl", (object)Subscriber.LinkedInUrl ?? DBNull.Value);
             var stackOverflowUrl = new SqlParameter("@StackOverflowUrl", (object)Subscriber.StackOverflowUrl ?? DBNull.Value);
             var gitHubUrl = new SqlParameter("@GitHubUrl", (object)Subscriber.GithubUrl ?? DBNull.Value);
+
+            // todo: update stored procedure to be additive so that we don't need to get current subscriber's skills here.
+            var subscriberSkills = _db.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Subscriber.SubscriberGuid)
+                .Join(_db.SubscriberSkill.Where(ss => ss.IsDeleted == 0), s => s.SubscriberId, sk => sk.SubscriberId, (s, sk) => new { sk.SkillId })
+                .Join(_db.Skill.Where(s => s.IsDeleted == 0), x => x.SkillId, s => s.SkillId, (x, s) => s)
+                .Distinct()
+                .OrderBy(s => s.SkillName)
+                .ProjectTo<SkillDto>(_mapper.ConfigurationProvider)
+                .ToList();
 
             DataTable table = new DataTable();
             table.Columns.Add("Guid", typeof(Guid));
@@ -115,6 +127,10 @@ namespace UpDiddyApi.Controllers
                 {
                     table.Rows.Add(skill.SkillGuid);
                 }
+            }
+            foreach (var skill in subscriberSkills)
+            {
+                table.Rows.Add(skill.SkillGuid);
             }
 
             var skillGuids = new SqlParameter("@SkillGuids", table);

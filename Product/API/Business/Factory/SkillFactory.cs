@@ -14,9 +14,10 @@ namespace UpDiddyApi.Business.Factory
             Skill rVal = new Skill();
             rVal.SkillName = skillName;
             rVal.CreateDate = DateTime.UtcNow;
-            rVal.CreateGuid = Guid.Empty;
             rVal.ModifyDate = DateTime.UtcNow;
-            rVal.ModifyGuid = Guid.Empty;
+            rVal.CreateGuid = Guid.NewGuid();
+            rVal.ModifyGuid = Guid.NewGuid();
+            rVal.SkillGuid = Guid.NewGuid();
             rVal.IsDeleted = 0;
             rVal.SkillGuid = Guid.NewGuid();
             return rVal;
@@ -24,7 +25,7 @@ namespace UpDiddyApi.Business.Factory
 
         static public Skill GetOrAdd(UpDiddyDbContext db, string skillName)
         {
-            skillName = skillName.Trim();
+            skillName = skillName.Trim().ToLower();
 
             Skill skill = db.Skill
                 .Where(s => s.IsDeleted == 0 && s.SkillName == skillName)

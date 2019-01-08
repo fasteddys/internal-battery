@@ -34,8 +34,10 @@
     var savedCountryGuid = $("#SelectedCountry").val();
     if (savedCountryGuid === undefined || savedCountryGuid === "00000000-0000-0000-0000-000000000000" || savedCountryGuid === "") {
         $("#SelectedCountry option:eq(1)").attr('selected', 'selected');
+        $("#SelectedCountry").trigger('change');
     } else {
         $("#SelectedCountry").val(savedCountryGuid);
+        $("#SelectedCountry").trigger('change');
     }
 
     $("input[name='SelectedCourseVariant']").change(function () {
@@ -109,7 +111,7 @@
         } else if (_promoCode !== undefined && $.trim(_promoCode) !== '' && typeof _courseVariantGuid != 'undefined') {
             var form = $('#CourseCheckoutForm');
             var token = $('input[name="__RequestVerificationToken"]', form).val();
-            var postUrl = "/Course/PromoCodeValidation/" + _promoCode + "/" + _courseVariantGuid + "/" + _subscriberGuid;
+            var postUrl = "/Course/PromoCodeValidation/" + _promoCode + "/" + _courseVariantGuid;
 
             $.ajax({
                 url: postUrl,
@@ -148,7 +150,7 @@
         }
     });
 
-    $('#phone-number')
+    $('.phone-number-input')
         .keydown(function (e) {
             var key = e.which || e.charCode || e.keyCode || 0;
             $phone = $(this);

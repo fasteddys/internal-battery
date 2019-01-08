@@ -19,6 +19,7 @@
     "sass": "^1.14.3"
   },
   "dependencies": {
+    "braintree-web-drop-in": "1.13.0",
     "toastr": "^2.1.4"
   }
 }
