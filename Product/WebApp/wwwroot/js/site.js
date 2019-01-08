@@ -109,7 +109,7 @@
         } else if (_promoCode !== undefined && $.trim(_promoCode) !== '' && typeof _courseVariantGuid != 'undefined') {
             var form = $('#CourseCheckoutForm');
             var token = $('input[name="__RequestVerificationToken"]', form).val();
-            var postUrl = "/Course/PromoCodeValidation/" + _promoCode + "/" + _courseVariantGuid + "/" + _subscriberGuid;
+            var postUrl = "/Course/PromoCodeValidation/" + _promoCode + "/" + _courseVariantGuid;
 
             $.ajax({
                 url: postUrl,
