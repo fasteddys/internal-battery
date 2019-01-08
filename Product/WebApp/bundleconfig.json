@@ -20,6 +20,7 @@
       "bower_components/popper.js/dist/umd/popper.js",
       "bower_components/bootstrap/dist/js/bootstrap.js",
       "node_modules/toastr/build/toastr.min.js",
+      "node_modules/braintree-web-drop-in/dist/browser/dropin.js",
       "bower_components/selectize/dist/js/standalone/selectize.js",
       "bower_components/bluebird/js/browser/bluebird.js",
       "wwwroot/js/site.js",
@@ -49,6 +50,7 @@
   {
     "outputFileName": "wwwroot/js/site.temp.min.js",
     "inputFiles": [
+      "node_modules/braintree-web-drop-in/dist/browser/dropin.js",
       "wwwroot/js/site.js",
       "wwwroot/js/session-storage.js",
       "wwwroot/js/career-circle-api.js"

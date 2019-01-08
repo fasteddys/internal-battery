@@ -34,8 +34,10 @@
     var savedCountryGuid = $("#SelectedCountry").val();
     if (savedCountryGuid === undefined || savedCountryGuid === "00000000-0000-0000-0000-000000000000" || savedCountryGuid === "") {
         $("#SelectedCountry option:eq(1)").attr('selected', 'selected');
+        $("#SelectedCountry").trigger('change');
     } else {
         $("#SelectedCountry").val(savedCountryGuid);
+        $("#SelectedCountry").trigger('change');
     }
 
     $("input[name='SelectedCourseVariant']").change(function () {
