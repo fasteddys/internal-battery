@@ -190,7 +190,7 @@
                                 <h2>What's the best phone number to reach you?</h2>
                                 <div class="phone-number-input-container">
                                     <input form="SignupForm" type="text" id="phone-number" class="form-control phone-number-input" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
-                                    <div class="phone-number-warning">Please enter 10 digits for your phone number.</div>
+                                    <div class="input-disclaimer">Please enter 10 digits for your phone number.</div>
                                 </div>
 
                             </div>
@@ -238,6 +238,11 @@
                                                             </div>
                                                             <div class="col-12 col-sm-6">
                                                                 @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select", form = "SignupForm" })
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-12">
+                                                                <div class="input-disclaimer">Please enter your full address, or leave this slide blank.</div>
                                                             </div>
                                                         </div>
                                                     </div>

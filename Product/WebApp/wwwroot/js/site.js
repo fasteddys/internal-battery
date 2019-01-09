@@ -30,7 +30,7 @@
                         $("#SelectedState").val($("#SelectedState option:first").val());
                     }
                     else {
-                        $("#SelectedState").val(savedStateGuid);
+                        $("#SelectedState").val(savedStateGuid); 
                     }
                 };
             });

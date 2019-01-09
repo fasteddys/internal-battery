@@ -50,48 +50,63 @@ $(document).ready(function () {
         var inputValue = $(this).val();
         var inputRegEx = new RegExp($(this).data("val-regex-pattern"));
         var regexTest = inputRegEx.test($(this).val());
+        var isAddressSlide = $(this).parents(".address-container").length;
 
         if (!regexTest && inputValue) {
             $(this).addClass("invalid-regex");
-            $(nextButtonAnchor).removeAttr("href");
-            $(nextButton).addClass("disabled");
-            
+            disableNextButton(parentSlide);
         }
         else {
-            if ($(this).parents(".address-container")) {
-                if (addressFieldsAreValid()) {
-                    $(this).removeClass("invalid-regex");
-                    $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
-                    $(nextButton).removeClass("disabled");
-                }
-                else {
-                    $(this).addClass("invalid-regex");
-                    $(nextButtonAnchor).removeAttr("href");
-                    $(nextButton).addClass("disabled");
-                }
+            $(this).removeClass("invalid-regex");
+            if (!isAddressSlide) {
+                enableNextButton(parentSlide);
+            }
+        }
+        if (isAddressSlide) {
+            if (addressFieldsAreValid()) {
+                enableNextButton(parentSlide);
+                $('.address-container').find(".input-disclaimer").hide();
             }
             else {
-                $(this).removeClass("invalid-regex");
-                $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
-                $(nextButton).removeClass("disabled");
+                disableNextButton(parentSlide);
+                $('.address-container').find(".input-disclaimer").show();
             }
             
-            
         }
+            
+            
         if ($(this).attr("id") === "phone-number") {
             if ($(this).val().length !== 14 && $(this).val().length !== 1) {
-                $(this).parent().find(".phone-number-warning").show();
-                $(nextButtonAnchor).removeAttr("href");
-                $(nextButton).addClass("disabled");
+                $(this).siblings(".input-disclaimer").show();
+                disableNextButton(parentSlide);
             }
             else {
-                $(this).parent().find(".phone-number-warning").hide();
-                $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
-                $(nextButton).removeClass("disabled");
+                $(this).siblings(".input-disclaimer").hide();
+                enableNextButton(parentSlide);
             }
         }
 
 
+    });
+
+    $("#SelectedState").change(function () {
+
+        var parentSlide = $(this).closest(".carousel-item");
+        var nextButton = $(parentSlide).find(".flow-next-button");
+        var nextButtonAnchor = $(parentSlide).find(".flow-next-button a");
+        var isAddressSlide = $(this).parents(".address-container").length;
+        if (isAddressSlide) {
+            if (addressFieldsAreValid()) {
+                $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
+                $(nextButton).removeClass("disabled");
+                $('.address-container').find(".input-disclaimer").hide();
+            }
+            else {
+                $(nextButtonAnchor).removeAttr("href");
+                $(nextButton).addClass("disabled");
+                $('.address-container').find(".input-disclaimer").show();
+            }
+        }
     });
 
     $(".add-work-history").on("click", function () {
@@ -205,14 +220,35 @@ $(document).ready(function () {
     });
 });
 
+var disableNextButton = function (carouselSlide) {
+    var parentSlide = $(carouselSlide).closest(".carousel-item");
+    var nextButton = $(parentSlide).find(".flow-next-button");
+    var nextButtonAnchor = $(parentSlide).find(".flow-next-button a");
+    $(nextButtonAnchor).removeAttr("href");
+    $(nextButton).addClass("disabled");
+};
+
+var enableNextButton = function (carouselSlide) {
+    var parentSlide = $(carouselSlide).closest(".carousel-item");
+    var nextButton = $(parentSlide).find(".flow-next-button");
+    var nextButtonAnchor = $(parentSlide).find(".flow-next-button a");
+    $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
+    $(nextButton).removeClass("disabled");
+}
+
 var addressFieldsAreValid = function () {
+
+    // Allow user to enter in no address information
+    if (!$("#Address").val() && !$("#City").val() && !$("#SelectedState").val())
+        return true;
+
     var addressIsValid = new RegExp($("#Address").data("val-regex-pattern")).test($("#Address").val());
     var cityIsValid = new RegExp($("#City").data("val-regex-pattern")).test($("#City").val());
     if ($("#Address").val() && addressIsValid && $("#City").val() && cityIsValid && $("#SelectedState").val()) {
         return true;
     }
     return false;
-}
+};
 
 var IsValidFileType = function (filename) {
     if (filename === null || filename === "" || !filename.includes('.')) {
