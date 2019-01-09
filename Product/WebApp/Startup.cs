@@ -82,6 +82,13 @@ namespace UpDiddy
             #region AddLocalization
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
+            services.AddCors(o => o.AddPolicy("UnifiedCors", builder =>
+            {
+                builder.WithOrigins("https://login.microsoftonline.com")
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            }));
+
             services.AddMvc()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
                 .AddDataAnnotationsLocalization();
@@ -214,6 +221,7 @@ namespace UpDiddy
 
             app.UseSession();
             app.UseAuthentication();
+            app.UseCors("UnifiedCors");
 
             // TODO - Change template action below to index upon site launch.
             app.UseMvc(routes =>
