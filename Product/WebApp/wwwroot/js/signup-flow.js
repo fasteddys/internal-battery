@@ -43,6 +43,96 @@ $(document).ready(function () {
         "hideMethod": "fadeOut"
     };
 
+    $(".signup-flow-container input").keyup(function () {
+        var parentSlide = $(this).closest(".carousel-item");
+        var inputValue = $(this).val();
+        var inputRegEx = new RegExp($(this).data("val-regex-pattern"));
+        var regexTest = inputRegEx.test($(this).val());
+        var isAddressSlide = $(this).parents(".address-container").length;
+        var isNameSlide = $(this).parents(".first-name-container").length;
+
+        if (!regexTest && inputValue) {
+            disableNextButton(parentSlide);
+        }
+        else {
+            $(this).removeClass("invalid-regex");
+            if (!isAddressSlide && !isNameSlide) {
+                enableNextButton(parentSlide);
+            }
+        }
+        if (isAddressSlide) {
+            if (addressFieldsAreValid()) {
+                enableNextButton(parentSlide);
+                $('.address-container').find(".input-disclaimer").hide();
+            }
+            else {
+                disableNextButton(parentSlide);
+                $('.address-container').find(".input-disclaimer").show();
+            }
+            
+        }
+
+        if (isNameSlide) {
+            if (nameFieldsAreValid()) {
+                enableNextButton(parentSlide);
+                $('.first-name-container').find(".input-disclaimer").hide();
+            }
+            else {
+                disableNextButton(parentSlide);
+                $('.first-name-container').find(".input-disclaimer").show();
+            }
+            
+        }
+            
+            
+        if ($(this).attr("id") === "phone-number") {
+            if ($(this).val().length !== 14 && $(this).val().length !== 1) {
+                $(this).siblings(".input-disclaimer").show();
+                disableNextButton(parentSlide);
+            }
+            else {
+                $(this).siblings(".input-disclaimer").hide();
+                enableNextButton(parentSlide);
+            }
+        }
+
+
+    });
+
+    $(".signup-flow-container input").focusout(function () {
+        var inputValue = $(this).val();
+        var inputRegEx = new RegExp($(this).data("val-regex-pattern"));
+        var regexTest = inputRegEx.test($(this).val());
+        if (!regexTest && inputValue) {
+            $(this).addClass("invalid-regex");
+        }
+        else {
+            $(this).removeClass("invalid-regex");
+        }
+    });
+
+
+
+    $("#SelectedState").change(function () {
+
+        var parentSlide = $(this).closest(".carousel-item");
+        var nextButton = $(parentSlide).find(".flow-next-button");
+        var nextButtonAnchor = $(parentSlide).find(".flow-next-button a");
+        var isAddressSlide = $(this).parents(".address-container").length;
+        if (isAddressSlide) {
+            if (addressFieldsAreValid()) {
+                $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
+                $(nextButton).removeClass("disabled");
+                $('.address-container').find(".input-disclaimer").hide();
+            }
+            else {
+                $(nextButtonAnchor).removeAttr("href");
+                $(nextButton).addClass("disabled");
+                $('.address-container').find(".input-disclaimer").show();
+            }
+        }
+    });
+
     $(".add-work-history").on("click", function () {
         //$('.work-history-log').append('<div class="form-row"><div class="form-group col-md-6" ><input type="text" class="form-control" placeholder="Job Title"></div><div class="form-group col-md-6"><input type="text" class="form-control" placeholder="Organization"></div></div>');
     });
@@ -153,6 +243,54 @@ $(document).ready(function () {
         });
     });
 });
+
+var disableNextButton = function (carouselSlide) {
+    var parentSlide = $(carouselSlide).closest(".carousel-item");
+    var nextButton = $(parentSlide).find(".flow-next-button");
+    var nextButtonAnchor = $(parentSlide).find(".flow-next-button a");
+    $(nextButtonAnchor).removeAttr("href");
+    $(nextButton).addClass("disabled");
+};
+
+var enableNextButton = function (carouselSlide) {
+    var parentSlide = $(carouselSlide).closest(".carousel-item");
+    var nextButton = $(parentSlide).find(".flow-next-button");
+    var nextButtonAnchor = $(parentSlide).find(".flow-next-button a");
+    $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
+    $(nextButton).removeClass("disabled");
+};
+
+var addressFieldsAreValid = function () {
+
+    // Allow user to enter in no address information
+    if (!$("#Address").val() && !$("#City").val() && !$("#SelectedState").val())
+        return true;
+
+    var addressIsValid = new RegExp($("#Address").data("val-regex-pattern")).test($("#Address").val());
+    var cityIsValid = new RegExp($("#City").data("val-regex-pattern")).test($("#City").val());
+    if ($("#Address").val() && addressIsValid && $("#City").val() && cityIsValid && $("#SelectedState").val()) {
+        return true;
+    }
+    return false;
+};
+
+var nameFieldsAreValid = function () {
+
+    var firstNameElement = $("#SignupFlowCarousel #FirstNameInput");
+    var lastNameElement = $("#SignupFlowCarousel #LastNameInput");
+
+
+    // Allow user to enter in no address information
+    if (!firstNameElement.val() && !lastNameElement.val())
+        return true;
+
+    var fNameValid = new RegExp(firstNameElement.data("val-regex-pattern")).test(firstNameElement.val());
+    var lNameValid = new RegExp(lastNameElement.data("val-regex-pattern")).test(lastNameElement.val());
+    if (firstNameElement.val() && fNameValid && lastNameElement.val() && lNameValid) {
+        return true;
+    }
+    return false;
+};
 
 var IsValidFileType = function (filename) {
     if (filename === null || filename === "" || !filename.includes('.')) {
