@@ -9,7 +9,7 @@
             $.getJSON(url, { countryGuid: selectedCountry }, function (states) {
                 if (states != null && !jQuery.isEmptyObject(states)) {
                     stateSelect.append($('<option/>', {
-                        value: "---",
+                        value: "",
                         text: "Select State"
                     }));
                     $.each(states.value, function (index, state) {
@@ -20,7 +20,7 @@
                     });
                     var savedStateGuid = $("#SavedStateGuid").val();
                     if (savedStateGuid === undefined || savedStateGuid === "00000000-0000-0000-0000-000000000000" || savedStateGuid === "") {
-                        $("#SelectedState").val("---");
+                        $("#SelectedState").val("");
                     }
                     else {
                         $("#SelectedState").val(savedStateGuid);
