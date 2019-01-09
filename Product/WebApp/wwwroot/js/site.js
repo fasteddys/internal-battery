@@ -47,6 +47,9 @@
         $("#SelectedCountry").trigger('change');
     }
 
+    // ensure that no course variant option is selected on page load; this is important if server-side validation fails
+    $("input[name='SelectedCourseVariant']").attr('checked', false);
+
     $("input[name='SelectedCourseVariant']").change(function () {
         var selectedCourseVariant = $("input[name='SelectedCourseVariant']:checked");
         var selectedCourseVariantPrice = $(selectedCourseVariant).parent().next().children(".price").html();
