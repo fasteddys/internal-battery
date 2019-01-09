@@ -76,7 +76,7 @@
         </div>
     </div>
 </div>
-<form id="SignupForm" asp-controller="Home" asp-action="Signup"></form>
+<form id="SignupForm" asp-controller="Home" asp-action="Onboard"></form>
 <div class="signup-flow-container">
     <div class="row signup-flow-row">
         <div id="Flow-ResumeColumn" class="col-12 signup-flow-column animated slideInUp">
@@ -193,7 +193,7 @@
                             <div>
                                 <h2>What's the best phone number to reach you?</h2>
                                 <div class="phone-number-input-container">
-                                    <input form="SignupForm" type="text" id="phone-number" class="form-control" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
+                                    <input form="SignupForm" type="text" id="phone-number" class="form-control phone-number-input" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
                                 </div>
 
                             </div>

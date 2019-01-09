@@ -17,13 +17,14 @@ namespace UpDiddyApi.Business.Factory
             rVal.CreateGuid = Guid.NewGuid();
             rVal.ModifyDate = DateTime.Now;
             rVal.ModifyGuid = Guid.NewGuid();
+            rVal.SkillGuid = Guid.NewGuid();
             rVal.IsDeleted = 0;
             return rVal;
         }
 
         static public Skill GetOrAdd(UpDiddyDbContext db, string skillName)
         {
-            skillName = skillName.Trim();
+            skillName = skillName.Trim().ToLower();
 
             Skill skill = db.Skill
                 .Where(s => s.IsDeleted == 0 && s.SkillName == skillName)
