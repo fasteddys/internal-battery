@@ -43,6 +43,57 @@ $(document).ready(function () {
         "hideMethod": "fadeOut"
     };
 
+    $(".signup-flow-container input").keyup(function () {
+        var parentSlide = $(this).closest(".carousel-item");
+        var nextButton = $(parentSlide).find(".flow-next-button");
+        var nextButtonAnchor = $(parentSlide).find(".flow-next-button a");
+        var inputValue = $(this).val();
+        var inputRegEx = new RegExp($(this).data("val-regex-pattern"));
+        var regexTest = inputRegEx.test($(this).val());
+
+        if (!regexTest && inputValue) {
+            $(this).addClass("invalid-regex");
+            $(nextButtonAnchor).removeAttr("href");
+            $(nextButton).addClass("disabled");
+            
+        }
+        else {
+            if ($(this).parents(".address-container")) {
+                if (addressFieldsAreValid()) {
+                    $(this).removeClass("invalid-regex");
+                    $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
+                    $(nextButton).removeClass("disabled");
+                }
+                else {
+                    $(this).addClass("invalid-regex");
+                    $(nextButtonAnchor).removeAttr("href");
+                    $(nextButton).addClass("disabled");
+                }
+            }
+            else {
+                $(this).removeClass("invalid-regex");
+                $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
+                $(nextButton).removeClass("disabled");
+            }
+            
+            
+        }
+        if ($(this).attr("id") === "phone-number") {
+            if ($(this).val().length !== 14 && $(this).val().length !== 1) {
+                $(this).parent().find(".phone-number-warning").show();
+                $(nextButtonAnchor).removeAttr("href");
+                $(nextButton).addClass("disabled");
+            }
+            else {
+                $(this).parent().find(".phone-number-warning").hide();
+                $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
+                $(nextButton).removeClass("disabled");
+            }
+        }
+
+
+    });
+
     $(".add-work-history").on("click", function () {
         //$('.work-history-log').append('<div class="form-row"><div class="form-group col-md-6" ><input type="text" class="form-control" placeholder="Job Title"></div><div class="form-group col-md-6"><input type="text" class="form-control" placeholder="Organization"></div></div>');
     });
@@ -153,6 +204,15 @@ $(document).ready(function () {
         });
     });
 });
+
+var addressFieldsAreValid = function () {
+    var addressIsValid = new RegExp($("#Address").data("val-regex-pattern")).test($("#Address").val());
+    var cityIsValid = new RegExp($("#City").data("val-regex-pattern")).test($("#City").val());
+    if ($("#Address").val() && addressIsValid && $("#City").val() && cityIsValid && $("#SelectedState").val()) {
+        return true;
+    }
+    return false;
+}
 
 var IsValidFileType = function (filename) {
     if (filename === null || filename === "" || !filename.includes('.')) {

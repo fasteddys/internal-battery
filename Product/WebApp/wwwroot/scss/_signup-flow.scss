@@ -95,6 +95,20 @@
                                     border: 0;
                                     border-bottom: 2px solid $color-secondary;
                                 }
+
+                                &.invalid-regex {
+                                    border-bottom: 2px solid red;
+                                    color: red;
+
+                                    &:focus {
+                                        border-bottom: 2px solid red;
+                                    }
+                                }
+                            }
+
+                            .phone-number-warning {
+                                display: none;
+                                font-size: .75rem;
                             }
                         }
 
@@ -441,12 +455,6 @@
                                 font-size: 1.1rem;
                                 color: $color-secondary;
                                 border-radius: 0;
-
-                                &:focus {
-                                    outline: 0;
-                                    border: 0;
-                                    border-bottom: 2px solid $color-secondary;
-                                }
                             }
                         }
 
@@ -753,7 +761,7 @@
     }
 
     .signup-flow-container {
-        h2{
+        h2 {
             font-size: 2rem;
         }
 
@@ -785,12 +793,6 @@
                                 font-size: 1.6rem;
                                 color: $color-secondary;
                                 border-radius: 0;
-
-                                &:focus {
-                                    outline: 0;
-                                    border: 0;
-                                    border-bottom: 2px solid $color-secondary;
-                                }
                             }
                         }
 
