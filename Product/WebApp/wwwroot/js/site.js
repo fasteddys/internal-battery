@@ -12,7 +12,7 @@
                     var savedStateGuid = $("#SavedStateGuid").val();
                     var isSavedStateInNewStateList = false;
                     stateSelect.append($('<option/>', {
-                        value: "---",
+                        value: "",
                         text: "Select State"
                     }));
                     $.each(states.value, function (index, state) {
@@ -27,7 +27,7 @@
                     });
 
                     if (savedStateGuid === undefined || savedStateGuid === "00000000-0000-0000-0000-000000000000" || savedStateGuid === "" || !isSavedStateInNewStateList) {
-                        $("#SelectedState").val("---");
+                        $("#SelectedState").val($("#SelectedState option:first").val());
                     }
                     else {
                         $("#SelectedState").val(savedStateGuid);

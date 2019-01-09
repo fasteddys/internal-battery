@@ -382,15 +382,27 @@
                                                                 if (Model.HasFirstAndLastName)
                                                                 {
                                                                     <div class="name-container">
-                                                                        <div class="option-header">Name</div>
-                                                                        <span class="option-value">@Model.FirstName @Model.LastName</span>
+                                                                        <div class="row">
+                                                                            <div class="col-12 col-sm-3 option-header no-padding">
+                                                                                Name
+                                                                            </div>
+                                                                            <div class="col-12 col-sm-9 option-value no-padding">
+                                                                                @Model.FirstName @Model.LastName
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 }
                                                                 if (Model.HasFullyQualifiedAddress)
                                                                 {
                                                                     <div class="address-container">
-                                                                        <div class="option-header">Address</div>
-                                                                        <span class="option-value">@Model.Address @Model.City, @Model.States.Where(s => s.Value == Model.SelectedState.Value.ToString()).FirstOrDefault().Text, @Model.Countries.Where(c => c.Value == Model.SelectedCountry.Value.ToString()).FirstOrDefault().Text</span>
+                                                                        <div class="row">
+                                                                            <div class="col-12 col-sm-3 option-header no-padding">
+                                                                                Address
+                                                                            </div>
+                                                                            <div class="col-12 col-sm-9 option-value no-padding">
+                                                                                @Model.Address @Model.City, @Model.States.Where(s => s.Value == Model.SelectedState.Value.ToString()).FirstOrDefault().Text, @Model.Countries.Where(c => c.Value == Model.SelectedCountry.Value.ToString()).FirstOrDefault().Text
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 }
                                                             }
@@ -414,16 +426,28 @@
                                                         if (!string.IsNullOrWhiteSpace(Model.FormattedPhone))
                                                         {
                                                             <div>
-                                                                <div class="option-header">Phone</div>
-                                                                <span class="option-value">@Model.FormattedPhone</span>
+                                                                <div class="row">
+                                                                    <div class="col-12 col-sm-3 option-header no-padding">
+                                                                        Phone
+                                                                    </div>
+                                                                    <div class="col-12 col-sm-9 option-value no-padding">
+                                                                        @Model.FormattedPhone
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         }
                                                     }
                                                     @*We know this page cannot be accessed unless user has signed up with an email.
                                                         Therefore, we don't need to check if it exists.*@
                                                     <div>
-                                                        <div class="option-header">Email</div>
-                                                        <span class="option-value">@Model.Email</span>
+                                                        <div class="row">
+                                                            <div class="col-12 col-sm-3 option-header no-padding">
+                                                                Email
+                                                            </div>
+                                                            <div class="col-12 col-sm-9 option-value no-padding">
+                                                                @Model.Email
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -450,36 +474,66 @@
                                                                 if (!string.IsNullOrWhiteSpace(Model.FacebookUrl))
                                                                 {
                                                                     <div>
-                                                                        <div class="option-header">Facebook</div>
-                                                                        <span class="option-value">@Model.FacebookUrl</span>
+                                                                        <div class="row">
+                                                                            <div class="col-12 col-sm-3 option-header no-padding">
+                                                                                Facebook
+                                                                            </div>
+                                                                            <div class="col-12 col-sm-9 option-value no-padding">
+                                                                                @Model.FacebookUrl
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 }
                                                                 if (!string.IsNullOrWhiteSpace(Model.GithubUrl))
                                                                 {
                                                                     <div>
-                                                                        <div class="option-header">GitHub</div>
-                                                                        <span class="option-value">@Model.GithubUrl</span>
+                                                                        <div class="row">
+                                                                            <div class="col-12 col-sm-3 option-header no-padding">
+                                                                                GitHub
+                                                                            </div>
+                                                                            <div class="col-12 col-sm-9 option-value no-padding">
+                                                                                @Model.GithubUrl
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 }
                                                                 if (!string.IsNullOrWhiteSpace(Model.LinkedInUrl))
                                                                 {
                                                                     <div>
-                                                                        <div class="option-header">LinkedIn</div>
-                                                                        <span class="option-value">@Model.LinkedInUrl</span>
+                                                                        <div class="row">
+                                                                            <div class="col-12 col-sm-3 option-header no-padding">
+                                                                                LinkedIn
+                                                                            </div>
+                                                                            <div class="col-12 col-sm-9 option-value no-padding">
+                                                                                @Model.LinkedInUrl
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 }
                                                                 if (!string.IsNullOrWhiteSpace(Model.StackOverflowUrl))
                                                                 {
                                                                     <div>
-                                                                        <div class="option-header">StackOverflow</div>
-                                                                        <span class="option-value">@Model.StackOverflowUrl</span>
+                                                                        <div class="row">
+                                                                            <div class="col-12 col-sm-3 option-header no-padding">
+                                                                                StackOverflow
+                                                                            </div>
+                                                                            <div class="col-12 col-sm-9 option-value no-padding">
+                                                                                @Model.StackOverflowUrl
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 }
                                                                 if (!string.IsNullOrWhiteSpace(Model.TwitterUrl))
                                                                 {
                                                                     <div>
-                                                                        <div class="option-header">Twitter</div>
-                                                                        <span class="option-value">@Model.TwitterUrl</span>
+                                                                        <div class="row">
+                                                                            <div class="col-12 col-sm-3 option-header no-padding">
+                                                                                Twitter
+                                                                            </div>
+                                                                            <div class="col-12 col-sm-9 option-value no-padding">
+                                                                                @Model.TwitterUrl
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 }
                                                             }
@@ -511,8 +565,10 @@
                                                                 foreach (var skill in Model.Skills)
                                                                 {
                                                                     <div class="skill-pill">
-
-                                                                        @Html.DisplayFor(item => skill.SkillName)
+                                                                        @{ 
+                                                                            string skillText = UpDiddyLib.Helpers.Utils.ToTitleCase(skill.SkillName);
+                                                                            <text>@skillText</text>
+                                                                        }
                                                                     </div>
                                                                 }
                                                             }
