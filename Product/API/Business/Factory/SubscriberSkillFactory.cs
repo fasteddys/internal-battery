@@ -17,6 +17,7 @@ namespace UpDiddyApi.Business.Factory
                 {
                     SkillId = skill.SkillId,
                     SubscriberId = subscriber.SubscriberId,
+                    SubscriberSkillGuid = Guid.NewGuid(),
                     CreateDate = DateTime.Now,
                     CreateGuid = Guid.NewGuid(),
                     ModifyDate = DateTime.Now,
