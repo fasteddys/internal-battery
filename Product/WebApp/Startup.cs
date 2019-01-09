@@ -84,7 +84,7 @@ namespace UpDiddy
 
             services.AddCors(o => o.AddPolicy("UnifiedCors", builder =>
             {
-                builder.WithOrigins("https://login.microsoftonline.com")
+                builder.WithOrigins("*")
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
@@ -201,13 +201,7 @@ namespace UpDiddy
                 // UI strings that we have localized.
                 SupportedUICultures = supportedCultures
             });
-
-            app.Use((context, next) =>
-            {
-                context.Response.Headers["Access-Control-Allow-Origin"] = "https://login.microsoftonline.com";
-                return next.Invoke();
-            });
-        
+                    
             // set the cache-control header to 24 hours
             app.UseStaticFiles(new StaticFileOptions
             {
