@@ -45,20 +45,18 @@ $(document).ready(function () {
 
     $(".signup-flow-container input").keyup(function () {
         var parentSlide = $(this).closest(".carousel-item");
-        var nextButton = $(parentSlide).find(".flow-next-button");
-        var nextButtonAnchor = $(parentSlide).find(".flow-next-button a");
         var inputValue = $(this).val();
         var inputRegEx = new RegExp($(this).data("val-regex-pattern"));
         var regexTest = inputRegEx.test($(this).val());
         var isAddressSlide = $(this).parents(".address-container").length;
+        var isNameSlide = $(this).parents(".first-name-container").length;
 
         if (!regexTest && inputValue) {
-            $(this).addClass("invalid-regex");
             disableNextButton(parentSlide);
         }
         else {
             $(this).removeClass("invalid-regex");
-            if (!isAddressSlide) {
+            if (!isAddressSlide && !isNameSlide) {
                 enableNextButton(parentSlide);
             }
         }
@@ -70,6 +68,18 @@ $(document).ready(function () {
             else {
                 disableNextButton(parentSlide);
                 $('.address-container').find(".input-disclaimer").show();
+            }
+            
+        }
+
+        if (isNameSlide) {
+            if (nameFieldsAreValid()) {
+                enableNextButton(parentSlide);
+                $('.first-name-container').find(".input-disclaimer").hide();
+            }
+            else {
+                disableNextButton(parentSlide);
+                $('.first-name-container').find(".input-disclaimer").show();
             }
             
         }
@@ -88,6 +98,20 @@ $(document).ready(function () {
 
 
     });
+
+    $(".signup-flow-container input").focusout(function () {
+        var inputValue = $(this).val();
+        var inputRegEx = new RegExp($(this).data("val-regex-pattern"));
+        var regexTest = inputRegEx.test($(this).val());
+        if (!regexTest && inputValue) {
+            $(this).addClass("invalid-regex");
+        }
+        else {
+            $(this).removeClass("invalid-regex");
+        }
+    });
+
+
 
     $("#SelectedState").change(function () {
 
@@ -234,7 +258,7 @@ var enableNextButton = function (carouselSlide) {
     var nextButtonAnchor = $(parentSlide).find(".flow-next-button a");
     $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
     $(nextButton).removeClass("disabled");
-}
+};
 
 var addressFieldsAreValid = function () {
 
@@ -245,6 +269,24 @@ var addressFieldsAreValid = function () {
     var addressIsValid = new RegExp($("#Address").data("val-regex-pattern")).test($("#Address").val());
     var cityIsValid = new RegExp($("#City").data("val-regex-pattern")).test($("#City").val());
     if ($("#Address").val() && addressIsValid && $("#City").val() && cityIsValid && $("#SelectedState").val()) {
+        return true;
+    }
+    return false;
+};
+
+var nameFieldsAreValid = function () {
+
+    var firstNameElement = $("#SignupFlowCarousel #FirstNameInput");
+    var lastNameElement = $("#SignupFlowCarousel #LastNameInput");
+
+
+    // Allow user to enter in no address information
+    if (!firstNameElement.val() && !lastNameElement.val())
+        return true;
+
+    var fNameValid = new RegExp(firstNameElement.data("val-regex-pattern")).test(firstNameElement.val());
+    var lNameValid = new RegExp(lastNameElement.data("val-regex-pattern")).test(lastNameElement.val());
+    if (firstNameElement.val() && fNameValid && lastNameElement.val() && lNameValid) {
         return true;
     }
     return false;
