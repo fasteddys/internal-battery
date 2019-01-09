@@ -8,19 +8,26 @@
         if (selectedCountry != null && selectedCountry != '') {
             $.getJSON(url, { countryGuid: selectedCountry }, function (states) {
                 if (states != null && !jQuery.isEmptyObject(states)) {
+
+                    var savedStateGuid = $("#SavedStateGuid").val();
+                    var isSavedStateInNewStateList = false;
                     stateSelect.append($('<option/>', {
-                        value: "---",
+                        value: "",
                         text: "Select State"
                     }));
                     $.each(states.value, function (index, state) {
+                        if (state.stateGuid == savedStateGuid) {
+                            isSavedStateInNewStateList = true;
+                        }
+
                         stateSelect.append($('<option/>', {
                             value: state.stateGuid,
                             text: state.name
                         }));
                     });
-                    var savedStateGuid = $("#SavedStateGuid").val();
-                    if (savedStateGuid === undefined || savedStateGuid === "00000000-0000-0000-0000-000000000000" || savedStateGuid === "") {
-                        $("#SelectedState").val("---");
+
+                    if (savedStateGuid === undefined || savedStateGuid === "00000000-0000-0000-0000-000000000000" || savedStateGuid === "" || !isSavedStateInNewStateList) {
+                        $("#SelectedState").val($("#SelectedState option:first").val());
                     }
                     else {
                         $("#SelectedState").val(savedStateGuid);
@@ -39,6 +46,9 @@
         $("#SelectedCountry").val(savedCountryGuid);
         $("#SelectedCountry").trigger('change');
     }
+
+    // ensure that no course variant option is selected on page load; this is important if server-side validation fails
+    $("input[name='SelectedCourseVariant']").attr('checked', false);
 
     $("input[name='SelectedCourseVariant']").change(function () {
         var selectedCourseVariant = $("input[name='SelectedCourseVariant']:checked");

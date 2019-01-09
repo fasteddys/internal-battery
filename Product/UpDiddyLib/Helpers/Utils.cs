@@ -442,5 +442,15 @@ namespace UpDiddyLib.Helpers
         {
             return (c >= '0' && c <= '9');
         }
+
+        public static string RemoveNonNumericCharacters(string val)
+        {
+            if (string.IsNullOrEmpty(val))
+                return string.Empty;
+
+            Regex digitsOnly = new Regex(@"[^\d]");
+            return digitsOnly.Replace(val, "");
+        }
+
     }
 }

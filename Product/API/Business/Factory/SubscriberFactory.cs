@@ -210,7 +210,7 @@ namespace UpDiddyApi.Business.Factory
         {
             subscriber.FirstName = contactInfo.FirstName;
             subscriber.LastName = contactInfo.LastName;
-            subscriber.PhoneNumber = contactInfo.PhoneNumber;
+            subscriber.PhoneNumber = Utils.RemoveNonNumericCharacters(contactInfo.PhoneNumber);
             subscriber.City = contactInfo.City;
             subscriber.Address = contactInfo.Address;
             State state = StateFactory.GetStateByStateCode(db, contactInfo.State);

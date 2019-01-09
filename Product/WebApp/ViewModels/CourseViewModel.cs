@@ -40,9 +40,36 @@ namespace UpDiddy.ViewModels
         public string SubscriberFirstName { get; set; }
         [Required(ErrorMessage = "A last name must be entered for the subscriber.")]
         public string SubscriberLastName { get; set; }
-        [Required(ErrorMessage = "A phone number must be entered for the subscriber.")]
-        [Phone(ErrorMessage = "The phone number provided is not valid.")]
-        public string SubscriberPhoneNumber { get; set; }
+        private string _FormattedPhone;
+        public string FormattedPhone
+        {
+            get
+            {
+                long phone = 0;
+                if (long.TryParse(this._FormattedPhone, out phone))
+                    return String.Format("{0:(###) ###-####}", phone);
+                else
+                    return _FormattedPhone;
+            }
+            set
+            {
+                if (value != null)
+                    _FormattedPhone = value.Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+                else
+                    _FormattedPhone = value;
+            }
+        }
+        [RegularExpression("^[2-9]{1}[0-9]{9}$", ErrorMessage = "Phone must be 10 digits and may not start with a 0 or 1. Please edit your phone number before continuing.")]
+        public string SubscriberPhoneNumber
+        {
+            get
+            {
+                if (this._FormattedPhone != null)
+                    return this.FormattedPhone.Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+                else
+                    return _FormattedPhone;
+            }
+        }
         [Required(ErrorMessage = "A course section must be selected.")]
         public Guid? SelectedCourseVariant { get; set; }
         public DateTime? SelectedStartDate { get; set; }

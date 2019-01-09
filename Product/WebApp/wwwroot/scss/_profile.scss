@@ -336,23 +336,29 @@
                             background-color: $color-white;
                             display: inline-block;
                             width: 100%;
-                            .edit-action{
+
+                            .edit-action {
                                 font-size: .75rem;
                                 color: $color-secondary;
                                 padding-right: 1.5rem;
                                 cursor: pointer;
-                                &:hover{
+
+                                &:hover {
                                     color: $color-primary;
                                 }
                             }
+
                             .options-container {
                                 .option-header {
                                     font-size: .65rem;
                                     width: 25%;
                                     display: inline-block;
                                 }
-                                .option-value{
+
+                                .option-value {
                                     font-size: .75rem;
+                                    word-wrap: break-word;
+                                    padding-right: 1rem;
                                 }
 
                                 > div {
