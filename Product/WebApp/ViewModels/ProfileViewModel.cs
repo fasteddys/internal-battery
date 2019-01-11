@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
@@ -90,6 +91,17 @@ namespace UpDiddy.ViewModels
             }
         }
 
+        public string SelectedStateText()
+        {
+            return States.Where(s => s.Value == SelectedState.Value.ToString()).FirstOrDefault().Text;
+        }
+
+        public string SelectedCountryText()
+        {
+            return Countries.Where(c => c.Value == SelectedCountry.Value.ToString()).FirstOrDefault().Text;
+        }
+
+
         public Boolean HasFirstAndLastName
         {
             get
@@ -110,6 +122,17 @@ namespace UpDiddy.ViewModels
                     this.SelectedState != null &&
                     this.SelectedState != Guid.Empty;
             }
+        }
+
+
+        public bool HasSuppledWorkHistory
+        {
+            // TODO JAB Implement 
+            get
+            {
+                return false;
+            }
+            
         }
 
         public Boolean HasSuppliedAnySocialLinks
