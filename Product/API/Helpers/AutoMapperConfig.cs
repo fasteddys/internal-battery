@@ -31,6 +31,13 @@ namespace UpDiddyApi.Helpers
             CreateMap<EnrollmentLog, EnrollmentLogDto>().ReverseMap();
             CreateMap<CourseVariantType, CourseVariantTypeDto>().ReverseMap();
             CreateMap<Skill, SkillDto>().ReverseMap();
+            CreateMap<EducationalInstitution, EducationalInstitutionDto>().ReverseMap();
+            CreateMap<EducationalDegree, EducationalDegreeDto>().ReverseMap();
+            CreateMap<EducationalDegreeType, EducationalDegreeTypeDto>().ReverseMap();
+            CreateMap<Company, CompanyDto>().ReverseMap();
+            CreateMap<CompensationType, CompensationTypeDto>().ReverseMap();
+
+
 
             // mappings that ignore properties in the Dto that don't exist in the model object
             CreateMap<PromoCode, PromoCodeDto>()
@@ -39,6 +46,17 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.Discount, opt => opt.Ignore())
                 .ForMember(x => x.FinalCost, opt => opt.Ignore())
                 .ForMember(x => x.PromoCodeRedemptionGuid, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<SubscriberEducationHistory, SubscriberEducationHistoryDto>()
+                .ForMember(x => x.EducationalInstitution, opt => opt.Ignore())
+                .ForMember(x => x.EducationalDegreeType, opt => opt.Ignore())
+                .ForMember(x => x.EducationalDegree, opt => opt.Ignore())
+                .ReverseMap();
+
+            CreateMap<SubscriberWorkHistory, SubscriberWorkHistoryDto>()
+                .ForMember(x => x.CompensationType, opt => opt.Ignore())
+                .ForMember(x => x.Company, opt => opt.Ignore())
                 .ReverseMap();
 
             // mappings with related entities
@@ -51,6 +69,8 @@ namespace UpDiddyApi.Helpers
                 .ReverseMap();
             CreateMap<Subscriber, SubscriberDto>()
                 .ForMember(s => s.Enrollments, opt => opt.MapFrom(src => src.Enrollments))
+                .ForMember(s => s.EducationHistory, opt => opt.Ignore())
+                .ForMember(s => s.WorkHistory, opt => opt.Ignore())
                 .ReverseMap();
             CreateMap<State, StateDto>()
                 .ForMember(s => s.Country, opt => opt.MapFrom(src => src.Country))
