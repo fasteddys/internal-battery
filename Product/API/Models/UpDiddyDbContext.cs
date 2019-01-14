@@ -114,7 +114,7 @@ namespace UpDiddyApi.Models
         public DbSet<EducationalInstitution> EducationalInstitution { get; set; }
         public DbSet<EducationalDegreeType> EducationalDegreeType { get; set; }
         public DbSet<EducationalDegree> EducationalDegree { get; set; }
-
+        public DbSet<CourseSkill> CourseSkill { get; set; }
  
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -123,7 +123,8 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Skill>()
             .HasIndex(u => u.SkillName)
             .IsUnique();
-
+            modelBuilder.Entity<CourseSkill>()
+                .HasKey(cs => new { cs.CourseId, cs.SkillId });
             modelBuilder.Entity<PromoCode>()
                 .Property(pc => pc.NumberOfRedemptions)
                 .HasDefaultValue(0);

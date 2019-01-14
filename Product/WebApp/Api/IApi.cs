@@ -12,7 +12,6 @@ namespace UpDiddy.Api
         TopicDto TopicBySlug(string TopicSlug);
         IList<CourseDto> getCoursesByTopicSlug(string TopicSlug);
         CourseDto Course(string CourseSlug);
-        CourseDto CourseByGuid(Guid CourseGuid);
         IList<CountryDto> GetCountries();
         IList<StateDto> GetStatesByCountry(Guid? countryGuid);
         CourseVariantDto GetCourseVariant(Guid courseVariantGuid);
@@ -33,5 +32,6 @@ namespace UpDiddy.Api
         IList<SkillDto> GetSkills(string userQuery);
         IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid);
         BasicResponseDto UploadResume(ResumeDto resumeDto);
+        BasicResponseDto UpdateEntitySkills(EntitySkillDto entitySkillDto);
     }
 }

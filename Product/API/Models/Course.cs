@@ -30,5 +30,6 @@ namespace UpDiddyApi.Models
         public int? Hidden { get; set; }
         public string VideoUrl { get; set; }
         public List<CourseVariant> CourseVariants { get; set; }
+        public List<CourseSkill> CourseSkills { get; set; } 
     }
 }

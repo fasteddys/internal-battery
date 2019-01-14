@@ -124,21 +124,6 @@ namespace UpDiddy.Api
 
         }
 
-        public CourseDto CourseByGuid(Guid CourseGuid)
-        {
-
-            string cacheKey = $"CourseByGuid{CourseGuid}";
-            CourseDto rval = GetCachedValue<CourseDto>(cacheKey);
-
-            if (rval != null)
-                return rval;
-            else
-            {
-                rval = _CourseByGuid(CourseGuid);
-                SetCachedValue<CourseDto>(cacheKey, rval);
-            }
-            return rval;
-        }
 
         public IList<CountryDto> GetCountries()
         {
@@ -228,6 +213,11 @@ namespace UpDiddy.Api
             return Put<BasicResponseDto>(Subscriber, "profile", true);
         }
 
+        public BasicResponseDto UpdateEntitySkills(EntitySkillDto entitySkillDto)
+        {
+            return Put<BasicResponseDto>(entitySkillDto, "skill", true);
+        }
+
         public BasicResponseDto UpdateOnboardingStatus(Guid SubscriberGuid)
         {
             return Put<BasicResponseDto>("profile/onboard/" + SubscriberGuid, true);
@@ -310,11 +300,6 @@ namespace UpDiddy.Api
             return retVal;
         }
 
-        private CourseDto _CourseByGuid(Guid CourseGuid)
-        {
-            CourseDto retVal = Get<CourseDto>("course/" + CourseGuid, false);
-            return retVal;
-        }
         public CourseVariantDto _GetCourseVariant(Guid courseVariantGuid)
         {
             return Get<CourseVariantDto>("course/course-variant/" + courseVariantGuid, false);

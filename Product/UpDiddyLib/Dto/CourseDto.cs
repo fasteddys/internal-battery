@@ -26,5 +26,6 @@ namespace UpDiddyLib.Dto
         // todo: does Woz-specific info belong somewhere else, should we use polymorphism to return diffent types based on vendor (or something else)?
         public int TermsOfServiceDocumentId { get; set; }
         public string TermsOfServiceContent { get; set; }
+        public List<SkillDto> Skills { get; set; }
     }
 }
