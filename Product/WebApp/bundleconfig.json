@@ -3,8 +3,8 @@
     "outputFileName": "wwwroot/css/site.dev.css",
     "inputFiles": [
       "bower_components/bootstrap/dist/css/bootstrap.css",
-      "wwwroot/css/bundle.css",
       "wwwroot/lib/mvc-grid/mvc-grid.css",
+      "wwwroot/css/bundle.css",
       "node_modules/toastr/build/toastr.css",
       "bower_components/selectize/dist/css/selectize.css",
       "bower_components/selectize/dist/css/selectize.default.css"

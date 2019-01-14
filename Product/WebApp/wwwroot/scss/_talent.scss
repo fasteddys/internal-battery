@@ -1,0 +1,63 @@
+﻿@import '_variables';
+
+.talent {
+}
+.nav-talent{
+    .nav-link{
+        &.active{
+            background-color:#135f79;
+        }
+    }
+}
+.mvc-grid-pager {
+    button {
+        color: $color-secondary;
+        &.active {
+            background-color: $color-primary;
+            border-color: $color-primary;
+
+            &:hover {
+                background-color: #135f79;
+                border-color: #135f79;
+            }
+        }
+
+        &:focus,
+        &:hover {
+            border-color: $color-primary;
+        }
+    }
+}
+
+.mvc-grid {
+    .table {
+        background-color: white;
+
+        th {
+            background-color: transparent;
+        }
+        .far{
+            &.fa-eye{
+                color: $color-primary;
+            }
+        }
+
+        &.table-primary {
+            thead {
+                tr {
+                    background-color: $color-primary;
+                    font-weight: normal;
+                    color: #fff;
+                }
+            }
+
+            .mvc-grid-filter {
+                color: white;
+
+                &:hover {
+                    background-color: #135f79;
+                }
+            }
+        }
+    }
+}
