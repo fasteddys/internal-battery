@@ -8,10 +8,14 @@
 <div class="container-fluid bg-color-primary">
     <div class="container">
         <div class="row">
-            <div class="col-sm">
-                <ul class="nav nav-talent text-white">
-                    <li class="nav-link active" href="#">Subscribers</li>
-                    <li class="nav-link" href="#">Analytics</li>
+            <div class="col-md">
+                <ul class="nav nav-talent">
+                    <li class="nav-link active">
+                        <a class="text-white" href="/Talent/Subscribers">Subscribers</a>
+                    </li>
+                    <li class="nav-link" href="#">
+                        <a class="text-white" href="#">Analytics</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -25,7 +29,8 @@
                     <label for="GridSearch" class="sr-only">Search</label>
                     <input id="GridSearch" class="form-control" placeholder="Search" />
                 </div>
-                <button class="btn btn-primary">Search</button>
+                <button class="btn btn-primary" onclick="doSearch(false);">Search</button>
+                <button class="btn btn-primary" onclick="doSearch(true);">Reset</button>
             </div>
         </div>
     </div>
@@ -38,19 +43,15 @@
         <script type="text/javascript">
             window.onload = function () {
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-                document.getElementById('GridSearch').addEventListener('input', function () {
-                    doSearch();
-                });
             }
-            var delayTimer;
-            function doSearch() {
-                clearTimeout(delayTimer);
-                delayTimer = setTimeout(function () {
-                    var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-                    var search = document.getElementById('GridSearch').value;
-                    grid.query.set('searchQuery', search);
-                    grid.reload();
-                }, 600);
+
+            function doSearch(isReset) {
+                if (isReset)
+                    document.getElementById('GridSearch').value = '';
+                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                var search = document.getElementById('GridSearch').value;
+                grid.query.set('searchQuery', search);
+                grid.reload();
             }
         </script>}
 </div>

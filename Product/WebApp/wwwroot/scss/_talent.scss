@@ -2,16 +2,136 @@
 
 .talent {
 }
-.nav-talent{
-    .nav-link{
-        &.active{
-            background-color:#135f79;
+
+.talent-breadcrumb {
+    font-size: 12px;
+    color: dimgray;
+
+    a {
+        color: #135f79;
+    }
+}
+
+.subscriber-sidebar {
+
+    .name {
+        color: black;
+        font-size: 20px;
+        text-align: center;
+    }
+
+    .title {
+        color: #135f79;
+        font-size: 16px;
+        text-align: center;
+    }
+
+    .image {
+        color: #135f79;
+        text-align: center;
+    }
+
+    .contact-header {
+        margin-top: 25px;
+        color: dimgray;
+        font-size: 12px;
+        border-bottom-style: solid;
+        border-bottom-width: 1px;
+        border-bottom-color: rgba(211, 211, 211, .5);
+    }
+
+    .contact-details {
+        font-size: 14px;
+        color: black;
+
+        ul {
+            li {
+                list-style-type: none;
+
+                a {
+                    color: #135f79;
+                }
+            }
         }
     }
 }
+
+.subscriber-tabs {
+    .nav-tabs {
+        .nav-link {
+            color: #000;
+            font-size: 14px;
+
+            &.active {
+                color: #135f79;
+                font-weight: bold;
+                border-top: 0;
+                border-left: 0;
+                border-right: 0;
+                border-bottom-color: #135f79;
+                border-bottom-width: 3px;
+            }
+
+            &:hover {
+                border-top: 0;
+                border-left: 0;
+                border-right: 0;
+                font-weight: bold;
+            }
+        }
+    }
+}
+
+.subscriber-content {
+    #work {
+        .instance {
+            border-bottom-width: 1px;
+            border-bottom-style: solid;
+            border-bottom-color: rgba(211, 211, 211, .5);
+
+            .title {
+                font-size: 16px;
+                color: #135f79;
+            }
+
+            .company {
+                font-size: 14px;
+                color: #135f79;
+
+                i {
+                    margin-left: .75em;
+                    color: lightgray;
+                }
+            }
+
+            .period {
+                font-size: 14px;
+                color: #135f79;
+            }
+
+            .description {
+                color: black;
+                font-size: 12px;
+            }
+        }
+    }
+}
+
+.nav-talent {
+    .nav-link {
+        height: 45px;
+        padding-top: 10px;
+
+        &.active {
+            background-color: #135f79;
+        }
+    }
+}
+
 .mvc-grid-pager {
     button {
         color: $color-secondary;
+
         &.active {
             background-color: $color-primary;
             border-color: $color-primary;
@@ -36,8 +156,9 @@
         th {
             background-color: transparent;
         }
-        .far{
-            &.fa-eye{
+
+        .far {
+            &.fa-eye {
                 color: $color-primary;
             }
         }

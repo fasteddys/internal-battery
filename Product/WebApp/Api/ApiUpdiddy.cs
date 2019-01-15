@@ -408,15 +408,47 @@ namespace UpDiddy.Api
         }
 
         #region TalentPortal
+
+        public SubscriberDto Subscriber(Guid subscriberGuid)
+        {
+            string cacheKey = $"Subscriber{subscriberGuid}";
+            SubscriberDto rval = GetCachedValue<SubscriberDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _Subscriber(subscriberGuid);
+                SetCachedValue<SubscriberDto>(cacheKey, rval);
+            }
+            return rval;
+        }
+
         public IList<SubscriberDto> SubscriberSearch(string searchQuery)
+        {
+            string cacheKey = $"SubscriberSearch{searchQuery}";
+            IList<SubscriberDto> rval = GetCachedValue<IList<SubscriberDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _SubscriberSearch(searchQuery);
+                SetCachedValue<IList<SubscriberDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        private IList<SubscriberDto> _SubscriberSearch(string searchQuery)
         {
             return Get<IList<SubscriberDto>>($"subscriber/search/{searchQuery}", true);
         }
 
-        public SubscriberDto Subscriber(Guid subscriberGuid)
+        private SubscriberDto _Subscriber(Guid subscriberGuid)
         {
             return Get<SubscriberDto>($"subscriber/{subscriberGuid}", true);
         }
+
         #endregion
 
         public T Post<T>(string ApiAction, bool Authorized = false, string Content = null)

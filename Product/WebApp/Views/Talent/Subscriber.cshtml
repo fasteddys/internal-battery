@@ -1,221 +1,278 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Localization
 @using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
+@using UpDiddyLib.Helpers
 @using System.Collections.Generic;
 @using System;
 @model SubscriberViewModel
 
-
-<div>
-    <a asp-controller="Talent" asp-action="Subscribers">Back to Subscriber List</a>
+<div class="container-fluid bg-color-primary">
+    <div class="container">
+        <div class="row">
+            <div class="col-md">
+                <ul class="nav nav-talent">
+                    <li class="nav-link active">
+                        <a class="text-white" href="/Talent/Subscribers">Subscribers</a>
+                    </li>
+                    <li class="nav-link" href="#">
+                        <a class="text-white" href="#">Analytics</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
-<br />
-<br />
-<div class="subscriber-container">
-    <h2>@Model.FirstName @Model.LastName</h2>
-    <h3>Contact Details</h3>
-    <div>
-        <div>@Html.DisplayFor(m => m.Email)</div>
-        <div>@Html.DisplayFor(m => m.PhoneNumber)</div>
-        <div>@Html.DisplayFor(m => m.Address)</div>
-        <div>@Html.DisplayFor(m => m.City)</div>
-        <div>@Html.DisplayFor(m => m.State)</div>
-        <div>@Html.DisplayFor(m => m.Country)</div>
-        <div>@Html.DisplayFor(m => m.PostalCode)</div>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-2 mt-3 mb-3 talent-breadcrumb">
+            <div class="form-inline">
+                <div class="form-group">
+                    <a asp-controller="Talent" asp-action="Subscribers">Subscribers</a>
+                    &nbsp;/&nbsp;
+                    @Model.LastName, @Model.FirstName
+                </div>
+            </div>
+        </div>
     </div>
+    <div class="row">
+        <div class="col-3 subscriber-sidebar">
+            <div class="row">
+                <div class="col-12 name">
+                    @Model.FirstName @Model.LastName
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 title">
+                    @Model.CurrentTitle
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 image">
+                    <i class="fas fa-user-circle fa-9x"></i>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 contact-header p-0">
+                    Contact
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 contact-details p-0">
+                    <ul class="p-0">
+                        <li><a href="mailto:@Model.Email">@Model.Email</a></li>
+                        <li><a href="tel:@Model.PhoneNumber">@Utils.FormatPhoneNumber(Model.PhoneNumber)</a></li>
+                        <li>@Model.Address, @Model.City @Model.State @Model.PostalCode</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-9 subscriber-tabs">
+            <ul class="nav nav-tabs nav-fill">
+                <li class="nav-item">
+                    <a class="nav-link active" id="work-tab" data-toggle="tab" href="#work" role="tab" aria-controls="work" aria-selected="true">Work History</a>
+                </li>
+                <li class="nav-item" href="#">
+                    <a class="nav-link" id="education-tab" data-toggle="tab" href="#education" role="tab" aria-controls="education" aria-selected="false">Education/Certs</a>
+                </li>
+                <li class="nav-item" href="#">
+                    <a class="nav-link" id="skill-tab" data-toggle="tab" href="#skill" role="tab" aria-controls="skill" aria-selected="false">Skills</a>
+                </li>
+                <li class="nav-item" href="#">
+                    <a class="nav-link" id="upskill-tab" data-toggle="tab" href="#upskill" role="tab" aria-controls="upskill" aria-selected="false">Upskilling</a>
+                </li>
+            </ul>
 
-    <h3>Social Links</h3>
-    <div>
-        <div>@Html.DisplayFor(m => m.FacebookUrl)</div>
-        <div>@Html.DisplayFor(m => m.GithubUrl)</div>
-        <div>@Html.DisplayFor(m => m.LinkedInUrl)</div>
-        <div>@Html.DisplayFor(m => m.StackOverflowUrl)</div>
-        <div>@Html.DisplayFor(m => m.TwitterUrl)</div>
-    </div>
-    <h3>Enrollments</h3>
-    <div class="courses-in-progress-list-container">
-        @{
-            if (Model.Enrollments.Count == 0)
-            {
-                <text>You are not currently enrolled in any courses.</text>
-            }
-        }
-        <ul class="courses-in-progress-list-desktop">
-            @foreach (EnrollmentDto enrollment in Model.Enrollments)
-            {
-                <li class="course-in-progress-li">
-                    @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+            <div class="tab-content subscriber-content">
+                <div class="tab-pane fade show active" id="work" role="tabpanel" aria-labelledby="work-tab">
+                    @foreach (var workHistory in Model.WorkHistory.OrderByDescending(wh => wh.StartDate))
                     {
-                        @Html.Raw("<a target=\"_blank\" href=\"" + enrollment.CourseUrl + "\">")
-                    }
-
-                    <div class="course-in-progress-anchor-container">
-                        <div class="course-in-progress-info">
-                            <div class="row no-padding">
-                                <div class="col-12 col-sm-8 no-padding">
-                                    <h3>@enrollment.Course.Name</h3>
+                        <div class="row">
+                            <div class="col-12 px-0 py-2 instance">
+                                <div class="row">
+                                    <div class="col-12 px-0 title">
+                                        @workHistory.Title
+                                    </div>
                                 </div>
-                                <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
-                                    @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Pending)
-                                    {
-                                        <text>Enrollment in progress.</text>
-                                    }
-                                    else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
-                                    {
-                                        <text>Continue <i class="fas fa-arrow-right"></i></text>
-                                    }
+                                <div class="row">
+                                    <div class="col-12 px-0 company">
+                                        @workHistory.Company<i class="fas fa-paperclip"></i>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 px-0 period">
+                                        @{
+                                            DateTime effectiveEndDate;
+                                            string periodDisplay = workHistory.StartDate.ToString("MMMM yyyy") + " - ";
+                                            if (workHistory.EndDate == DateTime.MinValue)
+                                            {
+                                                effectiveEndDate = DateTime.UtcNow;
+                                                periodDisplay += "Present";
+                                            }
+                                            else
+                                            {
+                                                effectiveEndDate = workHistory.EndDate;
+                                                periodDisplay += workHistory.EndDate.ToString("MMMM yyyy");
+                                            }
+                                            var period = new DateTime(effectiveEndDate.Subtract(workHistory.StartDate).Ticks);
+
+                                            periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
+                                        }
+                                        @Html.Raw(periodDisplay)
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 description px-2 py-2">
+                                        @workHistory.JobDecription
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        @{
-                            @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
-                            {
-                                double percentComplete = enrollment.PercentComplete;
-                                string classFormatter = "";
-                                if (percentComplete < 50)
-                                {
-                                    classFormatter = "less-than-50";
-                                }
-                                else
-                                {
-                                    classFormatter = "more-than-50";
-                                }
-                                <div class="course-in-progress">
-
-                                    <div class="progress @(classFormatter)">
-
-                                        <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
-                                            <div class="course-completion-percentage">
-                                                @(percentComplete)%
-                                            </div>
-                                        </div>
-
-                                    </div>
-
-                                </div>
-                            }
-                            else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Error)
-                            {
-                                <div class="course-enrollment-failure-container">
-                                    Unfortunately, an error occurred when attempting to process your enrollment. We have been notified and are working to resolve the issue.
-                                </div>
-                            }
-
-                        }
-                    </div>
-
-                    @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
-                    {
-                        @Html.Raw("</a>")
                     }
-
-
-
-
-                </li>
-            }
-        </ul>
-    </div>
-    <h3>Skills</h3>
-    <div>
-        @{
-            if (Model.Skills.Count == 0)
-            {
-                <text>No skills have been provided.</text>
-            }
-            else
-            {
-                <div class="options-container">
-                    @{
-                        foreach (var skill in Model.Skills)
+                </div>
+                <div class="tab-pane fade" id="education" role="tabpanel" aria-labelledby="education-tab">
+                    <table>
+                        <tr>
+                            <th>Institution</th>
+                            <th>Degree</th>
+                            <th>Degree Type</th>
+                            <th>Period</th>
+                        </tr>
+                        @foreach (var educationHistory in Model.EducationHistory.OrderByDescending(eh => eh.StartDate))
                         {
-                            <div class="skill-pill">
+                            <tr>
+                                <td>@educationHistory.EducationalInstitution</td>
+                                <td>@educationHistory.EducationalDegree</td>
+                                <td>@educationHistory.EducationalDegreeType</td>
+                                <td>
+                                    @{
+                                        DateTime effectiveEndDate;
+                                        string periodDisplay = educationHistory.StartDate.ToString("MMMM yyyy") + " - ";
+                                        if (educationHistory.EndDate == DateTime.MinValue)
+                                        {
+                                            effectiveEndDate = DateTime.UtcNow;
+                                            periodDisplay += "Present";
+                                        }
+                                        else
+                                        {
+                                            effectiveEndDate = educationHistory.EndDate;
+                                            periodDisplay += educationHistory.EndDate.ToString("MMMM yyyy");
+                                        }
+                                        var period = new DateTime(effectiveEndDate.Subtract(educationHistory.StartDate).Ticks);
 
-                                @Html.DisplayFor(item => skill.SkillName)
+                                        periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
+                                    }
+                                    @Html.Raw(periodDisplay)
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="skill" role="tabpanel" aria-labelledby="skill-tab">
+                    @{
+                        if (Model.Skills.Count == 0)
+                        {
+                            <text>No skills have been provided.</text>
+                        }
+                        else
+                        {
+                            <div class="options-container">
+                                @{
+                                    foreach (var skill in Model.Skills)
+                                    {
+                                        <div class="skill-pill">
+
+                                            @Html.DisplayFor(item => skill.SkillName)
+                                        </div>
+                                    }
+                                }
                             </div>
                         }
                     }
                 </div>
-            }
-        }
+                <div class="tab-pane fade" id="upskill" role="tabpanel" aria-labelledby="upskill-tab">
+                    @{
+                        if (Model.Enrollments.Count == 0)
+                        {
+                            <text>You are not currently enrolled in any courses.</text>
+                        }
+                    }
+                    <ul class="courses-in-progress-list-desktop">
+                        @foreach (EnrollmentDto enrollment in Model.Enrollments)
+                        {
+                            <li class="course-in-progress-li">
+                                @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                {
+                                    @Html.Raw("<a target=\"_blank\" href=\"" + enrollment.CourseUrl + "\">")
+                                }
+
+                                <div class="course-in-progress-anchor-container">
+                                    <div class="course-in-progress-info">
+                                        <div class="row no-padding">
+                                            <div class="col-12 col-sm-8 no-padding">
+                                                <h3>@enrollment.Course.Name</h3>
+                                            </div>
+                                            <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
+                                                @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Pending)
+                                                {
+                                                    <text>Enrollment in progress.</text>
+                                                }
+                                                else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                                {
+                                                    <text>Continue <i class="fas fa-arrow-right"></i></text>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @{
+                                        @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                        {
+                                            double percentComplete = enrollment.PercentComplete;
+                                            string classFormatter = "";
+                                            if (percentComplete < 50)
+                                            {
+                                                classFormatter = "less-than-50";
+                                            }
+                                            else
+                                            {
+                                                classFormatter = "more-than-50";
+                                            }
+                                            <div class="course-in-progress">
+
+                                                <div class="progress @(classFormatter)">
+
+                                                    <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
+                                                        <div class="course-completion-percentage">
+                                                            @(percentComplete)%
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+                                        }
+                                        else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Error)
+                                        {
+                                            <div class="course-enrollment-failure-container">
+                                                Unfortunately, an error occurred when attempting to process your enrollment. We have been notified and are working to resolve the issue.
+                                            </div>
+                                        }
+
+                                    }
+                                </div>
+
+                                @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                {
+                                    @Html.Raw("</a>")
+                                }
+
+
+
+
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <h3>Work History</h3>
-    <table>
-        <tr>
-            <th>Title</th>
-            <th>Company</th>
-            <th>Period</th>
-        </tr>
-        @foreach (var workHistory in Model.WorkHistory.OrderByDescending(wh => wh.StartDate))
-        {
-            <tr>
-                <td>@workHistory.Title</td>
-                <td>@workHistory.Company</td>
-                <td>
-                    @{
-                        DateTime effectiveEndDate;
-                        string periodDisplay = workHistory.StartDate.ToString("MMMM yyyy") + " - ";
-                        if (workHistory.EndDate == DateTime.MinValue)
-                        {
-                            effectiveEndDate = DateTime.UtcNow;
-                            periodDisplay += "Present";
-                        }
-                        else
-                        {
-                            effectiveEndDate = workHistory.EndDate;
-                            periodDisplay += workHistory.EndDate.ToString("MMMM yyyy");
-                        }
-                        var period = new DateTime(effectiveEndDate.Subtract(workHistory.StartDate).Ticks);
-
-                        periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
-                    }
-                    @Html.Raw(periodDisplay)
-                </td>
-            </tr>
-        }
-    </table>
-
-    <h3>Education History</h3>
-    <table>
-        <tr>
-            <th>Institution</th>
-            <th>Degree</th>
-            <th>Degree Type</th>
-            <th>Period</th>
-        </tr>
-        @foreach (var educationHistory in Model.EducationHistory.OrderByDescending(eh => eh.StartDate))
-        {
-            <tr>
-                <td>@educationHistory.EducationalInstitution</td>
-                <td>@educationHistory.EducationalDegree</td>
-                <td>@educationHistory.EducationalDegreeType</td>
-                <td>
-                    @{
-                        DateTime effectiveEndDate;
-                        string periodDisplay = educationHistory.StartDate.ToString("MMMM yyyy") + " - ";
-                        if (educationHistory.EndDate == DateTime.MinValue)
-                        {
-                            effectiveEndDate = DateTime.UtcNow;
-                            periodDisplay += "Present";
-                        }
-                        else
-                        {
-                            effectiveEndDate = educationHistory.EndDate;
-                            periodDisplay += educationHistory.EndDate.ToString("MMMM yyyy");
-                        }
-                        var period = new DateTime(effectiveEndDate.Subtract(educationHistory.StartDate).Ticks);
-
-                        periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
-                    }
-                    @Html.Raw(periodDisplay)
-                </td>
-            </tr>
-        }
-    </table>
-</div>
-<br />
-<br />
-<div>
-    <a asp-controller="Talent" asp-action="Subscribers">Back to Subscriber List</a>
 </div>

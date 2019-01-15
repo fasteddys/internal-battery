@@ -1,26 +1,26 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
+@using UpDiddyLib.Helpers
 @model IEnumerable<SubscriberDto>
 
 @(Html
-    .Grid(Model)
-    .Build(columns =>
-    {
-        columns.Add(model => model.FirstName).Sortable(true).Titled("First Name");
-        columns.Add(model => model.LastName).Sortable(true).Titled("Last Name");
-        columns.Add(model => model.Email).Titled("Email");
-        columns.Add(model => model.PhoneNumber).Titled("Phone");
-        columns.Add(model => model.City).Sortable(true).Filterable(true).Titled("City");
-        columns.Add(model => model.State.Name).Sortable(true).Filterable(true).Titled("State");
-        columns.Add(model => $"<a href=\"Subscriber/{model.SubscriberGuid}\"><i class=\"far fa-eye\"></i></a>").Encoded(false).AppendCss("text-center");
-        //todo: figure out how to put "Actions" in header above
-    })
-    .AppendCss("table table-primary table-striped")
-    .Empty("No data found")
-    .Pageable(pager =>
-    {
-        pager.PageSizes = new Dictionary<Int32, String> { { 0, "All" }, { 5, "5" }, { 10, "10" } };
-        pager.ShowPageSizes = true;
-        pager.RowsPerPage = 0;
-    })
+        .Grid(Model)
+        .Build(columns =>
+        {
+            columns.Add(model => model.FirstName).Sortable(true).Titled("First Name");
+            columns.Add(model => model.LastName).Sortable(true).Titled("Last Name");
+            columns.Add(model => model.Email).Titled("Email");
+            columns.Add(model => model.PhoneNumber).Titled("Phone").RenderedAs(model => Utils.FormatPhoneNumber(model.PhoneNumber));
+            columns.Add(model => model.City).Sortable(true).Filterable(true).Titled("City");
+            columns.Add(model => model.State.Name).Sortable(true).Filterable(true).Titled("State");
+            columns.Add(model => $"<a href=\"Subscriber/{model.SubscriberGuid}\"><i class=\"far fa-eye\"></i></a>").Titled("Actions").Encoded(false).AppendCss("text-center");
+})
+        .AppendCss("table table-primary table-striped")
+        .Empty("No data found")
+        .Pageable(pager =>
+        {
+            pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
+            pager.ShowPageSizes = true;
+            pager.RowsPerPage = 10;
+        })
 )

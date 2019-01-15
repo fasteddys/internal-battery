@@ -26,5 +26,12 @@ namespace UpDiddy.ViewModels
         public List<EnrollmentDto> Enrollments { get; set; }
         public List<SkillDto> Skills { get; set; }
         public List<SubscriberWorkHistoryDto> WorkHistory { get; set; }
+        public string CurrentTitle
+        {
+            get
+            {
+                return WorkHistory.Where(wh => wh.IsCurrent == 1).OrderByDescending(wh => wh.StartDate).FirstOrDefault()?.Title;
+            }
+        }
     }
 }

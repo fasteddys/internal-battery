@@ -16,6 +16,26 @@ namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+        public static string FormatPhoneNumber(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber) || phoneNumber.Length < 10 || phoneNumber.Length > 15)
+                return phoneNumber;
+            int max = 15, min = 10;
+            string areaCode = phoneNumber.Substring(0, 3);
+            string mid = phoneNumber.Substring(3, 3);
+            string lastFour = phoneNumber.Substring(6, 4);
+            string extension = phoneNumber.Substring(10, phoneNumber.Length - min);
+            if (phoneNumber.Length == min)
+            {
+                return $"({areaCode}) {mid}-{lastFour}";
+            }
+            else if (phoneNumber.Length > min && phoneNumber.Length <= max)
+            {
+                return $"({areaCode}) {mid}-{lastFour} x{extension}";
+            }
+            return phoneNumber;
+        }
+
         public static string ToBase64EncodedString(IFormFile file)
         {
             string base64EncodedString = null;
