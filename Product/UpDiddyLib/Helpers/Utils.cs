@@ -406,7 +406,7 @@ namespace UpDiddyLib.Helpers
 
             if(NonAlphaSymbols.Length > 0)
             {
-                string[] IndividualNameStrings = Regex.Split(value, "[- ']");
+                string[] IndividualNameStrings = Regex.Split(value, "[- '.()]");
                 StringBuilder FinalString = new StringBuilder();
                 int NonAlphaCount = 0;
                 if (!IsEnglishLetter(value.ToCharArray()[0]) && !IsNumeric(value.ToCharArray()[0]))
@@ -458,5 +458,15 @@ namespace UpDiddyLib.Helpers
         {
             return (c >= '0' && c <= '9');
         }
+
+        public static string RemoveNonNumericCharacters(string val)
+        {
+            if (string.IsNullOrEmpty(val))
+                return string.Empty;
+
+            Regex digitsOnly = new Regex(@"[^\d]");
+            return digitsOnly.Replace(val, "");
+        }
+
     }
 }

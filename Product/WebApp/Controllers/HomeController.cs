@@ -334,10 +334,8 @@ namespace UpDiddy.Controllers
             }
             else
             {
-                var errors = ModelState.Select(x => x.Value.Errors)
-                           .Where(y => y.Count > 0)
-                           .ToList();
-                return View();
+                // todo: implement logic to tell user modelstate was invalid
+                return RedirectToAction("Profile");
             }
         }
 

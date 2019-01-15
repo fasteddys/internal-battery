@@ -4,8 +4,8 @@
 
 <link rel="stylesheet" type="text/css" href="~/lib/animate/animate.css">
 @section Scripts{
-    <script src="~/js/signup-flow.js"></script>
-    <script src="~/js/selectize-handling.js"></script>
+    <script src="~/js/signup-flow.js" asp-append-version="true"></script>
+    <script src="~/js/selectize-handling.js" asp-append-version="true"></script>
     <script>var url = '@Url.Action("GetStatesByCountry", "Home")'; var subscriberSkills = @Json.Serialize(Model.Skills);</script>
 }
 
@@ -163,8 +163,9 @@
                                 <h2>Tell us a little about yourself. What's your name?</h2>
                                 <input form="SignupForm" type="text" id="FirstNameInput" asp-for="FirstName" placeholder="First name" autocomplete="false" />
                                 <input form="SignupForm" type="text" id="LastNameInput" asp-for="LastName" placeholder="Last name" autocomplete="false" />
-
+                                <div class="input-disclaimer">Please enter a valid first and last name, or leave this slide blank.</div>
                             </div>
+                            
                         </div>
                         <div class="container">
                             <div class="row">
@@ -190,6 +191,7 @@
                                 <h2>What's the best phone number to reach you?</h2>
                                 <div class="phone-number-input-container">
                                     <input form="SignupForm" type="text" id="phone-number" class="form-control phone-number-input" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
+                                    <div class="input-disclaimer">Please enter a full, 10-digit phone number, or leave this slide blank.</div>
                                 </div>
 
                             </div>
@@ -231,11 +233,17 @@
                                                             </div>
                                                         </div>
                                                         <div class="row">
+
+                                                            <div class="col-12 col-sm-6">
+                                                                @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select", form = "SignupForm" })
+                                                            </div>
                                                             <div class="col-12 col-sm-6">
                                                                 @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select", form = "SignupForm" })
                                                             </div>
-                                                            <div class="col-12 col-sm-6">
-                                                                @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select", form = "SignupForm" })
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-12">
+                                                                <div class="input-disclaimer">Please enter your full address, or leave this slide blank.<br />Note: to remove your state, select the "Select State" option.</div>
                                                             </div>
                                                         </div>
                                                     </div>

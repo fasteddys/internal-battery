@@ -208,5 +208,17 @@ namespace UpDiddyLib.Tests
         {
             Assert.Equal("123 Test Drive", UpDiddyLib.Helpers.Utils.ToTitleCase("123 test drive"));
         }
+
+        [Fact]
+        public void ToTitleCase_DotNet()
+        {
+            Assert.Equal(".Net", UpDiddyLib.Helpers.Utils.ToTitleCase(".net"));
+        }
+
+        [Fact]
+        public void ToTitleCase_Parens()
+        {
+            Assert.Equal("Sarbanes Oxley (Sox)", UpDiddyLib.Helpers.Utils.ToTitleCase("SARBANES OXLEY (SOX)"));
+        }
     }
 }

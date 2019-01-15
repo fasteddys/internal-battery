@@ -86,7 +86,7 @@ namespace UpDiddy.Controllers
                 CourseVariants = courseVariantViewModels,
                 SubscriberFirstName = this.subscriber.FirstName,
                 SubscriberLastName = this.subscriber.LastName,
-                SubscriberPhoneNumber = this.subscriber.PhoneNumber,
+                FormattedPhone = this.subscriber.PhoneNumber,
                 SubscriberGuid = this.subscriber.SubscriberGuid.Value,
                 TermsOfServiceContent = course.TermsOfServiceContent,
                 TermsOfServiceDocumentId = course.TermsOfServiceDocumentId,
