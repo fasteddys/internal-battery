@@ -31,7 +31,8 @@ using Serilog.Sinks.ApplicationInsights;
 using UpDiddyLib.Serilog.Sinks;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
-using UpDiddyApi.Business.Resume;
+using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Services;
 using System.Collections.Generic;
 
 namespace UpDiddyApi

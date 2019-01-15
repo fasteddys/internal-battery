@@ -7,9 +7,9 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.MessageQueue;
 using Microsoft.Extensions.Logging;
-using UpDiddyApi.Business.Resume;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
-namespace UpDiddyApi.Business
+namespace UpDiddyApi.ApplicationCore
 {
     public class BusinessVendorBase
     {

@@ -8,11 +8,11 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 using Hangfire;
-using UpDiddyApi.Business;
+using UpDiddyApi.ApplicationCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
-using UpDiddyApi.Business.Factory;
+using UpDiddyApi.ApplicationCore.Factory;
 
 namespace UpDiddyApi.Controllers
 {

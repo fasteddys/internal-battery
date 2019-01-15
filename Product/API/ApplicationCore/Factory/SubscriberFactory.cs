@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UpDiddyApi.Business.Resume;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
-namespace UpDiddyApi.Business.Factory
+namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SubscriberFactory
     {

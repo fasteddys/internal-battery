@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
 
-namespace UpDiddyApi.Business.Factory
+namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class EducationalDegreeFactory
     {

@@ -5,7 +5,7 @@ using System;
 using UpDiddyApi.Models;
 using Microsoft.Extensions.Logging;
 
-namespace UpDiddyApi.Business
+namespace UpDiddyApi.ApplicationCore
 {
     public class FactoryBase
     {

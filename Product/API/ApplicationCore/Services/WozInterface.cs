@@ -17,8 +17,9 @@ using UpDiddyLib.Helpers;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using UpDiddy.Helpers;
 using Microsoft.Extensions.Logging;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
-namespace UpDiddyApi.Business
+namespace UpDiddyApi.ApplicationCore
 {
     public class WozInterface : BusinessVendorBase, IWozInterface
     {

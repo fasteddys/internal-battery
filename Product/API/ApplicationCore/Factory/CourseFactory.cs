@@ -10,7 +10,7 @@ using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
 using Microsoft.Extensions.Logging;
 
-namespace UpDiddyApi.Business
+namespace UpDiddyApi.ApplicationCore
 {
     public class CourseFactory : FactoryBase
     {

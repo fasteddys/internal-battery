@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
-using UpDiddyApi.Business;
+using UpDiddyApi.ApplicationCore;
 using Microsoft.Extensions.Caching.Distributed;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 

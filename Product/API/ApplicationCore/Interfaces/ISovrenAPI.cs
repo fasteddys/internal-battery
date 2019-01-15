@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace UpDiddyApi.Business.Resume
+namespace UpDiddyApi.ApplicationCore.Interfaces
 {
     public interface ISovrenAPI
     {

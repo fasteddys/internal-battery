@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
 
-namespace UpDiddyApi.Business
+namespace UpDiddyApi.ApplicationCore.Interfaces
 {
     public interface IWozInterface
     {

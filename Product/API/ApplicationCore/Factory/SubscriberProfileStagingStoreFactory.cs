@@ -10,7 +10,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 using UpDiddy.Helpers;
 
-namespace UpDiddyApi.Business.Factory
+namespace UpDiddyApi.ApplicationCore.Factory
 {
 
     public enum ProfileDataStatus { Acquired = 0, Processing, Processed, Deleted, AccountNotFound, AcquistionError, ProcessingError };

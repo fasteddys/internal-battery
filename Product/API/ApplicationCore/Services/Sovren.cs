@@ -9,8 +9,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
-namespace UpDiddyApi.Business.Resume
+namespace UpDiddyApi.ApplicationCore.Services
 {
     public class Sovren : ISovrenAPI
     {

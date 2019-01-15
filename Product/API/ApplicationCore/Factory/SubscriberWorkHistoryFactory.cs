@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 
-namespace UpDiddyApi.Business.Factory
+namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SubscriberWorkHistoryFactory
     {

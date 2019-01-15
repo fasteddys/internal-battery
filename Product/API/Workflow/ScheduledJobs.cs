@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using UpDiddyApi.Business;
+using UpDiddyApi.ApplicationCore;
 using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.Dto;
@@ -14,8 +14,8 @@ using System.Net.Http;
 using UpDiddy.Helpers;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using UpDiddyApi.Business.Resume;
-using UpDiddyApi.Business.Factory;
+using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Factory;
 
 namespace UpDiddyApi.Workflow
 {
