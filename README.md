@@ -102,6 +102,7 @@ Be sure when configuring Key Vault secrets to use `--` as the seperator as `:` a
 * SysEmail:ApiKey
 
 ### API Secrets Checklist
+* AzureAdB2C:ClientSecret
 * Braintree:MerchantID
 * Braintree:PublicKey
 * Braintree:PrivateKey

@@ -81,7 +81,7 @@ namespace UpDiddyApi.Controllers
                 // mark the promo code as completed
                 var completedPromoCodeRedemption = _db.PromoCodeRedemption.Where(pcr => pcr.PromoCodeRedemptionGuid == query.PromoCodeRedemptionGuid).FirstOrDefault();
                 completedPromoCodeRedemption.ModifyDate = DateTime.UtcNow;
-                completedPromoCodeRedemption.ModifyGuid = Guid.NewGuid();
+                completedPromoCodeRedemption.ModifyGuid = Guid.Empty;
                 completedPromoCodeRedemption.RedemptionStatusId = 2; // completed
                 _db.Attach<PromoCodeRedemption>(completedPromoCodeRedemption);
                 
@@ -93,7 +93,7 @@ namespace UpDiddyApi.Controllers
 
                 var promoCodeToUpdate = _db.PromoCode.Where(pc => pc.PromoCodeId == promoCodeId).FirstOrDefault();
                 promoCodeToUpdate.ModifyDate = DateTime.UtcNow;
-                promoCodeToUpdate.ModifyGuid = Guid.NewGuid();
+                promoCodeToUpdate.ModifyGuid = Guid.Empty;
                 promoCodeToUpdate.NumberOfRedemptions += 1;
                 _db.Attach<PromoCode>(promoCodeToUpdate);
 
@@ -132,7 +132,7 @@ namespace UpDiddyApi.Controllers
                 if (promoCode.IsDeleted == 1)
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code is no longer valid." });
 
-                DateTime currentDateTime = DateTime.Now;
+                DateTime currentDateTime = DateTime.UtcNow;
                 if (promoCode.PromoStartDate > currentDateTime.AddHours(-4)) // todo: improve ghetto grace period date logic
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code is not yet active." });
 
@@ -221,7 +221,9 @@ namespace UpDiddyApi.Controllers
                     _db.PromoCodeRedemption.Add(new PromoCodeRedemption()
                     {
                         CreateDate = DateTime.UtcNow,
-                        CreateGuid = Guid.NewGuid(),
+                        CreateGuid = Guid.Empty,
+                        ModifyDate = DateTime.UtcNow,
+                        ModifyGuid = Guid.Empty,
                         IsDeleted = 0,
                         PromoCodeRedemptionGuid = validPromoCodeDto.PromoCodeRedemptionGuid,
                         RedemptionStatusId = 1, // "In Process"

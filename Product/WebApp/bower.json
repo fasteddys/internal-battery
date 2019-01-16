@@ -9,5 +9,8 @@
     "popper.js": "v1.14.3",
     "selectize": "v0.12.6",
     "bluebird": "v3.5.3"
+  },
+  "resolutions": {
+    "jquery": "3.3.1"
   }
 }

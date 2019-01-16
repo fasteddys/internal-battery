@@ -119,17 +119,21 @@ namespace UpDiddyApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
             modelBuilder.Entity<Skill>()
-            .HasIndex(u => u.SkillName)
-            .IsUnique();
+                .HasIndex(u => u.SkillName)
+                .IsUnique();
 
+            modelBuilder.Entity<SubscriberSkill>()
+                .HasKey(ss => new { ss.SkillId, ss.SubscriberId });
+                
             modelBuilder.Entity<PromoCode>()
                 .Property(pc => pc.NumberOfRedemptions)
                 .HasDefaultValue(0);
+
             modelBuilder.Entity<PromoCode>()
                 .Property(pc => pc.MaxAllowedNumberOfRedemptions)
                 .HasDefaultValue(1);
+            
             // this caused a problem when cleaning up abandoned promo codes. may still want a constraint in the future, but needs to be implemented differently
             //modelBuilder.Entity<PromoCodeRedemption>()
             //    .HasIndex(i => new { i.PromoCodeId, i.SubscriberId, i.CourseId, i.RedemptionStatusId, i.IsDeleted }).IsUnique();

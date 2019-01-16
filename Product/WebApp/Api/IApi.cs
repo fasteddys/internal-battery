@@ -17,6 +17,7 @@ namespace UpDiddy.Api
         IList<StateDto> GetStatesByCountry(Guid? countryGuid);
         CourseVariantDto GetCourseVariant(Guid courseVariantGuid);
         SubscriberDto Subscriber();
+        SubscriberDto Subscriber(Guid subscriberGuid);
         PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid);
         PromoCodeDto PromoCodeValidation(string code, string courseVariantGuid);
         CourseLoginDto CourseLogin(Guid EnrollmentGuid);
@@ -33,5 +34,11 @@ namespace UpDiddy.Api
         IList<SkillDto> GetSkills(string userQuery);
         IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid);
         BasicResponseDto UploadResume(ResumeDto resumeDto);
+
+        SubscriberADGroupsDto MyGroups();
+
+        #region TalentPortal
+        IList<SubscriberDto> SubscriberSearch(string searchQuery);
+        #endregion
     }
 }

@@ -85,7 +85,7 @@ namespace UpDiddyApi.Business.Factory
         }
 
 
- 
+
 
 
         #region Helper Functions
@@ -231,10 +231,11 @@ namespace UpDiddyApi.Business.Factory
             {
                 EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(db, eh.EducationalInstitution);
                 EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(db, eh.EducationalDegree);
+                EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(db, eh.EducationalDegreeType);
 
                 SubscriberEducationHistory educationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryForSubscriber(db, subscriber, educationalInstitution, educationalDegree, eh.StartDate, eh.EndDate, eh.DegreeDate);
                 if (educationHistory == null)
-                    SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree);
+                    SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree, educationalDegreeType);
             }
         }
 
