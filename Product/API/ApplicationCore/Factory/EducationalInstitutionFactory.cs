@@ -12,10 +12,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             EducationalInstitution rVal = new EducationalInstitution();
             rVal.Name = institutionName;
-            rVal.CreateDate = DateTime.Now;
-            rVal.CreateGuid = Guid.NewGuid();
-            rVal.ModifyDate = DateTime.Now;
-            rVal.ModifyGuid = Guid.NewGuid();
+            rVal.CreateDate = DateTime.UtcNow;
+            rVal.CreateGuid = Guid.Empty;
+            rVal.ModifyDate = DateTime.UtcNow;
+            rVal.ModifyGuid = Guid.Empty;
+            rVal.EducationalInstitutionGuid = Guid.NewGuid();
             rVal.IsDeleted = 0;
             return rVal;
         }

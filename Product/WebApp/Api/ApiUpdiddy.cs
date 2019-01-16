@@ -262,6 +262,11 @@ namespace UpDiddy.Api
         {
             return Post<BasicResponseDto>(resumeDto, "resume/upload", true);
         }
+
+        public SubscriberADGroupsDto MyGroups()
+        {
+            return Get<SubscriberADGroupsDto>("subscriber/me/group", true);
+        }
         #endregion
 
         #region Cache Helper Functions
@@ -339,7 +344,7 @@ namespace UpDiddy.Api
             {
                 int CacheTTL = int.Parse(_configuration["redis:cacheTTLInMinutes"]);
                 string newValue = Newtonsoft.Json.JsonConvert.SerializeObject(Value);
-                _cache.SetString(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddHours(CacheTTL) });
+                _cache.SetString(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL) });
                 return true;
             }
             catch (Exception ex)
@@ -401,6 +406,50 @@ namespace UpDiddy.Api
                 return (T)Convert.ChangeType(null, typeof(T));
             }
         }
+
+        #region TalentPortal
+
+        public SubscriberDto Subscriber(Guid subscriberGuid)
+        {
+            string cacheKey = $"Subscriber{subscriberGuid}";
+            SubscriberDto rval = GetCachedValue<SubscriberDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _Subscriber(subscriberGuid);
+                SetCachedValue<SubscriberDto>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public IList<SubscriberDto> SubscriberSearch(string searchQuery)
+        {
+            string cacheKey = $"SubscriberSearch{searchQuery}";
+            IList<SubscriberDto> rval = GetCachedValue<IList<SubscriberDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _SubscriberSearch(searchQuery);
+                SetCachedValue<IList<SubscriberDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        private IList<SubscriberDto> _SubscriberSearch(string searchQuery)
+        {
+            return Get<IList<SubscriberDto>>($"subscriber/search/{searchQuery}", true);
+        }
+
+        private SubscriberDto _Subscriber(Guid subscriberGuid)
+        {
+            return Get<SubscriberDto>($"subscriber/{subscriberGuid}", true);
+        }
+
+        #endregion
 
         public T Post<T>(string ApiAction, bool Authorized = false, string Content = null)
         {

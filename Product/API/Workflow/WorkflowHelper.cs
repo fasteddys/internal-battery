@@ -43,10 +43,10 @@ namespace UpDiddyApi.Workflow
             _log.InputParameters = $"enrollmentGuid={EnrollmentGuid}";
             if (_log.WozTransactionLogId > 0)
                 _log.WozTransactionLogId = 0;
-            _log.ModifyDate = DateTime.Now;
-            _log.CreateDate = DateTime.Now;
-            _log.CreateGuid = Guid.NewGuid();
-            _log.ModifyGuid = Guid.NewGuid();
+            _log.ModifyDate = DateTime.UtcNow;
+            _log.CreateDate = DateTime.UtcNow;
+            _log.CreateGuid = Guid.Empty;
+            _log.ModifyGuid = Guid.Empty;
             _log.ResponseJson = Info.ToString();
             _db.WozTransactionLog.Add(_log);
             _db.SaveChanges();
@@ -61,10 +61,10 @@ namespace UpDiddyApi.Workflow
             _log.InputParameters = $"enrollmentGuid={EnrollmentGuid}";
             if (_log.WozTransactionLogId > 0)
                 _log.WozTransactionLogId = 0;
-            _log.ModifyDate = DateTime.Now;
-            _log.CreateDate = DateTime.Now;
-            _log.CreateGuid = Guid.NewGuid();
-            _log.ModifyGuid = Guid.NewGuid();
+            _log.ModifyDate = DateTime.UtcNow;
+            _log.CreateDate = DateTime.UtcNow;
+            _log.CreateGuid = Guid.Empty;
+            _log.ModifyGuid = Guid.Empty;
             _log.ResponseJson = Info.ToString();
             _db.WozTransactionLog.Add(_log);
             _db.SaveChanges();
@@ -80,10 +80,10 @@ namespace UpDiddyApi.Workflow
             _log.InputParameters = $"enrollmentGuid={EnrollmentGuid}";
             if (_log.WozTransactionLogId > 0)
                 _log.WozTransactionLogId = 0;
-            _log.ModifyDate = DateTime.Now;
-            _log.CreateDate = DateTime.Now;
-            _log.CreateGuid = Guid.NewGuid();
-            _log.ModifyGuid = Guid.NewGuid();
+            _log.ModifyDate = DateTime.UtcNow;
+            _log.CreateDate = DateTime.UtcNow;
+            _log.CreateGuid = Guid.Empty;
+            _log.ModifyGuid = Guid.Empty;
             _log.ResponseJson = Info;
             _db.WozTransactionLog.Add(_log);
             _db.SaveChanges();
@@ -98,10 +98,10 @@ namespace UpDiddyApi.Workflow
             _log.InputParameters = $"enrollmentGuid={EnrollmentGuid}";
             if (_log.WozTransactionLogId > 0)
                 _log.WozTransactionLogId = 0;
-            _log.ModifyDate = DateTime.Now;
-            _log.CreateDate = DateTime.Now;
-            _log.CreateGuid = Guid.NewGuid();
-            _log.ModifyGuid = Guid.NewGuid();
+            _log.ModifyDate = DateTime.UtcNow;
+            _log.CreateDate = DateTime.UtcNow;
+            _log.CreateGuid = Guid.Empty;
+            _log.ModifyGuid = Guid.Empty;
             _log.ResponseJson = Info;
             _db.WozTransactionLog.Add(_log);
             _db.SaveChanges();
@@ -121,7 +121,7 @@ namespace UpDiddyApi.Workflow
             {
                 // Update the enrollment status and update the modify date 
                 Enrollment.EnrollmentStatusId = (int)status;
-                Enrollment.ModifyDate = DateTime.Now;
+                Enrollment.ModifyDate = DateTime.UtcNow;
                 _db.SaveChanges();
                 return $"Enrollment {EnrollmentGuid} updated to {status}";
             }

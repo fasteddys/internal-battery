@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
@@ -84,7 +85,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
- 
+
 
 
         #region Helper Functions
@@ -210,7 +211,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             subscriber.FirstName = contactInfo.FirstName;
             subscriber.LastName = contactInfo.LastName;
-            subscriber.PhoneNumber = Utils.RemoveNonNumericCharacters(contactInfo.PhoneNumber);
+            contactInfo.PhoneNumber = contactInfo.PhoneNumber.Trim().Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+            Regex phoneRegex = new Regex(@"^([0-9]{0,3})?[2-9]{1}[0-9]{9}$");
+            if(phoneRegex.IsMatch(contactInfo.PhoneNumber))
+                subscriber.PhoneNumber = Utils.RemoveNonNumericCharacters(contactInfo.PhoneNumber);
             subscriber.City = contactInfo.City;
             subscriber.Address = contactInfo.Address;
             State state = StateFactory.GetStateByStateCode(db, contactInfo.State);
@@ -227,10 +231,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
             {
                 EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(db, eh.EducationalInstitution);
                 EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(db, eh.EducationalDegree);
+                EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(db, eh.EducationalDegreeType);
 
                 SubscriberEducationHistory educationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryForSubscriber(db, subscriber, educationalInstitution, educationalDegree, eh.StartDate, eh.EndDate, eh.DegreeDate);
                 if (educationHistory == null)
-                    SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree);
+                    SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree, educationalDegreeType);
             }
         }
 

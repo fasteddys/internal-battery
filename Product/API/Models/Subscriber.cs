@@ -31,8 +31,8 @@ namespace UpDiddyApi.Models
         public string GithubUrl { get; set; }
         public List<Enrollment> Enrollments { get; set; }
         public int HasOnboarded { get; set; }
-
+        public List<SubscriberSkill> SubscriberSkills { get; } = new List<SubscriberSkill>();
+        public List<SubscriberEducationHistory> SubscriberEducationHistory { get; } = new List<SubscriberEducationHistory>();
+        public List<SubscriberWorkHistory> SubscriberWorkHistory { get; } = new List<SubscriberWorkHistory>();
     }
-
-
 }

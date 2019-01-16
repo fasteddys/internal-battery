@@ -19,10 +19,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 throw new Exception($"LinkedInInterface:AcquireBearerToken Subscriber not found for {subscriberGuid}");
 
             LinkedInToken rVal = new LinkedInToken();
-            rVal.CreateDate = DateTime.Now;
-            rVal.CreateGuid = Guid.NewGuid();
-            rVal.ModifyDate = DateTime.Now;
-            rVal.ModifyGuid = Guid.NewGuid();
+            rVal.CreateDate = DateTime.UtcNow;
+            rVal.CreateGuid = Guid.Empty;
+            rVal.ModifyDate = DateTime.UtcNow;
+            rVal.ModifyGuid = Guid.Empty;
             rVal.SubscriberId = Subscriber.SubscriberId;
             rVal.IsDeleted = 0;
             return rVal;
@@ -33,9 +33,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static void SetToken(LinkedInToken token, string accessToken, long expires_in_seconds)
         {
-            token.ModifyDate = DateTime.Now;
+            token.ModifyDate = DateTime.UtcNow;
             token.AccessToken = accessToken;
-            token.AccessTokenExpiry = DateTime.Now.AddSeconds(expires_in_seconds);
+            token.AccessTokenExpiry = DateTime.UtcNow.AddSeconds(expires_in_seconds);
 
         }
 

@@ -142,8 +142,10 @@ namespace UpDiddyApi.Workflow
                             // Create and persist Vendor Login object
                             VendorStudentLoginDto StudentLogin = new VendorStudentLoginDto()
                             {
-                                CreateDate = DateTime.Now,
-                                ModifyDate = DateTime.Now,
+                                CreateGuid = Guid.Empty,
+                                ModifyGuid = Guid.Empty,
+                                CreateDate = DateTime.UtcNow,
+                                ModifyDate = DateTime.UtcNow,
                                 IsDeleted = 0,
                                 VendorId = _wozVendorId,
                                 VendorLogin = ExeterId,
