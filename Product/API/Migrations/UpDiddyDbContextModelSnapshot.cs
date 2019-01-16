@@ -1433,9 +1433,7 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid?>("ModifyGuid");
 
                     b.Property<Guid?>("SubscriberSkillGuid");
-
-                    b.Property<int>("SubscriberSkillId");
-
+                    
                     b.HasKey("SkillId", "SubscriberId");
 
                     b.HasIndex("SubscriberId");
