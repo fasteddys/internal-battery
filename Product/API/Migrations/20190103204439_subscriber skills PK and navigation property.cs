@@ -19,6 +19,18 @@ namespace UpDiddyApi.Migrations
                 name: "SubscriberSkillId",
                 table: "SubscriberSkill");
 
+            migrationBuilder.Sql(@"
+;with invalidSubscriberSkills as (
+    select SubscriberId, SkillId, count(1) [cnt]
+    from SubscriberSkill
+    group by SubscriberId, SkillId
+    having count(1) > 1)
+delete ss
+from SubscriberSkill ss 
+inner join invalidSubscriberSkills iss on iss.SubscriberId = ss.SubscriberId and iss.SkillId = ss.SkillId
+where ss.isdeleted = 1
+            ");
+
             migrationBuilder.AddPrimaryKey(
                 name: "PK_SubscriberSkill",
                 table: "SubscriberSkill",
