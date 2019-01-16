@@ -24,6 +24,8 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Shared;
 using Microsoft.Net.Http.Headers;
 using UpDiddy.Api;
+using UpDiddy.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UpDiddy
 {
@@ -67,20 +69,33 @@ namespace UpDiddy
             {
                 sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-
             })
             .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
             .AddCookie(options =>
             {
+                options.AccessDeniedPath = "/Home/Forbidden";
                 options.Cookie.Path = "/";
                 options.SlidingExpiration = false;
                 options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
                 options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
             });
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement("Recruiter")));
+            });
+            services.AddSingleton<IAuthorizationHandler, ApiGroupAuthorizationHandler>();
+
 
             #region AddLocalization
             services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+            services.AddCors(o => o.AddPolicy("UnifiedCors", builder =>
+            {
+                builder.WithOrigins("*")
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            }));
 
             services.AddMvc()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
@@ -194,13 +209,7 @@ namespace UpDiddy
                 // UI strings that we have localized.
                 SupportedUICultures = supportedCultures
             });
-
-            app.Use((context, next) =>
-            {
-                context.Response.Headers["Access-Control-Allow-Origin"] = "https://login.microsoftonline.com";
-                return next.Invoke();
-            });
-        
+                    
             // set the cache-control header to 24 hours
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -214,6 +223,7 @@ namespace UpDiddy
 
             app.UseSession();
             app.UseAuthentication();
+            app.UseCors("UnifiedCors");
 
             // TODO - Change template action below to index upon site launch.
             app.UseMvc(routes =>

@@ -36,31 +36,6 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
         }
 
-        [HttpGet]
-        [Authorize]
-        [Route("api/[controller]")]
-        public IActionResult Get()
-        {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-
-            Subscriber subscriber = _db.Subscriber
-                .Include(s => s.State)
-                .ThenInclude(s => s.Country)
-                .Include(s => s.Enrollments)
-                .ThenInclude(e => e.Course)
-                .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid)
-                .FirstOrDefault();
-
-            if (subscriber == null)
-                return NotFound();
-
-            SubscriberDto subscriberDto = _mapper.Map<SubscriberDto>(subscriber);
-            subscriberDto.EducationHistory = RetrieveEducationHistory(subscriber.SubscriberId);
-            subscriberDto.WorkHistory = RetrieveWorkHistory(subscriber.SubscriberId);
-
-            return Ok(subscriberDto);
-        }
-
         [HttpPost]
         [Authorize]
         [Route("api/[controller]")]
@@ -76,11 +51,11 @@ namespace UpDiddyApi.Controllers
             subscriber = new Subscriber();
             subscriber.SubscriberGuid = subscriberGuid;
             subscriber.Email = HttpContext.User.FindFirst("emails").Value;
-            subscriber.CreateDate = DateTime.Now;
-            subscriber.ModifyDate = DateTime.Now;
+            subscriber.CreateDate = DateTime.UtcNow;
+            subscriber.ModifyDate = DateTime.UtcNow;
             subscriber.IsDeleted = 0;
-            subscriber.ModifyGuid = subscriberGuid;
-            subscriber.CreateGuid = subscriberGuid;
+            subscriber.ModifyGuid = Guid.Empty;
+            subscriber.CreateGuid = Guid.Empty;
 
             // Save subscriber to database 
             _db.Subscriber.Add(subscriber);
@@ -252,121 +227,7 @@ namespace UpDiddyApi.Controllers
         #region Business Logic
 
         
-        private IList<SubscriberEducationHistoryDto> RetrieveEducationHistory(int subscriberId)
-        {
-            IList<SubscriberEducationHistoryDto> educationHistory = _db.SubscriberEducationHistory
-                    .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
-                    .ProjectTo<SubscriberEducationHistoryDto>(_mapper.ConfigurationProvider)
-                    .ToList();
-
-            // If the subscriber has no education history, return an empty list.
-            if(educationHistory.Count == 0)
-            {
-                return new List<SubscriberEducationHistoryDto>();
-            }
-
-            try
-            {
-                foreach (SubscriberEducationHistoryDto sub in educationHistory)
-                {
-                    EducationalInstitutionDto instituation = _db.EducationalInstitution
-                        .Where(ei => ei.IsDeleted == 0 && ei.EducationalInstitutionId == Int32.Parse(sub.EducationalInstitutionId))
-                        .ProjectTo<EducationalInstitutionDto>(_mapper.ConfigurationProvider)
-                        .FirstOrDefault();
-                    sub.EducationalInstitution = instituation.Name;
-                }
-            }
-            catch(Exception e)
-            {
-                _syslog.Log(LogLevel.Information, "ProfileController:RetrieveEducationHistory - No educational institution found.");
-            }
-
-            try
-            {
-                foreach (SubscriberEducationHistoryDto sub in educationHistory)
-                {
-
-                    EducationalDegreeDto degree = _db.EducationalDegree
-                        .Where(d => d.IsDeleted == 0 && d.EducationalDegreeId == sub.EducationalDegreeId)
-                        .ProjectTo<EducationalDegreeDto>(_mapper.ConfigurationProvider)
-                        .FirstOrDefault();
-                    sub.EducationalDegree = degree.Degree;
-                }
-            }
-            catch(Exception e)
-            {
-                _syslog.Log(LogLevel.Information, "ProfileController:RetrieveEducationHistory - No educational degree found.");
-            }
-
-            try
-            {
-                foreach (SubscriberEducationHistoryDto sub in educationHistory)
-                {
-
-                    EducationalDegreeTypeDto degreeType = _db.EducationalDegreeType
-                        .Where(dt => dt.IsDeleted == 0 && dt.EducationalDegreeTypeId == sub.EducationalDegreeTypeId)
-                        .ProjectTo<EducationalDegreeTypeDto>(_mapper.ConfigurationProvider)
-                        .FirstOrDefault();
-                    sub.EducationalDegreeType = degreeType.DegreeType;
-                }
-            }
-            catch(Exception e)
-            {
-                _syslog.Log(LogLevel.Information, "ProfileController:RetrieveEducationHistory - No educational degree type found.");
-            }
-
-
-            return educationHistory;
-        }
-
-        private IList<SubscriberWorkHistoryDto> RetrieveWorkHistory(int subscriberId)
-        {
-            IList<SubscriberWorkHistoryDto> workHistory = _db.SubscriberWorkHistory
-                    .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
-                    .ProjectTo<SubscriberWorkHistoryDto>(_mapper.ConfigurationProvider)
-                    .ToList();
-
-            // If the subscriber has no education history, return an empty list.
-            if (workHistory.Count == 0)
-            {
-                return new List<SubscriberWorkHistoryDto>();
-            }
-
-            try
-            {
-                foreach (SubscriberWorkHistoryDto sub in workHistory)
-                {
-                    CompanyDto company = _db.Company
-                        .Where(c => c.IsDeleted == 0 && c.CompanyId == sub.CompanyId)
-                        .ProjectTo<CompanyDto>(_mapper.ConfigurationProvider)
-                        .FirstOrDefault();
-                    sub.Company = company.CompanyName;
-                }
-            }
-            catch (Exception e)
-            {
-                _syslog.Log(LogLevel.Information, "ProfileController:RetrieveWorkHistory - No company found.");
-            }
-
-            try
-            {
-                foreach (SubscriberWorkHistoryDto sub in workHistory)
-                {
-
-                    CompensationTypeDto compensationType = _db.CommunicationType
-                    .Where(ct => ct.IsDeleted == 0 && ct.CommunicationTypeId == sub.CompensationTypeId)
-                    .ProjectTo<CompensationTypeDto>(_mapper.ConfigurationProvider)
-                    .FirstOrDefault();
-                    sub.CompensationType = compensationType.CompensationTypeName;
-                }
-            }
-            catch (Exception e)
-            {
-                _syslog.Log(LogLevel.Information, "ProfileController:RetrieveWorkHistory - No compensation type found.");
-            }
-
-            return workHistory;
-        }
+        
         
         #endregion
     }

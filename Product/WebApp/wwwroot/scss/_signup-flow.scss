@@ -77,8 +77,7 @@
                     .carousel-item {
 
 
-                        .first-name-container,
-                        .last-name-container,
+                        .name-container,
                         .phone-number-container,
                         .address-container {
                             input {
@@ -91,14 +90,30 @@
                                 border-radius: 0;
 
                                 &:focus {
+                                    box-shadow: none;
                                     outline: 0;
                                     border: 0;
                                     border-bottom: 2px solid $color-secondary;
                                 }
+
+                                &.invalid-regex {
+                                    border-bottom: 2px solid red;
+                                    color: red;
+
+                                    &:focus {
+                                        border-bottom: 2px solid red;
+                                    }
+                                }
+                            }
+
+                            .input-disclaimer { 
+                                margin-top: 2rem;
+                                display: none;
+                                font-size: .75rem;
                             }
                         }
 
-                        .first-name-container {
+                       .name-container {
                             input {
                                 margin-top: 1rem;
                             }
@@ -429,8 +444,7 @@
                     .carousel-item {
                         min-height: 170px;
 
-                        .first-name-container,
-                        .last-name-container,
+                        .name-container,
                         .phone-number-container,
                         .address-container {
                             input {
@@ -441,12 +455,6 @@
                                 font-size: 1.1rem;
                                 color: $color-secondary;
                                 border-radius: 0;
-
-                                &:focus {
-                                    outline: 0;
-                                    border: 0;
-                                    border-bottom: 2px solid $color-secondary;
-                                }
                             }
                         }
 
@@ -753,7 +761,7 @@
     }
 
     .signup-flow-container {
-        h2{
+        h2 {
             font-size: 2rem;
         }
 
@@ -773,8 +781,7 @@
                     .carousel-item {
                         min-height: 170px;
 
-                        .first-name-container,
-                        .last-name-container,
+                        .name-container,
                         .phone-number-container,
                         .address-container {
                             input {
@@ -785,16 +792,10 @@
                                 font-size: 1.6rem;
                                 color: $color-secondary;
                                 border-radius: 0;
-
-                                &:focus {
-                                    outline: 0;
-                                    border: 0;
-                                    border-bottom: 2px solid $color-secondary;
-                                }
                             }
                         }
 
-                        .first-name-container {
+                        .name-container {
                             input {
                                 margin-top: 2rem;
                             }

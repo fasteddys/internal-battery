@@ -157,7 +157,7 @@ namespace UpDiddyApi.Business
                 LinkedInToken lit = LinkedInTokenFactory.GetBySubcriber(_db, subscriberGuid);
 
                 // If the user does not have a linked in token or their bearer token has expired get them a bearer token
-                if (lit == null || lit.AccessTokenExpiry < DateTime.Now)
+                if (lit == null || lit.AccessTokenExpiry < DateTime.UtcNow)
                     rval = AcquireBearerToken(subscriberGuid, code, returnUrl, lit);
 
                 // Import the user's profile data from linkein

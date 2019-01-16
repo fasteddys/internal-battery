@@ -200,7 +200,7 @@ namespace UpDiddy.Controllers
         [HttpPost]
         public BasicResponseDto UpdateProfileInformation(ProfileViewModel profileViewModel)
         {
-            IList<SkillDto> skillsDto = null;
+            List<SkillDto> skillsDto = null;
             if (ModelState.IsValid)
             {
                 if (profileViewModel.SelectedSkills != null)
@@ -305,7 +305,7 @@ namespace UpDiddy.Controllers
         public IActionResult Onboard(SignupFlowViewModel signupFlowViewModel)
         {
             GetSubscriber(false);
-            IList<SkillDto> skillsDto = null;
+            List<SkillDto> skillsDto = null;
             if (ModelState.IsValid)
             {
                 if (signupFlowViewModel.SelectedSkills != null)
@@ -339,10 +339,8 @@ namespace UpDiddy.Controllers
             }
             else
             {
-                var errors = ModelState.Select(x => x.Value.Errors)
-                           .Where(y => y.Count > 0)
-                           .ToList();
-                return View();
+                // todo: implement logic to tell user modelstate was invalid
+                return RedirectToAction("Profile");
             }
         }
 
@@ -430,6 +428,12 @@ namespace UpDiddy.Controllers
         {
             ViewBag.InvalidPath = this.HttpContext.Request.Path;
             Response.StatusCode = 404;
+            return View();
+        }
+
+        public IActionResult Forbidden()
+        {
+            Response.StatusCode = 401;
             return View();
         }
 

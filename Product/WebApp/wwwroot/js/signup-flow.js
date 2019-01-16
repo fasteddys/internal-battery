@@ -23,29 +23,84 @@ $(document).ajaxStart(function () {
     $('.overlay').hide();
 });
 
-var toastrOptions = {
-    "closeButton": true,
-    "debug": false,
-    "newestOnTop": false,
-    "progressBar": false,
-    "positionClass": "toast-top-full-width",
-    "preventDuplicates": false,
-    "onclick": null,
-    "showDuration": "300",
-    "hideDuration": "1000",
-    "timeOut": "3000",
-    "extendedTimeOut": "1000",
-    "showEasing": "swing",
-    "hideEasing": "linear",
-    "showMethod": "fadeIn",
-    "hideMethod": "fadeOut"
-};
-
-
 $(document).ready(function () {
     $('.overlay').hide();
 
+        var toastrOptions = {
+            "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": false,
+        "positionClass": "toast-top-full-width",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "3000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+
+    $(".signup-flow-container input").keyup(function () {
+        var parentSlide = $(this).closest(".carousel-item");
+        var inputValue = $(this).val();
+        var inputRegEx = new RegExp($(this).data("val-regex-pattern"));
+        var regexTest = inputRegEx.test($(this).val());
+        var isPhoneNumberSlide = $(this).attr("id") === "FormattedPhone";
+        var containerName = $(this).data("container-name");
+
         
+
+        if (inputFieldsAreValid(containerName)) {
+            $(this).removeClass("invalid-regex");
+            enableNextButton(parentSlide);
+            $('.' + containerName + '-container').find(".input-disclaimer").hide();
+        }
+        else {
+            disableNextButton(parentSlide);
+            $('.' + containerName + '-container').find(".input-disclaimer").show();
+        }
+    });
+
+    $(".signup-flow-container input").focusout(function () {
+        var inputValue = $(this).val();
+        var inputRegEx = new RegExp($(this).data("val-regex-pattern"));
+        var regexTest = inputRegEx.test($(this).val());
+        if ($(this).attr('id') === 'FormattedPhone') {
+            regexTest = new RegExp($("#Phone").data("val-regex-pattern")).test(getTrimmedPhoneNumber($(this).val()));
+        }
+        if (!regexTest && inputValue) {
+            $(this).addClass("invalid-regex");
+        }
+        else {
+            $(this).removeClass("invalid-regex");
+        }
+    });
+
+
+
+    $("#SelectedState").change(function () {
+
+        var parentSlide = $(this).closest(".carousel-item");
+        var nextButton = $(parentSlide).find(".flow-next-button");
+        var nextButtonAnchor = $(parentSlide).find(".flow-next-button a");
+        var isAddressSlide = $(this).parents(".address-container").length;
+        if (isAddressSlide) {
+            if (addressFieldsAreValid()) {
+                $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
+                $(nextButton).removeClass("disabled");
+                $('.address-container').find(".input-disclaimer").hide();
+            }
+            else {
+                $(nextButtonAnchor).removeAttr("href");
+                $(nextButton).addClass("disabled");
+                $('.address-container').find(".input-disclaimer").show();
+            }
+        }
+    });
 
     $(".add-work-history").on("click", function () {
         //$('.work-history-log').append('<div class="form-row"><div class="form-group col-md-6" ><input type="text" class="form-control" placeholder="Job Title"></div><div class="form-group col-md-6"><input type="text" class="form-control" placeholder="Organization"></div></div>');
@@ -164,6 +219,74 @@ $(document).ready(function () {
              CareerCircleSignalR.listen("UploadResume", ResumeUploadComplete);
         });  
 });
+
+var disableNextButton = function (carouselSlide) {
+    var parentSlide = $(carouselSlide).closest(".carousel-item");
+    var nextButton = $(parentSlide).find(".flow-next-button");
+    var nextButtonAnchor = $(parentSlide).find(".flow-next-button a");
+    $(nextButtonAnchor).removeAttr("href");
+    $(nextButton).addClass("disabled");
+};
+
+var enableNextButton = function (carouselSlide) {
+    var parentSlide = $(carouselSlide).closest(".carousel-item");
+    var nextButton = $(parentSlide).find(".flow-next-button");
+    var nextButtonAnchor = $(parentSlide).find(".flow-next-button a");
+    $(nextButtonAnchor).attr("href", "#SignupFlowCarousel");
+    $(nextButton).removeClass("disabled");
+};
+
+var inputFieldsAreValid = function (containerName) {
+    switch (containerName) {
+        case "name":
+            return nameFieldsAreValid();
+        case "address":
+            return addressFieldsAreValid();
+        case "phone-number":
+            return phoneNumberFieldsAreValid();
+    }
+};
+
+var addressFieldsAreValid = function () {
+
+    var allFieldsNotEmpty = $("#Address").val() && $("#City").val() && $("#SelectedState").val();
+    var allFieldsEmpty = !$("#Address").val() && !$("#City").val() && !$("#SelectedState").val();
+
+    return allFieldsEmpty || allFieldsNotEmpty;
+};
+
+var nameFieldsAreValid = function () {
+
+    var firstNameElement = $("#SignupFlowCarousel #FirstNameInput");
+    var lastNameElement = $("#SignupFlowCarousel #LastNameInput");
+
+
+    // Allow user to enter in no address information
+    if (!firstNameElement.val() && !lastNameElement.val())
+        return true;
+
+    var fNameValid = new RegExp(firstNameElement.data("val-regex-pattern")).test(firstNameElement.val());
+    var lNameValid = new RegExp(lastNameElement.data("val-regex-pattern")).test(lastNameElement.val());
+    if (firstNameElement.val() && fNameValid && lastNameElement.val() && lNameValid) {
+        return true;
+    }
+    return false;
+};
+
+var phoneNumberFieldsAreValid = function () {
+    var phoneNumber = $("#FormattedPhone").val();
+    if (phoneNumber.length === 0)
+        return true;
+    var validLength = phoneNumber.length === 14;
+    var inputRegEx = new RegExp($('#Phone').data("val-regex-pattern"));
+    var regexTest = inputRegEx.test(getTrimmedPhoneNumber(phoneNumber));
+    return validLength && regexTest;
+};
+
+var getTrimmedPhoneNumber = function (phoneNumber) {
+    var strippedNumber = phoneNumber.replace("(", "").replace(")", "").replace(" ", "").replace("-", "");
+    return strippedNumber;
+};
 
 
 

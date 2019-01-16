@@ -8,22 +8,29 @@
         if (selectedCountry != null && selectedCountry != '') {
             $.getJSON(url, { countryGuid: selectedCountry }, function (states) {
                 if (states != null && !jQuery.isEmptyObject(states)) {
+
+                    var savedStateGuid = $("#SavedStateGuid").val();
+                    var isSavedStateInNewStateList = false;
                     stateSelect.append($('<option/>', {
-                        value: "---",
+                        value: "",
                         text: "Select State"
                     }));
                     $.each(states.value, function (index, state) {
+                        if (state.stateGuid == savedStateGuid) {
+                            isSavedStateInNewStateList = true;
+                        }
+
                         stateSelect.append($('<option/>', {
                             value: state.stateGuid,
                             text: state.name
                         }));
                     });
-                    var savedStateGuid = $("#SavedStateGuid").val();
-                    if (savedStateGuid === undefined || savedStateGuid === "00000000-0000-0000-0000-000000000000" || savedStateGuid === "") {
-                        $("#SelectedState").val("---");
+
+                    if (savedStateGuid === undefined || savedStateGuid === "00000000-0000-0000-0000-000000000000" || savedStateGuid === "" || !isSavedStateInNewStateList) {
+                        $("#SelectedState").val($("#SelectedState option:first").val());
                     }
                     else {
-                        $("#SelectedState").val(savedStateGuid);
+                        $("#SelectedState").val(savedStateGuid); 
                     }
                 };
             });
@@ -39,6 +46,9 @@
         $("#SelectedCountry").val(savedCountryGuid);
         $("#SelectedCountry").trigger('change');
     }
+
+    // ensure that no course variant option is selected on page load; this is important if server-side validation fails
+    $("input[name='SelectedCourseVariant']").attr('checked', false);
 
     $("input[name='SelectedCourseVariant']").change(function () {
         var selectedCourseVariant = $("input[name='SelectedCourseVariant']:checked");
@@ -155,20 +165,12 @@
             var key = e.which || e.charCode || e.keyCode || 0;
             $phone = $(this);
 
-            // Don't let them remove the starting '('
-            if ($phone.val().length === 1 && (key === 8 || key === 46)) {
-                $phone.val('(');
-                return false;
-            }
-            // Reset if they highlight and type over first char.
-            else if ($phone.val().charAt(0) !== '(') {
-                $phone.val('(' + String.fromCharCode(e.keyCode) + '');
-            }
+            
 
             // Auto-format- do not expose the mask as the user begins to type
             if (key !== 8 && key !== 9) {
-                if ($phone.val().length === 4) {
-                    $phone.val($phone.val() + ')');
+                if ($phone.val().length === 3) {
+                    $phone.val('(' + $phone.val() + ')');
                 }
                 if ($phone.val().length === 5) {
                     $phone.val($phone.val() + ' ');
@@ -188,20 +190,12 @@
         .bind('focus click', function () {
             $phone = $(this);
 
-            if ($phone.val().length === 0) {
-                $phone.val('(');
-            }
-            else {
-                var val = $phone.val();
-                $phone.val('').val(val); // Ensure cursor remains at the end
-            }
-        })
-        .blur(function () {
-            $phone = $(this);
+            var val = $phone.val();
+            $phone.val('').val(val); // Ensure cursor remains at the end
 
-            if ($phone.val() === '(') {
-                $phone.val('');
-            }
+        }).keyup(function () {
+            if ($phone.val() === "(")
+                $phone.val("");
         });
     
 });

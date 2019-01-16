@@ -1,9 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UpDiddyApi.Business.Resume;
 using UpDiddyApi.Models;
@@ -14,6 +18,8 @@ namespace UpDiddyApi.Business.Factory
 {
     public class SubscriberFactory
     {
+
+        // Can we get rid of this function given the one below it?
         public static Subscriber GetSubscriberById(UpDiddyDbContext db, int subscriberId)
         {
             return db.Subscriber
@@ -21,6 +27,30 @@ namespace UpDiddyApi.Business.Factory
                 .FirstOrDefault();
         }
 
+        public static SubscriberDto GetSubscriber(UpDiddyDbContext _db, Guid subscriberGuid, ILogger _syslog, IMapper _mapper)
+        {
+            if (Guid.Empty.Equals(subscriberGuid))
+            {
+                _syslog.Log(LogLevel.Information, $"***** SubscriberFactory:GetSubscriber empty subscriber guid supplied.");
+                return new SubscriberDto();
+            }
+                
+
+            Subscriber subscriber = _db.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                .Include(s => s.State).ThenInclude(c => c.Country)
+                .Include(s => s.SubscriberSkills).ThenInclude(ss => ss.Skill)
+                .Include(s => s.Enrollments).ThenInclude(e => e.Course)
+                .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.Company)
+                .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.CompensationType)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalInstitution)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegreeType)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegree)
+                .FirstOrDefault();
+
+            SubscriberDto subscriberDto = _mapper.Map<SubscriberDto>(subscriber);
+            return subscriberDto;
+        }
 
         public static ProfileDataStatus ImportLinkedIn(UpDiddyDbContext db, ISovrenAPI sovrenApi, SubscriberProfileStagingStore info, ref string msg)
         {
@@ -84,7 +114,7 @@ namespace UpDiddyApi.Business.Factory
         }
 
 
- 
+
 
 
         #region Helper Functions
@@ -210,7 +240,10 @@ namespace UpDiddyApi.Business.Factory
         {
             subscriber.FirstName = contactInfo.FirstName;
             subscriber.LastName = contactInfo.LastName;
-            subscriber.PhoneNumber = contactInfo.PhoneNumber;
+            contactInfo.PhoneNumber = contactInfo.PhoneNumber.Trim().Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+            Regex phoneRegex = new Regex(@"^([0-9]{0,3})?[2-9]{1}[0-9]{9}$");
+            if(phoneRegex.IsMatch(contactInfo.PhoneNumber))
+                subscriber.PhoneNumber = Utils.RemoveNonNumericCharacters(contactInfo.PhoneNumber);
             subscriber.City = contactInfo.City;
             subscriber.Address = contactInfo.Address;
             State state = StateFactory.GetStateByStateCode(db, contactInfo.State);
@@ -227,10 +260,11 @@ namespace UpDiddyApi.Business.Factory
             {
                 EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(db, eh.EducationalInstitution);
                 EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(db, eh.EducationalDegree);
+                EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(db, eh.EducationalDegreeType);
 
                 SubscriberEducationHistory educationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryForSubscriber(db, subscriber, educationalInstitution, educationalDegree, eh.StartDate, eh.EndDate, eh.DegreeDate);
                 if (educationHistory == null)
-                    SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree);
+                    SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree, educationalDegreeType);
             }
         }
 

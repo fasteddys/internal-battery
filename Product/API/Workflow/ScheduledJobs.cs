@@ -19,6 +19,7 @@ using UpDiddyApi.Business.Factory;
 using Microsoft.AspNetCore.SignalR;
 using UpDiddyApi.Helpers.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 
 namespace UpDiddyApi.Workflow
 {
@@ -118,7 +119,7 @@ namespace UpDiddyApi.Workflow
                 {
                     _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress looking to update enrollment {e.EnrollmentGuid}");
                     // Only Call woz if the modify date is null or if the modify date older that progress update age threshold
-                    if (e.ModifyDate == null || ((DateTime)e.ModifyDate).AddHours(ProgressUpdateAgeThresholdInHours) <= DateTime.Now)
+                    if (e.ModifyDate == null || ((DateTime)e.ModifyDate).AddHours(ProgressUpdateAgeThresholdInHours) <= DateTime.UtcNow)
                     {
                         _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress calling woz for enrollment {e.EnrollmentGuid}");
                         wcp = GetWozCourseProgress(e);
@@ -128,7 +129,7 @@ namespace UpDiddyApi.Workflow
                             updatesMade = true;
                             e.PercentComplete = Convert.ToInt32(((double) wcp.ActivitiesCompleted / (double) wcp.ActivitiesTotal) * 100);
                             _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress updating enrollment {e.EnrollmentGuid} set PercentComplete={e.PercentComplete}");
-                            e.ModifyDate = DateTime.Now;
+                            e.ModifyDate = DateTime.UtcNow;
                         }
                         else
                         {
@@ -281,7 +282,8 @@ namespace UpDiddyApi.Workflow
                 
                 // Callback to client to let them know upload is complete
                 ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
-                hubHelper.CallClient(subscriber.SubscriberGuid, Constants.SignalR.ResumeUpLoadVerb, "Ok");
+                SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, (Guid)subscriber.SubscriberGuid, _syslog, _mapper);
+                hubHelper.CallClient(subscriber.SubscriberGuid, Constants.SignalR.ResumeUpLoadVerb, JsonConvert.SerializeObject(subscriberDto));
             }
             catch (Exception e)
             { 
@@ -326,7 +328,7 @@ namespace UpDiddyApi.Workflow
                     foreach (PromoCodeRedemption abandonedPromoCodeRedemption in abandonedPromoCodeRedemptions)
                     {
                         abandonedPromoCodeRedemption.ModifyDate = DateTime.UtcNow;
-                        abandonedPromoCodeRedemption.ModifyGuid = Guid.NewGuid();
+                        abandonedPromoCodeRedemption.ModifyGuid = Guid.Empty;
                         abandonedPromoCodeRedemption.IsDeleted = 1;
                         _db.Attach(abandonedPromoCodeRedemption);
                     }
