@@ -21,28 +21,30 @@ $(document).ajaxStart(function () {
 }).ajaxStop(function () {
     clearTimeout(timer);
     $('.overlay').hide();
-});
+    });
+
+var toastrOptions = {
+    "closeButton": true,
+    "debug": false,
+    "newestOnTop": false,
+    "progressBar": false,
+    "positionClass": "toast-top-full-width",
+    "preventDuplicates": false,
+    "onclick": null,
+    "showDuration": "300",
+    "hideDuration": "1000",
+    "timeOut": "3000",
+    "extendedTimeOut": "1000",
+    "showEasing": "swing",
+    "hideEasing": "linear",
+    "showMethod": "fadeIn",
+    "hideMethod": "fadeOut"
+};
 
 $(document).ready(function () {
     $('.overlay').hide();
 
-        var toastrOptions = {
-            "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": false,
-        "positionClass": "toast-top-full-width",
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "3000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    };
+    
 
     $(".signup-flow-container input").keyup(function () {
         var parentSlide = $(this).closest(".carousel-item");
@@ -294,26 +296,58 @@ var EnableResumeNextButton = function () {
     $('#ResumeNextButton').removeClass('disabled');
     $('#ResumeNextButton a').attr("href", "#SignupFlowCarousel");
     $('.skip-resume').hide();
-}
+};
 
 var ResumeUploadComplete = function (message) {
+    var json = JSON.parse(message);
     // Make sure a resume upload in progress 
     if (resumeUploadInProgress == true) {
         toastr.success("All set, let's go!", 'Success!', toastrOptions);
         // Set flag to indicate resume upload is in complete 
         resumeUploadInProgress = false;
         EnableResumeNextButton();
+        //Populate later slides with information extracted from resume parse
+        PopulateOnboardingSlides(json);
         // Move to next page 
         $('.carousel').carousel({}).carousel('next');
     }
-    else 
+    else
         toastr.success("Sorry, that took a little longer than we had hoped for...", 'Success!', toastrOptions);
-}
+};
+
+var PopulateOnboardingSlides = function (response) {
+    var carousel = $("#SignupFlowCarousel");
+    carousel.find("#FirstNameInput").val(SetProperCase(response.FirstName));
+    carousel.find("#LastNameInput").val(SetProperCase(response.LastName));
+    if (response.PhoneNumber) {
+        carousel.find("#FormattedPhone").val("("
+            + response.PhoneNumber.substring(0, 3) + ") "
+            + response.PhoneNumber.substring(3, 6) + "-"
+            + response.PhoneNumber.substring(6, 10));
+    }
+    
+    carousel.find("#Address").val(SetProperCase(response.Address));
+    carousel.find("#City").val(SetProperCase(response.City));
+
+    if (response.State && response.State.StateGuid) {
+        carousel.find("#SelectedState").val(response.State.StateGuid);
+    }
+
+    carousel.find('#SelectedSkills').selectize({
+        options: response.Skills
+    });
+
+};
+
+var SetProperCase = function (value) {
+    if (value)
+        return value.toProperCase();
+    return value;
+};
 
 // Set timeout in case 
 var ResumeUploadTimeout = function () {
-    setTimeout(function ()
-    {
+    setTimeout(function () {
         // If the resume upload is still in progress after 10 seconds,
         // enable the next button
         if (resumeUploadInProgress == true) {
@@ -321,7 +355,7 @@ var ResumeUploadTimeout = function () {
             EnableResumeNextButton();
         }
     }, 15000);
-}
+};
 
 
 var IsValidFileType = function (filename) {
@@ -397,4 +431,8 @@ var findMaxCarouselItemHeight = function () {
 var setCarouselHeight = function () {
     $('.carousel-item').css("height", 'initial');
     $('.carousel-item').css("height", findMaxCarouselItemHeight());
+};
+
+String.prototype.toProperCase = function () {
+    return this.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
 };

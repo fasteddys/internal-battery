@@ -238,14 +238,14 @@ namespace UpDiddyApi.Business.Factory
 
         private static void _AddSubscriberContactInfo(UpDiddyDbContext db, Subscriber subscriber, SubscriberContactInfoDto contactInfo)
         {
-            subscriber.FirstName = contactInfo.FirstName;
-            subscriber.LastName = contactInfo.LastName;
+            subscriber.FirstName = contactInfo.FirstName.ToLower();
+            subscriber.LastName = contactInfo.LastName.ToLower();
             contactInfo.PhoneNumber = contactInfo.PhoneNumber.Trim().Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
             Regex phoneRegex = new Regex(@"^([0-9]{0,3})?[2-9]{1}[0-9]{9}$");
             if(phoneRegex.IsMatch(contactInfo.PhoneNumber))
                 subscriber.PhoneNumber = Utils.RemoveNonNumericCharacters(contactInfo.PhoneNumber);
-            subscriber.City = contactInfo.City;
-            subscriber.Address = contactInfo.Address;
+            subscriber.City = contactInfo.City.ToLower();
+            subscriber.Address = contactInfo.Address.ToLower();
             State state = StateFactory.GetStateByStateCode(db, contactInfo.State);
             if (state != null)
                 subscriber.StateId = state.StateId;
