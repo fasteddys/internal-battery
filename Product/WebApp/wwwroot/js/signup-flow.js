@@ -16,12 +16,7 @@ class Education {
     }
 }
 
-$(document).ajaxStart(function () { 
-    timer = setTimeout(function () { $('.overlay').show(); }, 200);
-}).ajaxStop(function () {
-    clearTimeout(timer);
-    $('.overlay').hide();
-    });
+
 
 var toastrOptions = {
     "closeButton": true,
@@ -42,7 +37,6 @@ var toastrOptions = {
 };
 
 $(document).ready(function () {
-    $('.overlay').hide();
 
     
 
