@@ -94,9 +94,7 @@ function CreateWorkHistoryDto(includeGuid)
     if (isNaN(compensation))
         compensation = 0;
 
-    rval = {
-
-        
+    rval = {        
         StartDate: $("#txtWorkHistoryStartDate").val(),
         EndDate: $("#txtWorkHistoryEndDate").val(),
         IsCurrent: isChecked,
@@ -148,8 +146,6 @@ function UpdateWorkHistory() {
     return false;
 }
 
-
-
 function AddWorkHistory() {
     var obj = CreateWorkHistoryDto(false);
     var objJson = JSON.stringify(obj);
@@ -164,7 +160,10 @@ function AddWorkHistory() {
         },
         success: function (res) {
             var html = CreateWorkHistoryDiv(res);
-            $("#ProfileWorkHistory").children().last().append(html);
+            if ($("#ProfileWorkHistory").children().length > 0)
+                $("#ProfileWorkHistory").children().last().append(html);
+            else
+                $("#ProfileWorkHistory").append(html);
         }
     });
 
@@ -172,10 +171,23 @@ function AddWorkHistory() {
     return false;
 }
 
+function DeleteWorkHistory(WorkHistoryGuid) {
+    $.ajax({
+        url: '/Home/DeleteWorkHistory/' + WorkHistoryGuid,
+        type: 'POST',
+        contentType: "application/json",
+        error: function (data) {
+            toastr.warning(JSON.stringify(data), 'Oops, Something went wrong.');
+        },
+        success: function (res) {
+            $("#ProfileWorkHistory_" + res.subscriberWorkHistoryGuid).remove();
+        }
+    });
+}
+
 // TODO find a way to not have to repeat this logic in C# and javascrip
 function FormattedCompanyTenure(WorkHistoryInfo)
 {
-
     var rVal = "";
 
     if (WorkHistoryInfo.startDate == "" && WorkHistoryInfo.endDate == "")
@@ -217,9 +229,6 @@ function CreateWorkHistoryDiv(WorkHistoryInfo) {
     divHtml += "</div>";
     divHtml += "</div>";  
     // Replace razor items with values from new work history 
-
-
-  //   divHtml = divHtml.replace("@wh.Company", WorkHistoryInfo.company);
     var regex = /@wh.Company/gi;
     divHtml = divHtml.replace(regex, WorkHistoryInfo.company);
 
@@ -250,17 +259,12 @@ function CreateWorkHistoryDiv(WorkHistoryInfo) {
 
     regex = /@wh.IsCurrent/gi;
     divHtml = divHtml.replace(regex, WorkHistoryInfo.isCurrent);
-
-    console.log(divHtml);
-
+   
     return divHtml;
 }
 
 
-function DeleteWorkHistory(WorkHistoryGuid) {
 
-    alert("DeleteWorkHistory Guid = " + WorkHistoryGuid);
-}
 
 function EditWorkHistory(WorkHistoryGuid) {    
     // Retrieve values for history to edit from screen
@@ -288,8 +292,7 @@ function EditWorkHistory(WorkHistoryGuid) {
     $("#ddlWorkHistoryCompensationType").val(compensationType);
     $('#WorkHistoryModal').modal('show');
     // Set Guid on edit form 
-    $("#hdnWorkHistoryGuid").val(WorkHistoryGuid);  
-    
+    $("#hdnWorkHistoryGuid").val(WorkHistoryGuid);      
 }
 
 function SelectDate(ctl) {   

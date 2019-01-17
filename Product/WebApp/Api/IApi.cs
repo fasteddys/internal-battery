@@ -37,6 +37,7 @@ namespace UpDiddy.Api
         BasicResponseDto UploadResume(ResumeDto resumeDto);
         SubscriberWorkHistoryDto AddWorkHistory(SubscriberWorkHistoryDto workHistory);
         SubscriberWorkHistoryDto UpdateWorkHistory(SubscriberWorkHistoryDto workHistory);
+        SubscriberWorkHistoryDto DeleteWorkHistory(Guid workHistoryGuid);
         IList<SubscriberWorkHistoryDto> GetWorkHistory();
     }
 }

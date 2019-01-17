@@ -312,6 +312,12 @@ namespace UpDiddy.Api
         }
 
 
+        public SubscriberWorkHistoryDto DeleteWorkHistory(Guid workHistoryGuid)
+        {
+            return Put<SubscriberWorkHistoryDto>("profile/DeleteWorkHistory/" + workHistoryGuid.ToString() , true);
+        }
+
+
         #endregion
 
         #region Cache Helper Functions

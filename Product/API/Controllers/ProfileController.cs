@@ -167,7 +167,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult AddWorkHistory([FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);    
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
             Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company);
             int companyId = company != null ? company.CompanyId : -1;
             CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
@@ -190,7 +190,7 @@ namespace UpDiddyApi.Controllers
                 ModifyGuid = Guid.NewGuid(),
                 CreateDate = DateTime.Now,
                 ModifyDate = DateTime.Now,
-                IsDeleted = 0,                
+                IsDeleted = 0,
                 SubscriberId = subscriber.SubscriberId,
                 StartDate = WorkHistoryDto.StartDate,
                 EndDate = WorkHistoryDto.EndDate,
@@ -222,15 +222,15 @@ namespace UpDiddyApi.Controllers
                 compensationTypeId = compensationType.CompensationTypeId;
             else
             {
-                compensationType = CompensationTypeFactory.GetOrAdd(_db,Constants.NotSpecifedOption);
+                compensationType = CompensationTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
                 compensationTypeId = compensationType.CompensationTypeId;
             }
-       
+
             if (subscriber == null)
                 return BadRequest();
 
             SubscriberWorkHistory WorkHistory = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_db, WorkHistoryDto.SubscriberWorkHistoryGuid);
-            if  (WorkHistory == null )
+            if (WorkHistory == null || WorkHistory.SubscriberId != subscriber.SubscriberId)
                 return BadRequest();
 
             // Update the company ID
@@ -241,10 +241,30 @@ namespace UpDiddyApi.Controllers
             WorkHistory.Title = WorkHistoryDto.Title;
             WorkHistory.IsCurrent = WorkHistoryDto.IsCurrent;
             WorkHistory.Compensation = WorkHistoryDto.Compensation;
-            WorkHistory.CompensationTypeId = compensationTypeId;            
+            WorkHistory.CompensationTypeId = compensationTypeId;
             _db.SaveChanges();
             return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
         }
+
+
+        [Authorize]
+        [HttpPut]
+        [Route("api/[controller]/DeleteWorkHistory/{WorkHistoryGuid}")]
+        public IActionResult DeleteWorkHistory(Guid WorkHistoryGuid)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            SubscriberWorkHistory WorkHistory = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_db, WorkHistoryGuid);
+            if (WorkHistory == null || WorkHistory.SubscriberId != subscriber.SubscriberId)
+                return BadRequest();
+            // Soft delete of the workhistory item
+            WorkHistory.IsDeleted = 1;
+            _db.SaveChanges();
+
+            return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
+        }
+
+
 
 
 

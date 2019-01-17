@@ -474,11 +474,8 @@ namespace UpDiddy.Controllers
         [Route("/Home/AddWorkHistory")]
         public IActionResult AddWorkHistory([FromBody] SubscriberWorkHistoryDto wh )
         {
-            if (wh != null)
-            {
-                var x = _Api.AddWorkHistory(wh);
-                return Ok(x);
-            }
+            if (wh != null)                            
+                return Ok(_Api.AddWorkHistory(wh));            
             else
                 return BadRequest("Oops, We're sorry somthing when wrong!");
             
@@ -489,14 +486,21 @@ namespace UpDiddy.Controllers
         [Route("/Home/UpdateWorkHistory")]
         public IActionResult UpdateWorkHistory([FromBody] SubscriberWorkHistoryDto wh)
         {
-            if (wh != null)
-            {
-                var x = _Api.UpdateWorkHistory(wh);
-                return Ok(x);
-            }
+            if (wh != null)              
+                return Ok(_Api.UpdateWorkHistory(wh));           
             else
                 return BadRequest("Oops, We're sorry somthing when wrong!");
 
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/DeleteWorkHistory/{WorkHistoryGuid}")]
+        public IActionResult DeleteWorkHistory(Guid WorkHistoryGuid)
+        {
+
+            return Ok(_Api.DeleteWorkHistory(WorkHistoryGuid));
+                
         }
 
     }

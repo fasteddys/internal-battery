@@ -164,7 +164,7 @@ namespace UpDiddy.ViewModels
         {            
             get
             {
-                if (WorkHistory == null || WorkHistory.Count < 0)
+                if (WorkHistory == null || WorkHistory.Count <= 0)
                     return false;
                 else
                     return true;
