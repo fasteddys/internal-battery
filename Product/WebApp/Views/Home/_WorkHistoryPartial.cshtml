@@ -1,11 +1,18 @@
-﻿ <div class="col-12 no-padding">
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model ProfileViewModel
+
+<div class="col-12 no-padding">
     <div class="edit-container">
         <div class="row">
             <div class="col-6 no-padding">
                 <h5>Work History Info</h5>
             </div>
             <div class="col-6 no-padding container-align-right">
-                <span class="edit-action" data-toggle="modal" data-target="#WorkHistoryModal">Edit</span>
+                <span class="edit-action" data-toggle="modal" data-target="#WorkHistoryModal" onclick="InitWorkHistoryAddMode()">Add</span>
             </div>
         </div>
         <div class="options-container">
@@ -15,17 +22,30 @@
                     <text>No work history has been provided.</text>
                 }
             }
-            @*We know this page cannot be accessed unless user has signed up with an email.
-        Therefore, we don't need to check if it exists.*@
-            <div>
-                <div class="row">
-                    <div class="col-12 col-sm-3 option-header no-padding">
-                        TODO pust something here
+            @* Render the users work history *@
+            <div id="ProfileWorkHistory">
+                @foreach (SubscriberWorkHistoryDto wh in Model.WorkHistory)
+                {
+                <div class="row profile-work-history" id="ProfileWorkHistory_@wh.SubscriberWorkHistoryGuid">
+
+                    <div id="ProfileWorkHistory_Company_@wh.SubscriberWorkHistoryGuid" class="col-12 col-sm-9 option-value no-padding" data-company="@wh.Company">
+                        @wh.Company      <i class="fa fa-pencil-alt" aria-hidden="true" onclick="EditWorkHistory('@wh.SubscriberWorkHistoryGuid')"></i>     <i class="fa fa-bone" aria-hidden="true" onclick="DeleteWorkHistory('@wh.SubscriberWorkHistoryGuid')"> </i>
                     </div>
+
+                    <div id="ProfileWorkHistory_Tenure_@wh.SubscriberWorkHistoryGuid" class="col-12 col-sm-9 option-value no-padding" data-startdate="@wh.StartDate" data-enddate="@wh.EndDate" data-iscurrent="@wh.IsCurrent" >
+                        @Model.FormattedCompanyTenure(@wh.StartDate, @wh.EndDate, @wh.IsCurrent)
+                    </div>
+
+                    <div id="ProfileWorkHistory_JobInfo_@wh.SubscriberWorkHistoryGuid"  class="col-12 col-sm-9 option-value no-padding">
+                        <span id="ProfileWorkHistory_JobTitle_@wh.SubscriberWorkHistoryGuid">   @wh.Title  </span> : <span id="ProfileWorkHistory_JobDescription_@wh.SubscriberWorkHistoryGuid">  @wh.JobDecription </span>
+                    </div>
+                                        
                     <div class="col-12 col-sm-9 option-value no-padding">
-                        And Here
+                        <span id="ProfileWorkHistory_CompensationType_@wh.SubscriberWorkHistoryGuid"> @wh.CompensationType  </span> compensation   <span id="ProfileWorkHistory_Compensation_@wh.SubscriberWorkHistoryGuid">  @wh.Compensation </span>
                     </div>
-                </div>
+
+                </div>     
+                 }
             </div>
         </div>
     </div>

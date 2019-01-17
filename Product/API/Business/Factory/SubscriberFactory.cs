@@ -21,6 +21,13 @@ namespace UpDiddyApi.Business.Factory
                 .FirstOrDefault();
         }
 
+        public static Subscriber GetSubscriberByGuid(UpDiddyDbContext db, Guid subscriberGuid)
+        {
+            return db.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                .FirstOrDefault();
+        }
+
 
         public static ProfileDataStatus ImportLinkedIn(UpDiddyDbContext db, ISovrenAPI sovrenApi, SubscriberProfileStagingStore info, ref string msg)
         {

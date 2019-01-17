@@ -12,6 +12,9 @@ namespace UpDiddy.ViewModels
 {
     public class ProfileViewModel : BaseViewModel
     {
+        //
+        public IList<SubscriberWorkHistoryDto> WorkHistory { get; set; }
+        public IList<CompensationTypeDto> WorkCompensationTypes{ get; set; }
         public IList<SkillDto> Skills { get; set; }
         public string SelectedSkills { get; set; }
         public IList<EnrollmentDto> Enrollments { get; set; }
@@ -28,6 +31,35 @@ namespace UpDiddy.ViewModels
         [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "Please enter a valid city.")]
         public string City { get; set; }
         private string _FormattedPhone;
+
+      
+
+        public string FormattedCompanyTenure(DateTime? startDate, DateTime? endDate, int isCurrent)
+        {         
+            string rVal = string.Empty;
+
+            if (startDate == null && endDate == null)
+                return "Dates unknown";
+
+            if (startDate != null)
+                rVal = ((DateTime) startDate).ToString("MMM yyyy");
+            else
+                rVal += " ? ";
+
+            rVal += " - ";
+
+            if (endDate != null)
+                rVal += ((DateTime)endDate).ToString("MMM yyyy");
+            else
+                rVal += " ? ";
+                
+            if (isCurrent > 0)
+                rVal += " (current)";
+            
+            return rVal;             
+        }
+
+
         public string FormattedPhone
         {
             get
@@ -71,6 +103,8 @@ namespace UpDiddy.ViewModels
         [RegularExpression(@"^http(s)?://([\w]+.)?github.com/[A-z0-9_]+/?$", ErrorMessage = "The GitHub profile URL is not valid.")]
         public string GithubUrl { get; set; }
         public Guid? SubscriberGuid { get; set; }
+ 
+
 
         public Boolean IsAnyProfileInformationPopulated
         {
@@ -102,6 +136,7 @@ namespace UpDiddy.ViewModels
         }
 
 
+    
         public Boolean HasFirstAndLastName
         {
             get
@@ -126,11 +161,13 @@ namespace UpDiddy.ViewModels
 
 
         public bool HasSuppledWorkHistory
-        {
-            // TODO JAB Implement 
+        {            
             get
             {
-                return false;
+                if (WorkHistory == null || WorkHistory.Count < 0)
+                    return false;
+                else
+                    return true;
             }
             
         }

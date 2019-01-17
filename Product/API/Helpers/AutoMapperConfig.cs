@@ -31,7 +31,8 @@ namespace UpDiddyApi.Helpers
             CreateMap<EnrollmentLog, EnrollmentLogDto>().ReverseMap();
             CreateMap<CourseVariantType, CourseVariantTypeDto>().ReverseMap();
             CreateMap<Skill, SkillDto>().ReverseMap();
-
+            CreateMap<Company, CompanyDto>().ReverseMap();
+            CreateMap<CompensationType, CompensationTypeDto>().ReverseMap(); 
             // mappings that ignore properties in the Dto that don't exist in the model object
             CreateMap<PromoCode, PromoCodeDto>()
                 .ForMember(x => x.IsValid, opt => opt.Ignore())
@@ -55,6 +56,24 @@ namespace UpDiddyApi.Helpers
             CreateMap<State, StateDto>()
                 .ForMember(s => s.Country, opt => opt.MapFrom(src => src.Country))
                 .ReverseMap();
+
+            // dealing with difference between workhistory/workhistorydto and educationhistory/educationhistorydto
+
+            CreateMap<SubscriberWorkHistory, SubscriberWorkHistoryDto>()
+
+                .ForMember(x => x.Company, opt => opt.MapFrom(src => src.Company.CompanyName))
+
+                .ForMember(x => x.CompensationType, opt => opt.MapFrom(src => src.CompensationType.CompensationTypeName));
+
+            CreateMap<SubscriberEducationHistory, SubscriberEducationHistoryDto>()
+
+                .ForMember(x => x.EducationalInstitution, opt => opt.MapFrom(src => src.EducationalInstitution.Name))
+
+                .ForMember(x => x.EducationalDegree, opt => opt.MapFrom(src => src.EducationalDegree.Degree))
+
+                .ForMember(x => x.EducationalDegreeType, opt => opt.MapFrom(src => src.EducationalDegreeType.DegreeType)).ReverseMap();
+
+
         }
     }
 }

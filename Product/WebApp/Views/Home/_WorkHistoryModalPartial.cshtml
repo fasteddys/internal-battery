@@ -13,15 +13,58 @@
                     <h4>Change work history info</h4>
                 </div>
                 <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">Phone Number</div>
+                    <input id="hdnWorkHistoryGuid" form="WorkHistoryForm" type="hidden" class="form-control" />
+                    <div class="modal-edit-input-label">Company</div>
                     <div class="modal-edit-input">
-                        <input id="PhoneUpdateInput" form="PersonalInfoForm" type="text" class="form-control phone-number-input" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
+                        <input id="ddlWorkHistoryCompany" form="WorkHistoryForm" type="text" class="form-control" />
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Start Date <i class="fa fa-calendar-alt" aria-hidden="true" onclick="SelectDate('txtWorkHistoryStartDate')"  > </i> </div>
+                    <div class="modal-edit-input">
+                        <input id="txtWorkHistoryStartDate" form="WorkHistoryForm" type="text" class="form-control" />
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">End Date <i class="fa fa-calendar-alt" aria-hidden="true" onclick="SelectDate('txtWorkHistoryEndDate')"  > </i>  </div>
+                    <div class="modal-edit-input">
+                        <input id="txtWorkHistoryEndDate" form="WorkHistoryForm" type="text" class="form-control" />
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Is Current</div>
+                    <div class="modal-edit-input">
+                        <input id="chkWorkHistoryIsCurrent" form="WorkHistoryForm" type="checkbox" class="form-control" />
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Job Title</div>
+                    <div class="modal-edit-input">
+                        <input id="txtWorkHistoryJobTitle" form="WorkHistoryForm" type="text" class="form-control" />
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Job Description</div>
+                    <div class="modal-edit-input">
+                        <input id="txtWorkHistoryJobDescription" form="WorkHistoryForm" type="text" class="form-control" />
+                    </div>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Compensation </div>
+                    <div class="modal-edit-input">
+                        <input id="txtWorkHistoryCompensation" form="WorkHistoryForm" type="text" class="form-control" data-val-regex-pattern="^[\d,]+(\.\d{1,5})?$" />
+                        <select id="ddlWorkHistoryCompensationType">
+                            @foreach (CompensationTypeDto ct in Model.WorkCompensationTypes)
+                            {
+                                <option value="@ct.CompensationTypeName">@ct.CompensationTypeName</option>
+                            }
+                        </select>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button id="ContactInfoModalSaveButton" form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
+                <button id="ContactInfoModalSaveButton" form="PersonalInfoForm" type="submit" class="btn btn-primary" onclick="return SaveWorkHistory()">Save</button>
             </div>
         </div>
     </div>

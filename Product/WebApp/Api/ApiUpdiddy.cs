@@ -187,7 +187,7 @@ namespace UpDiddy.Api
         public IList<SkillDto> GetSkills(string userQuery)
         {
             string cacheKey = $"GetSkills{userQuery}";
-            IList<SkillDto> rval = GetCachedValue<IList<SkillDto>>(cacheKey);
+           IList<SkillDto> rval = GetCachedValue<IList<SkillDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
@@ -198,6 +198,38 @@ namespace UpDiddy.Api
             }
             return rval;
         }
+
+        public IList<CompanyDto> GetCompanies(string userQuery)
+        {
+            string cacheKey = $"GetCompanies{userQuery}";
+            IList<CompanyDto> rval = GetCachedValue<IList<CompanyDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetCompanies(userQuery);
+                SetCachedValue<IList<CompanyDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public IList<CompensationTypeDto> GetCompensationTypes()
+        {
+            string cacheKey = $"GetCompensationTypes";
+            IList<CompensationTypeDto> rval = GetCachedValue<IList<CompensationTypeDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetCompensationTypes();
+                SetCachedValue<IList<CompensationTypeDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+
 
         #endregion
 
@@ -262,6 +294,24 @@ namespace UpDiddy.Api
         {
             return Post<BasicResponseDto>(resumeDto, "resume/upload", true);
         }
+
+        public SubscriberWorkHistoryDto AddWorkHistory(SubscriberWorkHistoryDto workHistory)
+        {
+            return Post<SubscriberWorkHistoryDto>(workHistory, "profile/AddWorkHistory", true);
+        }
+
+        public SubscriberWorkHistoryDto UpdateWorkHistory(SubscriberWorkHistoryDto workHistory)
+        {
+            return Post<SubscriberWorkHistoryDto>(workHistory, "profile/UpdateWorkHistory", true);
+        }
+
+
+        public IList<SubscriberWorkHistoryDto> GetWorkHistory()
+        {
+            return Get<IList<SubscriberWorkHistoryDto>>("profile/GetWorkHistory", true);
+        }
+
+
         #endregion
 
         #region Cache Helper Functions
@@ -323,6 +373,17 @@ namespace UpDiddy.Api
         private IList<SkillDto> _GetSkills(string userQuery)
         {
             return Get<IList<SkillDto>>("skill/" + userQuery, true);
+        }
+
+
+        private IList<CompanyDto> _GetCompanies(string userQuery)
+        {
+            return Get<IList<CompanyDto>>("company/" + userQuery, true);
+        }
+
+        private IList<CompensationTypeDto> _GetCompensationTypes()
+        {
+            return Get<IList<CompensationTypeDto>>("compensation-types" , true);
         }
 
         public IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid)

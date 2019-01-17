@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using System.Data.SqlClient;
 using System.Data;
 using System.Security.Claims;
+using UpDiddyApi.Business.Factory;
+using UpDiddy.Helpers;
 
 namespace UpDiddyApi.Controllers
 {
@@ -158,6 +160,95 @@ namespace UpDiddyApi.Controllers
             return Ok();
         }
 
+        [Authorize]
+        [HttpPost]
+        [Route("api/[controller]/AddWorkHistory")]
+        // TODO looking into consolidating Add and Update to reduce code redundancy
+        public IActionResult AddWorkHistory([FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);    
+            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company);
+            int companyId = company != null ? company.CompanyId : -1;
+            CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
+            int compensationTypeId = 0;
+            if (compensationType != null)
+                compensationTypeId = compensationType.CompensationTypeId;
+            else
+            {
+                compensationType = CompensationTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
+                compensationTypeId = compensationType.CompensationTypeId;
+            }
+
+            if (subscriber == null)
+                return BadRequest();
+
+            SubscriberWorkHistory WorkHistory = new SubscriberWorkHistory()
+            {
+                SubscriberWorkHistoryGuid = Guid.NewGuid(),
+                CreateGuid = Guid.NewGuid(),
+                ModifyGuid = Guid.NewGuid(),
+                CreateDate = DateTime.Now,
+                ModifyDate = DateTime.Now,
+                IsDeleted = 0,                
+                SubscriberId = subscriber.SubscriberId,
+                StartDate = WorkHistoryDto.StartDate,
+                EndDate = WorkHistoryDto.EndDate,
+                IsCurrent = WorkHistoryDto.IsCurrent,
+                Title = WorkHistoryDto.Title,
+                JobDecription = WorkHistoryDto.JobDecription,
+                Compensation = WorkHistoryDto.Compensation,
+                CompensationTypeId = compensationTypeId,
+                CompanyId = companyId
+            };
+
+            _db.SubscriberWorkHistory.Add(WorkHistory);
+            _db.SaveChanges();
+            return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("api/[controller]/UpdateWorkHistory")]
+        public IActionResult UpdateWorkHistory([FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company);
+            int companyId = company != null ? company.CompanyId : -1;
+            CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
+            int compensationTypeId = 0;
+            if (compensationType != null)
+                compensationTypeId = compensationType.CompensationTypeId;
+            else
+            {
+                compensationType = CompensationTypeFactory.GetOrAdd(_db,Constants.NotSpecifedOption);
+                compensationTypeId = compensationType.CompensationTypeId;
+            }
+       
+            if (subscriber == null)
+                return BadRequest();
+
+            SubscriberWorkHistory WorkHistory = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_db, WorkHistoryDto.SubscriberWorkHistoryGuid);
+            if  (WorkHistory == null )
+                return BadRequest();
+
+            // Update the company ID
+            WorkHistory.CompanyId = companyId;
+            WorkHistory.StartDate = WorkHistoryDto.StartDate;
+            WorkHistory.EndDate = WorkHistoryDto.EndDate;
+            WorkHistory.JobDecription = WorkHistoryDto.JobDecription;
+            WorkHistory.Title = WorkHistoryDto.Title;
+            WorkHistory.IsCurrent = WorkHistoryDto.IsCurrent;
+            WorkHistory.Compensation = WorkHistoryDto.Compensation;
+            WorkHistory.CompensationTypeId = compensationTypeId;            
+            _db.SaveChanges();
+            return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
+        }
+
+
+
+
         [HttpPut]
         [Route("api/[controller]/onboard/{SubscriberGuid}")]
         public IActionResult Onboard(Guid SubscriberGuid)
@@ -215,6 +306,9 @@ namespace UpDiddyApi.Controllers
             return Ok(states.OrderBy(s => s.Sequence).ProjectTo<StateDto>(_mapper.ConfigurationProvider));
         }
 
+
+
+        // TODO find a better home for these lookup endpoints - maybe a new lookup or data endpoint?
         [HttpGet]
         [Route("api/skill/{userQuery}")]
         public IActionResult GetSkills(string userQuery)
@@ -227,6 +321,34 @@ namespace UpDiddyApi.Controllers
 
             return Ok(skills);
         }
+
+        [HttpGet]
+        [Route("api/company/{userQuery}")]
+        public IActionResult GetCompanies(string userQuery)
+        {
+            var companies = _db.Company
+                .Where(c => c.IsDeleted == 0 && c.CompanyName.Contains(userQuery))
+                .OrderBy(c => c.CompanyName)
+                .ProjectTo<CompanyDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(companies);
+        }
+
+
+        [HttpGet]
+        [Route("api/compensation-types")]
+        public IActionResult GetCompensationTypes()
+        {
+            var compensationTypes = _db.CompensationType
+                .Where(c => c.IsDeleted == 0  )
+                .OrderBy(c => c.CompensationTypeName)
+                .ProjectTo<CompensationTypeDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(compensationTypes);
+        }
+
 
         [Authorize]
         [HttpGet]
@@ -244,5 +366,28 @@ namespace UpDiddyApi.Controllers
 
             return Ok(subscriberSkills);
         }
+
+         
+        [Authorize]
+        [HttpGet]
+        [Route("api/[controller]/GetWorkHistory")]
+        public IActionResult GetWorkHistory()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            if (subscriber == null)
+                return BadRequest();
+ 
+            var workHistory = _db.SubscriberWorkHistory
+            .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId)
+            .OrderByDescending(s => s.StartDate)
+            .ProjectTo<SubscriberWorkHistoryDto>(_mapper.ConfigurationProvider)
+            .ToList();
+
+            return Ok(workHistory);
+        }
+
+
+
     }
 }

@@ -1463,7 +1463,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<DateTime>("EndDate");
+                    b.Property<DateTime?>("EndDate");
 
                     b.Property<int>("IsCurrent");
 
@@ -1475,7 +1475,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<DateTime>("StartDate");
+                    b.Property<DateTime?>("StartDate");
 
                     b.Property<int>("SubscriberId");
 

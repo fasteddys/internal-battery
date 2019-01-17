@@ -22,6 +22,7 @@ namespace UpDiddy.Helpers
         {
             "doc", "docx", "odt", "pdf", "rtf", "tex", "txt", "wks", "wps", "wpd"
         };
+        static public readonly string NotSpecifedOption = "Not Specifed";
 
         public static class DataFormat
         {

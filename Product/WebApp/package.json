@@ -19,7 +19,10 @@
     "sass": "^1.14.3"
   },
   "dependencies": {
+    "bootstrap-datepicker": "^1.8.0",
     "braintree-web-drop-in": "1.13.0",
+    "jquery-ui": "^1.12.1",
+    "jquery-ui-dist": "^1.12.1",
     "toastr": "^2.1.4"
   }
 }

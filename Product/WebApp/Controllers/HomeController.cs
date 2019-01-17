@@ -166,6 +166,7 @@ namespace UpDiddy.Controllers
                 StackOverflowUrl = this.subscriber?.StackOverflowUrl,
                 TwitterUrl = this.subscriber?.TwitterUrl,
                 Enrollments = this.subscriber?.Enrollments,
+                WorkCompensationTypes = _Api.GetCompensationTypes(),
                 Countries = _Api.GetCountries().Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
@@ -178,9 +179,12 @@ namespace UpDiddy.Controllers
                     Selected = s.StateGuid == this.subscriber?.State?.StateGuid
                 }),
                 // todo: consider refactoring this... include in GetSubscriber (add navigation property)
-                Skills = _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value)
-            };
+                Skills = _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value),
+                WorkHistory = _Api.GetWorkHistory()
 
+
+            };
+         
             // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
             // i considered overloading the existing GetSubscriber method to do this, but then that makes CourseController 
             // a dependency of BaseController. that's more refactoring than i think we want to concern ourselves with now.
@@ -437,12 +441,63 @@ namespace UpDiddy.Controllers
             return LocalRedirect(returnUrl);
         }
 
+        // TODO find a better home for these lookup endpoints - maybe a new lookup or data endpoint?
         [Authorize]
         [HttpGet]
+        [Route("/Home/GetSkills")]
         public JsonResult GetSkills(string userQuery)
         {
             var matchedSkills = _Api.GetSkills(userQuery);
             return new JsonResult(matchedSkills);
         }
+
+        [Authorize]
+        [HttpGet]
+        [Route("/Home/GetCompanies")]
+        public JsonResult GetCompanies(string userQuery)
+        {
+            var matchedCompanies = _Api.GetCompanies(userQuery);
+            return new JsonResult(matchedCompanies);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("/Home/GetCompensationTypes")]
+        public JsonResult GetCompensationTypes(string userQuery)
+        {
+            var compensationTypes = _Api.GetCompanies(userQuery);
+            return new JsonResult(compensationTypes);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/AddWorkHistory")]
+        public IActionResult AddWorkHistory([FromBody] SubscriberWorkHistoryDto wh )
+        {
+            if (wh != null)
+            {
+                var x = _Api.AddWorkHistory(wh);
+                return Ok(x);
+            }
+            else
+                return BadRequest("Oops, We're sorry somthing when wrong!");
+            
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/UpdateWorkHistory")]
+        public IActionResult UpdateWorkHistory([FromBody] SubscriberWorkHistoryDto wh)
+        {
+            if (wh != null)
+            {
+                var x = _Api.UpdateWorkHistory(wh);
+                return Ok(x);
+            }
+            else
+                return BadRequest("Oops, We're sorry somthing when wrong!");
+
+        }
+
     }
 }
