@@ -20,7 +20,6 @@ namespace UpDiddy.ViewModels
         public String FirstName { get; set; }
         [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "Last name may only contain alphabetic characters, spaces, apostrophes, and hyphens.")]
         public String LastName { get; set; }
-        [RegularExpression(@"\w+(\s\w+){2,}", ErrorMessage = "Please enter a valid street address.")]
         public String Address { get; set; }
         public Guid? SelectedState { get; set; }
         public Guid? SelectedCountry { get; set; }

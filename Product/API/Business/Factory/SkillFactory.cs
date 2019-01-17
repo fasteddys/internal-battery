@@ -13,12 +13,13 @@ namespace UpDiddyApi.Business.Factory
         {
             Skill rVal = new Skill();
             rVal.SkillName = skillName;
-            rVal.CreateDate = DateTime.Now;
+            rVal.CreateDate = DateTime.UtcNow;
+            rVal.ModifyDate = DateTime.UtcNow;
             rVal.CreateGuid = Guid.NewGuid();
-            rVal.ModifyDate = DateTime.Now;
             rVal.ModifyGuid = Guid.NewGuid();
             rVal.SkillGuid = Guid.NewGuid();
             rVal.IsDeleted = 0;
+            rVal.SkillGuid = Guid.NewGuid();
             return rVal;
         }
 

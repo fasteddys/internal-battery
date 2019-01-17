@@ -8,6 +8,27 @@
         .hero-subtitle {
             margin-top: 1rem;
         }
+
+        .skill-pill {
+            background-color: $color-primary;
+            padding: .5rem 1rem;
+            font-size: .75rem;
+            border-radius: 20px;
+            color: $color-white;
+            display: inline-block;
+            margin-right: .5rem;
+            margin-bottom: .5rem;
+
+            &:last-child {
+                padding-bottom: .5rem;
+            }
+        }
+
+        h4 {
+            font-family: "OpenSans-Light";
+            font-size:1.5em;
+            font-weight:500;
+        }
     }
 
     .form-row {
@@ -75,6 +96,7 @@
                     cursor: default;
                 }
             }
+
             #CourseVariants {
                 padding-bottom: 3em;
             }

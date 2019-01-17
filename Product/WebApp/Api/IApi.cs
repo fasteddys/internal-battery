@@ -12,10 +12,12 @@ namespace UpDiddy.Api
         TopicDto TopicBySlug(string TopicSlug);
         IList<CourseDto> getCoursesByTopicSlug(string TopicSlug);
         CourseDto Course(string CourseSlug);
+        IList<CourseDto> Courses();
         IList<CountryDto> GetCountries();
         IList<StateDto> GetStatesByCountry(Guid? countryGuid);
         CourseVariantDto GetCourseVariant(Guid courseVariantGuid);
         SubscriberDto Subscriber();
+        SubscriberDto Subscriber(Guid subscriberGuid);
         PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid);
         PromoCodeDto PromoCodeValidation(string code, string courseVariantGuid);
         CourseLoginDto CourseLogin(Guid EnrollmentGuid);
@@ -32,6 +34,15 @@ namespace UpDiddy.Api
         IList<SkillDto> GetSkills(string userQuery);
         IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid);
         BasicResponseDto UploadResume(ResumeDto resumeDto);
+
+        SubscriberADGroupsDto MyGroups();
+
+        #region TalentPortal
+        IList<SubscriberDto> SubscriberSearch(string searchQuery);
+        #endregion
+        #region AdminPortal
         BasicResponseDto UpdateEntitySkills(EntitySkillDto entitySkillDto);
+        IList<SkillDto> GetEntitySkills(string entityType, Guid entityGuid);
+        #endregion
     }
 }

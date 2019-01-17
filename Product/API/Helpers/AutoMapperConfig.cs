@@ -27,7 +27,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<Vendor, VendorDto>().ReverseMap();
             CreateMap<Enrollment, EnrollmentDto>().ReverseMap();
             CreateMap<WozCourseEnrollment, WozCourseEnrollmentDto>().ReverseMap();
-            CreateMap<Country, CountryDto>().ReverseMap();       
+            CreateMap<Country, CountryDto>().ReverseMap();
             CreateMap<EnrollmentLog, EnrollmentLogDto>().ReverseMap();
             CreateMap<CourseVariantType, CourseVariantTypeDto>().ReverseMap();
             CreateMap<Skill, SkillDto>().ReverseMap();
@@ -52,10 +52,22 @@ namespace UpDiddyApi.Helpers
                 .ReverseMap();
             CreateMap<Subscriber, SubscriberDto>()
                 .ForMember(s => s.Enrollments, opt => opt.MapFrom(src => src.Enrollments))
+                .ForMember(s => s.Skills, opt => opt.MapFrom(src => src.SubscriberSkills.Select(ss => ss.Skill)))
+                .ForMember(s => s.WorkHistory, opt => opt.MapFrom(src => src.SubscriberWorkHistory))
+                .ForMember(s => s.EducationHistory, opt => opt.MapFrom(src => src.SubscriberEducationHistory))
                 .ReverseMap();
             CreateMap<State, StateDto>()
                 .ForMember(s => s.Country, opt => opt.MapFrom(src => src.Country))
                 .ReverseMap();
+
+            // dealing with difference between workhistory/workhistorydto and educationhistory/educationhistorydto
+            CreateMap<SubscriberWorkHistory, SubscriberWorkHistoryDto>()
+                .ForMember(x => x.Company, opt => opt.MapFrom(src => src.Company.CompanyName))
+                .ForMember(x => x.CompensationType, opt => opt.MapFrom(src => src.CompensationType.CompensationTypeName));
+            CreateMap<SubscriberEducationHistory, SubscriberEducationHistoryDto>()
+                .ForMember(x => x.EducationalInstitution, opt => opt.MapFrom(src => src.EducationalInstitution.Name))
+                .ForMember(x => x.EducationalDegree, opt => opt.MapFrom(src => src.EducationalDegree.Degree))
+                .ForMember(x => x.EducationalDegreeType, opt => opt.MapFrom(src => src.EducationalDegreeType.DegreeType));
         }
     }
 }

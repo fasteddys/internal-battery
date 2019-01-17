@@ -62,7 +62,6 @@ namespace UpDiddy.Api
             return rval;
         }
 
-
         public TopicDto TopicById(int TopicId)
         {
             string cacheKey = $"TopicById{TopicId}";
@@ -108,6 +107,21 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public IList<CourseDto> Courses()
+        {
+            string cacheKey = $"getCourses";
+            IList<CourseDto> rval = GetCachedValue<IList<CourseDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _Courses();
+                SetCachedValue<IList<CourseDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
         public CourseDto Course(string CourseSlug)
         {
             string cacheKey = $"Course{CourseSlug}";
@@ -123,7 +137,6 @@ namespace UpDiddy.Api
             return rval;
 
         }
-
 
         public IList<CountryDto> GetCountries()
         {
@@ -215,9 +228,13 @@ namespace UpDiddy.Api
 
         public BasicResponseDto UpdateEntitySkills(EntitySkillDto entitySkillDto)
         {
-            return Put<BasicResponseDto>(entitySkillDto, "skill", true);
+            return Put<BasicResponseDto>(entitySkillDto, "skill/update", true);
         }
 
+        public IList<SkillDto> GetEntitySkills(string entityType, Guid entityGuid)
+        {
+            return Get<IList<SkillDto>>($"skill/get/{entityType}/{entityGuid}", false);
+        }
         public BasicResponseDto UpdateOnboardingStatus(Guid SubscriberGuid)
         {
             return Put<BasicResponseDto>("profile/onboard/" + SubscriberGuid, true);
@@ -225,7 +242,7 @@ namespace UpDiddy.Api
 
         public BasicResponseDto SyncLinkedInAccount(string linkedInCode, string returnUrl)
         {
-            return Put<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}",true);
+            return Put<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}", true);
         }
 
         public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto)
@@ -251,6 +268,11 @@ namespace UpDiddy.Api
         public BasicResponseDto UploadResume(ResumeDto resumeDto)
         {
             return Post<BasicResponseDto>(resumeDto, "resume/upload", true);
+        }
+
+        public SubscriberADGroupsDto MyGroups()
+        {
+            return Get<SubscriberADGroupsDto>("subscriber/me/group", true);
         }
         #endregion
 
@@ -293,6 +315,10 @@ namespace UpDiddy.Api
         {
             return Get<IList<CourseDto>>("course/topic/" + TopicSlug, false);
         }
+        private IList<CourseDto> _Courses()
+        {
+            return Get<IList<CourseDto>>("course/", false);
+        }
 
         private CourseDto _Course(string CourseSlug)
         {
@@ -324,7 +350,7 @@ namespace UpDiddy.Api
             {
                 int CacheTTL = int.Parse(_configuration["redis:cacheTTLInMinutes"]);
                 string newValue = Newtonsoft.Json.JsonConvert.SerializeObject(Value);
-                _cache.SetString(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddHours(CacheTTL) });
+                _cache.SetString(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL) });
                 return true;
             }
             catch (Exception ex)
@@ -386,6 +412,50 @@ namespace UpDiddy.Api
                 return (T)Convert.ChangeType(null, typeof(T));
             }
         }
+
+        #region TalentPortal
+
+        public SubscriberDto Subscriber(Guid subscriberGuid)
+        {
+            string cacheKey = $"Subscriber{subscriberGuid}";
+            SubscriberDto rval = GetCachedValue<SubscriberDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _Subscriber(subscriberGuid);
+                SetCachedValue<SubscriberDto>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public IList<SubscriberDto> SubscriberSearch(string searchQuery)
+        {
+            string cacheKey = $"SubscriberSearch{searchQuery}";
+            IList<SubscriberDto> rval = GetCachedValue<IList<SubscriberDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _SubscriberSearch(searchQuery);
+                SetCachedValue<IList<SubscriberDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        private IList<SubscriberDto> _SubscriberSearch(string searchQuery)
+        {
+            return Get<IList<SubscriberDto>>($"subscriber/search/{searchQuery}", true);
+        }
+
+        private SubscriberDto _Subscriber(Guid subscriberGuid)
+        {
+            return Get<SubscriberDto>($"subscriber/{subscriberGuid}", true);
+        }
+
+        #endregion
 
         public T Post<T>(string ApiAction, bool Authorized = false, string Content = null)
         {

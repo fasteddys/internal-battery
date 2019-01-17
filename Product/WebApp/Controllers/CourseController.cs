@@ -90,6 +90,7 @@ namespace UpDiddy.Controllers
                 SubscriberGuid = this.subscriber.SubscriberGuid.Value,
                 TermsOfServiceContent = course.TermsOfServiceContent,
                 TermsOfServiceDocumentId = course.TermsOfServiceDocumentId,
+                Skills = course.Skills,
                 Countries = _Api.GetCountries().Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
@@ -191,8 +192,8 @@ namespace UpDiddy.Controllers
                     CreateDate = currentDate,
                     ModifyDate = currentDate,
                     DateEnrolled = currentDate,
-                    CreateGuid = Guid.NewGuid(),
-                    ModifyGuid = Guid.NewGuid(),
+                    CreateGuid = Guid.Empty,
+                    ModifyGuid = Guid.Empty,
                     CourseGuid = courseViewModel.CourseGuid,
                     EnrollmentGuid = Guid.NewGuid(),
                     SubscriberId = this.subscriber.SubscriberId,

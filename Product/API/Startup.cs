@@ -33,6 +33,10 @@ using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using UpDiddyApi.Business.Resume;
 using System.Collections.Generic;
+using UpDiddyApi.Business.Graph;
+using System.Security.Claims;
+using UpDiddyApi.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace UpDiddyApi
 {
@@ -94,15 +98,24 @@ namespace UpDiddyApi
             {
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-              .AddJwtBearer(jwtOptions =>
-              {
-                  jwtOptions.Authority = $"https://login.microsoftonline.com/tfp/{Configuration["AzureAdB2C:Tenant"]}/{Configuration["AzureAdB2C:Policy"]}/v2.0/";
-                  jwtOptions.Audience = Configuration["AzureAdB2C:ClientId"];
-                  jwtOptions.Events = new JwtBearerEvents
-                  {
-                      OnAuthenticationFailed = AuthenticationFailed
-                  };
-              });
+            .AddJwtBearer(jwtOptions =>
+            {
+                jwtOptions.Authority = $"https://login.microsoftonline.com/tfp/{Configuration["AzureAdB2C:Tenant"]}/{Configuration["AzureAdB2C:Policy"]}/v2.0/";
+                jwtOptions.Audience = Configuration["AzureAdB2C:ClientId"];
+                jwtOptions.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = AuthenticationFailed
+                };
+            });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement(new string[]{ "Recruiter" })));
+                options.AddPolicy("IsCareerCircleAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Career Circle Administrator" })));
+                options.AddPolicy("IsUserAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Career Circle User Admin" })));
+                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] {"Recruiter", "Career Circle Administrator" })));
+            });
+            services.AddSingleton<IAuthorizationHandler, GroupAuthorizationHandler>();
 
             // Get the connection string from the Azure secret vault
             var SqlConnection = Configuration["CareerCircleSqlConnection"];                     
@@ -173,6 +186,9 @@ namespace UpDiddyApi
             services.AddTransient<ISovrenAPI, Sovren>();
             services.AddHttpClient<ISovrenAPI,Sovren>();
 
+            services.AddTransient<IB2CGraph, B2CGraphClient>();
+            services.AddHttpClient<IB2CGraph, B2CGraphClient>();
+
             // Configure SnapshotCollector from application settings
             // TODO Uncomment test 
             //services.Configure<SnapshotCollectorConfiguration>(Configuration.GetSection(nameof(SnapshotCollectorConfiguration)));
@@ -186,8 +202,6 @@ namespace UpDiddyApi
                 options.InstanceName = Configuration.GetValue<string>("redis:name");
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
-
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

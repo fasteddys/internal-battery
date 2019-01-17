@@ -16,6 +16,18 @@
                     <div class="col-md-8">
                         <div class="hero-title">@Model.Name</div>
                         <div class="hero-subtitle">@Model.Description</div>
+                        <div class="row">
+                            <div class="col px-0 pt-4 pb-0">
+                                <h4>Acquired Skills:</h4>
+                                @foreach (var skill in Model.Skills)
+                                {
+                                    <div class="skill-pill">
+
+                                        @Html.DisplayFor(item => skill.SkillName)
+                                    </div>
+                                }
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-4 container-align-right">
                         <img src="~/images/globe.png" />
@@ -225,8 +237,8 @@
         </div>
     </div>
 </div>
-@section  Scripts {
-<script>
+@section Scripts {
+    <script>
     var client_token = "@ViewBag.ClientToken";
     var form = document.querySelector('#CourseCheckoutForm');
     braintree.dropin.create({
@@ -254,5 +266,5 @@
             });
         });
         });
-</script>
+    </script>
 }

@@ -1,0 +1,114 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using UpDiddyLib.Helpers
+@using System.Collections.Generic;
+@using System;
+
+@section Scripts
+    {
+    <script type="text/javascript">
+
+        var coursesUrl = '@Url.Action("CourseLookup", "Admin")';
+        var subscribersUrl = '@Url.Action("SubscriberLookup", "Admin")';
+        var skillsUrl = '@Url.Action("SkillsLookup", "Admin")';
+        var xhr;
+        var select_entity_type, $select_entity_type;
+        var select_entity, $select_entity;
+        var select_skills, $select_skills;
+
+        $select_entity_type = $('#select-entity-type').selectize({
+            onChange: function (value) {
+                if (!value.length) return;
+                var selectedUrl;
+                if (value == "course")
+                    selectedUrl = coursesUrl;
+                else if (value == "subscriber")
+                    selectedUrl = subscribersUrl;
+                select_entity.disable();
+                select_entity.clearOptions();
+                select_entity.load(function (callback) {
+                    xhr && xhr.abort();
+                    xhr = $.ajax({
+                        url: selectedUrl,
+                        success: function (results) {
+                            select_entity.enable();
+                            callback(results);
+                        },
+                        error: function () {
+                            callback();
+                        }
+                    })
+                });
+            }
+        });
+
+        $select_entity = $('#select-entity').selectize({
+            valueField: 'entityGuid',
+            labelField: 'entityName',
+            searchField: ['entityName'],
+            onChange: function (value) {
+                if (!value.length) return;
+                select_skills.disable();
+                select_skills.clearOptions();
+                select_skills.load(function (callback) {
+                    xhr && xhr.abort();
+                    xhr = $.ajax({
+                        url: skillsUrl + '/' + $('#select-entity-type').val() + '/' + $('#select-entity').val(),
+                        success: function (results) {
+                            select_skills.enable();
+                            callback(results);
+                        },
+                        error: function () {
+                            callback();
+                        }
+                    })
+                });
+            }
+        });
+
+        $select_skills = $('#select-skills').selectize({
+            valueField: 'skillGuid',
+            labelField: 'skillName',
+            searchField: ['skillName']
+        });
+
+        select_entity = $select_entity[0].selectize;
+        select_entity_type = $select_entity_type[0].selectize;
+        select_skills = $select_skills[0].selectize;
+        select_entity.disable();
+        select_skills.disable();
+    </script>
+}
+
+<div class="admin-skills-container">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <h4>Associate Skills with Entities</h4>
+                <div class="row">
+                    <div class="col">
+                        <label for="select-entity-type">Entity Type:</label>
+                        <select id="select-entity-type" placeholder="Select an Entity Type">
+                            <option value="" selected="selected"></option>
+                            <option value="course">Course</option>
+                            <option value="subscriber">Subscriber</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label for="select-entity">Entity:</label>
+                        <select id="select-entity" placeholder="Select an Entity"></select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label for="select-skills">Skills:</label>
+                        <select id="select-skills" placeholder="Select Skills"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -26,6 +26,8 @@ namespace UpDiddyLib.Dto
         public int HasOnboarded { get; set; }
         public StateDto State { get; set; }
         public List<EnrollmentDto> Enrollments { get; set; }
-        public IList<SkillDto> Skills { get; set; }
+        public List<SkillDto> Skills { get; set; }
+        public List<SubscriberWorkHistoryDto> WorkHistory { get; set; }
+        public List<SubscriberEducationHistoryDto> EducationHistory { get; set; }
     }
 }

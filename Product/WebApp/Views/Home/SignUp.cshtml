@@ -75,6 +75,7 @@
     </div>
 </div>
 <form id="SignupForm" asp-controller="Home" asp-action="Onboard"></form>
+<input type="hidden" asp-for="Phone"/>
 <div class="signup-flow-container">
     <div class="row signup-flow-row">
         <div id="Flow-ResumeColumn" class="col-12 signup-flow-column animated slideInUp">
@@ -158,11 +159,11 @@
                         </div>
                     *@
                     <div class="carousel-item">
-                        <div class="first-name-container">
+                        <div class="name-container">
                             <div>
                                 <h2>Tell us a little about yourself. What's your name?</h2>
-                                <input form="SignupForm" type="text" id="FirstNameInput" asp-for="FirstName" placeholder="First name" autocomplete="false" />
-                                <input form="SignupForm" type="text" id="LastNameInput" asp-for="LastName" placeholder="Last name" autocomplete="false" />
+                                <input form="SignupForm" type="text" id="FirstNameInput" asp-for="FirstName" data-container-name="name" placeholder="First name" autocomplete="false" />
+                                <input form="SignupForm" type="text" id="LastNameInput" asp-for="LastName" data-container-name="name" placeholder="Last name" autocomplete="false" />
                                 <div class="input-disclaimer">Please enter a valid first and last name, or leave this slide blank.</div>
                             </div>
                             
@@ -190,8 +191,8 @@
                             <div>
                                 <h2>What's the best phone number to reach you?</h2>
                                 <div class="phone-number-input-container">
-                                    <input form="SignupForm" type="text" id="phone-number" class="form-control phone-number-input" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
-                                    <div class="input-disclaimer">Please enter a full, 10-digit phone number, or leave this slide blank.</div>
+                                    <input form="SignupForm" type="text" class="form-control phone-number-input" maxlength="14" placeholder="(###) ###-####" data-container-name="phone-number" asp-for="FormattedPhone" />
+                                    <div class="input-disclaimer">Please enter a valid phone number beginning with 2-9, or leave this slide blank.</div>
                                 </div>
 
                             </div>
@@ -225,10 +226,10 @@
                                                     <div class="address-format-container">
                                                         <div class="row">
                                                             <div class="col-12 col-sm-8">
-                                                                <input form="SignupForm" type="text" class="form-control" placeholder="Street address" asp-for="Address">
+                                                                <input form="SignupForm" type="text" class="form-control" placeholder="Street address" data-container-name="address" asp-for="Address">
                                                             </div>
                                                             <div class="col-12 col-sm-4">
-                                                                <input form="SignupForm" type="text" class="form-control" placeholder="City" asp-for="City">
+                                                                <input form="SignupForm" type="text" class="form-control" placeholder="City" data-container-name="address" asp-for="City">
 
                                                             </div>
                                                         </div>

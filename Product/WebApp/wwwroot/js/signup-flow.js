@@ -48,61 +48,29 @@ $(document).ready(function () {
         var inputValue = $(this).val();
         var inputRegEx = new RegExp($(this).data("val-regex-pattern"));
         var regexTest = inputRegEx.test($(this).val());
-        var isAddressSlide = $(this).parents(".address-container").length;
-        var isNameSlide = $(this).parents(".first-name-container").length;
+        var isPhoneNumberSlide = $(this).attr("id") === "FormattedPhone";
+        var containerName = $(this).data("container-name");
 
-        if (!regexTest && inputValue) {
-            disableNextButton(parentSlide);
+        
+
+        if (inputFieldsAreValid(containerName)) {
+            $(this).removeClass("invalid-regex");
+            enableNextButton(parentSlide);
+            $('.' + containerName + '-container').find(".input-disclaimer").hide();
         }
         else {
-            $(this).removeClass("invalid-regex");
-            if (!isAddressSlide && !isNameSlide) {
-                enableNextButton(parentSlide);
-            }
+            disableNextButton(parentSlide);
+            $('.' + containerName + '-container').find(".input-disclaimer").show();
         }
-        if (isAddressSlide) {
-            if (addressFieldsAreValid()) {
-                enableNextButton(parentSlide);
-                $('.address-container').find(".input-disclaimer").hide();
-            }
-            else {
-                disableNextButton(parentSlide);
-                $('.address-container').find(".input-disclaimer").show();
-            }
-            
-        }
-
-        if (isNameSlide) {
-            if (nameFieldsAreValid()) {
-                enableNextButton(parentSlide);
-                $('.first-name-container').find(".input-disclaimer").hide();
-            }
-            else {
-                disableNextButton(parentSlide);
-                $('.first-name-container').find(".input-disclaimer").show();
-            }
-            
-        }
-            
-            
-        if ($(this).attr("id") === "phone-number") {
-            if ($(this).val().length !== 14 && $(this).val().length !== 1) {
-                $(this).siblings(".input-disclaimer").show();
-                disableNextButton(parentSlide);
-            }
-            else {
-                $(this).siblings(".input-disclaimer").hide();
-                enableNextButton(parentSlide);
-            }
-        }
-
-
     });
 
     $(".signup-flow-container input").focusout(function () {
         var inputValue = $(this).val();
         var inputRegEx = new RegExp($(this).data("val-regex-pattern"));
         var regexTest = inputRegEx.test($(this).val());
+        if ($(this).attr('id') === 'FormattedPhone') {
+            regexTest = new RegExp($("#Phone").data("val-regex-pattern")).test(getTrimmedPhoneNumber($(this).val()));
+        }
         if (!regexTest && inputValue) {
             $(this).addClass("invalid-regex");
         }
@@ -260,18 +228,23 @@ var enableNextButton = function (carouselSlide) {
     $(nextButton).removeClass("disabled");
 };
 
+var inputFieldsAreValid = function (containerName) {
+    switch (containerName) {
+        case "name":
+            return nameFieldsAreValid();
+        case "address":
+            return addressFieldsAreValid();
+        case "phone-number":
+            return phoneNumberFieldsAreValid();
+    }
+};
+
 var addressFieldsAreValid = function () {
 
-    // Allow user to enter in no address information
-    if (!$("#Address").val() && !$("#City").val() && !$("#SelectedState").val())
-        return true;
+    var allFieldsNotEmpty = $("#Address").val() && $("#City").val() && $("#SelectedState").val();
+    var allFieldsEmpty = !$("#Address").val() && !$("#City").val() && !$("#SelectedState").val();
 
-    var addressIsValid = new RegExp($("#Address").data("val-regex-pattern")).test($("#Address").val());
-    var cityIsValid = new RegExp($("#City").data("val-regex-pattern")).test($("#City").val());
-    if ($("#Address").val() && addressIsValid && $("#City").val() && cityIsValid && $("#SelectedState").val()) {
-        return true;
-    }
-    return false;
+    return allFieldsEmpty || allFieldsNotEmpty;
 };
 
 var nameFieldsAreValid = function () {
@@ -290,6 +263,21 @@ var nameFieldsAreValid = function () {
         return true;
     }
     return false;
+};
+
+var phoneNumberFieldsAreValid = function () {
+    var phoneNumber = $("#FormattedPhone").val();
+    if (phoneNumber.length === 0)
+        return true;
+    var validLength = phoneNumber.length === 14;
+    var inputRegEx = new RegExp($('#Phone').data("val-regex-pattern"));
+    var regexTest = inputRegEx.test(getTrimmedPhoneNumber(phoneNumber));
+    return validLength && regexTest;
+};
+
+var getTrimmedPhoneNumber = function (phoneNumber) {
+    var strippedNumber = phoneNumber.replace("(", "").replace(")", "").replace(" ", "").replace("-", "");
+    return strippedNumber;
 };
 
 var IsValidFileType = function (filename) {

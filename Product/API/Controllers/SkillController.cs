@@ -14,8 +14,7 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Controllers
 {
-    [ApiController]
-    public class SkillController : Controller
+    public class SkillController : ControllerBase
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
@@ -31,10 +30,24 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
         }
 
-        // implement security after task_100 has been merged to this branch as follows: [Authorize("Policy=IsAdminPolicy")]
-        [HttpPut]
-        [Authorize]
+        [HttpGet]
         [Route("api/[controller]")]
+        public IActionResult Get()
+        {
+            return Ok();
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("api/[controller]/get/{entityType}/{entityGuid}")]
+        public IActionResult Get (string entityType, Guid entityGuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpPut]
+        [Authorize(Policy ="IsCareerCircleAdmin")]
+        [Route("api/[controller]/update")]
         public IActionResult Update([FromBody] EntitySkillDto entitySkillDto)
         {
             if (entitySkillDto == null || entitySkillDto.EntityGuid == Guid.Empty || string.IsNullOrWhiteSpace(entitySkillDto.EntityType))
