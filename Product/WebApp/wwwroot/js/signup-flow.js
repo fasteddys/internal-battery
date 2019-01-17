@@ -317,26 +317,35 @@ var ResumeUploadComplete = function (message) {
 
 var PopulateOnboardingSlides = function (response) {
     var carousel = $("#SignupFlowCarousel");
-    carousel.find("#FirstNameInput").val(SetProperCase(response.FirstName));
-    carousel.find("#LastNameInput").val(SetProperCase(response.LastName));
+    carousel.find("#FirstNameInput").val(SetProperCase(response.firstName));
+    carousel.find("#LastNameInput").val(SetProperCase(response.lastName));
     if (response.PhoneNumber) {
         carousel.find("#FormattedPhone").val("("
             + response.PhoneNumber.substring(0, 3) + ") "
             + response.PhoneNumber.substring(3, 6) + "-"
             + response.PhoneNumber.substring(6, 10));
     }
-    
-    carousel.find("#Address").val(SetProperCase(response.Address));
-    carousel.find("#City").val(SetProperCase(response.City));
 
-    if (response.State && response.State.StateGuid) {
-        carousel.find("#SelectedState").val(response.State.StateGuid);
+    carousel.find("#Address").val(SetProperCase(response.address));
+    carousel.find("#City").val(SetProperCase(response.city));
+
+    if (response.state && response.state.stateGuid) {
+        carousel.find("#SelectedState").val(response.state.stateGuid);
     }
 
-    carousel.find('#SelectedSkills').selectize({
-        options: response.Skills
-    });
+    
 
+    var subscriberSkills = response.skills;
+    var selectize = carousel.find("#SelectedSkills")[0].selectize;
+    selectize.clear();
+    selectize.load(function (callback) {
+        callback(subscriberSkills);
+    });
+    var selectedSkills = [];
+    $.each(subscriberSkills, function (i, obj) {
+        selectedSkills.push(obj.skillGuid);
+    });
+    selectize.setValue(selectedSkills);
 };
 
 var SetProperCase = function (value) {

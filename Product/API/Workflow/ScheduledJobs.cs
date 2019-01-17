@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.SignalR;
 using UpDiddyApi.Helpers.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace UpDiddyApi.Workflow
 {
@@ -282,8 +283,19 @@ namespace UpDiddyApi.Workflow
                 
                 // Callback to client to let them know upload is complete
                 ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
+                DefaultContractResolver contractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                };
                 SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, (Guid)subscriber.SubscriberGuid, _syslog, _mapper);
-                hubHelper.CallClient(subscriber.SubscriberGuid, Constants.SignalR.ResumeUpLoadVerb, JsonConvert.SerializeObject(subscriberDto));
+                hubHelper.CallClient(subscriber.SubscriberGuid, 
+                    Constants.SignalR.ResumeUpLoadVerb, 
+                    JsonConvert.SerializeObject(
+                        subscriberDto,
+                        new JsonSerializerSettings
+                        {
+                            ContractResolver = contractResolver
+                        }));
             }
             catch (Exception e)
             { 

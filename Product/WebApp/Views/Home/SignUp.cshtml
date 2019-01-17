@@ -7,8 +7,9 @@
     <script src="~/js/session-storage.js"></script>
     <script src="~/lib/signalr/signalr.js"></script>
     <script src="~/js/career-circle-signalr.js"></script>
-    <script src="~/js/signup-flow.js"></script>
     <script src="~/js/selectize-handling.js"></script>
+    <script src="~/js/signup-flow.js"></script>
+
     <script>var url = '@Url.Action("GetStatesByCountry", "Home")'; var subscriberSkills = @Json.Serialize(Model.Skills); </script>
 }
 
@@ -77,7 +78,7 @@
     </div>
 </div>
 <form id="SignupForm" asp-controller="Home" asp-action="Onboard"></form>
-<input type="hidden" asp-for="Phone"/>
+<input type="hidden" asp-for="Phone" />
 <div class="signup-flow-container">
     <div class="row signup-flow-row">
         <div id="Flow-ResumeColumn" class="col-12 signup-flow-column animated slideInUp">
@@ -105,7 +106,7 @@
                                         <i class="fas fa-exchange-alt"></i>&nbsp;&nbsp;Change
                                     </label>
                                     <input id="hdnConnectionId" type="hidden" />
-                                    <input type="hidden" id="hdnSubscriberGuid" value="@Model.SubscriberGuid"  />
+                                    <input type="hidden" id="hdnSubscriberGuid" value="@Model.SubscriberGuid" />
                                     <input id="UploadedResume" type="file" asp-for="Resume" accept=".doc,.docx,.odt,.pdf,.rtf,.tex,.txt,.wks,.wps,.wpd" />
                                     <input id="SubmitResumeUpload" type="submit" value="Upload" class="appear-on-resume-attach btn-resume-submit">
 
@@ -170,7 +171,7 @@
                                 <input form="SignupForm" type="text" id="LastNameInput" asp-for="LastName" data-container-name="name" placeholder="Last name" autocomplete="false" />
                                 <div class="input-disclaimer">Please enter a valid first and last name, or leave this slide blank.</div>
                             </div>
-                            
+
                         </div>
                         <div class="container">
                             <div class="row">
