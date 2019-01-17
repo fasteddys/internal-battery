@@ -192,7 +192,7 @@ $(document).ready(function () {
                     // update behavior based on revamped status codes
                     case 'Processing':              
                         removeSkipFunctionalityOnResumeUpload();
-                        toastr.success('Processing, please wait!', 'Success!', toastrOptions);
+                        toastr.success('We have recieved your resume and are currently processing it; please wait...', 'Great!', toastrOptions);
                         break;
                     default:
                         EnableResumeNextButton();
@@ -296,7 +296,6 @@ var ResumeUploadComplete = function (message) {
     var json = JSON.parse(message);
     // Make sure a resume upload in progress 
     if (resumeUploadInProgress == true) {
-        toastr.success("All set, let's go!", 'Success!', toastrOptions);
         // Set flag to indicate resume upload is in complete 
         resumeUploadInProgress = false;
         EnableResumeNextButton();
@@ -315,11 +314,11 @@ var PopulateOnboardingSlides = function (response) {
     // Set slides using information returned from signalR
     carousel.find("#FirstNameInput").val(SetProperCase(response.firstName));
     carousel.find("#LastNameInput").val(SetProperCase(response.lastName));
-    if (response.PhoneNumber) {
+    if (response.phoneNumber) {
         carousel.find("#FormattedPhone").val("("
-            + response.PhoneNumber.substring(0, 3) + ") "
-            + response.PhoneNumber.substring(3, 6) + "-"
-            + response.PhoneNumber.substring(6, 10));
+            + response.phoneNumber.substring(0, 3) + ") "
+            + response.phoneNumber.substring(3, 6) + "-"
+            + response.phoneNumber.substring(6, 10));
     }
 
     carousel.find("#Address").val(SetProperCase(response.address));
@@ -434,8 +433,12 @@ var findMaxCarouselItemHeight = function () {
 };
 
 var setCarouselHeight = function () {
-    $('.carousel-item').css("height", 'initial');
-    $('.carousel-item').css("height", findMaxCarouselItemHeight());
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    if (width >= 768) {
+        $('.carousel-item').css("height", 'initial');
+        $('.carousel-item').css("min-height", findMaxCarouselItemHeight());
+    }
+   
 };
 
 String.prototype.toProperCase = function () {
