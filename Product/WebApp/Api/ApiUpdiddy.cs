@@ -225,12 +225,12 @@ namespace UpDiddy.Api
 
         public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
         {
-            return Put<BasicResponseDto>(Subscriber, "profile", true);
+            return Put<BasicResponseDto>(Subscriber, "subscriber/update", true);
         }
 
-        public BasicResponseDto UpdateOnboardingStatus(Guid SubscriberGuid)
+        public BasicResponseDto UpdateOnboardingStatus()
         {
-            return Put<BasicResponseDto>("profile/onboard/" + SubscriberGuid, true);
+            return Put<BasicResponseDto>("subscriber/onboard", true);
         }
 
         public BasicResponseDto SyncLinkedInAccount(string linkedInCode, string returnUrl)
@@ -245,7 +245,7 @@ namespace UpDiddy.Api
 
         public SubscriberDto CreateSubscriber()
         {
-            return Post<SubscriberDto>("profile", true);
+            return Post<SubscriberDto>("subscriber/new", true);
         }
 
         public WozCourseProgressDto UpdateStudentCourseProgress(bool FutureSchedule)
@@ -332,7 +332,7 @@ namespace UpDiddy.Api
 
         public IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid)
         {
-            return Get<IList<SkillDto>>("profile/" + subscriberGuid + "/skill", true);
+            return Get<IList<SkillDto>>("subscriber/" + subscriberGuid + "/skill", true);
         }
         #endregion
 

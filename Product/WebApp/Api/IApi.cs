@@ -22,7 +22,7 @@ namespace UpDiddy.Api
         PromoCodeDto PromoCodeValidation(string code, string courseVariantGuid);
         CourseLoginDto CourseLogin(Guid EnrollmentGuid);
         BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber);
-        BasicResponseDto UpdateOnboardingStatus(Guid SubscriberGuid);
+        BasicResponseDto UpdateOnboardingStatus();
         Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto);
         SubscriberDto CreateSubscriber();
         WozCourseProgressDto UpdateStudentCourseProgress(bool FutureSchedule);

@@ -317,6 +317,8 @@ var ResumeUploadComplete = function (message) {
 
 var PopulateOnboardingSlides = function (response) {
     var carousel = $("#SignupFlowCarousel");
+
+    // Set slides using information returned from signalR
     carousel.find("#FirstNameInput").val(SetProperCase(response.firstName));
     carousel.find("#LastNameInput").val(SetProperCase(response.lastName));
     if (response.PhoneNumber) {
@@ -334,7 +336,7 @@ var PopulateOnboardingSlides = function (response) {
     }
 
     
-
+    // Set skills
     var subscriberSkills = response.skills;
     var selectize = carousel.find("#SelectedSkills")[0].selectize;
     selectize.clear();

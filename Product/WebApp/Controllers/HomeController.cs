@@ -72,7 +72,7 @@ namespace UpDiddy.Controllers
             // This will check to see if the subscriber has onboarded. If not, it flips the flag.
             // This means the onboarding flow should only ever work the first time a user logs into their account.
             if(subscriber.HasOnboarded != 1)
-                _Api.UpdateOnboardingStatus((Guid)subscriber.SubscriberGuid);
+                _Api.UpdateOnboardingStatus();
 
             SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
             {
