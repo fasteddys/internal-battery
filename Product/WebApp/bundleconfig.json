@@ -72,6 +72,7 @@
       "bower_components/bootstrap/dist/js/bootstrap.min.js",
       "wwwroot/lib/mvc-grid/mvc-grid.js",
       "node_modules/toastr/build/toastr.min.js",
+      "node_modules/@aspnet/signalr/dist/browser/signalr.min.js",
       "bower_components/selectize/dist/js/standalone/selectize.min.js",
       "bower_components/bluebird/js/browser/bluebird.min.js",
       "wwwroot/js/site.temp.min.js"

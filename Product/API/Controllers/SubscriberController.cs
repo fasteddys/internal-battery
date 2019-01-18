@@ -74,7 +74,7 @@ namespace UpDiddyApi.Controllers
                 return Unauthorized();
         }
 
-        [HttpPost("/api/[controller]/new")]
+        [HttpPost("/api/[controller]")]
         public IActionResult NewSubscriber()
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -100,7 +100,7 @@ namespace UpDiddyApi.Controllers
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
         }
 
-        [HttpPut("/api/[controller]/update")]
+        [HttpPut("/api/[controller]")]
         public IActionResult Update([FromBody] SubscriberDto Subscriber)
         {
             Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);

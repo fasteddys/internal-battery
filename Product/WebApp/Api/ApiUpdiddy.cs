@@ -220,7 +220,7 @@ namespace UpDiddy.Api
 
         public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
         {
-            return Put<BasicResponseDto>(Subscriber, "subscriber/update", true);
+            return Put<BasicResponseDto>(Subscriber, "subscriber", true);
         }
 
         public BasicResponseDto UpdateOnboardingStatus()
@@ -240,7 +240,7 @@ namespace UpDiddy.Api
 
         public SubscriberDto CreateSubscriber()
         {
-            return Post<SubscriberDto>("subscriber/new", true);
+            return Post<SubscriberDto>("subscriber", true);
         }
 
         public WozCourseProgressDto UpdateStudentCourseProgress(bool FutureSchedule)
