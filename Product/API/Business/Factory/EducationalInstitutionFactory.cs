@@ -24,7 +24,7 @@ namespace UpDiddyApi.Business.Factory
         static public EducationalInstitution GetOrAdd(UpDiddyDbContext db, string institutionName)
         {
 
-            institutionName = institutionName.Trim().ToLower();
+            institutionName = institutionName.Trim();
 
             EducationalInstitution educationalInstitution = db.EducationalInstitution
                 .Where(s => s.IsDeleted == 0 && s.Name == institutionName)

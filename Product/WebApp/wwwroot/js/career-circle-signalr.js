@@ -6,8 +6,7 @@ var CareerCircleSignalR = (function (hubUrl) {
     var _connection = null;    
     var _signalr_url = hubUrl;
     var _subscriberGuid = null;
-
-    var _signalr_api_url = 'http://localhost:5002/api/clienthub/';
+    
     
     var connectGood = function () {
         _connection = new signalR.HubConnectionBuilder()

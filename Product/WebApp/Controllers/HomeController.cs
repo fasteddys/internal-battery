@@ -154,8 +154,8 @@ namespace UpDiddy.Controllers
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
                 SubscriberGuid = this.subscriber?.SubscriberGuid,
-                FirstName = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.FirstName),
-                LastName = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.LastName),
+                FirstName = this.subscriber?.FirstName,
+                LastName = this.subscriber?.LastName,
                 FormattedPhone = this.subscriber?.PhoneNumber,
                 Email = this.subscriber?.Email,
                 Address = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.Address),

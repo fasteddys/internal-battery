@@ -23,7 +23,7 @@ namespace UpDiddyApi.Business.Factory
 
         static public EducationalDegree GetOrAdd(UpDiddyDbContext db, string degree)
         {
-            degree = degree.Trim().ToLower();
+            degree = degree.Trim();
 
             EducationalDegree educationalDegree = db.EducationalDegree
                 .Where(s => s.IsDeleted == 0 && s.Degree == degree)

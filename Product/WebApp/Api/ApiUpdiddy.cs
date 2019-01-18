@@ -203,11 +203,6 @@ namespace UpDiddy.Api
 
         #region Public UnCached Methods
 
-        public SubscriberDto Subscriber()
-        {
-            return Get<SubscriberDto>("subscriber/me", true);
-        }
-
         public PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid)
         {
             return Get<PromoCodeDto>("promocode/redemption-validate/" + promoCodeRedemptionGuid + "/course-variant/" + courseGuid, true);
@@ -409,16 +404,20 @@ namespace UpDiddy.Api
 
         #region TalentPortal
 
-        public SubscriberDto Subscriber(Guid subscriberGuid)
+        public SubscriberDto Subscriber(Guid subscriberGuid, bool hardRefresh)
         {
             string cacheKey = $"Subscriber{subscriberGuid}";
-            SubscriberDto rval = GetCachedValue<SubscriberDto>(cacheKey);
+            SubscriberDto rval = null;
+            if(!hardRefresh)
+                rval = GetCachedValue<SubscriberDto>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = _Subscriber(subscriberGuid);
+                if (rval == null)
+                    rval = CreateSubscriber();
                 SetCachedValue<SubscriberDto>(cacheKey, rval);
             }
             return rval;

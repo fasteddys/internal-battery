@@ -37,26 +37,8 @@ namespace UpDiddy.Controllers
  
             if (User.Identity.IsAuthenticated)
             {
-                // Try to get the subscriber from session 
-                string SubscriberJson = "";
-                if(!HardRefresh)
-                    SubscriberJson = HttpContext.Session.GetString(Constants.SubsriberSessionKey);   
-                
-                if ( String.IsNullOrEmpty(SubscriberJson)  )
-                {
-                    this.subscriber = _Api.Subscriber();
-                    if ( this.subscriber != null )
-                        HttpContext.Session.SetString(Constants.SubsriberSessionKey, JsonConvert.SerializeObject(this.subscriber));
-                }
-                else 
-                    this.subscriber = JsonConvert.DeserializeObject<SubscriberDto>(SubscriberJson);
-                
-                // if the user is not a subscriber, create their subscriber record now
-                if ( this.subscriber == null )
-                {
-                    this.subscriber = _Api.CreateSubscriber();
-                    HttpContext.Session.SetString(Constants.SubsriberSessionKey, JsonConvert.SerializeObject(this.subscriber));
-                }
+                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                this.subscriber = _Api.Subscriber(subscriberGuid, HardRefresh);
                     
             }
             else

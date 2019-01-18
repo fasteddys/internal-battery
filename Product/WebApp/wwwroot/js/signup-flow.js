@@ -178,6 +178,7 @@ $(document).ready(function () {
         resumeUploadInProgress = true;
         // Setup a time out to clean things up in case SignalR never calls back 
         ResumeUploadTimeout();
+        $(".overlay").show();
         var formData = new FormData();
         formData.append('Resume', $('#UploadedResume')[0].files[0]); // myFile is the input type="file" control
         var _url = $(this).attr('action');
@@ -294,6 +295,7 @@ var EnableResumeNextButton = function () {
 
 var ResumeUploadComplete = function (message) {
     var json = JSON.parse(message);
+    $('.overlay').hide(); 
     // Make sure a resume upload in progress 
     if (resumeUploadInProgress == true) {
         // Set flag to indicate resume upload is in complete 
@@ -305,15 +307,15 @@ var ResumeUploadComplete = function (message) {
         $('.carousel').carousel({}).carousel('next');
     }
     else
-        toastr.success("Sorry, that took a little longer than we had hoped for...", 'Success!', toastrOptions);
+        toastr.warning("Unfortunately, parsing your resume took longer than we expected. Please proceed and manually enter your information.", toastrOptions);
 };
 
 var PopulateOnboardingSlides = function (response) {
     var carousel = $("#SignupFlowCarousel");
 
     // Set slides using information returned from signalR
-    carousel.find("#FirstNameInput").val(SetProperCase(response.firstName));
-    carousel.find("#LastNameInput").val(SetProperCase(response.lastName));
+    carousel.find("#FirstNameInput").val(response.firstName);
+    carousel.find("#LastNameInput").val(response.lastName);
     if (response.phoneNumber) {
         carousel.find("#FormattedPhone").val("("
             + response.phoneNumber.substring(0, 3) + ") "
@@ -355,6 +357,7 @@ var ResumeUploadTimeout = function () {
         // If the resume upload is still in progress after 10 seconds,
         // enable the next button
         if (resumeUploadInProgress == true) {
+            $('.overlay').hide(); 
             resumeUploadInProgress = false;
             EnableResumeNextButton();
         }

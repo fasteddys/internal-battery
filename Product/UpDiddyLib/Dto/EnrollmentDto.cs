@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -26,6 +27,7 @@ namespace UpDiddyLib.Dto
         public int CourseId { get; set; }
         public CourseDto Course { get; set; }
         public int SubscriberId { get; set; }
+        [JsonIgnore]
         public SubscriberDto Subscriber { get; set; }
         public DateTime DateEnrolled { get; set; }
         public Decimal PricePaid { get; set; }

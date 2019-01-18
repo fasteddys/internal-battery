@@ -36,27 +36,42 @@ namespace UpDiddyApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger _syslog;
         private IB2CGraph _graphClient;
+        private IAuthorizationService _authorizationService;
 
-        public SubscriberController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<SubscriberController> sysLog, IDistributedCache distributedCache, IB2CGraph client)
+        public SubscriberController(UpDiddyDbContext db, 
+            IMapper mapper, 
+            IConfiguration configuration, 
+            ILogger<SubscriberController> sysLog, 
+            IDistributedCache distributedCache, 
+            IB2CGraph client,
+            IAuthorizationService authorizationService)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
             _graphClient = client;
+            _authorizationService = authorizationService;
         }
+        
 
-        [HttpGet("/api/[controller]/me")]
-        public IActionResult Me()
+        [HttpGet("{subscriberGuid}")]
+        public async Task<IActionResult> Get(Guid subscriberGuid)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-
             // Validate guid for GetSubscriber call
             if (Guid.Empty.Equals(subscriberGuid) || subscriberGuid == null)
                 return NotFound();
 
-            SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
-            return Ok(subscriberDto);
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
+
+            if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
+            {
+                SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
+                return Ok(subscriberDto);
+            }
+            else
+                return Unauthorized();
         }
 
         [HttpPost("/api/[controller]/new")]
@@ -223,28 +238,6 @@ namespace UpDiddyApi.Controllers
                 .ToList();
 
             return Json(_mapper.Map<List<SubscriberDto>>(subscribers));
-        }
-
-        [HttpGet("{subscriberGuid}")]
-        [Authorize(Policy = "IsRecruiterPolicy")]
-        public IActionResult Get(Guid subscriberGuid)
-        {
-            Subscriber subscriber = _db.Subscriber
-                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
-                .Include(s => s.State).ThenInclude(c => c.Country)
-                .Include(s => s.SubscriberSkills).ThenInclude(ss => ss.Skill)
-                .Include(s => s.Enrollments).ThenInclude(e => e.Course)
-                .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.Company)
-                .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.CompensationType)
-                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalInstitution)
-                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegreeType)
-                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegree)
-                .FirstOrDefault();
-
-            if (subscriber == null)
-                return NotFound();
-            else
-                return Ok(_mapper.Map<SubscriberDto>(subscriber));
         }
 
         // Can we remove subscriberGuid from this route and get it from the user context?
