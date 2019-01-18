@@ -57,7 +57,7 @@ namespace UpDiddy.Controllers
         [Route("/admin/skillslookup/{entityType}/{entityGuid}")]
         public JsonResult SkillsLookup(string entityType, Guid entityGuid)
         {
-            var selectListSkills = 
+            var selectListSkills =
                 _api.GetEntitySkills(entityType, entityGuid)
                 .Select(skill => new
                 {

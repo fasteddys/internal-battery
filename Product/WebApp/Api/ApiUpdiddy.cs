@@ -233,7 +233,7 @@ namespace UpDiddy.Api
 
         public IList<SkillDto> GetEntitySkills(string entityType, Guid entityGuid)
         {
-            return Get<IList<SkillDto>>($"skill/get/{entityType}/{entityGuid}", false);
+            return Get<IList<SkillDto>>($"skill/get/{entityType}/{entityGuid}", true);
         }
         public BasicResponseDto UpdateOnboardingStatus(Guid SubscriberGuid)
         {

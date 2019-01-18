@@ -70,7 +70,11 @@
         $select_skills = $('#select-skills').selectize({
             valueField: 'skillGuid',
             labelField: 'skillName',
-            searchField: ['skillName']
+            searchField: ['skillName'],
+            persist: false,
+            create: false,
+            allowEmptyOption: false,
+            delimiter: ',',
         });
 
         select_entity = $select_entity[0].selectize;
@@ -105,7 +109,7 @@
                 <div class="row">
                     <div class="col">
                         <label for="select-skills">Skills:</label>
-                        <select id="select-skills" placeholder="Select Skills"></select>
+                        <input type="text" id="select-skills" placeholder="Select Skills"/>
                     </div>
                 </div>
             </div>

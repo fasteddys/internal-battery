@@ -5,10 +5,12 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using UpDiddyApi.Business.Graph;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 
@@ -40,13 +42,38 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/get/{entityType}/{entityGuid}")]
-        public IActionResult Get (string entityType, Guid entityGuid)
+        public IActionResult Get(string entityType, Guid entityGuid)
         {
-            throw new NotImplementedException();
+            IList<SkillDto> rval = null;
+            switch (entityType)
+            {
+                case "course":
+                    rval = _db.CourseSkill
+                        .Include(cs => cs.Skill)
+                        .Include(cs => cs.Course)
+                        .Where(cs => cs.IsDeleted == 0 && cs.Course.CourseGuid == entityGuid)
+                        .Select(cs => cs.Skill)
+                        .ProjectTo<SkillDto>(_mapper.ConfigurationProvider)
+                        .ToList();
+                    break;
+                case "subscriber":
+                    rval = _db.SubscriberSkill
+                     .Include(ss => ss.Skill)
+                     .Include(ss => ss.Subscriber)
+                     .Where(ss => ss.IsDeleted == 0 && ss.Subscriber.SubscriberGuid == entityGuid)
+                     .Select(ss => ss.Skill)
+                     .ProjectTo<SkillDto>(_mapper.ConfigurationProvider)
+                     .ToList();
+                    break;
+                default:
+                    throw new NotImplementedException("This entity type is not supported.");
+            }
+
+            return Ok(rval);
         }
 
         [HttpPut]
-        [Authorize(Policy ="IsCareerCircleAdmin")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/update")]
         public IActionResult Update([FromBody] EntitySkillDto entitySkillDto)
         {
