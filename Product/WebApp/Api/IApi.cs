@@ -16,13 +16,12 @@ namespace UpDiddy.Api
         IList<CountryDto> GetCountries();
         IList<StateDto> GetStatesByCountry(Guid? countryGuid);
         CourseVariantDto GetCourseVariant(Guid courseVariantGuid);
-        SubscriberDto Subscriber();
-        SubscriberDto Subscriber(Guid subscriberGuid);
+        SubscriberDto Subscriber(Guid subscriberGuid, bool hardRefresh);
         PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid);
         PromoCodeDto PromoCodeValidation(string code, string courseVariantGuid);
         CourseLoginDto CourseLogin(Guid EnrollmentGuid);
         BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber);
-        BasicResponseDto UpdateOnboardingStatus(Guid SubscriberGuid);
+        BasicResponseDto UpdateOnboardingStatus();
         Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto);
         SubscriberDto CreateSubscriber();
         WozCourseProgressDto UpdateStudentCourseProgress(bool FutureSchedule);

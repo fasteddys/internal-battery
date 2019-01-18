@@ -7,9 +7,9 @@ namespace UpDiddyLib.Dto
     public class SubscriberDto : BaseDto
     {
         public int SubscriberId { get; set; }
-        public Guid? SubscriberGuid { get; set; }       
-        public string FirstName { get; set; }     
-        public string LastName { get; set; }       
+        public Guid? SubscriberGuid { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public string Email { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string PhoneNumber { get; set; }
