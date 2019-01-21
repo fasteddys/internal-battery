@@ -2,6 +2,15 @@
 
 // Base Styles
 @media (min-width: 0px) {
+
+    .morecontent span{
+        display:none;
+    }
+    .morelink {
+        display:block;
+        color:$color-primary;
+    }
+
     #NameModal,
     #WorkHistoryModal,
     #ContactInfoModal,
@@ -36,40 +45,141 @@
                     font-size: .75rem;
                     padding: 0 .5rem;
                 }
+                /*
+                .modal-edit-input.modal-checkbox {
+                    text-align: center;
+
+                    input[type=checkbox] {
+                        height: 25px;
+                        width: 25px;
+                        margin-top: 8px;
+                        margin-left: 18px;
+                    }
+                }
+                */
+                .modal-checkbox {
+                    text-align: center;
+
+                    input[type=checkbox] {
+                        display: none;
+                    }
+
+                    input[type=checkbox] + label:before {
+                        font-family: 'Font Awesome\ 5 Free';
+                        display: inline-block;
+                        font-size: 25px;
+                    }
+
+                    input[type=checkbox] + label:before {
+                        content: "\f0c8";
+                    }
+
+                    input[type=checkbox]:checked + label:before {
+                        content: "\f14a";
+                    }
+
+                    label {
+                        margin-bottom: 0;
+                    }
+                }
 
                 .modal-edit-input {
                     padding: 2px 0;
 
-                    input {
-                        border: 0;
-                        border-radius: .5rem;
+                    span {
+                        display: inline;
                     }
 
-                    select {
-                        border: 0;
+                    span + input {
+                        width: 90%;
+                        display: inline;
                     }
 
-                    .selectize-control {
-                        padding: .25rem;
+                    .extra-label {
+                        color: dimgray;
+                        margin-top: 10px;
+                        font-size: 12px;
+                    }
 
-                        .selectize-input {
-                            box-shadow: none;
+                    textarea {
+                        border: 0;
+                        font-size: 16px;
+                        font-weight: 400;
+                        font-family: FontAwesome, "Open Sans", Verdana, sans-serif;
+                        color: #495057;
+                    }
+                }
+
+                input {
+                    border: 0;
+                    border-radius: .5rem;
+                }
+
+                select {
+                    border: 0;
+                }
+
+                .selectize-control.form-control.single {
+                    padding: 0;
+                    margin-top: 5px;
+                    border: 0;
+                    background-color: white;
+                    background-image: none;
+
+                    .selectize-input {
+                        box-shadow: none;
+                        border: 0;
+                        background-image: none;
+                        background-color: white;
+
+                        .items {
+                            background-color: white;
+                            background-image: none;
+                        }
+
+                        .item {
+                            color: #495057;
+                            background-color: transparent;
+                            background-image: none;
                             border: 0;
+                            margin: 0;
+                            padding: 0;
+                            font-size: 16px;
+                            font-weight: 400;
+                            font-family: FontAwesome, "Open Sans", Verdana, sans-serif;
+                        }
 
-                            .item {
-                                background-color: $color-secondary;
+                        .selectize-dropdown-content {
+                            .option {
+                                background-color: white;
                                 background-image: none;
-                                border: $color-secondary;
-                                padding: 6px 10px;
-                                border-radius: 8px;
-                                margin-top: .5rem;
                             }
+                        }
+                    }
+                }
+
+                .selectize-control {
+                    padding: .25rem;
+
+                    .selectize-input {
+                        box-shadow: none;
+                        border: 0;
+
+                        .item {
+                            background-color: $color-secondary;
+                            background-image: none;
+                            border: $color-secondary;
+                            padding: 6px 10px;
+                            border-radius: 8px;
+                            margin-top: .5rem;
                         }
                     }
                 }
             }
         }
     }
+
+
     .profile-container {
 
         .profile-hero {
@@ -351,6 +461,35 @@
                             }
 
                             .options-container {
+
+                                .profile-work-history {
+                                    
+                                    border-bottom: 1px solid $color-secondary;
+
+                                    i {
+                                        cursor: pointer;
+                                    }
+
+                                    &:last-child {
+                                        border-bottom: 0;
+                                    }
+
+                                    .work-history-title {
+                                        font-size: 14px;
+                                        font-weight: bold;
+                                    }
+
+                                    .work-history-company {
+                                        font-size: 12px;
+                                        font-weight: bold;
+                                    }
+
+                                    .work-history-tenure, .work-history-compensation, .work-history-description {
+                                        font-size: 12px;
+                                        font-weight: normal;
+                                    }
+                                }
+
                                 .option-header {
                                     font-size: .65rem;
                                     width: 25%;
@@ -402,7 +541,6 @@
         h2 {
             font-size: 1.5rem;
         }
-        
     }
 }
 
@@ -427,7 +565,7 @@
                                 }
                             }
 
-                            .course-enrollment-failure-container{
+                            .course-enrollment-failure-container {
                                 text-align: left;
                             }
                         }
@@ -501,5 +639,4 @@
             }
         }
     }
-    
 }

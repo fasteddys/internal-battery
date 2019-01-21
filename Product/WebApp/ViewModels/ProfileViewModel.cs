@@ -32,8 +32,8 @@ namespace UpDiddy.ViewModels
         public string City { get; set; }
         private string _FormattedPhone;
 
-      
 
+        [Obsolete("Remove this once we are certain we cannot make use of it", false)]
         public string FormattedCompanyTenure(DateTime? startDate, DateTime? endDate, int isCurrent)
         {         
             string rVal = string.Empty;
@@ -160,7 +160,7 @@ namespace UpDiddy.ViewModels
         }
 
 
-        public bool HasSuppledWorkHistory
+        public bool HasSuppliedWorkHistory
         {            
             get
             {
