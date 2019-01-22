@@ -77,6 +77,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/update")]
         public IActionResult Update([FromBody] EntitySkillDto entitySkillDto)
         {
+            // todo: exception handling
             if (entitySkillDto == null || entitySkillDto.EntityGuid == Guid.Empty || string.IsNullOrWhiteSpace(entitySkillDto.EntityType))
                 return BadRequest();
 

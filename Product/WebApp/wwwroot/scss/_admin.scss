@@ -1,5 +1,19 @@
-﻿.admin-skills-container {
-    label {
+﻿#AdminContainer {
+    background-color: gray;
+
+    .nav-admin {
+        .nav-link {
+            height: 45px;
+            padding-top: 10px;
+
+            &.active {
+                background-color: dimgray;
+            }
+        }
+    }
+}
+.admin-skills-container {
+    label { 
         line-height: 30px;
         margin-left: 4px;
     }

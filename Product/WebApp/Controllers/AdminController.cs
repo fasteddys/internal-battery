@@ -74,18 +74,16 @@ namespace UpDiddy.Controllers
         [Route("/admin/skills")]
         public IActionResult Skills()
         {
-            //var testing = _api.UpdateEntitySkills(new UpDiddyLib.Dto.EntitySkillDto()
-            //{
-            //    EntityType = "Course",
-            //    EntityGuid = Guid.Parse("9C4E9CE7-EB4D-43A8-9D55-8438769C285D"),
-            //    Skills = new List<SkillDto> {
-            //        new SkillDto() { SkillGuid = Guid.Parse("E4A11336-6C37-42A7-A486-C708E1F15410")},
-            //        new SkillDto() { SkillGuid = Guid.Parse("5EA4EC82-21BD-4B32-99B0-00C585BC005A")},
-            //        new SkillDto() { SkillGuid = Guid.Parse("A7D33E93-5346-4EEC-B909-366A9330F26D")}
-            //    }
-            //});
-
             return View();
+        }
+
+        [HttpPut]
+        [Route("/admin/skills")]
+        public IActionResult UpdateSkills([FromBody] EntitySkillDto entitySkillDto)
+        {
+            // todo: exception handling
+            _api.UpdateEntitySkills(entitySkillDto);
+            return Ok();
         }
     }
 }
