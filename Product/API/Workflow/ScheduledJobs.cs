@@ -11,18 +11,23 @@ using UpDiddyLib.Dto;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Hangfire;
 using System.Net.Http;
-using UpDiddy.Helpers;
+using UpDiddyLib.Helpers;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Business.Resume;
 using UpDiddyApi.Business.Factory;
+using Microsoft.AspNetCore.SignalR;
+using UpDiddyApi.Helpers.SignalR;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace UpDiddyApi.Workflow
 {
     public class ScheduledJobs : BusinessVendorBase 
     {
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, IHubContext<ClientHub> hub, IDistributedCache distributedCache)
         {
             _db = context;
             _mapper = mapper;
@@ -32,6 +37,8 @@ namespace UpDiddyApi.Workflow
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
             _sovrenApi = sovrenApi;
+            _hub = hub;
+            _cache = distributedCache;
         }
 
 
@@ -271,7 +278,24 @@ namespace UpDiddyApi.Workflow
                 .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == resumeDto.SubscriberGuid)
                 .ToList();
 
+                // Import user profile data
                 _ImportSubscriberProfileData(profiles);
+                
+                // Callback to client to let them know upload is complete
+                ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
+                DefaultContractResolver contractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                };
+                SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, (Guid)subscriber.SubscriberGuid, _syslog, _mapper);
+                hubHelper.CallClient(subscriber.SubscriberGuid, 
+                    Constants.SignalR.ResumeUpLoadVerb, 
+                    JsonConvert.SerializeObject(
+                        subscriberDto,
+                        new JsonSerializerSettings
+                        {
+                            ContractResolver = contractResolver
+                        }));
             }
             catch (Exception e)
             { 

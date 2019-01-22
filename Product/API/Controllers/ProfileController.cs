@@ -14,7 +14,7 @@ using System.Data.SqlClient;
 using System.Data;
 using System.Security.Claims;
 using UpDiddyApi.Business.Factory;
-using UpDiddy.Helpers;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers
 {

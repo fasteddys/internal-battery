@@ -1,4 +1,5 @@
-﻿var workHistory = {};
+﻿var resumeUploadInProgress = false;
+var workHistory = {};
 class WorkHistoryItem {
     constructor(_title, _org, _description) {
         this.title = _title;
@@ -15,33 +16,29 @@ class Education {
     }
 }
 
-$(document).ajaxStart(function () { 
-    timer = setTimeout(function () { $('.overlay').show(); }, 200);
-}).ajaxStop(function () {
-    clearTimeout(timer);
-    $('.overlay').hide();
-});
+
+
+var toastrOptions = {
+    "closeButton": true,
+    "debug": false,
+    "newestOnTop": false,
+    "progressBar": false,
+    "positionClass": "toast-top-full-width",
+    "preventDuplicates": false,
+    "onclick": null,
+    "showDuration": "300",
+    "hideDuration": "1000",
+    "timeOut": "3000",
+    "extendedTimeOut": "1000",
+    "showEasing": "swing",
+    "hideEasing": "linear",
+    "showMethod": "fadeIn",
+    "hideMethod": "fadeOut"
+};
 
 $(document).ready(function () {
-    $('.overlay').hide();
 
-        var toastrOptions = {
-            "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": false,
-        "positionClass": "toast-top-full-width",
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "3000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    };
+    
 
     $(".signup-flow-container input").keyup(function () {
         var parentSlide = $(this).closest(".carousel-item");
@@ -168,9 +165,7 @@ $(document).ready(function () {
                 $('#UploadedResumeText').html("<span class='invalid-entry'>Sorry, unfortunately we do not accept resumes of this file type.</span> <br /> Please upload a file in one of the following file types:  .doc, .docx, .odt, .pdf, .rtf, .tex, .txt, .wks, .wps, or .wpd.");
                 $('#ResumeUploadDisclaimer').css("display", "none");
                 $('#SubmitResumeUpload').hide();
-            }
-            
-            
+            }                       
             setCarouselHeight();
         }
         $('#UploadedResumeLabel').hide();
@@ -179,6 +174,11 @@ $(document).ready(function () {
 
     $('#ResumeUploadForm').on('submit', function (e) {
         e.preventDefault();
+        // Set flag to indicate resume upload is in progress 
+        resumeUploadInProgress = true;
+        // Setup a time out to clean things up in case SignalR never calls back 
+        ResumeUploadTimeout();
+        $(".overlay").show();
         var formData = new FormData();
         formData.append('Resume', $('#UploadedResume')[0].files[0]); // myFile is the input type="file" control
         var _url = $(this).attr('action');
@@ -191,25 +191,30 @@ $(document).ready(function () {
             success: function (result) {
                 switch (result.statusCode) {
                     // update behavior based on revamped status codes
-                    case 'Processing':
-                        $('#ResumeNextButton').removeClass('disabled');
-                        $('#ResumeNextButton a').attr("href", "#SignupFlowCarousel");
-                        $('.skip-resume').hide();
+                    case 'Processing':              
                         removeSkipFunctionalityOnResumeUpload();
-                        toastr.success('We are processing your resume now. The information we are able to extract will be displayed on your profile page.', 'Success!', toastrOptions);
+                        toastr.success('We have recieved your resume and are currently processing it; please wait...', 'Great!', toastrOptions);
                         break;
                     default:
+                        EnableResumeNextButton();
                         toastr.warning('We were not able to process this file. Please select another file and try again. Alternatively, you can skip this and move to the next step.', 'Warning!', toastrOptions);
                         break;
                 }
             },
             error: function (jqXHR) {
+                EnableResumeNextButton();
                 toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions);
             },
             complete: function (jqXHR, status) {
             }
         });
     });
+
+    // Wire up SignalR to listen for resume upload completion
+    CareerCircleSignalR.connect($("#hdnSubscriberGuid").val() )
+        .then(result => {
+             CareerCircleSignalR.listen("UploadResume", ResumeUploadComplete);
+        });  
 });
 
 var disableNextButton = function (carouselSlide) {
@@ -280,13 +285,93 @@ var getTrimmedPhoneNumber = function (phoneNumber) {
     return strippedNumber;
 };
 
+
+
+var EnableResumeNextButton = function () {
+    $('#ResumeNextButton').removeClass('disabled');
+    $('#ResumeNextButton a').attr("href", "#SignupFlowCarousel");
+    $('.skip-resume').hide();
+};
+
+var ResumeUploadComplete = function (message) {
+    var json = JSON.parse(message);
+    $('.overlay').hide(); 
+    // Make sure a resume upload in progress 
+    if (resumeUploadInProgress == true) {
+        // Set flag to indicate resume upload is in complete 
+        resumeUploadInProgress = false;
+        EnableResumeNextButton();
+        //Populate later slides with information extracted from resume parse
+        PopulateOnboardingSlides(json);
+        // Move to next page 
+        $('.carousel').carousel({}).carousel('next');
+    }
+    else
+        toastr.warning("Unfortunately, parsing your resume took longer than we expected. Please proceed and manually enter your information.", toastrOptions);
+};
+
+var PopulateOnboardingSlides = function (response) {
+    var carousel = $("#SignupFlowCarousel");
+
+    // Set slides using information returned from signalR
+    carousel.find("#FirstNameInput").val(response.firstName);
+    carousel.find("#LastNameInput").val(response.lastName);
+    if (response.phoneNumber) {
+        carousel.find("#FormattedPhone").val("("
+            + response.phoneNumber.substring(0, 3) + ") "
+            + response.phoneNumber.substring(3, 6) + "-"
+            + response.phoneNumber.substring(6, 10));
+    }
+
+    carousel.find("#Address").val(SetProperCase(response.address));
+    carousel.find("#City").val(SetProperCase(response.city));
+
+    if (response.state && response.state.stateGuid) {
+        carousel.find("#SelectedState").val(response.state.stateGuid);
+    }
+
+    
+    // Set skills
+    var subscriberSkills = response.skills;
+    var selectize = carousel.find("#SelectedSkills")[0].selectize;
+    selectize.clear();
+    selectize.load(function (callback) {
+        callback(subscriberSkills);
+    });
+    var selectedSkills = [];
+    $.each(subscriberSkills, function (i, obj) {
+        selectedSkills.push(obj.skillGuid);
+    });
+    selectize.setValue(selectedSkills);
+};
+
+var SetProperCase = function (value) {
+    if (value)
+        return value.toProperCase();
+    return value;
+};
+
+// Set timeout in case 
+var ResumeUploadTimeout = function () {
+    setTimeout(function () {
+        // If the resume upload is still in progress after 10 seconds,
+        // enable the next button
+        if (resumeUploadInProgress == true) {
+            $('.overlay').hide(); 
+            resumeUploadInProgress = false;
+            EnableResumeNextButton();
+        }
+    }, 20000);
+};
+
+
 var IsValidFileType = function (filename) {
     if (filename === null || filename === "" || !filename.includes('.')) {
         return false;
     }
     var fileExtensions = ["doc", "docx", "odt", "pdf", "rtf", "tex", "txt", "wks", "wps", "wpd"];
     var splitFileName = filename.split(".");
-    if (fileExtensions.indexOf(splitFileName[splitFileName.length - 1]) > 0) {
+    if (fileExtensions.indexOf(splitFileName[splitFileName.length - 1]) >= 0) {
         return true;
     }
     return false;
@@ -345,13 +430,20 @@ var findMaxCarouselItemHeight = function () {
             maxHeight = $(this).height();
         }
     });
-
     //add height from top of viewport
     maxHeight += 150;
     return maxHeight;
 };
 
 var setCarouselHeight = function () {
-    $('.carousel-item').css("height", 'initial');
-    $('.carousel-item').css("height", findMaxCarouselItemHeight());
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    if (width >= 768) {
+        $('.carousel-item').css("height", 'initial');
+        $('.carousel-item').css("min-height", findMaxCarouselItemHeight());
+    }
+   
+};
+
+String.prototype.toProperCase = function () {
+    return this.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
 };

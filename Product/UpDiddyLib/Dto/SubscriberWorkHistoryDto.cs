@@ -16,6 +16,8 @@ namespace UpDiddyLib.Dto
         public string JobDecription { get; set; }
         public decimal Compensation { get; set; }
         public string CompensationType { get; set; }
+        public int CompensationTypeId { get; set; }
         public string Company { get; set; }
+        public int CompanyId { get; set; }
     }
 }

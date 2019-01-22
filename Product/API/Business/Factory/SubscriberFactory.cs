@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -15,6 +18,8 @@ namespace UpDiddyApi.Business.Factory
 {
     public class SubscriberFactory
     {
+
+        // Can we get rid of this function given the one below it?
         public static Subscriber GetSubscriberById(UpDiddyDbContext db, int subscriberId)
         {
             return db.Subscriber
@@ -22,6 +27,30 @@ namespace UpDiddyApi.Business.Factory
                 .FirstOrDefault();
         }
 
+        public static SubscriberDto GetSubscriber(UpDiddyDbContext _db, Guid subscriberGuid, ILogger _syslog, IMapper _mapper)
+        {
+            if (Guid.Empty.Equals(subscriberGuid))
+            {
+                _syslog.Log(LogLevel.Information, $"***** SubscriberFactory:GetSubscriber empty subscriber guid supplied.");
+                return new SubscriberDto();
+            }
+                
+
+            Subscriber subscriber = _db.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                .Include(s => s.State).ThenInclude(c => c.Country)
+                .Include(s => s.SubscriberSkills).ThenInclude(ss => ss.Skill)
+                .Include(s => s.Enrollments).ThenInclude(e => e.Course)
+                .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.Company)
+                .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.CompensationType)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalInstitution)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegreeType)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegree)
+                .FirstOrDefault();
+
+            SubscriberDto subscriberDto = _mapper.Map<SubscriberDto>(subscriber);
+            return subscriberDto;
+        }
         public static Subscriber GetSubscriberByGuid(UpDiddyDbContext db, Guid subscriberGuid)
         {
             return db.Subscriber

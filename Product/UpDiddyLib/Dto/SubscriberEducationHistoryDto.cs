@@ -5,7 +5,7 @@ using System.Text;
 namespace UpDiddyLib.Dto
 {
     public class SubscriberEducationHistoryDto : BaseDto
-    {    
+    {
         public int SubscriberEducationHistoryId { get; set; }
         public Guid SubscriberEducationHistoryGuid { get; set; }
         public int SubscriberId { get; set; }

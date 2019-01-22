@@ -11,6 +11,7 @@
         delimiter: ',',
         load: function (query, callback) {
             if (!query.length) return callback();
+            $('.overlay').show(); 
             $.ajax({
                 url: '/Home/GetSkills',
                 type: 'GET',
@@ -20,9 +21,11 @@
                 },
                 error: function () {
                     callback();
+                    $('.overlay').hide(); 
                 },
                 success: function (res) {
                     callback(res);
+                    $('.overlay').hide(); 
                 }
             });
         },

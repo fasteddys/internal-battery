@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace UpDiddy.Helpers
+namespace UpDiddyLib.Helpers
 {
     // todo: consider moving these constants to their respective domains of usage
     public static class Constants
@@ -36,6 +36,15 @@ namespace UpDiddy.Helpers
             public static readonly string Sovren = "Sovren";
             public static readonly string LinkedIn = "LinkedIn";
         }
+
+        public static class SignalR
+        {
+            public static readonly string CookieKey = "ccsignalr_connection_id";
+            public static readonly string ResumeUpLoadVerb = "UploadResume";
+        }
+
+
+
 
     }
 }

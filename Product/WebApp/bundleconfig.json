@@ -27,6 +27,7 @@
       "wwwroot/lib/mvc-grid/mvc-grid.js",
       "node_modules/toastr/build/toastr.min.js",
       "node_modules/braintree-web-drop-in/dist/browser/dropin.js",
+      "node_modules/@aspnet/signalr/dist/browser/signalr.js",
       "bower_components/selectize/dist/js/standalone/selectize.js",
       "bower_components/bluebird/js/browser/bluebird.js",
       "wwwroot/js/site.js",
@@ -58,8 +59,16 @@
     }
   },
   {
-    "outputFileName": "wwwroot/js/site.temp.min.js",
+    "outputFileName": "wwwroot/js/site.min.js",
     "inputFiles": [
+      "bower_components/jquery/dist/jquery.js",
+      "bower_components/popper.js/dist/umd/popper.js",
+      "bower_components/bootstrap/dist/js/bootstrap.js",
+      "wwwroot/lib/mvc-grid/mvc-grid.js",
+      "node_modules/toastr/build/toastr.min.js",
+      "node_modules/@aspnet/signalr/dist/browser/signalr.js",
+      "bower_components/selectize/dist/js/standalone/selectize.js",
+      "bower_components/bluebird/js/browser/bluebird.js",
       "node_modules/braintree-web-drop-in/dist/browser/dropin.js",
       "wwwroot/js/site.js",
       "wwwroot/js/session-storage.js",

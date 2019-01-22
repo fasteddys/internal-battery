@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-    public class EducationalDegreeDto
+    public class EducationalDegreeDto : BaseDto
     {
         public Guid EducationalDegreeGuid { get; set; }
         public string Degree { get; set; }

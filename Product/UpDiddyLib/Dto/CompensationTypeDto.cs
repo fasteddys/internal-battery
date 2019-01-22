@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-    public class CompensationTypeDto
+    public class CompensationTypeDto : BaseDto
     {
         public Guid CompensationTypeGuid { get; set; }
         public string CompensationTypeName { get; set; }
