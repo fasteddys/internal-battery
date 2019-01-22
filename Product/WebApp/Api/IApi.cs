@@ -2,6 +2,9 @@ using System;
 using UpDiddyLib.Dto;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
+using System.IO;
+using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace UpDiddy.Api
 {
@@ -40,5 +43,7 @@ namespace UpDiddy.Api
         #region TalentPortal
         IList<SubscriberDto> SubscriberSearch(string searchQuery);
         #endregion
+
+        Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, int fileId);
     }
 }

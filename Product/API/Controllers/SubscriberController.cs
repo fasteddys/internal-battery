@@ -20,6 +20,8 @@ using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
+using System.IO;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.Controllers
 {
@@ -32,14 +34,16 @@ namespace UpDiddyApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger _syslog;
         private IB2CGraph _graphClient;
+        private ICloudStorage _cloudStorage;
 
-        public SubscriberController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<SubscriberController> sysLog, IDistributedCache distributedCache, IB2CGraph client)
+        public SubscriberController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<SubscriberController> sysLog, IDistributedCache distributedCache, IB2CGraph client, ICloudStorage cloudStorage)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
             _graphClient = client;
+            _cloudStorage = cloudStorage;
         }
 
         [HttpGet("/api/[controller]/me/group")]
@@ -127,6 +131,43 @@ namespace UpDiddyApi.Controllers
                 return NotFound();
             else
                 return Ok(_mapper.Map<SubscriberDto>(subscriber));
+        }
+
+        [Authorize]
+        [HttpGet("/api/[controller]/{subscriberGuid}/file/{fileId}")]
+        public async Task<IActionResult> DownloadFile(Guid subscriberGuid, int fileId)
+        {
+            Guid userGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (userGuid != subscriberGuid)
+                return Unauthorized();
+
+            Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(subscriberGuid))
+                .Include(s => s.SubscriberFile)
+                .First();
+            SubscriberFile file = subscriber.SubscriberFile.Where(f => f.Id == fileId).First();
+            return File(await _cloudStorage.OpenReadAsync(file.BlobName), "application/octet-stream", Path.GetFileName(file.BlobName));
+        }
+
+        [Authorize]
+        [HttpDelete("/api/[controller]/{subscriberGuid}/file/{fileId}")]
+        public async Task<IActionResult> DeleteFile(Guid subscriberGuid, int fileId)
+        {
+            Guid userGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (userGuid != subscriberGuid)
+                return Unauthorized();
+
+            Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(subscriberGuid))
+                .Include(s => s.SubscriberFile)
+                .First();
+            SubscriberFile file = subscriber.SubscriberFile.Where(f => f.Id == fileId).First();
+
+            if (!await _cloudStorage.DeleteFileAsync(file.BlobName))
+                return BadRequest();
+
+            _db.SubscriberFile.Remove(file);
+            await _db.SaveChangesAsync();
+
+            return Ok();
         }
     }
 }

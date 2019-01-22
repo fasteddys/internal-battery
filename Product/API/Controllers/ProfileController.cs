@@ -48,13 +48,15 @@ namespace UpDiddyApi.Controllers
                 .ThenInclude(s => s.Country)
                 .Include(s => s.Enrollments)
                 .ThenInclude(e => e.Course)
+                .Include(s => s.SubscriberFile)
                 .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid)
                 .FirstOrDefault();
 
             if (subscriber == null)
                 return NotFound();
+            SubscriberDto subscriberDto = _mapper.Map<SubscriberDto>(subscriber);
 
-            return Ok(_mapper.Map<SubscriberDto>(subscriber));
+            return Ok(subscriberDto);
         }
 
         [HttpPost]

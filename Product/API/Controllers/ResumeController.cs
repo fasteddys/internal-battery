@@ -13,6 +13,7 @@ using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace UpDiddyApi.Controllers
 {
@@ -22,12 +23,14 @@ namespace UpDiddyApi.Controllers
         private ISovrenAPI _sovrenApi;
         private UpDiddyDbContext _db;
         protected internal ILogger _syslog = null;
+        private ICloudStorage _cloudStorage;
 
-        public ResumeController(ISovrenAPI sovrenApi, UpDiddyDbContext db, ILogger<ResumeController> sysLog)
+        public ResumeController(ISovrenAPI sovrenApi, UpDiddyDbContext db, ILogger<ResumeController> sysLog, ICloudStorage cloudStorage)
         {
             this._sovrenApi = sovrenApi;
             this._db = db;
             this._syslog = sysLog;
+            this._cloudStorage = cloudStorage;
         }
 
         /// <summary>
@@ -39,60 +42,45 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         [HttpPost]
         [Route("upload")]
-        public async Task<IActionResult> Upload([FromBody] ResumeDto resumeDto)
+        public async Task<IActionResult> Upload(IFormFile resume, bool parseResume = false)
         {
-            BasicResponseDto basicResponseDto = new BasicResponseDto()
-            {
-                StatusCode = "100",
-                Description = "Initialized"
-            };
-
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             // todo: research and implement a better way to handle soft deletes then manual checks everywhere
             Subscriber subscriber = _db.Subscriber
+                .Include(s => s.SubscriberFile)
                 .Where(s => s.SubscriberGuid == subscriberGuid && s.IsDeleted == 0)
                 .FirstOrDefault();
 
             if (subscriber == null)
                 return NotFound(new { code = 404, message = "Subscriber not found in the system." });
 
-            if (subscriber.SubscriberGuid != resumeDto.SubscriberGuid)
+            SubscriberFile subscriberFileResume = new SubscriberFile
             {
-                basicResponseDto.StatusCode = "401";
-                basicResponseDto.Description = "Unauthorized; subscriber's GUID does not match the resume user's GUID.";
-                return Unauthorized();
-            }
-               
+                BlobName = await _cloudStorage.UploadFileAsync(String.Format("{0}/{1}/", subscriberGuid, "resume"), resume.FileName, resume.OpenReadStream()),
+                ModifyGuid = subscriberGuid,
+                CreateGuid = subscriberGuid,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = DateTime.UtcNow
+            };
 
-            try
+            // check to see if file is already in the system, if there is a file in the system in already then delete it
+            // todo: refactor as part of multiple file upload/management system
+            // todo: move logic to OnDelete event or somewhere centralized and run as a transaction somehow
+            if(subscriber.SubscriberFile.Count > 0)
             {
-                if (resumeDto != null && resumeDto.SubscriberGuid != Guid.Empty && !string.IsNullOrWhiteSpace(resumeDto.Base64EncodedResume))
-                {
-
-                    // todo: research and implement a better way to handle soft deletes then manual checks everywhere
-                    // Queue job as background process 
-                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileData(resumeDto, subscriber));
-
-                    // indicate that a background job is being processed
-                    basicResponseDto.StatusCode = "Processing";
-                    basicResponseDto.Description = "Scheduled job to import profile data is being processed.";
-                }
-                else
-                {
-                    basicResponseDto.StatusCode = "BadRequest";
-                    basicResponseDto.Description = "The parameter supplied is invalid.";
-                }
-            }
-            catch (Exception ex)
-            {
-
-                basicResponseDto.StatusCode = "InternalServerError";
-                basicResponseDto.Description = ex.Message;
-                _syslog.Log(LogLevel.Error, $"ResumeController.Upload: Parameters subscriber= {(resumeDto == null ? string.Empty : resumeDto.SubscriberGuid.ToString())} resume= {(resumeDto == null ? string.Empty : resumeDto.Base64EncodedResume)} ");
+                SubscriberFile oldFile = subscriber.SubscriberFile.Last();
+                await _cloudStorage.DeleteFileAsync(oldFile.BlobName);
+                subscriber.SubscriberFile.Remove(oldFile);
             }
 
-            return Ok(basicResponseDto);
+            subscriber.SubscriberFile.Add(subscriberFileResume);
+            _db.SaveChanges();
+
+            if(parseResume)
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(subscriberFileResume));
+
+            return Ok(new { code = 200, message = "Success!", subscriberFile = subscriberFileResume });
         }
     }
 }

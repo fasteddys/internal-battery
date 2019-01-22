@@ -18,6 +18,7 @@
     "outputFileName": "wwwroot/js/site.dev.js",
     "inputFiles": [
       "bower_components/jquery/dist/jquery.js",
+      "node_modules/axios/dist/axios.js",
       "bower_components/popper.js/dist/umd/popper.js",
       "bower_components/bootstrap/dist/js/bootstrap.js",
       "wwwroot/lib/mvc-grid/mvc-grid.js",
@@ -67,6 +68,7 @@
     "outputFileName": "wwwroot/js/site.min.js",
     "inputFiles": [
       "bower_components/jquery/dist/jquery.min.js",
+      "node_modules/axios/dist/axios.min.js",
       "bower_components/popper.js/dist/umd/popper.min.js",
       "bower_components/bootstrap/dist/js/bootstrap.min.js",
       "wwwroot/lib/mvc-grid/mvc-grid.js",

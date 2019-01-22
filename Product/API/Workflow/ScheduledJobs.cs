@@ -16,13 +16,15 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Factory;
+using System.IO;
 
 namespace UpDiddyApi.Workflow
 {
     public class ScheduledJobs : BusinessVendorBase 
     {
+        ICloudStorage _cloudStorage;
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, ICloudStorage cloudStorage)
         {
             _db = context;
             _mapper = mapper;
@@ -32,6 +34,7 @@ namespace UpDiddyApi.Workflow
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
             _sovrenApi = sovrenApi;
+            _cloudStorage = cloudStorage;
         }
 
 
@@ -254,21 +257,30 @@ namespace UpDiddyApi.Workflow
 
         #region CareerCircle Jobs 
  
-        public Boolean ImportSubscriberProfileData(ResumeDto resumeDto,Subscriber subscriber)
+        public async Task<bool> ImportSubscriberProfileDataAsync(SubscriberFile resume)
         {
             try
             {
+                resume.Subscriber = _db.Subscriber.Where(s => s.SubscriberId == resume.SubscriberId).First();
                 string errMsg = string.Empty;
 
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resumeDto.SubscriberGuid}");
+                string base64EncodedString = null;
+                using (var ms = new MemoryStream())
+                {
+                    await _cloudStorage.DownloadToStreamAsync(resume.BlobName, ms);
+                    var fileBytes = ms.ToArray();
+                    base64EncodedString = Convert.ToBase64String(fileBytes);
 
-                String parsedDocument =  _sovrenApi.SubmitResumeAsync(resumeDto.Base64EncodedResume).Result;
-                SubscriberProfileStagingStoreFactory.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
+                }
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
+
+                String parsedDocument =  _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
+                SubscriberProfileStagingStoreFactory.Save(_db, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
 
                 // Get the list of profiles that need 
                 List<SubscriberProfileStagingStore> profiles = _db.SubscriberProfileStagingStore
                 .Include(p => p.Subscriber)
-                .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == resumeDto.SubscriberGuid)
+                .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == resume.Subscriber.SubscriberGuid)
                 .ToList();
 
                 _ImportSubscriberProfileData(profiles);

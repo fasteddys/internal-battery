@@ -267,11 +267,24 @@ namespace UpDiddy.Api
         {
             return Get<SubscriberADGroupsDto>("subscriber/me/group", true);
         }
+
+        public async Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, int fileId)
+        {
+            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
+            string ApiUrl = _ApiBaseUri + String.Format("subscriber/{0}/file/{1}", subscriberGuid, fileId);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
+
+            // Add token to the Authorization header and make the request
+            await AddBearerTokenAsync(request);
+
+            HttpResponseMessage response = await client.SendAsync(request);
+            return response;
+        }
         #endregion
 
         #region Cache Helper Functions
 
-        private IList<TopicDto> _Topics()
+            private IList<TopicDto> _Topics()
         {
             return Get<IList<TopicDto>>("topic", false);
         }

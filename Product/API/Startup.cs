@@ -183,6 +183,7 @@ namespace UpDiddyApi
 
             services.AddTransient<ISovrenAPI, Sovren>();
             services.AddHttpClient<ISovrenAPI,Sovren>();
+            services.AddTransient<ICloudStorage, AzureBlobStorage>();
 
             services.AddTransient<IB2CGraph, B2CGraphClient>();
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
