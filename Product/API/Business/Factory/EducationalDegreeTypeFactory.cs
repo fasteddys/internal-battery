@@ -12,15 +12,16 @@ namespace UpDiddyApi.Business.Factory
         {
             EducationalDegreeType rVal = new EducationalDegreeType();
             rVal.DegreeType = degreeType;
-            rVal.CreateDate = DateTime.Now;
-            rVal.CreateGuid = Guid.NewGuid();
-            rVal.ModifyDate = DateTime.Now;
-            rVal.ModifyGuid = Guid.NewGuid();
+            rVal.CreateDate = DateTime.UtcNow;
+            rVal.CreateGuid = Guid.Empty;
+            rVal.ModifyDate = DateTime.UtcNow;
+            rVal.ModifyGuid = Guid.Empty;
+            rVal.EducationalDegreeTypeGuid = Guid.NewGuid();
             rVal.IsDeleted = 0;
             return rVal;
         }
 
-        static public EducationalDegreeType GetOrAdd(UpDiddyDbContext db, string degreeType)
+        public static EducationalDegreeType GetOrAdd(UpDiddyDbContext db, string degreeType)
         {
             degreeType = degreeType.Trim();
 
@@ -43,6 +44,5 @@ namespace UpDiddyApi.Business.Factory
                 .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
                 .FirstOrDefault();
         }
-
     }
 }

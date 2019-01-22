@@ -13,10 +13,11 @@ namespace UpDiddyApi.Business.Factory
         {
             Company rVal = new Company();
             rVal.CompanyName = companyName;
-            rVal.CreateDate = DateTime.Now;
-            rVal.CreateGuid = Guid.NewGuid();
-            rVal.ModifyDate = DateTime.Now;
-            rVal.ModifyGuid = Guid.NewGuid();
+            rVal.CreateDate = DateTime.UtcNow;
+            rVal.CreateGuid = Guid.Empty;
+            rVal.ModifyDate = DateTime.UtcNow;
+            rVal.ModifyGuid = Guid.Empty;
+            rVal.CompanyGuid = Guid.NewGuid();
             rVal.IsDeleted = 0;
             return rVal;
         }

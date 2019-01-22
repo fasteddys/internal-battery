@@ -28,9 +28,7 @@ namespace UpDiddy.ViewModels
         public string FirstName { get; set; }
         [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "Last name may only contain alphabetic characters, spaces, apostrophes, and hyphens.")]
         public string LastName { get; set; }
-        [RegularExpression(@"\w+(\s\w+){2,}", ErrorMessage = "Please enter a valid street address.")]
         public string Address { get; set; }
-        [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "Please enter a valid city.")]
         public string City { get; set; }
         private string _FormattedPhone;
 
@@ -81,7 +79,7 @@ namespace UpDiddy.ViewModels
             }
         }
 
-        [RegularExpression("^[2-9]{1}[0-9]{9}$", ErrorMessage = "Phone must be 10 digits and may not start with a 0 or 1. Please edit your phone number before continuing.")]
+        [RegularExpression("^([0-9]{0,3})?[2-9]{1}[0-9]{9}$", ErrorMessage = "Phone must be 10 digits and may not start with a 0 or 1. Please edit your phone number before continuing.")]
         public string Phone
         {
             get

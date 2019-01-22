@@ -27,11 +27,9 @@ namespace UpDiddyApi.Business.Factory
                 .FirstOrDefault();
         }
 
-
         public static bool AddEducationHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, SubscriberEducationHistoryDto educationkHistory,
-                EducationalInstitution educationalInstitution, EducationalDegree educationalDegree)
+                EducationalInstitution educationalInstitution, EducationalDegree educationalDegree, EducationalDegreeType educationalDegreeType)
         {
-
             bool rVal = true;
             try
             {
@@ -40,26 +38,25 @@ namespace UpDiddyApi.Business.Factory
                     StartDate = educationkHistory.StartDate,
                     EndDate = educationkHistory.EndDate,
                     SubscriberId = subscriber.SubscriberId,
-                    CreateDate = DateTime.Now,
-                    CreateGuid = Guid.NewGuid(),
-                    ModifyDate = DateTime.Now,
-                    ModifyGuid = Guid.NewGuid(),
+                    CreateDate = DateTime.UtcNow,
+                    CreateGuid = Guid.Empty,
+                    ModifyDate = DateTime.UtcNow,
+                    ModifyGuid = Guid.Empty,
                     SubscriberEducationHistoryGuid = Guid.NewGuid(),
                     IsDeleted = 0,
                     EducationalInstitutionId = educationalInstitution.EducationalInstitutionId,
                     DegreeDate = educationkHistory.DegreeDate,
-                    EducationalDegreeId = educationalDegree.EducationalDegreeId
+                    EducationalDegreeId = educationalDegree.EducationalDegreeId,
+                    EducationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId
                 };
                 db.SubscriberEducationHistory.Add(eh);
                 db.SaveChanges();
-
             }
             catch
             {
                 rVal = false;
             }
             return rVal;
-
         }
     }
 }

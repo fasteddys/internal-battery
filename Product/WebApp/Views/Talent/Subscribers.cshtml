@@ -1,0 +1,57 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model IEnumerable<SubscriberDto>
+
+<div class="container-fluid bg-color-primary">
+    <div class="container">
+        <div class="row">
+            <div class="col-md">
+                <ul class="nav nav-talent">
+                    <li class="nav-link active">
+                        <a class="text-white" href="/Talent/Subscribers">Subscribers</a>
+                    </li>
+                    <li class="nav-link" href="#">
+                        <a class="text-white" href="#">Analytics</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container talent">
+    <div class="row">
+        <div class="col-sm mt-3 mb-3">
+            <div class="form-inline">
+                <div class="form-group">
+                    <label for="GridSearch" class="sr-only">Search</label>
+                    <input id="GridSearch" class="form-control" placeholder="Search" />
+                </div>
+                <button class="btn btn-primary" onclick="doSearch(false);">Search</button>
+                <button class="btn btn-primary" onclick="doSearch(true);">Reset</button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm">
+            @Html.AjaxGrid(Url.Action("SubscriberGrid"))
+        </div>
+    </div>
+    @section Scripts{
+        <script type="text/javascript">
+            window.onload = function () {
+                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+            }
+
+            function doSearch(isReset) {
+                if (isReset)
+                    document.getElementById('GridSearch').value = '';
+                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                var search = document.getElementById('GridSearch').value;
+                grid.query.set('searchQuery', search);
+                grid.reload();
+            }
+        </script>}
+</div>
