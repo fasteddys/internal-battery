@@ -214,6 +214,36 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public IList<EducationalInstitutionDto> GetEducationalInstitutions(string userQuery)
+        {
+            string cacheKey = $"GetEducationalInstitutions{userQuery}";
+            IList<EducationalInstitutionDto> rval = GetCachedValue<IList<EducationalInstitutionDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetEducationalInstitutions(userQuery);
+                SetCachedValue<IList<EducationalInstitutionDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public IList<EducationalDegreeDto> GetEducationalDegrees(string userQuery)
+        {
+            string cacheKey = $"GetEducationalDegrees{userQuery}";
+            IList<EducationalDegreeDto> rval = GetCachedValue<IList<EducationalDegreeDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetEducationalDegrees(userQuery);
+                SetCachedValue<IList<EducationalDegreeDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
         public IList<CompensationTypeDto> GetCompensationTypes()
         {
             string cacheKey = $"GetCompensationTypes";
@@ -228,6 +258,25 @@ namespace UpDiddy.Api
             }
             return rval;
         }
+
+
+        public IList<EducationalDegreeTypeDto> GetEducationalDegreeTypes()
+        {
+            string cacheKey = $"GetEducationDegreeTypes";
+            IList<EducationalDegreeTypeDto> rval = GetCachedValue<IList<EducationalDegreeTypeDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetEducationalDegreeTypes();
+                SetCachedValue<IList<EducationalDegreeTypeDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+ 
+
 
 
 
@@ -300,6 +349,11 @@ namespace UpDiddy.Api
             return Post<SubscriberWorkHistoryDto>(workHistory, "profile/AddWorkHistory", true);
         }
 
+        public SubscriberEducationHistoryDto AddEducationalHistory(SubscriberEducationHistoryDto educationHistory)
+        {
+            return Post<SubscriberEducationHistoryDto>(educationHistory, "profile/AddEducationalHistory", true);
+        }
+
         public SubscriberWorkHistoryDto UpdateWorkHistory(SubscriberWorkHistoryDto workHistory)
         {
             return Post<SubscriberWorkHistoryDto>(workHistory, "profile/UpdateWorkHistory", true);
@@ -311,10 +365,26 @@ namespace UpDiddy.Api
             return Get<IList<SubscriberWorkHistoryDto>>("profile/GetWorkHistory", true);
         }
 
+        public IList<SubscriberEducationHistoryDto> GetEducationHistory()
+        {
+            return Get<IList<SubscriberEducationHistoryDto>>("profile/GetEducationHistory", true);
+        }
+
 
         public SubscriberWorkHistoryDto DeleteWorkHistory(Guid workHistoryGuid)
         {
             return Put<SubscriberWorkHistoryDto>("profile/DeleteWorkHistory/" + workHistoryGuid.ToString() , true);
+        }
+
+        public SubscriberEducationHistoryDto UpdateEducationHistory(SubscriberEducationHistoryDto educationHistory)
+        {
+            return Post<SubscriberEducationHistoryDto>(educationHistory, "profile/UpdateEducationHistory", true);
+        }
+
+
+        public SubscriberEducationHistoryDto DeleteEducationHistory(Guid educationHistory)
+        {
+            return Put<SubscriberEducationHistoryDto>("profile/DeleteEducationHistory/" + educationHistory.ToString(), true);
         }
 
 
@@ -387,10 +457,29 @@ namespace UpDiddy.Api
             return Get<IList<CompanyDto>>("company/" + userQuery, true);
         }
 
+        private IList<EducationalInstitutionDto> _GetEducationalInstitutions(string userQuery)
+        {
+            return Get<IList<EducationalInstitutionDto>>("educational-institution/" + userQuery, true);
+        }
+
+        private IList<EducationalDegreeDto> _GetEducationalDegrees(string userQuery)
+        {
+            return Get<IList<EducationalDegreeDto>>("educational-degree/" + userQuery, true);
+        }
+
+
         private IList<CompensationTypeDto> _GetCompensationTypes()
         {
             return Get<IList<CompensationTypeDto>>("compensation-types" , true);
         }
+
+
+
+        private IList<EducationalDegreeTypeDto> _GetEducationalDegreeTypes()
+        { 
+            return Get<IList<EducationalDegreeTypeDto>>("educational-degree-types", true);
+        }
+
 
         public IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid)
         {

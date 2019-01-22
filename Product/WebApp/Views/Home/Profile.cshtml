@@ -51,6 +51,13 @@
 <!-- Personal Info Modal -->
 @{ Html.RenderPartial("_PersonalInfoModalPartial", Model); }
 
+
+<!-- Education History Modal    -->
+@{ Html.RenderPartial("_EducationHistoryModalPartial", Model); }  
+
+   
+
+
 <!-- Work History Modal -->
 @{ Html.RenderPartial("_WorkHistoryModalPartial", Model); }
 
@@ -225,6 +232,10 @@
 
                                         <!-- Work History -->
                                         @{ Html.RenderPartial("_WorkHistoryPartial", Model); }
+
+                                        <!-- Education History  -->
+                                        @{ Html.RenderPartial("_EducationHistoryPartial", Model); } 
+                                           
 
                                         <!-- Social Links -->
                                         @{ Html.RenderPartial("_SocialLinksPartial", Model); }

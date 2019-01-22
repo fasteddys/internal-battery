@@ -167,6 +167,7 @@ namespace UpDiddy.Controllers
                 TwitterUrl = this.subscriber?.TwitterUrl,
                 Enrollments = this.subscriber?.Enrollments,
                 WorkCompensationTypes = _Api.GetCompensationTypes(),
+                EducationDegreeTypes = _Api.GetEducationalDegreeTypes(),
                 Countries = _Api.GetCountries().Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
@@ -180,7 +181,8 @@ namespace UpDiddy.Controllers
                 }),
                 // todo: consider refactoring this... include in GetSubscriber (add navigation property)
                 Skills = _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value),
-                WorkHistory = _Api.GetWorkHistory()
+                WorkHistory = _Api.GetWorkHistory(),
+                EducationHistory = _Api.GetEducationHistory()
 
 
             };
@@ -460,6 +462,27 @@ namespace UpDiddy.Controllers
             return new JsonResult(matchedCompanies);
         }
 
+
+        [Authorize]
+        [HttpGet]
+        [Route("/Home/GetEducationalInstitutions")]
+        public JsonResult GetEducationalInstitutions(string userQuery)
+        {
+            var matchedInstitutions = _Api.GetEducationalInstitutions(userQuery);
+            return new JsonResult(matchedInstitutions);
+        }
+
+
+        [Authorize]
+        [HttpGet]
+        [Route("/Home/GetEducationalDegrees")]
+        public JsonResult GetEducationalDegrees(string userQuery)
+        {
+            var matchedDegrees = _Api.GetEducationalDegrees(userQuery);
+            return new JsonResult(matchedDegrees);
+        }
+
+
         [Authorize]
         [HttpGet]
         [Route("/Home/GetCompensationTypes")]
@@ -502,6 +525,44 @@ namespace UpDiddy.Controllers
             return Ok(_Api.DeleteWorkHistory(WorkHistoryGuid));
                 
         }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/AddEducationalHistory")]
+        public IActionResult AddEducationalHistory([FromBody] SubscriberEducationHistoryDto eh)
+        {
+            
+            if (eh != null)
+               return Ok( _Api.AddEducationalHistory(eh));
+            else
+                return BadRequest("Oops, We're sorry somthing when wrong!");            
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/UpdateEducationHistory")]
+        public IActionResult UpdateEducationHistory([FromBody] SubscriberEducationHistoryDto eh)
+        {
+            if (eh != null)
+                return Ok(_Api.UpdateEducationHistory(eh));
+            else
+                return BadRequest("Oops, We're sorry somthing when wrong!");
+
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/DeleteEducationHistory/{EducationHistoryGuid}")]
+        public IActionResult DeleteEducationHistory(Guid EducationHistoryGuid)
+        {
+
+            return Ok(_Api.DeleteEducationHistory(EducationHistoryGuid));
+
+        }
+
+
+
+
 
     }
 }

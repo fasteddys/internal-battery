@@ -168,20 +168,15 @@ namespace UpDiddyApi.Controllers
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            if (subscriber == null)
+                return BadRequest();
             Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company);
             int companyId = company != null ? company.CompanyId : -1;
             CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
             int compensationTypeId = 0;
-            if (compensationType != null)
-                compensationTypeId = compensationType.CompensationTypeId;
-            else
-            {
+            if (compensationType == null)      
                 compensationType = CompensationTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
-                compensationTypeId = compensationType.CompensationTypeId;
-            }
-
-            if (subscriber == null)
-                return BadRequest();
+            compensationTypeId = compensationType.CompensationTypeId;
 
             SubscriberWorkHistory WorkHistory = new SubscriberWorkHistory()
             {
@@ -206,6 +201,54 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
             return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
         }
+
+
+
+        [Authorize]
+        [HttpPost]
+        [Route("api/[controller]/AddEducationalHistory")]
+        // TODO looking into consolidating Add and Update to reduce code redundancy
+        public IActionResult AddEducationalHistory([FromBody] SubscriberEducationHistoryDto EducationHistoryDto)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            if (subscriber == null)
+                return BadRequest();
+            // Find or create the institution 
+            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution);
+            int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
+            // Find or create the degree major 
+            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree);
+            int educationalDegreeId = educationalDegree.EducationalDegreeId;
+            // Find or create the degree type 
+            EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, EducationHistoryDto.EducationalDegreeType);
+            int educationalDegreeTypeId = 0;                    
+            if (educationalDegreeType == null)      
+                    educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);                
+            educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
+
+            SubscriberEducationHistory EducationHistory = new SubscriberEducationHistory()
+            {
+                SubscriberEducationHistoryGuid = Guid.NewGuid(),
+                CreateGuid = Guid.NewGuid(),
+                ModifyGuid = Guid.NewGuid(),
+                CreateDate = DateTime.Now,
+                ModifyDate = DateTime.Now,
+                IsDeleted = 0,
+                SubscriberId = subscriber.SubscriberId,
+                StartDate = EducationHistoryDto.StartDate,
+                EndDate = EducationHistoryDto.EndDate,
+                DegreeDate = EducationHistoryDto.DegreeDate,
+                EducationalDegreeId = educationalDegreeId,
+                EducationalDegreeTypeId = educationalDegreeTypeId,
+                EducationalInstitutionId = educationalInstitutionId
+            };
+
+            _db.SubscriberEducationHistory.Add(EducationHistory);
+            _db.SaveChanges();
+            return Ok(_mapper.Map<SubscriberEducationHistoryDto>(EducationHistory));
+        }
+
 
         [Authorize]
         [HttpPost]
@@ -234,6 +277,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest();
 
             // Update the company ID
+            WorkHistory.ModifyDate = DateTime.Now;
             WorkHistory.CompanyId = companyId;
             WorkHistory.StartDate = WorkHistoryDto.StartDate;
             WorkHistory.EndDate = WorkHistoryDto.EndDate;
@@ -245,6 +289,44 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
             return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
         }
+
+        [Authorize]
+        [HttpPost]
+        [Route("api/[controller]/UpdateEducationHistory")]
+        public IActionResult UpdateEducationHistory([FromBody] SubscriberEducationHistoryDto EducationHistoryDto)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            if (subscriber == null)
+                return BadRequest();
+
+            SubscriberEducationHistory EducationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_db, EducationHistoryDto.SubscriberEducationHistoryGuid);
+            if (EducationHistory == null || EducationHistory.SubscriberId != subscriber.SubscriberId)
+                return BadRequest();    
+            // Find or create the institution 
+            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution);
+            int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
+            // Find or create the degree major 
+            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree);
+            int educationalDegreeId = educationalDegree.EducationalDegreeId;
+            // Find or create the degree type 
+            EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, EducationHistoryDto.EducationalDegreeType);
+            int educationalDegreeTypeId = 0;
+            if (educationalDegreeType == null)
+                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
+            educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
+
+            EducationHistory.ModifyDate = DateTime.Now;
+            EducationHistory.StartDate = EducationHistoryDto.StartDate;
+            EducationHistory.EndDate = EducationHistoryDto.EndDate;
+            EducationHistory.DegreeDate = EducationHistoryDto.DegreeDate;
+            EducationHistory.EducationalDegreeId = educationalDegreeId;
+            EducationHistory.EducationalDegreeTypeId = educationalDegreeTypeId;
+            EducationHistory.EducationalInstitutionId = educationalInstitutionId;
+            _db.SaveChanges();
+            return Ok(_mapper.Map<SubscriberEducationHistoryDto>(EducationHistory));
+        }
+
 
 
         [Authorize]
@@ -263,6 +345,25 @@ namespace UpDiddyApi.Controllers
 
             return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
         }
+
+        [Authorize]
+        [HttpPut]
+        [Route("api/[controller]/DeleteEducationHistory/{EducationHistoryGuid}")]
+        public IActionResult DeleteEducationHistory(Guid EducationHistoryGuid)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            SubscriberEducationHistory EducationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_db, EducationHistoryGuid);
+            if (EducationHistory == null || EducationHistory.SubscriberId != subscriber.SubscriberId)
+                return BadRequest();
+            // Soft delete of the workhistory item
+            EducationHistory.IsDeleted = 1;
+            _db.SaveChanges();
+
+            return Ok(_mapper.Map<SubscriberEducationHistory>(EducationHistory));
+        }
+
+
 
 
 
@@ -357,6 +458,47 @@ namespace UpDiddyApi.Controllers
 
 
         [HttpGet]
+        [Route("api/educational-institution/{userQuery}")]
+        public IActionResult GetEducationalInstitutions(string userQuery)
+        {
+            var educationalInstitutions = _db.EducationalInstitution
+                .Where(c => c.IsDeleted == 0 && c.Name.Contains(userQuery))
+                .OrderBy(c => c.Name)
+                .ProjectTo<EducationalInstitutionDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(educationalInstitutions);
+        }
+        [HttpGet]
+
+        [Route("api/educational-degree/{userQuery}")]
+        public IActionResult GetEducationalDegrees(string userQuery)
+        {
+            var educationalDegrees = _db.EducationalDegree
+                .Where(c => c.IsDeleted == 0 && c.Degree.Contains(userQuery))
+                .OrderBy(c => c.Degree)
+                .ProjectTo<EducationalDegreeDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(educationalDegrees);
+        }
+                  
+        [Route("api/educational-degree-types")]
+        public IActionResult GetEducationalDegreesTypes()
+        {
+            var educationalDegreesType = _db.EducationalDegreeType
+                .Where(c => c.IsDeleted == 0)
+                .OrderBy(c => c.DegreeType)
+                .ProjectTo<EducationalDegreeTypeDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(educationalDegreesType);
+        }
+
+
+
+
+        [HttpGet]
         [Route("api/compensation-types")]
         public IActionResult GetCompensationTypes()
         {
@@ -405,6 +547,25 @@ namespace UpDiddyApi.Controllers
             .ToList();
 
             return Ok(workHistory);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("api/[controller]/GetEducationHistory")]
+        public IActionResult GetEducationHistory()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            if (subscriber == null)
+                return BadRequest();
+
+            var educationHistory = _db.SubscriberEducationHistory
+            .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId)
+            .OrderByDescending(s => s.StartDate)
+            .ProjectTo<SubscriberEducationHistoryDto>(_mapper.ConfigurationProvider)
+            .ToList();
+
+            return Ok(educationHistory);
         }
 
 

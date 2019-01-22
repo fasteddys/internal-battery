@@ -14,7 +14,9 @@ namespace UpDiddy.ViewModels
     {
         //
         public IList<SubscriberWorkHistoryDto> WorkHistory { get; set; }
+        public IList<SubscriberEducationHistoryDto> EducationHistory { get; set; }
         public IList<CompensationTypeDto> WorkCompensationTypes{ get; set; }
+        public IList<EducationalDegreeTypeDto> EducationDegreeTypes { get; set; }
         public IList<SkillDto> Skills { get; set; }
         public string SelectedSkills { get; set; }
         public IList<EnrollmentDto> Enrollments { get; set; }
@@ -171,6 +173,19 @@ namespace UpDiddy.ViewModels
             }
             
         }
+
+        public bool HasSuppliedEducationHistory
+        {
+            get
+            {
+                if (EducationHistory == null || EducationHistory.Count <= 0)
+                    return false;
+                else
+                    return true;
+            }
+
+        }
+
 
         public Boolean HasSuppliedAnySocialLinks
         {
