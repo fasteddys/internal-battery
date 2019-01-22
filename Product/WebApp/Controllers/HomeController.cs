@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Security.Claims;
 using UpDiddy.Helpers;
- 
+using System.Security.Claims;
 
 namespace UpDiddy.Controllers
 {
@@ -172,6 +172,8 @@ namespace UpDiddy.Controllers
                 StackOverflowUrl = this.subscriber?.StackOverflowUrl,
                 TwitterUrl = this.subscriber?.TwitterUrl,
                 Enrollments = this.subscriber?.Enrollments,
+                WorkCompensationTypes = _Api.GetCompensationTypes(),
+                EducationDegreeTypes = _Api.GetEducationalDegreeTypes(),
                 Countries = _Api.GetCountries().Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
@@ -185,9 +187,11 @@ namespace UpDiddy.Controllers
                 }),
                 // todo: consider refactoring this... include in GetSubscriber (add navigation property)
                 Skills = _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value),
-                Files = this.subscriber?.Files
+                Files = this.subscriber?.Files,
+                WorkHistory = _Api.GetWorkHistory(this.subscriber.SubscriberGuid.Value),
+                EducationHistory = _Api.GetEducationHistory(this.subscriber.SubscriberGuid.Value)
             };
-
+         
             // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
             // i considered overloading the existing GetSubscriber method to do this, but then that makes CourseController 
             // a dependency of BaseController. that's more refactoring than i think we want to concern ourselves with now.
@@ -460,12 +464,129 @@ namespace UpDiddy.Controllers
             return LocalRedirect(returnUrl);
         }
 
+        // TODO find a better home for these lookup endpoints - maybe a new lookup or data endpoint?
         [Authorize]
         [HttpGet]
+        [Route("/Home/GetSkills")]
         public JsonResult GetSkills(string userQuery)
         {
             var matchedSkills = _Api.GetSkills(userQuery);
             return new JsonResult(matchedSkills);
         }
+
+        [Authorize]
+        [HttpGet]
+        [Route("/Home/GetCompanies")]
+        public JsonResult GetCompanies(string userQuery)
+        {
+            var matchedCompanies = _Api.GetCompanies(userQuery);
+            return new JsonResult(matchedCompanies);
+        }
+
+
+        [Authorize]
+        [HttpGet]
+        [Route("/Home/GetEducationalInstitutions")]
+        public JsonResult GetEducationalInstitutions(string userQuery)
+        {
+            var matchedInstitutions = _Api.GetEducationalInstitutions(userQuery);
+            return new JsonResult(matchedInstitutions);
+        }
+
+
+        [Authorize]
+        [HttpGet]
+        [Route("/Home/GetEducationalDegrees")]
+        public JsonResult GetEducationalDegrees(string userQuery)
+        {
+            var matchedDegrees = _Api.GetEducationalDegrees(userQuery);
+            return new JsonResult(matchedDegrees);
+        }
+
+
+        [Authorize]
+        [HttpGet]
+        [Route("/Home/GetCompensationTypes")]
+        public JsonResult GetCompensationTypes(string userQuery)
+        {
+            var compensationTypes = _Api.GetCompanies(userQuery);
+            return new JsonResult(compensationTypes);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/AddWorkHistory")]
+        public IActionResult AddWorkHistory([FromBody] SubscriberWorkHistoryDto wh )
+        {
+            Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (wh != null)                            
+                return Ok(_Api.AddWorkHistory(subscriberGuid, wh));            
+            else
+                return BadRequest("Oops, We're sorry somthing when wrong!");
+            
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/UpdateWorkHistory")]
+        public IActionResult UpdateWorkHistory([FromBody] SubscriberWorkHistoryDto wh)
+        {
+            Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (wh != null)              
+                return Ok(_Api.UpdateWorkHistory(subscriberGuid, wh));           
+            else
+                return BadRequest("Oops, We're sorry somthing when wrong!");
+
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/DeleteWorkHistory/{WorkHistoryGuid}")]
+        public IActionResult DeleteWorkHistory(Guid WorkHistoryGuid)
+        {
+            Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            return Ok(_Api.DeleteWorkHistory(subscriberGuid, WorkHistoryGuid));
+                
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/AddEducationalHistory")]
+        public IActionResult AddEducationalHistory([FromBody] SubscriberEducationHistoryDto eh)
+        {
+            Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (eh != null)
+               return Ok( _Api.AddEducationalHistory(subscriberGuid, eh));
+            else
+                return BadRequest("Oops, We're sorry somthing when wrong!");            
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/UpdateEducationHistory")]
+        public IActionResult UpdateEducationHistory([FromBody] SubscriberEducationHistoryDto eh)
+        {
+            Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (eh != null)
+                return Ok(_Api.UpdateEducationHistory(subscriberGuid, eh));
+            else
+                return BadRequest("Oops, We're sorry somthing when wrong!");
+
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/DeleteEducationHistory/{EducationHistoryGuid}")]
+        public IActionResult DeleteEducationHistory(Guid EducationHistoryGuid)
+        {
+            Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            return Ok(_Api.DeleteEducationHistory(subscriberGuid, EducationHistoryGuid));
+
+        }
+
+
+
+
+
     }
 }

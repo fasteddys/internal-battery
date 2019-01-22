@@ -101,21 +101,29 @@
                                 <div class="row">
                                     <div class="col-12 px-0 period">
                                         @{
-                                            DateTime effectiveEndDate;
-                                            string periodDisplay = workHistory.StartDate.ToString("MMMM yyyy") + " - ";
-                                            if (workHistory.EndDate == DateTime.MinValue)
+                                            string periodDisplay = string.Empty;
+                                            if (!workHistory.StartDate.HasValue)
                                             {
-                                                effectiveEndDate = DateTime.UtcNow;
-                                                periodDisplay += "Present";
+                                                periodDisplay = "No date range specified";
                                             }
                                             else
                                             {
-                                                effectiveEndDate = workHistory.EndDate;
-                                                periodDisplay += workHistory.EndDate.ToString("MMMM yyyy");
-                                            }
-                                            var period = new DateTime(effectiveEndDate.Subtract(workHistory.StartDate).Ticks);
+                                                DateTime effectiveEndDate;
+                                                periodDisplay = workHistory.StartDate.Value.ToString("MMMM yyyy") + " - ";
+                                                if (!workHistory.EndDate.HasValue || workHistory.EndDate.Value == DateTime.MinValue)
+                                                {
+                                                    effectiveEndDate = DateTime.UtcNow;
+                                                    periodDisplay += "Present";
+                                                }
+                                                else
+                                                {
+                                                    effectiveEndDate = workHistory.EndDate.Value;
+                                                    periodDisplay += workHistory.EndDate.Value.ToString("MMMM yyyy");
+                                                }
+                                                var period = new DateTime(effectiveEndDate.Subtract(workHistory.StartDate.Value).Ticks);
 
-                                            periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
+                                                periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
+                                            }
                                         }
                                         @Html.Raw(periodDisplay)
                                     </div>
@@ -158,21 +166,29 @@
                                 <div class="row">
                                     <div class="col-12 px-0 period">
                                         @{
-                                            DateTime effectiveEndDate;
-                                            string periodDisplay = educationHistory.StartDate.ToString("MMMM yyyy") + " - ";
-                                            if (educationHistory.EndDate == DateTime.MinValue)
+                                            string periodDisplay = string.Empty;
+                                            if (!educationHistory.StartDate.HasValue)
                                             {
-                                                effectiveEndDate = DateTime.UtcNow;
-                                                periodDisplay += "Present";
+                                                periodDisplay = "No date range specified";
                                             }
                                             else
                                             {
-                                                effectiveEndDate = educationHistory.EndDate;
-                                                periodDisplay += educationHistory.EndDate.ToString("MMMM yyyy");
-                                            }
-                                            var period = new DateTime(effectiveEndDate.Subtract(educationHistory.StartDate).Ticks);
+                                                DateTime effectiveEndDate;
+                                                periodDisplay = educationHistory.StartDate.Value.ToString("MMMM yyyy") + " - ";
+                                                if (!educationHistory.EndDate.HasValue || educationHistory.EndDate.Value == DateTime.MinValue)
+                                                {
+                                                    effectiveEndDate = DateTime.UtcNow;
+                                                    periodDisplay += "Present";
+                                                }
+                                                else
+                                                {
+                                                    effectiveEndDate = educationHistory.EndDate.Value;
+                                                    periodDisplay += educationHistory.EndDate.Value.ToString("MMMM yyyy");
+                                                }
+                                                var period = new DateTime(effectiveEndDate.Subtract(educationHistory.StartDate.Value).Ticks);
 
-                                            periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
+                                                periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
+                                            }
                                         }
                                         @Html.Raw(periodDisplay)
                                     </div>

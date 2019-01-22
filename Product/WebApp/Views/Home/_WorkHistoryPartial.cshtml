@@ -1,0 +1,51 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model ProfileViewModel
+
+<div class="col-12 no-padding">
+    <div class="edit-container">
+        <div class="row">
+            <div class="col-6 no-padding">
+                <h5>Work History Info</h5>
+            </div>
+            <div class="col-6 no-padding container-align-right">
+                <span class="edit-action" data-toggle="modal" data-target="#WorkHistoryModal" onclick="InitWorkHistoryAddMode()">Add</span>
+            </div>
+        </div>
+        <div class="options-container">
+
+            <div id="ProfileWorkHistoryNotSpecified" style="@(Model.HasSuppliedWorkHistory ? "display:none" : "display:block")">
+
+                <text>No work history has been provided.</text>
+
+            </div>
+            <div id="ProfileWorkHistory">
+                @foreach (SubscriberWorkHistoryDto wh in Model.WorkHistory)
+                {
+                    <div class="row profile-work-history" id="ProfileWorkHistory_@wh.SubscriberWorkHistoryGuid">
+                        <div id="ProfileWorkHistory_Title_@wh.SubscriberWorkHistoryGuid" class="col-11 work-history-title" data-title="@wh.Title">
+                            @wh.Title
+                            <i class="fa fa-pencil-alt" aria-hidden="true" onclick="EditWorkHistory('@wh.SubscriberWorkHistoryGuid')"></i>
+                            <i class="fa fa-trash" aria-hidden="true" onclick="DeleteWorkHistory('@wh.SubscriberWorkHistoryGuid')"></i>
+                        </div>
+                        <div id="ProfileWorkHistory_Company_@wh.SubscriberWorkHistoryGuid" class="col-11 work-history-company" data-company="@wh.Company">
+                            @wh.Company
+                        </div>
+                        <div id="ProfileWorkHistory_Tenure_@wh.SubscriberWorkHistoryGuid" class="col-11 work-history-tenure" data-startdate="@wh.StartDate" data-enddate="@wh.EndDate" data-iscurrent="@wh.IsCurrent">
+                            @* value being set in profile.js *@
+                        </div>
+                        <div id="ProfileWorkHistory_Compensation_@wh.SubscriberWorkHistoryGuid" class="col-11 work-history-compensation" data-compensation="@wh.Compensation" data-compensationtype="@wh.CompensationType">
+                            @* value being set in profile.js *@
+                        </div>
+                        <div id="ProfileWorkHistory_Description_@wh.SubscriberWorkHistoryGuid" class="col-11 work-history-description more" data-description="@wh.JobDecription">
+                            @wh.JobDecription
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

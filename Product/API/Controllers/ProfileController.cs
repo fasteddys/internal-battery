@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using System.Data.SqlClient;
 using System.Data;
 using System.Security.Claims;
+using UpDiddyApi.ApplicationCore.Factory;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers
 {
@@ -217,6 +219,9 @@ namespace UpDiddyApi.Controllers
             return Ok(states.OrderBy(s => s.Sequence).ProjectTo<StateDto>(_mapper.ConfigurationProvider));
         }
 
+
+
+        // TODO find a better home for these lookup endpoints - maybe a new lookup or data endpoint?
         [HttpGet]
         [Route("api/skill/{userQuery}")]
         public IActionResult GetSkills(string userQuery)
@@ -230,11 +235,69 @@ namespace UpDiddyApi.Controllers
             return Ok(skills);
         }
 
-        #region Business Logic
+        [HttpGet]
+        [Route("api/company/{userQuery}")]
+        public IActionResult GetCompanies(string userQuery)
+        {
+            var companies = _db.Company
+                .Where(c => c.IsDeleted == 0 && c.CompanyName.Contains(userQuery))
+                .OrderBy(c => c.CompanyName)
+                .ProjectTo<CompanyDto>(_mapper.ConfigurationProvider)
+                .ToList();
 
-        
-        
-        
-        #endregion
+            return Ok(companies);
+        }
+
+
+        [HttpGet]
+        [Route("api/educational-institution/{userQuery}")]
+        public IActionResult GetEducationalInstitutions(string userQuery)
+        {
+            var educationalInstitutions = _db.EducationalInstitution
+                .Where(c => c.IsDeleted == 0 && c.Name.Contains(userQuery))
+                .OrderBy(c => c.Name)
+                .ProjectTo<EducationalInstitutionDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(educationalInstitutions);
+        }
+        [HttpGet]
+
+        [Route("api/educational-degree/{userQuery}")]
+        public IActionResult GetEducationalDegrees(string userQuery)
+        {
+            var educationalDegrees = _db.EducationalDegree
+                .Where(c => c.IsDeleted == 0 && c.Degree.Contains(userQuery))
+                .OrderBy(c => c.Degree)
+                .ProjectTo<EducationalDegreeDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(educationalDegrees);
+        }
+                  
+        [Route("api/educational-degree-types")]
+        public IActionResult GetEducationalDegreesTypes()
+        {
+            var educationalDegreesType = _db.EducationalDegreeType
+                .Where(c => c.IsDeleted == 0)
+                .OrderBy(c => c.DegreeType)
+                .ProjectTo<EducationalDegreeTypeDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(educationalDegreesType);
+        }
+
+        [HttpGet]
+        [Route("api/compensation-types")]
+        public IActionResult GetCompensationTypes()
+        {
+            var compensationTypes = _db.CompensationType
+                .Where(c => c.IsDeleted == 0  )
+                .OrderBy(c => c.CompensationTypeName)
+                .ProjectTo<CompensationTypeDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            return Ok(compensationTypes);
+        }
     }
 }

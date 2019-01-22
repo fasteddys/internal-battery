@@ -3,11 +3,13 @@
     "outputFileName": "wwwroot/css/site.dev.css",
     "inputFiles": [
       "bower_components/bootstrap/dist/css/bootstrap.css",
+      "node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.css",
       "wwwroot/lib/mvc-grid/mvc-grid.css",
       "wwwroot/css/bundle.css",
       "node_modules/toastr/build/toastr.css",
       "bower_components/selectize/dist/css/selectize.css",
-      "bower_components/selectize/dist/css/selectize.default.css"
+      "bower_components/selectize/dist/css/selectize.default.css",
+      "node_modules/jquery-ui-dist/jquery-ui.css"
     ],
     "minify": {
       "enabled": false,
@@ -19,8 +21,10 @@
     "inputFiles": [
       "bower_components/jquery/dist/jquery.js",
       "node_modules/axios/dist/axios.js",
+      "node_modules/jquery-ui-dist/jquery-ui.js",
       "bower_components/popper.js/dist/umd/popper.js",
       "bower_components/bootstrap/dist/js/bootstrap.js",
+      "node_modules/bootstrap-datepicker/dist/js/bootstrap-datepicker.js",
       "wwwroot/lib/mvc-grid/mvc-grid.js",
       "node_modules/toastr/build/toastr.min.js",
       "node_modules/braintree-web-drop-in/dist/browser/dropin.js",
@@ -29,7 +33,9 @@
       "bower_components/bluebird/js/browser/bluebird.js",
       "wwwroot/js/site.js",
       "wwwroot/js/session-storage.js",
-      "wwwroot/js/career-circle-api.js"
+      "wwwroot/js/career-circle-api.js",
+      "node_modules/moment/moment.js",
+      "node_modules/bootbox/bootbox.js"
     ],
     "minify": {
       "enabled": false,
@@ -41,11 +47,13 @@
     "outputFileName": "wwwroot/css/site.min.css",
     "inputFiles": [
       "bower_components/bootstrap/dist/css/bootstrap.css",
+      "node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.css",
       "wwwroot/lib/mvc-grid/mvc-grid.css",
       "wwwroot/css/bundle.css",
       "node_modules/toastr/build/toastr.css",
       "bower_components/selectize/dist/css/selectize.css",
-      "bower_components/selectize/dist/css/selectize.default.css"
+      "bower_components/selectize/dist/css/selectize.default.css",
+      "node_modules/jquery-ui-dist/jquery-ui.css"
     ],
     "minify": {
       "enabled": true,
@@ -59,12 +67,15 @@
       "node_modules/axios/dist/axios.js",
       "bower_components/popper.js/dist/umd/popper.js",
       "bower_components/bootstrap/dist/js/bootstrap.js",
+      "node_modules/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js",
       "wwwroot/lib/mvc-grid/mvc-grid.js",
       "node_modules/toastr/build/toastr.min.js",
       "node_modules/@aspnet/signalr/dist/browser/signalr.js",
       "bower_components/selectize/dist/js/standalone/selectize.js",
       "bower_components/bluebird/js/browser/bluebird.js",
       "node_modules/braintree-web-drop-in/dist/browser/dropin.js",
+      "node_modules/moment/moment.js",
+      "node_modules/bootbox/bootbox.min.js",
       "wwwroot/js/site.js",
       "wwwroot/js/session-storage.js",
       "wwwroot/js/career-circle-api.js"
@@ -72,7 +83,6 @@
     "minify": {
       "enabled": true,
       "renameLocals": true
-    },
-    "sourceMap": true
+    }
   }
 ]

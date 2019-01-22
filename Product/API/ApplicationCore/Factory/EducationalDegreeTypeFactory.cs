@@ -21,7 +21,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        static public EducationalDegreeType GetOrAdd(UpDiddyDbContext db, string degreeType)
+        public static EducationalDegreeType GetOrAdd(UpDiddyDbContext db, string degreeType)
         {
             degreeType = degreeType.Trim();
 
@@ -36,6 +36,13 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 db.SaveChanges();
             }
             return educationalDegreeType;
+        }
+
+        public static EducationalDegreeType GetEducationalDegreeTypeByDegreeType(UpDiddyDbContext db, string degreeType)
+        {
+            return db.EducationalDegreeType
+                .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
+                .FirstOrDefault();
         }
     }
 }

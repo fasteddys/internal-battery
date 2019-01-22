@@ -1321,7 +1321,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<DateTime>("DegreeDate");
+                    b.Property<DateTime?>("DegreeDate");
 
                     b.Property<int?>("EducationalDegreeId");
 
@@ -1329,7 +1329,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("EducationalInstitutionId");
 
-                    b.Property<DateTime>("EndDate");
+                    b.Property<DateTime?>("EndDate");
 
                     b.Property<int>("IsDeleted");
 
@@ -1337,7 +1337,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<DateTime>("StartDate");
+                    b.Property<DateTime?>("StartDate");
 
                     b.Property<Guid>("SubscriberEducationHistoryGuid");
 
@@ -1484,7 +1484,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<DateTime>("EndDate");
+                    b.Property<DateTime?>("EndDate");
 
                     b.Property<int>("IsCurrent");
 
@@ -1496,7 +1496,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<DateTime>("StartDate");
+                    b.Property<DateTime?>("StartDate");
 
                     b.Property<int>("SubscriberId");
 

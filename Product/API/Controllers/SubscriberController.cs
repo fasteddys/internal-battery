@@ -57,8 +57,8 @@ namespace UpDiddyApi.Controllers
             _cloudStorage = cloudStorage;
             _authorizationService = authorizationService;
         }
-        
 
+        #region Basic Subscriber Endpoints
         [HttpGet("{subscriberGuid}")]
         public async Task<IActionResult> Get(Guid subscriberGuid)
         {
@@ -161,6 +161,281 @@ namespace UpDiddyApi.Controllers
 
             return Ok();
         }
+        #endregion
+
+        #region Subscriber Work History
+        [Authorize]
+        [HttpGet]
+        [Route("/api/[controller]/{subscriberGuid}/work-history")]
+        public async Task<IActionResult> GetWorkHistoryAsync(Guid subscriberGuid)
+        {
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
+
+            if (subscriberGuid != loggedInUserGuid && !isAuth.Succeeded)
+                return Unauthorized();
+
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            if (subscriber == null)
+                return BadRequest();
+
+            var workHistory = _db.SubscriberWorkHistory
+            .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId)
+            .OrderByDescending(s => s.StartDate)
+            .ProjectTo<SubscriberWorkHistoryDto>(_mapper.ConfigurationProvider)
+            .ToList();
+
+            return Ok(workHistory);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/api/[controller]/{subscriberGuid}/work-history")]
+        // TODO looking into consolidating Add and Update to reduce code redundancy
+        public IActionResult AddWorkHistory(Guid subscriberGuid, [FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
+        {
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            if (subscriberGuid != loggedInUserGuid)
+                return Unauthorized();
+
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            if (subscriber == null)
+                return BadRequest();
+            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company);
+            int companyId = company != null ? company.CompanyId : -1;
+            CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
+            int compensationTypeId = 0;
+            if (compensationType == null)
+                compensationType = CompensationTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
+            compensationTypeId = compensationType.CompensationTypeId;
+
+            SubscriberWorkHistory WorkHistory = new SubscriberWorkHistory()
+            {
+                SubscriberWorkHistoryGuid = Guid.NewGuid(),
+                CreateGuid = Guid.NewGuid(),
+                ModifyGuid = Guid.NewGuid(),
+                CreateDate = DateTime.Now,
+                ModifyDate = DateTime.Now,
+                IsDeleted = 0,
+                SubscriberId = subscriber.SubscriberId,
+                StartDate = WorkHistoryDto.StartDate,
+                EndDate = WorkHistoryDto.EndDate,
+                IsCurrent = WorkHistoryDto.IsCurrent,
+                Title = WorkHistoryDto.Title,
+                JobDecription = WorkHistoryDto.JobDecription,
+                Compensation = WorkHistoryDto.Compensation,
+                CompensationTypeId = compensationTypeId,
+                CompanyId = companyId
+            };
+
+            _db.SubscriberWorkHistory.Add(WorkHistory);
+            _db.SaveChanges();
+            return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
+        }
+
+        [Authorize]
+        [HttpPut]
+        [Route("/api/[controller]/{subscriberGuid}/work-history")]
+        public IActionResult UpdateWorkHistory(Guid subscriberGuid, [FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
+        {
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            if (subscriberGuid != loggedInUserGuid)
+                return Unauthorized();
+
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company);
+            int companyId = company != null ? company.CompanyId : -1;
+            CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
+            int compensationTypeId = 0;
+            if (compensationType != null)
+                compensationTypeId = compensationType.CompensationTypeId;
+            else
+            {
+                compensationType = CompensationTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
+                compensationTypeId = compensationType.CompensationTypeId;
+            }
+
+            if (subscriber == null)
+                return BadRequest();
+
+            SubscriberWorkHistory WorkHistory = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_db, WorkHistoryDto.SubscriberWorkHistoryGuid);
+            if (WorkHistory == null || WorkHistory.SubscriberId != subscriber.SubscriberId)
+                return BadRequest();
+
+            // Update the company ID
+            WorkHistory.ModifyDate = DateTime.Now;
+            WorkHistory.CompanyId = companyId;
+            WorkHistory.StartDate = WorkHistoryDto.StartDate;
+            WorkHistory.EndDate = WorkHistoryDto.EndDate;
+            WorkHistory.JobDecription = WorkHistoryDto.JobDecription;
+            WorkHistory.Title = WorkHistoryDto.Title;
+            WorkHistory.IsCurrent = WorkHistoryDto.IsCurrent;
+            WorkHistory.Compensation = WorkHistoryDto.Compensation;
+            WorkHistory.CompensationTypeId = compensationTypeId;
+            _db.SaveChanges();
+            return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
+        }
+
+        [Authorize]
+        [HttpDelete]
+        [Route("/api/[controller]/{subscriberGuid}/work-history/{WorkHistoryGuid}")]
+        public IActionResult DeleteWorkHistory(Guid subscriberGuid, Guid WorkHistoryGuid)
+        {
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            if (subscriberGuid != loggedInUserGuid)
+                return Unauthorized();
+
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            SubscriberWorkHistory WorkHistory = SubscriberWorkHistoryFactory.GetWorkHistoryByGuid(_db, WorkHistoryGuid);
+            if (WorkHistory == null || WorkHistory.SubscriberId != subscriber.SubscriberId)
+                return BadRequest();
+            // Soft delete of the workhistory item
+            WorkHistory.IsDeleted = 1;
+            _db.SaveChanges();
+
+            return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
+        }
+        #endregion
+
+        #region Subscriber Education History
+        [Authorize]
+        [HttpGet]
+        [Route("/api/[controller]/{subscriberGuid}/education-history")]
+        public async Task<IActionResult> GetEducationHistoryAsync(Guid subscriberGuid)
+        {
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
+
+            if (subscriberGuid != loggedInUserGuid && !isAuth.Succeeded)
+                return Unauthorized();
+
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            if (subscriber == null)
+                return BadRequest();
+
+            var educationHistory = _db.SubscriberEducationHistory
+            .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId)
+            .OrderByDescending(s => s.StartDate)
+            .ProjectTo<SubscriberEducationHistoryDto>(_mapper.ConfigurationProvider)
+            .ToList();
+
+            return Ok(educationHistory);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/api/[controller]/{subscriberGuid}/education-history")]
+        // TODO looking into consolidating Add and Update to reduce code redundancy
+        public IActionResult AddEducationalHistory(Guid subscriberGuid, [FromBody] SubscriberEducationHistoryDto EducationHistoryDto)
+        {
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            if (subscriberGuid != loggedInUserGuid)
+                return Unauthorized();
+
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            if (subscriber == null)
+                return BadRequest();
+            // Find or create the institution 
+            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution);
+            int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
+            // Find or create the degree major 
+            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree);
+            int educationalDegreeId = educationalDegree.EducationalDegreeId;
+            // Find or create the degree type 
+            EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, EducationHistoryDto.EducationalDegreeType);
+            int educationalDegreeTypeId = 0;
+            if (educationalDegreeType == null)
+                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
+            educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
+
+            SubscriberEducationHistory EducationHistory = new SubscriberEducationHistory()
+            {
+                SubscriberEducationHistoryGuid = Guid.NewGuid(),
+                CreateGuid = Guid.NewGuid(),
+                ModifyGuid = Guid.NewGuid(),
+                CreateDate = DateTime.Now,
+                ModifyDate = DateTime.Now,
+                IsDeleted = 0,
+                SubscriberId = subscriber.SubscriberId,
+                StartDate = EducationHistoryDto.StartDate,
+                EndDate = EducationHistoryDto.EndDate,
+                DegreeDate = EducationHistoryDto.DegreeDate,
+                EducationalDegreeId = educationalDegreeId,
+                EducationalDegreeTypeId = educationalDegreeTypeId,
+                EducationalInstitutionId = educationalInstitutionId
+            };
+
+            _db.SubscriberEducationHistory.Add(EducationHistory);
+            _db.SaveChanges();
+            return Ok(_mapper.Map<SubscriberEducationHistoryDto>(EducationHistory));
+        }
+
+        [Authorize]
+        [HttpPut]
+        [Route("/api/[controller]/{subscriberGuid}/education-history")]
+        public IActionResult UpdateEducationHistory(Guid subscriberGuid, [FromBody] SubscriberEducationHistoryDto EducationHistoryDto)
+        {
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            if (subscriberGuid != loggedInUserGuid)
+                return Unauthorized();
+
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            if (subscriber == null)
+                return BadRequest();
+
+            SubscriberEducationHistory EducationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_db, EducationHistoryDto.SubscriberEducationHistoryGuid);
+            if (EducationHistory == null || EducationHistory.SubscriberId != subscriber.SubscriberId)
+                return BadRequest();
+            // Find or create the institution 
+            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution);
+            int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
+            // Find or create the degree major 
+            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree);
+            int educationalDegreeId = educationalDegree.EducationalDegreeId;
+            // Find or create the degree type 
+            EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, EducationHistoryDto.EducationalDegreeType);
+            int educationalDegreeTypeId = 0;
+            if (educationalDegreeType == null)
+                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
+            educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
+
+            EducationHistory.ModifyDate = DateTime.Now;
+            EducationHistory.StartDate = EducationHistoryDto.StartDate;
+            EducationHistory.EndDate = EducationHistoryDto.EndDate;
+            EducationHistory.DegreeDate = EducationHistoryDto.DegreeDate;
+            EducationHistory.EducationalDegreeId = educationalDegreeId;
+            EducationHistory.EducationalDegreeTypeId = educationalDegreeTypeId;
+            EducationHistory.EducationalInstitutionId = educationalInstitutionId;
+            _db.SaveChanges();
+            return Ok(_mapper.Map<SubscriberEducationHistoryDto>(EducationHistory));
+        }
+
+        [Authorize]
+        [HttpDelete]
+        [Route("/api/[controller]/{subscriberGuid}/education-history/{EducationHistoryGuid}")]
+        public IActionResult DeleteEducationHistory(Guid subscriberGuid, Guid EducationHistoryGuid)
+        {
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            if (subscriberGuid != loggedInUserGuid)
+                return Unauthorized();
+
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            SubscriberEducationHistory EducationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryByGuid(_db, EducationHistoryGuid);
+            if (EducationHistory == null || EducationHistory.SubscriberId != subscriber.SubscriberId)
+                return BadRequest();
+            // Soft delete of the workhistory item
+            EducationHistory.IsDeleted = 1;
+            _db.SaveChanges();
+
+            return Ok(_mapper.Map<SubscriberEducationHistory>(EducationHistory));
+        }
+        #endregion
 
         [HttpPut("/api/[controller]/onboard")]
         public IActionResult Onboard()

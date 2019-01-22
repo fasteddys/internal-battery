@@ -1,0 +1,35 @@
+﻿<div class="col-12 no-padding">
+    <div class="edit-container">
+        <div class="row">
+            <div class="col-6 no-padding">
+                <h5>Skills</h5>
+            </div>
+            <div class="col-6 no-padding container-align-right">
+                <span class="edit-action" data-toggle="modal" data-target="#SkillsModal">Edit</span>
+            </div>
+        </div>
+        @{
+            if (Model.Skills.Count == 0)
+            {
+                <text>No skills have been provided.</text>
+            }
+            else
+            {
+                <div class="options-container">
+                    @{
+                        foreach (var skill in Model.Skills)
+                        {
+                            <div class="skill-pill">
+                                @{
+                                    string skillText = UpDiddyLib.Helpers.Utils.ToTitleCase(skill.SkillName);
+                                    <text>@skillText</text>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        }
+
+    </div>
+</div>

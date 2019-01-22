@@ -54,7 +54,7 @@ namespace UpDiddyApi.Controllers
             // check EnrolmmentDto but if exception occurs then this is a bad request
             try
             {
-                if (subscriberGuid != EnrollmentDto.Subscriber.SubscriberGuid.Value)
+                if (!subscriberGuid.Equals(EnrollmentFlowDto.SubscriberDto.SubscriberGuid))
                     return Unauthorized();
             } catch (Exception ex)
             {
