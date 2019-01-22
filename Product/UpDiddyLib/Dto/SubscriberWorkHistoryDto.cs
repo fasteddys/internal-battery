@@ -8,7 +8,6 @@ namespace UpDiddyLib.Dto
     {
         public int SubscriberWorkHistoryId { get; set; }
         public Guid SubscriberWorkHistoryGuid { get; set; }
-        public int SubscriberId { get; set; } 
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public int IsCurrent { get; set; }
@@ -16,8 +15,6 @@ namespace UpDiddyLib.Dto
         public string JobDecription { get; set; }
         public decimal Compensation { get; set; }
         public string CompensationType { get; set; }
-        public int CompensationTypeId { get; set; }
-        public string Company { get; set; }
-        public int CompanyId { get; set; }
+        public string Company { get; set; }        
     }
 }

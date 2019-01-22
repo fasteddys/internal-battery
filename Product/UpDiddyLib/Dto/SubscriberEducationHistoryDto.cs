@@ -8,7 +8,6 @@ namespace UpDiddyLib.Dto
     {
         public int SubscriberEducationHistoryId { get; set; }
         public Guid SubscriberEducationHistoryGuid { get; set; }
-        public int SubscriberId { get; set; }
         public string EducationalInstitution  { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }

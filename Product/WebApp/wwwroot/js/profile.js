@@ -289,7 +289,7 @@ function AddWorkHistory() {
         success: function (res) {
             var html = CreateWorkHistoryDiv(res);
             $("#ProfileWorkHistory").append(html);
-            if ($("#ProfileWorkHistory").children().length <= 0)
+            if ($("#ProfileWorkHistory").children().length > 0)
                 $("#ProfileWorkHistoryNotSpecified").hide();
         }
     });
@@ -413,8 +413,8 @@ function CreateWorkHistoryDiv(WorkHistoryInfo) {
 
     var divHtml = "<div class=\"row profile-work-history\" id=\"ProfileWorkHistory_@wh.SubscriberWorkHistoryGuid\">";
     divHtml += "<div id=\"ProfileWorkHistory_Title_@wh.SubscriberWorkHistoryGuid\" class=\"col-11 work-history-title\" data-title=\"@wh.Title\">";
-    divHtml += "@wh.Title";
-    divHtml += "<i class=\"fa fa-pencil-alt\" aria-hidden=\"true\" onclick=\"EditWorkHistory('@wh.SubscriberWorkHistoryGuid')\"></i>";
+    divHtml += "@wh.Title ";
+    divHtml += "<i class=\"fa fa-pencil-alt\" aria-hidden=\"true\" onclick=\"EditWorkHistory('@wh.SubscriberWorkHistoryGuid')\"></i> ";
     divHtml += "<i class=\"fa fa-trash\" aria-hidden=\"true\" onclick=\"DeleteWorkHistory('@wh.SubscriberWorkHistoryGuid')\"></i>";
     divHtml += "</div>";
     divHtml += "<div id=\"ProfileWorkHistory_Company_@wh.SubscriberWorkHistoryGuid\" class=\"col-11 work-history-company\" data-company=\"@wh.Company\">";
@@ -605,7 +605,7 @@ function AddEducationHistory() {
         success: function (res) {
             var html = CreateEducationHistoryDiv(res);
             $("#ProfileEducationHistory").append(html);
-            if ($("#ProfileEducationHistory").children().length <= 0)
+            if ($("#ProfileEducationHistory").children().length > 0)
                 $("#ProfileEducationHistoryNotSpecified").hide();
         }
     });
@@ -652,8 +652,8 @@ function CreateEducationHistoryDiv(EducationHistoryInfo) {
 
     var divHtml = "<div class=\"row profile-education-history\" id=\"ProfileEducationHistory_@eh.SubscriberEducationHistoryGuid\">";
     divHtml += "<div id=\"ProfileEducationHistory_Institution_@eh.SubscriberEducationHistoryGuid\" class=\"col-11 education-history-institution\" data-institution=\"@eh.EducationalInstitution\">";
-    divHtml += "@eh.EducationalInstitution";
-    divHtml += "<i class=\"fa fa-pencil-alt\" aria-hidden=\"true\" onclick=\"EditEducationHistory('@eh.SubscriberEducationHistoryGuid')\"></i>";
+    divHtml += "@eh.EducationalInstitution ";
+    divHtml += "<i class=\"fa fa-pencil-alt\" aria-hidden=\"true\" onclick=\"EditEducationHistory('@eh.SubscriberEducationHistoryGuid')\"></i> ";
     divHtml += "<i class=\"fa fa-trash\" aria-hidden=\"true\" onclick=\"DeleteEducationHistory('@eh.SubscriberEducationHistoryGuid')\"> </i>";
     divHtml += "</div>";
     divHtml += "<div id=\"ProfileEducationHistory_Degree_@eh.SubscriberEducationHistoryGuid\" class=\"col-11 education-history-degree\" data-degree=\"@eh.EducationalDegree\" data-degreetype=\"@eh.EducationalDegreeType\" >";

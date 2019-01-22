@@ -18,11 +18,12 @@ namespace UpDiddyApi.Business.Factory
         static public CompensationType CreateCompensationType(string CompensationTypeName)
         {
             CompensationType rVal = new CompensationType();
+            rVal.CompensationTypeGuid = Guid.NewGuid();
             rVal.CompensationTypeName = CompensationTypeName;
-            rVal.CreateDate = DateTime.Now;
-            rVal.CreateGuid = Guid.NewGuid();
-            rVal.ModifyDate = DateTime.Now;
-            rVal.ModifyGuid = Guid.NewGuid();
+            rVal.CreateDate = DateTime.UtcNow;
+            rVal.CreateGuid = Guid.Empty;
+            rVal.ModifyDate = DateTime.UtcNow;
+            rVal.ModifyGuid = Guid.Empty;
             rVal.IsDeleted = 0;
             return rVal;
         }

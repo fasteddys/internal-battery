@@ -18,15 +18,16 @@ namespace UpDiddyApi.Business.Factory
 {
     public class SubscriberFactory
     {
-
+        
         // Can we get rid of this function given the one below it?
+        // JAB - It is being used by the resume parse methods.  Refactor rquired for removal
         public static Subscriber GetSubscriberById(UpDiddyDbContext db, int subscriberId)
         {
             return db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .FirstOrDefault();
         }
-
+         
         public static SubscriberDto GetSubscriber(UpDiddyDbContext _db, Guid subscriberGuid, ILogger _syslog, IMapper _mapper)
         {
             if (Guid.Empty.Equals(subscriberGuid))
@@ -63,7 +64,7 @@ namespace UpDiddyApi.Business.Factory
         {
             try
             {
-                // Get the subscriber 
+                // Get the subscriber        
                 Subscriber subscriber = SubscriberFactory.GetSubscriberById(db, info.SubscriberId);
                 if (subscriber == null)
                 {
