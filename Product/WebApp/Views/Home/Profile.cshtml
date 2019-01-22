@@ -94,6 +94,12 @@
                         @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select", form = "PersonalInfoForm" })
                     </div>
                 </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Zip Code</div>
+                    <div class="modal-edit-input">
+                        <input id="PostalCodeUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="PostalCode" />
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -400,7 +406,7 @@
                                                                                 Address
                                                                             </div>
                                                                             <div class="col-12 col-sm-9 option-value no-padding">
-                                                                                @Model.Address @Model.City, @Model.States.Where(s => s.Value == Model.SelectedState.Value.ToString()).FirstOrDefault().Text, @Model.Countries.Where(c => c.Value == Model.SelectedCountry.Value.ToString()).FirstOrDefault().Text
+                                                                                @Model.Address @Model.City, @Model.States.Where(s => s.Value == Model.SelectedState.Value.ToString()).FirstOrDefault().Text, @Model.PostalCode, @Model.Countries.Where(c => c.Value == Model.SelectedCountry.Value.ToString()).FirstOrDefault().Text
                                                                             </div>
                                                                         </div>
                                                                     </div>

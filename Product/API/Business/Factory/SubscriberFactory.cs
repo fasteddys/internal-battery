@@ -246,6 +246,7 @@ namespace UpDiddyApi.Business.Factory
                 subscriber.PhoneNumber = Utils.RemoveNonNumericCharacters(contactInfo.PhoneNumber);
             subscriber.City = contactInfo.City;
             subscriber.Address = contactInfo.Address;
+            subscriber.PostalCode = contactInfo.PostalCode;
             State state = StateFactory.GetStateByStateCode(db, contactInfo.State);
             if (state != null)
                 subscriber.StateId = state.StateId;

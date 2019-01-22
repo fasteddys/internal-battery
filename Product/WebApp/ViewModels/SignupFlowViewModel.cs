@@ -24,6 +24,7 @@ namespace UpDiddy.ViewModels
         public Guid? SelectedState { get; set; }
         public Guid? SelectedCountry { get; set; }
         public String City { get; set; }
+        public String PostalCode { get; set; }
         public IEnumerable<SelectListItem> States { get; set; }
         public IEnumerable<SelectListItem> Countries { get; set; }
         public Guid SubscriberGuid { get; set; }

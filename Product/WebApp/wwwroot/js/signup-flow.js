@@ -246,8 +246,8 @@ var inputFieldsAreValid = function (containerName) {
 
 var addressFieldsAreValid = function () {
 
-    var allFieldsNotEmpty = $("#Address").val() && $("#City").val() && $("#SelectedState").val();
-    var allFieldsEmpty = !$("#Address").val() && !$("#City").val() && !$("#SelectedState").val();
+    var allFieldsNotEmpty = $("#Address").val() && $("#City").val() && $("#SelectedState").val() && $("#PostalCode").val();
+    var allFieldsEmpty = !$("#Address").val() && !$("#City").val() && !$("#SelectedState").val() && !$("#PostalCode").val();
 
     return allFieldsEmpty || allFieldsNotEmpty;
 };
@@ -325,6 +325,7 @@ var PopulateOnboardingSlides = function (response) {
 
     carousel.find("#Address").val(SetProperCase(response.address));
     carousel.find("#City").val(SetProperCase(response.city));
+    carousel.find("#PostalCode").val(response.postalCode);
 
     if (response.state && response.state.stateGuid) {
         carousel.find("#SelectedState").val(response.state.stateGuid);

@@ -67,6 +67,7 @@ namespace UpDiddyLib.Helpers
             string state = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:StructuredXMLResume/hrxml:ContactInfo/hrxml:ContactMethod/hrxml:PostalAddress/hrxml:Region", namespaceManager));
             string countryCode = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:StructuredXMLResume/hrxml:ContactInfo/hrxml:ContactMethod/hrxml:PostalAddress/hrxml:Country", namespaceManager));
             string city = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:StructuredXMLResume/hrxml:ContactInfo/hrxml:ContactMethod/hrxml:PostalAddress/hrxml:Municipality", namespaceManager));
+            string postalCode = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:StructuredXMLResume/hrxml:ContactInfo/hrxml:ContactMethod/hrxml:PostalAddress/hrxml:PostalCode", namespaceManager));
 
             SubscriberContactInfoDto rVal = new SubscriberContactInfoDto()
             {
@@ -77,7 +78,8 @@ namespace UpDiddyLib.Helpers
                 Address = address,
                 State = state,
                 CountryCode = countryCode,
-                City = city
+                City = city,
+                PostalCode = postalCode
             };
 
             return rVal;
