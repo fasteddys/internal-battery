@@ -1,5 +1,6 @@
 ﻿$(document).ready(function () {
 
+    // encapsulate this into a method
     $('.work-history-tenure').each(function () {
         this.innerHTML = FormattedDateRange($(this).data('startdate'), $(this).data('enddate'));
     });
@@ -8,7 +9,19 @@
         this.innerHTML = FormattedCompensation($(this).data('compensationtype'), $(this).data('compensation'));
     });
 
-    var showChar = 250;  // How many characters are shown by default
+    $('.education-history-degree').each(function () {
+        this.innerHTML = FormattedDegreeAndType($(this).data('degreetype'), $(this).data('degree'));
+    });
+
+    $('.education-history-tenure').each(function () {
+        this.innerHTML = FormattedDateRange($(this).data('startdate'), $(this).data('enddate'));
+    });
+    $('.education-history-degreedate').each(function () {
+        this.innerHTML = FormattedDegreeDate($(this).data('degreedate'));
+    });
+
+    // encapsulate this into a method
+    var showChar = 250;
     var ellipsestext = "...";
     var moretext = "Show more >";
     var lesstext = "Show less";
@@ -78,7 +91,6 @@
         }
     });
 
-
     $('#ddlWorkHistoryCompany').selectize({
         valueField: 'companyName',
         labelField: 'companyName',
@@ -109,14 +121,15 @@
     });
 
     $('#txtWorkHistoryStartDate').datepicker({
-        autoclose: true
+        autoclose: true,
+        clearBtn: true
     });
 
     $('#txtWorkHistoryEndDate').datepicker({
-        autoclose: true
+        autoclose: true,
+        clearBtn: true
     });
 
-    // Education History
     $('#ddlEducationHistoryInstitution').selectize({
         valueField: 'name',
         labelField: 'name',
@@ -140,7 +153,6 @@
                     callback();
                 },
                 success: function (res) {
-                    console.log(JSON.stringify(res) );
                     callback(res);
                 }
             });
@@ -170,33 +182,29 @@
                     callback();
                 },
                 success: function (res) {
-                    console.log(JSON.stringify(res));
                     callback(res);
                 }
             });
         }
     });
- 
-
 });
 
-
 $('#txtEducationHistoryStartDate').datepicker({
-    autoclose: true
+    autoclose: true,
+    clearBtn: true
 });
 
 $('#txtEducationHistoryEndDate').datepicker({
-    autoclose: true
+    autoclose: true,
+    clearBtn: true
 });
 
 $('#txtEducationHistoryDegreeDate').datepicker({
-    autoclose: true
+    autoclose: true,
+    clearBtn: true
 });
 
-
-
 function InitWorkHistoryAddMode() {
-    // Important! clear the the cached history guid which is 
     $("#hdnWorkHistoryGuid").val("");
     $("#txtWorkHistoryJobDescription").val("");
     $("#ddlWorkHistoryCompany")[0].selectize.clear();
@@ -234,10 +242,8 @@ function CreateWorkHistoryDto(includeGuid) {
     return rval;
 }
 
-
 function SaveWorkHistory() {
 
-    // Check for add or edit 
     if ($("#hdnWorkHistoryGuid").val().trim() == "")
         AddWorkHistory();
     else
@@ -245,7 +251,6 @@ function SaveWorkHistory() {
 
     return false;
 }
-
 
 function UpdateWorkHistory() {
     var obj = CreateWorkHistoryDto(true);
@@ -329,7 +334,7 @@ function DeleteWorkHistory(WorkHistoryGuid) {
 function FormattedDateRange(startDate, endDate) {
     var formattedDateRange = '';
     var effectiveStartDate;
-    if (!moment(startDate, "MM/DD/YYYY").isValid()) {
+    if (!moment(startDate).isValid()) {
         return 'No date range specified';
     }
     else {
@@ -338,7 +343,7 @@ function FormattedDateRange(startDate, endDate) {
     }
     var effectiveEndDate;
 
-    if (!moment(endDate, "MM/DD/YYYY").isValid()) {
+    if (!moment(endDate).isValid()) {
         effectiveEndDate = moment();
         formattedDateRange += "Present";
     } else {
@@ -379,6 +384,31 @@ function FormattedCompensation(compensationType, compensation) {
     }
 }
 
+function FormattedDegreeAndType(degreeType, degree) {
+    var formattedDegreeAndType = '';
+    if (degree === '') {
+        return "No degree specified";
+    } else {
+        formattedDegreeAndType += degree;
+        if (!(degreeType === '')) {
+            formattedDegreeAndType += ' (' + degreeType + ')';
+        }
+        return formattedDegreeAndType;
+    }
+}
+
+function FormattedDegreeDate(degreeDate) {
+    if (degreeDate === '') {
+        return "No degree date specified";
+    } else {
+        if (!moment(degreeDate).isValid()) {
+            return "Invalid value for degree date";
+        } else {
+            return "Degree Date: " + moment(degreeDate).format("MM/DD/YYYY");
+        }
+    }
+}
+
 function CreateWorkHistoryDiv(WorkHistoryInfo) {
 
     var divHtml = "<div class=\"row profile-work-history\" id=\"ProfileWorkHistory_@wh.SubscriberWorkHistoryGuid\">";
@@ -391,7 +421,7 @@ function CreateWorkHistoryDiv(WorkHistoryInfo) {
     divHtml += "@wh.Company";
     divHtml += "</div>";
     divHtml += "<div id=\"ProfileWorkHistory_Tenure_@wh.SubscriberWorkHistoryGuid\" class=\"col-11 work-history-tenure\" data-startdate=\"@wh.StartDate\" data-enddate=\"@wh.EndDate\" data-iscurrent=\"@wh.IsCurrent\">";
-    divHtml += FormattedDateRange(WorkHistoryInfo.startDate, WorkHistoryInfo.startDate);
+    divHtml += FormattedDateRange(WorkHistoryInfo.startDate, WorkHistoryInfo.endDate);
     divHtml += "</div>";
     divHtml += "<div id=\"ProfileWorkHistory_Compensation_@wh.SubscriberWorkHistoryGuid\" class=\"col-11 work-history-compensation\" data-compensation=\"@wh.Compensation\" data-compensationtype=\"@wh.CompensationType\">";
     divHtml += FormattedCompensation(WorkHistoryInfo.compensationType, WorkHistoryInfo.compensation);
@@ -471,20 +501,15 @@ function SelectDate(ctl) {
     $('#' + ctl).datepicker('show');
 }
 
-
-
-// Educational History Stuff 
-
-
 function CreateEducationalHistoryDto(includeGuid) {
-  
+
     rval = {
         StartDate: $("#txtEducationHistoryStartDate").val(),
-        EndDate: $("#txtEducationHistoryEndDate").val(),       
+        EndDate: $("#txtEducationHistoryEndDate").val(),
         DegreeDate: $("#txtEducationHistoryDegreeDate").val(),
         EducationalInstitution: $('#ddlEducationHistoryInstitution')[0].selectize.getValue(),
-        EducationalDegree: $('#ddlEducationHistoryDegree')[0].selectize.getValue(), 
-        EducationalDegreeType: $('#ddlEducationHistoryDegreeType').find(":selected").text()        
+        EducationalDegree: $('#ddlEducationHistoryDegree')[0].selectize.getValue(),
+        EducationalDegreeType: $('#ddlEducationHistoryDegreeType').find(":selected").text()
     }
 
     if (includeGuid)
@@ -496,6 +521,12 @@ function CreateEducationalHistoryDto(includeGuid) {
 function InitEducationHistoryAddMode() {
     // Important! clear the the cached history guid which is 
     $("#hdnEducationHistoryGuid").val("");
+    $("#ddlEducationHistoryInstitution")[0].selectize.clear();
+    $("#ddlEducationHistoryDegree")[0].selectize.clear();
+    $("#ddlEducationHistoryDegreeType").val($("#ddlEducationHistoryDegreeType option:first").val());
+    $("#txtEducationHistoryStartDate").val("");
+    $("#txtEducationHistoryEndDate").val("");
+    $("#txtEducationHistoryDegreeDate").val("");
 }
 
 function SaveEducationHistory() {
@@ -512,23 +543,17 @@ function SaveEducationHistory() {
 
 function EditEducationHistory(EducationHistoryGuid) {
 
-
-
-
     // Retrieve values for history to edit from screen
     var institution = $("#ProfileEducationHistory_Institution_" + EducationHistoryGuid).data("institution");
-    var startDate = $("#ProfileEducationHistory_Tenure_" + EducationHistoryGuid).data("startdate");
-    var endDate = $("#ProfileEducationHistory_Tenure_" + EducationHistoryGuid).data("enddate");
-    var degreeDate = $("#ProfileEducationHistory_Tenure_" + EducationHistoryGuid).data("degreedate");
+    var startDate = moment($("#ProfileEducationHistory_Tenure_" + EducationHistoryGuid).data("startdate")).format('MM/DD/YYYY');
+    if (startDate === "Invalid date")
+        startDate = null;
+    var endDate = moment($("#ProfileEducationHistory_Tenure_" + EducationHistoryGuid).data("enddate")).format('MM/DD/YYYY');
+    if (endDate === "Invalid date")
+        endDate = null;
+    var degreeDate = $("#ProfileEducationHistory_DegreeDate_" + EducationHistoryGuid).data("degreedate");
     var degree = $("#ProfileEducationHistory_Degree_" + EducationHistoryGuid).data("degree");
     var degreeType = $("#ProfileEducationHistory_Degree_" + EducationHistoryGuid).data("degreetype");
-                       
-    console.log("EditEducationHistory Degree = " + degree);
-    console.log("EditEducationHistory degreeType = " + degreeType);
-    console.log("EditEducationHistory startDate = " + startDate);
-    console.log("EditEducationHistory endDate = " + endDate);
-    console.log("EditEducationHistory degreeDate = " + degreeDate);
-    console.log("html " + $("#ProfileEducationHistory_Degree_" + EducationHistoryGuid).html()    )
 
     // Populate edit form with values 
     $('#ddlEducationHistoryInstitution')[0].selectize.createItem(institution, false)
@@ -537,7 +562,6 @@ function EditEducationHistory(EducationHistoryGuid) {
     $("#txtEducationHistoryStartDate").val(startDate);
     $("#txtEducationHistoryEndDate").val(endDate);
     $("#txtEducationHistoryDegreeDate").val(degreeDate);
- 
 
     $('#EducationHistoryModal').modal('show');
     // Set Guid on edit form 
@@ -546,7 +570,7 @@ function EditEducationHistory(EducationHistoryGuid) {
 function UpdateEducationHistory() {
     var obj = CreateEducationalHistoryDto(true);
     var objJson = JSON.stringify(obj);
-    
+
     $.ajax({
         url: '/Home/UpdateEducationHistory',
         type: 'POST',
@@ -557,7 +581,6 @@ function UpdateEducationHistory() {
         },
         success: function (res) {
             var html = CreateEducationHistoryDiv(res);
-            console.log("UpdateEducationHistory html = " + html)
             $("#ProfileEducationHistory_" + res.subscriberEducationHistoryGuid).replaceWith(html);
         }
     });
@@ -582,8 +605,8 @@ function AddEducationHistory() {
         success: function (res) {
             var html = CreateEducationHistoryDiv(res);
             $("#ProfileEducationHistory").append(html);
-            if ( $("#ProfileEducationHistory").children().length <= 0)
-               $("#ProfileEducationHistoryNotSpecified").hide();
+            if ($("#ProfileEducationHistory").children().length <= 0)
+                $("#ProfileEducationHistoryNotSpecified").hide();
         }
     });
 
@@ -592,39 +615,55 @@ function AddEducationHistory() {
 }
 
 function DeleteEducationHistory(EducationHistoryGuid) {
-
-    $.ajax({
-        url: '/Home/DeleteEducationHistory/' + EducationHistoryGuid,
-        type: 'POST',
-        contentType: "application/json",
-        error: function (data) {
-            toastr.warning(JSON.stringify(data), 'Oops, Something went wrong.');
+    bootbox.confirm({
+        message: "Are you sure you want to delete this work history entry?",
+        buttons: {
+            confirm: {
+                label: 'Yes',
+                className: 'btn-success'
+            },
+            cancel: {
+                label: 'No',
+                classname: 'btn-danger'
+            }
         },
-        success: function (res) {                        
-            $("#ProfileEducationHistory_" + res.subscriberEducationHistoryGuid).remove();
-            // Show the no education history div if the user deletes their last education history
-            if ($("#ProfileEducationHistory").children().length <= 0)
-                $("#ProfileEducationHistoryNotSpecified").show();
+        callback: function (result) {
+            if (result) {
+                $.ajax({
+                    url: '/Home/DeleteEducationHistory/' + EducationHistoryGuid,
+                    type: 'POST',
+                    contentType: "application/json",
+                    error: function (data) {
+                        toastr.warning(JSON.stringify(data), 'Oops, Something went wrong.');
+                    },
+                    success: function (res) {
+                        $("#ProfileEducationHistory_" + res.subscriberEducationHistoryGuid).remove();
+                        // Show the no education history div if the user deletes their last education history
+                        if ($("#ProfileEducationHistory").children().length <= 0)
+                            $("#ProfileEducationHistoryNotSpecified").show();
+                    }
+                });
+            }
         }
     });
 }
 
 function CreateEducationHistoryDiv(EducationHistoryInfo) {
-    
-    var divHtml =
-        "<div class=\"row profile-education-history\" id=\"ProfileEducationHistory_@eh.SubscriberEducationHistoryGuid\">";
-    divHtml += "<div id=\"ProfileEducationHistory_Institution_@eh.SubscriberEducationHistoryGuid\" class=\"col-12 col-sm-9 option-value no-padding\" data-institution=\"@eh.EducationalInstitution\">";
-    divHtml += "@eh.EducationalInstitution      <i class=\"fa fa-pencil-alt\" aria-hidden=\"true\" onclick=\"EditEducationHistory('@eh.SubscriberEducationHistoryGuid')\"></i>     <i class=\"fa fa-bone\" aria-hidden=\"true\" onclick=\"DeleteEducationHistory('@eh.SubscriberEducationHistoryGuid')\"> </i>";
-    divHtml += "</div>";
 
-    divHtml += "    <div id=\"ProfileEducationHistory_Tenure_@eh.SubscriberEducationHistoryGuid\" class=\"col-12 col-sm-9 option-value no-padding\" data-startdate=\"@eh.StartDate\" data-enddate=\"@eh.EndDate\" data-degreedate=\"@eh.DegreeDate\">";
-    divHtml += "        <span id=\"ProfileEducationHistory_Degree_StartDate_@eh.SubscriberEducationHistoryGuid\">  Start Date:   @eh.StartDate  </span>";
-    divHtml += "<span id=\"ProfileEducationHistory_Degree_EndDate_@eh.SubscriberEducationHistoryGuid\">  End Date: @eh.EndDate </span>";
-    divHtml += "<span id=\"ProfileEducationHistory_Degree_DegreeDate_@eh.SubscriberEducationHistoryGuid\"> Degree Date:  @eh.DegreeDate </span>";
-    divHtml += "    </div>";
-    divHtml += "<div id=\"ProfileEducationHistory_Degree_@eh.SubscriberEducationHistoryGuid\" class=\"col-12 col-sm-9 option-value no-padding\" data-degree=\"@eh.EducationalDegree\" data-degreetype=\"@eh.EducationalDegreeType\"  >";
-    divHtml += "            <span id=\"ProfileEducationHistory_Degree_@eh.SubscriberEducationHistoryGuid\"> Degree:  @eh.EducationalDegree  </span>";
-    divHtml += "<span id=\"ProfileEducationHistory_DegreeType_@eh.SubscriberEducationHistoryGuid\">  Degree Type: @eh.EducationalDegreeType </span>";
+    var divHtml = "<div class=\"row profile-education-history\" id=\"ProfileEducationHistory_@eh.SubscriberEducationHistoryGuid\">";
+    divHtml += "<div id=\"ProfileEducationHistory_Institution_@eh.SubscriberEducationHistoryGuid\" class=\"col-11 education-history-institution\" data-institution=\"@eh.EducationalInstitution\">";
+    divHtml += "@eh.EducationalInstitution";
+    divHtml += "<i class=\"fa fa-pencil-alt\" aria-hidden=\"true\" onclick=\"EditEducationHistory('@eh.SubscriberEducationHistoryGuid')\"></i>";
+    divHtml += "<i class=\"fa fa-trash\" aria-hidden=\"true\" onclick=\"DeleteEducationHistory('@eh.SubscriberEducationHistoryGuid')\"> </i>";
+    divHtml += "</div>";
+    divHtml += "<div id=\"ProfileEducationHistory_Degree_@eh.SubscriberEducationHistoryGuid\" class=\"col-11 education-history-degree\" data-degree=\"@eh.EducationalDegree\" data-degreetype=\"@eh.EducationalDegreeType\" >";
+    divHtml += FormattedDegreeAndType(EducationHistoryInfo.educationalDegreeType, EducationHistoryInfo.educationalDegree);
+    divHtml += "</div>";
+    divHtml += "<div id=\"ProfileEducationHistory_Tenure_@eh.SubscriberEducationHistoryGuid\" class=\"col-11 education-history-tenure\" data-startdate=\"@eh.StartDate\" data-enddate=\"@eh.EndDate\">";
+    divHtml += FormattedDateRange(EducationHistoryInfo.startDate, EducationHistoryInfo.endDate);
+    divHtml += "</div>";
+    divHtml += "<div id=\"ProfileEducationHistory_DegreeDate__@eh.SubscriberEducationHistoryGuid\" class=\"col-11 education-history-degreedate\" data-degreedate=\"@eh.DegreeDate\">";
+    divHtml += FormattedDegreeDate(EducationHistoryInfo.degreeDate);
     divHtml += "</div>";
     divHtml += "</div>";
 
@@ -635,27 +674,8 @@ function CreateEducationHistoryDiv(EducationHistoryInfo) {
     regex = /@eh.EducationalInstitution/gi;
     divHtml = divHtml.replace(regex, EducationHistoryInfo.educationalInstitution);
 
-    // Order matters, most specific to lease specific!  
-    regex = /@eh.EducationalDegreeType/gi;
-    divHtml = divHtml.replace(regex, EducationHistoryInfo.educationalDegreeType);
-
-    regex = /@eh.EducationalDegree/gi;
-    divHtml = divHtml.replace(regex, EducationHistoryInfo.educationalDegree);
-
-
-    regex = /@eh.StartDate/gi;
-    divHtml = divHtml.replace(regex, EducationHistoryInfo.startDate);
-
-    regex = /@eh.EndDate/gi;
-    divHtml = divHtml.replace(regex, EducationHistoryInfo.endDate);
-
     regex = /@eh.DegreeDate/gi;
     divHtml = divHtml.replace(regex, EducationHistoryInfo.degreeDate);
- 
 
     return divHtml;
 }
-
-
-
-

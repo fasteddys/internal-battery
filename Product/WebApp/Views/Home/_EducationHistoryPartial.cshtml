@@ -15,30 +15,29 @@
                 <span class="edit-action" data-toggle="modal" data-target="#EducationHistoryModal" onclick="InitEducationHistoryAddMode()">Add</span>
             </div>
         </div>
-        <div class="options-container">           
+        <div class="options-container">
             <div id="ProfileEducationHistoryNotSpecified" style="@(Model.HasSuppliedEducationHistory ? "display:none" : "display:block")">
-                  <text >No education history has been provided.</text>
-            </div>                                   
+                <text>No education history has been provided.</text>
+            </div>
             <div id="ProfileEducationHistory">
                 @foreach (SubscriberEducationHistoryDto eh in Model.EducationHistory)
                 {
-                    <div class="row profile-education-history" id="ProfileEducationHistory_@eh.SubscriberEducationHistoryGuid">
-
-                        <div id="ProfileEducationHistory_Institution_@eh.SubscriberEducationHistoryGuid" class="col-12 col-sm-9 option-value no-padding" data-institution="@eh.EducationalInstitution">
-                            @eh.EducationalInstitution      <i class="fa fa-pencil-alt" aria-hidden="true" onclick="EditEducationHistory('@eh.SubscriberEducationHistoryGuid')"></i>     <i class="fa fa-bone" aria-hidden="true" onclick="DeleteEducationHistory('@eh.SubscriberEducationHistoryGuid')"> </i>
-                        </div>
-
-                        <div id="ProfileEducationHistory_Tenure_@eh.SubscriberEducationHistoryGuid" class="col-12 col-sm-9 option-value no-padding" data-startdate="@eh.StartDate" data-enddate="@eh.EndDate" data-degreedate="@eh.DegreeDate">
-                            <span id="ProfileEducationHistory_Degree_StartDate_@eh.SubscriberEducationHistoryGuid">  Start Date:   @eh.StartDate  </span>
-                            <span id="ProfileEducationHistory_Degree_EndDate_@eh.SubscriberEducationHistoryGuid">  End Date: @eh.EndDate </span>
-                            <span id="ProfileEducationHistory_Degree_DegreeDate_@eh.SubscriberEducationHistoryGuid"> Degree Date:  @eh.DegreeDate </span>
-                        </div>
-
-                        <div id="ProfileEducationHistory_Degree_@eh.SubscriberEducationHistoryGuid" class="col-12 col-sm-9 option-value no-padding" data-degree="@eh.EducationalDegree" data-degreetype="@eh.EducationalDegreeType">
-                            <span id="ProfileEducationHistory_Degree_@eh.SubscriberEducationHistoryGuid"> Degree:  @eh.EducationalDegree  </span>
-                            <span id="ProfileEducationHistory_DegreeType_@eh.SubscriberEducationHistoryGuid">  Degree Type: @eh.EducationalDegreeType </span>
-                        </div>
+                <div class="row profile-education-history" id="ProfileEducationHistory_@eh.SubscriberEducationHistoryGuid">
+                    <div id="ProfileEducationHistory_Institution_@eh.SubscriberEducationHistoryGuid" class="col-11 education-history-institution" data-institution="@eh.EducationalInstitution">
+                        @eh.EducationalInstitution
+                        <i class="fa fa-pencil-alt" aria-hidden="true" onclick="EditEducationHistory('@eh.SubscriberEducationHistoryGuid')"></i>
+                        <i class="fa fa-trash" aria-hidden="true" onclick="DeleteEducationHistory('@eh.SubscriberEducationHistoryGuid')"> </i>
                     </div>
+                    <div id="ProfileEducationHistory_Degree_@eh.SubscriberEducationHistoryGuid" class="col-11 education-history-degree" data-degree="@eh.EducationalDegree" data-degreetype="@eh.EducationalDegreeType">
+                        @* value being set in profile.js *@
+                    </div>
+                    <div id="ProfileEducationHistory_Tenure_@eh.SubscriberEducationHistoryGuid" class="col-11 education-history-tenure" data-startdate="@eh.StartDate" data-enddate="@eh.EndDate">
+                        @* value being set in profile.js *@
+                    </div>
+                    <div id="ProfileEducationHistory_DegreeDate__@eh.SubscriberEducationHistoryGuid" class="col-11 education-history-degreedate" data-degreedate="@eh.DegreeDate">
+                        @* value being set in profile.js *@
+                    </div>
+                </div>
                 }
             </div>
         </div>

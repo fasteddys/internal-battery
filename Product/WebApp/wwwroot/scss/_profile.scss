@@ -13,6 +13,7 @@
 
     #NameModal,
     #WorkHistoryModal,
+    #EducationHistoryModal,
     #ContactInfoModal,
     #SocialLinksModal,
     #SkillsModal {
@@ -119,6 +120,13 @@
                     border: 0;
                 }
 
+                .selectize-dropdown [data-selectable].option {
+                    opacity: 1;
+                    background-color: white;
+                    width: 100%;
+                }
+
+                /* this is my sad attempt at fixing the selectize dropdowns... probably can remove most of this */
                 .selectize-control.form-control.single {
                     padding: 0;
                     margin-top: 5px;
@@ -150,6 +158,7 @@
                         }
 
                         .selectize-dropdown-content {
+
                             .option {
                                 background-color: white;
                                 background-image: none;
@@ -462,7 +471,7 @@
 
                             .options-container {
 
-                                .profile-work-history {
+                                .profile-work-history, .profile-education-history {
                                     
                                     border-bottom: 1px solid $color-secondary;
 
@@ -474,17 +483,17 @@
                                         border-bottom: 0;
                                     }
 
-                                    .work-history-title {
+                                    .work-history-title, .education-history-institution {
                                         font-size: 14px;
                                         font-weight: bold;
                                     }
 
-                                    .work-history-company {
+                                    .work-history-company, .education-history-degree {
                                         font-size: 12px;
                                         font-weight: bold;
                                     }
 
-                                    .work-history-tenure, .work-history-compensation, .work-history-description {
+                                    .work-history-tenure, .work-history-compensation, .work-history-description, .education-history-tenure, .education-history-degreedate {
                                         font-size: 12px;
                                         font-weight: normal;
                                     }

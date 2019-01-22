@@ -16,21 +16,20 @@
                     <input id="hdnEducationHistoryGuid" form="EducationHistoryForm" type="hidden" class="form-control" />
                     <div class="modal-edit-input-label">Educational Institution</div>
                     <div class="modal-edit-input">
-                        <input id="ddlEducationHistoryInstitution" form="EducationHistoryForm" type="text" class="form-control" />
+                        <input id="ddlEducationHistoryInstitution" form="EducationHistoryForm" type="text" class="form-control" placeholder="Search for or add institution..." />
                     </div>
                 </div>
                 <div class="profile-edit-modal-edit-option">
                     <input id="hdnEducationHistoryGuid" form="EducationHistoryForm" type="hidden" class="form-control" />
                     <div class="modal-edit-input-label">Major</div>
                     <div class="modal-edit-input">
-                        <input id="ddlEducationHistoryDegree" form="EducationHistoryForm" type="text" class="form-control" />
+                        <input id="ddlEducationHistoryDegree" form="EducationHistoryForm" type="text" class="form-control" placeholder="Search for or add degree..." />
                     </div>
                 </div>
                 <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">Degree Type </div>
+                    <div class="modal-edit-input-label">Degree Type</div>
                     <div class="modal-edit-input">
-                        <input id="txtEducationHistoryCompensation" form="EducationHistoryForm" type="text" class="form-control" data-val-regex-pattern="^[\d,]+(\.\d{1,5})?$" />
-                        <select id="ddlEducationHistoryDegreeType">
+                        <select id="ddlEducationHistoryDegreeType" class="form-control">
                             @foreach (EducationalDegreeTypeDto dt in Model.EducationDegreeTypes)
                             {
                                 <option value="@dt.DegreeType">@dt.DegreeType</option>
@@ -38,29 +37,24 @@
                         </select>
                     </div>
                 </div>
-
-
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">Start Date <i class="fa fa-calendar-alt" aria-hidden="true" onclick="SelectDate('txtEducationHistoryStartDate')"> </i> </div>
                     <div class="modal-edit-input">
-                        <input id="txtEducationHistoryStartDate" form="EducationHistoryForm" type="text" class="form-control" />
+                        <input id="txtEducationHistoryStartDate" form="EducationHistoryForm" type="text" class="form-control" readonly="readonly" placeholder="Click to select start date..." />
                     </div>
                 </div>
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">End Date <i class="fa fa-calendar-alt" aria-hidden="true" onclick="SelectDate('txtEducationHistoryEndDate')"> </i>  </div>
                     <div class="modal-edit-input">
-                        <input id="txtEducationHistoryEndDate" form="EducationHistoryForm" type="text" class="form-control" />
+                        <input id="txtEducationHistoryEndDate" form="EducationHistoryForm" type="text" class="form-control" readonly="readonly" placeholder="Click to select end date..." />
                     </div>
                 </div>
                 <div class="profile-edit-modal-edit-option">
                     <div class="modal-edit-input-label">Degree Date <i class="fa fa-calendar-alt" aria-hidden="true" onclick="SelectDate('txtEducationHistoryDegreeDate')"> </i>  </div>
                     <div class="modal-edit-input">
-                        <input id="txtEducationHistoryDegreeDate" form="EducationHistoryForm" type="text" class="form-control" />
+                        <input id="txtEducationHistoryDegreeDate" form="EducationHistoryForm" type="text" class="form-control" readonly="readonly" placeholder="Click to select degree date..." />
                     </div>
                 </div>
-
-
-
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
