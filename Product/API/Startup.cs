@@ -20,7 +20,7 @@ using UpDiddyLib.Helpers;
 using Polly;
 using Polly.Extensions.Http;
 using System.Net.Http;
-using UpDiddy.Helpers;
+using UpDiddyLib.Helpers;
 using UpDiddyLib.Shared;
 using Microsoft.ApplicationInsights.SnapshotCollector;
 using Microsoft.Extensions.Options;
@@ -34,10 +34,12 @@ using Serilog.Events;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Services;
 using System.Collections.Generic;
-using UpDiddyApi.Business.Graph;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using System.Security.Claims;
 using UpDiddyApi.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using UpDiddyApi.Helpers.SignalR;
 
 namespace UpDiddyApi
 {
@@ -93,6 +95,7 @@ namespace UpDiddyApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+          
             services.AddSingleton<Serilog.ILogger>(Logger);
 
             services.AddAuthentication(options =>
@@ -129,14 +132,19 @@ namespace UpDiddyApi
             services.AddCors(o => o.AddPolicy("Cors", builder =>
             {
                 builder.WithOrigins(origins.ToArray())
+                       .AllowCredentials()
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
+
 
             // Add framework services.
             // the 'ignore' option for reference loop handling was implemented to prevent circular errors during serialization 
             // (e.g. SubscriberDto contains a collection of EnrollmentDto objects, and the EnrollmentDto object has a reference to a SubscriberDto)
             services.AddMvc().AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            // Add SignalR
+            services.AddSignalR();
 
             // Add AutoMapper 
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
@@ -224,7 +232,14 @@ namespace UpDiddyApi
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-    }
+
+            // Added for SignalR
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<ClientHub>("/clienthub");
+            });
+
+        }
 
         private Task AuthenticationFailed(AuthenticationFailedContext arg)
         {

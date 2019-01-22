@@ -11,12 +11,17 @@ using UpDiddyLib.Dto;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Hangfire;
 using System.Net.Http;
-using UpDiddy.Helpers;
+using UpDiddyLib.Helpers;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Factory;
 using System.IO;
+using Microsoft.AspNetCore.SignalR;
+using UpDiddyApi.Helpers.SignalR;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace UpDiddyApi.Workflow
 {
@@ -24,7 +29,7 @@ namespace UpDiddyApi.Workflow
     {
         ICloudStorage _cloudStorage;
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, ICloudStorage cloudStorage)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, IHubContext<ClientHub> hub, IDistributedCache distributedCache, ICloudStorage cloudStorage)
         {
             _db = context;
             _mapper = mapper;
@@ -35,6 +40,8 @@ namespace UpDiddyApi.Workflow
             _httpClientFactory = httpClientFactory;
             _sovrenApi = sovrenApi;
             _cloudStorage = cloudStorage;
+            _hub = hub;
+            _cache = distributedCache;
         }
 
 
@@ -283,7 +290,24 @@ namespace UpDiddyApi.Workflow
                 .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == resume.Subscriber.SubscriberGuid)
                 .ToList();
 
+                // Import user profile data
                 _ImportSubscriberProfileData(profiles);
+                
+                // Callback to client to let them know upload is complete
+                ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
+                DefaultContractResolver contractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                };
+                SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, (Guid)resume.Subscriber.SubscriberGuid, _syslog, _mapper);
+                hubHelper.CallClient(resume.Subscriber.SubscriberGuid, 
+                    Constants.SignalR.ResumeUpLoadVerb, 
+                    JsonConvert.SerializeObject(
+                        subscriberDto,
+                        new JsonSerializerSettings
+                        {
+                            ContractResolver = contractResolver
+                        }));
             }
             catch (Exception e)
             { 

@@ -8,7 +8,6 @@ var CareerCircleAPI = (function (apiUrl) {
         baseURL: apiUrl,
 
         transformRequest: [function (data, headers) {
-            console.log('transforming request');
             headers['Authorization'] = 'Bearer ' + SessionStorage.getJSON(_session_key).AccessToken;
             return data;
         }],
@@ -19,8 +18,8 @@ var CareerCircleAPI = (function (apiUrl) {
 
     // on requests check token and set it
     _http.interceptors.request.use(
-        config => {
-            return new Promise((resolve, reject) => {
+        function(config) {
+            return new Promise(function (resolve, reject) {
                 getToken().then(function (jwt) {
                     resolve(config);
                 })
@@ -32,8 +31,8 @@ var CareerCircleAPI = (function (apiUrl) {
     var getToken = function () {
         var jwt = SessionStorage.get(_session_key);
 
-        if (jwt == null || new Date() <= new Date(jwt.ExpiresOn)) {
-            return new Promise(resolve => {
+        if (jwt == null ? new Date() : new Date(jwt.ExpiresOn)) {
+            return new Promise(function(resolve) {
                 retrieveToken().done(function (response) {
                     SessionStorage.set(_session_key, JSON.stringify(response.data));
                     resolve(SessionStorage.getJSON(_session_key));
@@ -41,7 +40,7 @@ var CareerCircleAPI = (function (apiUrl) {
             });
         };
 
-        return new Promise(resolve => {
+        return new Promise(function(resolve) {
             resolve(JSON.parse(jwt));
         });
     };
@@ -77,9 +76,9 @@ var CareerCircleAPI = (function (apiUrl) {
     }
 
     var deleteFile = function (fileId) {
-        return new Promise(resolve => {
+        return new Promise(function(resolve) {
             getToken().then(function (jwt) {
-                var path = `/subscriber/${jwt.UniqueId}/file/${fileId}`;
+                var path = '/subscriber/' + jwt.UniqueId + '/file/' + fileId;
                 resolve(_http.delete(path));
             });
         });

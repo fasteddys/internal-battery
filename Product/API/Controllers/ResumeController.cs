@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
-using UpDiddy.Helpers;
+using UpDiddyLib.Helpers;
 using Hangfire;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;

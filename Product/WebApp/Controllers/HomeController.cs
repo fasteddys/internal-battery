@@ -23,6 +23,8 @@ using UpDiddyLib.Helpers;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Security.Claims;
+using UpDiddy.Helpers;
+ 
 
 namespace UpDiddy.Controllers
 {
@@ -73,10 +75,11 @@ namespace UpDiddy.Controllers
             // This will check to see if the subscriber has onboarded. If not, it flips the flag.
             // This means the onboarding flow should only ever work the first time a user logs into their account.
             if(subscriber.HasOnboarded != 1)
-                _Api.UpdateOnboardingStatus((Guid)subscriber.SubscriberGuid);
+                _Api.UpdateOnboardingStatus();
 
             SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
             {
+                SubscriberGuid = (Guid) subscriber.SubscriberGuid,
                 Countries = _Api.GetCountries().Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
@@ -154,8 +157,8 @@ namespace UpDiddy.Controllers
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
                 SubscriberGuid = this.subscriber?.SubscriberGuid,
-                FirstName = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.FirstName),
-                LastName = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.LastName),
+                FirstName = this.subscriber?.FirstName,
+                LastName = this.subscriber?.LastName,
                 FormattedPhone = this.subscriber?.PhoneNumber,
                 Email = this.subscriber?.Email,
                 Address = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.Address),
@@ -276,6 +279,8 @@ namespace UpDiddy.Controllers
         [HttpPost]
         public IActionResult UploadResume(ResumeViewModel resumeViewModel)
         {
+            var hubId = Request.Cookies[Constants.SignalR.CookieKey];
+
             // Check that the resume is a valid text file
             if (!Utils.IsValidTextFile(resumeViewModel.Resume.FileName))
             {

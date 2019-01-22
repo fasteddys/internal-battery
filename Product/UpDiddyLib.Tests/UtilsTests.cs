@@ -200,7 +200,7 @@ namespace UpDiddyLib.Tests
         [Fact]
         public void ToTitleCase_NameWithApostrophe()
         {
-            Assert.Equal("D'Artagnan", UpDiddyLib.Helpers.Utils.ToTitleCase("d'artagnan"));
+            Assert.Equal("D'artagnan", UpDiddyLib.Helpers.Utils.ToTitleCase("d'artagnan"));
         }
 
         [Fact]

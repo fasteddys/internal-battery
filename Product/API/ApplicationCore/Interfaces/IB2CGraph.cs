@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace UpDiddyApi.Business.Graph
+namespace UpDiddyApi.ApplicationCore.Interfaces
 {
     public interface IB2CGraph
     {

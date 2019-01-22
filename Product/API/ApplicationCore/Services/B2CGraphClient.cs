@@ -10,8 +10,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
-namespace UpDiddyApi.Business.Graph
+namespace UpDiddyApi.ApplicationCore.Services
 {
     public class B2CGraphClient : IB2CGraph
     {

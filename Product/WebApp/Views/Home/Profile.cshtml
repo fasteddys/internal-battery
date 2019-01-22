@@ -61,7 +61,7 @@
         });
 
             // resume upload component
-            $('.resume-upload-form .file-input').change(function () {
+            $('.resume-upload-form .file-input').on('change', function () {
                 var $input = $('.file-input');
                 if ($input[0].files.length > 0) {
                     $('.resume-upload-form').addClass('has-file');
@@ -95,9 +95,11 @@
                         location.reload();
                     })
                     .catch(function (err) {
+                        toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions);
+                    })
+                    .finally(function () {
                         $('.resume-control button').prop('disabled', false);
                         $('.resume-control button').removeClass('disabled');
-                        toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions);
                     });
             });
 
@@ -114,14 +116,15 @@
 
                 CareerCircleAPI.uploadResume($input[0].files[0])
                     .then(function (x) {
-                        $('.resume-upload-form').removeClass('loading');
                         location.reload();
                     })
                     .catch(function (err) {
+                        toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions);
+                    })
+                    .finally(function () {
                         $('.resume-upload-form').removeClass('loading');
                         $('.resume-upload-form .btn').prop('disabled', false);
                         $('.resume-upload-form .btn').removeClass('disabled');
-                        toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions);
                     });
             });
 

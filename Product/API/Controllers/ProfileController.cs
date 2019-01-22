@@ -230,21 +230,11 @@ namespace UpDiddyApi.Controllers
             return Ok(skills);
         }
 
-        [Authorize]
-        [HttpGet]
-        [Route("api/[controller]/{subscriberGuid}/skill")]
-        public IActionResult GetSkillsBySubscriber(Guid subscriberGuid)
-        {
-            var subscriberSkills = _db.Subscriber
-                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid.Value == subscriberGuid)
-                .Join(_db.SubscriberSkill.Where(ss => ss.IsDeleted == 0), s => s.SubscriberId, sk => sk.SubscriberId, (s, sk) => new { sk.SkillId })
-                .Join(_db.Skill.Where(s => s.IsDeleted == 0), x => x.SkillId, s => s.SkillId, (x, s) => s)
-                .Distinct()
-                .OrderBy(s => s.SkillName)
-                .ProjectTo<SkillDto>(_mapper.ConfigurationProvider)
-                .ToList();
+        #region Business Logic
 
-            return Ok(subscriberSkills);
-        }
+        
+        
+        
+        #endregion
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 using System.Linq;
 using UpDiddy.Models;
 using UpDiddyLib.Dto;
-using UpDiddy.Helpers;
+using UpDiddyLib.Helpers;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -203,11 +203,6 @@ namespace UpDiddy.Api
 
         #region Public UnCached Methods
 
-        public SubscriberDto Subscriber()
-        {
-            return Get<SubscriberDto>("profile", true);
-        }
-
         public PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid)
         {
             return Get<PromoCodeDto>("promocode/redemption-validate/" + promoCodeRedemptionGuid + "/course-variant/" + courseGuid, true);
@@ -225,12 +220,12 @@ namespace UpDiddy.Api
 
         public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
         {
-            return Put<BasicResponseDto>(Subscriber, "profile", true);
+            return Put<BasicResponseDto>(Subscriber, "subscriber", true);
         }
 
-        public BasicResponseDto UpdateOnboardingStatus(Guid SubscriberGuid)
+        public BasicResponseDto UpdateOnboardingStatus()
         {
-            return Put<BasicResponseDto>("profile/onboard/" + SubscriberGuid, true);
+            return Put<BasicResponseDto>("subscriber/onboard", true);
         }
 
         public BasicResponseDto SyncLinkedInAccount(string linkedInCode, string returnUrl)
@@ -245,7 +240,7 @@ namespace UpDiddy.Api
 
         public SubscriberDto CreateSubscriber()
         {
-            return Post<SubscriberDto>("profile", true);
+            return Post<SubscriberDto>("subscriber", true);
         }
 
         public WozCourseProgressDto UpdateStudentCourseProgress(bool FutureSchedule)
@@ -345,7 +340,7 @@ namespace UpDiddy.Api
 
         public IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid)
         {
-            return Get<IList<SkillDto>>("profile/" + subscriberGuid + "/skill", true);
+            return Get<IList<SkillDto>>("subscriber/" + subscriberGuid + "/skill", true);
         }
         #endregion
 
@@ -422,16 +417,20 @@ namespace UpDiddy.Api
 
         #region TalentPortal
 
-        public SubscriberDto Subscriber(Guid subscriberGuid)
+        public SubscriberDto Subscriber(Guid subscriberGuid, bool hardRefresh)
         {
             string cacheKey = $"Subscriber{subscriberGuid}";
-            SubscriberDto rval = GetCachedValue<SubscriberDto>(cacheKey);
+            SubscriberDto rval = null;
+            if(!hardRefresh)
+                rval = GetCachedValue<SubscriberDto>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = _Subscriber(subscriberGuid);
+                if (rval == null)
+                    rval = CreateSubscriber();
                 SetCachedValue<SubscriberDto>(cacheKey, rval);
             }
             return rval;

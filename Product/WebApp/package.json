@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "@aspnet/signalr": "^1.1.0",
     "braintree-web-drop-in": "1.13.0",
     "toastr": "^2.1.4"
   }

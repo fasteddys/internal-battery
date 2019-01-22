@@ -48,3 +48,6 @@ Thumbs.db
 
 # vscode files
 .vscode
+
+# bundle files
+*.map
