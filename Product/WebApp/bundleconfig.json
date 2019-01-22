@@ -42,6 +42,7 @@
     "outputFileName": "wwwroot/css/site.min.css",
     "inputFiles": [
       "bower_components/bootstrap/dist/css/bootstrap.css",
+      "node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.css",
       "wwwroot/css/bundle.css",
       "node_modules/toastr/build/toastr.css",
       "bower_components/selectize/dist/css/selectize.css",
@@ -71,6 +72,7 @@
       "bower_components/jquery/dist/jquery.min.js",
       "bower_components/popper.js/dist/umd/popper.min.js",
       "bower_components/bootstrap/dist/js/bootstrap.min.js",
+      "node_modules/bootstrap-datepicker/dist/js/bootstrap-datepicker.js",
       "node_modules/toastr/build/toastr.min.js",
       "bower_components/selectize/dist/js/standalone/selectize.min.js",
       "bower_components/bluebird/js/browser/bluebird.min.js",

@@ -16,36 +16,32 @@
             </div>
         </div>
         <div class="options-container">
-            @{
-                if (!Model.HasSuppledWorkHistory)
-                {
-                    <text>No work history has been provided.</text>
-                }
-            }
-            @* Render the users work history *@
+            <div id="ProfileWorkHistoryNotSpecified" style="@(Model.HasSuppliedWorkHistory ? "display:none" : "display:block")">
+                <text>No work history has been provided.</text>
+            </div>
             <div id="ProfileWorkHistory">
                 @foreach (SubscriberWorkHistoryDto wh in Model.WorkHistory)
                 {
-                <div class="row profile-work-history" id="ProfileWorkHistory_@wh.SubscriberWorkHistoryGuid">
+                    <div class="row profile-work-history" id="ProfileWorkHistory_@wh.SubscriberWorkHistoryGuid">
 
-                    <div id="ProfileWorkHistory_Company_@wh.SubscriberWorkHistoryGuid" class="col-12 col-sm-9 option-value no-padding" data-company="@wh.Company">
-                        @wh.Company      <i class="fa fa-pencil-alt" aria-hidden="true" onclick="EditWorkHistory('@wh.SubscriberWorkHistoryGuid')"></i>     <i class="fa fa-bone" aria-hidden="true" onclick="DeleteWorkHistory('@wh.SubscriberWorkHistoryGuid')"> </i>
-                    </div>
+                        <div id="ProfileWorkHistory_Company_@wh.SubscriberWorkHistoryGuid" class="col-12 col-sm-9 option-value no-padding" data-company="@wh.Company">
+                            @wh.Company      <i class="fa fa-pencil-alt" aria-hidden="true" onclick="EditWorkHistory('@wh.SubscriberWorkHistoryGuid')"></i>     <i class="fa fa-bone" aria-hidden="true" onclick="DeleteWorkHistory('@wh.SubscriberWorkHistoryGuid')"> </i>
+                        </div>
 
-                    <div id="ProfileWorkHistory_Tenure_@wh.SubscriberWorkHistoryGuid" class="col-12 col-sm-9 option-value no-padding" data-startdate="@wh.StartDate" data-enddate="@wh.EndDate" data-iscurrent="@wh.IsCurrent" >
-                        @Model.FormattedCompanyTenure(@wh.StartDate, @wh.EndDate, @wh.IsCurrent)
-                    </div>
+                        <div id="ProfileWorkHistory_Tenure_@wh.SubscriberWorkHistoryGuid" class="col-12 col-sm-9 option-value no-padding" data-startdate="@wh.StartDate" data-enddate="@wh.EndDate" data-iscurrent="@wh.IsCurrent">
+                            @Model.FormattedCompanyTenure(@wh.StartDate, @wh.EndDate, @wh.IsCurrent)
+                        </div>
 
-                    <div id="ProfileWorkHistory_JobInfo_@wh.SubscriberWorkHistoryGuid"  class="col-12 col-sm-9 option-value no-padding">
-                        <span id="ProfileWorkHistory_JobTitle_@wh.SubscriberWorkHistoryGuid">   @wh.Title  </span> : <span id="ProfileWorkHistory_JobDescription_@wh.SubscriberWorkHistoryGuid">  @wh.JobDecription </span>
-                    </div>
-                                        
-                    <div class="col-12 col-sm-9 option-value no-padding">
-                        <span id="ProfileWorkHistory_CompensationType_@wh.SubscriberWorkHistoryGuid"> @wh.CompensationType  </span> compensation   <span id="ProfileWorkHistory_Compensation_@wh.SubscriberWorkHistoryGuid">  @wh.Compensation </span>
-                    </div>
+                        <div id="ProfileWorkHistory_JobInfo_@wh.SubscriberWorkHistoryGuid" class="col-12 col-sm-9 option-value no-padding">
+                            <span id="ProfileWorkHistory_JobTitle_@wh.SubscriberWorkHistoryGuid">   @wh.Title  </span> : <span id="ProfileWorkHistory_JobDescription_@wh.SubscriberWorkHistoryGuid">  @wh.JobDecription </span>
+                        </div>
 
-                </div>     
-                 }
+                        <div class="col-12 col-sm-9 option-value no-padding">
+                            <span id="ProfileWorkHistory_CompensationType_@wh.SubscriberWorkHistoryGuid"> @wh.CompensationType  </span> compensation   <span id="ProfileWorkHistory_Compensation_@wh.SubscriberWorkHistoryGuid">  @wh.Compensation </span>
+                        </div>
+
+                    </div>
+                }
             </div>
         </div>
     </div>
