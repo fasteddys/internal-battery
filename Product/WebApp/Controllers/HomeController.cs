@@ -21,7 +21,7 @@ using System.Text.Encodings.Web;
 using System.IO;
 using UpDiddyLib.Helpers;
 using UpDiddy.Helpers;
- 
+using System.Security.Claims;
 
 namespace UpDiddy.Controllers
 {
@@ -184,8 +184,8 @@ namespace UpDiddy.Controllers
                 }),
                 // todo: consider refactoring this... include in GetSubscriber (add navigation property)
                 Skills = _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value),
-                WorkHistory = _Api.GetWorkHistory(),
-                EducationHistory = _Api.GetEducationHistory()
+                WorkHistory = _Api.GetWorkHistory(this.subscriber.SubscriberGuid.Value),
+                EducationHistory = _Api.GetEducationHistory(this.subscriber.SubscriberGuid.Value)
 
 
             };
@@ -508,8 +508,9 @@ namespace UpDiddy.Controllers
         [Route("/Home/AddWorkHistory")]
         public IActionResult AddWorkHistory([FromBody] SubscriberWorkHistoryDto wh )
         {
+            Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if (wh != null)                            
-                return Ok(_Api.AddWorkHistory(wh));            
+                return Ok(_Api.AddWorkHistory(subscriberGuid, wh));            
             else
                 return BadRequest("Oops, We're sorry somthing when wrong!");
             
@@ -520,8 +521,9 @@ namespace UpDiddy.Controllers
         [Route("/Home/UpdateWorkHistory")]
         public IActionResult UpdateWorkHistory([FromBody] SubscriberWorkHistoryDto wh)
         {
+            Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if (wh != null)              
-                return Ok(_Api.UpdateWorkHistory(wh));           
+                return Ok(_Api.UpdateWorkHistory(subscriberGuid, wh));           
             else
                 return BadRequest("Oops, We're sorry somthing when wrong!");
 
@@ -532,8 +534,8 @@ namespace UpDiddy.Controllers
         [Route("/Home/DeleteWorkHistory/{WorkHistoryGuid}")]
         public IActionResult DeleteWorkHistory(Guid WorkHistoryGuid)
         {
-
-            return Ok(_Api.DeleteWorkHistory(WorkHistoryGuid));
+            Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            return Ok(_Api.DeleteWorkHistory(subscriberGuid, WorkHistoryGuid));
                 
         }
 
@@ -542,9 +544,9 @@ namespace UpDiddy.Controllers
         [Route("/Home/AddEducationalHistory")]
         public IActionResult AddEducationalHistory([FromBody] SubscriberEducationHistoryDto eh)
         {
-            
+            Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if (eh != null)
-               return Ok( _Api.AddEducationalHistory(eh));
+               return Ok( _Api.AddEducationalHistory(subscriberGuid, eh));
             else
                 return BadRequest("Oops, We're sorry somthing when wrong!");            
         }
@@ -554,8 +556,9 @@ namespace UpDiddy.Controllers
         [Route("/Home/UpdateEducationHistory")]
         public IActionResult UpdateEducationHistory([FromBody] SubscriberEducationHistoryDto eh)
         {
+            Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if (eh != null)
-                return Ok(_Api.UpdateEducationHistory(eh));
+                return Ok(_Api.UpdateEducationHistory(subscriberGuid, eh));
             else
                 return BadRequest("Oops, We're sorry somthing when wrong!");
 
@@ -566,8 +569,8 @@ namespace UpDiddy.Controllers
         [Route("/Home/DeleteEducationHistory/{EducationHistoryGuid}")]
         public IActionResult DeleteEducationHistory(Guid EducationHistoryGuid)
         {
-
-            return Ok(_Api.DeleteEducationHistory(EducationHistoryGuid));
+            Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            return Ok(_Api.DeleteEducationHistory(subscriberGuid, EducationHistoryGuid));
 
         }
 

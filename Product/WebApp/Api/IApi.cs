@@ -38,14 +38,14 @@ namespace UpDiddy.Api
         IList<EducationalDegreeTypeDto> GetEducationalDegreeTypes();
         IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid);
         BasicResponseDto UploadResume(ResumeDto resumeDto);
-        SubscriberWorkHistoryDto AddWorkHistory(SubscriberWorkHistoryDto workHistory);
-        SubscriberWorkHistoryDto UpdateWorkHistory(SubscriberWorkHistoryDto workHistory);
-        SubscriberEducationHistoryDto UpdateEducationHistory(SubscriberEducationHistoryDto educationHistory);
-        SubscriberWorkHistoryDto DeleteWorkHistory(Guid workHistoryGuid);
-        SubscriberEducationHistoryDto DeleteEducationHistory(Guid educationHistory);
-        IList<SubscriberWorkHistoryDto> GetWorkHistory();
-        IList<SubscriberEducationHistoryDto> GetEducationHistory();
-        SubscriberEducationHistoryDto AddEducationalHistory(SubscriberEducationHistoryDto workHistory);
+        SubscriberWorkHistoryDto AddWorkHistory(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
+        SubscriberWorkHistoryDto UpdateWorkHistory(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
+        SubscriberEducationHistoryDto UpdateEducationHistory(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory);
+        SubscriberWorkHistoryDto DeleteWorkHistory(Guid subscriberGuid, Guid workHistoryGuid);
+        SubscriberEducationHistoryDto DeleteEducationHistory(Guid subscriberGuid, Guid educationHistory);
+        IList<SubscriberWorkHistoryDto> GetWorkHistory(Guid subscriberGuid);
+        IList<SubscriberEducationHistoryDto> GetEducationHistory(Guid subscriberGuid);
+        SubscriberEducationHistoryDto AddEducationalHistory(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
 
         SubscriberADGroupsDto MyGroups();
 

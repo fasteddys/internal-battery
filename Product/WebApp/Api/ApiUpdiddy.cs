@@ -339,47 +339,51 @@ namespace UpDiddy.Api
             return Post<BasicResponseDto>(resumeDto, "resume/upload", true);
         }
 
-        public SubscriberWorkHistoryDto AddWorkHistory(SubscriberWorkHistoryDto workHistory)
+        #region Subscriber Work History
+        public SubscriberWorkHistoryDto AddWorkHistory(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
         {
-            return Post<SubscriberWorkHistoryDto>(workHistory, "profile/AddWorkHistory", true);
+            return Post<SubscriberWorkHistoryDto>(workHistory, string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), true);
         }
-
-        public SubscriberEducationHistoryDto AddEducationalHistory(SubscriberEducationHistoryDto educationHistory)
+        public SubscriberWorkHistoryDto UpdateWorkHistory(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
         {
-            return Post<SubscriberEducationHistoryDto>(educationHistory, "subscriber/educational-history", true);
-        }
-
-        public SubscriberWorkHistoryDto UpdateWorkHistory(SubscriberWorkHistoryDto workHistory)
-        {
-            return Put<SubscriberWorkHistoryDto>(workHistory, "subscriber/work-history", true);
+            return Put<SubscriberWorkHistoryDto>(workHistory, string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), true);
         }
         
-        public IList<SubscriberWorkHistoryDto> GetWorkHistory()
+        public IList<SubscriberWorkHistoryDto> GetWorkHistory(Guid subscriberGuid)
         {
-            return Get<IList<SubscriberWorkHistoryDto>>("subscriber/work-history", true);
+            return Get<IList<SubscriberWorkHistoryDto>>(string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), true);
+        }
+        // Chris Put Delete in here and change path
+        public SubscriberWorkHistoryDto DeleteWorkHistory(Guid subscriberGuid, Guid workHistoryGuid)
+        {
+            return Delete<SubscriberWorkHistoryDto>(string.Format("subscriber/{0}/work-history/{1}",subscriberGuid.ToString(), workHistoryGuid.ToString()) , true);
+        }
+        #endregion
+
+        #region Subscriber Education History
+        public SubscriberEducationHistoryDto AddEducationalHistory(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
+        {
+            return Post<SubscriberEducationHistoryDto>(educationHistory, string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), true);
         }
 
-        public IList<SubscriberEducationHistoryDto> GetEducationHistory()
+
+        public IList<SubscriberEducationHistoryDto> GetEducationHistory(Guid subscriberGuid)
         {
-            return Get<IList<SubscriberEducationHistoryDto>>("subscriber/education-history", true);
+            return Get<IList<SubscriberEducationHistoryDto>>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), true);
+        }
+
+
+        public SubscriberEducationHistoryDto UpdateEducationHistory(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
+        {
+            return Put<SubscriberEducationHistoryDto>(educationHistory, string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), true);
         }
 
         // Chris Put Delete in here and change path
-        public SubscriberWorkHistoryDto DeleteWorkHistory(Guid workHistoryGuid)
+        public SubscriberEducationHistoryDto DeleteEducationHistory(Guid subscriberGuid, Guid educationHistory)
         {
-            return Put<SubscriberWorkHistoryDto>("subscriber/DeleteWorkHistory/" + workHistoryGuid.ToString() , true);
+            return Delete<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history/{1}", subscriberGuid.ToString(), educationHistory.ToString()), true);
         }
-
-        public SubscriberEducationHistoryDto UpdateEducationHistory(SubscriberEducationHistoryDto educationHistory)
-        {
-            return Put<SubscriberEducationHistoryDto>(educationHistory, "subscriber/education-history", true);
-        }
-
-        // Chris Put Delete in here and change path
-        public SubscriberEducationHistoryDto DeleteEducationHistory(Guid educationHistory)
-        {
-            return Put<SubscriberEducationHistoryDto>("subscriber/DeleteEducationHistory/" + educationHistory.ToString(), true);
-        }
+        #endregion
 
         public SubscriberADGroupsDto MyGroups()
         {
@@ -543,6 +547,22 @@ namespace UpDiddy.Api
         public T Get<T>(string ApiAction, bool Authorized = false)
         {
             Task<string> Response = _GetAsync(ApiAction, Authorized);
+            try
+            {
+                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
+                return rval;
+            }
+            catch (Exception ex)
+            {
+                // TODO instrument with json string and requested type 
+                var msg = ex.Message;
+                return (T)Convert.ChangeType(null, typeof(T));
+            }
+        }
+
+        public T Delete<T>(string ApiAction, bool Authorized = false)
+        {
+            Task<string> Response = _DeleteAsync(ApiAction, Authorized);
             try
             {
                 T rval = JsonConvert.DeserializeObject<T>(Response.Result);
@@ -784,6 +804,47 @@ namespace UpDiddy.Api
 
         }
 
+        private async Task<string> _DeleteAsync(string ApiAction, bool Authorized = false)
+        {
+            string responseString = "";
+            try
+            {
+                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpDeleteClientName);
+                string ApiUrl = _ApiBaseUri + ApiAction;
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Delete, ApiUrl);
+
+                // Add token to the Authorization header and make the request 
+                if (Authorized)
+                    await AddBearerTokenAsync(request);
+
+                HttpResponseMessage response = await client.SendAsync(request);
+                // Handle the response
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        responseString = await response.Content.ReadAsStringAsync();
+                        break;
+                    case HttpStatusCode.Unauthorized:
+                        responseString = $"Please sign in again. {response.ReasonPhrase}";
+                        break;
+                    default:
+                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
+                        break;
+                }
+            }
+            catch (MsalUiRequiredException ex)
+            {
+                responseString = $"Session has expired. Please sign in again. {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                responseString = $"Error calling API: {ex.Message}";
+            }
+
+            return responseString;
+
+        }
+
         private async Task<string> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
         {
             string ApiUrl = _ApiBaseUri + ApiAction;
@@ -811,6 +872,7 @@ namespace UpDiddy.Api
             return responseString;
 
         }
+
         private HttpRequestMessage Request(HttpMethod method, string ApiAction, string Content)
         {
             HttpRequestMessage request = new HttpRequestMessage(method, _ApiBaseUri + ApiAction)
