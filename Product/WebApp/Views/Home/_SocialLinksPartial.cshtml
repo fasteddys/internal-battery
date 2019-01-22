@@ -1,0 +1,91 @@
+﻿<div class="col-12 no-padding">
+    <div class="edit-container">
+        <div class="row">
+            <div class="col-6 no-padding">
+                <h5>Social Links</h5>
+            </div>
+            <div class="col-6 no-padding container-align-right">
+                <span class="edit-action" data-toggle="modal" data-target="#SocialLinksModal">Edit</span>
+            </div>
+        </div>
+        @{
+            if (!Model.HasSuppliedAnySocialLinks)
+            {
+                <text>No social links have been provided.</text>
+            }
+            else
+            {
+                <div class="options-container">
+                    @{
+                        if (!string.IsNullOrWhiteSpace(Model.FacebookUrl))
+                        {
+                            <div>
+                                <div class="row">
+                                    <div class="col-12 col-sm-3 option-header no-padding">
+                                        Facebook
+                                    </div>
+                                    <div class="col-12 col-sm-9 option-value no-padding">
+                                        @Model.FacebookUrl
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        if (!string.IsNullOrWhiteSpace(Model.GithubUrl))
+                        {
+                            <div>
+                                <div class="row">
+                                    <div class="col-12 col-sm-3 option-header no-padding">
+                                        GitHub
+                                    </div>
+                                    <div class="col-12 col-sm-9 option-value no-padding">
+                                        @Model.GithubUrl
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        if (!string.IsNullOrWhiteSpace(Model.LinkedInUrl))
+                        {
+                            <div>
+                                <div class="row">
+                                    <div class="col-12 col-sm-3 option-header no-padding">
+                                        LinkedIn
+                                    </div>
+                                    <div class="col-12 col-sm-9 option-value no-padding">
+                                        @Model.LinkedInUrl
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        if (!string.IsNullOrWhiteSpace(Model.StackOverflowUrl))
+                        {
+                            <div>
+                                <div class="row">
+                                    <div class="col-12 col-sm-3 option-header no-padding">
+                                        StackOverflow
+                                    </div>
+                                    <div class="col-12 col-sm-9 option-value no-padding">
+                                        @Model.StackOverflowUrl
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        if (!string.IsNullOrWhiteSpace(Model.TwitterUrl))
+                        {
+                            <div>
+                                <div class="row">
+                                    <div class="col-12 col-sm-3 option-header no-padding">
+                                        Twitter
+                                    </div>
+                                    <div class="col-12 col-sm-9 option-value no-padding">
+                                        @Model.TwitterUrl
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        }
+
+    </div>
+</div>

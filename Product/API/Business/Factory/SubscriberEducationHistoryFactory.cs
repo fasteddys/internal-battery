@@ -9,7 +9,16 @@ namespace UpDiddyApi.Business.Factory
 {
     public class SubscriberEducationHistoryFactory
     {
-        public static SubscriberEducationHistory GetEducationHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, EducationalInstitution educationalInstitution, EducationalDegree educationalDegree, DateTime startDate, DateTime endDate, DateTime degreeDate)
+
+        public static SubscriberEducationHistory GetEducationHistoryByGuid(UpDiddyDbContext db, Guid SubscriberEducationHistoryGuid)
+        {
+            return db.SubscriberEducationHistory
+                .Where(eh => eh.IsDeleted == 0 && eh.SubscriberEducationHistoryGuid == SubscriberEducationHistoryGuid)
+                .FirstOrDefault();
+        }
+
+
+        public static SubscriberEducationHistory GetEducationHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, EducationalInstitution educationalInstitution, EducationalDegree educationalDegree, DateTime? startDate, DateTime? endDate, DateTime? degreeDate)
         {
             return db.SubscriberEducationHistory
                 .Where(eh => eh.IsDeleted == 0 && eh.EducationalDegreeId == educationalDegree.EducationalDegreeId &&

@@ -1,0 +1,27 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model ProfileViewModel
+<div class="modal fade" id="ContactInfoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="profile-edit-modal-header-container">
+                    <h4>Change contact info</h4>
+                </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Phone Number</div>
+                    <div class="modal-edit-input">
+                        <input id="PhoneUpdateInput" form="PersonalInfoForm" type="text" class="form-control phone-number-input" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="ContactInfoModalSaveButton" form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>

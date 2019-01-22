@@ -187,7 +187,7 @@ namespace UpDiddy.Api
         public IList<SkillDto> GetSkills(string userQuery)
         {
             string cacheKey = $"GetSkills{userQuery}";
-            IList<SkillDto> rval = GetCachedValue<IList<SkillDto>>(cacheKey);
+           IList<SkillDto> rval = GetCachedValue<IList<SkillDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
@@ -198,6 +198,87 @@ namespace UpDiddy.Api
             }
             return rval;
         }
+
+        public IList<CompanyDto> GetCompanies(string userQuery)
+        {
+            string cacheKey = $"GetCompanies{userQuery}";
+            IList<CompanyDto> rval = GetCachedValue<IList<CompanyDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetCompanies(userQuery);
+                SetCachedValue<IList<CompanyDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public IList<EducationalInstitutionDto> GetEducationalInstitutions(string userQuery)
+        {
+            string cacheKey = $"GetEducationalInstitutions{userQuery}";
+            IList<EducationalInstitutionDto> rval = GetCachedValue<IList<EducationalInstitutionDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetEducationalInstitutions(userQuery);
+                SetCachedValue<IList<EducationalInstitutionDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public IList<EducationalDegreeDto> GetEducationalDegrees(string userQuery)
+        {
+            string cacheKey = $"GetEducationalDegrees{userQuery}";
+            IList<EducationalDegreeDto> rval = GetCachedValue<IList<EducationalDegreeDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetEducationalDegrees(userQuery);
+                SetCachedValue<IList<EducationalDegreeDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public IList<CompensationTypeDto> GetCompensationTypes()
+        {
+            string cacheKey = $"GetCompensationTypes";
+            IList<CompensationTypeDto> rval = GetCachedValue<IList<CompensationTypeDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetCompensationTypes();
+                SetCachedValue<IList<CompensationTypeDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+
+        public IList<EducationalDegreeTypeDto> GetEducationalDegreeTypes()
+        {
+            string cacheKey = $"GetEducationDegreeTypes";
+            IList<EducationalDegreeTypeDto> rval = GetCachedValue<IList<EducationalDegreeTypeDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetEducationalDegreeTypes();
+                SetCachedValue<IList<EducationalDegreeTypeDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+ 
+
+
+
 
         #endregion
 
@@ -258,10 +339,57 @@ namespace UpDiddy.Api
             return Post<BasicResponseDto>(resumeDto, "resume/upload", true);
         }
 
+        #region Subscriber Work History
+        public SubscriberWorkHistoryDto AddWorkHistory(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
+        {
+            return Post<SubscriberWorkHistoryDto>(workHistory, string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), true);
+        }
+        public SubscriberWorkHistoryDto UpdateWorkHistory(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
+        {
+            return Put<SubscriberWorkHistoryDto>(workHistory, string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), true);
+        }
+        
+        public IList<SubscriberWorkHistoryDto> GetWorkHistory(Guid subscriberGuid)
+        {
+            return Get<IList<SubscriberWorkHistoryDto>>(string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), true);
+        }
+        // Chris Put Delete in here and change path
+        public SubscriberWorkHistoryDto DeleteWorkHistory(Guid subscriberGuid, Guid workHistoryGuid)
+        {
+            return Delete<SubscriberWorkHistoryDto>(string.Format("subscriber/{0}/work-history/{1}",subscriberGuid.ToString(), workHistoryGuid.ToString()) , true);
+        }
+        #endregion
+
+        #region Subscriber Education History
+        public SubscriberEducationHistoryDto AddEducationalHistory(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
+        {
+            return Post<SubscriberEducationHistoryDto>(educationHistory, string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), true);
+        }
+
+
+        public IList<SubscriberEducationHistoryDto> GetEducationHistory(Guid subscriberGuid)
+        {
+            return Get<IList<SubscriberEducationHistoryDto>>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), true);
+        }
+
+
+        public SubscriberEducationHistoryDto UpdateEducationHistory(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
+        {
+            return Put<SubscriberEducationHistoryDto>(educationHistory, string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), true);
+        }
+
+        // Chris Put Delete in here and change path
+        public SubscriberEducationHistoryDto DeleteEducationHistory(Guid subscriberGuid, Guid educationHistory)
+        {
+            return Delete<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history/{1}", subscriberGuid.ToString(), educationHistory.ToString()), true);
+        }
+        #endregion
+
         public SubscriberADGroupsDto MyGroups()
         {
             return Get<SubscriberADGroupsDto>("subscriber/me/group", true);
         }
+
         #endregion
 
         #region Cache Helper Functions
@@ -324,6 +452,36 @@ namespace UpDiddy.Api
         {
             return Get<IList<SkillDto>>("skill/" + userQuery, true);
         }
+
+
+        private IList<CompanyDto> _GetCompanies(string userQuery)
+        {
+            return Get<IList<CompanyDto>>("company/" + userQuery, true);
+        }
+
+        private IList<EducationalInstitutionDto> _GetEducationalInstitutions(string userQuery)
+        {
+            return Get<IList<EducationalInstitutionDto>>("educational-institution/" + userQuery, true);
+        }
+
+        private IList<EducationalDegreeDto> _GetEducationalDegrees(string userQuery)
+        {
+            return Get<IList<EducationalDegreeDto>>("educational-degree/" + userQuery, true);
+        }
+
+
+        private IList<CompensationTypeDto> _GetCompensationTypes()
+        {
+            return Get<IList<CompensationTypeDto>>("compensation-types" , true);
+        }
+
+
+
+        private IList<EducationalDegreeTypeDto> _GetEducationalDegreeTypes()
+        { 
+            return Get<IList<EducationalDegreeTypeDto>>("educational-degree-types", true);
+        }
+
 
         public IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid)
         {
@@ -389,6 +547,22 @@ namespace UpDiddy.Api
         public T Get<T>(string ApiAction, bool Authorized = false)
         {
             Task<string> Response = _GetAsync(ApiAction, Authorized);
+            try
+            {
+                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
+                return rval;
+            }
+            catch (Exception ex)
+            {
+                // TODO instrument with json string and requested type 
+                var msg = ex.Message;
+                return (T)Convert.ChangeType(null, typeof(T));
+            }
+        }
+
+        public T Delete<T>(string ApiAction, bool Authorized = false)
+        {
+            Task<string> Response = _DeleteAsync(ApiAction, Authorized);
             try
             {
                 T rval = JsonConvert.DeserializeObject<T>(Response.Result);
@@ -630,6 +804,47 @@ namespace UpDiddy.Api
 
         }
 
+        private async Task<string> _DeleteAsync(string ApiAction, bool Authorized = false)
+        {
+            string responseString = "";
+            try
+            {
+                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpDeleteClientName);
+                string ApiUrl = _ApiBaseUri + ApiAction;
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Delete, ApiUrl);
+
+                // Add token to the Authorization header and make the request 
+                if (Authorized)
+                    await AddBearerTokenAsync(request);
+
+                HttpResponseMessage response = await client.SendAsync(request);
+                // Handle the response
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        responseString = await response.Content.ReadAsStringAsync();
+                        break;
+                    case HttpStatusCode.Unauthorized:
+                        responseString = $"Please sign in again. {response.ReasonPhrase}";
+                        break;
+                    default:
+                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
+                        break;
+                }
+            }
+            catch (MsalUiRequiredException ex)
+            {
+                responseString = $"Session has expired. Please sign in again. {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                responseString = $"Error calling API: {ex.Message}";
+            }
+
+            return responseString;
+
+        }
+
         private async Task<string> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
         {
             string ApiUrl = _ApiBaseUri + ApiAction;
@@ -657,6 +872,7 @@ namespace UpDiddy.Api
             return responseString;
 
         }
+
         private HttpRequestMessage Request(HttpMethod method, string ApiAction, string Content)
         {
             HttpRequestMessage request = new HttpRequestMessage(method, _ApiBaseUri + ApiAction)

@@ -9,7 +9,15 @@ namespace UpDiddyApi.Business.Factory
 {
     public class SubscriberWorkHistoryFactory
     {
-        public static SubscriberWorkHistory GetWorkHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, Company company, DateTime startDate, DateTime endDate)
+
+        public static SubscriberWorkHistory GetWorkHistoryByGuid(UpDiddyDbContext db, Guid SubcriberWorkHistoryGuid)
+        {
+            return db.SubscriberWorkHistory
+                .Where(wh => wh.IsDeleted == 0 && wh.SubscriberWorkHistoryGuid == SubcriberWorkHistoryGuid )
+                .FirstOrDefault();
+        }
+
+        public static SubscriberWorkHistory GetWorkHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, Company company, DateTime? startDate, DateTime? endDate)
         {
             return db.SubscriberWorkHistory
                 .Where(wh => wh.IsDeleted == 0 && wh.CompanyId == company.CompanyId && wh.SubscriberId == subscriber.SubscriberId && wh.StartDate == startDate && wh.EndDate == endDate)

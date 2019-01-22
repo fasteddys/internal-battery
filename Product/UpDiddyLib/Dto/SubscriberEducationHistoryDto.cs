@@ -8,15 +8,11 @@ namespace UpDiddyLib.Dto
     {
         public int SubscriberEducationHistoryId { get; set; }
         public Guid SubscriberEducationHistoryGuid { get; set; }
-        public int SubscriberId { get; set; }
-        public string EducationalInstitution { get; set; }
-        public string EducationalInstitutionId { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public DateTime DegreeDate { get; set; }
-        public string EducationalDegreeType { get; set; }
-        public int EducationalDegreeTypeId { get; set; }
-        public string EducationalDegree { get; set; }
-        public int EducationalDegreeId { get; set; }
+        public string EducationalInstitution  { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public DateTime? DegreeDate { get; set; }
+        public string EducationalDegreeType{ get; set; } 
+        public string EducationalDegree  { get; set; }        
     }
 }

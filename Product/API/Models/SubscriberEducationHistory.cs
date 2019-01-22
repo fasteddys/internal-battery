@@ -13,9 +13,9 @@ namespace UpDiddyApi.Models
         public virtual Subscriber Subscriber { get; set; }
         public int EducationalInstitutionId { get; set; }
         public virtual EducationalInstitution EducationalInstitution { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public DateTime DegreeDate { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public DateTime? DegreeDate { get; set; }
         public int? EducationalDegreeTypeId { get; set; }
         public virtual EducationalDegreeType EducationalDegreeType { get; set; }
         public int? EducationalDegreeId { get; set; }
