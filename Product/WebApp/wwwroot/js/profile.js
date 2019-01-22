@@ -206,12 +206,9 @@ function AddWorkHistory() {
         },
         success: function (res) {
             var html = CreateWorkHistoryDiv(res);
-            if ($("#ProfileWorkHistory").children().length > 0)
-                $("#ProfileWorkHistory").children().last().append(html);
-            else {
-                $("#ProfileWorkHistory").append(html);
+            $("#ProfileWorkHistory").append(html);
+            if ($("#ProfileWorkHistory").children().length <= 0)
                 $("#ProfileWorkHistoryNotSpecified").hide();
-            }
         }
     });
 
