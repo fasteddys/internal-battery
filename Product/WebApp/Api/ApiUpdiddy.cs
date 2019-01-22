@@ -346,39 +346,39 @@ namespace UpDiddy.Api
 
         public SubscriberEducationHistoryDto AddEducationalHistory(SubscriberEducationHistoryDto educationHistory)
         {
-            return Post<SubscriberEducationHistoryDto>(educationHistory, "profile/AddEducationalHistory", true);
+            return Post<SubscriberEducationHistoryDto>(educationHistory, "subscriber/educational-history", true);
         }
 
         public SubscriberWorkHistoryDto UpdateWorkHistory(SubscriberWorkHistoryDto workHistory)
         {
-            return Post<SubscriberWorkHistoryDto>(workHistory, "profile/UpdateWorkHistory", true);
+            return Put<SubscriberWorkHistoryDto>(workHistory, "subscriber/work-history", true);
         }
         
         public IList<SubscriberWorkHistoryDto> GetWorkHistory()
         {
-            return Get<IList<SubscriberWorkHistoryDto>>("profile/GetWorkHistory", true);
+            return Get<IList<SubscriberWorkHistoryDto>>("subscriber/work-history", true);
         }
 
         public IList<SubscriberEducationHistoryDto> GetEducationHistory()
         {
-            return Get<IList<SubscriberEducationHistoryDto>>("profile/GetEducationHistory", true);
+            return Get<IList<SubscriberEducationHistoryDto>>("subscriber/education-history", true);
         }
 
-
+        // Chris Put Delete in here and change path
         public SubscriberWorkHistoryDto DeleteWorkHistory(Guid workHistoryGuid)
         {
-            return Put<SubscriberWorkHistoryDto>("profile/DeleteWorkHistory/" + workHistoryGuid.ToString() , true);
+            return Put<SubscriberWorkHistoryDto>("subscriber/DeleteWorkHistory/" + workHistoryGuid.ToString() , true);
         }
 
         public SubscriberEducationHistoryDto UpdateEducationHistory(SubscriberEducationHistoryDto educationHistory)
         {
-            return Post<SubscriberEducationHistoryDto>(educationHistory, "profile/UpdateEducationHistory", true);
+            return Put<SubscriberEducationHistoryDto>(educationHistory, "subscriber/education-history", true);
         }
 
-
+        // Chris Put Delete in here and change path
         public SubscriberEducationHistoryDto DeleteEducationHistory(Guid educationHistory)
         {
-            return Put<SubscriberEducationHistoryDto>("profile/DeleteEducationHistory/" + educationHistory.ToString(), true);
+            return Put<SubscriberEducationHistoryDto>("subscriber/DeleteEducationHistory/" + educationHistory.ToString(), true);
         }
 
         public SubscriberADGroupsDto MyGroups()
