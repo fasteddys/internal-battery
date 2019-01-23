@@ -31,9 +31,10 @@ using Serilog.Sinks.ApplicationInsights;
 using UpDiddyLib.Serilog.Sinks;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
-using UpDiddyApi.Business.Resume;
+using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Services;
 using System.Collections.Generic;
-using UpDiddyApi.Business.Graph;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using System.Security.Claims;
 using UpDiddyApi.Authorization;
 using Microsoft.AspNetCore.Authorization;
@@ -190,6 +191,7 @@ namespace UpDiddyApi
 
             services.AddTransient<ISovrenAPI, Sovren>();
             services.AddHttpClient<ISovrenAPI,Sovren>();
+            services.AddTransient<ICloudStorage, AzureBlobStorage>();
 
             services.AddTransient<IB2CGraph, B2CGraphClient>();
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();

@@ -20,6 +20,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Text.Encodings.Web;
 using System.IO;
 using UpDiddyLib.Helpers;
+using System.Threading.Tasks;
+using System.Net.Http;
+using System.Security.Claims;
 using UpDiddy.Helpers;
 using System.Security.Claims;
 
@@ -184,10 +187,9 @@ namespace UpDiddy.Controllers
                 }),
                 // todo: consider refactoring this... include in GetSubscriber (add navigation property)
                 Skills = _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value),
+                Files = this.subscriber?.Files,
                 WorkHistory = _Api.GetWorkHistory(this.subscriber.SubscriberGuid.Value),
                 EducationHistory = _Api.GetEducationHistory(this.subscriber.SubscriberGuid.Value)
-
-
             };
          
             // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
@@ -268,6 +270,14 @@ namespace UpDiddy.Controllers
             }
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> DownloadFile(int fileId)
+        {
+            HttpResponseMessage response = await _Api.DownloadFileAsync(Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value), fileId);
+            Stream stream = await response.Content.ReadAsStreamAsync();
+            return File(stream, "application/octet-stream", response.Content.Headers.ContentDisposition.FileName);
+        }
 
         [Authorize]
         [HttpPost]

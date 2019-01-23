@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using UpDiddyApi.Business;
+using UpDiddyApi.ApplicationCore;
 using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.Dto;
@@ -14,8 +14,9 @@ using System.Net.Http;
 using UpDiddyLib.Helpers;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using UpDiddyApi.Business.Resume;
-using UpDiddyApi.Business.Factory;
+using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Factory;
+using System.IO;
 using Microsoft.AspNetCore.SignalR;
 using UpDiddyApi.Helpers.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
@@ -26,8 +27,9 @@ namespace UpDiddyApi.Workflow
 {
     public class ScheduledJobs : BusinessVendorBase 
     {
+        ICloudStorage _cloudStorage;
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, IHubContext<ClientHub> hub, IDistributedCache distributedCache)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, IHubContext<ClientHub> hub, IDistributedCache distributedCache, ICloudStorage cloudStorage)
         {
             _db = context;
             _mapper = mapper;
@@ -37,6 +39,7 @@ namespace UpDiddyApi.Workflow
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
             _sovrenApi = sovrenApi;
+            _cloudStorage = cloudStorage;
             _hub = hub;
             _cache = distributedCache;
         }
@@ -261,21 +264,31 @@ namespace UpDiddyApi.Workflow
 
         #region CareerCircle Jobs 
  
-        public Boolean ImportSubscriberProfileData(ResumeDto resumeDto,Subscriber subscriber)
+        public async Task<bool> ImportSubscriberProfileDataAsync(SubscriberFile resume)
         {
             try
             {
+                resume.Subscriber = _db.Subscriber.Where(s => s.SubscriberId == resume.SubscriberId).First();
                 string errMsg = string.Empty;
 
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resumeDto.SubscriberGuid}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
+                string base64EncodedString = null;
+                using (var ms = new MemoryStream())
+                {
+                    await _cloudStorage.DownloadToStreamAsync(resume.BlobName, ms);
+                    var fileBytes = ms.ToArray();
+                    base64EncodedString = Convert.ToBase64String(fileBytes);
 
-                String parsedDocument =  _sovrenApi.SubmitResumeAsync(resumeDto.Base64EncodedResume).Result;
-                SubscriberProfileStagingStoreFactory.Save(_db, subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
+                }
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData: Finished downloading and encoding file at {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
+
+                String parsedDocument =  _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
+                SubscriberProfileStagingStoreFactory.Save(_db, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
 
                 // Get the list of profiles that need 
                 List<SubscriberProfileStagingStore> profiles = _db.SubscriberProfileStagingStore
                 .Include(p => p.Subscriber)
-                .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == resumeDto.SubscriberGuid)
+                .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == resume.Subscriber.SubscriberGuid)
                 .ToList();
 
                 // Import user profile data
@@ -287,8 +300,8 @@ namespace UpDiddyApi.Workflow
                 {
                     NamingStrategy = new CamelCaseNamingStrategy()
                 };
-                SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, (Guid)subscriber.SubscriberGuid, _syslog, _mapper);
-                hubHelper.CallClient(subscriber.SubscriberGuid, 
+                SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, (Guid)resume.Subscriber.SubscriberGuid, _syslog, _mapper);
+                hubHelper.CallClient(resume.Subscriber.SubscriberGuid, 
                     Constants.SignalR.ResumeUpLoadVerb, 
                     JsonConvert.SerializeObject(
                         subscriberDto,

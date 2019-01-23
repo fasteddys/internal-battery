@@ -542,6 +542,87 @@
             }
         }
     }
+
+    .resume-file-component {
+        // force height to make it more smooth
+        height: 30px;
+        .resume-control,
+        .resume-upload-form {
+            .edit,
+            .delete,
+            .download,
+            .change-file {
+                color: $color-primary;
+                background: transparent;
+                cursor: pointer;
+                border: 0;
+                &:active {
+                    outline: 0; 
+                }
+
+                &:hover {
+                    color: darken($color-primary, 10%);
+                }
+                &:active {
+                    color: darken($color-primary, 15%)
+                }
+            }
+
+            .edit,
+            .delete {
+                &.disabled {
+                    color: $color-tertiary-gray;
+                }
+            }
+        }
+
+        .resume-upload-form {
+
+            .submit,
+            .change-file,
+            .cancel {
+                display: none;
+            }
+
+            .loading-spinner {
+                display: none;
+            }
+
+            &.loading {
+                .loading-spinner {
+                    display: inline-block;
+                }
+            }
+
+            &.has-file {
+                .submit, 
+                .change-file {
+                    display: inline-block;
+                }
+                .select-file {
+                    display: none;
+                }
+            }
+        }
+
+        &.has-resume {
+            .resume-upload-form {
+                display: none;
+                .cancel {
+                    display: inline-block;
+                }
+            }
+        }
+
+        &.editing.has-resume {
+            .resume-upload-form {
+                display: block;
+            }
+            .resume-control {
+                display: none;
+            }
+        }
+    }
 }
 
 // Extra Small Styles
