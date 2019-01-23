@@ -406,6 +406,58 @@ namespace UpDiddyLib.Helpers
             Regex digitsOnly = new Regex(@"[^\d]");
             return digitsOnly.Replace(val, "");
         }
-
+        [Obsolete("Remove this once we are certain we cannot make use of it", false)]
+        public static string FormattedDateRange(DateTime? startDate, DateTime? endDate)
+        {
+            string formattedDateRange = string.Empty;
+            if(!startDate.HasValue || startDate.Value == DateTime.MinValue)
+            {
+                return "No date range specified";
+            }
+            else
+            {
+                formattedDateRange = startDate.Value.ToString("MMMM yyyy") + " - ";
+            }            
+            DateTime effectiveEndDate;
+            if (!endDate.HasValue || endDate.Value == DateTime.MinValue)
+            {
+                effectiveEndDate = DateTime.UtcNow;
+                formattedDateRange += "Present";
+            }
+            else
+            {
+                effectiveEndDate = endDate.Value;
+                formattedDateRange += endDate.Value.ToString("MMMM yyyy");
+            }
+            DateTime period;
+            if (effectiveEndDate > startDate.Value)
+            {
+                period = new DateTime(effectiveEndDate.Subtract(startDate.Value).Ticks);
+            }
+            else
+            {
+                period = DateTime.MinValue;
+            }
+            formattedDateRange += " (" + period.Year + " years " + period.Month + " months)";
+            return formattedDateRange;
+        }
+        [Obsolete("Remove this once we are certain we cannot make use of it",false)]
+        public static string FormattedCompensation(string compensationType, decimal compensation)
+        {
+            string formattedCompensation = string.Empty;
+            if (compensation == 0)
+            {
+                return "No compensation specified";
+            }
+            else
+            {
+                formattedCompensation = $"{compensation:C}";
+                if(!string.IsNullOrWhiteSpace(compensationType))
+                {
+                    formattedCompensation += $" ({compensationType})";
+                }
+            }
+            return formattedCompensation;
+        }
     }
 }

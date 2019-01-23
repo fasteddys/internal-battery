@@ -367,7 +367,7 @@ var ResumeUploadTimeout = function () {
             resumeUploadInProgress = false;
             EnableResumeNextButton();
         }
-    }, 15000);
+    }, 20000);
 };
 
 
@@ -377,7 +377,7 @@ var IsValidFileType = function (filename) {
     }
     var fileExtensions = ["doc", "docx", "odt", "pdf", "rtf", "tex", "txt", "wks", "wps", "wpd"];
     var splitFileName = filename.split(".");
-    if (fileExtensions.indexOf(splitFileName[splitFileName.length - 1]) > 0) {
+    if (fileExtensions.indexOf(splitFileName[splitFileName.length - 1]) >= 0) {
         return true;
     }
     return false;

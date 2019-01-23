@@ -46,7 +46,7 @@ namespace UpDiddyApi.Authorization
                 .Get<List<ConfigADGroup>>()
                 .Find(e => e.Name == requirement.RoleName);
 
-            Microsoft.Graph.Group group = groups.Where(e => e.Id == requiredGroup.Id).First();
+            Microsoft.Graph.Group group = groups.Where(e => e.Id == requiredGroup.Id).FirstOrDefault();
 
             return group != null;
         }

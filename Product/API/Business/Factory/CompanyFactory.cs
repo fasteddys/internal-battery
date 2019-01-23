@@ -23,9 +23,8 @@ namespace UpDiddyApi.Business.Factory
         }
 
         static public Company GetOrAdd(UpDiddyDbContext db, string companyName)
-        {
+        {            
             companyName = companyName.Trim();
-
             Company company = db.Company
                 .Where(c => c.IsDeleted == 0 && c.CompanyName == companyName)
                 .FirstOrDefault();

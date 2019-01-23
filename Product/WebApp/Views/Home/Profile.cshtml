@@ -36,183 +36,40 @@
             });
             e.preventDefault();
         });
-
-
-
-
     });
 
     </script>
-    <script src="~/js/selectize-handling.js"></script>
-    <script src="~/js/profile.js"></script>
+    <script src="~/js/selectize-handling.js" asp-append-version="true"></script>
+    <script src="~/js/profile.js" asp-append-version="true"></script>
 }
 
 @* Modals for editing *@
 <form asp-controller="Home" asp-action="UpdateProfileInformation" id="PersonalInfoForm"></form>
 <input type="hidden" form="PersonalInfoForm" value="@Model.SubscriberGuid" asp-for="SubscriberGuid" />
 <input type="hidden" id="SavedStateGuid" value="@(Model.SelectedState)" />
-<div class="modal fade" id="NameModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-                <div class="profile-edit-modal-header-container">
-                    <h4>Change Personal Info</h4>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">First name</div>
-                    <div class="modal-edit-input">
-                        <input id="FirstNameUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="FirstName" />
-                    </div>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">Last name</div>
-                    <div class="modal-edit-input">
-                        <input id="LastNameUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="LastName" />
-                    </div>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">Address</div>
-                    <div class="modal-edit-input">
-                        <input id="AddressUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="Address" />
-                    </div>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">City</div>
-                    <div class="modal-edit-input">
-                        <input id="CityUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="City" />
-                    </div>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">Country</div>
-                    <div class="modal-edit-input">
-                        @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select", form = "PersonalInfoForm" })
-                    </div>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">State</div>
-                    <div class="modal-edit-input">
-                        @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select", form = "PersonalInfoForm" })
-                    </div>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">Zip Code</div>
-                    <div class="modal-edit-input">
-                        <input id="PostalCodeUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="PostalCode" />
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button id="NameModalSaveButton" form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="modal fade" id="ContactInfoModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-                <div class="profile-edit-modal-header-container">
-                    <h4>Change contact info</h4>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">Phone Number</div>
-                    <div class="modal-edit-input">
-                        <input id="PhoneUpdateInput" form="PersonalInfoForm" type="text" class="form-control phone-number-input" maxlength="14" placeholder="(###) ###-####" asp-for="FormattedPhone" />
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button id="ContactInfoModalSaveButton" form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Personal Info Modal -->
+@{ Html.RenderPartial("_PersonalInfoModalPartial", Model); }
 
-<div class="modal fade" id="SocialLinksModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-                <div class="profile-edit-modal-header-container">
-                    <h4>Change social links</h4>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">Facebook</div>
-                    <div class="modal-edit-input">
-                        @{
-                            string facebookPlaceholder = string.IsNullOrEmpty(Model.FacebookUrl) ? "E.g. http://www.facebook.com/me" : Model.FacebookUrl;
-                        }
-                        <input id="FacebookUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="FacebookUrl" placeholder="@facebookPlaceholder" />
-                    </div>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">Twitter</div>
-                    <div class="modal-edit-input">
-                        @{
-                            string twitterPlaceholder = string.IsNullOrEmpty(Model.TwitterUrl) ? "E.g. https://www.twitter.com/me" : Model.TwitterUrl;
-                        }
-                        <input id="TwitterUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="TwitterUrl" placeholder="@twitterPlaceholder" />
-                    </div>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">LinkedIn</div>
-                    <div class="modal-edit-input">
-                        @{
-                            string linkedinPlaceholder = string.IsNullOrEmpty(Model.LinkedInUrl) ? "E.g. https://linkedin.com/in/me" : Model.LinkedInUrl;
-                        }
-                        <input id="LinkedInUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="LinkedInUrl" placeholder="@linkedinPlaceholder" />
-                    </div>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">StackOverflow</div>
-                    <div class="modal-edit-input">
-                        @{
-                            string stackOverflowPlaceholder = string.IsNullOrEmpty(Model.StackOverflowUrl) ? "E.g. https://stackoverflow.com/users/123456/me" : Model.StackOverflowUrl;
-                        }
-                        <input id="StackOverflowUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="StackOverflowUrl" placeholder="@stackOverflowPlaceholder" />
-                    </div>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">GitHub</div>
-                    <div class="modal-edit-input">
-                        @{
-                            string githubPlaceholder = string.IsNullOrEmpty(Model.GithubUrl) ? "E.g. http://github.com/me" : Model.GithubUrl;
-                        }
-                        <input id="GitHubUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="GithubUrl" placeholder="@githubPlaceholder" />
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button id="SocialLinksModalSaveButton" disabled form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="modal fade" id="SkillsModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-                <div class="profile-edit-modal-header-container">
-                    <h4>Change skills</h4>
-                </div>
-                <div class="profile-edit-modal-edit-option">
-                    <div class="modal-edit-input-label">Skills</div>
-                    <div class="modal-edit-input">
-                        <input form="PersonalInfoForm" type="text" asp-for="SelectedSkills" />
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button form="PersonalInfoForm" type="submit" class="btn btn-primary">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Education History Modal    -->
+@{ Html.RenderPartial("_EducationHistoryModalPartial", Model); }  
+
+   
+
+
+<!-- Work History Modal -->
+@{ Html.RenderPartial("_WorkHistoryModalPartial", Model); }
+
+<!-- Contact Info Modal -->
+@{ Html.RenderPartial("_ContactInfoModalPartial", Model); }
+
+<!-- Social Links Modal -->
+@{ Html.RenderPartial("_SocialLinksModalPartial", Model); }
+
+<!-- Skills Modal -->
+@{ Html.RenderPartial("_SkillsModalPartial", Model); }
+
 
 <div class="profile-container">
     <div class="row profile-hero">
@@ -366,224 +223,27 @@
                                 </div>
                                 <div class="options-input-container">
                                     <div class="row">
-                                        <div class="col-12 no-padding">
-                                            <div class="edit-container">
-                                                <div class="row">
-                                                    <div class="col-6 no-padding">
-                                                        <h5>Personal Info</h5>
-                                                    </div>
-                                                    <div class="col-6 no-padding container-align-right">
-                                                        <span class="edit-action" data-toggle="modal" data-target="#NameModal">Edit</span>
-                                                    </div>
-                                                </div>
-                                                @{
-                                                    if (!Model.HasFirstAndLastName && !Model.HasFullyQualifiedAddress)
-                                                    {
-                                                        <text>No personal information has been provided.</text>
-                                                    }
-                                                    else
-                                                    {
-                                                        <div class="options-container">
-                                                            @{
-                                                                if (Model.HasFirstAndLastName)
-                                                                {
-                                                                    <div class="name-container">
-                                                                        <div class="row">
-                                                                            <div class="col-12 col-sm-3 option-header no-padding">
-                                                                                Name
-                                                                            </div>
-                                                                            <div class="col-12 col-sm-9 option-value no-padding">
-                                                                                @Model.FirstName @Model.LastName
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                }
-                                                                if (Model.HasFullyQualifiedAddress)
-                                                                {
-                                                                    <div class="address-container">
-                                                                        <div class="row">
-                                                                            <div class="col-12 col-sm-3 option-header no-padding">
-                                                                                Address
-                                                                            </div>
-                                                                            <div class="col-12 col-sm-9 option-value no-padding">
-                                                                                @Model.Address @Model.City, @Model.States.Where(s => s.Value == Model.SelectedState.Value.ToString()).FirstOrDefault().Text, @Model.PostalCode, @Model.Countries.Where(c => c.Value == Model.SelectedCountry.Value.ToString()).FirstOrDefault().Text
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                }
-                                                            }
-                                                        </div>
-                                                    }
-                                                }
-                                            </div>
-                                        </div>
-                                        <div class="col-12 no-padding">
-                                            <div class="edit-container">
-                                                <div class="row">
-                                                    <div class="col-6 no-padding">
-                                                        <h5>Contact Info</h5>
-                                                    </div>
-                                                    <div class="col-6 no-padding container-align-right">
-                                                        <span class="edit-action" data-toggle="modal" data-target="#ContactInfoModal">Edit</span>
-                                                    </div>
-                                                </div>
-                                                <div class="options-container">
-                                                    @{
-                                                        if (!string.IsNullOrWhiteSpace(Model.FormattedPhone))
-                                                        {
-                                                            <div>
-                                                                <div class="row">
-                                                                    <div class="col-12 col-sm-3 option-header no-padding">
-                                                                        Phone
-                                                                    </div>
-                                                                    <div class="col-12 col-sm-9 option-value no-padding">
-                                                                        @Model.FormattedPhone
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        }
-                                                    }
-                                                    @*We know this page cannot be accessed unless user has signed up with an email.
-                                                        Therefore, we don't need to check if it exists.*@
-                                                    <div>
-                                                        <div class="row">
-                                                            <div class="col-12 col-sm-3 option-header no-padding">
-                                                                Email
-                                                            </div>
-                                                            <div class="col-12 col-sm-9 option-value no-padding">
-                                                                @Model.Email
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-12 no-padding">
-                                            <div class="edit-container">
-                                                <div class="row">
-                                                    <div class="col-6 no-padding">
-                                                        <h5>Social Links</h5>
-                                                    </div>
-                                                    <div class="col-6 no-padding container-align-right">
-                                                        <span class="edit-action" data-toggle="modal" data-target="#SocialLinksModal">Edit</span>
-                                                    </div>
-                                                </div>
-                                                @{
-                                                    if (!Model.HasSuppliedAnySocialLinks)
-                                                    {
-                                                        <text>No social links have been provided.</text>
-                                                    }
-                                                    else
-                                                    {
-                                                        <div class="options-container">
-                                                            @{
-                                                                if (!string.IsNullOrWhiteSpace(Model.FacebookUrl))
-                                                                {
-                                                                    <div>
-                                                                        <div class="row">
-                                                                            <div class="col-12 col-sm-3 option-header no-padding">
-                                                                                Facebook
-                                                                            </div>
-                                                                            <div class="col-12 col-sm-9 option-value no-padding">
-                                                                                @Model.FacebookUrl
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                }
-                                                                if (!string.IsNullOrWhiteSpace(Model.GithubUrl))
-                                                                {
-                                                                    <div>
-                                                                        <div class="row">
-                                                                            <div class="col-12 col-sm-3 option-header no-padding">
-                                                                                GitHub
-                                                                            </div>
-                                                                            <div class="col-12 col-sm-9 option-value no-padding">
-                                                                                @Model.GithubUrl
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                }
-                                                                if (!string.IsNullOrWhiteSpace(Model.LinkedInUrl))
-                                                                {
-                                                                    <div>
-                                                                        <div class="row">
-                                                                            <div class="col-12 col-sm-3 option-header no-padding">
-                                                                                LinkedIn
-                                                                            </div>
-                                                                            <div class="col-12 col-sm-9 option-value no-padding">
-                                                                                @Model.LinkedInUrl
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                }
-                                                                if (!string.IsNullOrWhiteSpace(Model.StackOverflowUrl))
-                                                                {
-                                                                    <div>
-                                                                        <div class="row">
-                                                                            <div class="col-12 col-sm-3 option-header no-padding">
-                                                                                StackOverflow
-                                                                            </div>
-                                                                            <div class="col-12 col-sm-9 option-value no-padding">
-                                                                                @Model.StackOverflowUrl
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                }
-                                                                if (!string.IsNullOrWhiteSpace(Model.TwitterUrl))
-                                                                {
-                                                                    <div>
-                                                                        <div class="row">
-                                                                            <div class="col-12 col-sm-3 option-header no-padding">
-                                                                                Twitter
-                                                                            </div>
-                                                                            <div class="col-12 col-sm-9 option-value no-padding">
-                                                                                @Model.TwitterUrl
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                }
-                                                            }
-                                                        </div>
-                                                    }
-                                                }
 
-                                            </div>
-                                        </div>
-                                        <div class="col-12 no-padding">
-                                            <div class="edit-container">
-                                                <div class="row">
-                                                    <div class="col-6 no-padding">
-                                                        <h5>Skills</h5>
-                                                    </div>
-                                                    <div class="col-6 no-padding container-align-right">
-                                                        <span class="edit-action" data-toggle="modal" data-target="#SkillsModal">Edit</span>
-                                                    </div>
-                                                </div>
-                                                @{
-                                                    if (Model.Skills.Count == 0)
-                                                    {
-                                                        <text>No skills have been provided.</text>
-                                                    }
-                                                    else
-                                                    {
-                                                        <div class="options-container">
-                                                            @{
-                                                                foreach (var skill in Model.Skills)
-                                                                {
-                                                                    <div class="skill-pill">
-                                                                        @{ 
-                                                                            string skillText = UpDiddyLib.Helpers.Utils.ToTitleCase(skill.SkillName);
-                                                                            <text>@skillText</text>
-                                                                        }
-                                                                    </div>
-                                                                }
-                                                            }
-                                                        </div>
-                                                    }
-                                                }
+                                        <!-- Personal Info -->
+                                        @{ Html.RenderPartial("_PersonalInfoPartial", Model); }
 
-                                            </div>
-                                        </div>
+                                        <!-- Contact Info -->
+                                        @{ Html.RenderPartial("_ContactInfoPartial", Model); }
+
+                                        <!-- Work History -->
+                                        @{ Html.RenderPartial("_WorkHistoryPartial", Model); }
+
+                                        <!-- Education History  -->
+                                        @{ Html.RenderPartial("_EducationHistoryPartial", Model); } 
+                                           
+
+                                        <!-- Social Links -->
+                                        @{ Html.RenderPartial("_SocialLinksPartial", Model); }
+
+                                        <!-- Skills  -->
+                                        @{ Html.RenderPartial("_SkillsPartial", Model); }
+
+
                                     </div>
                                 </div>
                             </div>
