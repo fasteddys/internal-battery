@@ -410,6 +410,10 @@ function FormattedDegreeDate(degreeDate) {
     }
 }
 
+String.prototype.sanitize = function () {
+    return this.replace(/(<([^>]+)>)/ig, "");
+}
+
 function CreateWorkHistoryDiv(WorkHistoryInfo) {
 
     var divHtml = "<div class=\"row profile-work-history\" id=\"ProfileWorkHistory_@wh.SubscriberWorkHistoryGuid\">";
@@ -433,19 +437,19 @@ function CreateWorkHistoryDiv(WorkHistoryInfo) {
     divHtml += "</div>";
     // Replace razor items with values from new work history 
     var regex = /@wh.Company/gi;
-    divHtml = divHtml.replace(regex, WorkHistoryInfo.company);
+    divHtml = divHtml.replace(regex, WorkHistoryInfo.company.sanitize());
 
     regex = /@wh.SubscriberWorkHistoryGuid/gi;
     divHtml = divHtml.replace(regex, WorkHistoryInfo.subscriberWorkHistoryGuid);
 
     regex = /@wh.Title/gi;
-    divHtml = divHtml.replace(regex, WorkHistoryInfo.title);
+    divHtml = divHtml.replace(regex, WorkHistoryInfo.title.sanitize());
 
     regex = /@wh.CompensationType/gi;
     divHtml = divHtml.replace(regex, WorkHistoryInfo.compensationType);
 
     regex = /@wh.JobDecription/gi;
-    divHtml = divHtml.replace(regex, WorkHistoryInfo.jobDecription);
+    divHtml = divHtml.replace(regex, WorkHistoryInfo.jobDecription.sanitize());
 
     regex = /@wh.Compensation/gi;
     divHtml = divHtml.replace(regex, WorkHistoryInfo.compensation);
@@ -673,13 +677,13 @@ function CreateEducationHistoryDiv(EducationHistoryInfo) {
     divHtml = divHtml.replace(regex, EducationHistoryInfo.subscriberEducationHistoryGuid);
 
     regex = /@eh.EducationalInstitution/gi;
-    divHtml = divHtml.replace(regex, EducationHistoryInfo.educationalInstitution);
+    divHtml = divHtml.replace(regex, EducationHistoryInfo.educationalInstitution.sanitize());
  
     regex = /@eh.EducationalDegreeType/gi;
-    divHtml = divHtml.replace(regex, EducationHistoryInfo.educationalDegreeType);
+    divHtml = divHtml.replace(regex, EducationHistoryInfo.educationalDegreeType.sanitize());
 
     regex = /@eh.EducationalDegree/gi;
-    divHtml = divHtml.replace(regex, EducationHistoryInfo.educationalDegree);
+    divHtml = divHtml.replace(regex, EducationHistoryInfo.educationalDegree.sanitize());
 
     regex = /@eh.StartDate/gi;
     divHtml = divHtml.replace(regex, EducationHistoryInfo.startDate);
