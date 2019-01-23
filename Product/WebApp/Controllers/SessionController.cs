@@ -53,7 +53,7 @@ namespace UpDiddy.Controllers
         public IActionResult ResetPassword()
         {
             SetAzureAdB2CCulture();
-            var redirectUrl = Url.Action(nameof(HomeController.Index), "Home");
+            var redirectUrl = Url.Action(nameof(SessionController.SignOut), "Session");
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
             properties.Items[AzureAdB2COptions.PolicyAuthenticationProperty] = AzureAdB2COptions.ResetPasswordPolicyId;
             return Challenge(properties, OpenIdConnectDefaults.AuthenticationScheme);

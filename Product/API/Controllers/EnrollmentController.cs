@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
-using UpDiddyApi.Business;
+using UpDiddyApi.ApplicationCore;
 using Microsoft.Extensions.Caching.Distributed;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -54,7 +54,7 @@ namespace UpDiddyApi.Controllers
             // check EnrolmmentDto but if exception occurs then this is a bad request
             try
             {
-                if (subscriberGuid != EnrollmentDto.Subscriber.SubscriberGuid.Value)
+                if (!subscriberGuid.Equals(EnrollmentFlowDto.SubscriberDto.SubscriberGuid))
                     return Unauthorized();
             } catch (Exception ex)
             {

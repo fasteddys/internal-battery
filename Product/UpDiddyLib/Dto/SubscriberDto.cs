@@ -30,5 +30,7 @@ namespace UpDiddyLib.Dto
         public List<SkillDto> Skills { get; set; }
         public List<SubscriberWorkHistoryDto> WorkHistory { get; set; }
         public List<SubscriberEducationHistoryDto> EducationHistory { get; set; }
+
+        public List<SubscriberFileDto> Files { get; set; }
     }
 }

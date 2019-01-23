@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 using System.Data.SqlClient;
 using System.Data;
 using System.Security.Claims;
-using UpDiddyApi.Business.Factory;
+using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers

@@ -7,37 +7,126 @@
 @section Scripts
     {
     <script type="text/javascript">
-    // this must be present for the API call used in site.js
-    var url = '@Url.Action("GetStatesByCountry", "Home")';
-    var subscriberSkills = @Json.Serialize(Model.Skills);
+        // this must be present for the API call used in site.js
+        var url = '@Url.Action("GetStatesByCountry", "Home")';
+        var subscriberSkills = @Json.Serialize(Model.Skills);
 
-    document.addEventListener("DOMContentLoaded", function (event) {
+        document.addEventListener("DOMContentLoaded", function (event) {
 
-        $('#PersonalInfoForm').submit(function (e) {
-            $.ajax({
-                type: "POST",
-                url: '/home/UpdateProfileInformation',
-                data: $(this).serialize(),
-                success: function (html) {
-                    if (html.statusCode === "200") {
-                        location.reload();
-                    }
-                    else if (html.statusCode === "400") {
-                        var errorsList = html.description.split("|");
-                        for (var i = 0; i < errorsList.length; i++) {
-                            if (errorsList[i] !== "") {
-                                toastr.warning(errorsList[i], 'Warning!');
+            $('#PersonalInfoForm').submit(function (e) {
+                $.ajax({
+                    type: "POST",
+                    url: '/home/UpdateProfileInformation',
+                    data: $(this).serialize(),
+                    success: function (html) {
+                        if (html.statusCode === "200") {
+                            location.reload();
+                        }
+                        else if (html.statusCode === "400") {
+                            var errorsList = html.description.split("|");
+                            for (var i = 0; i < errorsList.length; i++) {
+                                if (errorsList[i] !== "") {
+                                    toastr.warning(errorsList[i], 'Warning!');
+                                }
+
                             }
 
                         }
-
                     }
+                });
+                e.preventDefault();
+            });
+        });
+
+        $(document).ready(function () {
+            var toastrOptions = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": false,
+                "progressBar": false,
+                "positionClass": "toast-top-full-width",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "3000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+
+            // resume upload component
+            $('.resume-upload-form .file-input').on('change', function () {
+                var $input = $('.file-input');
+                if ($input[0].files.length > 0) {
+                    $('.resume-upload-form').addClass('has-file');
+                    $('.resume-upload-form .change-file .file-name').text($input[0].files[0].name);
+                } else {
+                    $('.resume-upload-form').removeClass('has-file');
+                    $('.resume-upload-form .change-file .file-name').text('');
                 }
             });
-            e.preventDefault();
-        });
-    });
 
+            $('.resume-control .edit').click(function (event) {
+                event.preventDefault();
+                $('.resume-file-component').toggleClass('editing');
+            });
+
+            $('.resume-upload-form .cancel').click(function (event) {
+                event.preventDefault();
+                $('.resume-file-component').toggleClass('editing');
+            });
+
+            $('.resume-control .delete').click(function () {
+                event.preventDefault();
+
+                $('.resume-control button').prop('disabled', true);
+                $('.resume-control button').addClass('disabled');
+
+                var fileId = $('.resume-control .delete').data('id');
+                submitting = true;
+                CareerCircleAPI.deleteFile(fileId)
+                    .then(function () {
+                        location.reload();
+                    })
+                    .catch(function (err) {
+                        toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions);
+                    })
+                    .finally(function () {
+                        $('.resume-control button').prop('disabled', false);
+                        $('.resume-control button').removeClass('disabled');
+                    });
+            });
+
+            $('.resume-upload-form').submit(function (event) {
+                event.preventDefault();
+                var $input = $('.file-input');
+
+                if ($input[0].files.length == 0)
+                    return;
+
+                $('.resume-upload-form').addClass('loading');
+                $('.resume-upload-form .btn').prop('disabled', true);
+                $('.resume-upload-form .btn').addClass('disabled');
+
+                CareerCircleAPI.uploadResume($input[0].files[0])
+                    .then(function (x) {
+                        location.reload();
+                    })
+                    .catch(function (err) {
+                        toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions);
+                    })
+                    .finally(function () {
+                        $('.resume-upload-form').removeClass('loading');
+                        $('.resume-upload-form .btn').prop('disabled', false);
+                        $('.resume-upload-form .btn').removeClass('disabled');
+                    });
+            });
+
+        });
+        
     </script>
     <script src="~/js/selectize-handling.js" asp-append-version="true"></script>
     <script src="~/js/profile.js" asp-append-version="true"></script>
@@ -77,11 +166,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
-                        <!--<div class="profile-headshot">
-                            <img src="~/images/blank_avatar.jpg" />
-                        </div>-->
                         <div class="row profile-header-info">
-                            <!--<div class="offset-md-3 col-md-5">-->
                             <div class="col-md-8 no-padding">
                                 <div class="career-circle-profile-text">My CareerCircle Profile</div>
                                 <div id="ProfileName" class="career-circle-profile-name">
@@ -93,20 +178,47 @@
                                     @Model.Email
                                 </div>
                             </div>
-                            <!--
-                            <div class="col-md-4 no-padding">
-                                Circle Completion Rating
-                            </div>
-                            -->
                         </div>
 
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md">
+                        <div class="resume-file-component @((Model.Resume != null) ? "has-resume" : "")">
+                            @if (Model.Resume != null)
+                            {
+                                <div class="resume-control">
+                                    <a class="download" href="/Home/DownloadFile?fileId=@Model.Resume.Id" target="_blank"><i class="fas fa-download" title="Download"></i> @Model.Resume.SimpleName</a>
+                                    <button class="edit"><i class="fas fa-edit text-light-blue" title="Edit"></i></button>
+                                    <button class="delete" data-id="@Model.Resume.Id"><i class="fas fa-minus-circle text-light-blue" title="Delete"></i></button>
+                                </div>
+                            }
+                            <form class="resume-upload-form" method="post" action="/Home/UploadResume" enctype="multipart/form-data">
+                                <div>
+                                    <label for="resume-file-input" class="btn btn-sm btn-light-blue select-file mb-0">
+                                        <i class="fas fa-file-upload"></i>&nbsp;Upload Resume
+                                    </label>
+                                    <label for="resume-file-input" class="change-file mb-0">
+                                        <span class="file-name"></span>&nbsp;<i class="fas fa-exchange-alt"></i>
+                                    </label>
+                                    <button type="submit" class="submit btn btn-sm btn-light-blue">
+                                        Save
+                                        <span class="loading-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                        <span class="loading-spinner sr-only">Loading...</span>
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary cancel">Cancel</button>
+                                    <input required id="resume-file-input" class="pseudo-hidden file-input" type="file" accept=".doc,.docx,.odt,.pdf,.rtf,.tex,.txt,.wks,.wps,.wpd" />
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row profile-body-container">
-        <div class="col-md-12">
+    <div class="profile-body-container">
+        <div class="row">
+            <div class="col-md-12">
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">
@@ -203,6 +315,7 @@
                     </div>
                 </div>
             </div>
+        </div>
         </div>
 
     </div>

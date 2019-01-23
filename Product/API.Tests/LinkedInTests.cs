@@ -1,7 +1,7 @@
 ﻿using System;
 using Xunit;
 using Moq;
-using UpDiddyApi.Business;
+using UpDiddyApi.ApplicationCore;
 using Microsoft.EntityFrameworkCore;
 using UpDiddyApi.Models;
 

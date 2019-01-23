@@ -22,6 +22,7 @@ namespace UpDiddy.ViewModels
         public IList<EnrollmentDto> Enrollments { get; set; }
         public IEnumerable<SelectListItem> States { get; set; }
         public IEnumerable<SelectListItem> Countries { get; set; }
+        public IList<SubscriberFileDto> Files { get; set; }
         public Guid? SelectedState { get; set; }
         public Guid? SelectedCountry { get; set; }
         [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "First name may only contain alphabetic characters, spaces, apostrophes, and hyphens.")]
@@ -33,6 +34,18 @@ namespace UpDiddy.ViewModels
         public string PostalCode { get; set; }
         private string _FormattedPhone;
 
+        // todo: refactor for future use
+        public SubscriberFileDto Resume
+        {
+            get
+            {
+                if (Files == null || Files.Count == 0)
+                    return null;
+
+                // return the last record since we are only tracking one resume at a time for now
+                return Files[Files.Count - 1];
+            }
+        }
 
         [Obsolete("Remove this once we are certain we cannot make use of it", false)]
         public string FormattedCompanyTenure(DateTime? startDate, DateTime? endDate, int isCurrent)

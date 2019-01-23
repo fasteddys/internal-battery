@@ -162,35 +162,16 @@ $(document).ready(function () {
         // Setup a time out to clean things up in case SignalR never calls back 
         ResumeUploadTimeout();
         $(".overlay").show();
-        var formData = new FormData();
-        formData.append('Resume', $('#UploadedResume')[0].files[0]); // myFile is the input type="file" control
-        var _url = $(this).attr('action');
-        $.ajax({
-            url: _url,
-            type: 'POST',
-            data: formData,
-            processData: false,  // tell jQuery not to process the data
-            contentType: false,  // tell jQuery not to set contentType
-            success: function (result) {
-                switch (result.statusCode) {
-                    // update behavior based on revamped status codes
-                    case 'Processing':              
-                        removeSkipFunctionalityOnResumeUpload();
-                        toastr.success('We have recieved your resume and are currently processing it; please wait...', 'Great!', toastrOptions);
-                        break;
-                    default:
-                        EnableResumeNextButton();
-                        toastr.warning('We were not able to process this file. Please select another file and try again. Alternatively, you can skip this and move to the next step.', 'Warning!', toastrOptions);
-                        break;
-                }
-            },
-            error: function (jqXHR) {
+
+        CareerCircleAPI.uploadResume($('#UploadedResume')[0].files[0], true)
+            .then(function (result) {
+                removeSkipFunctionalityOnResumeUpload();
+                toastr.success('We have recieved your resume and are currently processing it; please wait...', 'Great!', toastrOptions);
+            })
+            .catch(function (err) {
                 EnableResumeNextButton();
-                toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions);
-            },
-            complete: function (jqXHR, status) {
-            }
-        });
+                toastr.warning('We were not able to process this file. Please select another file and try again. Alternatively, you can skip this and move to the next step.', 'Warning!', toastrOptions);
+            });
     });
 
     // Wire up SignalR to listen for resume upload completion
