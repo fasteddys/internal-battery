@@ -118,6 +118,7 @@ namespace UpDiddyApi.Controllers
             var lastName = new SqlParameter("@LastName", (object)(Subscriber.LastName ?? subscriberFromDb.LastName) ?? DBNull.Value);
             var address = new SqlParameter("@Address", (object)(Subscriber.Address ?? subscriberFromDb.Address) ?? DBNull.Value);
             var city = new SqlParameter("@City", (object)(Subscriber.City ?? subscriberFromDb.City) ?? DBNull.Value);
+            var postalCode = new SqlParameter("@PostalCode", (object)(Subscriber.PostalCode ?? subscriberFromDb.PostalCode) ?? DBNull.Value);
             var stateGuid = new SqlParameter("@StateGuid", (Subscriber?.State?.StateGuid != null ? (object)Subscriber.State.StateGuid : (subscriberFromDb.State?.StateGuid != null ? (object)subscriberFromDb.State.StateGuid : DBNull.Value)));
             var phoneNumber = new SqlParameter("@PhoneNumber", (object)(Subscriber.PhoneNumber ?? subscriberFromDb.PhoneNumber) ?? DBNull.Value);
             var facebookUrl = new SqlParameter("@FacebookUrl", (object)Subscriber.FacebookUrl ?? DBNull.Value);
@@ -141,7 +142,7 @@ namespace UpDiddyApi.Controllers
             skillGuids.SqlDbType = SqlDbType.Structured;
             skillGuids.TypeName = "dbo.GuidList";
 
-            var spParams = new object[] { subscriberGuid, firstName, lastName, address, city, stateGuid, phoneNumber, facebookUrl, twitterUrl, linkedInUrl, stackOverflowUrl, gitHubUrl, skillGuids };
+            var spParams = new object[] { subscriberGuid, firstName, lastName, address, city, postalCode, stateGuid, phoneNumber, facebookUrl, twitterUrl, linkedInUrl, stackOverflowUrl, gitHubUrl, skillGuids };
 
             var rowsAffected = _db.Database.ExecuteSqlCommand(@"
                 EXEC [dbo].[System_Update_Subscriber] 
@@ -150,6 +151,7 @@ namespace UpDiddyApi.Controllers
 	                @LastName,
 	                @Address,
 	                @City,
+                    @PostalCode,
 	                @StateGuid,
                     @PhoneNumber,
 	                @FacebookUrl,

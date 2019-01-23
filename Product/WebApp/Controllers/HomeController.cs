@@ -163,6 +163,7 @@ namespace UpDiddy.Controllers
                 Email = this.subscriber?.Email,
                 Address = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.Address),
                 City = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.City),
+                PostalCode = this.subscriber?.PostalCode,
                 SelectedState = this.subscriber?.State?.StateGuid,
                 SelectedCountry = this.subscriber?.State?.Country?.CountryGuid,
                 FacebookUrl = this.subscriber?.FacebookUrl,
@@ -232,6 +233,7 @@ namespace UpDiddy.Controllers
                     LastName = profileViewModel.LastName,
                     Address = profileViewModel.Address,
                     PhoneNumber = profileViewModel.Phone,
+                    PostalCode = profileViewModel.PostalCode,
                     City = profileViewModel.City,
                     State = new StateDto() { StateGuid = profileViewModel.SelectedState },
                     FacebookUrl = profileViewModel.FacebookUrl,
@@ -346,6 +348,7 @@ namespace UpDiddy.Controllers
                     Address = signupFlowViewModel.Address,
                     PhoneNumber = signupFlowViewModel.Phone,
                     City = signupFlowViewModel.City,
+                    PostalCode = signupFlowViewModel.PostalCode,
                     State = new StateDto() { StateGuid = signupFlowViewModel.SelectedState },
                     SubscriberGuid = (Guid)this.subscriber.SubscriberGuid,
                     Skills = skillsDto

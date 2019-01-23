@@ -10,6 +10,34 @@
         // this must be present for the API call used in site.js
         var url = '@Url.Action("GetStatesByCountry", "Home")';
         var subscriberSkills = @Json.Serialize(Model.Skills);
+
+        document.addEventListener("DOMContentLoaded", function (event) {
+
+            $('#PersonalInfoForm').submit(function (e) {
+                $.ajax({
+                    type: "POST",
+                    url: '/home/UpdateProfileInformation',
+                    data: $(this).serialize(),
+                    success: function (html) {
+                        if (html.statusCode === "200") {
+                            location.reload();
+                        }
+                        else if (html.statusCode === "400") {
+                            var errorsList = html.description.split("|");
+                            for (var i = 0; i < errorsList.length; i++) {
+                                if (errorsList[i] !== "") {
+                                    toastr.warning(errorsList[i], 'Warning!');
+                                }
+
+                            }
+
+                        }
+                    }
+                });
+                e.preventDefault();
+            });
+        });
+
         $(document).ready(function () {
             var toastrOptions = {
                 "closeButton": true,
@@ -28,33 +56,6 @@
                 "showMethod": "fadeIn",
                 "hideMethod": "fadeOut"
             };
-
-            document.addEventListener("DOMContentLoaded", function (event) {
-
-                $('#PersonalInfoForm').submit(function (e) {
-                    $.ajax({
-                        type: "POST",
-                        url: '/home/UpdateProfileInformation',
-                        data: $(this).serialize(),
-                        success: function (html) {
-                            if (html.statusCode === "200") {
-                                location.reload();
-                            }
-                            else if (html.statusCode === "400") {
-                                var errorsList = html.description.split("|");
-                                for (var i = 0; i < errorsList.length; i++) {
-                                    if (errorsList[i] !== "") {
-                                        toastr.warning(errorsList[i], 'Warning!');
-                                    }
-
-                                }
-
-                            }
-                        }
-                    });
-                    e.preventDefault();
-                });
-            });
 
             // resume upload component
             $('.resume-upload-form .file-input').on('change', function () {
