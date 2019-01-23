@@ -275,8 +275,7 @@ var ResumeUploadComplete = function (message) {
         // Move to next page 
         $('.carousel').carousel({}).carousel('next');
     }
-    else
-        toastr.warning("Unfortunately, parsing your resume took longer than we expected. Please proceed and manually enter your information.", toastrOptions);
+        
 };
 
 var ValidateOnboardingSlide = function (input) {
@@ -346,6 +345,7 @@ var ResumeUploadTimeout = function () {
         if (resumeUploadInProgress == true) {
             $('.overlay').hide(); 
             resumeUploadInProgress = false;
+            toastr.warning("Unfortunately, parsing your resume took longer than we expected. Please proceed and manually enter your information.", toastrOptions);
             EnableResumeNextButton();
         }
     }, 20000);
