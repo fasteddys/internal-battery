@@ -16,6 +16,7 @@
     $('.education-history-tenure').each(function () {
         this.innerHTML = FormattedDateRange($(this).data('startdate'), $(this).data('enddate'));
     });
+
     $('.education-history-degreedate').each(function () {
         this.innerHTML = FormattedDegreeDate($(this).data('degreedate'));
     });
@@ -551,7 +552,7 @@ function EditEducationHistory(EducationHistoryGuid) {
     var endDate = moment($("#ProfileEducationHistory_Tenure_" + EducationHistoryGuid).data("enddate")).format('MM/DD/YYYY');
     if (endDate === "Invalid date")
         endDate = null;
-    var degreeDate = $("#ProfileEducationHistory_DegreeDate_" + EducationHistoryGuid).data("degreedate");
+    var degreeDate = moment($("#ProfileEducationHistory_DegreeDate_" + EducationHistoryGuid).data("degreedate")).format('MM/DD/YYYY');;
     var degree = $("#ProfileEducationHistory_Degree_" + EducationHistoryGuid).data("degree");
     var degreeType = $("#ProfileEducationHistory_Degree_" + EducationHistoryGuid).data("degreetype");
 
@@ -662,7 +663,7 @@ function CreateEducationHistoryDiv(EducationHistoryInfo) {
     divHtml += "<div id=\"ProfileEducationHistory_Tenure_@eh.SubscriberEducationHistoryGuid\" class=\"col-11 education-history-tenure\" data-startdate=\"@eh.StartDate\" data-enddate=\"@eh.EndDate\">";
     divHtml += FormattedDateRange(EducationHistoryInfo.startDate, EducationHistoryInfo.endDate);
     divHtml += "</div>";
-    divHtml += "<div id=\"ProfileEducationHistory_DegreeDate__@eh.SubscriberEducationHistoryGuid\" class=\"col-11 education-history-degreedate\" data-degreedate=\"@eh.DegreeDate\">";
+    divHtml += "<div id=\"ProfileEducationHistory_DegreeDate_@eh.SubscriberEducationHistoryGuid\" class=\"col-11 education-history-degreedate\" data-degreedate=\"@eh.DegreeDate\">";
     divHtml += FormattedDegreeDate(EducationHistoryInfo.degreeDate);
     divHtml += "</div>";
     divHtml += "</div>";
@@ -673,6 +674,18 @@ function CreateEducationHistoryDiv(EducationHistoryInfo) {
 
     regex = /@eh.EducationalInstitution/gi;
     divHtml = divHtml.replace(regex, EducationHistoryInfo.educationalInstitution);
+ 
+    regex = /@eh.EducationalDegreeType/gi;
+    divHtml = divHtml.replace(regex, EducationHistoryInfo.educationalDegreeType);
+
+    regex = /@eh.EducationalDegree/gi;
+    divHtml = divHtml.replace(regex, EducationHistoryInfo.educationalDegree);
+
+    regex = /@eh.StartDate/gi;
+    divHtml = divHtml.replace(regex, EducationHistoryInfo.startDate);
+
+    regex = /@eh.EndDate/gi;
+    divHtml = divHtml.replace(regex, EducationHistoryInfo.endDate);
 
     regex = /@eh.DegreeDate/gi;
     divHtml = divHtml.replace(regex, EducationHistoryInfo.degreeDate);
