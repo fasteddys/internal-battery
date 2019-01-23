@@ -13,6 +13,7 @@
         opacity: 0.5;
         height: 100%;
         z-index: 999;
+        display: none;
     }
 
     #loading-img {
@@ -75,7 +76,7 @@
                     padding-top: 5rem;
 
                     .carousel-item {
-
+                        padding-bottom: 10rem;
 
                         .name-container,
                         .phone-number-container,
@@ -106,14 +107,14 @@
                                 }
                             }
 
-                            .input-disclaimer { 
+                            .input-disclaimer {
                                 margin-top: 2rem;
                                 display: none;
                                 font-size: .75rem;
                             }
                         }
 
-                       .name-container {
+                        .name-container {
                             input {
                                 margin-top: 1rem;
                             }
@@ -166,7 +167,7 @@
                                     background-image: none;
                                     border: 1px solid $color-secondary;
                                     padding: .5rem 1rem;
-                                    font-size: 1rem;
+                                    font-size: .75rem;
                                 }
                             }
                         }
@@ -780,7 +781,7 @@
 
                     .carousel-item {
                         min-height: 170px;
-
+                        
                         .name-container,
                         .phone-number-container,
                         .address-container {
@@ -835,7 +836,7 @@
 
                         .skills-container {
                             .selectize-input {
-                                width: 25rem;
+                                width: 40rem;
                                 margin-top: 3rem;
                                 border: 2px solid $color-secondary;
 
@@ -1012,11 +1013,173 @@
 // Large Styles
 @media (min-width: 992px) {
     .signup-flow-container {
+        h2 {
+            font-size: 2rem;
+        }
+
+        .signup-flow-row {
+            overflow: hidden;
+
+
+
+
+            .signup-flow-column {
+                position: relative;
+                text-align: center;
+
+                .carousel {
+                    padding-top: 15rem;
+
+                    .carousel-item {
+                        min-height: 170px;
+                        padding-bottom: 6rem;
+                        .name-container,
+                        .phone-number-container,
+                        .address-container {
+                            input {
+                                border: 0;
+                                border-bottom: 2px solid $color-secondary-light;
+                                padding: .5rem;
+                                text-align: center;
+                                font-size: 1.6rem;
+                                color: $color-secondary;
+                                border-radius: 0;
+                            }
+                        }
+
+                        .name-container {
+                            input {
+                                margin-top: 2rem;
+                            }
+                        }
+
+                        .address-format-container {
+                            margin-top: 2rem;
+                            max-width: 40rem;
+                            margin: 0 auto;
+
+                            .row {
+                                margin-top: 1rem;
+
+                                input {
+                                    height: initial;
+
+                                    &:focus {
+                                        outline: 0;
+                                        box-shadow: none;
+                                    }
+                                }
+
+                                select {
+                                    border: 2px solid $color-secondary;
+                                    height: 3rem;
+                                    color: $color-secondary;
+                                    font-size: 1.3rem;
+
+                                    &:focus {
+                                        border: 2px solid $color-secondary;
+                                        outline: none;
+                                        box-shadow: none;
+                                    }
+                                }
+                            }
+                        }
+
+                        .skills-container {
+                            .selectize-input {
+                                width: 50rem;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
 // Extra Large Styles
 @media (min-width: 1200px) {
     .signup-flow-container {
+        h2 {
+            font-size: 2rem;
+        }
+
+        .signup-flow-row {
+            overflow: hidden;
+
+
+
+
+            .signup-flow-column {
+                position: relative;
+                text-align: center;
+
+                .carousel {
+                    padding-top: 15rem;
+
+                    .carousel-item {
+                        min-height: 170px;
+
+                        .name-container,
+                        .phone-number-container,
+                        .address-container {
+                            input {
+                                border: 0;
+                                border-bottom: 2px solid $color-secondary-light;
+                                padding: .5rem;
+                                text-align: center;
+                                font-size: 1.6rem;
+                                color: $color-secondary;
+                                border-radius: 0;
+                            }
+                        }
+
+                        .name-container {
+                            input {
+                                margin-top: 2rem;
+                            }
+                        }
+
+                        .address-format-container {
+                            margin-top: 2rem;
+                            max-width: 40rem;
+                            margin: 0 auto;
+
+                            .row {
+                                margin-top: 1rem;
+
+                                input {
+                                    height: initial;
+
+                                    &:focus {
+                                        outline: 0;
+                                        box-shadow: none;
+                                    }
+                                }
+
+                                select {
+                                    border: 2px solid $color-secondary;
+                                    height: 3rem;
+                                    color: $color-secondary;
+                                    font-size: 1.3rem;
+
+                                    &:focus {
+                                        border: 2px solid $color-secondary;
+                                        outline: none;
+                                        box-shadow: none;
+                                    }
+                                }
+                            }
+                        }
+
+                        .skills-container {
+                            .selectize-input {
+                                width: 62rem;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

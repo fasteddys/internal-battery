@@ -39,7 +39,7 @@ namespace UpDiddy.Controllers
         [Route("/Talent/Subscriber/{subscriberGuid}")]
         public IActionResult Subscriber(Guid subscriberGuid)
         {
-            SubscriberDto subscriber = _api.Subscriber(subscriberGuid);
+            SubscriberDto subscriber = _api.Subscriber(subscriberGuid, false);
 
             SubscriberViewModel subscriberViewModel = new SubscriberViewModel()
             {

@@ -11,7 +11,7 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.MessageQueue;
 using Microsoft.EntityFrameworkCore;
-using UpDiddyApi.Business;
+using UpDiddyApi.ApplicationCore;
 using UpDiddyLib.Helpers;
 using System.Net.Http;
 using Microsoft.AspNetCore.Authorization;

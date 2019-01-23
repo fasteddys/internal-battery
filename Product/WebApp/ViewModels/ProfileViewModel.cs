@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
@@ -11,11 +12,17 @@ namespace UpDiddy.ViewModels
 {
     public class ProfileViewModel : BaseViewModel
     {
+        //
+        public IList<SubscriberWorkHistoryDto> WorkHistory { get; set; }
+        public IList<SubscriberEducationHistoryDto> EducationHistory { get; set; }
+        public IList<CompensationTypeDto> WorkCompensationTypes{ get; set; }
+        public IList<EducationalDegreeTypeDto> EducationDegreeTypes { get; set; }
         public IList<SkillDto> Skills { get; set; }
         public string SelectedSkills { get; set; }
         public IList<EnrollmentDto> Enrollments { get; set; }
         public IEnumerable<SelectListItem> States { get; set; }
         public IEnumerable<SelectListItem> Countries { get; set; }
+        public IList<SubscriberFileDto> Files { get; set; }
         public Guid? SelectedState { get; set; }
         public Guid? SelectedCountry { get; set; }
         [RegularExpression(@"^[ a-zA-Z'-]+$", ErrorMessage = "First name may only contain alphabetic characters, spaces, apostrophes, and hyphens.")]
@@ -25,6 +32,47 @@ namespace UpDiddy.ViewModels
         public string Address { get; set; }
         public string City { get; set; }
         private string _FormattedPhone;
+
+        // todo: refactor for future use
+        public SubscriberFileDto Resume
+        {
+            get
+            {
+                if (Files == null || Files.Count == 0)
+                    return null;
+
+                // return the last record since we are only tracking one resume at a time for now
+                return Files[Files.Count - 1];
+            }
+        }
+
+        [Obsolete("Remove this once we are certain we cannot make use of it", false)]
+        public string FormattedCompanyTenure(DateTime? startDate, DateTime? endDate, int isCurrent)
+        {         
+            string rVal = string.Empty;
+
+            if (startDate == null && endDate == null)
+                return "Dates unknown";
+
+            if (startDate != null)
+                rVal = ((DateTime) startDate).ToString("MMM yyyy");
+            else
+                rVal += " ? ";
+
+            rVal += " - ";
+
+            if (endDate != null)
+                rVal += ((DateTime)endDate).ToString("MMM yyyy");
+            else
+                rVal += " ? ";
+                
+            if (isCurrent > 0)
+                rVal += " (current)";
+            
+            return rVal;             
+        }
+
+
         public string FormattedPhone
         {
             get
@@ -68,6 +116,8 @@ namespace UpDiddy.ViewModels
         [RegularExpression(@"^http(s)?://([\w]+.)?github.com/[A-z0-9_]+/?$", ErrorMessage = "The GitHub profile URL is not valid.")]
         public string GithubUrl { get; set; }
         public Guid? SubscriberGuid { get; set; }
+ 
+
 
         public Boolean IsAnyProfileInformationPopulated
         {
@@ -88,6 +138,18 @@ namespace UpDiddy.ViewModels
             }
         }
 
+        public string SelectedStateText()
+        {
+            return States.Where(s => s.Value == SelectedState.Value.ToString()).FirstOrDefault().Text;
+        }
+
+        public string SelectedCountryText()
+        {
+            return Countries.Where(c => c.Value == SelectedCountry.Value.ToString()).FirstOrDefault().Text;
+        }
+
+
+    
         public Boolean HasFirstAndLastName
         {
             get
@@ -109,6 +171,32 @@ namespace UpDiddy.ViewModels
                     this.SelectedState != Guid.Empty;
             }
         }
+
+
+        public bool HasSuppliedWorkHistory
+        {            
+            get
+            {
+                if (WorkHistory == null || WorkHistory.Count <= 0)
+                    return false;
+                else
+                    return true;
+            }
+            
+        }
+
+        public bool HasSuppliedEducationHistory
+        {
+            get
+            {
+                if (EducationHistory == null || EducationHistory.Count <= 0)
+                    return false;
+                else
+                    return true;
+            }
+
+        }
+
 
         public Boolean HasSuppliedAnySocialLinks
         {

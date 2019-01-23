@@ -247,6 +247,33 @@ a:hover{
     text-decoration: none;
 }
 
+.pseudo-hidden {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.btn {
+    &.btn-light-blue {
+        color: #fff;
+        background-color: $color-primary;
+        border-color: $color-primary;
+
+        &:hover {
+            background-color: darken($color-primary, 10%);
+            border-color: darken($color-primary, 10%);
+        }
+
+        &:active {
+            background-color: darken($color-primary, 15%);
+            border-color: darken($color-primary, 15%);
+        }
+    }
+}
+
 .page-hero {
     background-image: url('../images/medium_blue_background.jpg');
     color: $color-white;

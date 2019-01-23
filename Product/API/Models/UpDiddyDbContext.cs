@@ -107,6 +107,7 @@ namespace UpDiddyApi.Models
         public DbSet<SubscriberProfileStagingStore> SubscriberProfileStagingStore { get; set; }
         public DbSet<Skill> Skill { get; set; }
         public DbSet<SubscriberSkill> SubscriberSkill { get; set; }
+        public DbSet<SubscriberFile> SubscriberFile { get; set; }
         public DbSet<SubscriberWorkHistory> SubscriberWorkHistory { get; set; }
         public DbSet<Company> Company { get; set; }
         public DbSet<CompensationType> CompensationType { get; set; }

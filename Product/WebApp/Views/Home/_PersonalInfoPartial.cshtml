@@ -1,0 +1,51 @@
+﻿<div class="col-12 no-padding">
+    <div class="edit-container">
+        <div class="row">
+            <div class="col-6 no-padding">
+                <h5>Personal Info</h5>
+            </div>
+            <div class="col-6 no-padding container-align-right">
+                <span class="edit-action" data-toggle="modal" data-target="#NameModal">Edit</span>
+            </div>
+        </div>
+        @{
+            if (!Model.HasFirstAndLastName && !Model.HasFullyQualifiedAddress)
+            {
+                <text>No personal information has been provided.</text>
+            }
+            else
+            {
+                <div class="options-container">
+                    @{
+                        if (Model.HasFirstAndLastName)
+                        {
+                            <div class="name-container">
+                                <div class="row">
+                                    <div class="col-12 col-sm-3 option-header no-padding">
+                                        Name
+                                    </div>
+                                    <div class="col-12 col-sm-9 option-value no-padding">
+                                        @Model.FirstName @Model.LastName
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        if (Model.HasFullyQualifiedAddress)
+                        {
+                            <div class="address-container">
+                                <div class="row">
+                                    <div class="col-12 col-sm-3 option-header no-padding">
+                                        Address
+                                    </div>
+                                    <div class="col-12 col-sm-9 option-value no-padding">
+                                        @Model.Address @Model.City,  @Model.SelectedStateText(), @Model.SelectedCountryText()
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>

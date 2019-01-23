@@ -18,7 +18,12 @@
                         <div class="hero-subtitle">@Model.Description</div>
                         <div class="row">
                             <div class="col px-0 pt-4 pb-0">
-                                <h4>Acquired Skills:</h4>
+                                @{ 
+                                    if(Model.Skills != null && Model.Skills.Count > 0)
+                                    {
+                                        <text><h4>Acquired Skills:</h4></text>
+                                    }
+                                }
                                 @foreach (var skill in Model.Skills)
                                 {
                                     <div class="skill-pill">

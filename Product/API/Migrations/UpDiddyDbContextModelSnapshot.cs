@@ -1346,7 +1346,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<DateTime>("DegreeDate");
+                    b.Property<DateTime?>("DegreeDate");
 
                     b.Property<int?>("EducationalDegreeId");
 
@@ -1354,7 +1354,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("EducationalInstitutionId");
 
-                    b.Property<DateTime>("EndDate");
+                    b.Property<DateTime?>("EndDate");
 
                     b.Property<int>("IsDeleted");
 
@@ -1362,7 +1362,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<DateTime>("StartDate");
+                    b.Property<DateTime?>("StartDate");
 
                     b.Property<Guid>("SubscriberEducationHistoryGuid");
 
@@ -1379,6 +1379,33 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("SubscriberEducationHistory");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("BlobName");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("SubscriberFile");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberProfileStagingStore", b =>
@@ -1458,7 +1485,7 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid?>("ModifyGuid");
 
                     b.Property<Guid?>("SubscriberSkillGuid");
-                    
+
                     b.HasKey("SkillId", "SubscriberId");
 
                     b.HasIndex("SubscriberId");
@@ -1482,7 +1509,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<DateTime>("EndDate");
+                    b.Property<DateTime?>("EndDate");
 
                     b.Property<int>("IsCurrent");
 
@@ -1494,7 +1521,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<DateTime>("StartDate");
+                    b.Property<DateTime?>("StartDate");
 
                     b.Property<int>("SubscriberId");
 
@@ -1985,7 +2012,15 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
+                        .WithMany("SubscriberEducationHistory")
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberFile", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany("SubscriberFile")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -2022,7 +2057,7 @@ namespace UpDiddyApi.Migrations
                         .HasForeignKey("CompensationTypeId");
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
+                        .WithMany("SubscriberWorkHistory")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

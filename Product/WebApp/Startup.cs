@@ -15,7 +15,7 @@ using UpDiddy.Helpers.RewriteRules;
 using Polly;
 using System.Net.Http;
 using Polly.Extensions.Http;
-using UpDiddy.Helpers;
+using UpDiddyLib.Helpers;
 using Microsoft.Extensions.Caching.Distributed;
 using Polly.Registry;
 using Polly.Caching;

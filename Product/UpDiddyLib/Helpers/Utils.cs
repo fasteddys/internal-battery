@@ -10,7 +10,8 @@ using System.Xml.Linq;
 using UpDiddyLib.Dto;
 using System.Xml.XPath;
 using System.Xml;
-using UpDiddy.Helpers;
+using System.Globalization;
+//using UpDiddy.Helpers;
 
 namespace UpDiddyLib.Helpers
 {
@@ -389,75 +390,11 @@ namespace UpDiddyLib.Helpers
             if (string.IsNullOrEmpty(value))
                 return string.Empty;
 
-            value = value.ToLower();
-            StringBuilder NonAlphaSymbolsString = new StringBuilder();
-
-            //Create a string of only non-alpha characters
-            foreach (char val in value.ToCharArray())
-            {
-                if (!IsEnglishLetter(val) && !IsNumeric(val))
-                {
-                    NonAlphaSymbolsString.Append(val);
-                }
-            }
-
-            //Transfer non-alpha string to array
-            char[] NonAlphaSymbols = NonAlphaSymbolsString.ToString().ToCharArray();
-
-            if(NonAlphaSymbols.Length > 0)
-            {
-                string[] IndividualNameStrings = Regex.Split(value, "[- '.()]");
-                StringBuilder FinalString = new StringBuilder();
-                int NonAlphaCount = 0;
-                if (!IsEnglishLetter(value.ToCharArray()[0]) && !IsNumeric(value.ToCharArray()[0]))
-                {
-                    FinalString.Append(NonAlphaSymbols[NonAlphaCount]);
-                    NonAlphaCount++;
-                }
-                foreach(string var in IndividualNameStrings)
-                {
-                    FinalString.Append(IndividualStringToUpper(var));
-                    if(NonAlphaCount < NonAlphaSymbols.Length)
-                    {
-                        FinalString.Append(NonAlphaSymbols[NonAlphaCount]);
-                        NonAlphaCount++;
-                    }
-                    
-                }
-                return FinalString.ToString();
-            }
-            else
-            {
-                return IndividualStringToUpper(value);
-            }
-
-
-            
+            TextInfo ti = new CultureInfo("en-US", false).TextInfo;
+            return ti.ToTitleCase(value.ToLower());
         }
 
-        public static string IndividualStringToUpper(string value)
-        {
-            char[] array = value.ToCharArray();
-            // Handle the first letter in the string.  
-            if (array.Length >= 1)
-            {
-                if (char.IsLower(array[0]))
-                {
-                    array[0] = char.ToUpper(array[0]);
-                }
-            }
-            return new string(array);
-        }
-
-        public static bool IsEnglishLetter(char c)
-        {
-            return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
-        }
-
-        public static bool IsNumeric(char c)
-        {
-            return (c >= '0' && c <= '9');
-        }
+       
 
         public static string RemoveNonNumericCharacters(string val)
         {
@@ -467,6 +404,58 @@ namespace UpDiddyLib.Helpers
             Regex digitsOnly = new Regex(@"[^\d]");
             return digitsOnly.Replace(val, "");
         }
-
+        [Obsolete("Remove this once we are certain we cannot make use of it", false)]
+        public static string FormattedDateRange(DateTime? startDate, DateTime? endDate)
+        {
+            string formattedDateRange = string.Empty;
+            if(!startDate.HasValue || startDate.Value == DateTime.MinValue)
+            {
+                return "No date range specified";
+            }
+            else
+            {
+                formattedDateRange = startDate.Value.ToString("MMMM yyyy") + " - ";
+            }            
+            DateTime effectiveEndDate;
+            if (!endDate.HasValue || endDate.Value == DateTime.MinValue)
+            {
+                effectiveEndDate = DateTime.UtcNow;
+                formattedDateRange += "Present";
+            }
+            else
+            {
+                effectiveEndDate = endDate.Value;
+                formattedDateRange += endDate.Value.ToString("MMMM yyyy");
+            }
+            DateTime period;
+            if (effectiveEndDate > startDate.Value)
+            {
+                period = new DateTime(effectiveEndDate.Subtract(startDate.Value).Ticks);
+            }
+            else
+            {
+                period = DateTime.MinValue;
+            }
+            formattedDateRange += " (" + period.Year + " years " + period.Month + " months)";
+            return formattedDateRange;
+        }
+        [Obsolete("Remove this once we are certain we cannot make use of it",false)]
+        public static string FormattedCompensation(string compensationType, decimal compensation)
+        {
+            string formattedCompensation = string.Empty;
+            if (compensation == 0)
+            {
+                return "No compensation specified";
+            }
+            else
+            {
+                formattedCompensation = $"{compensation:C}";
+                if(!string.IsNullOrWhiteSpace(compensationType))
+                {
+                    formattedCompensation += $" ({compensationType})";
+                }
+            }
+            return formattedCompensation;
+        }
     }
 }

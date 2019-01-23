@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.Models
 {
@@ -34,5 +35,6 @@ namespace UpDiddyApi.Models
         public List<SubscriberSkill> SubscriberSkills { get; } = new List<SubscriberSkill>();
         public List<SubscriberEducationHistory> SubscriberEducationHistory { get; } = new List<SubscriberEducationHistory>();
         public List<SubscriberWorkHistory> SubscriberWorkHistory { get; } = new List<SubscriberWorkHistory>();
+        public List<SubscriberFile> SubscriberFile { get; set; } = new List<SubscriberFile>();
     }
 }

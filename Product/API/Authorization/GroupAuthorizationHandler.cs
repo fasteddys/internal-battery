@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using UpDiddyApi.Business.Graph;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Authorization

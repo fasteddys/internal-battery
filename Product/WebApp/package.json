@@ -19,7 +19,14 @@
     "sass": "^1.14.3"
   },
   "dependencies": {
+    "axios": "^0.18.0",
+    "bootbox": "^4.4.0",
+    "bootstrap-datepicker": "^1.8.0",
+    "@aspnet/signalr": "^1.1.0",
     "braintree-web-drop-in": "1.13.0",
+    "jquery-ui": "^1.12.1",
+    "jquery-ui-dist": "^1.12.1",
+    "moment": "^2.23.0",
     "toastr": "^2.1.4"
   }
 }
