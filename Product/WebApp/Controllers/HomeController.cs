@@ -151,40 +151,6 @@ namespace UpDiddy.Controllers
         {
             GetSubscriber(true);
 
-            Guid? SubscriberGuid = this.subscriber?.SubscriberGuid;
-            string FirstName = this.subscriber?.FirstName;
-            string LastName = this.subscriber?.LastName;
-            string FormattedPhone = this.subscriber?.PhoneNumber;
-            string Email = this.subscriber?.Email;
-            string Address = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.Address);
-            string City = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.City);
-            Guid? SelectedState = this.subscriber?.State?.StateGuid;
-            Guid? SelectedCountry = this.subscriber?.State?.Country?.CountryGuid;
-            string FacebookUrl = this.subscriber?.FacebookUrl;
-            string GithubUrl = this.subscriber?.GithubUrl;
-            string ImageUrl = null;
-            string LinkedInUrl = this.subscriber?.LinkedInUrl;
-            string StackOverflowUrl = this.subscriber?.StackOverflowUrl;
-            string TwitterUrl = this.subscriber?.TwitterUrl;
-            List<EnrollmentDto> Enrollments = this.subscriber?.Enrollments;
-            IList<CompensationTypeDto> WorkCompensationTypes = _Api.GetCompensationTypes();
-            IList<EducationalDegreeTypeDto> EducationDegreeTypes = _Api.GetEducationalDegreeTypes();
-            IEnumerable<SelectListItem> Countries = _Api.GetCountries().Select(c => new SelectListItem()
-            {
-                Text = c.DisplayName,
-                Value = c.CountryGuid.ToString(),
-            });
-            IEnumerable<SelectListItem> States = _Api.GetStatesByCountry(this.subscriber?.State?.Country?.CountryGuid).Select(s => new SelectListItem()
-            {
-                Text = s.Name,
-                Value = s.StateGuid.ToString(),
-                Selected = s.StateGuid == this.subscriber?.State?.StateGuid
-            });
-            // todo: consider refactoring this... include in GetSubscriber (add navigation property)
-            IList<SkillDto> Skills = _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value);
-            IList<SubscriberWorkHistoryDto> WorkHistory = _Api.GetWorkHistory(this.subscriber.SubscriberGuid.Value);
-            IList<SubscriberEducationHistoryDto> EducationHistory = _Api.GetEducationHistory(this.subscriber.SubscriberGuid.Value);
-
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
                 SubscriberGuid = this.subscriber?.SubscriberGuid,
