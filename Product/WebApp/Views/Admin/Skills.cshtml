@@ -34,6 +34,7 @@
                 select_entity.clearOptions();
                 select_skills.clear();
                 select_skills.clearOptions();
+                select_skills.disable();
                 select_entity.load(function (callback) {
                     xhr && xhr.abort();
                     xhr = $.ajax({
