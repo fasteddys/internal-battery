@@ -228,11 +228,15 @@
                                                 <div class="col-12">
                                                     <div class="address-format-container">
                                                         <div class="row">
-                                                            <div class="col-12 col-sm-8">
+                                                            <div class="col-12 col-sm-6">
                                                                 <input form="SignupForm" type="text" class="form-control" placeholder="Street address" data-container-name="address" asp-for="Address">
                                                             </div>
-                                                            <div class="col-12 col-sm-4">
+                                                            <div class="col-12 col-sm-3">
                                                                 <input form="SignupForm" type="text" class="form-control" placeholder="City" data-container-name="address" asp-for="City">
+
+                                                            </div>
+                                                            <div class="col-12 col-sm-3">
+                                                                <input form="SignupForm" type="text" class="form-control" placeholder="Zip Code" data-container-name="address" asp-for="PostalCode">
 
                                                             </div>
                                                         </div>
@@ -244,6 +248,7 @@
                                                             <div class="col-12 col-sm-6">
                                                                 @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select", form = "SignupForm" })
                                                             </div>
+
                                                         </div>
                                                         <div class="row">
                                                             <div class="col-12">

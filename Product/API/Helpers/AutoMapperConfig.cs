@@ -50,6 +50,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<Course, CourseDto>()
                 .ForMember(c => c.CourseVariants, opt => opt.MapFrom(src => src.CourseVariants))
                 .ForMember(c => c.Vendor, opt => opt.MapFrom(src => src.Vendor))
+                .ForMember(c => c.Skills, opt => opt.MapFrom(src => src.CourseSkills.Select(cs => cs.Skill)))
                 .ReverseMap();
             CreateMap<CourseVariant, CourseVariantDto>()
                 .ForMember(cv => cv.CourseVariantType, opt => opt.MapFrom(src => src.CourseVariantType))

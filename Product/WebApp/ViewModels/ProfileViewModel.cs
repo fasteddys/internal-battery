@@ -31,6 +31,7 @@ namespace UpDiddy.ViewModels
         public string LastName { get; set; }
         public string Address { get; set; }
         public string City { get; set; }
+        public string PostalCode { get; set; }
         private string _FormattedPhone;
 
         // todo: refactor for future use
@@ -167,6 +168,7 @@ namespace UpDiddy.ViewModels
                 return
                     !string.IsNullOrWhiteSpace(this.Address) &&
                     !string.IsNullOrWhiteSpace(this.City) &&
+                    !string.IsNullOrWhiteSpace(this.PostalCode) && 
                     this.SelectedState != null &&
                     this.SelectedState != Guid.Empty;
             }

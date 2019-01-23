@@ -48,6 +48,12 @@
                         @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select", form = "PersonalInfoForm" })
                     </div>
                 </div>
+                <div class="profile-edit-modal-edit-option">
+                    <div class="modal-edit-input-label">Zip Code</div>
+                    <div class="modal-edit-input">
+                        <input id="PostalCodeUpdateInput" form="PersonalInfoForm" type="text" class="form-control" asp-for="PostalCode" />
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

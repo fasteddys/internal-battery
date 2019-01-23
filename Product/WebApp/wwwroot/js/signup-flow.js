@@ -41,24 +41,7 @@ $(document).ready(function () {
     
 
     $(".signup-flow-container input").keyup(function () {
-        var parentSlide = $(this).closest(".carousel-item");
-        var inputValue = $(this).val();
-        var inputRegEx = new RegExp($(this).data("val-regex-pattern"));
-        var regexTest = inputRegEx.test($(this).val());
-        var isPhoneNumberSlide = $(this).attr("id") === "FormattedPhone";
-        var containerName = $(this).data("container-name");
-
-        
-
-        if (inputFieldsAreValid(containerName)) {
-            $(this).removeClass("invalid-regex");
-            enableNextButton(parentSlide);
-            $('.' + containerName + '-container').find(".input-disclaimer").hide();
-        }
-        else {
-            disableNextButton(parentSlide);
-            $('.' + containerName + '-container').find(".input-disclaimer").show();
-        }
+        ValidateOnboardingSlide($(this));
     });
 
     $(".signup-flow-container input").focusout(function () {
@@ -227,8 +210,8 @@ var inputFieldsAreValid = function (containerName) {
 
 var addressFieldsAreValid = function () {
 
-    var allFieldsNotEmpty = $("#Address").val() && $("#City").val() && $("#SelectedState").val();
-    var allFieldsEmpty = !$("#Address").val() && !$("#City").val() && !$("#SelectedState").val();
+    var allFieldsNotEmpty = $("#Address").val() && $("#City").val() && $("#SelectedState").val() && $("#PostalCode").val();
+    var allFieldsEmpty = !$("#Address").val() && !$("#City").val() && !$("#SelectedState").val() && !$("#PostalCode").val();
 
     return allFieldsEmpty || allFieldsNotEmpty;
 };
@@ -284,12 +267,33 @@ var ResumeUploadComplete = function (message) {
         EnableResumeNextButton();
         //Populate later slides with information extracted from resume parse
         PopulateOnboardingSlides(json);
+        //Validate slides given input data has been populated
+        $("#SignupFlowCarousel .carousel-item input").each(function () {
+            ValidateOnboardingSlide($(this));
+        });
+        
         // Move to next page 
         $('.carousel').carousel({}).carousel('next');
     }
-    else
-        toastr.warning("Unfortunately, parsing your resume took longer than we expected. Please proceed and manually enter your information.", toastrOptions);
+        
 };
+
+var ValidateOnboardingSlide = function (input) {
+    var parentSlide = $(input).closest(".carousel-item");
+    var containerName = $(input).data("container-name");
+
+
+
+    if (inputFieldsAreValid(containerName)) {
+        $(this).removeClass("invalid-regex");
+        enableNextButton(parentSlide);
+        $('.' + containerName + '-container').find(".input-disclaimer").hide();
+    }
+    else {
+        disableNextButton(parentSlide);
+        $('.' + containerName + '-container').find(".input-disclaimer").show();
+    }
+}
 
 var PopulateOnboardingSlides = function (response) {
     var carousel = $("#SignupFlowCarousel");
@@ -306,6 +310,7 @@ var PopulateOnboardingSlides = function (response) {
 
     carousel.find("#Address").val(SetProperCase(response.address));
     carousel.find("#City").val(SetProperCase(response.city));
+    carousel.find("#PostalCode").val(response.postalCode);
 
     if (response.state && response.state.stateGuid) {
         carousel.find("#SelectedState").val(response.state.stateGuid);
@@ -340,6 +345,7 @@ var ResumeUploadTimeout = function () {
         if (resumeUploadInProgress == true) {
             $('.overlay').hide(); 
             resumeUploadInProgress = false;
+            toastr.warning("Unfortunately, parsing your resume took longer than we expected. Please proceed and manually enter your information.", toastrOptions);
             EnableResumeNextButton();
         }
     }, 20000);

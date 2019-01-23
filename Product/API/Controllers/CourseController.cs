@@ -28,7 +28,6 @@ namespace UpDiddyApi.Controllers
     [ApiController]
     public class CourseController : ControllerBase
     {
-
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
@@ -38,8 +37,6 @@ namespace UpDiddyApi.Controllers
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ISysEmail _sysemail;
         private readonly IDistributedCache _distributedCache;
-
-
 
         public CourseController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, ILogger<CourseController> syslog, IDistributedCache distributedCache)
         {
@@ -52,7 +49,6 @@ namespace UpDiddyApi.Controllers
             _wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
             _sysemail = sysemail;
             _distributedCache = distributedCache;
-
         }
 
         [HttpPut]
@@ -80,8 +76,6 @@ namespace UpDiddyApi.Controllers
             return Ok();
         }
 
-
-
         // GET: api/courses
         [HttpGet]
         [Route("api/[controller]")]
@@ -94,7 +88,6 @@ namespace UpDiddyApi.Controllers
                 .ToList();
 
             return Ok(rval);
-
         }
 
         [HttpGet]
@@ -128,10 +121,14 @@ namespace UpDiddyApi.Controllers
             // retrieve the course data that we store in our system, including course variant and type
             Course course = _db.Course
                 .Include(c => c.Vendor)
-                .Include(c => c.CourseVariants)
-                .ThenInclude(cv => cv.CourseVariantType)
+                .Include(c => c.CourseVariants).ThenInclude(cv => cv.CourseVariantType)
+                .Include(c => c.CourseSkills).ThenInclude(cs => cs.Skill)
                 .Where(t => t.IsDeleted == 0 && t.Slug == CourseSlug)
                 .FirstOrDefault();
+
+            // not the greatest implementation performance-wise, but the alternative requires JOIN syntax and this is easier to read
+            course.CourseSkills = course.CourseSkills.Where(cs => cs.IsDeleted == 0).ToList();
+            course.CourseVariants = course.CourseVariants.Where(cv => cv.IsDeleted == 0).ToList();
 
             if (course == null)
                 return NotFound();
@@ -163,20 +160,6 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/{courseGuid}")]
-        public IActionResult GetCourseByGuid(Guid courseGuid)
-        {
-            Course course = _db.Course
-                .Where(t => t.IsDeleted == 0 && t.CourseGuid == courseGuid)
-                .FirstOrDefault();
-
-            if (course == null)
-                return NotFound();
-
-            return Ok(_mapper.Map<CourseDto>(course));
-        }
-
-        [HttpGet]
         [Route("api/[controller]/course-variant/{courseVariantGuid}")]
         public IActionResult GetCourseVariant(Guid courseVariantGuid)
         {
@@ -189,20 +172,6 @@ namespace UpDiddyApi.Controllers
                 return NotFound();
             else
                 return Ok(_mapper.Map<CourseVariantDto>(courseVariant));
-        }
-
-        [HttpGet]
-        [Route("api/[controller]/id/{CourseId}")]
-        public IActionResult GetCourseById(int CourseId)
-        {
-
-            Course course = _db.Course
-                .Where(t => t.IsDeleted == 0 && t.CourseId == CourseId)
-                .FirstOrDefault();
-
-            if (course == null)
-                return NotFound();
-            return Ok(_mapper.Map<CourseDto>(course));
         }
     }
 }

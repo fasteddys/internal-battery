@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190122152802_Adding postal code to System_Update_Subscriber sproc")]
+    partial class AddingpostalcodetoSystem_Update_Subscribersproc
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -457,31 +459,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("CourseReviewId");
 
                     b.ToTable("CourseReview");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.CourseSkill", b =>
-                {
-                    b.Property<int>("CourseId");
-
-                    b.Property<int>("SkillId");
-
-                    b.Property<Guid?>("CourseSkillGuid");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.HasKey("CourseId", "SkillId");
-
-                    b.HasIndex("SkillId");
-
-                    b.ToTable("CourseSkill");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CourseVariant", b =>
@@ -1346,7 +1323,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<DateTime?>("DegreeDate");
+                    b.Property<DateTime>("DegreeDate");
 
                     b.Property<int?>("EducationalDegreeId");
 
@@ -1354,7 +1331,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("EducationalInstitutionId");
 
-                    b.Property<DateTime?>("EndDate");
+                    b.Property<DateTime>("EndDate");
 
                     b.Property<int>("IsDeleted");
 
@@ -1362,7 +1339,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<DateTime?>("StartDate");
+                    b.Property<DateTime>("StartDate");
 
                     b.Property<Guid>("SubscriberEducationHistoryGuid");
 
@@ -1379,33 +1356,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("SubscriberEducationHistory");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberFile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("BlobName");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.ToTable("SubscriberFile");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberProfileStagingStore", b =>
@@ -1509,7 +1459,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<DateTime?>("EndDate");
+                    b.Property<DateTime>("EndDate");
 
                     b.Property<int>("IsCurrent");
 
@@ -1521,7 +1471,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<DateTime?>("StartDate");
+                    b.Property<DateTime>("StartDate");
 
                     b.Property<int>("SubscriberId");
 
@@ -1903,19 +1853,6 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.CourseSkill", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Course", "Course")
-                        .WithMany("CourseSkills")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Skill", "Skill")
-                        .WithMany()
-                        .HasForeignKey("SkillId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.CourseVariant", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Course", "Course")
@@ -2013,14 +1950,6 @@ namespace UpDiddyApi.Migrations
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany("SubscriberEducationHistory")
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.SubscriberFile", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany("SubscriberFile")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
