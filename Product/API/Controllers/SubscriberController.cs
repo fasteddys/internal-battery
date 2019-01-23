@@ -25,6 +25,7 @@ using UpDiddyApi.ApplicationCore.Factory;
 using System.Data.SqlClient;
 using AutoMapper.QueryableExtensions;
 using System.Data;
+using System.Web;
 
 namespace UpDiddyApi.Controllers
 {
@@ -40,11 +41,11 @@ namespace UpDiddyApi.Controllers
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
 
-        public SubscriberController(UpDiddyDbContext db, 
-            IMapper mapper, 
-            IConfiguration configuration, 
-            ILogger<SubscriberController> sysLog, 
-            IDistributedCache distributedCache, 
+        public SubscriberController(UpDiddyDbContext db,
+            IMapper mapper,
+            IConfiguration configuration,
+            ILogger<SubscriberController> sysLog,
+            IDistributedCache distributedCache,
             IB2CGraph client,
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService)
@@ -194,6 +195,11 @@ namespace UpDiddyApi.Controllers
         // TODO looking into consolidating Add and Update to reduce code redundancy
         public IActionResult AddWorkHistory(Guid subscriberGuid, [FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
         {
+            // sanitize user inputs
+            WorkHistoryDto.Company = HttpUtility.HtmlEncode(WorkHistoryDto.Company);
+            WorkHistoryDto.JobDecription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDecription);
+            WorkHistoryDto.Title = HttpUtility.HtmlEncode(WorkHistoryDto.Title);
+
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (subscriberGuid != loggedInUserGuid)
@@ -239,6 +245,11 @@ namespace UpDiddyApi.Controllers
         [Route("/api/[controller]/{subscriberGuid}/work-history")]
         public IActionResult UpdateWorkHistory(Guid subscriberGuid, [FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
         {
+            // sanitize user inputs
+            WorkHistoryDto.Company = HttpUtility.HtmlEncode(WorkHistoryDto.Company);
+            WorkHistoryDto.JobDecription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDecription);
+            WorkHistoryDto.Title = HttpUtility.HtmlEncode(WorkHistoryDto.Title);
+
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (subscriberGuid != loggedInUserGuid)
@@ -331,6 +342,11 @@ namespace UpDiddyApi.Controllers
         // TODO looking into consolidating Add and Update to reduce code redundancy
         public IActionResult AddEducationalHistory(Guid subscriberGuid, [FromBody] SubscriberEducationHistoryDto EducationHistoryDto)
         {
+            // sanitize user inputs
+            EducationHistoryDto.EducationalDegree = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalDegree);
+            EducationHistoryDto.EducationalDegreeType = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalDegreeType);
+            EducationHistoryDto.EducationalInstitution = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalInstitution);
+
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (subscriberGuid != loggedInUserGuid)
@@ -355,10 +371,10 @@ namespace UpDiddyApi.Controllers
             SubscriberEducationHistory EducationHistory = new SubscriberEducationHistory()
             {
                 SubscriberEducationHistoryGuid = Guid.NewGuid(),
-                CreateGuid = Guid.NewGuid(),
-                ModifyGuid = Guid.NewGuid(),
-                CreateDate = DateTime.Now,
-                ModifyDate = DateTime.Now,
+                CreateGuid = Guid.Empty,
+                ModifyGuid = Guid.Empty,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = DateTime.UtcNow,
                 IsDeleted = 0,
                 SubscriberId = subscriber.SubscriberId,
                 StartDate = EducationHistoryDto.StartDate,
@@ -379,6 +395,11 @@ namespace UpDiddyApi.Controllers
         [Route("/api/[controller]/{subscriberGuid}/education-history")]
         public IActionResult UpdateEducationHistory(Guid subscriberGuid, [FromBody] SubscriberEducationHistoryDto EducationHistoryDto)
         {
+            // sanitize user inputs
+            EducationHistoryDto.EducationalDegree = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalDegree);
+            EducationHistoryDto.EducationalDegreeType = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalDegreeType);
+            EducationHistoryDto.EducationalInstitution = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalInstitution);
+
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (subscriberGuid != loggedInUserGuid)
@@ -503,7 +524,7 @@ namespace UpDiddyApi.Controllers
 
             return View();
         }
-        
+
         [HttpGet("/api/[controller]/search")]
         [Authorize(Policy = "IsRecruiterPolicy")]
         public IActionResult Search()
