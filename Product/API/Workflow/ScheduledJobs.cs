@@ -271,6 +271,7 @@ namespace UpDiddyApi.Workflow
                 resume.Subscriber = _db.Subscriber.Where(s => s.SubscriberId == resume.SubscriberId).First();
                 string errMsg = string.Empty;
 
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
                 string base64EncodedString = null;
                 using (var ms = new MemoryStream())
                 {
@@ -279,7 +280,7 @@ namespace UpDiddyApi.Workflow
                     base64EncodedString = Convert.ToBase64String(fileBytes);
 
                 }
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData: Finished downloading and encoding file at {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
 
                 String parsedDocument =  _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
                 SubscriberProfileStagingStoreFactory.Save(_db, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);

@@ -53,7 +53,7 @@ namespace UpDiddyApi.Controllers
                 .FirstOrDefault();
 
             if (subscriber == null)
-                return NotFound(new { code = 404, message = "Subscriber not found in the system." });
+                return NotFound(new BasicResponseDto{ StatusCode = "404", Description = "Subscriber not found in the system." });
 
             SubscriberFile subscriberFileResume = new SubscriberFile
             {
@@ -80,7 +80,7 @@ namespace UpDiddyApi.Controllers
             if(parseResume)
                 BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(subscriberFileResume));
 
-            return Ok(new { code = 200, message = "Success!", subscriberFile = subscriberFileResume });
+            return Ok(new BasicResponseDto { StatusCode = "200", Description = "Success!" });
         }
     }
 }
