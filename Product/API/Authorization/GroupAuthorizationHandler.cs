@@ -42,15 +42,16 @@ namespace UpDiddyApi.Authorization
                 return false;
 
             // get the configured groups
-            ConfigADGroup requiredGroup = _configuration.GetSection("ADGroups:Values")
+            List<ConfigADGroup> requiredGroups = _configuration.GetSection("ADGroups:Values")
                 .Get<List<ConfigADGroup>>()
-                .Find(e => e.Name == requirement.RoleName);
+                .Where(e => requirement.Claims.Where(c => c.Value ==e.Name).Any())
+                .ToList();
 
-            Microsoft.Graph.Group group = groups.Where(e => e.Id == requiredGroup.Id).FirstOrDefault();
+            // claims in GroupRequirement are treated as OR conditions
+            Microsoft.Graph.Group group = groups.Where(e => requiredGroups.Where(rg => rg.Id  == e.Id).Any()).FirstOrDefault();
 
             return group != null;
         }
-
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, GroupRequirement requirement)
         {
@@ -64,12 +65,16 @@ namespace UpDiddyApi.Authorization
 
     public class GroupRequirement : IAuthorizationRequirement
     {
-        public string RoleName;
-        public Claim claim;
-        public GroupRequirement(string role)
+        public string[] RoleNames;
+        public List<Claim> Claims;
+        public GroupRequirement(string[] roles)
         {
-            RoleName = role;
-            claim = new Claim("Role", RoleName);
+            RoleNames = roles;
+            Claims = new List<Claim>();
+            foreach(string role in roles)
+            {
+                Claims.Add(new Claim(role, role));
+            }
         }
     }
 }

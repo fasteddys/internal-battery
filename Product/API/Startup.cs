@@ -114,7 +114,10 @@ namespace UpDiddyApi
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement("Recruiter")));
+                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement(new string[]{ "Recruiter" })));
+                options.AddPolicy("IsCareerCircleAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Career Circle Administrator" })));
+                options.AddPolicy("IsUserAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Career Circle User Admin" })));
+                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] {"Recruiter", "Career Circle Administrator" })));
             });
             services.AddSingleton<IAuthorizationHandler, GroupAuthorizationHandler>();
 

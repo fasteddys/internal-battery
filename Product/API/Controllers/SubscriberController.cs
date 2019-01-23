@@ -476,7 +476,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet("/api/[controller]/search/{searchQuery}")]
-        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Authorize(Policy = "IsRecruiterOrAdmin")]
         public IActionResult Search(string searchQuery)
         {
             List<Subscriber> subscribers = _db.Subscriber
@@ -507,7 +507,7 @@ namespace UpDiddyApi.Controllers
         }
         
         [HttpGet("/api/[controller]/search")]
-        [Authorize(Policy = "IsRecruiterPolicy")]
+        [Authorize(Policy = "IsRecruiterOrAdmin")]
         public IActionResult Search()
         {
             List<Subscriber> subscribers = _db.Subscriber

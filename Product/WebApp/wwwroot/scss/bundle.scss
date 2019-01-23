@@ -4,26 +4,27 @@
 @import "../../node_modules/@fortawesome/fontawesome-free/scss/brands.scss";
 
 
-@import '_common';
-@import '_navigation';
-@import '_home';
-@import '_card';
-@import '_topic';
-@import '_course-checkout';
 @import '_about';
-@import '_contact';
-@import '_login';
-@import '_enrollment-success';
+@import '_admin';
+@import '_card';
 @import '_coming-soon';
+@import '_common';
+@import '_contact';
+@import '_course-checkout';
 @import '_enrollment-failure';
-@import '_privacy';
+@import '_enrollment-success';
 @import '_error';
-@import '_profile';
 @import '_faq';
-@import '_signup-flow';
 @import '_footer'; 
+@import '_home';
+@import '_login';
+@import '_navigation';
+@import '_privacy';
+@import '_profile';
 @import '_signout';
+@import '_signup-flow';
 @import '_talent';
+@import '_topic';
 
 // import components
 @import 'components/_linkedIn';

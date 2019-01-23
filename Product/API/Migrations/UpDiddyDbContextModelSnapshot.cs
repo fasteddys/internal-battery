@@ -459,6 +459,31 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("CourseReview");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.CourseSkill", b =>
+                {
+                    b.Property<int>("CourseId");
+
+                    b.Property<int>("SkillId");
+
+                    b.Property<Guid?>("CourseSkillGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.HasKey("CourseId", "SkillId");
+
+                    b.HasIndex("SkillId");
+
+                    b.ToTable("CourseSkill");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.CourseVariant", b =>
                 {
                     b.Property<int>("CourseVariantId")
@@ -1875,6 +1900,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Vendor", "Vendor")
                         .WithMany()
                         .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CourseSkill", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Course", "Course")
+                        .WithMany("CourseSkills")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Skill", "Skill")
+                        .WithMany()
+                        .HasForeignKey("SkillId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

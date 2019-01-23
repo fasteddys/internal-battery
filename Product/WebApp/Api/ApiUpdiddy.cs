@@ -62,7 +62,6 @@ namespace UpDiddy.Api
             return rval;
         }
 
-
         public TopicDto TopicById(int TopicId)
         {
             string cacheKey = $"TopicById{TopicId}";
@@ -108,6 +107,21 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public IList<CourseDto> Courses()
+        {
+            string cacheKey = $"getCourses";
+            IList<CourseDto> rval = GetCachedValue<IList<CourseDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _Courses();
+                SetCachedValue<IList<CourseDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
         public CourseDto Course(string CourseSlug)
         {
             string cacheKey = $"Course{CourseSlug}";
@@ -122,22 +136,6 @@ namespace UpDiddy.Api
             }
             return rval;
 
-        }
-
-        public CourseDto CourseByGuid(Guid CourseGuid)
-        {
-
-            string cacheKey = $"CourseByGuid{CourseGuid}";
-            CourseDto rval = GetCachedValue<CourseDto>(cacheKey);
-
-            if (rval != null)
-                return rval;
-            else
-            {
-                rval = _CourseByGuid(CourseGuid);
-                SetCachedValue<CourseDto>(cacheKey, rval);
-            }
-            return rval;
         }
 
         public IList<CountryDto> GetCountries()
@@ -304,6 +302,15 @@ namespace UpDiddy.Api
             return Put<BasicResponseDto>(Subscriber, "subscriber", true);
         }
 
+        public BasicResponseDto UpdateEntitySkills(EntitySkillDto entitySkillDto)
+        {
+            return Put<BasicResponseDto>(entitySkillDto, "skill/update", true);
+        }
+
+        public IList<SkillDto> GetEntitySkills(string entityType, Guid entityGuid)
+        {
+            return Get<IList<SkillDto>>($"skill/get/{entityType}/{entityGuid}", true);
+        }
         public BasicResponseDto UpdateOnboardingStatus()
         {
             return Put<BasicResponseDto>("subscriber/onboard", true);
@@ -311,7 +318,7 @@ namespace UpDiddy.Api
 
         public BasicResponseDto SyncLinkedInAccount(string linkedInCode, string returnUrl)
         {
-            return Put<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}",true);
+            return Put<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}", true);
         }
 
         public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto)
@@ -443,6 +450,10 @@ namespace UpDiddy.Api
         {
             return Get<IList<CourseDto>>("course/topic/" + TopicSlug, false);
         }
+        private IList<CourseDto> _Courses()
+        {
+            return Get<IList<CourseDto>>("course/", false);
+        }
 
         private CourseDto _Course(string CourseSlug)
         {
@@ -450,11 +461,6 @@ namespace UpDiddy.Api
             return retVal;
         }
 
-        private CourseDto _CourseByGuid(Guid CourseGuid)
-        {
-            CourseDto retVal = Get<CourseDto>("course/" + CourseGuid, false);
-            return retVal;
-        }
         public CourseVariantDto _GetCourseVariant(Guid courseVariantGuid)
         {
             return Get<CourseVariantDto>("course/course-variant/" + courseVariantGuid, false);

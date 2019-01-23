@@ -90,6 +90,7 @@ namespace UpDiddy.Controllers
                 SubscriberGuid = this.subscriber.SubscriberGuid.Value,
                 TermsOfServiceContent = course.TermsOfServiceContent,
                 TermsOfServiceDocumentId = course.TermsOfServiceDocumentId,
+                Skills = course.Skills,
                 Countries = _Api.GetCountries().Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
