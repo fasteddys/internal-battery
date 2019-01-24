@@ -25,6 +25,7 @@ using UpDiddyApi.ApplicationCore.Factory;
 using System.Data.SqlClient;
 using AutoMapper.QueryableExtensions;
 using System.Data;
+using System.Web;
 
 namespace UpDiddyApi.Controllers
 {
@@ -40,11 +41,11 @@ namespace UpDiddyApi.Controllers
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
 
-        public SubscriberController(UpDiddyDbContext db, 
-            IMapper mapper, 
-            IConfiguration configuration, 
-            ILogger<SubscriberController> sysLog, 
-            IDistributedCache distributedCache, 
+        public SubscriberController(UpDiddyDbContext db,
+            IMapper mapper,
+            IConfiguration configuration,
+            ILogger<SubscriberController> sysLog,
+            IDistributedCache distributedCache,
             IB2CGraph client,
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService)
@@ -184,6 +185,38 @@ namespace UpDiddyApi.Controllers
             var workHistory = _db.SubscriberWorkHistory
             .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId)
             .OrderByDescending(s => s.StartDate)
+            .Select(wh => new SubscriberWorkHistory()
+            {
+                Company = new Company()
+                {
+                    CompanyGuid = wh.Company.CompanyGuid,
+                    CompanyId = wh.Company.CompanyId,
+                    CompanyName = HttpUtility.HtmlDecode(wh.Company.CompanyName),
+                    CreateDate = wh.Company.CreateDate,
+                    CreateGuid = wh.Company.CreateGuid,
+                    IsDeleted = wh.Company.IsDeleted,
+                    ModifyDate = wh.Company.ModifyDate,
+                    ModifyGuid = wh.Company.ModifyGuid
+                },
+                CompanyId = wh.CompanyId,
+                Compensation = wh.Compensation,
+                CompensationType = wh.CompensationType,
+                CompensationTypeId = wh.CompensationTypeId,
+                CreateDate = wh.CreateDate,
+                CreateGuid = wh.CreateGuid,
+                EndDate = wh.EndDate,
+                IsCurrent = wh.IsCurrent,
+                IsDeleted = wh.IsDeleted,
+                JobDecription = HttpUtility.HtmlDecode(wh.JobDecription),
+                ModifyDate = wh.ModifyDate,
+                ModifyGuid = wh.ModifyGuid,
+                StartDate = wh.StartDate,
+                SubscriberId = wh.SubscriberId,
+                SubscriberWorkHistoryGuid = wh.SubscriberWorkHistoryGuid,
+                SubscriberWorkHistoryId = wh.SubscriberWorkHistoryId,
+                Title = HttpUtility.HtmlDecode(wh.Title)
+                // ignoring subscriber property
+            })
             .ProjectTo<SubscriberWorkHistoryDto>(_mapper.ConfigurationProvider)
             .ToList();
 
@@ -196,6 +229,11 @@ namespace UpDiddyApi.Controllers
         // TODO looking into consolidating Add and Update to reduce code redundancy
         public IActionResult AddWorkHistory(Guid subscriberGuid, [FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
         {
+            // sanitize user inputs
+            WorkHistoryDto.Company = HttpUtility.HtmlEncode(WorkHistoryDto.Company);
+            WorkHistoryDto.JobDecription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDecription);
+            WorkHistoryDto.Title = HttpUtility.HtmlEncode(WorkHistoryDto.Title);
+
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (subscriberGuid != loggedInUserGuid)
@@ -241,6 +279,11 @@ namespace UpDiddyApi.Controllers
         [Route("/api/[controller]/{subscriberGuid}/work-history")]
         public IActionResult UpdateWorkHistory(Guid subscriberGuid, [FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
         {
+            // sanitize user inputs
+            WorkHistoryDto.Company = HttpUtility.HtmlEncode(WorkHistoryDto.Company);
+            WorkHistoryDto.JobDecription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDecription);
+            WorkHistoryDto.Title = HttpUtility.HtmlEncode(WorkHistoryDto.Title);
+
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (subscriberGuid != loggedInUserGuid)
@@ -321,6 +364,58 @@ namespace UpDiddyApi.Controllers
             var educationHistory = _db.SubscriberEducationHistory
             .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriber.SubscriberId)
             .OrderByDescending(s => s.StartDate)
+            .Select(eh => new SubscriberEducationHistory()
+            {
+                CreateDate = eh.CreateDate,
+                CreateGuid = eh.CreateGuid,
+                DegreeDate = eh.DegreeDate,
+                EducationalDegree = new EducationalDegree()
+                {
+                    CreateDate = eh.EducationalDegree.CreateDate,
+                    CreateGuid = eh.EducationalDegree.CreateGuid,
+                    Degree = HttpUtility.HtmlDecode(eh.EducationalDegree.Degree),
+                    EducationalDegreeGuid = eh.EducationalDegree.EducationalDegreeGuid,
+                    EducationalDegreeId = eh.EducationalDegree.EducationalDegreeId,
+                    IsDeleted = eh.EducationalDegree.IsDeleted,
+                    ModifyDate = eh.EducationalDegree.ModifyDate,
+                    ModifyGuid = eh.EducationalDegree.ModifyGuid
+                },
+                EducationalDegreeId = eh.EducationalDegreeId,
+                EducationalDegreeType = eh.EducationalDegreeType,
+                //new EducationalDegreeType()
+                //{
+                //    CreateDate = eh.EducationalDegreeType.CreateDate,
+                //    CreateGuid = eh.EducationalDegreeType.CreateGuid,
+                //    DegreeType = eh.EducationalDegreeType.DegreeType,
+                //    EducationalDegreeTypeGuid = eh.EducationalDegreeType.EducationalDegreeTypeGuid,
+                //    EducationalDegreeTypeId = eh.EducationalDegreeType.EducationalDegreeTypeId,
+                //    IsDeleted = eh.EducationalDegreeType.IsDeleted,
+                //    ModifyDate = eh.EducationalDegreeType.ModifyDate,
+                //    ModifyGuid = eh.EducationalDegreeType.ModifyGuid
+                //},
+                EducationalDegreeTypeId = eh.EducationalDegreeTypeId,
+                EducationalInstitution = new EducationalInstitution()
+                {
+                    CreateDate = eh.EducationalInstitution.CreateDate,
+                    CreateGuid = eh.EducationalInstitution.CreateGuid,
+                    EducationalInstitutionGuid = eh.EducationalInstitution.EducationalInstitutionGuid,
+                    EducationalInstitutionId = eh.EducationalInstitution.EducationalInstitutionId,
+                    IsDeleted = eh.EducationalInstitution.IsDeleted,
+                    ModifyDate = eh.EducationalInstitution.ModifyDate,
+                    ModifyGuid = eh.EducationalInstitution.ModifyGuid,
+                    Name = HttpUtility.HtmlDecode(eh.EducationalInstitution.Name)
+                },
+                EducationalInstitutionId = eh.EducationalInstitutionId,
+                EndDate = eh.EndDate,
+                IsDeleted = eh.IsDeleted,
+                ModifyDate = eh.ModifyDate,
+                ModifyGuid = eh.ModifyGuid,
+                StartDate = eh.StartDate,
+                SubscriberEducationHistoryGuid = eh.SubscriberEducationHistoryGuid,
+                SubscriberEducationHistoryId = eh.SubscriberEducationHistoryId,
+                SubscriberId = eh.SubscriberId
+                // ignoring Subscriber property
+            })
             .ProjectTo<SubscriberEducationHistoryDto>(_mapper.ConfigurationProvider)
             .ToList();
 
@@ -333,6 +428,10 @@ namespace UpDiddyApi.Controllers
         // TODO looking into consolidating Add and Update to reduce code redundancy
         public IActionResult AddEducationalHistory(Guid subscriberGuid, [FromBody] SubscriberEducationHistoryDto EducationHistoryDto)
         {
+            // sanitize user inputs
+            EducationHistoryDto.EducationalDegree = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalDegree);
+            EducationHistoryDto.EducationalInstitution = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalInstitution);
+
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (subscriberGuid != loggedInUserGuid)
@@ -357,10 +456,10 @@ namespace UpDiddyApi.Controllers
             SubscriberEducationHistory EducationHistory = new SubscriberEducationHistory()
             {
                 SubscriberEducationHistoryGuid = Guid.NewGuid(),
-                CreateGuid = Guid.NewGuid(),
-                ModifyGuid = Guid.NewGuid(),
-                CreateDate = DateTime.Now,
-                ModifyDate = DateTime.Now,
+                CreateGuid = Guid.Empty,
+                ModifyGuid = Guid.Empty,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = DateTime.UtcNow,
                 IsDeleted = 0,
                 SubscriberId = subscriber.SubscriberId,
                 StartDate = EducationHistoryDto.StartDate,
@@ -381,6 +480,10 @@ namespace UpDiddyApi.Controllers
         [Route("/api/[controller]/{subscriberGuid}/education-history")]
         public IActionResult UpdateEducationHistory(Guid subscriberGuid, [FromBody] SubscriberEducationHistoryDto EducationHistoryDto)
         {
+            // sanitize user inputs
+            EducationHistoryDto.EducationalDegree = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalDegree);
+            EducationHistoryDto.EducationalInstitution = HttpUtility.HtmlEncode(EducationHistoryDto.EducationalInstitution);
+
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (subscriberGuid != loggedInUserGuid)
@@ -505,7 +608,7 @@ namespace UpDiddyApi.Controllers
 
             return View();
         }
-        
+
         [HttpGet("/api/[controller]/search")]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         public IActionResult Search()
