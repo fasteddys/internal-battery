@@ -15,6 +15,7 @@ using System.Data;
 using System.Security.Claims;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyLib.Helpers;
+using System.Web;
 
 namespace UpDiddyApi.Controllers
 {
@@ -102,6 +103,25 @@ namespace UpDiddyApi.Controllers
             var companies = _db.Company
                 .Where(c => c.IsDeleted == 0 && c.CompanyName.Contains(userQuery))
                 .OrderBy(c => c.CompanyName)
+                .Select(c => new Company()
+                  {
+                      CompanyName = HttpUtility.HtmlDecode(c.CompanyName),
+
+                      CompanyGuid = c.CompanyGuid,
+
+                      CompanyId = c.CompanyId,
+
+                      CreateDate = c.CreateDate,
+
+                      CreateGuid = c.CreateGuid,
+
+                      IsDeleted = c.IsDeleted,
+
+                      ModifyDate = c.ModifyDate,
+
+                      ModifyGuid = c.ModifyGuid
+
+                  })
                 .ProjectTo<CompanyDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
@@ -116,6 +136,27 @@ namespace UpDiddyApi.Controllers
             var educationalInstitutions = _db.EducationalInstitution
                 .Where(c => c.IsDeleted == 0 && c.Name.Contains(userQuery))
                 .OrderBy(c => c.Name)
+                .Select(ei => new EducationalInstitution()
+
+                {
+
+                    Name = HttpUtility.HtmlDecode(ei.Name),
+
+                    EducationalInstitutionGuid = ei.EducationalInstitutionGuid,
+
+                    CreateDate = ei.CreateDate,
+
+                    CreateGuid = ei.CreateGuid,
+
+                    EducationalInstitutionId = ei.EducationalInstitutionId,
+
+                    IsDeleted = ei.IsDeleted,
+
+                    ModifyDate = ei.ModifyDate,
+
+                    ModifyGuid = ei.ModifyGuid
+
+                })
                 .ProjectTo<EducationalInstitutionDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
@@ -129,12 +170,32 @@ namespace UpDiddyApi.Controllers
             var educationalDegrees = _db.EducationalDegree
                 .Where(c => c.IsDeleted == 0 && c.Degree.Contains(userQuery))
                 .OrderBy(c => c.Degree)
+                .Select(ed => new EducationalDegree()
+                {
+
+                    Degree = HttpUtility.HtmlDecode(ed.Degree),
+
+                    EducationalDegreeGuid = ed.EducationalDegreeGuid,
+
+                    CreateDate = ed.CreateDate,
+
+                    CreateGuid = ed.CreateGuid,
+
+                    EducationalDegreeId = ed.EducationalDegreeId,
+
+                    IsDeleted = ed.IsDeleted,
+
+                    ModifyDate = ed.ModifyDate,
+
+                    ModifyGuid = ed.ModifyGuid
+
+                })
                 .ProjectTo<EducationalDegreeDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
             return Ok(educationalDegrees);
         }
-                  
+
         [Route("api/educational-degree-types")]
         public IActionResult GetEducationalDegreesTypes()
         {
@@ -152,7 +213,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetCompensationTypes()
         {
             var compensationTypes = _db.CompensationType
-                .Where(c => c.IsDeleted == 0  )
+                .Where(c => c.IsDeleted == 0)
                 .OrderBy(c => c.CompensationTypeName)
                 .ProjectTo<CompensationTypeDto>(_mapper.ConfigurationProvider)
                 .ToList();

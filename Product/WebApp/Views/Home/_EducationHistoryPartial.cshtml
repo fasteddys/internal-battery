@@ -3,6 +3,7 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
+ 
 @model ProfileViewModel
 
 <div class="col-12 no-padding">
@@ -23,7 +24,7 @@
                 @foreach (SubscriberEducationHistoryDto eh in Model.EducationHistory)
                 {
                 <div class="row profile-education-history" id="ProfileEducationHistory_@eh.SubscriberEducationHistoryGuid">
-                    <div id="ProfileEducationHistory_Institution_@eh.SubscriberEducationHistoryGuid" class="col-11 education-history-institution" data-institution="@eh.EducationalInstitution">
+                    <div id="ProfileEducationHistory_Institution_@eh.SubscriberEducationHistoryGuid" class="col-11 education-history-institution" data-institution=" @eh.EducationalInstitution">
                         @eh.EducationalInstitution
                         <i class="fa fa-pencil-alt" aria-hidden="true" onclick="EditEducationHistory('@eh.SubscriberEducationHistoryGuid')"></i>
                         <i class="fa fa-trash" aria-hidden="true" onclick="DeleteEducationHistory('@eh.SubscriberEducationHistoryGuid')"> </i>

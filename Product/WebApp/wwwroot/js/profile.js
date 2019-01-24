@@ -403,7 +403,7 @@ function FormattedDegreeDate(degreeDate) {
         return "No degree date specified";
     } else {
         if (!moment(degreeDate).isValid()) {
-            return "Invalid value for degree date";
+            return "No degree date specified";
         } else {
             return "Degree Date: " + moment(degreeDate).format("MM/DD/YYYY");
         }
@@ -513,6 +513,8 @@ function CreateEducationalHistoryDto(includeGuid) {
         EducationalDegreeType: $('#ddlEducationHistoryDegreeType').find(":selected").text()
     }
 
+    console.log("CreateEducationalHistoryDto Type = " + $('#ddlEducationHistoryDegreeType').find(":selected").text() )
+
     if (includeGuid)
         rval.SubscriberEducationHistoryGuid = $("#hdnEducationHistoryGuid").val();
 
@@ -553,6 +555,8 @@ function EditEducationHistory(EducationHistoryGuid) {
     if (endDate === "Invalid date")
         endDate = null;
     var degreeDate = moment($("#ProfileEducationHistory_DegreeDate_" + EducationHistoryGuid).data("degreedate")).format('MM/DD/YYYY');;
+    if (degreeDate === "Invalid date")
+        degreeDate = null;
     var degree = $("#ProfileEducationHistory_Degree_" + EducationHistoryGuid).data("degree");
     var degreeType = $("#ProfileEducationHistory_Degree_" + EducationHistoryGuid).data("degreetype");
 
