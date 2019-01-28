@@ -19,6 +19,7 @@
   {
     "outputFileName": "wwwroot/js/site.dev.js",
     "inputFiles": [
+      "node_modules/@babel/polyfill/dist/polyfill.js",
       "bower_components/jquery/dist/jquery.js",
       "node_modules/axios/dist/axios.js",
       "node_modules/jquery-ui-dist/jquery-ui.js",
@@ -31,11 +32,9 @@
       "node_modules/@aspnet/signalr/dist/browser/signalr.js",
       "bower_components/selectize/dist/js/standalone/selectize.js",
       "bower_components/bluebird/js/browser/bluebird.js",
-      "wwwroot/js/site.js",
-      "wwwroot/js/session-storage.js",
-      "wwwroot/js/career-circle-api.js",
       "node_modules/moment/moment.js",
-      "node_modules/bootbox/bootbox.js"
+      "node_modules/bootbox/bootbox.js",
+      "client/dist/js/core.js"
     ],
     "minify": {
       "enabled": false,
@@ -63,6 +62,7 @@
   {
     "outputFileName": "wwwroot/js/site.min.js",
     "inputFiles": [
+      "node_modules/@babel/pollyfill/dist/pollyfill.js",
       "bower_components/jquery/dist/jquery.js",
       "node_modules/axios/dist/axios.js",
       "bower_components/popper.js/dist/umd/popper.js",
@@ -76,9 +76,7 @@
       "node_modules/braintree-web-drop-in/dist/browser/dropin.js",
       "node_modules/moment/moment.js",
       "node_modules/bootbox/bootbox.min.js",
-      "wwwroot/js/site.js",
-      "wwwroot/js/session-storage.js",
-      "wwwroot/js/career-circle-api.js"
+      "client/dist/js/core.js"
     ],
     "minify": {
       "enabled": true,
