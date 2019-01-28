@@ -62,7 +62,7 @@
   {
     "outputFileName": "wwwroot/js/site.min.js",
     "inputFiles": [
-      "node_modules/@babel/pollyfill/dist/pollyfill.js",
+      "node_modules/@babel/polyfill/dist/polyfill.js",
       "bower_components/jquery/dist/jquery.js",
       "node_modules/axios/dist/axios.js",
       "bower_components/popper.js/dist/umd/popper.js",
