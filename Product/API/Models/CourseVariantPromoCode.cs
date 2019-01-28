@@ -11,5 +11,7 @@ namespace UpDiddyApi.Models
         public Guid? CourseVariantPromoCodeGuid { get; set; }
         public int CourseVariantId { get; set; }
         public int PromoCodeId { get; set; }
+        public int? MaxAllowedNumberOfRedemptions { get; set; }
+        public int NumberOfRedemptions { get; set; }
     }
 }

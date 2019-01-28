@@ -19,7 +19,7 @@ namespace UpDiddyApi.Models
         public UpDiddyDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<UpDiddyDbContext>();
-            
+
             var CurrentDir = System.IO.Directory.GetCurrentDirectory();
             IConfigurationBuilder configBuilder = new ConfigurationBuilder();
             string Env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -29,7 +29,7 @@ namespace UpDiddyApi.Models
             bool IsEnvLocal = Env == "Development";
             IConfiguration config;
             // if development file exists then this is being executed locally
-            if(IsEnvLocal)
+            if (IsEnvLocal)
             {
                 configBuilder
                     .SetBasePath(CurrentDir)
@@ -37,7 +37,8 @@ namespace UpDiddyApi.Models
                     .AddUserSecrets<Startup>();
 
                 config = configBuilder.Build();
-            } else
+            }
+            else
             {
                 // else it is being executed in the cloud and retrieve environmental variables (for now)
                 configBuilder.AddEnvironmentVariables();
@@ -47,7 +48,7 @@ namespace UpDiddyApi.Models
 
             // Get the connection string from the Azure secret vault
             var SqlConnectionString = config["CareerCircleSqlConnection"];
-            
+
             optionsBuilder.UseSqlServer(SqlConnectionString);
             return new UpDiddyDbContext(optionsBuilder.Options);
         }
@@ -116,10 +117,32 @@ namespace UpDiddyApi.Models
         public DbSet<EducationalDegreeType> EducationalDegreeType { get; set; }
         public DbSet<EducationalDegree> EducationalDegree { get; set; }
         public DbSet<CourseSkill> CourseSkill { get; set; }
- 
+        public DbSet<Campaign> Campaign { get; set; }
+        public DbSet<Action> Action { get; set; }
+        public DbSet<SubscriberAction> SubscriberAction { get; set; }
+        public DbSet<Contact> Contact { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<SubscriberAction>()
+                .HasKey(sa => new { sa.SubscriberId, sa.CampaignId, sa.ActionId });
+
+            modelBuilder.Entity<SubscriberAction>()
+                .Property(sa => sa.OccurredDate)
+                .HasDefaultValue(DateTime.UtcNow);
+
+            modelBuilder.Entity<CourseVariantPromoCode>()
+                .Property(spc => spc.NumberOfRedemptions)
+                .HasDefaultValue(0);
+
+            modelBuilder.Entity<SubscriberPromoCode>()
+                .Property(spc => spc.NumberOfRedemptions)
+                .HasDefaultValue(0);
+
+            modelBuilder.Entity<VendorPromoCode>()
+                .Property(spc => spc.NumberOfRedemptions)
+                .HasDefaultValue(0);
+
             modelBuilder.Entity<Skill>()
                 .HasIndex(u => u.SkillName)
                 .IsUnique();
@@ -129,6 +152,7 @@ namespace UpDiddyApi.Models
 
             modelBuilder.Entity<CourseSkill>()
                 .HasKey(cs => new { cs.CourseId, cs.SkillId });
+
             modelBuilder.Entity<PromoCode>()
                 .Property(pc => pc.NumberOfRedemptions)
                 .HasDefaultValue(0);
@@ -136,7 +160,7 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<PromoCode>()
                 .Property(pc => pc.MaxAllowedNumberOfRedemptions)
                 .HasDefaultValue(1);
-            
+
             // this caused a problem when cleaning up abandoned promo codes. may still want a constraint in the future, but needs to be implemented differently
             //modelBuilder.Entity<PromoCodeRedemption>()
             //    .HasIndex(i => new { i.PromoCodeId, i.SubscriberId, i.CourseId, i.RedemptionStatusId, i.IsDeleted }).IsUnique();
