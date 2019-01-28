@@ -1,0 +1,63 @@
+﻿@import '_variables';
+body {
+    nav {
+        text-transform: uppercase;
+        border-bottom: 1px solid $color-secondary-light;
+        a{
+            cursor: pointer;
+        }
+        .navbar-brand {
+            margin: 0;
+        }
+
+        &.navbar-light {
+            .navbar-nav {
+
+                .nav-link {
+                    color: $color-secondary;
+                    font-size: $rem-12;
+
+                    &.temp-profile-link {
+                        cursor: default;
+
+                        &:hover {
+                            color:#03264A; 
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (min-width: 0px) {
+    body {
+        .navbar-brand {
+            img {
+                width: 6rem;
+            }
+        }
+
+        .hero-home-bottom-details {
+            text-align: center;
+        }
+    }
+}
+
+@media (min-width: 992px) {
+    body {
+        .hero-home-bottom-details{
+            text-align: left;
+        }
+    }
+}
+
+@media (min-width: 1200px) {
+    body {
+        .navbar-brand {
+            img {
+                width: 9rem;
+            }
+        }
+    }
+}

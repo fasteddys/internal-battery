@@ -1,0 +1,173 @@
+﻿@import '_variables';
+
+.checkout-page-container {
+    .checkout-topic-detail-band {
+        background-color: $color-secondary;
+        color: $color-white;
+
+        .hero-subtitle {
+            margin-top: 1rem;
+        }
+
+        .skill-pill {
+            background-color: $color-primary;
+            padding: .5rem 1rem;
+            font-size: .75rem;
+            border-radius: 20px;
+            color: $color-white;
+            display: inline-block;
+            margin-right: .5rem;
+            margin-bottom: .5rem;
+
+            &:last-child {
+                padding-bottom: .5rem;
+            }
+        }
+
+        h4 {
+            font-family: "OpenSans-Light";
+            font-size:1.5em;
+            font-weight:500;
+        }
+    }
+
+    .form-row {
+        border-top: $rem-1 dashed $color-primary;
+        padding: 3rem 0;
+
+        .form-group {
+            #PromoCodeApplyButton {
+                padding: .375rem .75rem;
+            }
+
+            .total-container {
+                > div {
+                    padding: 0;
+
+                    &.total-row-item {
+                        border-top: $rem-1 solid $color-primary;
+                        padding-top: 1rem;
+                    }
+                }
+            }
+
+            .selection-radios-container {
+                .form-check {
+                    margin-bottom: 1rem;
+                }
+
+                #InstructorLedInputField {
+                    width: 15rem;
+                }
+            }
+        }
+    }
+
+    .checkout-hero {
+
+
+        .checkout-known-info-header {
+            font-size: 2rem;
+        }
+
+        .known-info-container {
+            ul {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+        }
+    }
+
+    .checkout-vendor-info-container {
+
+        #CourseCheckoutForm {
+            button {
+                font-size: 1rem;
+                padding: .5rem 1rem;
+                transition: background-color 0.15s ease;
+
+                &:hover {
+                    background-color: $color-secondary;
+                }
+
+                &:disabled {
+                    background-color: $color-tertiary-gray;
+                    cursor: default;
+                }
+            }
+
+            #CourseVariants {
+                padding-bottom: 3em;
+            }
+
+            .CourseVariantStartDate {
+                width: 50%;
+                display: none;
+            }
+
+            .billing-info-header-container {
+            }
+
+            .billing-info-container {
+            }
+
+            .same-as-above,
+            .billing-info-header {
+                display: inline-block;
+                margin-right: 2rem;
+            }
+
+            .payment-info-header {
+            }
+
+            .tos-agree {
+                padding-top: 1rem;
+            }
+
+            .bt-drop-in-wrapper {
+                width: 100%;
+
+                .braintree-form__field-group {
+                    label {
+                        width: 100%;
+                    }
+                }
+            }
+
+            #ValidationMessageError {
+                display: none;
+
+                span {
+                    color: darkred;
+                }
+            }
+
+            #ValidationMessageSuccess {
+                display: none;
+
+                span {
+                    color: $color-primary;
+                }
+            }
+        }
+
+        #ValidationSummary {
+            color: darkred;
+
+            .validation-summary-valid {
+                display: none;
+            }
+        }
+
+        .terms-of-service-header {
+        }
+
+        .terms-of-service-scrollview {
+            max-height: 10rem;
+            border: $rem-1 solid $color-tertiary-light-gray;
+            padding: 1.5rem;
+            overflow: auto;
+        }
+    }
+}

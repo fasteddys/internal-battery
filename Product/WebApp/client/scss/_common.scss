@@ -1,0 +1,304 @@
+﻿@import '_variables';
+
+.f-color-primary{
+    color: $color-primary;
+}
+.bg-color-primary {
+    background-color: $color-primary;
+}
+
+
+.f-color-secondary {
+    color: $color-secondary;
+}
+.bg-color-secondary {
+    background-color: $color-secondary;
+}
+
+.f-color-tertiary {
+    color: $color-tertiary;
+}
+
+.bg-color-tertiary {
+    background-color: $color-tertiary;
+}
+
+.f-color-secondary-light {
+    color: $color-tertiary;
+}
+
+
+.f-color-tertiary-gray {
+    color: $color-tertiary-gray;
+}
+
+
+.f-color-tertiary-light-gray {
+    color: $color-tertiary-light-gray;
+}
+
+
+.f-color-white{
+    color: $color-white;
+}
+
+.f-color-black{
+    color: $color-black;
+}
+
+.invalid-entry{
+    color: red;
+}
+
+
+
+/* Font Declarations */
+@font-face {
+    font-family: "OpenSans-Bold";
+    src: url('../fonts/OpenSans-Bold.ttf') format('truetype');
+}
+
+.opensans-bold{font-family: $opensans-bold}
+.f-bold{
+    font-family: OpenSans-Bold;
+}
+@font-face {
+    font-family: "OpenSans-Regular";
+    src: url('../fonts/OpenSans-Regular.ttf') format('truetype');
+}
+
+.opensans-regular { font-family: $opensans-regular}
+
+@font-face {
+    font-family: "OpenSans-Light";
+    src: url('../fonts/OpenSans-Light.ttf') format('truetype');
+}
+
+.opensans-light {font-family: $opensans-light}
+
+.brand-button-light{
+    background-color: #fff;
+    border-radius: 1rem;
+    border: $rem-1 solid $color-secondary;
+    padding: .5rem 1.75rem;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: $color-secondary;
+    border: $rem-2 solid $color-white;
+
+    &.font-small {
+        font-size: 1rem;
+    }
+
+    &:disabled {
+        background-color: $color-tertiary-gray;
+        border-color: $color-tertiary-gray;
+    }
+
+    &:hover {
+        background-color: $color-secondary;
+        border-color: $color-secondary;
+    }
+
+    &:active {
+        background-color: $color-secondary;
+        border-color: $color-secondary;
+    }
+
+    &:focus {
+        background-color: $color-secondary;
+        border-color: $color-secondary;
+        box-shadow: none;
+    }
+
+    &:not(:disabled):not(.disabled):active {
+        background-color: $color-secondary;
+        border-color: $color-secondary;
+    }
+
+    &:not(:disabled):not(.disabled):active:focus {
+        box-shadow: none;
+    }
+}
+
+.brand-button-tertiary {
+    background-color: $color-tertiary;
+    color: $color-white;
+    border-radius: 1rem;
+    padding: 1rem;
+    cursor: pointer;
+    transition: box-shadow 0.1s ease-in-out;
+    font-size: 1.5rem;
+
+    &:hover {
+        box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+    }
+    &.border-white{
+        border: 2px solid $color-white;
+    }
+}
+
+.banner-button {
+    background-size: cover;
+    color: white;
+    font-size: 2.5em;
+    font-weight: bold;
+    text-align: center;
+    height: 125px;
+    line-height: 125px;
+    margin-bottom: 10px;
+
+    &.green {
+        background-image: url("/images/GreenBlock.png");
+    }
+
+    &.blue {
+        background-image: url("/images/NavyBlock.png");
+    }
+}
+
+.brand-button {
+    border-radius: $rem-8;
+    max-width: 14rem;
+    padding: .4rem;
+    font-size: 1.685rem;
+    text-align: center;
+    cursor: pointer;
+    display: inline-block;
+
+    &.contrast-primary {
+        background-color: $color-primary;
+        color: #fff;
+        border: $rem-2 solid #fff;
+
+        &:hover {
+            background-color: $color-secondary;
+        }
+    }
+
+    &.contrast-secondary {
+        background-color: $color-white;
+        color: $color-secondary;
+        border: $rem-2 solid $color-secondary;
+    }
+
+    &:hover {
+        background-color: $color-primary;
+        color: $color-white;
+        border: $rem-2 solid $color-white;
+    }
+}
+
+nav .brand-button-light {
+    background-color: transparent;
+    border-radius: 0;
+    border: 0;
+    padding: 0;
+}
+
+
+
+.row{
+    margin-left: 0;
+    margin-right: 0;
+}
+/* Helper classes */
+.container-align-right {
+    text-align: right;
+}
+
+.container-align-left {
+    text-align: left;
+}
+
+.container-align-center {
+    text-align: center;
+}
+
+
+.breadcrumb-text {
+    color: $color-tertiary-gray;
+    font-size: $rem-13;
+}
+
+input {
+    font-family: FontAwesome, "Open Sans", Verdana, sans-serif;
+}
+
+.no-padding{
+    padding: 0;
+}
+
+.no-margin{
+    margin: 0;
+}
+
+.hidden{
+    display: none;
+}
+
+.w-40 {
+    width: 40%;
+}
+
+a:hover{
+    text-decoration: none;
+}
+
+.pseudo-hidden {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.btn {
+    &.btn-light-blue {
+        color: #fff;
+        background-color: $color-primary;
+        border-color: $color-primary;
+
+        &:hover {
+            background-color: darken($color-primary, 10%);
+            border-color: darken($color-primary, 10%);
+        }
+
+        &:active {
+            background-color: darken($color-primary, 15%);
+            border-color: darken($color-primary, 15%);
+        }
+    }
+}
+
+.page-hero {
+    background-image: url('../images/medium_blue_background.jpg');
+    color: $color-white;
+    background-size: cover;
+
+    
+    .hero-header {
+        font-size: 2rem;
+        padding: 2rem 0;
+    }
+}
+@media (min-width: 992px){
+    .navbar-light {
+        .navbar-nav {
+            .brand-button-light {
+
+                &:hover {
+                    background-color: $color-secondary;
+
+                    .nav-link{
+                        color: $color-white;
+                    }
+                }
+            }
+        }
+    }
+}
+

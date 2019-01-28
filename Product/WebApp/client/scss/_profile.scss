@@ -1,0 +1,732 @@
+﻿@import '_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+
+    .morecontent span{
+        display:none;
+    }
+    .morelink {
+        display:block;
+        color:$color-primary;
+    }
+
+    #NameModal,
+    #WorkHistoryModal,
+    #EducationHistoryModal,
+    #ContactInfoModal,
+    #SocialLinksModal,
+    #SkillsModal {
+        .modal-body {
+            .profile-edit-modal-header-container {
+                border-bottom: 1px solid $color-secondary;
+                margin-bottom: 2rem;
+            }
+
+            .profile-edit-modal-edit-option {
+                position: relative;
+                border: 1px solid $color-secondary;
+                border-radius: .5rem;
+                margin-top: 2rem;
+
+                &.regex-failure {
+                    border-color: red;
+
+                    .modal-edit-input-label {
+                        color: red;
+                    }
+                }
+                
+                .modal-edit-input-label {
+                    position: absolute;
+                    top: -10px;
+                    left: 1rem;
+                    background-color: $color-white;
+                    color: $color-secondary;
+                    font-size: .75rem;
+                    padding: 0 .5rem;
+                }
+                /*
+                .modal-edit-input.modal-checkbox {
+                    text-align: center;
+
+                    input[type=checkbox] {
+                        height: 25px;
+                        width: 25px;
+                        margin-top: 8px;
+                        margin-left: 18px;
+                    }
+                }
+                */
+                .modal-checkbox {
+                    text-align: center;
+
+                    input[type=checkbox] {
+                        display: none;
+                    }
+
+                    input[type=checkbox] + label:before {
+                        font-family: 'Font Awesome\ 5 Free';
+                        display: inline-block;
+                        font-size: 25px;
+                    }
+
+                    input[type=checkbox] + label:before {
+                        content: "\f0c8";
+                    }
+
+                    input[type=checkbox]:checked + label:before {
+                        content: "\f14a";
+                    }
+
+                    label {
+                        margin-bottom: 0;
+                    }
+                }
+
+                .modal-edit-input {
+                    padding: 2px 0;
+
+                    span {
+                        display: inline;
+                    }
+
+                    span + input {
+                        width: 90%;
+                        display: inline;
+                    }
+
+                    .extra-label {
+                        color: dimgray;
+                        margin-top: 10px;
+                        font-size: 12px;
+                    }
+
+                    textarea {
+                        border: 0;
+                        font-size: 16px;
+                        font-weight: 400;
+                        font-family: FontAwesome, "Open Sans", Verdana, sans-serif;
+                        color: #495057;
+                    }
+                }
+
+                input {
+                    border: 0;
+                    border-radius: .5rem;
+                }
+
+                select {
+                    border: 0;
+                }
+
+                .selectize-dropdown [data-selectable].option {
+                    opacity: 1;
+                    background-color: white;
+                    width: 100%;
+                }
+
+                /* this is my sad attempt at fixing the selectize dropdowns... probably can remove most of this */
+                .selectize-control.form-control.single {
+                    padding: 0;
+                    margin-top: 5px;
+                    border: 0;
+                    background-color: white;
+                    background-image: none;
+
+                    .selectize-input {
+                        box-shadow: none;
+                        border: 0;
+                        background-image: none;
+                        background-color: white;
+
+                        .items {
+                            background-color: white;
+                            background-image: none;
+                        }
+
+                        .item {
+                            color: #495057;
+                            background-color: transparent;
+                            background-image: none;
+                            border: 0;
+                            margin: 0;
+                            padding: 0;
+                            font-size: 16px;
+                            font-weight: 400;
+                            font-family: FontAwesome, "Open Sans", Verdana, sans-serif;
+                        }
+
+                        .selectize-dropdown-content {
+
+                            .option {
+                                background-color: white;
+                                background-image: none;
+                            }
+                        }
+                    }
+                }
+
+                .selectize-control {
+                    padding: .25rem;
+
+                    .selectize-input {
+                        box-shadow: none;
+                        border: 0;
+
+                        .item {
+                            background-color: $color-secondary;
+                            background-image: none;
+                            border: $color-secondary;
+                            padding: 6px 10px;
+                            border-radius: 8px;
+                            margin-top: .5rem;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    .profile-container {
+
+        .profile-hero {
+            padding: 6.5rem 0 2rem 0;
+            background-color: $color-secondary;
+            position: relative;
+            color: $color-white;
+
+            .profile-headshot {
+                position: absolute;
+                bottom: -80px;
+
+                img {
+                    width: 200px;
+                    border-radius: 100px;
+                    border: $rem-10 solid $color-white;
+                }
+            }
+
+            .profile-header-info {
+                .career-circle-profile-text {
+                    margin-bottom: 1rem;
+                }
+
+                .career-circle-profile-name {
+                    font-size: 2.625rem;
+                    line-height: 3rem;
+                }
+
+                .career-circle-profile-email {
+                    color: $color-primary;
+                }
+            }
+        }
+
+        .profile-body-container {
+            margin: 2rem 0;
+
+            .courses-in-progress-container {
+                margin-bottom: 2rem;
+
+                .courses-in-progress-list-desktop {
+                    padding: 0;
+                    list-style: none;
+                    margin-top: 2rem;
+
+                    li {
+                        border: 1px solid $color-secondary;
+                        border-radius: 0.5rem;
+                        margin-bottom: 1rem;
+                        overflow: hidden;
+                        box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
+                        -webkit-box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
+                        transition: all 0s ease-in-out;
+                        -o-transition: all 0s ease-in-out;
+                        -webkit-transition: all 0s ease-in-out;
+                        color: $color-white;
+
+                        h3 {
+                            font-size: 1.25rem;
+                        }
+
+                        .course-in-progress-anchor-container {
+                            padding: 1rem;
+                            background-image: url('../images/medium_blue_background.jpg');
+                            background-position: right;
+                            background-size: cover;
+
+                            .course-in-progress-info {
+                                text-align: center;
+                            }
+
+                            .course-enrollment-failure-container {
+                                text-align: center;
+                            }
+                        }
+
+                        > a {
+                            color: $color-white;
+
+                            .course-in-progress-anchor-container {
+                                &:hover {
+                                    background-image: url('../images/light_blue_background.jpg');
+                                    cursor: pointer;
+                                }
+                            }
+                        }
+
+
+
+                        .course-in-progress {
+                            border: 0.25rem solid $color-secondary;
+                            max-height: 3rem;
+                            border-radius: .25rem;
+                        }
+
+                        .course-listing {
+                            height: 2.5rem;
+                            line-height: 2.5rem;
+                            display: inline-block;
+                            overflow: hidden;
+                            width: 98%;
+
+                            .course-list-course-name {
+                                text-align: center;
+                            }
+                        }
+
+                        .progress {
+                            display: inline-block;
+                            width: 100%;
+                            height: 2.5rem;
+                            background-color: $color-white;
+                            position: relative;
+                            overflow: hidden;
+                            border-radius: .25rem;
+                            ;
+
+                            &.less-than-50 {
+                                .progress-bar {
+                                    background-color: $color-primary;
+                                    position: relative;
+                                    height: 2.5rem;
+                                    width: 0%;
+
+                                    .course-completion-percentage {
+                                        position: absolute;
+                                        top: 8px;
+                                        right: -40px;
+                                        font-size: 1rem;
+                                        font-family: $opensans-bold;
+                                        z-index: 999;
+                                        color: $color-secondary;
+                                    }
+                                }
+
+                                .course-continue-anchor {
+                                    position: absolute;
+                                    right: 1rem;
+                                    top: 0.5rem;
+                                    font-size: 1rem;
+                                }
+                            }
+
+                            &.more-than-50 {
+                                .progress-bar {
+                                    background-color: $color-primary;
+                                    position: relative;
+                                    height: 2.5rem;
+
+                                    .course-completion-percentage {
+                                        position: absolute;
+                                        top: 8px;
+                                        right: 8px;
+                                        font-size: 1rem;
+                                        font-family: $opensans-bold;
+                                        z-index: 999;
+                                        color: $color-white;
+                                    }
+                                }
+
+                                .course-continue-anchor {
+                                    position: absolute;
+                                    left: 1rem;
+                                    top: 0.5rem;
+                                    font-size: 1rem;
+
+                                    a {
+                                        color: $color-white;
+
+                                        &:hover {
+                                            color: $color-tertiary-light-gray;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        &:hover {
+                            border: 1px solid $color-primary;
+                            box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+                            -webkit-box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+
+                            .course-in-progress {
+                                border: 0.25rem solid $color-secondary;
+                            }
+
+                            .progress {
+                                border-radius: 0;
+
+                                .progress-bar {
+                                    background-color: $color-secondary;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            .dashed-line-boxes-container {
+                > div {
+                    border-top: 1px dashed $color-primary;
+                    padding-top: 2rem;
+                }
+            }
+
+            .personal-info-header {
+                margin-bottom: 1rem;
+            }
+
+            .personal-info-display {
+                ul {
+                    padding: 0;
+                    list-style: none;
+                }
+            }
+
+            button {
+                &:hover {
+                    background-color: $color-primary;
+                    border-color: $color-primary;
+                }
+
+                &:focus {
+                    box-shadow: none;
+                }
+
+                &:active {
+                    background-color: $color-primary;
+                    border-color: $color-primary;
+                }
+            }
+
+            .edit-profile-info-button {
+                &.profile-mobile-view {
+                    margin: 0 auto;
+                }
+            }
+
+            .btn-primary:not(:disabled):not(.disabled).active, .btn-primary:not(:disabled):not(.disabled):active, .show > .btn-primary.dropdown-toggle {
+                background-color: $color-primary;
+                border-color: $color-primary;
+            }
+
+            #ValidationSummary {
+                color: darkred;
+            }
+        }
+
+        .profile-edit-container {
+            background-color: $color-secondary;
+            padding: 2rem 0;
+
+            #ProfileInformationContainer {
+
+                h2 {
+                    color: $color-white;
+                }
+
+                .edit-personal-info-container {
+                    .options-input-container {
+                        .edit-container {
+                            border-radius: 1rem;
+                            margin-top: 2rem;
+                            padding: 1rem 0 1rem 1.5rem;
+                            background-color: $color-white;
+                            display: inline-block;
+                            width: 100%;
+
+                            .edit-action {
+                                font-size: .75rem;
+                                color: $color-secondary;
+                                padding-right: 1.5rem;
+                                cursor: pointer;
+
+                                &:hover {
+                                    color: $color-primary;
+                                }
+                            }
+
+                            .options-container {
+
+                                .profile-work-history, .profile-education-history {
+                                    
+                                    border-bottom: 1px solid $color-secondary;
+
+                                    i {
+                                        cursor: pointer;
+                                    }
+
+                                    &:last-child {
+                                        border-bottom: 0;
+                                    }
+
+                                    .work-history-title, .education-history-institution {
+                                        font-size: 14px;
+                                        font-weight: bold;
+                                    }
+
+                                    .work-history-company, .education-history-degree {
+                                        font-size: 12px;
+                                        font-weight: bold;
+                                    }
+
+                                    .work-history-tenure, .work-history-compensation, .work-history-description, .education-history-tenure, .education-history-degreedate {
+                                        font-size: 12px;
+                                        font-weight: normal;
+                                    }
+                                }
+
+                                .option-header {
+                                    font-size: .65rem;
+                                    width: 25%;
+                                    display: inline-block;
+                                }
+
+                                .option-value {
+                                    font-size: .75rem;
+                                    word-wrap: break-word;
+                                    padding-right: 1rem;
+                                }
+
+                                > div {
+                                    border-bottom: 1px solid $color-secondary;
+                                    padding: .5rem 0;
+
+                                    &:last-child {
+                                        border-bottom: 0;
+                                        padding-bottom: 0;
+                                    }
+                                }
+
+                                .skill-pill {
+                                    background-color: $color-secondary;
+                                    padding: .5rem 1rem;
+                                    font-size: .75rem;
+                                    border-radius: 20px;
+                                    color: $color-white;
+                                    display: inline-block;
+                                    margin-right: .5rem;
+                                    margin-bottom: .5rem;
+
+                                    &:last-child {
+                                        padding-bottom: .5rem;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .resume-file-component {
+        // force height to make it more smooth
+        height: 30px;
+        .resume-control,
+        .resume-upload-form {
+            .edit,
+            .delete,
+            .download,
+            .change-file {
+                color: $color-primary;
+                background: transparent;
+                cursor: pointer;
+                border: 0;
+                &:active {
+                    outline: 0; 
+                }
+
+                &:hover {
+                    color: darken($color-primary, 10%);
+                }
+                &:active {
+                    color: darken($color-primary, 15%)
+                }
+            }
+
+            .edit,
+            .delete {
+                &.disabled {
+                    color: $color-tertiary-gray;
+                }
+            }
+        }
+
+        .resume-upload-form {
+
+            .submit,
+            .change-file,
+            .cancel {
+                display: none;
+            }
+
+            .loading-spinner {
+                display: none;
+            }
+
+            &.loading {
+                .loading-spinner {
+                    display: inline-block;
+                }
+            }
+
+            &.has-file {
+                .submit, 
+                .change-file {
+                    display: inline-block;
+                }
+                .select-file {
+                    display: none;
+                }
+            }
+        }
+
+        &.has-resume {
+            .resume-upload-form {
+                display: none;
+                .cancel {
+                    display: inline-block;
+                }
+            }
+        }
+
+        &.editing.has-resume {
+            .resume-upload-form {
+                display: block;
+            }
+            .resume-control {
+                display: none;
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+    .profile-container {
+        h2 {
+            font-size: 1.5rem;
+        }
+    }
+}
+
+// Small Styles
+@media (min-width: 576px) {
+    .profile-container {
+        h2 {
+            font-size: 1.5rem;
+        }
+
+        .profile-body-container {
+
+            .courses-in-progress-container {
+                .courses-in-progress-list-desktop {
+                    li {
+                        .course-in-progress-anchor-container {
+                            .course-in-progress-info {
+                                text-align: left;
+
+                                .cip-progress-indictation {
+                                    text-align: right;
+                                }
+                            }
+
+                            .course-enrollment-failure-container {
+                                text-align: left;
+                            }
+                        }
+                    }
+                }
+
+
+                .courses-in-progress-list-desktop {
+
+                    li {
+                        .course-listing {
+                            .course-list-course-name {
+                                text-align: left;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+    .profile-container {
+        h2 {
+            font-size: 2rem;
+        }
+
+        .profile-body-container {
+
+            .courses-in-progress-container {
+
+                .courses-in-progress-list-desktop {
+
+                    li {
+                        .course-listing {
+                        }
+
+                        h3 {
+                            font-size: 1.75rem;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Large Styles
+@media (min-width: 992px) {
+    .profile-container {
+    }
+}
+
+//Extra Large Styles
+@media (min-width: 1200px) {
+    .profile-container {
+        .profile-body-container {
+
+            .courses-in-progress-container {
+
+                .courses-in-progress-list-desktop {
+
+                    li {
+
+                        &:hover {
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
