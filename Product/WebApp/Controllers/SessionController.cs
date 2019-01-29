@@ -50,6 +50,20 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
+        public IActionResult SignUp()
+        {
+            SetAzureAdB2CCulture();
+            /** 
+             * Due to iOS issues, we need to introduce a landing page so that the call to
+             * our profile page is coming from the same HTTPcontext session as our site.
+             * */
+            var redirectUrl = Url.Action(nameof(HomeController.LoggingIn), "Home");
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            properties.Items[AzureAdB2COptions.PolicyAuthenticationProperty] = AzureAdB2COptions.SignUpPolicyId;
+            return Challenge(properties, OpenIdConnectDefaults.AuthenticationScheme);
+        }
+
+        [HttpGet]
         public IActionResult ResetPassword()
         {
             SetAzureAdB2CCulture();

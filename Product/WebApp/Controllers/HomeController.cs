@@ -587,7 +587,17 @@ namespace UpDiddy.Controllers
 
         }
 
-
+        [HttpGet]
+        [Route("/Home/Campaign/{CampaignGuid}/{ContactGuid}")]
+        public IActionResult Campaign(Guid CampaignGuid, Guid ContactGuid)
+        {
+            CampaignViewModel cvm = new CampaignViewModel()
+            {
+                CampaignGuid = CampaignGuid,
+                ContactGuid = ContactGuid
+            };
+            return View(cvm);
+        }
 
 
 
