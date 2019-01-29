@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 namespace UpDiddyApi.Models
@@ -8,6 +9,7 @@ namespace UpDiddyApi.Models
     {
         public int CourseVariantId { get; set; }
         public Guid? CourseVariantGuid { get; set; }
+        [Column(TypeName="decimal(18,2)")]
         public Decimal Price { get; set; }
         public int CourseVariantTypeId { get; set; }
         public virtual CourseVariantType CourseVariantType { get; set; }

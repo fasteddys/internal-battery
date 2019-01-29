@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,6 +17,7 @@ namespace UpDiddyApi.Models
         public int IsCurrent { get; set; }
         public string Title { get; set; }
         public string JobDecription { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Compensation { get; set; }
         public int? CompensationTypeId { get; set;}
         public virtual CompensationType CompensationType { get; set; }

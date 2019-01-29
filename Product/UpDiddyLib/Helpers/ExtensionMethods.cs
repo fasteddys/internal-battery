@@ -11,5 +11,7 @@ namespace UpDiddyLib.Helpers
         {
             return compare - dt;
         }
+
+        public static bool EqualsInsensitive(this string str, string value) => string.Equals(str, value, StringComparison.CurrentCultureIgnoreCase);
     }
 }
