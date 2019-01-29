@@ -204,7 +204,7 @@ $('#txtEducationHistoryDegreeDate').datepicker({
     autoclose: true,
     clearBtn: true
 });
-
+ 
 function InitWorkHistoryAddMode() {
     $("#hdnWorkHistoryGuid").val("");
     $("#txtWorkHistoryJobDescription").val("");
@@ -226,7 +226,7 @@ function CreateWorkHistoryDto(includeGuid) {
     if (isNaN(compensation))
         compensation = 0;
 
-    rval = {
+    var rval = {
         StartDate: $("#txtWorkHistoryStartDate").val(),
         EndDate: $("#txtWorkHistoryEndDate").val(),
         IsCurrent: isChecked,
@@ -501,14 +501,14 @@ function EditWorkHistory(WorkHistoryGuid) {
     // Set Guid on edit form 
     $("#hdnWorkHistoryGuid").val(WorkHistoryGuid);
 }
-
+ 
 function SelectDate(ctl) {
     $('#' + ctl).datepicker('show');
 }
 
 function CreateEducationalHistoryDto(includeGuid) {
 
-    rval = {
+     var rval = {
         StartDate: $("#txtEducationHistoryStartDate").val(),
         EndDate: $("#txtEducationHistoryEndDate").val(),
         DegreeDate: $("#txtEducationHistoryDegreeDate").val(),
