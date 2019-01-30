@@ -39,13 +39,8 @@ steps:
   workingDirectory: Product/WebApp
 
 - script: |
-    npm run gulp sass
-  displayName: Compile Sass
-  workingDirectory: Product/WebApp
-
-- script: |
-    npm run gulp fonts
-  displayName: Copy Fonts
+    npm run gulp compile
+  displayName: Compile sass, javascript and copy fonts
   workingDirectory: Product/WebApp
 
 - script: |

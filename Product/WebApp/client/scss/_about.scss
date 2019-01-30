@@ -1,0 +1,164 @@
+﻿@import '_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .about-us-container {
+
+        .about-us-primary-band {
+            background-image: linear-gradient( rgba(3, 38, 74, 0.45), rgba(3, 38, 74, 0.45) ), url('../images/about-background-2.jpg');
+            background-size: cover;
+            background-position: top;
+            padding: 8em 0;
+        }
+
+        .about-us-hero {
+            background-image: url('../images/about-us-hero.png');
+            color: $color-white;
+            background-size: cover;
+            background-position: center;
+
+            .hero-logo {
+                max-height: 500px;
+                display: block;
+                margin: auto;
+            }
+
+            .arrow {
+                position: relative;
+                top: -75px;
+                max-height: 50px;
+                display: block;
+                margin: auto;
+            }
+
+            .tagline {
+                font-size: 1.5em;
+                position: relative;
+                top: -60px;
+            }
+
+            .about-us-header {
+                font-size: 1.5rem;
+            }
+
+            .career-circle-video-container {
+                overflow: hidden;
+                padding-bottom: 56.25%;
+                position: relative;
+                height: 0;
+
+                video {
+                    left: 0;
+                    top: 0;
+                    height: 100%;
+                    width: 100%;
+                    position: absolute;
+                }
+            }
+        }
+
+        .content-panel {
+            color: $color-white;
+            background-color: $color-secondary;
+            padding: 2rem;
+            border-left: $rem-5 solid $color-tertiary;
+
+            .content-panel-header {
+                font-size: 1.5rem;
+                padding-bottom: 2rem;
+            }
+        }
+
+        .about-us-secondary-band {
+            .partners-band {
+                .partners-header {
+                    font-size: 1.5rem;
+                    padding-bottom: 1rem;
+                }
+            }
+        }
+
+        .about-us-tertiary-band {
+            background: url('../images/light_blue_background.jpg');
+            background-size: cover;
+            color: $color-white;
+
+            .contact-us-header {
+                font-size: 1.5rem;
+                padding-bottom: 1rem;
+            }
+        }
+
+        #ContactUsForm {
+            .contact-us-button-container {
+                text-align: center;
+
+                button {
+                    padding: 0.4rem 3rem;
+                    box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
+                    border: 0;
+
+                    &:hover {
+                        background-color: $color-secondary;
+                        box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+    .about-us-container {
+        .about-us-hero {
+            .tagline {
+                font-size: .75em;
+                top: -30px;
+            }
+            .arrow {
+                top: -25px;
+            }
+        }
+    }
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+    .about-us-container {
+        .about-us-hero {
+            .tagline {
+                top: -60px;
+                font-size: 1em;
+            }
+
+            .arrow {
+                top: -50px;
+            }
+        }
+    }
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+//Extra Large Styles
+@media (min-width: 1200px) {
+    // todo: refactor to not have to specify for each width
+    .about-us-container {
+        .about-us-hero {
+            .tagline {
+                top: -95px;
+                font-size: 1.5em;
+            }
+            .arrow {
+                top: -75px;
+            }
+        }
+    }
+}

@@ -1,0 +1,50 @@
+﻿@import '_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .privacy-page-container {
+        div{
+            display: block;
+        }
+        .privacy-hero-band {
+            background-image: url('../images/medium_blue_background.jpg');
+            color: $color-white;
+            background-size: cover;
+
+            .privacy-hero {
+                padding-bottom: 2rem;
+
+                .privacy-header {
+                    font-size: 2rem;
+                    padding: 2rem 0;
+                }
+            }
+        }
+        .privacy-content{
+            padding: 2rem 0;
+            .privacy-content-container{
+
+            }
+       }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+//Extra Large Styles
+@media (min-width: 1200px) {
+}

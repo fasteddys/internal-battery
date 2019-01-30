@@ -66,15 +66,15 @@ All javascript files and css files are bundled and minified via [dotnet core](ht
 
 It is recommended to download the [Bundler & Minifier Plugin](https://marketplace.visualstudio.com/items?itemName=MadsKristensen.BundlerMinifier) for Visual Studio to speed up development. This plugin triggers re-bundling automatically when the source file is changed as opposed to only triggering once during build.
 
-#### Sass Compilation
-In order to compile the scss files you must have the following installed:
+#### Frontend Development
+In order to compile the js/scss files you must have the following installed:
  * node 10.13.0 (or other compatible version)
  * npm 6.4.1+ (or other compatible version)
 
 ##### Steps to Compile
 1. `cd Product/WebApp`
 2. `npm install`
-3. `npm run gulp sass` or `npm run gulp sass:watch` to trigger on save
+3. `npm run gulp compile` This will compile the scss, js and copy the fonts into wwwroot
 
 #### Third-Party Libraries
 Third-Party libraries are managed via [bower](https://bower.io/) and [npm](https://www.npmjs.com/). See the `bower.json` and `package.json` for libraries and versions included.
