@@ -587,7 +587,24 @@ namespace UpDiddy.Controllers
 
         }
 
+        [HttpGet]
+        [Route("/Home/Campaign/{CampaignGuid}/{ContactGuid}")]
+        public IActionResult Campaign(Guid CampaignGuid, Guid ContactGuid)
+        {
+            string _TrackingImgSource = _configuration["Api:ApiUrl"] +
+                "tracking?contact=" +
+                ContactGuid +
+                "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
+                CampaignGuid;
 
+            CampaignViewModel cvm = new CampaignViewModel()
+            {
+                CampaignGuid = CampaignGuid,
+                ContactGuid = ContactGuid,
+                TrackingImgSource = _TrackingImgSource
+            };
+            return View(cvm);
+        }
 
 
 

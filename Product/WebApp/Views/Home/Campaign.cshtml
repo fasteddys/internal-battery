@@ -1,0 +1,27 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model CampaignViewModel
+
+
+<div id="CampaignContainer">
+    <div id="CampaignHeroBand" class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="campaign-hero-header">
+                            Congratulations!
+                        </div>
+                        <div class="campaign-hero-subheader">
+                            You've been selected to receive this offer!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<img src="@Model.TrackingImgSource" />
