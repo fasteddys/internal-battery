@@ -7,76 +7,17 @@
 
 
 <div id="CampaignContainer">
-    @*
-        This component was copied from: /Shared/Components/Templates/_TextWithVideoBand.cshtml
-    *@
-    <div class="cc-text-video-band cc-cscheme-secondary row">
-        <div class="col-12">
-            <div class="container no-padding">
-                <div class="row">
-                    <div class="col-12 col-md-6 cc-text-video-band-left-column no-padding">
-                        <div class="cc-text-video-band-verbiage-container d-flex align-items-center">
-                            <div class="row">
-                                <div class="col-12 cc-text-video-band-header font-bold">
-                                    Expand Your Skills
-                                </div>
-                                <div class="col-12 cc-text-video-band-description">
-                                    <div>
-                                        We prepare the workforce of today for the opportunities of
-                                        tomorrow. Enroll in affordable courses and expand your skill set.
-                                    </div>
-                                    <div>
-                                        We know where the top jobs are. Our partners include
-                                        companies in Chicago, Baltimore, Charlotte, and Boston.
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 cc-text-video-band-right-column">
-                        <div class="career-circle-video-container d-flex align-items-center">
-                            <div class="row">
-                                <div class="col-12 no-padding">
-                                    <video class="embed-responsive embed-responsive-16by9"
-                                           src="~/videos/Career_Circle.mp4"
-                                           controls
-                                           frameborder="0"
-                                           allowfullscreen
-                                           asp-append-version="true"></video>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    @*
-        This component was copied from: /Shared/Components/Templates/_SkewBand.cshtml
-    *@
-    <div class="cc-skew-band skew-left-to-right cc-cscheme-tertiary-light-gray row">
-        <div class="col-12">
-            <div class="container no-padding">
-                <div class="row">
-                    <div class="col-12 no-padding d-flex justify-content-center">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="cc-skew-band-header font-bold">
-                                    Become an Angular Developer
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="cc-skew-band-content">
-                                    @* Place the content of the band here. *@
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @Html.Partial("Components/Bands/_TextWithVideoBand", new TextWithVideoBandViewModel {
+        Header = "Expand Your Skills",
+        DescriptionLine1 = "We prepare the workforce of today for the opportunities of tomorrow. Enroll in affordable courses and expand your skill set.",
+        DescriptionLine2 = "We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston",
+        VideoUrl = "/videos/Career_Circle.mp4",
+        ChosenColorScheme = "cc-cscheme-secondary"
+    })
+    @Html.Partial("Components/Bands/_SkewBand", new SkewBandViewModel {
+        SkewDirection = "skew-left-to-right",
+        Header = "Become an Angular Developer",
+        ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
+    })
 </div>
 <img src="@Model.TrackingImgSource" />

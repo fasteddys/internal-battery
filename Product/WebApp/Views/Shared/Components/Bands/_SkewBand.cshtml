@@ -1,24 +1,14 @@
-﻿@*
-    This is a template for a band with an angled or "skewed"
-    top.
-
-    ***Instructions***
-
-    Simply copy the contents of this component below, and paste
-    it into the html page you wish to use it. The styles will
-    automatically be reflected on the page, and you only need
-    to populate the text sections, as indicated below.
-
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model SkewBandViewModel
+@*
     ***Customization Options***
 
-    You can change the "skew-left-to-right" option to 
+    You can change the "skew-left-to-right" option to
     "skew-right-to-left" to change the skew direction.
 *@
 
-@*
-    This component was copied from: /Shared/Components/Templates/_SkewBand.cshtml
-*@
-<div class="cc-skew-band skew-left-to-right cc-cscheme-tertiary-light-gray row">
+<div class="cc-skew-band @Model.SkewDirection @Model.ChosenColorScheme row">
     <div class="col-12">
         <div class="container no-padding">
             <div class="row">
@@ -26,7 +16,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="cc-skew-band-header font-bold">
-                                @* Place the header to the band here. *@
+                                @Model.Header
                             </div>
                         </div>
                         <div class="col-12">

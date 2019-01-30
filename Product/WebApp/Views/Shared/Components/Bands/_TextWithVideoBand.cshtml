@@ -1,26 +1,14 @@
-﻿@*
-    This is a template for a responsive, two-column component
-    that contains a simple header/description, as well as
-    a video.
-
-    ***Instructions***
-
-    Simply copy the contents of this component below, and paste
-    it into the html page you wish to use it. The styles will
-    automatically be reflected on the page, and you only need
-    to populate the text sections, as indicated below.
-
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model TextWithVideoBandViewModel
+@*
     ***Customization Options***
 
     You can change the "cc-cscheme-secondary" class on the root div
     below to change the color scheme of the band (other options
     include cc-cscheme-white and cc-cscheme-primary).
 *@
-
-@*
-    This component was copied from: /Shared/Components/Templates/_TextWithVideoBand.cshtml
-*@
-<div class="cc-text-video-band cc-cscheme-secondary row">
+<div class="cc-text-video-band @Model.ChosenColorScheme row">
     <div class="col-12">
         <div class="container no-padding">
             <div class="row">
@@ -28,11 +16,11 @@
                     <div class="cc-text-video-band-verbiage-container d-flex align-items-center">
                         <div class="row">
                             <div class="col-12 cc-text-video-band-header font-bold">
-                                @* Place the header for the band here. *@
+                                @Model.Header
                             </div>
                             <div class="col-12 cc-text-video-band-description">
-                                <div>@* Place the description for the band here. *@</div>
-                                <div>@* Place another paragraph of the description here. *@</div>
+                                <div>@Model.DescriptionLine1</div>
+                                <div>@Model.DescriptionLine2</div>
                             </div>
                         </div>
                     </div>
@@ -41,9 +29,8 @@
                     <div class="career-circle-video-container d-flex align-items-center">
                         <div class="row">
                             <div class="col-12 no-padding">
-                                @* Replace the source of the video below with your new video. *@
                                 <video class="embed-responsive embed-responsive-16by9"
-                                       src=""
+                                       src="@Model.VideoUrl"
                                        controls
                                        frameborder="0"
                                        allowfullscreen
