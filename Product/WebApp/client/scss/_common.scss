@@ -44,10 +44,18 @@
 .f-color-tertiary-gray {
     color: $color-tertiary-gray;
 }
+.cc-cscheme-tertiary-gray{
+    color: $color-secondary;
+    background-color: $color-tertiary-gray;
+}
 
 
 .f-color-tertiary-light-gray {
     color: $color-tertiary-light-gray;
+}
+.cc-cscheme-tertiary-light-gray {
+    color: $color-secondary;
+    background-color: $color-tertiary-light-gray;
 }
 
 
