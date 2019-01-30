@@ -9,5 +9,8 @@ namespace UpDiddy.ViewModels
     {
         public Guid CampaignGuid { get; set; }
         public Guid ContactGuid { get; set; }
+        public string TrackingImgSource { get; set; }
+
+
     }
 }
