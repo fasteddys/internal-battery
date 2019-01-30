@@ -14,8 +14,7 @@ namespace UpDiddyApi.Models
         public string FirstName { get; set; }
         public string LastName { get; set; }
         [Required]
-        public string LinkIdentifier { get; set; }
-        public Guid? ContactGuid { get; set; }
+        public Guid ContactGuid { get; set; }
         public int? SubscriberId { get; set; }
         public virtual Subscriber Subscriber { get; set; }
     }
