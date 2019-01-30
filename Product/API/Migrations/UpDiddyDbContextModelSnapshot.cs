@@ -418,6 +418,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
+                    b.Property<string>("Headers");
+
                     b.Property<int>("IsDeleted");
 
                     b.Property<DateTime?>("ModifyDate");

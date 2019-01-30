@@ -15,5 +15,6 @@ namespace UpDiddyApi.Models
         public int CampaignId { get; set; }
         public virtual Campaign Campaign { get; set; }
         public DateTime OccurredDate { get; set; }
+        public string Headers { get; set; }
     }
 }
