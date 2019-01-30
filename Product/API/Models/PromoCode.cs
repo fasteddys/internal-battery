@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,6 +16,7 @@ namespace UpDiddyApi.Models
         public DateTime PromoStartDate { get; set; }
         public DateTime PromoEndDate { get; set; }
         public int PromoTypeId { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public Decimal PromoValueFactor { get; set; }
         [Required]
         public string PromoName { get; set; }

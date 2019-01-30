@@ -8,6 +8,11 @@ namespace UpDiddyLib.Helpers
     // todo: consider moving these constants to their respective domains of usage
     public static class Constants
     {
+        public const string TRACKING_KEY_CONTACT = "Contact";
+        public const string TRACKING_KEY_ACTION = "Action";
+        public const string TRACKING_KEY_CAMPAIGN = "Campaign";
+
+
         static public string  SubsriberSessionKey = "Subscriber";
         static public readonly string EMPTY_STRING = "";
         static public readonly string HttpGetClientName = "HttpGetClient";
@@ -42,9 +47,5 @@ namespace UpDiddyLib.Helpers
             public static readonly string CookieKey = "ccsignalr_connection_id";
             public static readonly string ResumeUpLoadVerb = "UploadResume";
         }
-
-
-
-
     }
 }

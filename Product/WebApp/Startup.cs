@@ -26,6 +26,7 @@ using Microsoft.Net.Http.Headers;
 using UpDiddy.Api;
 using UpDiddy.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace UpDiddy
 {
@@ -115,8 +116,8 @@ namespace UpDiddy
             // Define default api policy with async retries and exponential backoff            
             var ApiGetPolicy = HttpPolicyExtensions
                 .HandleTransientHttpError()
-                .WaitAndRetryAsync(PollyRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2,retryAttempt)));
- 
+                .WaitAndRetryAsync(PollyRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+
             // Define a policy without retries for non idempotenic operations
             // FMI: https://www.stevejgordon.co.uk/httpclientfactory-using-polly-for-transient-fault-handling
             var ApiPostPolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
@@ -188,7 +189,7 @@ namespace UpDiddy
             {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
-            }   
+            }
 
             var supportedCultures = new[]
                 {
@@ -211,7 +212,7 @@ namespace UpDiddy
                 // UI strings that we have localized.
                 SupportedUICultures = supportedCultures
             });
-                    
+
             // set the cache-control header to 24 hours
             app.UseStaticFiles(new StaticFileOptions
             {

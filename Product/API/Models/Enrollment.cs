@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UpDiddyApi.Models
 {
@@ -15,6 +16,7 @@ namespace UpDiddyApi.Models
         public int SubscriberId { get; set; }
         public Subscriber Subscriber { get; set; }
         public DateTime DateEnrolled { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
         public Decimal PricePaid { get; set; }
         public int PercentComplete { get; set; }
         public int? IsRetake { get; set; }

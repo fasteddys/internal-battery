@@ -49,11 +49,11 @@ namespace UpDiddyApi
         public static string ScopeWrite;
         public IConfigurationRoot Configuration { get; set; }
 
-        public Serilog.ILogger Logger { get; } 
+        public Serilog.ILogger Logger { get; }
 
         public ISysEmail SysEmail { get; }
 
-        public Startup(IHostingEnvironment env, IConfiguration configuration )
+        public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
             // Note: please refer to UpDiddyDbContext if this logic needs to be updated (configuration)
             var builder = new ConfigurationBuilder()
@@ -70,11 +70,11 @@ namespace UpDiddyApi
 
             // if environment is set to staging or production then add vault keys
             var config = builder.Build();
-            if(env.IsStaging() || env.IsProduction())
+            if (env.IsStaging() || env.IsProduction())
             {
-                builder.AddAzureKeyVault(config["Vault:Url"], 
+                builder.AddAzureKeyVault(config["Vault:Url"],
                     config["Vault:ClientId"],
-                    config["Vault:ClientSecret"], 
+                    config["Vault:ClientSecret"],
                     new KeyVaultSecretManager());
             }
 
@@ -95,7 +95,7 @@ namespace UpDiddyApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-          
+
             services.AddSingleton<Serilog.ILogger>(Logger);
 
             services.AddAuthentication(options =>
@@ -114,17 +114,17 @@ namespace UpDiddyApi
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement(new string[]{ "Recruiter" })));
+                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Recruiter" })));
                 options.AddPolicy("IsCareerCircleAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Career Circle Administrator" })));
                 options.AddPolicy("IsUserAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Career Circle User Admin" })));
-                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] {"Recruiter", "Career Circle Administrator" })));
+                options.AddPolicy("IsRecruiterOrAdmin", policy => policy.AddRequirements(new GroupRequirement(new string[] { "Recruiter", "Career Circle Administrator" })));
             });
             services.AddSingleton<IAuthorizationHandler, GroupAuthorizationHandler>();
 
             // Get the connection string from the Azure secret vault
-            var SqlConnection = Configuration["CareerCircleSqlConnection"];                     
+            var SqlConnection = Configuration["CareerCircleSqlConnection"];
             services.AddDbContext<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
-   
+
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
             // Add System Email   
@@ -153,7 +153,7 @@ namespace UpDiddyApi
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
 
             // Configure Hangfire 
-            var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"]; 
+            var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"];
             services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
             // Have the workflow monitor run every minute 
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
@@ -164,7 +164,7 @@ namespace UpDiddyApi
             int promoCodeRedemptionLookbackInMinutes = 30;
             int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
             int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));            
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
             // Add Polly 
             // Create Policies  
             int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
@@ -193,7 +193,7 @@ namespace UpDiddyApi
               .AddPolicyHandler(ApiDeletePolicy);
 
             services.AddTransient<ISovrenAPI, Sovren>();
-            services.AddHttpClient<ISovrenAPI,Sovren>();
+            services.AddHttpClient<ISovrenAPI, Sovren>();
             services.AddTransient<ICloudStorage, AzureBlobStorage>();
 
             services.AddTransient<IB2CGraph, B2CGraphClient>();
@@ -212,6 +212,14 @@ namespace UpDiddyApi
                 options.InstanceName = Configuration.GetValue<string>("redis:name");
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
+
+            // load file for tracking pixel as singleton to limit overhead
+            services.AddSingleton<FileContentResult>(
+                new FileContentResult(
+                    Convert.FromBase64String(Configuration.GetValue<string>("Tracking:PixelContentBase64")),
+                    Configuration.GetValue<string>("Tracking:PixelContentType")
+                    )
+                );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -233,7 +241,7 @@ namespace UpDiddyApi
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Version}/{action=Get}/{id?}");
             });
 
             // Added for SignalR

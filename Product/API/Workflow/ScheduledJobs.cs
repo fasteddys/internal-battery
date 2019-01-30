@@ -12,7 +12,6 @@ using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Hangfire;
 using System.Net.Http;
 using UpDiddyLib.Helpers;
-using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Factory;
@@ -25,11 +24,11 @@ using Newtonsoft.Json.Serialization;
 
 namespace UpDiddyApi.Workflow
 {
-    public class ScheduledJobs : BusinessVendorBase 
+    public class ScheduledJobs : BusinessVendorBase
     {
         ICloudStorage _cloudStorage;
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, IHubContext<ClientHub> hub, IDistributedCache distributedCache, ICloudStorage cloudStorage)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, IHubContext<ClientHub> hub, IDistributedCache distributedCache, ICloudStorage cloudStorage)
         {
             _db = context;
             _mapper = mapper;
@@ -65,7 +64,7 @@ namespace UpDiddyApi.Workflow
                     return false;
 
                 Vendor woz = _db.Vendor
-                    .Where(v => v.IsDeleted == 0 && v.Name ==  Constants.WozVendorName)
+                    .Where(v => v.IsDeleted == 0 && v.Name == Constants.WozVendorName)
                     .FirstOrDefault();
 
                 if (woz == null)
@@ -80,7 +79,7 @@ namespace UpDiddyApi.Workflow
                     return false;
 
                 DateTime? LastLoginDate = GetWozStudentLastLogin(int.Parse(studentLogin.VendorLogin));
-                if (LastLoginDate != null &&  (studentLogin.LastLoginDate == null || LastLoginDate > studentLogin.LastLoginDate))
+                if (LastLoginDate != null && (studentLogin.LastLoginDate == null || LastLoginDate > studentLogin.LastLoginDate))
                 {
                     studentLogin.LastLoginDate = LastLoginDate;
                     _db.SaveChanges();
@@ -131,13 +130,13 @@ namespace UpDiddyApi.Workflow
                         {
                             _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress updating enrollment {e.EnrollmentGuid}");
                             updatesMade = true;
-                            e.PercentComplete = Convert.ToInt32(((double) wcp.ActivitiesCompleted / (double) wcp.ActivitiesTotal) * 100);
+                            e.PercentComplete = Convert.ToInt32(((double)wcp.ActivitiesCompleted / (double)wcp.ActivitiesTotal) * 100);
                             _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress updating enrollment {e.EnrollmentGuid} set PercentComplete={e.PercentComplete}");
                             e.ModifyDate = DateTime.UtcNow;
                         }
                         else
                         {
-                            if ( wcp == null  )
+                            if (wcp == null)
                                 _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress GetWozCourseProgress returned null for enrollment {e.EnrollmentGuid}");
                             else
                                 _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress GetWozCourseProgress returned ActivitiesCompleted = {wcp.ActivitiesCompleted} ActivitiesTotal = {wcp.ActivitiesTotal}");
@@ -145,7 +144,7 @@ namespace UpDiddyApi.Workflow
                     }
                     else
                     {
-                        DateTime ModifyDate = (DateTime) e.ModifyDate;
+                        DateTime ModifyDate = (DateTime)e.ModifyDate;
                         DateTime DateThreshold = ((DateTime)e.ModifyDate).AddHours(ProgressUpdateAgeThresholdInHours);
                         _syslog.Log(LogLevel.Information,
                             $"***** UpdateStudentProgress skipping  update for enrollment {e.EnrollmentGuid} enrollment Modify date is {ModifyDate.ToLongDateString()} {ModifyDate.ToLongTimeString()} Threshold date is {DateThreshold.ToLongDateString()} {DateThreshold.ToLongTimeString()}");
@@ -157,12 +156,12 @@ namespace UpDiddyApi.Workflow
                 _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress completed");
                 return true;
             }
-            catch ( Exception e )
+            catch (Exception e)
             {
-                _syslog.Log(LogLevel.Error, $"UpdateStudentProgress:GetWozCourseProgress threw an exception -> {e.Message} for subscriber {SubscriberGuid}" );
+                _syslog.Log(LogLevel.Error, $"UpdateStudentProgress:GetWozCourseProgress threw an exception -> {e.Message} for subscriber {SubscriberGuid}");
                 return false;
             }
-            
+
         }
 
 
@@ -182,7 +181,7 @@ namespace UpDiddyApi.Workflow
                           .Where(t => t.IsDeleted == 0 && t.EnrollmentStatusId == (int)EnrollmentStatus.FutureRegisterStudentComplete)
                          .ToList<Enrollment>();
 
-                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog,_httpClientFactory);
+                WozInterface wi = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
                 foreach (Enrollment e in Enrollments)
                 {
                     wi.ReconcileFutureEnrollment(e.EnrollmentGuid.ToString());
@@ -193,7 +192,7 @@ namespace UpDiddyApi.Workflow
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Error,"ScheduledJobs:ReconcileFutureEnrollments threw an exception -> " + e.Message);                
+                _syslog.Log(LogLevel.Error, "ScheduledJobs:ReconcileFutureEnrollments threw an exception -> " + e.Message);
                 throw e;
             }
             finally
@@ -248,7 +247,7 @@ namespace UpDiddyApi.Workflow
                 else
                     return studentLogin.LastLoginDate;
 
-      
+
             }
             catch (Exception e)
             {
@@ -263,7 +262,7 @@ namespace UpDiddyApi.Workflow
 
 
         #region CareerCircle Jobs 
- 
+
         public async Task<bool> ImportSubscriberProfileDataAsync(SubscriberFile resume)
         {
             try
@@ -282,7 +281,7 @@ namespace UpDiddyApi.Workflow
                 }
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData: Finished downloading and encoding file at {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
 
-                String parsedDocument =  _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
+                String parsedDocument = _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
                 SubscriberProfileStagingStoreFactory.Save(_db, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
 
                 // Get the list of profiles that need 
@@ -293,7 +292,7 @@ namespace UpDiddyApi.Workflow
 
                 // Import user profile data
                 _ImportSubscriberProfileData(profiles);
-                
+
                 // Callback to client to let them know upload is complete
                 ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
                 DefaultContractResolver contractResolver = new DefaultContractResolver
@@ -301,8 +300,8 @@ namespace UpDiddyApi.Workflow
                     NamingStrategy = new CamelCaseNamingStrategy()
                 };
                 SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, (Guid)resume.Subscriber.SubscriberGuid, _syslog, _mapper);
-                hubHelper.CallClient(resume.Subscriber.SubscriberGuid, 
-                    Constants.SignalR.ResumeUpLoadVerb, 
+                hubHelper.CallClient(resume.Subscriber.SubscriberGuid,
+                    Constants.SignalR.ResumeUpLoadVerb,
                     JsonConvert.SerializeObject(
                         subscriberDto,
                         new JsonSerializerSettings
@@ -311,7 +310,7 @@ namespace UpDiddyApi.Workflow
                         }));
             }
             catch (Exception e)
-            { 
+            {
                 _syslog.Log(LogLevel.Error, "ScheduledJobs:ImportSubscriberProfileData threw an exception -> " + e.Message);
             }
             finally
@@ -325,20 +324,10 @@ namespace UpDiddyApi.Workflow
         public Boolean DoPromoCodeRedemptionCleanup(int? lookbackPeriodInMinutes = 30)
         {
 
- 
+
             bool result = false;
             using (_syslog.BeginScope("DoPromoCodeRedemptionCleanup"))
             {
-                // TODO remove debug code 
-                Process process = Process.GetCurrentProcess();
-                var WorkingSet64 = process.WorkingSet64; ;
-                var Threads = process.Threads.Count;
-                var VirtualMemorySize64 = process.VirtualMemorySize64;
-
-                _syslog.Log(LogLevel.Information, $"SystemHealth WorkingSet64: {WorkingSet64.ToString()}");
-                _syslog.Log(LogLevel.Information, $"SystemHealth Thread Count: {Threads}");
-                _syslog.Log(LogLevel.Information, $"SystemHealth VirtualMemorySize64: {VirtualMemorySize64}");
-
                 _syslog.LogInformation("Initiating promo code redemption cleanup");
                 try
                 {
@@ -373,6 +362,44 @@ namespace UpDiddyApi.Workflow
             return result;
         }
 
+        public void StoreTrackingInformation(Guid campaignGuid, Guid contactGuid, Guid actionGuid)
+        {
+            var campaignEntity = _db.Campaign.Where(c => c.CampaignGuid == campaignGuid && c.IsDeleted == 0).FirstOrDefault();
+            var contactEntity = _db.Contact.Where(c => c.ContactGuid == contactGuid && c.IsDeleted == 0).FirstOrDefault();
+            var actionEntity = _db.Action.Where(a => a.ActionGuid == actionGuid && a.IsDeleted == 0).FirstOrDefault();
+
+            // validate that the referenced entities exist
+            if (campaignEntity != null && contactEntity != null && actionEntity != null)
+            {
+                var existingContactAction = _db.ContactAction.Where(ca => ca.CampaignId == campaignEntity.CampaignId && ca.ContactId == contactEntity.ContactId && ca.ActionId == actionEntity.ActionId).FirstOrDefault();
+
+                if (existingContactAction != null)
+                {
+                    // update the existing tracking event with a new occurred date
+                    existingContactAction.ModifyDate = DateTime.UtcNow;
+                    existingContactAction.OccurredDate = DateTime.UtcNow;
+                }
+                else
+                {
+                    // create a unique record for the tracking event
+                    _db.ContactAction.Add(new ContactAction()
+                    {
+                        ActionId = actionEntity.ActionId,
+                        CampaignId = campaignEntity.CampaignId,
+                        ContactId = contactEntity.ContactId,
+                        ContactActionGuid = Guid.NewGuid(),
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.Empty,
+                        IsDeleted = 0,
+                        ModifyDate = DateTime.UtcNow,
+                        ModifyGuid = Guid.Empty,
+                        OccurredDate = DateTime.UtcNow
+                    });
+                }
+                _db.SaveChanges();
+            }
+        }
+
         #endregion
 
 
@@ -386,13 +413,13 @@ namespace UpDiddyApi.Workflow
                 string errMsg = string.Empty;
 
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()}");
- 
+
                 foreach (SubscriberProfileStagingStore p in profiles)
                 {
-                    if (p.ProfileSource == Constants.DataSource.LinkedIn)                    
+                    if (p.ProfileSource == Constants.DataSource.LinkedIn)
                         p.Status = (int)SubscriberFactory.ImportLinkedIn(_db, _sovrenApi, p, ref errMsg);
-                    else if (p.ProfileSource == Constants.DataSource.Sovren)                    
-                        p.Status = (int)SubscriberFactory.ImportSovren(_db, p, ref errMsg, _syslog);                    
+                    else if (p.ProfileSource == Constants.DataSource.Sovren)
+                        p.Status = (int)SubscriberFactory.ImportSovren(_db, p, ref errMsg, _syslog);
                     else
                     {
                         // Report on unknown source error

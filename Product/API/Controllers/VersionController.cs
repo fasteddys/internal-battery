@@ -4,15 +4,11 @@ namespace UpDiddyApi.Controllers
 {
     public class VersionController : Controller
     {
-
-        // GET: api/values
         [HttpGet]
-        [Route("api/[controller]")]
+        [Route("")]
         public IActionResult Get()
         {
-            return Content(typeof(Startup).Assembly.GetName().Version.ToString());
+            return Content($"Version: {typeof(Startup).Assembly.GetName().Version.ToString()}");
         }
-
-
     }
 }

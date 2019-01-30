@@ -119,17 +119,17 @@ namespace UpDiddyApi.Models
         public DbSet<CourseSkill> CourseSkill { get; set; }
         public DbSet<Campaign> Campaign { get; set; }
         public DbSet<Action> Action { get; set; }
-        public DbSet<SubscriberAction> SubscriberAction { get; set; }
+        public DbSet<ContactAction> ContactAction { get; set; }
         public DbSet<Contact> Contact { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<SubscriberAction>()
-                .HasKey(sa => new { sa.SubscriberId, sa.CampaignId, sa.ActionId });
+            modelBuilder.Entity<ContactAction>()
+                .HasKey(ca => new { ca.ContactId, ca.CampaignId, ca.ActionId });
 
-            modelBuilder.Entity<SubscriberAction>()
-                .Property(sa => sa.OccurredDate)
-                .HasDefaultValue(DateTime.UtcNow);
+            modelBuilder.Entity<ContactAction>()
+                .Property(ca => ca.OccurredDate)
+                .HasDefaultValueSql("GETUTCDATE()"); // must use sql function instead of c# function so that the current date is used on insert (rather than the initialized value from the migration)
 
             modelBuilder.Entity<CourseVariantPromoCode>()
                 .Property(spc => spc.NumberOfRedemptions)
@@ -164,6 +164,46 @@ namespace UpDiddyApi.Models
             // this caused a problem when cleaning up abandoned promo codes. may still want a constraint in the future, but needs to be implemented differently
             //modelBuilder.Entity<PromoCodeRedemption>()
             //    .HasIndex(i => new { i.PromoCodeId, i.SubscriberId, i.CourseId, i.RedemptionStatusId, i.IsDeleted }).IsUnique();
+
+            modelBuilder.Entity<Action>().HasData(
+              new Action()
+              {
+                  ActionId = 1,
+                  ActionGuid = Guid.Parse("8653122B-74F1-4020-8812-04C355CE56E7"),
+                  CreateDate = DateTime.Parse("01/28/2019"),
+                  IsDeleted = 0,
+                  Name = "Open email"
+              });
+
+            modelBuilder.Entity<Action>().HasData(
+                new Action()
+                {
+                    ActionId = 2,
+                    ActionGuid = Guid.Parse("47D62280-213F-44F3-8085-A83BB2A5BBE3"),
+                    CreateDate = DateTime.Parse("01/28/2019"),
+                    IsDeleted = 0,
+                    Name = "View content"
+                });
+
+            modelBuilder.Entity<Action>().HasData(
+                new Action()
+                {
+                    ActionId = 3,
+                    ActionGuid = Guid.Parse("5D87152D-B0D3-4A94-A777-58B69A44950E"),
+                    CreateDate = DateTime.Parse("01/28/2019"),
+                    IsDeleted = 0,
+                    Name = "Create account"
+                });
+
+            modelBuilder.Entity<Action>().HasData(
+                new Action()
+                {
+                    ActionId = 4,
+                    ActionGuid = Guid.Parse("3FA0B888-ACC6-4DA9-8E86-03F59F3137F5"),
+                    CreateDate = DateTime.Parse("01/28/2019"),
+                    IsDeleted = 0,
+                    Name = "Course enrollment"
+                });
 
             modelBuilder.Entity<RedemptionStatus>().HasData(
                 new RedemptionStatus()
