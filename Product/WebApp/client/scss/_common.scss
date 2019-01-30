@@ -1,9 +1,18 @@
 ﻿@import '_variables';
 
+.cc-cscheme-white {
+    color: $color-secondary;
+    background-color: $color-white;
+}
+
 .f-color-primary{
     color: $color-primary;
 }
 .bg-color-primary {
+    background-color: $color-primary;
+}
+.cc-cscheme-primary {
+    color: $color-white;
     background-color: $color-primary;
 }
 
@@ -12,6 +21,10 @@
     color: $color-secondary;
 }
 .bg-color-secondary {
+    background-color: $color-secondary;
+}
+.cc-cscheme-secondary {
+    color: $color-white;
     background-color: $color-secondary;
 }
 
@@ -48,6 +61,14 @@
 
 .invalid-entry{
     color: red;
+}
+
+.font-bold{
+    font-weight: bold;
+}
+
+.font-bolder{
+    font-weight: bolder;
 }
 
 

@@ -1,0 +1,183 @@
+﻿@import '../_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .cc-band {
+        padding: 2rem 0;
+
+        &.cc-bg-white {
+            background-color: $color-white;
+            color: $color-secondary;
+        }
+
+        &.cc-bg-primary {
+            background-color: $color-primary;
+            color: $color-white;
+        }
+
+        &.cc-bg-secondary {
+            background-color: $color-secondary;
+            color: $color-white;
+        }
+
+        .cc-band-verbiage-container{
+            height: 100%;
+        }
+
+        .cc-band-left-column{
+            padding-right: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .cc-band-header {
+            font-size: 2rem;
+            padding-bottom: 1rem;
+        }
+
+        .cc-band-subheader {
+            font-size: 1.5rem;
+        }
+
+        .cc-band-mini-header {
+            font-size: 1rem;
+        }
+
+        .cc-band-description {
+            font-size: .75rem;
+            > div{
+                padding-bottom: 1rem;
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+    .cc-band {
+        padding: 2rem 0;
+
+        &.cc-bg-white {
+            background-color: $color-white;
+            color: $color-secondary;
+        }
+
+        &.cc-bg-primary {
+            background-color: $color-primary;
+            color: $color-white;
+        }
+
+        &.cc-bg-secondary {
+            background-color: $color-secondary;
+            color: $color-white;
+        }
+
+        .cc-band-left-column {
+            padding-right: 0rem;
+        }
+
+        .cc-band-header {
+            font-size: 2rem;
+        }
+
+        .cc-band-subheader {
+            font-size: 1.5rem;
+        }
+
+        .cc-band-mini-header {
+            font-size: 1rem;
+        }
+
+        .cc-band-description {
+            font-size: .75rem;
+        }
+    }
+
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+    .cc-band {
+        padding: 2rem 0;
+
+        .cc-band-left-column {
+            padding-right: 2rem;
+            padding-bottom: 0rem;
+        }
+
+        .cc-band-left-column,
+        .cc-band-right-column{
+            > div{
+                height: 100%;
+            }
+        }
+
+        .cc-band-header {
+            font-size: 2rem;
+            padding-bottom: 1rem;
+        }
+
+        .cc-band-subheader {
+            font-size: 1.5rem;
+        }
+
+        .cc-band-mini-header {
+            font-size: 1rem;
+        }
+
+        .cc-band-description {
+            font-size: .75rem;
+
+            > div {
+                padding-bottom: 1rem;
+            }
+        }
+    }
+}
+
+// Large Styles
+@media (min-width: 992px) {
+    .cc-band {
+        padding: 2rem 0;
+
+        .cc-band-left-column {
+            padding-right: 2rem;
+            padding-bottom: 0rem;
+        }
+
+        .cc-band-left-column,
+        .cc-band-right-column {
+            > div {
+                height: 100%;
+            }
+        }
+
+        .cc-band-header {
+            font-size: 3rem;
+            padding-bottom: 1rem;
+        }
+
+        .cc-band-subheader {
+            font-size: 2rem;
+        }
+
+        .cc-band-mini-header {
+            font-size: 1.5rem;
+        }
+
+        .cc-band-description {
+            font-size: 1rem;
+
+            > div {
+                padding-bottom: 1rem;
+            }
+        }
+    }
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+}

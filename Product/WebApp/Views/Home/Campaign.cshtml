@@ -7,16 +7,47 @@
 
 
 <div id="CampaignContainer">
-    <div id="CampaignHeroBand" class="row">
+    @*
+        This component was copied from: /Shared/Components/Templates/_TextWithVideo.cshtml
+    *@
+    <div class="cc-band cc-cscheme-secondary row">
         <div class="col-12">
-            <div class="container">
+            <div class="container no-padding">
                 <div class="row">
-                    <div class="col-12">
-                        <div class="campaign-hero-header">
-                            Congratulations!
+                    <div class="col-12 col-md-6 cc-band-left-column no-padding">
+                        <div class="cc-band-verbiage-container d-flex align-items-center">
+                            <div class="row">
+                                <div class="col-12 cc-band-header font-bold">
+                                    Expand Your Skills
+                                </div>
+                                <div class="col-12 cc-band-description">
+                                    <div>
+                                        We prepare the workforce of today for the opportunities of
+                                        tomorrow. Enroll in affordable courses and expand your skill set.
+                                    </div>
+                                    <div>
+                                        We know where the top jobs are. Our partners include
+                                        companies in Chicago, Baltimore, Charlotte, and Boston.
+                                    </div>
+                                    
+                                </div>
+                            </div>
                         </div>
-                        <div class="campaign-hero-subheader">
-                            You've been selected to receive this offer!
+                    </div>
+                    <div class="col-12 col-md-6 cc-band-right-column">
+                        <div class="career-circle-video-container d-flex align-items-center">
+                            <div class="row">
+                                <div class="col-12 no-padding">
+                                    @* Replace the source of the video below with your new video. *@
+                                    <video class="embed-responsive embed-responsive-16by9"
+                                           src="~/videos/Career_Circle.mp4"
+                                           controls
+                                           frameborder="0"
+                                           allowfullscreen
+                                           asp-append-version="true"></video>
+
+                                </div>
+                            </div>    
                         </div>
                     </div>
                 </div>
