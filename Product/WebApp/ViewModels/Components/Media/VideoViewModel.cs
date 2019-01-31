@@ -6,9 +6,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddy.ViewModels
 {
-    public class SkewBandViewModel : BandViewModel
+    public class VideoViewModel : BandViewModel
     {
-        public string SkewDirection { get; set; }
-        public string Header { get; set; }
+        public string Url { get; set; }
+        public string Thumbnail { get; set; }
     }
 }

@@ -10,22 +10,34 @@
     @* Some of the below hardcoded values will be replaced with variables from the Model. *@
     @{
         List<string> Descriptions = new List<string>
-{
-    "We prepare the workforce of today for the opportunities of tomorrow. Enroll in affordable courses and expand your skill set.",
-    "We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston"
-};
+        {
+            "We prepare the workforce of today for the opportunities of tomorrow. Enroll in affordable courses and expand your skill set.",
+            "We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston"
+        };
     }
     @Html.Partial("Components/Bands/_CampaignSignUpBand", new CampaignSignUpBandViewModel {
-        CampaignCourse = "AngularJS"
+        CampaignCourse = "React"
     })
-    @Html.Partial("Components/Bands/_SkewBand", new SkewBandViewModel {
+    @{ 
+        List<ColumnSkewBandViewModel.ColumnSkewBandElement> Elements = new List<ColumnSkewBandViewModel.ColumnSkewBandElement>()
+        {
+            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/number-8-512.png", true),
+            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/number-8-512.png", true),
+            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/number-8-512.png", true),
+            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/number-8-512.png", true)
+        };
+    }
+    @Html.Partial("Components/Bands/_ColumnSkewBand", new ColumnSkewBandViewModel
+    {
         SkewDirection = "skew-left-to-right",
         Header = "Become an Angular Developer",
-        ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
+        ChosenColorScheme = "cc-cscheme-tertiary-mid-gray",
+        Elements = Elements
     })
     @Html.Partial("Components/Bands/_TextWithVideoBand", new TextWithVideoBandViewModel {
         Header = "Expand Your Skills",
         VideoUrl = "/videos/Career_Circle.mp4",
+        VideoThumbnailUrl = "/images/FullStack_Main.png",
         ChosenColorScheme = "cc-cscheme-secondary",
         Descriptions = Descriptions
     })

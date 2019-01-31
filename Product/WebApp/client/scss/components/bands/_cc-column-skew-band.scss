@@ -30,6 +30,12 @@
             }
         }
 
+        .cc-skew-band-content {
+            img {
+                width: 100%;
+            }
+        }
+
         &.cc-cscheme-white {
             &:before {
                 background-color: $color-white;
@@ -60,6 +66,12 @@
             }
         }
 
+        &.cc-cscheme-tertiary-mid-gray {
+            &:before {
+                background-color: $color-tertiary-mid-gray;
+            }
+        }
+
         &.cc-cscheme-tertiary-light-gray {
             &:before {
                 background-color: $color-tertiary-light-gray;
@@ -68,10 +80,16 @@
 
         .cc-skew-band-header {
             font-size: 2rem;
+            text-align: center;
         }
 
         .cc-skew-band-content {
             padding-top: 2rem;
+            > .row{
+                > div{
+                    margin-bottom: 2rem;
+                }
+            }
         }
     }
 }
@@ -96,6 +114,7 @@
 
         .cc-skew-band-header {
             font-size: 2.5rem;
+            
         }
     }
 }

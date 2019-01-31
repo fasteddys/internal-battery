@@ -12,7 +12,7 @@
     <div class="col-12">
         <div class="container no-padding">
             <div class="row">
-                <div class="col-12 col-lg-6 cc-text-video-band-left-column no-padding">
+                <div class="col-12 col-lg-6 cc-text-video-band-left-column no-padding @{if (Model.SwitchOrder) { <text>order-2</text>; } }">
                     <div class="cc-text-video-band-verbiage-container d-flex align-items-center">
                         <div class="row">
                             <div class="col-12 cc-text-video-band-header font-bold">
@@ -29,16 +29,14 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-lg-6 cc-text-video-band-right-column">
+                <div class="col-12 col-lg-6 cc-text-video-band-right-column @{if (Model.SwitchOrder) { <text>order-1</text>; } }">
                     <div class="career-circle-video-container d-flex align-items-center">
                         <div class="row">
                             <div class="col-12 no-padding">
-                                <video class="embed-responsive embed-responsive-16by9"
-                                       src="@Model.VideoUrl"
-                                       controls
-                                       frameborder="0"
-                                       allowfullscreen
-                                       asp-append-version="true"></video>
+                                @Html.Partial("Components/Media/_Video", new VideoViewModel {
+                                    Url = Model.VideoUrl,
+                                    Thumbnail = Model.VideoThumbnailUrl
+                                })
                             </div>
                         </div>
                     </div>

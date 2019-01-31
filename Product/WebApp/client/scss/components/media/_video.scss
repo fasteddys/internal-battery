@@ -1,0 +1,55 @@
+﻿@import '../../_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    #VideoComponentContainer {
+        position: relative;
+
+        video {
+            width: 100%;
+        }
+
+        .video-thumbnail {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 100%;
+
+            img {
+                width: 100%;
+                height: 100%;
+            }
+        }
+
+        .video-play-button {
+            position: absolute;
+            cursor: pointer;
+            color: $color-white;
+            text-align: center;
+            top: 50%;
+            left: 0;
+            right: 0;
+            transform: translateY(-50%);
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+}

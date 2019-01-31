@@ -10,6 +10,8 @@ namespace UpDiddy.ViewModels
     {
         public string Header { get; set; }
         public string VideoUrl { get; set; }
+        public string VideoThumbnailUrl { get; set; }
         public List<String> Descriptions { get; set; }
+        public bool SwitchOrder { get; set; }
     }
 }
