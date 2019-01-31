@@ -569,6 +569,7 @@ namespace UpDiddyApi.Controllers
         [HttpPut("/api/[controller]/contact/{contactGuid}")]
         public async Task<IActionResult> UpdateSubscriberContactAsync(Guid contactGuid, [FromBody] SignUpDto signUpDto)
         {
+            _syslog.Log(LogLevel.Information, "SubscriberController.UpdateSubscriberContactAsync:: {@ContactGuid} attempting to sign up with email {@Email}", contactGuid, signUpDto.email);
             Models.Contact contact = await _db.Contact.Where(c => c.ContactGuid.Equals(contactGuid)).FirstOrDefaultAsync();
 
             #region Verify and Check Data
@@ -595,7 +596,7 @@ namespace UpDiddyApi.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // todo: add logging
+                    _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Error occured while attempting to create a user in Azure Active Directory. Exception: {@Exception}", ex);
                     return StatusCode(500);
                 }
             }
@@ -629,7 +630,7 @@ namespace UpDiddyApi.Controllers
                 }
                 catch(Exception ex)
                 {
-                    // todo: add logging
+                    _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Error occured while attempting save Subscriber and contact DB updates for {@ContactGuid} (email: {@Email}). Exception: {@Exception}", contactGuid, signUpDto.email, ex);
                     return StatusCode(500);
                 }
             }
