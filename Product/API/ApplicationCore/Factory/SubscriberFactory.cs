@@ -42,6 +42,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(s => s.State).ThenInclude(c => c.Country)
                 .Include(s => s.SubscriberSkills).ThenInclude(ss => ss.Skill)
                 .Include(s => s.Enrollments).ThenInclude(e => e.Course)
+                .Include(s => s.Enrollments).ThenInclude(e => e.Campaign).ThenInclude(e => e.CampaignCourseVariant).ThenInclude(r => r.CourseVariant)
+                .Include(s => s.Enrollments).ThenInclude(e => e.Campaign).ThenInclude(e => e.CampaignCourseVariant).ThenInclude(r => r.RebateType)
                 .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.Company)
                 .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.CompensationType)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalInstitution)

@@ -36,7 +36,12 @@ namespace UpDiddyApi.Helpers
             CreateMap<EducationalInstitution, EducationalInstitutionDto>().ReverseMap();
             CreateMap<EducationalDegree, EducationalDegreeDto>().ReverseMap();
             CreateMap<EducationalDegreeType, EducationalDegreeTypeDto>().ReverseMap();
-            CreateMap<CompensationType, CompensationTypeDto>().ReverseMap(); 
+            CreateMap<CompensationType, CompensationTypeDto>().ReverseMap();
+            CreateMap<Campaign, CampaignDto>().ReverseMap();
+            CreateMap<CampaignCourseVariant, CampaignCourseVariantDto>().ReverseMap();
+            CreateMap<RebateType, RebateTypeDto>().ReverseMap();
+            CreateMap<Refund, RefundDto>().ReverseMap();
+
             // mappings that ignore properties in the Dto that don't exist in the model object
             CreateMap<PromoCode, PromoCodeDto>()
                 .ForMember(x => x.IsValid, opt => opt.Ignore())
