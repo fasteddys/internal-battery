@@ -17,5 +17,6 @@ namespace UpDiddyApi.Models
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public List<CampaignCourseVariant> CampaignCourseVariant { get; set; } = new List<CampaignCourseVariant>();
+        public List<CampaignContact> CampaignContact { get; set; } = new List<CampaignContact>();
     }
 }
