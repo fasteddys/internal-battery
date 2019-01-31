@@ -4,10 +4,14 @@
 @import "../../node_modules/@fortawesome/fontawesome-free/scss/brands.scss";
 
 // import components
+@import 'components/buttons/_action-button';
+
 @import 'components/_linkedIn';
-@import 'components/_cc-text-video-band';
-@import 'components/_cc-skew-band';
-@import 'components/_cc-triple-container-band';
+@import 'components/bands/_cc-text-video-band';
+@import 'components/bands/_cc-skew-band';
+@import 'components/bands/_cc-triple-container-band';
+@import 'components/bands/_cc-campaign-sign-up-band';
+@import 'components/authentication/_sign-up';
 
 // page styles
 @import '_about';

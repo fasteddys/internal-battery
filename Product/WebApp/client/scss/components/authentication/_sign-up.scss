@@ -1,0 +1,43 @@
+﻿@import '../../_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    #SignUpComponent {
+        .sign-up-input {
+            margin-bottom: 1rem;
+
+            input {
+                border-radius: .25rem; 
+                width: 100%;
+                padding: .5rem;
+                padding-left: 1.5rem;
+                font-size: .8rem;
+                border: none;
+
+                &:focus{
+                    outline: none;
+                }
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+}

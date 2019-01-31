@@ -1,0 +1,21 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model SignUpViewModel
+<div id="SignUpComponent">
+    <div class="row">
+        <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
+            <input placeholder="Your email" />
+        </div>
+        <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
+            <input placeholder="Password" />
+        </div>
+        <div id="SignUpAction" class="col-12 no-padding">
+            @Html.Partial("Components/Buttons/_ActionButton", new ActionButtonViewModel {
+                Text = "Sign Up Now",
+                SkewDirection = "skew-left-to-right",
+                ChosenColorScheme = "cc-cscheme-darkred"
+            })
+        </div>
+    </div>
+</div>
+
