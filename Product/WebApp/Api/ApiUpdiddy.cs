@@ -18,6 +18,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.AspNetCore.Mvc;
+using UpDiddyLib.Dto.Marketing;
 
 namespace UpDiddy.Api
 {
@@ -391,6 +392,11 @@ namespace UpDiddy.Api
             return Delete<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history/{1}", subscriberGuid.ToString(), educationHistory.ToString()), true);
         }
         #endregion
+
+        public SubscriberDto UpdateSubscriberContact(Guid contactGuid, SignUpDto signUpDto)
+        {
+            return Put<SubscriberDto>(signUpDto, string.Format("subscriber/contact/{0}", contactGuid.ToString()), false);
+        }
 
         public SubscriberADGroupsDto MyGroups()
         {

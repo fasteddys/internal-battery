@@ -9,8 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
     public interface IB2CGraph
     {
         Task<IList<Group>> GetUserGroupsByObjectId(string objectId);
-        Task<string> GetUserByObjectId(string objectId);
-        Task<string> AddUserToGroup(string objectId, string groupId);
-        Task<string> RemoveUserFromGroup(string objectId, string groupId);
+        Task<User> CreateUser(string name, string email, string password);
+        Task<User> GetUserBySignInEmail(string email);
     }
 }

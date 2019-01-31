@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.ApplicationCore.Services
@@ -19,6 +20,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private string clientId { get; set; }
         private string clientSecret { get; set; }
         private string tenant { get; set; }
+        private string baseUrl { get; set; }
 
         private AuthenticationContext authContext;
         private ClientCredential credential;
@@ -36,6 +38,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             // The AuthenticationContext is ADAL's primary class, in which you indicate the direcotry to use.
             this.authContext = new AuthenticationContext("https://login.microsoftonline.com/" + tenant);
 
+            this.baseUrl = "https://graph.windows.net/" + this.tenant;
+
             // The ClientCredential is where you pass in your client_id and client_secret, which are 
             // provided to Azure AD in order to receive an access_token using the app's identity.
             this.credential = new ClientCredential(clientId, clientSecret);
@@ -50,32 +54,52 @@ namespace UpDiddyApi.ApplicationCore.Services
             IList<Group> groups = JsonConvert.DeserializeObject<IList<Group>>(dirObj.AdditionalData["value"].ToString());
             return groups;
         }
-        public async Task<User> GetUserByObjectId(string objectId)
+
+        public async Task<User> GetUserBySignInEmail(string email)
         {
-            string response = await SendGraphGetRequest("/users/" + objectId, null);
-            User user = JsonConvert.DeserializeObject<User>(response);
-            return user;
+            string response = await SendGraphGetRequest("/users", String.Format("$filter=signInNames/any(x:x/value eq '{0}')", HttpUtility.UrlEncode(email)));
+            DirectoryObject dirObj = JsonConvert.DeserializeObject<DirectoryObject>(response);
+            IList<User> users = JsonConvert.DeserializeObject<IList<User>>(dirObj.AdditionalData["value"].ToString());
+            return users.FirstOrDefault();
         }
 
-        public async Task<string> AddUserToGroup(string objectId, string groupId)
+        public async Task<User> CreateUser(string name, string email, string password)
         {
-            string json = $"{{ @odata.id: 'https://graph.microsoft.com/v1.0/users/{objectId}' }}";
-            return await SendGraphPostRequest("/groups/" + groupId + "/members/$ref", json);
-        }
+            var user = new
+            {
+                displayName = name,
+                accountEnabled = true,
+                signInNames = new []
+                {
+                    new
+                    {
+                        type = "emailAddress",
+                        value = email
+                    }
+                },
+                creationType = "LocalAccount",
+                passwordProfile = new
+                {
+                    password = password,
+                    forceChangePasswordNextLogin = false
+                }
+            };
 
-        public async Task<string> RemoveUserFromGroup(string objectId, string groupId)
-        {
-            return await SendGraphDeleteRequest("/groups/" + groupId + "/members/" + objectId + "/$ref");
+            string json = JsonConvert.SerializeObject(user);
+            string response = await SendGraphPostRequest("/users", json);
+
+            User responseUser = JsonConvert.DeserializeObject<User>(response);
+            return responseUser;
         }
 
         public async Task<string> SendGraphGetRequest(string api, string query)
         {
             // First, use ADAL to acquire a token using the app's identity (the credential)
             // The first parameter is the resource we want an access_token for; in this case, the Graph API.
-            AuthenticationResult result = await authContext.AcquireTokenAsync("https://graph.microsoft.com", credential);
+            AuthenticationResult result = await authContext.AcquireTokenAsync("https://graph.windows.net", credential);
 
             // todo: make this url constant
-            string url = "https://graph.microsoft.com/v1.0" + api;
+            string url = this.baseUrl + api + "?api-version=1.6";
             if (!string.IsNullOrEmpty(query))
             {
                 url += "&" + query;
@@ -99,8 +123,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private async Task<string> SendGraphPostRequest(string api, string json)
         {
             // NOTE: This client uses ADAL v2, not ADAL v4
-            AuthenticationResult result = await authContext.AcquireTokenAsync("https://graph.microsoft.com", credential);
-            string url = "https://graph.microsoft.com/v1.0" + api;
+            AuthenticationResult result = await authContext.AcquireTokenAsync("https://graph.windows.net", credential);
+            string url = this.baseUrl + api + "?api-version=1.6";
 
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
@@ -120,8 +144,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private async Task<string> SendGraphDeleteRequest(string api)
         {
             // NOTE: This client uses ADAL v2, not ADAL v4
-            AuthenticationResult result = await authContext.AcquireTokenAsync("https://graph.microsoft.com", credential);
-            string url = "https://graph.microsoft.com/v1.0" + api;
+            AuthenticationResult result = await authContext.AcquireTokenAsync("https://graph.windows.net", credential);
+            string url = this.baseUrl + api + "?api-version=1.6";
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Delete, url);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
             HttpResponseMessage response = await _http.SendAsync(request);
@@ -134,11 +158,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             return await response.Content.ReadAsStringAsync();
-        }
-
-        Task<string> IB2CGraph.GetUserByObjectId(string objectId)
-        {
-            throw new NotImplementedException();
         }
     }
 }

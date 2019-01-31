@@ -26,6 +26,8 @@ using System.Data.SqlClient;
 using AutoMapper.QueryableExtensions;
 using System.Data;
 using System.Web;
+using UpDiddyLib.Dto.Marketing;
+using UpDiddyLib.Shared;
 
 namespace UpDiddyApi.Controllers
 {
@@ -559,6 +561,82 @@ namespace UpDiddyApi.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// This will verify the contact guid to email, make sure user does not exist already, and create one if it doesn't exist
+        /// </summary>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpPut("/api/[controller]/contact/{contactGuid}")]
+        public async Task<IActionResult> UpdateSubscriberContactAsync(Guid contactGuid, [FromBody] SignUpDto signUpDto)
+        {
+            Models.Contact contact = await _db.Contact.Where(c => c.ContactGuid.Equals(contactGuid)).FirstOrDefaultAsync();
+
+            #region Verify and Check Data
+            if (contact == null)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid Contact guid." });
+
+            // check email
+            if (contact.Email != signUpDto.email)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "This offer is only good for the recepient of this email campaign." });
+
+            // check if subscriber is in database
+            Subscriber subscriber = await _db.Subscriber.Where(s => s.Email == contact.Email).FirstOrDefaultAsync();
+            if (subscriber != null)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Subscriber already exists, please login to continue." });
+            #endregion
+
+            // check if user exits in AD if the user does then we skip this step
+            Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(contact.Email);
+            if(user == null)
+            {
+                try
+                {
+                    user = await _graphClient.CreateUser(contact.FullName, contact.Email, Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password));
+                }
+                catch (Exception ex)
+                {
+                    // todo: add logging
+                    return StatusCode(500);
+                }
+            }
+
+            // create subscriber for user
+            subscriber = new Subscriber();
+            subscriber.SubscriberGuid = Guid.Parse(user.AdditionalData["objectId"].ToString());
+            subscriber.FirstName = contact.FirstName;
+            subscriber.LastName = contact.LastName;
+            subscriber.Email = contact.Email;
+            subscriber.CreateDate = DateTime.UtcNow;
+            subscriber.ModifyDate = DateTime.UtcNow;
+            subscriber.IsDeleted = 0;
+            subscriber.ModifyGuid = Guid.Empty;
+            subscriber.CreateGuid = Guid.Empty;
+
+            // use transaction to verify that both changes 
+            using (var transaction = _db.Database.BeginTransaction())
+            {
+                try
+                {
+                    // Save subscriber to database 
+                    _db.Subscriber.Add(subscriber);
+                    await _db.SaveChangesAsync();
+
+                    // update contact in database
+                    contact.SubscriberId = subscriber.SubscriberId;
+                    await _db.SaveChangesAsync();
+
+                    transaction.Commit();
+                }
+                catch(Exception ex)
+                {
+                    // todo: add logging
+                    return StatusCode(500);
+                }
+            }
+
+            return Ok(_mapper.Map<SubscriberDto>(subscriber));
+        }
+
         [HttpGet("/api/[controller]/me/group")]
         public async Task<IActionResult> MyGroupsAsync()
         {
@@ -569,7 +647,7 @@ namespace UpDiddyApi.Controllers
             {
                 ConfigADGroup acceptedGroup = _configuration.GetSection("ADGroups:Values")
                     .Get<List<ConfigADGroup>>()
-                    .Find(e => e.Id == group.Id);
+                    .Find(e => e.Id.Equals(group.AdditionalData["objectId"]));
 
                 if (acceptedGroup != null)
                     response.Add(acceptedGroup.Name);

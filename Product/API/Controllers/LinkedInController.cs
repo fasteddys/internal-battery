@@ -61,13 +61,13 @@ namespace UpDiddyApi.Controllers
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var returnUrl = Request.Query["returnUrl"].ToString();
             if (String.IsNullOrEmpty(returnUrl))
-                return BadRequest(new { code = 400, message = "Missing return url as get param." });
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Missing return url as get param." });
 
             // Enqueue job and return 
-            BackgroundJob.Enqueue<LinkedInInterface>(lif => lif.SyncProfile(subscriberGuid, code, returnUrl) );
+                    BackgroundJob.Enqueue<LinkedInInterface>(lif => lif.SyncProfile(subscriberGuid, code, returnUrl) );
             BasicResponseDto rVal = new BasicResponseDto()
             {
-                StatusCode = ((int) ProfileDataStatus.Processing).ToString(),
+                StatusCode = (int) ProfileDataStatus.Processing,
                 Description = ProfileDataStatus.Processing.ToString()
             };
             return Ok(rVal);            
