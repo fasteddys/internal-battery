@@ -362,7 +362,7 @@ namespace UpDiddyApi.Workflow
             return result;
         }
 
-        public void StoreTrackingInformation(Guid campaignGuid, Guid contactGuid, Guid actionGuid)
+        public void StoreTrackingInformation(Guid campaignGuid, Guid contactGuid, Guid actionGuid, string headers)
         {
             var campaignEntity = _db.Campaign.Where(c => c.CampaignGuid == campaignGuid && c.IsDeleted == 0).FirstOrDefault();
             var contactEntity = _db.Contact.Where(c => c.ContactGuid == contactGuid && c.IsDeleted == 0).FirstOrDefault();
@@ -371,6 +371,7 @@ namespace UpDiddyApi.Workflow
             // validate that the referenced entities exist
             if (campaignEntity != null && contactEntity != null && actionEntity != null)
             {
+                // look for an existing contact action
                 var existingContactAction = _db.ContactAction.Where(ca => ca.CampaignId == campaignEntity.CampaignId && ca.ContactId == contactEntity.ContactId && ca.ActionId == actionEntity.ActionId).FirstOrDefault();
 
                 if (existingContactAction != null)
@@ -378,6 +379,8 @@ namespace UpDiddyApi.Workflow
                     // update the existing tracking event with a new occurred date
                     existingContactAction.ModifyDate = DateTime.UtcNow;
                     existingContactAction.OccurredDate = DateTime.UtcNow;
+                    if (!string.IsNullOrWhiteSpace(headers))
+                        existingContactAction.Headers = headers;
                 }
                 else
                 {
@@ -393,7 +396,8 @@ namespace UpDiddyApi.Workflow
                         IsDeleted = 0,
                         ModifyDate = DateTime.UtcNow,
                         ModifyGuid = Guid.Empty,
-                        OccurredDate = DateTime.UtcNow
+                        OccurredDate = DateTime.UtcNow,
+                        Headers = !string.IsNullOrWhiteSpace(headers) ? headers : null
                     });
                 }
                 _db.SaveChanges();

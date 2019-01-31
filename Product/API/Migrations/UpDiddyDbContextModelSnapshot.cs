@@ -48,9 +48,10 @@ namespace UpDiddyApi.Migrations
 
                     b.HasData(
                         new { ActionId = 1, ActionGuid = new Guid("8653122b-74f1-4020-8812-04c355ce56e7"), CreateDate = new DateTime(2019, 1, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("00000000-0000-0000-0000-000000000000"), IsDeleted = 0, Name = "Open email" },
-                        new { ActionId = 2, ActionGuid = new Guid("47d62280-213f-44f3-8085-a83bb2a5bbe3"), CreateDate = new DateTime(2019, 1, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("00000000-0000-0000-0000-000000000000"), IsDeleted = 0, Name = "View content" },
+                        new { ActionId = 2, ActionGuid = new Guid("47d62280-213f-44f3-8085-a83bb2a5bbe3"), CreateDate = new DateTime(2019, 1, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("00000000-0000-0000-0000-000000000000"), IsDeleted = 0, Name = "Visit landing page" },
                         new { ActionId = 3, ActionGuid = new Guid("5d87152d-b0d3-4a94-a777-58b69a44950e"), CreateDate = new DateTime(2019, 1, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("00000000-0000-0000-0000-000000000000"), IsDeleted = 0, Name = "Create account" },
-                        new { ActionId = 4, ActionGuid = new Guid("3fa0b888-acc6-4da9-8e86-03f59f3137f5"), CreateDate = new DateTime(2019, 1, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("00000000-0000-0000-0000-000000000000"), IsDeleted = 0, Name = "Course enrollment" }
+                        new { ActionId = 4, ActionGuid = new Guid("3fa0b888-acc6-4da9-8e86-03f59f3137f5"), CreateDate = new DateTime(2019, 1, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("00000000-0000-0000-0000-000000000000"), IsDeleted = 0, Name = "Course enrollment" },
+                        new { ActionId = 5, ActionGuid = new Guid("ccbee3a5-278e-4696-9cb6-ab6dc5b50d0a"), CreateDate = new DateTime(2019, 1, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("00000000-0000-0000-0000-000000000000"), IsDeleted = 0, Name = "Complete course" }
                     );
                 });
 
@@ -227,6 +228,43 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("CampaignId");
 
                     b.ToTable("Campaign");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CampaignCourseVariant", b =>
+                {
+                    b.Property<int>("CampaignId");
+
+                    b.Property<int>("CourseVariantId");
+
+                    b.Property<Guid?>("CampaignCourseVariantGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<bool>("IsEligibleForRebate");
+
+                    b.Property<int?>("MaxRebateEligibilityInDays");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("RebateTypeId");
+
+                    b.Property<int?>("RefundId");
+
+                    b.HasKey("CampaignId", "CourseVariantId");
+
+                    b.HasIndex("CourseVariantId");
+
+                    b.HasIndex("RebateTypeId");
+
+                    b.HasIndex("RefundId");
+
+                    b.ToTable("CampaignCourseVariant");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CommunicationSubscription", b =>
@@ -417,6 +455,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Headers");
 
                     b.Property<int>("IsDeleted");
 
@@ -818,6 +858,8 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("CampaignId");
+
                     b.Property<DateTime?>("CompletionDate");
 
                     b.Property<int>("CourseId");
@@ -854,6 +896,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<int?>("TermsOfServiceFlag");
 
                     b.HasKey("EnrollmentId");
+
+                    b.HasIndex("CampaignId");
 
                     b.HasIndex("CourseId");
 
@@ -1270,28 +1314,40 @@ namespace UpDiddyApi.Migrations
                     );
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.Rebate", b =>
+            modelBuilder.Entity("UpDiddyApi.Models.RebateType", b =>
                 {
-                    b.Property<int>("RebateId")
+                    b.Property<int>("RebateTypeId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("EnrollmentId");
+                    b.Property<DateTime>("CreateDate");
 
-                    b.Property<decimal>("RebateAmount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<Guid>("CreateGuid");
 
-                    b.Property<Guid?>("RebateGuid");
+                    b.Property<string>("Description");
 
-                    b.Property<DateTime>("RebateIssueDate");
+                    b.Property<int>("IsDeleted");
 
-                    b.Property<int>("RebateIssueStatus");
+                    b.Property<DateTime?>("ModifyDate");
 
-                    b.Property<int>("RebateIssued");
+                    b.Property<Guid?>("ModifyGuid");
 
-                    b.HasKey("RebateId");
+                    b.Property<string>("Name")
+                        .IsRequired();
 
-                    b.ToTable("Rebate");
+                    b.Property<Guid?>("RebateTypeGuid");
+
+                    b.HasKey("RebateTypeId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("RebateType");
+
+                    b.HasData(
+                        new { RebateTypeId = 1, CreateDate = new DateTime(2019, 1, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("00000000-0000-0000-0000-000000000000"), Description = "The subscriber must be placed in a job by one of our staffing partners within the number of days specified by the MaxRebateEligibilityInDays column in the CampaignCourseVariant table (if a value is defined).", IsDeleted = 0, Name = "Employment", RebateTypeGuid = new Guid("b7be76f3-ac8d-4c64-93f3-a62cc09d8dde") },
+                        new { RebateTypeId = 2, CreateDate = new DateTime(2019, 1, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("00000000-0000-0000-0000-000000000000"), Description = "The subscriber must complete the course within the number of days specified by the MaxRebateEligibilityInDays column in the CampaignCourseVariant table (if a value is defined).", IsDeleted = 0, Name = "Course completion", RebateTypeGuid = new Guid("fb69d56d-686b-4969-9465-e994e6c599a1") }
+                    );
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.RedemptionStatus", b =>
@@ -1323,6 +1379,30 @@ namespace UpDiddyApi.Migrations
                         new { RedemptionStatusId = 1, CreateDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("d5533b5c-6c87-4c48-b9be-d6ffb5532a4c"), IsDeleted = 0, Name = "In Process", RedemptionStatusGuid = new Guid("1fe97cde-3a2d-42f1-8b8d-42824367020b") },
                         new { RedemptionStatusId = 2, CreateDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), CreateGuid = new Guid("d5533b5c-6c87-4c48-b9be-d6ffb5532a4c"), IsDeleted = 0, Name = "Completed", RedemptionStatusGuid = new Guid("1fe97cde-3a2d-42f1-8b8d-42824367020b") }
                     );
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.Refund", b =>
+                {
+                    b.Property<int>("RefundId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("EnrollmentId");
+
+                    b.Property<decimal>("RefundAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid?>("RefundGuid");
+
+                    b.Property<DateTime>("RefundIssueDate");
+
+                    b.Property<int>("RefundIssueStatus");
+
+                    b.Property<int>("RefundIssued");
+
+                    b.HasKey("RefundId");
+
+                    b.ToTable("Refund");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.ReportEnrollmentByVendor", b =>
@@ -2059,6 +2139,28 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("WozTransactionLog");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.CampaignCourseVariant", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Campaign", "Campaign")
+                        .WithMany("CampaignCourseVariant")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.CourseVariant", "CourseVariant")
+                        .WithMany()
+                        .HasForeignKey("CourseVariantId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.RebateType", "RebateType")
+                        .WithMany()
+                        .HasForeignKey("RebateTypeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Refund", "Refund")
+                        .WithMany()
+                        .HasForeignKey("RefundId");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Contact", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
@@ -2120,6 +2222,10 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.Enrollment", b =>
                 {
+                    b.HasOne("UpDiddyApi.Models.Campaign", "Campaign")
+                        .WithMany()
+                        .HasForeignKey("CampaignId");
+
                     b.HasOne("UpDiddyApi.Models.Course", "Course")
                         .WithMany()
                         .HasForeignKey("CourseId")
