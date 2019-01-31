@@ -123,9 +123,13 @@ namespace UpDiddyApi.Models
         public DbSet<Contact> Contact { get; set; }
         public DbSet<CampaignCourseVariant> CampaignCourseVariant { get; set; }
         public DbSet<RebateType> RebateType { get; set; }
+        public DbSet<CampaignContact> CampaignContact { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<CampaignContact>()
+                .HasKey(cc => new { cc.CampaignId, cc.ContactId });
+
             modelBuilder.Entity<RebateType>().HasData(
                 new RebateType()
                 {
