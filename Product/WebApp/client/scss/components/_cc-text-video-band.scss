@@ -39,11 +39,11 @@
         }
 
         .cc-text-video-band-mini-header {
-            font-size: 1rem;
+            font-size: 1.25rem;
         }
 
         .cc-text-video-band-description {
-            font-size: .75rem;
+            font-size: 1rem;
             > div{
                 padding-bottom: 1rem;
             }
@@ -73,22 +73,6 @@
 
         .cc-text-video-band-left-column {
             padding-right: 0rem;
-        }
-
-        .cc-text-video-band-header {
-            font-size: 2rem;
-        }
-
-        .cc-text-video-band-subheader {
-            font-size: 1.5rem;
-        }
-
-        .cc-text-video-band-mini-header {
-            font-size: 1rem;
-        }
-
-        .cc-text-video-band-description {
-            font-size: .75rem;
         }
     }
 
@@ -120,17 +104,8 @@
             padding-bottom: 1rem;
         }
 
-        .cc-text-video-band-subheader {
-            font-size: 1.5rem;
-        }
-
-        .cc-text-video-band-mini-header {
-            font-size: 1rem;
-        }
-
         .cc-text-video-band-description {
-            font-size: .75rem;
-
+            padding-bottom: 2rem;
             > div {
                 padding-bottom: 1rem;
             }
@@ -141,7 +116,7 @@
 // Large Styles
 @media (min-width: 992px) {
     .cc-text-video-band {
-        padding: 2rem 0; 
+        padding: 3rem 0; 
 
         .cc-text-video-band-left-column {
             padding-right: 2rem;
@@ -156,20 +131,13 @@
         }
 
         .cc-text-video-band-header {
-            font-size: 3rem;
+            font-size: 2.5rem;
             padding-bottom: 1rem;
-        }
-
-        .cc-text-video-band-subheader {
-            font-size: 2rem;
-        }
-
-        .cc-text-video-band-mini-header {
-            font-size: 1.5rem;
         }
 
         .cc-text-video-band-description {
             font-size: 1rem;
+            padding-bottom: 0;
 
             > div {
                 padding-bottom: 1rem;

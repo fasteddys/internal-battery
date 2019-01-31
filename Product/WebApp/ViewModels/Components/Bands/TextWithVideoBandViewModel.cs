@@ -9,8 +9,7 @@ namespace UpDiddy.ViewModels
     public class TextWithVideoBandViewModel : BandViewModel
     {
         public string Header { get; set; }
-        public string DescriptionLine1 { get; set; }
-        public string DescriptionLine2 { get; set; }
         public string VideoUrl { get; set; }
+        public List<String> Descriptions { get; set; }
     }
 }

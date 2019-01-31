@@ -7,17 +7,34 @@
 
 
 <div id="CampaignContainer">
-    @Html.Partial("Components/Bands/_TextWithVideoBand", new TextWithVideoBandViewModel {
-        Header = "Expand Your Skills",
-        DescriptionLine1 = "We prepare the workforce of today for the opportunities of tomorrow. Enroll in affordable courses and expand your skill set.",
-        DescriptionLine2 = "We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston",
-        VideoUrl = "/videos/Career_Circle.mp4",
-        ChosenColorScheme = "cc-cscheme-secondary"
-    })
+    @* Some of the below hardcoded values will be replaced with variables from the Model. *@
+    @{ 
+        List<string> Descriptions = new List<string>
+        {
+            "We prepare the workforce of today for the opportunities of tomorrow. Enroll in affordable courses and expand your skill set.",
+            "We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston"
+        };
+    }
     @Html.Partial("Components/Bands/_SkewBand", new SkewBandViewModel {
         SkewDirection = "skew-left-to-right",
         Header = "Become an Angular Developer",
         ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
+    })
+    @Html.Partial("Components/Bands/_TextWithVideoBand", new TextWithVideoBandViewModel {
+        Header = "Expand Your Skills",
+        VideoUrl = "/videos/Career_Circle.mp4",
+        ChosenColorScheme = "cc-cscheme-secondary",
+        Descriptions = Descriptions
+    })
+    @Html.Partial("Components/Bands/_TripleContainerBand", new TripleContainerBandViewModel {
+        Header = "Advance Your Career With Angular",
+        ChosenColorScheme = "cc-cscheme-white",
+        C1TopValue = "9,543",
+        C1BottomValue = "# of Angular developer jobs open right now in Baltimore, Chicago, Charlotte and Boston",
+        C2TopValue = "874",
+        C2BottomValue = "# of Angular developers we've found jobs for this year",
+        C3TopValue = "$93,402",
+        C3BottomValue = "Average salary for Angular web developers"
     })
 </div>
 <img src="@Model.TrackingImgSource" />

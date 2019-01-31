@@ -19,8 +19,12 @@
                                 @Model.Header
                             </div>
                             <div class="col-12 cc-text-video-band-description">
-                                <div>@Model.DescriptionLine1</div>
-                                <div>@Model.DescriptionLine2</div>
+                                @{ 
+                                    foreach(string description in Model.Descriptions)
+                                    {
+                                        <div>@description</div>
+                                    }
+                                }
                             </div>
                         </div>
                     </div>

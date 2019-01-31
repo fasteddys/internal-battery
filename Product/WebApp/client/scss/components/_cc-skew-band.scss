@@ -14,7 +14,6 @@
                 left: 0;
                 height: 2rem;
                 width: 100%;
-                background-color: $color-tertiary-light-gray;
                 clip-path: polygon(0% 0%, 100% 100%, 100% 100%, 0% 100%);
             }
         }
@@ -27,17 +26,51 @@
                 left: 0;
                 height: 2rem;
                 width: 100%;
-                background-color: $color-tertiary-light-gray;
                 clip-path: polygon(0% 100%, 100% 0%, 100% 100%, 100% 100%);
             }
         }
 
+        &.cc-cscheme-white {
+            &:before {
+                background-color: $color-white;
+            }
+        }
+
+        &.cc-cscheme-primary {
+            &:before {
+                background-color: $color-primary;
+            }
+        }
+
+        &.cc-cscheme-secondary {
+            &:before {
+                background-color: $color-secondary;
+            }
+        }
+
+        &.cc-cscheme-tertiary {
+            &:before {
+                background-color: $color-tertiary;
+            }
+        }
+
+        &.cc-cscheme-tertiary-gray {
+            &:before {
+                background-color: $color-tertiary-gray;
+            }
+        }
+
+        &.cc-cscheme-tertiary-light-gray {
+            &:before {
+                background-color: $color-tertiary-light-gray;
+            }
+        }
 
         .cc-skew-band-header {
             font-size: 2rem;
         }
 
-        .cc-skew-band-content{
+        .cc-skew-band-content {
             padding-top: 2rem;
         }
     }
@@ -62,7 +95,7 @@
     .cc-skew-band {
 
         .cc-skew-band-header {
-            font-size: 3rem;
+            font-size: 2.5rem;
         }
     }
 }
