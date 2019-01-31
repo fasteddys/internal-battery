@@ -48,7 +48,7 @@ namespace UpDiddyApi.Authorization
                 .ToList();
 
             // claims in GroupRequirement are treated as OR conditions
-            Microsoft.Graph.Group group = groups.Where(e => requiredGroups.Where(rg => rg.Id  == e.Id).Any()).FirstOrDefault();
+            Microsoft.Graph.Group group = groups.Where(e => requiredGroups.Where(rg => rg.Id.Equals(e.AdditionalData["objectId"])).Any()).FirstOrDefault();
 
             return group != null;
         }

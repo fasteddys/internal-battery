@@ -247,7 +247,7 @@ namespace UpDiddy.Controllers
                 _Api.UpdateProfileInformation(Subscriber);
                 return new BasicResponseDto
                 {
-                    StatusCode = "200",
+                    StatusCode = 200,
                     Description = "OK"
                 };
             }
@@ -266,7 +266,7 @@ namespace UpDiddy.Controllers
 
                 return new BasicResponseDto
                 {
-                    StatusCode = "400",
+                    StatusCode = 400,
                     Description = validationErrors.ToString()
                 };
             }

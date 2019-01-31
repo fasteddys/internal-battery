@@ -52,4 +52,4 @@ gulp.task('js:watch', function () {
 
 gulp.task('compile', ['fonts', 'sass', 'js']);
 
-gulp.task('default', ['sass:watch', 'js:watch']);
+gulp.task('default', ['sass', 'sass:watch', 'js', 'js:watch']);

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using System.Threading.Tasks;
 using System.Net.Http;
+using UpDiddyLib.Dto.Marketing;
 
 namespace UpDiddy.Api
 {
@@ -49,6 +50,8 @@ namespace UpDiddy.Api
         IList<SubscriberWorkHistoryDto> GetWorkHistory(Guid subscriberGuid);
         IList<SubscriberEducationHistoryDto> GetEducationHistory(Guid subscriberGuid);
         SubscriberEducationHistoryDto AddEducationalHistory(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
+        SubscriberDto UpdateSubscriberContact(Guid contactGuid, SignUpDto signUpDto);
+
 
         SubscriberADGroupsDto MyGroups();
 
