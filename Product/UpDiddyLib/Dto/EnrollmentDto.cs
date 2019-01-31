@@ -43,6 +43,7 @@ namespace UpDiddyLib.Dto
         public Guid CourseVariantGuid { get; set; }
         public Guid CourseGuid { get; set; }
         public string CourseUrl { get; set; }
+        public virtual CampaignDto Campaign { get; set; }
 
         public SimplifiedEnrollmentStatus SimplifiedEnrollmentStatus
         {
