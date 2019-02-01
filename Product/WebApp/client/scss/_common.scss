@@ -345,3 +345,10 @@ a:hover{
     }
 }
 
+// IE Workarounds
+.d-flex{
+    .row{
+        width: 100%;
+    }
+}
+
