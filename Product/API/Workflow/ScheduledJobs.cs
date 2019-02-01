@@ -131,6 +131,9 @@ namespace UpDiddyApi.Workflow
                             _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress updating enrollment {e.EnrollmentGuid}");
                             updatesMade = true;
                             e.PercentComplete = Convert.ToInt32(((double)wcp.ActivitiesCompleted / (double)wcp.ActivitiesTotal) * 100);
+                            if (e.PercentComplete == 100 && e.CompletionDate == null)
+                                e.CompletionDate = DateTime.UtcNow;
+
                             _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress updating enrollment {e.EnrollmentGuid} set PercentComplete={e.PercentComplete}");
                             e.ModifyDate = DateTime.UtcNow;
                         }
