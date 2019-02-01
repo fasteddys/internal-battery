@@ -53,6 +53,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefault();
 
             SubscriberDto subscriberDto = _mapper.Map<SubscriberDto>(subscriber);
+            
+            // Populate campaign promotional message for enrollment
+            // todo find a better way to do  this
+            foreach ( EnrollmentDto e in subscriberDto.Enrollments)            
+                e.CampaignPromoInfo = CampaignFactory.EnrollmentPromoStatusAsText(e);
+            
             return subscriberDto;
         }
         public static Subscriber GetSubscriberByGuid(UpDiddyDbContext db, Guid subscriberGuid)
