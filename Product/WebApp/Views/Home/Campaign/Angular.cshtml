@@ -8,17 +8,12 @@
 
 <div id="CampaignContainer">
     @* Some of the below hardcoded values will be replaced with variables from the Model. *@
-    @{
-        List<string> Descriptions = new List<string>
-        {
-            "We prepare the workforce of today for the opportunities of tomorrow. Enroll in affordable courses and expand your skill set.",
-            "We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston"
-        };
-    }
+
     @Html.Partial("Components/Bands/_CampaignSignUpBand", new CampaignSignUpBandViewModel {
-        CampaignCourse = "React"
+        CampaignCourse = "AngularJS",
+        ImageUrl = "/images/angular.png"
     })
-    @{ 
+    @{
         List<ColumnSkewBandViewModel.ColumnSkewBandElement> Elements = new List<ColumnSkewBandViewModel.ColumnSkewBandElement>()
         {
             new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/number-8-512.png", true),
@@ -34,6 +29,13 @@
         ChosenColorScheme = "cc-cscheme-tertiary-mid-gray",
         Elements = Elements
     })
+    @{
+        List<string> Descriptions = new List<string>
+        {
+            "We prepare the workforce of today for the opportunities of tomorrow. Enroll in affordable courses and expand your skill set.",
+            "We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston."
+        };
+    }
     @Html.Partial("Components/Bands/_TextWithVideoBand", new TextWithVideoBandViewModel {
         Header = "Expand Your Skills",
         VideoUrl = "/videos/Career_Circle.mp4",

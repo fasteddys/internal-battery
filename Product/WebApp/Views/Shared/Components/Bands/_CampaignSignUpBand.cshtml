@@ -14,28 +14,36 @@
                 <div class="col-12 col-md-8 cc-campaign-sign-up-band-left-container">
                     <div class="row">
                         <div class="col-2 img-column no-padding">
-                            <img src="~/images/angular.png"/>
+                            <img src="@Model.ImageUrl"/>
                         </div>
                         <div class="col-10 no-padding">
                             <div class="row">
                                 <div class="col-12 hero-header font-bold">
-                                    Become
                                     @{
-                                        char FirstChar = Model.CampaignCourse.ToLower().ToCharArray()[0];
-                                        if (FirstChar == 'a' ||
-                                            FirstChar == 'e' ||
-                                            FirstChar == 'i' ||
-                                            FirstChar == 'o' ||
-                                            FirstChar == 'u')
+                                        if (!string.IsNullOrEmpty(Model.CampaignCourse))
                                         {
-                                            <text> an </text>
-                                        }
-                                        else
-                                        {
-                                            <text> a </text>
+                                            <text>Become</text>
+
+                                            char FirstChar = Model.CampaignCourse.ToLower().ToCharArray()[0];
+                                            if (FirstChar == 'a' ||
+                                                FirstChar == 'e' ||
+                                                FirstChar == 'i' ||
+                                                FirstChar == 'o' ||
+                                                FirstChar == 'u')
+                                            {
+                                                <text> an </text>
+                                            }
+                                            else
+                                            {
+                                                <text> a </text>
+                                            }
+
+
+                                            <text>@Model.CampaignCourse Developer</text>
                                         }
                                     }
-                                    @Model.CampaignCourse Developer
+
+
                                 </div>
                                 <div class="col-12 campaign-bullet-list">
                                     <div class="d-flex flex-column bd-highlight mb-3 mt-3">

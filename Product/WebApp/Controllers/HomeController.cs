@@ -588,8 +588,8 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        [Route("/Home/Campaign/{CampaignGuid}/{ContactGuid}")]
-        public IActionResult Campaign(Guid CampaignGuid, Guid ContactGuid)
+        [Route("/Home/Campaign/{CampaignViewName}/{CampaignGuid}/{ContactGuid}")]
+        public IActionResult Campaign(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
         {
             string _TrackingImgSource = _configuration["Api:ApiUrl"] +
                 "tracking?contact=" +
@@ -603,7 +603,7 @@ namespace UpDiddy.Controllers
                 ContactGuid = ContactGuid,
                 TrackingImgSource = _TrackingImgSource
             };
-            return View(cvm);
+            return View("Campaign/" + CampaignViewName, cvm);
         }
 
 
