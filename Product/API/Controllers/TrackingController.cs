@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Helpers;
@@ -34,14 +35,21 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]")]
         public IActionResult Get()
         {
-            // invoke the tracking asynchronously
-            Task.Run(() => ProcessTrackingInformation(Request.Query.Keys.ToDictionary(k => k, k => Request.Query[k])));
 
+            // gather all query parameters
+            var parameters = Request.Query.Keys.ToDictionary(k => k, k => Request.Query[k]);
+
+            // serialize all headers into json
+            var headers = JsonConvert.SerializeObject(Request.Headers, Formatting.Indented, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+
+            // invoke the tracking asynchronously
+            Task.Run(() => ProcessTrackingInformation(parameters, headers));
+            
             // return the tracking pixel
             return _pixelResponse;
         }
 
-        private void ProcessTrackingInformation(Dictionary<string, StringValues> parameters)
+        private void ProcessTrackingInformation(Dictionary<string, StringValues> parameters, string headers)
         {
             // look for expected parameters (contact, action, campaign)
             var campaign = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_CAMPAIGN)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
@@ -56,7 +64,7 @@ namespace UpDiddyApi.Controllers
                 if (Guid.TryParse(campaign, out campaignGuid) && Guid.TryParse(contact, out contactGuid) && Guid.TryParse(action, out actionGuid))
                 {
                     // invoke the Hangfire job to store the tracking information
-                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreTrackingInformation(campaignGuid, contactGuid, actionGuid));
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreTrackingInformation(campaignGuid, contactGuid, actionGuid, headers));
                 }
             }
         }

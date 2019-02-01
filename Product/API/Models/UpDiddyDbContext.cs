@@ -81,7 +81,7 @@ namespace UpDiddyApi.Models
         public DbSet<CommunicationTemplate> CommunicationTemplate { get; set; }
         public DbSet<CommunicationSubscription> CommunicationSubscription { get; set; }
         public DbSet<ReportEnrollmentByVendor> ReportEnrollmentByVendors { get; set; }
-        public DbSet<Rebate> Rebate { get; set; }
+        public DbSet<Refund> Refund { get; set; }
         public DbSet<VendorPromoCode> VendorPromoCode { get; set; }
         public DbSet<PromoCode> PromoCode { get; set; }
         public DbSet<SubscriberPromoCode> SubscriberPromoCode { get; set; }
@@ -121,15 +121,50 @@ namespace UpDiddyApi.Models
         public DbSet<Action> Action { get; set; }
         public DbSet<ContactAction> ContactAction { get; set; }
         public DbSet<Contact> Contact { get; set; }
+        public DbSet<CampaignCourseVariant> CampaignCourseVariant { get; set; }
+        public DbSet<RebateType> RebateType { get; set; }
+        public DbSet<CampaignContact> CampaignContact { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<CampaignContact>()
+                .HasKey(cc => new { cc.CampaignId, cc.ContactId });
+
+            modelBuilder.Entity<RebateType>().HasData(
+                new RebateType()
+                {
+                    RebateTypeId = 1,
+                    RebateTypeGuid = Guid.Parse("B7BE76F3-AC8D-4C64-93F3-A62CC09D8DDE"),
+                    CreateDate = DateTime.Parse("01/31/2019"),
+                    IsDeleted = 0,
+                    Name = "Employment",
+                    Description = "The subscriber must be placed in a job by one of our staffing partners within the number of days specified by the MaxRebateEligibilityInDays column in the CampaignCourseVariant table (if a value is defined)."
+                });
+
+            modelBuilder.Entity<RebateType>().HasData(
+                new RebateType()
+                {
+                    RebateTypeId = 2,
+                    RebateTypeGuid = Guid.Parse("FB69D56D-686B-4969-9465-E994E6C599A1"),
+                    CreateDate = DateTime.Parse("01/31/2019"),
+                    IsDeleted = 0,
+                    Name = "Course completion",
+                    Description = "The subscriber must complete the course within the number of days specified by the MaxRebateEligibilityInDays column in the CampaignCourseVariant table (if a value is defined)."
+                });
+
+            modelBuilder.Entity<CampaignCourseVariant>()
+                .HasKey(ccv => new { ccv.CampaignId, ccv.CourseVariantId });
+
             modelBuilder.Entity<ContactAction>()
                 .HasKey(ca => new { ca.ContactId, ca.CampaignId, ca.ActionId });
 
             modelBuilder.Entity<ContactAction>()
                 .Property(ca => ca.OccurredDate)
                 .HasDefaultValueSql("GETUTCDATE()"); // must use sql function instead of c# function so that the current date is used on insert (rather than the initialized value from the migration)
+
+            modelBuilder.Entity<RebateType>()
+                .HasIndex(rt => rt.Name)
+                .IsUnique();
 
             modelBuilder.Entity<CourseVariantPromoCode>()
                 .Property(spc => spc.NumberOfRedemptions)
@@ -182,7 +217,7 @@ namespace UpDiddyApi.Models
                     ActionGuid = Guid.Parse("47D62280-213F-44F3-8085-A83BB2A5BBE3"),
                     CreateDate = DateTime.Parse("01/28/2019"),
                     IsDeleted = 0,
-                    Name = "View content"
+                    Name = "Visit landing page"
                 });
 
             modelBuilder.Entity<Action>().HasData(
@@ -203,6 +238,16 @@ namespace UpDiddyApi.Models
                     CreateDate = DateTime.Parse("01/28/2019"),
                     IsDeleted = 0,
                     Name = "Course enrollment"
+                });
+
+            modelBuilder.Entity<Action>().HasData(
+                new Action()
+                {
+                    ActionId = 5,
+                    ActionGuid = Guid.Parse("CCBEE3A5-278E-4696-9CB6-AB6DC5B50D0A"),
+                    CreateDate = DateTime.Parse("01/28/2019"),
+                    IsDeleted = 0,
+                    Name = "Complete course"
                 });
 
             modelBuilder.Entity<RedemptionStatus>().HasData(
