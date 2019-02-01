@@ -26,7 +26,7 @@ namespace UpDiddyApi.Controllers
     {
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
-        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;       
+        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         protected internal ILogger _syslog = null;
         private readonly IDistributedCache _distributedCache;
 
@@ -50,13 +50,14 @@ namespace UpDiddyApi.Controllers
             // check subscriber that is logged in vs passed in via body
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-            
+
             // check EnrolmmentDto but if exception occurs then this is a bad request
             try
             {
                 if (!subscriberGuid.Equals(EnrollmentFlowDto.SubscriberDto.SubscriberGuid))
                     return Unauthorized();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(new { code = 400, message = "Missing required data in EnrollmentDto." });
             }
@@ -67,6 +68,12 @@ namespace UpDiddyApi.Controllers
                 EnrollmentDto.Subscriber = null;
                 EnrollmentDto.CourseId = _db.Course.Where(c => c.CourseGuid == EnrollmentDto.CourseGuid).Select(c => c.CourseId).FirstOrDefault();
                 Enrollment Enrollment = _mapper.Map<Enrollment>(EnrollmentDto);
+
+                if (Enrollment.Campaign != null)
+                {
+                    Enrollment.CampaignId = Enrollment.Campaign.CampaignId;
+                    Enrollment.Campaign = null;
+                }
                 _db.Enrollment.Add(Enrollment);
 
                 /* todo: need to revisit the enrollment log for a number of reasons: 

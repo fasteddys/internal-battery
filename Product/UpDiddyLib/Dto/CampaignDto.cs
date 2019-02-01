@@ -7,7 +7,7 @@ namespace UpDiddyLib.Dto
     public class CampaignDto : BaseDto
     {
         public int CampaignId { get; set; }
-        public Guid CampaignGuid { get; set; }        
+        public Guid CampaignGuid { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime StartDate { get; set; }

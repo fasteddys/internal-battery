@@ -18,7 +18,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class SubscriberFactory
     {
-        
+
         // Can we get rid of this function given the one below it?
         // JAB - It is being used by the resume parse methods.  Refactor rquired for removal
         public static Subscriber GetSubscriberById(UpDiddyDbContext db, int subscriberId)
@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .FirstOrDefault();
         }
-         
+
         public static SubscriberDto GetSubscriber(UpDiddyDbContext _db, Guid subscriberGuid, ILogger _syslog, IMapper _mapper)
         {
             if (Guid.Empty.Equals(subscriberGuid))
@@ -35,7 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 _syslog.Log(LogLevel.Information, $"***** SubscriberFactory:GetSubscriber empty subscriber guid supplied.");
                 return new SubscriberDto();
             }
-                
+
 
             Subscriber subscriber = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
@@ -52,7 +52,24 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(s => s.SubscriberFile)
                 .FirstOrDefault();
 
+            var eligibleCampaigns = _db.Campaign
+                .Include(c => c.CampaignCourseVariant)
+                    .ThenInclude(ccv => ccv.RebateType)
+                .Include(c => c.CampaignContact)
+                    .ThenInclude(cc => cc.Contact)
+                    .ThenInclude(co => co.Subscriber)
+                .Where(c => c.IsDeleted == 0
+                    // the subscriber is associated with a campaign (contact must be linked to subscriber!)
+                    && c.CampaignContact.Where(cc => cc.Contact.Subscriber.SubscriberId == subscriber.SubscriberId).Any()
+                    // the user doesn't have an enrollment matching any of the eligible campaign ids    
+                    && subscriber.Enrollments.Where(e => e.CampaignId == c.CampaignId).Any() == false
+                    // the campaign is active (enrollment dates)
+                    && c.StartDate <= DateTime.UtcNow && (!c.EndDate.HasValue || c.EndDate.Value >= DateTime.UtcNow))
+                .ToList();
+           
             SubscriberDto subscriberDto = _mapper.Map<SubscriberDto>(subscriber);
+            subscriberDto.EligibleCampaigns = _mapper.Map<List<CampaignDto>>(eligibleCampaigns);
+
             return subscriberDto;
         }
         public static Subscriber GetSubscriberByGuid(UpDiddyDbContext db, Guid subscriberGuid)
@@ -253,7 +270,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             subscriber.LastName = contactInfo.LastName;
             contactInfo.PhoneNumber = contactInfo.PhoneNumber.Trim().Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
             Regex phoneRegex = new Regex(@"^([0-9]{0,3})?[2-9]{1}[0-9]{9}$");
-            if(phoneRegex.IsMatch(contactInfo.PhoneNumber))
+            if (phoneRegex.IsMatch(contactInfo.PhoneNumber))
                 subscriber.PhoneNumber = Utils.RemoveNonNumericCharacters(contactInfo.PhoneNumber);
             subscriber.City = contactInfo.City;
             subscriber.Address = contactInfo.Address;

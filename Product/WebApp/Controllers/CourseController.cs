@@ -73,7 +73,9 @@ namespace UpDiddy.Controllers
                 {
                     Text = i.ToShortDateString(),
                     Value = i.ToString()
-                })
+                }),
+                IsEligibleCampaignOffer = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).Any(),
+                RebateOffer = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).FirstOrDefault()?.RebateType?.Description
             });
 
             CourseViewModel courseViewModel = new CourseViewModel()
@@ -128,6 +130,11 @@ namespace UpDiddy.Controllers
                 };
             }
             courseViewModel.CourseVariant = selectedCourseVariant;
+
+            // retrieve the campaign associated with the selected course variant for this subscriber (if one exists)
+            var campaign = this.subscriber.EligibleCampaigns
+                .Where(ec => ec.CampaignCourseVariant.Exists(ccv => ccv.CourseVariant.CourseVariantGuid == selectedCourseVariant.CourseVariantGuid))
+                .FirstOrDefault();
 
             // validate, consume, and apply promo code redemption. consider moving this to CourseViewModel.Validate (using IValidatableObject)
             PromoCodeDto validPromoCode = null;
@@ -205,7 +212,8 @@ namespace UpDiddy.Controllers
                     TermsOfServiceFlag = courseViewModel.TermsOfServiceDocumentId,
                     Subscriber = this.subscriber,
                     CourseVariantGuid = courseViewModel.CourseVariant.CourseVariantGuid,
-                    PromoCodeRedemptionGuid = courseViewModel.PromoCodeRedemptionGuid
+                    PromoCodeRedemptionGuid = courseViewModel.PromoCodeRedemptionGuid,
+                    Campaign = campaign
                 };
 
                 BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
