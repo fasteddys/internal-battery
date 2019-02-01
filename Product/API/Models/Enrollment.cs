@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using UpDiddyApi.ApplicationCore.Factory;
 namespace UpDiddyApi.Models
 {
     public class Enrollment : BaseModel
@@ -26,6 +26,6 @@ namespace UpDiddyApi.Models
         public int? TermsOfServiceFlag { get; set; }
         public Int64? SectionStartTimestamp { get; set; }
         public int? CampaignId { get; set; }
-        public virtual Campaign Campaign { get; set; }
+        public virtual Campaign Campaign { get; set; }  
     }
 }

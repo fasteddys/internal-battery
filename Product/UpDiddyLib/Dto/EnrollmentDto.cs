@@ -45,6 +45,8 @@ namespace UpDiddyLib.Dto
         public string CourseUrl { get; set; }
         public virtual CampaignDto Campaign { get; set; }
 
+        public string CampaignPromoInfo { get; set; }
+
         public SimplifiedEnrollmentStatus SimplifiedEnrollmentStatus
         {
             get
