@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddy.ViewModels
 {
-    public class BandViewModel : BaseViewModel
+    public class ComponentViewModel : BaseViewModel
     {
         public string ChosenColorScheme { get; set; }
     }

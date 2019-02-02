@@ -275,7 +275,21 @@ namespace UpDiddy.Api
             return rval;
         }
 
- 
+        public CourseDto GetCourseByCampaignGuid(Guid CampaignGuid)
+        {
+            string cacheKey = $"GetCourseByCampaignGuid{CampaignGuid}";
+            CourseDto rval = GetCachedValue<CourseDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetCourseByCampaignGuid(CampaignGuid);
+                SetCachedValue<CourseDto>(cacheKey, rval);
+            }
+            return rval;
+
+        }
 
 
 
@@ -514,6 +528,11 @@ namespace UpDiddy.Api
         public IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid)
         {
             return Get<IList<SkillDto>>("subscriber/" + subscriberGuid + "/skill", true);
+        }
+
+        public CourseDto _GetCourseByCampaignGuid(Guid CampaignGuid)
+        {
+            return Get<CourseDto>("course/campaign/" + CampaignGuid, false);
         }
         #endregion
 

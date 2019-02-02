@@ -6,8 +6,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddy.ViewModels
 {
-    public class CampaignSignUpBandViewModel : BandViewModel
+    public class CampaignSignUpBandViewModel : ComponentViewModel
     {
         public string CampaignCourse { get; set; }
+        public Guid ContactGuid { get; set; }
+        public Guid CampaignGuid { get; set; }
     }
 }

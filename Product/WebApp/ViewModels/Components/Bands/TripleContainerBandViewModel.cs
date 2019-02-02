@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddy.ViewModels
 {
-    public class TripleContainerBandViewModel : BandViewModel
+    public class TripleContainerBandViewModel : ComponentViewModel
     {
         public string Header { get; set; }
         public string C1TopValue { get; set; }

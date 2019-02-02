@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddy.ViewModels
 {
-    public class ColumnSkewBandViewModel : BandViewModel
+    public class ColumnSkewBandViewModel : ComponentViewModel
     {
         public string SkewDirection { get; set; }
         public string Header { get; set; }

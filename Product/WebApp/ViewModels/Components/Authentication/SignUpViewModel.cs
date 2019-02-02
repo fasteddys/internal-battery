@@ -6,8 +6,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddy.ViewModels
 {
-    public class SignUpViewModel : BaseViewModel
+    public class SignUpViewModel : ComponentViewModel
     {
-        
+        public string SkewDirection { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public Guid ContactGuid { get; set; }
+        public Guid? CampaignGuid { get; set; }
     }
 }

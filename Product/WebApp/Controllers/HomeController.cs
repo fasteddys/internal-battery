@@ -25,6 +25,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using UpDiddy.Helpers;
 using System.Security.Claims;
+using UpDiddyLib.Dto.Marketing;
 
 namespace UpDiddy.Controllers
 {
@@ -604,6 +605,30 @@ namespace UpDiddy.Controllers
                 TrackingImgSource = _TrackingImgSource
             };
             return View("Campaign/" + CampaignViewName, cvm);
+        }
+        
+        [HttpPost]
+        [Route("/Home/CampaignSignUp")]
+        public IActionResult CampaignSignUp(SignUpViewModel signUpViewModel)
+        {
+            SignUpDto sudto = new SignUpDto
+            {
+                email = signUpViewModel.Email,
+                password = signUpViewModel.Password
+            };
+
+            SubscriberDto subscriber = _Api.UpdateSubscriberContact(signUpViewModel.ContactGuid, sudto);
+
+            // If SubscriberId = 0, no subscriber was created.
+            if(subscriber.SubscriberId == 0)
+            {
+                return View();
+            }
+            else
+            {
+                CourseDto Course = _Api.GetCourseByCampaignGuid((Guid)signUpViewModel.CampaignGuid);
+                return RedirectToRoute("CourseCheckout", new { CourseSlug = Course.Slug });
+            }
         }
 
 

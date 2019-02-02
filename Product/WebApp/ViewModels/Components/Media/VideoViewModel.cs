@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddy.ViewModels
 {
-    public class VideoViewModel : BandViewModel
+    public class VideoViewModel : ComponentViewModel
     {
         public string Url { get; set; }
         public string Thumbnail { get; set; }

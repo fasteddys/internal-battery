@@ -11,7 +11,9 @@
 
     @Html.Partial("Components/Bands/_CampaignSignUpBand", new CampaignSignUpBandViewModel {
         CampaignCourse = "AngularJS",
-        ImageUrl = "/images/angular.png"
+        ImageUrl = "/images/angular.png",
+        CampaignGuid = Model.CampaignGuid,
+        ContactGuid = Model.ContactGuid
     })
     @{
         List<ColumnSkewBandViewModel.ColumnSkewBandElement> Elements = new List<ColumnSkewBandViewModel.ColumnSkewBandElement>()
