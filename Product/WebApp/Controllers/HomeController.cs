@@ -609,26 +609,36 @@ namespace UpDiddy.Controllers
         
         [HttpPost]
         [Route("/Home/CampaignSignUp")]
-        public IActionResult CampaignSignUp(SignUpViewModel signUpViewModel)
+        public BasicResponseDto CampaignSignUp(SignUpViewModel signUpViewModel)
         {
+            if (!signUpViewModel.Password.Equals(signUpViewModel.ReenterPassword))
+            {
+                return new BasicResponseDto
+                {
+                    StatusCode = 403,
+                    Description = "User's passwords do not match."
+                };
+            }
             SignUpDto sudto = new SignUpDto
             {
                 email = signUpViewModel.Email,
                 password = signUpViewModel.Password
             };
 
-            SubscriberDto subscriber = _Api.UpdateSubscriberContact(signUpViewModel.ContactGuid, sudto);
+            BasicResponseDto subscriberResponse = _Api.UpdateSubscriberContact(signUpViewModel.ContactGuid, sudto);
 
-            // If SubscriberId = 0, no subscriber was created.
-            if(subscriber.SubscriberId == 0)
+            switch (subscriberResponse.StatusCode)
             {
-                return View();
+                case 200:
+                    CourseDto Course = _Api.GetCourseByCampaignGuid((Guid)signUpViewModel.CampaignGuid);
+                    return new BasicResponseDto {
+                        StatusCode = subscriberResponse.StatusCode,
+                        Description = "/Course/Checkout/" + Course.Slug
+                    };
+                default:
+                    return subscriberResponse;
             }
-            else
-            {
-                CourseDto Course = _Api.GetCourseByCampaignGuid((Guid)signUpViewModel.CampaignGuid);
-                return RedirectToRoute("CourseCheckout", new { CourseSlug = Course.Slug });
-            }
+            
         }
 
 

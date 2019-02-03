@@ -12,6 +12,9 @@
         <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
             <input placeholder="Password" type="password" form="SignUpForm" name="Password" asp-for="Password" />
         </div>
+        <div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
+            <input placeholder="Re-enter password" type="password" form="SignUpForm" name="ReenterPassword" asp-for="ReenterPassword" />
+        </div>
         <div id="SignUpAction" class="col-12 no-padding">
             @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
                 Text = "Sign Up Now",

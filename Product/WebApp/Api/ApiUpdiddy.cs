@@ -408,12 +408,12 @@ namespace UpDiddy.Api
         }
         #endregion
 
-        public SubscriberDto UpdateSubscriberContact(Guid contactGuid, SignUpDto signUpDto)
+        public BasicResponseDto UpdateSubscriberContact(Guid contactGuid, SignUpDto signUpDto)
         {
             // encrypt password before sending to API
             signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
 
-            return Put<SubscriberDto>(signUpDto, string.Format("subscriber/contact/{0}", contactGuid.ToString()), false);
+            return Put<BasicResponseDto>(signUpDto, string.Format("subscriber/contact/{0}", contactGuid.ToString()), false);
         }
 
         public SubscriberADGroupsDto MyGroups()

@@ -11,6 +11,7 @@ namespace UpDiddy.ViewModels
         public string SkewDirection { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
+        public string ReenterPassword { get; set; }
         public Guid ContactGuid { get; set; }
         public Guid? CampaignGuid { get; set; }
     }
