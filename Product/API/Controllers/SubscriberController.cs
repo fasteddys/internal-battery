@@ -635,7 +635,7 @@ namespace UpDiddyApi.Controllers
                 }
             }
 
-            return Ok(_mapper.Map<SubscriberDto>(subscriber));
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
         }
 
         [HttpGet("/api/[controller]/me/group")]
