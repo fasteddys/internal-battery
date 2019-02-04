@@ -98,5 +98,7 @@ namespace UpDiddy.ViewModels
         public Guid CourseVariantGuid { get; set; }
         public Decimal Price { get; set; }
         public string CourseVariantType { get; set; }
+        public bool IsEligibleCampaignOffer { get; set; }
+        public string RebateOffer { get; set; }
     }
 }

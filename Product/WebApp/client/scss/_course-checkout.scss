@@ -26,8 +26,8 @@
 
         h4 {
             font-family: "OpenSans-Light";
-            font-size:1.5em;
-            font-weight:500;
+            font-size: 1.5em;
+            font-weight: 500;
         }
     }
 
@@ -99,6 +99,19 @@
 
             #CourseVariants {
                 padding-bottom: 3em;
+
+                .campaign-offer {
+                    background-color: pink;
+                    border-radius: 5px;
+                    border-color: red;
+                    border-width: 2px;
+                    border-style: dotted;
+
+                    .rebate-offer {
+                        font-style: italic;
+                        font-size: 12px;
+                    }
+                }
             }
 
             .CourseVariantStartDate {

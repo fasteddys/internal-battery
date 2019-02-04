@@ -51,6 +51,7 @@
     $("input[name='SelectedCourseVariant']").attr('checked', false);
 
     $("input[name='SelectedCourseVariant']").change(function () {
+
         var selectedCourseVariant = $("input[name='SelectedCourseVariant']:checked");
         var selectedCourseVariantPrice = $(selectedCourseVariant).parent().next().children(".price").html();
         $("#InitialCoursePrice").html(selectedCourseVariantPrice);
@@ -107,7 +108,7 @@
         var progressBar = $(this).find(".progress-bar");
         var newWidth = $(progressBar).attr('aria-valuenow') + "%";
         $(progressBar).animate({ width: newWidth });
-    });
+    });   
 
     $('#PromoCodeApplyButton').on('click', function () {
         var _promoCode = $('#PromoCodeInput').val();
