@@ -1,0 +1,86 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model CampaignSignUpBandViewModel
+@*
+    ***Customization Options***
+
+    
+*@
+
+<div class="cc-campaign-sign-up-band row">
+    <div class="col-12">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-md-8 cc-campaign-sign-up-band-left-container">
+                    <div class="row">
+                        <div class="col-2 img-column no-padding">
+                            <img src="@Model.ImageUrl"/>
+                        </div>
+                        <div class="col-10 no-padding">
+                            <div class="row">
+                                <div class="col-12 hero-header font-bold">
+                                    @{
+                                        if (!string.IsNullOrEmpty(Model.CampaignCourse))
+                                        {
+                                            <text>Become</text>
+
+                                            char FirstChar = Model.CampaignCourse.ToLower().ToCharArray()[0];
+                                            if (FirstChar == 'a' ||
+                                                FirstChar == 'e' ||
+                                                FirstChar == 'i' ||
+                                                FirstChar == 'o' ||
+                                                FirstChar == 'u')
+                                            {
+                                                <text> an </text>
+                                            }
+                                            else
+                                            {
+                                                <text> a </text>
+                                            }
+
+
+                                            <text>@Model.CampaignCourse Developer</text>
+                                        }
+                                    }
+
+
+                                </div>
+                                <div class="col-12 campaign-bullet-list">
+                                    <div class="d-flex flex-column bd-highlight mb-3 mt-3">
+                                        <div class="bd-highlight font-bold">Enroll today.</div>
+                                        <div class="bd-highlight font-bold">Learn @Model.CampaignCourse online.</div>
+                                        <div class="bd-highlight font-bold">Get a new job.</div>
+                                    </div>
+                                </div>
+                                <div class="col-12 locations-disclaimer-container">
+                                    <div class="locations-disclaimer">
+                                        Openings in Chicago, Baltimore, Charlotte, and Boston
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 cc-campaign-sign-up-band-right-container">
+                    <div class="row">
+                        <div class="col-12 no-padding sub-header font-bold">
+                            Enroll in the @Model.CampaignCourse course
+                        </div>
+                        <div class="col-12 no-padding mini-header">
+                            Create an account to get started
+                        </div>
+                        <div class="col-12 no-padding">
+                            @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel
+                            {
+                                ContactGuid = Model.ContactGuid,
+                                CampaignGuid = Model.CampaignGuid
+                            })
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

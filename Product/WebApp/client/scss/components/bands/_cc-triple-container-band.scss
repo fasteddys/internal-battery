@@ -1,0 +1,140 @@
+﻿@import '../../_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .cc-triple-container-band {
+        padding: 2rem 0;
+
+        .cc-triple-container-band-header {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .top-value-container {
+            font-size: 2rem;
+        }
+
+        .top-value-container,
+        .bottom-value-container {
+            padding: .5rem 0;
+        }
+
+        &.cc-cscheme-white {
+            .top-value-container {
+                border-bottom: 2px solid $color-secondary;
+                color: $color-primary;
+            }
+
+            .bottom-value-container {
+                color: $color-secondary;
+                font-size: 1rem;
+            }
+        }
+
+        &.cc-cscheme-primary {
+            .top-value-container {
+                border-bottom: 2px solid $color-white;
+                color: $color-white;
+            }
+
+            .bottom-value-container {
+                color: $color-white;
+                font-size: 1rem;
+            }
+        }
+
+        &.cc-cscheme-secondary {
+            .top-value-container {
+                border-bottom: 2px solid $color-white;
+                color: $color-white;
+            }
+
+            .bottom-value-container {
+                color: $color-white;
+                font-size: 1rem;
+            }
+        }
+
+        &.cc-cscheme-tertiary {
+            .top-value-container {
+                border-bottom: 2px solid $color-white;
+                color: $color-white;
+            }
+
+            .bottom-value-container {
+                color: $color-white;
+                font-size: 1rem;
+            }
+        }
+
+        &.cc-cscheme-tertiary-gray {
+            .top-value-container {
+                border-bottom: 2px solid $color-secondary;
+                color: $color-white;
+            }
+
+            .bottom-value-container {
+                color: $color-white;
+                font-size: 1rem;
+            }
+        }
+
+        &.cc-cscheme-tertiary-light-gray {
+            .top-value-container {
+                border-bottom: 2px solid $color-secondary;
+                color: $color-secondary;
+            }
+
+            .bottom-value-container {
+                color: $color-secondary;
+                font-size: 1rem;
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+    .cc-triple-container-band {
+        padding: 3rem 0;
+
+        .cc-triple-container-band-header {
+            font-size: 2.5rem;
+        }
+
+        .tcb-first-container {
+            padding-right: 2rem;
+        }
+
+        .tcb-second-container {
+            padding: 0 1rem;
+        }
+
+        .tcb-third-container {
+            padding-left: 2rem;
+        }
+
+        .top-value-container {
+            font-size: 2.5rem;
+        }
+
+        
+
+    }
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+}

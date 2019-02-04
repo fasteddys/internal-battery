@@ -1,0 +1,27 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model ActionButtonViewModel
+
+@{
+    string tag = "div";
+    string dataFormAttribute = "";
+    string hyperLinkAttribute = "";
+    if(Model.ButtonAction == ActionButtonViewModel.Action.CTA && !string.IsNullOrEmpty(Model.Hyperlink))
+    {
+        tag = "a";
+        hyperLinkAttribute = "href=" + Model.Hyperlink;
+    }
+    else if(Model.ButtonAction == ActionButtonViewModel.Action.SUBMIT)
+    {
+        dataFormAttribute = "data-form=" + Model.Form;
+    }
+}
+
+<@tag @hyperLinkAttribute>
+    <div id="ButtonComponent" class="button-container @Model.ChosenColorScheme @Model.SkewDirection font-bold" @dataFormAttribute>
+        @Model.Text
+    </div>
+</@tag>
+
+
+

@@ -54,7 +54,7 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("/Course/Checkout/{CourseSlug}")]
+        [Route("/Course/Checkout/{CourseSlug}", Name = "CourseCheckout")]
         public IActionResult Get(string CourseSlug)
         {
             GetSubscriber(false);

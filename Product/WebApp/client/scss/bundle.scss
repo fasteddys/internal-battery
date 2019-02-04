@@ -3,7 +3,18 @@
 @import "../../node_modules/@fortawesome/fontawesome-free/scss/regular.scss";
 @import "../../node_modules/@fortawesome/fontawesome-free/scss/brands.scss";
 
+// import components
+@import 'components/buttons/_action';
+@import 'components/media/_video';
 
+@import 'components/_linkedIn';
+@import 'components/bands/_cc-text-video-band';
+@import 'components/bands/_cc-column-skew-band';
+@import 'components/bands/_cc-triple-container-band';
+@import 'components/bands/_cc-campaign-sign-up-band';
+@import 'components/authentication/_sign-up';
+
+// page styles
 @import '_about';
 @import '_admin';
 @import '_card';
@@ -27,5 +38,3 @@
 @import '_talent';
 @import '_topic';
  
-// import components
-@import 'components/_linkedIn';

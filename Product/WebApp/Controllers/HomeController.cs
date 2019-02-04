@@ -25,6 +25,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using UpDiddy.Helpers;
 using System.Security.Claims;
+using UpDiddyLib.Dto.Marketing;
 
 namespace UpDiddy.Controllers
 {
@@ -588,8 +589,8 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        [Route("/Home/Campaign/{CampaignGuid}/{ContactGuid}")]
-        public IActionResult Campaign(Guid CampaignGuid, Guid ContactGuid)
+        [Route("/Home/Campaign/{CampaignViewName}/{CampaignGuid}/{ContactGuid}")]
+        public IActionResult Campaign(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
         {
             string _TrackingImgSource = _configuration["Api:ApiUrl"] +
                 "tracking?contact=" +
@@ -603,7 +604,91 @@ namespace UpDiddy.Controllers
                 ContactGuid = ContactGuid,
                 TrackingImgSource = _TrackingImgSource
             };
-            return View(cvm);
+            return View("Campaign/" + CampaignViewName, cvm);
+        }
+        
+        [HttpPost]
+        [Route("/Home/CampaignSignUp")]
+        public BasicResponseDto CampaignSignUp(SignUpViewModel signUpViewModel)
+        {
+            bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.Email) &&
+                !string.IsNullOrEmpty(signUpViewModel.Password) &&
+                !string.IsNullOrEmpty(signUpViewModel.ReenterPassword);
+
+            // Make sure user has filled out all fields.
+            if (!modelHasAllFields)
+            {
+                return new BasicResponseDto
+                {
+                    StatusCode = 400,
+                    Description = "Please enter all sign-up fields and try again."
+                };
+            }
+
+            // This is basically the same check as above, but to be safe...
+            if (!ModelState.IsValid)
+            {
+                return new BasicResponseDto
+                {
+                    StatusCode = 400,
+                    Description = "Unfortunately, an error has occured with your submission. Please try again."
+                };
+            }
+
+            // Make sure user's password and re-enter password values match.
+            if (!signUpViewModel.Password.Equals(signUpViewModel.ReenterPassword))
+            {
+                return new BasicResponseDto
+                {
+                    StatusCode = 403,
+                    Description = "User's passwords do not match."
+                };
+            }
+
+            // If all checks pass, assemble SignUpDto from information user entered.
+            SignUpDto sudto = new SignUpDto
+            {
+                email = signUpViewModel.Email,
+                password = signUpViewModel.Password
+            };
+
+            // Guard UX from any unforeseen server error.
+            try
+            {
+                // Convert contact to subscriber and create ADB2C account for them.
+                BasicResponseDto subscriberResponse = _Api.UpdateSubscriberContact(signUpViewModel.ContactGuid, sudto);
+
+                switch (subscriberResponse.StatusCode)
+                {
+                    
+                    case 200:
+                        // If contact-to-subscriber conversion is successful, fetch course user is enrolling in.
+                        CourseDto Course = _Api.GetCourseByCampaignGuid((Guid)signUpViewModel.CampaignGuid);
+
+                        // Return url to course checkout page to front-end. This will prompt user to log in
+                        // now that their ADB2C account is created.
+                        return new BasicResponseDto
+                        {
+                            StatusCode = subscriberResponse.StatusCode,
+                            Description = "/Course/Checkout/" + Course.Slug
+                        };
+                    default:
+                        // If there's an error from contact-to-subscriber converstion API call,
+                        // return that error description to a toast to the user.
+                        return subscriberResponse;
+                }
+            }
+            catch(Exception e)
+            {
+                // Generic server error to display gracefully to the user.
+                return new BasicResponseDto
+                {
+                    StatusCode = 500,
+                    Description = "Unfortunately, an error has occured with your submission. Please try again later."
+                };
+            }
+            
+            
         }
 
 

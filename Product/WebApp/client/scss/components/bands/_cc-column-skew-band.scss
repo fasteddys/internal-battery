@@ -1,0 +1,124 @@
+﻿@import '../../_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .cc-skew-band {
+        position: relative;
+        padding: 2rem;
+
+        &.skew-left-to-right {
+            &:before {
+                content: '';
+                position: absolute;
+                top: -31px;
+                left: 0;
+                height: 2rem;
+                width: 100%;
+                clip-path: polygon(0% 0%, 100% 100%, 100% 100%, 0% 100%);
+            }
+        }
+
+        &.skew-right-to-left {
+            &:before {
+                content: '';
+                position: absolute;
+                top: -31px;
+                left: 0;
+                height: 2rem;
+                width: 100%;
+                clip-path: polygon(0% 100%, 100% 0%, 100% 100%, 100% 100%);
+            }
+        }
+
+        .cc-skew-band-content {
+            img {
+                width: 100%;
+            }
+        }
+
+        &.cc-cscheme-white {
+            &:before {
+                background-color: $color-white;
+            }
+        }
+
+        &.cc-cscheme-primary {
+            &:before {
+                background-color: $color-primary;
+            }
+        }
+
+        &.cc-cscheme-secondary {
+            &:before {
+                background-color: $color-secondary;
+            }
+        }
+
+        &.cc-cscheme-tertiary {
+            &:before {
+                background-color: $color-tertiary;
+            }
+        }
+
+        &.cc-cscheme-tertiary-gray {
+            &:before {
+                background-color: $color-tertiary-gray;
+            }
+        }
+
+        &.cc-cscheme-tertiary-mid-gray {
+            &:before {
+                background-color: $color-tertiary-mid-gray;
+            }
+        }
+
+        &.cc-cscheme-tertiary-light-gray {
+            &:before {
+                background-color: $color-tertiary-light-gray;
+            }
+        }
+
+        .cc-skew-band-header {
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        .cc-skew-band-content {
+            padding-top: 2rem;
+            > .row{
+                > div{
+                    margin-bottom: 2rem;
+                }
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+    
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+    
+}
+
+// Large Styles
+@media (min-width: 992px) {
+    .cc-skew-band {
+
+        .cc-skew-band-header {
+            font-size: 2.5rem;
+            
+        }
+    }
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+}
