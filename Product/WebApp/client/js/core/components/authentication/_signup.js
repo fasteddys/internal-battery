@@ -42,7 +42,7 @@
                 url: '/Home/CampaignSignUp',
                 data: $(this).serialize(),
                 success: function (html) {
-                    if (html.statusCode === "200") {
+                    if (html.statusCode === 200) {
                         // If submission is OK, redirect them to authenticated course checkout page.
                         window.location.href = html.description;
                     }
