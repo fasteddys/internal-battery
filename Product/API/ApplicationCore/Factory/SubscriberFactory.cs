@@ -53,20 +53,16 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefault();
 
             var eligibleCampaigns = _db.Campaign
-                .Include(c => c.CampaignCourseVariant)
-                    .ThenInclude(ccv => ccv.RebateType)
-                .Include(c => c.CampaignContact)
-                    .ThenInclude(cc => cc.Contact)
-                    .ThenInclude(co => co.Subscriber)
+                .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.RebateType)
+                .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.CourseVariant)
+                .Include(c => c.CampaignContact).ThenInclude(cc => cc.Contact).ThenInclude(co => co.Subscriber)
                 .Where(c => c.IsDeleted == 0
                     // the subscriber is associated with a campaign (contact must be linked to subscriber!)
                     && c.CampaignContact.Where(cc => cc.Contact.Subscriber.SubscriberId == subscriber.SubscriberId).Any()
-                    // the user doesn't have an enrollment matching any of the eligible campaign ids    
-                    && subscriber.Enrollments.Where(e => e.CampaignId == c.CampaignId).Any() == false
                     // the campaign is active (enrollment dates)
                     && c.StartDate <= DateTime.UtcNow && (!c.EndDate.HasValue || c.EndDate.Value >= DateTime.UtcNow))
                 .ToList();
-           
+
             SubscriberDto subscriberDto = _mapper.Map<SubscriberDto>(subscriber);
             subscriberDto.EligibleCampaigns = _mapper.Map<List<CampaignDto>>(eligibleCampaigns);
 

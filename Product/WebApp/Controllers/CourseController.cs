@@ -63,7 +63,7 @@ namespace UpDiddy.Controllers
             var clientToken = gateway.ClientToken.Generate();
             ViewBag.ClientToken = clientToken;
             var course = _Api.Course(CourseSlug);
-
+            
             var courseVariantViewModels = course.CourseVariants.Select(dto => new CourseVariantViewModel()
             {
                 CourseVariantGuid = dto.CourseVariantGuid,

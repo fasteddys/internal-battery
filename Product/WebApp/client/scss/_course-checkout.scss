@@ -106,8 +106,11 @@
                     border-color: red;
                     border-width: 2px;
                     border-style: dotted;
-                    font-style:italic;
-                    font-size:12px;
+
+                    .rebate-offer {
+                        font-style: italic;
+                        font-size: 12px;
+                    }
                 }
             }
 

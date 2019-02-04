@@ -138,7 +138,7 @@ namespace UpDiddyApi.Models
                     CreateDate = DateTime.Parse("01/31/2019"),
                     IsDeleted = 0,
                     Name = "Employment",
-                    Description = "Get a job with an Allegis Group company, and you get a full refund."
+                    Description = "Get a job with an Allegis Group company, and you get a full refund!"
                 });
 
             modelBuilder.Entity<RebateType>().HasData(
@@ -149,7 +149,7 @@ namespace UpDiddyApi.Models
                     CreateDate = DateTime.Parse("01/31/2019"),
                     IsDeleted = 0,
                     Name = "Course completion",
-                    Description = "Complete the course within the offer timeframe, and you get a full refund."
+                    Description = "Complete the course within the offer timeframe, and you get a full refund!"
                 });
 
             modelBuilder.Entity<RebateType>().HasData(
@@ -159,8 +159,8 @@ namespace UpDiddyApi.Models
                     RebateTypeGuid = Guid.Parse("5B8591F6-AD54-45A9-A319-56E4DBC1449E"),
                     CreateDate = DateTime.Parse("02/01/2019"),
                     IsDeleted = 0,
-                    Name = "No offer",
-                    Description = "No rebate incentive is available."
+                    Name = "No incentive",
+                    Description = "Take this course to gain in-demand skills!"
                 });
 
             modelBuilder.Entity<CampaignCourseVariant>()
