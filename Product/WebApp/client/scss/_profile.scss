@@ -264,6 +264,12 @@
                             .course-enrollment-failure-container {
                                 text-align: center;
                             }
+
+                            .marketing-campaign-msg {
+                                color: yellow;
+                                padding-top: 8px;
+                                display: inline-block;
+                            }
                         }
 
                         > a {
@@ -472,7 +478,6 @@
                             .options-container {
 
                                 .profile-work-history, .profile-education-history {
-                                    
                                     border-bottom: 1px solid $color-secondary;
 
                                     i {

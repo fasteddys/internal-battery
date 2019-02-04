@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
+ 
 
 
 namespace UpDiddy.ViewModels
@@ -72,7 +73,6 @@ namespace UpDiddy.ViewModels
             
             return rVal;             
         }
-
 
         public string FormattedPhone
         {

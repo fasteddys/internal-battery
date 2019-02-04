@@ -47,5 +47,21 @@ namespace UpDiddyLib.Helpers
             public static readonly string CookieKey = "ccsignalr_connection_id";
             public static readonly string ResumeUpLoadVerb = "UploadResume";
         }
+
+        public static class CampaignRebate
+        {
+            public static readonly string CourseCompletion_Completed_EligibleMsg = "Congratulations on your new skill! Contact customer support to process your rebate";
+            public static readonly string CourseCompletion_Completed_NotEligibleMsg = "Congratulations on your new skill! Contact customer support for job oppurtunities";
+            public static readonly string CourseCompletion_InProgress_EligibleMsg = "Complete in {0} days for a full rebate";
+            public static readonly string CourseCompletion_InProgress_NotEligibleMsg = "Rebate offer expired";
+            public static readonly string Employment_Completed_EligibleMsg = "Congratulations on your new skill! Contact customer support for job opportunities and a full rebate if hired by one of our partners";
+            public static readonly string Employment_InProgress_EligibleMsg = "This course free when you get hired by one of our partners";
+            public static class CampaignRebateType
+            {
+                public static readonly string Employment = "Employment";
+                public static readonly string CourseCompletion = "Course completion";
+            }
+
+        }
     }
 }

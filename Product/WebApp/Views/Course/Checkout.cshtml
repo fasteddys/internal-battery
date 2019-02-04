@@ -18,8 +18,8 @@
                         <div class="hero-subtitle">@Model.Description</div>
                         <div class="row">
                             <div class="col px-0 pt-4 pb-0">
-                                @{ 
-                                    if(Model.Skills != null && Model.Skills.Count > 0)
+                                @{
+                                    if (Model.Skills != null && Model.Skills.Count > 0)
                                     {
                                         <text><h4>Acquired Skills:</h4></text>
                                     }
@@ -66,7 +66,7 @@
                                             <div class="row">
                                                 @foreach (var section in Model.CourseVariants)
                                                 {
-                                                    <div class="col-6">
+                                                    <div class="col-6 @(section.IsEligibleCampaignOffer ? "campaign-offer" : "")">
                                                         <div>
                                                             @Html.RadioButtonFor(m => m.SelectedCourseVariant, section.CourseVariantGuid, new { id = section.CourseVariantGuid, required = "required" })
                                                             <label asp-for="SelectedCourseVariant">@(section.CourseVariantType)</label>
@@ -82,6 +82,12 @@
                                                                 @Html.DropDownListFor(m => m.SelectedStartDate, section.StartDates, "---", new { @class = "form-control" })
                                                             }
                                                         </div>
+                                                        @if (section.IsEligibleCampaignOffer)
+                                                        {
+                                                            <div class="rebate-offer">
+                                                                @(section.RebateOffer)
+                                                            </div>
+                                                        }
                                                     </div>
                                                 }
                                             </div>
