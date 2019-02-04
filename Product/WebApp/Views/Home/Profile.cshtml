@@ -236,76 +236,78 @@
                                 <ul class="courses-in-progress-list-desktop">
                                     @foreach (EnrollmentDto enrollment in Model.Enrollments)
                                     {
-                                        <li class="course-in-progress-li">
-                                            @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
-                                            {
-                                                @Html.Raw("<a target=\"_blank\" href=\"" + enrollment.CourseUrl + "\">")
-                                            }
+                                    <li class="course-in-progress-li">
+                                        @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                        {
+                                            @Html.Raw("<a target=\"_blank\" href=\"" + enrollment.CourseUrl + "\">")
+                                        }
 
-                                            <div class="course-in-progress-anchor-container">
-                                                <div class="course-in-progress-info">
-                                                    <div class="row no-padding">
-                                                        <div class="col-12 col-sm-8 no-padding">
-                                                            <h3>@enrollment.Course.Name</h3>
-                                                        </div>
-                                                        <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
-                                                            @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Pending)
-                                                            {
-                                                                <text>Enrollment in progress.</text>
-                                                            }
-                                                            else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
-                                                            {
-                                                                <text>Continue <i class="fas fa-arrow-right"></i></text>
-                                                            }
-                                                        </div>
+                                        <div class="course-in-progress-anchor-container">
+                                            <div class="course-in-progress-info">
+                                                <div class="row no-padding">
+                                                    <div class="col-12 col-sm-8 no-padding">
+                                                        <h3>@enrollment.Course.Name</h3>
+
+                                                    </div>
+                                                    <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
+                                                        @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Pending)
+                                                        {
+                                                            <text>Enrollment in progress.</text>
+                                                        }
+                                                        else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                                        {
+                                                            <text>Continue <i class="fas fa-arrow-right"></i></text>
+                                                        }
                                                     </div>
                                                 </div>
-                                                @{
-                                                    @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                            </div>
+                                            @{
+                                                @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                                {
+                                                    double percentComplete = enrollment.PercentComplete;
+                                                    string classFormatter = "";
+                                                    if (percentComplete < 50)
                                                     {
-                                                        double percentComplete = enrollment.PercentComplete;
-                                                        string classFormatter = "";
-                                                        if (percentComplete < 50)
-                                                        {
-                                                            classFormatter = "less-than-50";
-                                                        }
-                                                        else
-                                                        {
-                                                            classFormatter = "more-than-50";
-                                                        }
-                                                        <div class="course-in-progress">
+                                                        classFormatter = "less-than-50";
+                                                    }
+                                                    else
+                                                    {
+                                                        classFormatter = "more-than-50";
+                                                    }
+                                                    <div class="course-in-progress">
 
-                                                            <div class="progress @(classFormatter)">
+                                                        <div class="progress @(classFormatter)">
 
-                                                                <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
-                                                                    <div class="course-completion-percentage">
-                                                                        @(percentComplete)%
-                                                                    </div>
+                                                            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
+                                                                <div class="course-completion-percentage">
+                                                                    @(percentComplete)%
                                                                 </div>
-
                                                             </div>
 
                                                         </div>
-                                                    }
-                                                    else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Error)
-                                                    {
-                                                        <div class="course-enrollment-failure-container">
-                                                            Unfortunately, an error occurred when attempting to process your enrollment. We have been notified and are working to resolve the issue.
-                                                        </div>
-                                                    }
 
+                                                    </div>
                                                 }
-                                            </div>
+                                                else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Error)
+                                                {
+                                                    <div class="course-enrollment-failure-container">
+                                                        Unfortunately, an error occurred when attempting to process your enrollment. We have been notified and are working to resolve the issue.
+                                                    </div>
+                                                }
 
-                                            @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
-                                            {
-                                                @Html.Raw("</a>")
                                             }
+                                            <span class="marketing-campaign-msg"> @enrollment.CampaignPromoInfo </span>
+                                        </div>
+
+                                        @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                        {
+                                            @Html.Raw("</a>")
+                                        }
 
 
+                        
 
-
-                                        </li>
+                                    </li>
                                     }
                                 </ul>
                             </div>
