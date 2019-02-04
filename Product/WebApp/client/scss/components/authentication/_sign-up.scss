@@ -17,6 +17,10 @@
                 &:focus{
                     outline: none;
                 }
+
+                &.invalid{
+                    border: 2px solid $color-red;
+                }
             }
         }
     }

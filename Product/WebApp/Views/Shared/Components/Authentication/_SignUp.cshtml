@@ -7,13 +7,13 @@
     <input type="hidden" asp-for="CampaignGuid" name="CampaignGuid" value="@Model.CampaignGuid" form="SignUpForm" />
     <div class="row">
         <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
-            <input placeholder="Your email" form="SignUpForm" name="Email" asp-for="Email" />
+            <input placeholder="Your email" form="SignUpForm" name="Email" asp-for="Email" required/>
         </div>
         <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
-            <input placeholder="Password" type="password" form="SignUpForm" name="Password" asp-for="Password" />
+            <input placeholder="Password" type="password" form="SignUpForm" name="Password" asp-for="Password" required/>
         </div>
         <div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
-            <input placeholder="Re-enter password" type="password" form="SignUpForm" name="ReenterPassword" asp-for="ReenterPassword" />
+            <input placeholder="Re-enter password" type="password" form="SignUpForm" name="ReenterPassword" asp-for="ReenterPassword" required/>
         </div>
         <div id="SignUpAction" class="col-12 no-padding">
             @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
