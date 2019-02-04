@@ -118,7 +118,7 @@ namespace UpDiddyApi.Workflow
                 WozCourseProgressDto wcp = null;
                 bool updatesMade = false;
 
-                foreach (Enrollment e in enrollments)
+                foreach (Enrollment e in enrollments)  
                 {
                     _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress looking to update enrollment {e.EnrollmentGuid}");
                     // Only Call woz if the modify date is null or if the modify date older that progress update age threshold
@@ -131,6 +131,10 @@ namespace UpDiddyApi.Workflow
                             _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress updating enrollment {e.EnrollmentGuid}");
                             updatesMade = true;
                             e.PercentComplete = Convert.ToInt32(((double)wcp.ActivitiesCompleted / (double)wcp.ActivitiesTotal) * 100);
+                            // Save the completion date 
+                            if (e.PercentComplete == 100 && e.CompletionDate == null)
+                                e.CompletionDate = DateTime.UtcNow;
+
                             _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress updating enrollment {e.EnrollmentGuid} set PercentComplete={e.PercentComplete}");
                             e.ModifyDate = DateTime.UtcNow;
                         }
