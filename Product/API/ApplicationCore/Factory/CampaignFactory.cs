@@ -13,7 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             string rVal = string.Empty;
 
-            CampaignCourseVariantDto courseInfo = enrollment?.Campaign?.CampaignCourseVariant?.Where(s => s.CourseVariant?.CourseVariantId == enrollment?.CourseId).FirstOrDefault();
+            CampaignCourseVariantDto courseInfo = enrollment?.CampaignCourseVariant;
             if (courseInfo != null)
             {
                 if (courseInfo.RebateType.Name == Constants.CampaignRebate.CampaignRebateType.Employment)
