@@ -117,8 +117,9 @@ namespace UpDiddyApi.Migrations
                 columns: new[] { "RebateTypeId", "CreateDate", "CreateGuid", "Description", "IsDeleted", "ModifyDate", "ModifyGuid", "Name", "RebateTypeGuid" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2019, 1, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), "Get hired by one of our staffing partners for a full refund!", 0, null, null, "Employment", new Guid("b7be76f3-ac8d-4c64-93f3-a62cc09d8dde") },
-                    { 2, new DateTime(2019, 1, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), "Complete the course within the offer time period for a full refund!", 0, null, null, "Course completion", new Guid("fb69d56d-686b-4969-9465-e994e6c599a1") }
+                    { 1, new DateTime(2019, 1, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), "Get hired by one of our staffing partners for a full refund!", 0, null, null, "Employment", new Guid("B7BE76F3-AC8D-4C64-93F3-A62CC09D8DDE") },
+                    { 2, new DateTime(2019, 1, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), "Complete the course within the offer time period for a full refund!", 0, null, null, "Course completion", new Guid("FB69D56D-686B-4969-9465-E994E6C599A1") },
+                    { 3, new DateTime(2019, 1, 31, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), "Take this course to gain in-demand skills!", 0, null, null, "No incentive", new Guid("5B8591F6-AD54-45A9-A319-56E4DBC1449E") }
                 });
 
             migrationBuilder.CreateIndex(

@@ -39,7 +39,7 @@ namespace UpDiddy.Controllers
             {
                 Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 this.subscriber = _Api.Subscriber(subscriberGuid, HardRefresh);
-                HttpContext.Session.SetString("Test", this.subscriber.CampaignOffer);
+                HttpContext.Session.SetString("CampaignOffers", this.subscriber.CampaignOffer);
                     
             }
             else

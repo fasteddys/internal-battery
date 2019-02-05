@@ -43,7 +43,7 @@ namespace UpDiddyLib.Dto
         public Guid CourseVariantGuid { get; set; }
         public Guid CourseGuid { get; set; }
         public string CourseUrl { get; set; }
-        public virtual CampaignDto Campaign { get; set; }
+        public virtual CampaignCourseVariantDto CampaignCourseVariant { get; set; }        
         // Marketing campaign status information to be displayed to the user on their profile page 
         public string CampaignCourseStatusInfo { get; set; }
 

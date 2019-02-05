@@ -95,7 +95,7 @@
     </nav>
 
             @{
-                string CampaignOffers = HttpContextAccessor.HttpContext.Session.GetString("Test");
+                string CampaignOffers = HttpContextAccessor.HttpContext.Session.GetString("CampaignOffers");
                 if (string.IsNullOrEmpty(CampaignOffers) == false)
                 {
                     <div class="alert alert-primary mb-0 rebate-alert" role="alert">

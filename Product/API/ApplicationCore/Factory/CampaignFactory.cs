@@ -13,7 +13,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static string EnrollmentPromoStatusAsText(EnrollmentDto enrollment)
         {
             string rVal = string.Empty;
-            CampaignCourseVariantDto courseInfo = enrollment?.Campaign?.CampaignCourseVariant?.Where(s => s.CourseVariant?.CourseVariantId == enrollment?.CourseId).FirstOrDefault();
+
+            CampaignCourseVariantDto courseInfo = enrollment?.CampaignCourseVariant;
             if (courseInfo != null)
             {
                 if (courseInfo.RebateType.Name == Constants.CampaignRebate.CampaignRebateType.Employment)
@@ -53,14 +54,28 @@ namespace UpDiddyApi.ApplicationCore.Factory
             foreach ( CampaignDto c in currentCampaigns) 
             {    
                 foreach ( CampaignCourseVariantDto ccv in c.CampaignCourseVariant )
-                {
-                    // TODO JAB guard with enrollment check 
-                    // Create anchor tag to let them navigate 
-                    string courseSlug = CourseVariantFactory.GetCourseVariantCourseSlug(_db, ccv.CourseVariant.CourseVariantId);
-                    rVal += c.Description + " " + ccv.RebateType.Description + " <a href='/Course/Checkout/" + courseSlug + "'>click here</a> ";
-                }
-               
+                {                                    
+                    if ( OfferAccepted(ccv,enrollments) == false )
+                    {
+                        // Create anchor tag to let them navigate to promoted course checkout
+                        string courseSlug = CourseVariantFactory.GetCourseVariantCourseSlug(_db, ccv.CourseVariant.CourseVariantId);
+                        rVal += c.Description + " " + ccv.RebateType.Description + " <a href='/Course/Checkout/" + courseSlug + "'>click here</a> ";
+                    }                    
+                }               
             }            
+            return rVal;
+        }
+
+
+        public static bool OfferAccepted(CampaignCourseVariantDto campaignCourse, List<EnrollmentDto>  enrollments)
+        {
+            bool rVal = false;
+            foreach ( EnrollmentDto enrollment in enrollments)
+            {
+                if (enrollment.CourseVariantId == campaignCourse.CourseVariant.CourseVariantId)
+                    return true;
+            }
+
             return rVal;
         }
 
