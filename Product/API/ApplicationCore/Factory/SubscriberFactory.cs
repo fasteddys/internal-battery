@@ -69,7 +69,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
             // Populate campaign promotional message for enrollment
             // todo find a better way to do  this
             foreach ( EnrollmentDto e in subscriberDto.Enrollments)            
-                e.CampaignPromoInfo = CampaignFactory.EnrollmentPromoStatusAsText(e);
+                e.CampaignCourseStatusInfo = CampaignFactory.EnrollmentPromoStatusAsText(e);
+
+            subscriberDto.CampaignOffer = CampaignFactory.OpenOffers(_db,subscriberDto.EligibleCampaigns, subscriberDto.Enrollments);
             
             return subscriberDto;
         }

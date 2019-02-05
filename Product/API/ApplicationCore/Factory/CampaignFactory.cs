@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
@@ -12,7 +13,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static string EnrollmentPromoStatusAsText(EnrollmentDto enrollment)
         {
             string rVal = string.Empty;
-
             CampaignCourseVariantDto courseInfo = enrollment?.Campaign?.CampaignCourseVariant?.Where(s => s.CourseVariant?.CourseVariantId == enrollment?.CourseId).FirstOrDefault();
             if (courseInfo != null)
             {
@@ -46,5 +46,23 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             return rVal;
         }
+
+        public static string OpenOffers(UpDiddyDbContext _db, List<CampaignDto> currentCampaigns, List<EnrollmentDto> enrollments)
+        {
+            string rVal = string.Empty;
+            foreach ( CampaignDto c in currentCampaigns) 
+            {    
+                foreach ( CampaignCourseVariantDto ccv in c.CampaignCourseVariant )
+                {
+                    // TODO JAB guard with enrollment check 
+                    // Create anchor tag to let them navigate 
+                    string courseSlug = CourseVariantFactory.GetCourseVariantCourseSlug(_db, ccv.CourseVariant.CourseVariantId);
+                    rVal += c.Description + " " + ccv.RebateType.Description + " <a href='/Course/Checkout/" + courseSlug + "'>click here</a> ";
+                }
+               
+            }            
+            return rVal;
+        }
+
     }
 }

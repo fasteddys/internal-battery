@@ -1,4 +1,8 @@
-﻿namespace UpDiddy.ViewModels
+﻿
+
+using UpDiddyLib.Dto;
+
+namespace UpDiddy.ViewModels
 {
     public class BaseViewModel
     {

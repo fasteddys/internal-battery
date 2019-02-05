@@ -88,7 +88,7 @@ namespace UpDiddy
                 options.AddPolicy("IsUserAdmin", policy => policy.AddRequirements(new GroupRequirement("Career Circle User Admin")));
             });
             services.AddSingleton<IAuthorizationHandler, ApiGroupAuthorizationHandler>();
-
+       
 
             #region AddLocalization
             services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -164,12 +164,14 @@ namespace UpDiddy
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
 
+            services.AddHttpContextAccessor();
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromHours(1);
                 options.Cookie.HttpOnly = true;
             });
-
+            // Enable session DI
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             // Add Api
             services.AddScoped<IApi, ApiUpdiddy>();
         }
