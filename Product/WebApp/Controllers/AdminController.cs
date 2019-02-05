@@ -21,10 +21,11 @@ namespace UpDiddy.Controllers
 
         [HttpGet]
         [Route("/admin/courselookup")]
-        public JsonResult CourseLookup()
+        public async Task<JsonResult> CourseLookup()
         {
-            var selectListCourses =
-                _api.Courses()
+            var selectListCourses = await _api.CoursesAsync();
+
+            selectListCourses
                 .Select(course => new
                 {
                     entityGuid = course.CourseGuid,
@@ -38,27 +39,29 @@ namespace UpDiddy.Controllers
 
         [HttpGet]
         [Route("/admin/subscriberlookup")]
-        public JsonResult SubscriberLookup()
+        public async Task<JsonResult> SubscriberLookup()
         {
-            var selectListSubscribers =
-                _api.SubscriberSearch(string.Empty)
-                    .Select(subscriber => new
-                    {
-                        entityGuid = subscriber.SubscriberGuid,
-                        entityName = subscriber.Email
-                    })
-                    .OrderBy(e => e.entityName)
-                    .ToList();
+            IList<SubscriberDto> subs = await _api.SubscriberSearchAsync(string.Empty);
 
-            return new JsonResult(selectListSubscribers);
+            subs
+                .Select(subscriber => new
+                {
+                    entityGuid = subscriber.SubscriberGuid,
+                    entityName = subscriber.Email
+                })
+                .OrderBy(e => e.entityName)
+                .ToList();
+
+            return new JsonResult(subs);
         }
 
         [HttpGet]
         [Route("/admin/skillslookup/{entityType}/{entityGuid}")]
-        public JsonResult SkillsLookup(string entityType, Guid entityGuid)
+        public async Task<JsonResult> SkillsLookup(string entityType, Guid entityGuid)
         {
-            var selectListSkills =
-                _api.GetEntitySkills(entityType, entityGuid)
+            var selectListSkills = await _api.GetEntitySkillsAsync(entityType, entityGuid);
+
+            selectListSkills
                 .Select(skill => new
                 {
                     skillGuid = skill.SkillGuid,

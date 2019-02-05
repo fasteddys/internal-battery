@@ -24,7 +24,6 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Security.Claims;
 using UpDiddy.Helpers;
-using System.Security.Claims;
 
 namespace UpDiddy.Controllers
 {
@@ -34,9 +33,9 @@ namespace UpDiddy.Controllers
         private readonly IHostingEnvironment _env;
 
         [HttpGet]
-        public IActionResult GetCountries()
+        public async Task<IActionResult> GetCountries()
         {
-            return Ok(Json(_Api.GetCountries()));
+            return Ok(Json(await _Api.GetCountriesAsync()));
         }
 
         public HomeController(IApi api,
@@ -48,17 +47,17 @@ namespace UpDiddy.Controllers
             _configuration = configuration;
         }
         [HttpGet]
-        public IActionResult GetStatesByCountry(Guid countryGuid)
+        public async Task<IActionResult> GetStatesByCountry(Guid countryGuid)
         {
-            return Ok(Json(_Api.GetStatesByCountry(countryGuid)));
+            return Ok(Json(await _Api.GetStatesByCountryAsync(countryGuid)));
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             // TODO remove test code 
-            GetSubscriber(false);
+            await GetSubscriberAsync(false);
 
-            HomeViewModel HomeViewModel = new HomeViewModel(_configuration, _Api.Topics());
+            HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
             return View(HomeViewModel);
         }
 
@@ -68,24 +67,27 @@ namespace UpDiddy.Controllers
         }
 
         [Authorize]
-        public IActionResult SignUp()
+        public async Task<IActionResult> SignUp()
         {
-            GetSubscriber(false);
+            await GetSubscriberAsync(false);
 
             // This will check to see if the subscriber has onboarded. If not, it flips the flag.
             // This means the onboarding flow should only ever work the first time a user logs into their account.
             if(subscriber.HasOnboarded != 1)
                 _Api.UpdateOnboardingStatus();
 
+
+            var countries = await _Api.GetCountriesAsync();
+            var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
             SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
             {
                 SubscriberGuid = (Guid) subscriber.SubscriberGuid,
-                Countries = _Api.GetCountries().Select(c => new SelectListItem()
+                Countries = countries.Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
                     Value = c.CountryGuid.ToString(),
                 }),
-                States = _Api.GetStatesByCountry(this.subscriber?.State?.Country?.CountryGuid).Select(s => new SelectListItem()
+                States = states.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
                     Value = s.StateGuid.ToString(),
@@ -135,9 +137,9 @@ namespace UpDiddy.Controllers
         }
 
         [Authorize]
-        public IActionResult ProfileLogin()
+        public async Task<IActionResult> ProfileLogin()
         {
-            GetSubscriber(true);
+            await GetSubscriberAsync(true);
             // todo: consider updating the course status on the API side when a request is made to retrieve the courses or something instead of
             // logic being determined in web app for managing API data
             if (this.subscriber != null)
@@ -150,10 +152,12 @@ namespace UpDiddy.Controllers
         }
 
         [Authorize]
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
-            GetSubscriber(true);
+            await GetSubscriberAsync(true);
 
+            var countries = await _Api.GetCountriesAsync();
+            var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
                 SubscriberGuid = this.subscriber?.SubscriberGuid,
@@ -173,24 +177,24 @@ namespace UpDiddy.Controllers
                 StackOverflowUrl = this.subscriber?.StackOverflowUrl,
                 TwitterUrl = this.subscriber?.TwitterUrl,
                 Enrollments = this.subscriber?.Enrollments,
-                WorkCompensationTypes = _Api.GetCompensationTypes(),
-                EducationDegreeTypes = _Api.GetEducationalDegreeTypes(),
-                Countries = _Api.GetCountries().Select(c => new SelectListItem()
+                WorkCompensationTypes = await _Api.GetCompensationTypesAsync(),
+                EducationDegreeTypes = await _Api.GetEducationalDegreeTypesAsync(),
+                Countries = countries.Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
                     Value = c.CountryGuid.ToString(),
                 }),
-                States = _Api.GetStatesByCountry(this.subscriber?.State?.Country?.CountryGuid).Select(s => new SelectListItem()
+                States = states.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
                     Value = s.StateGuid.ToString(),
-                    Selected = s.StateGuid == this.subscriber?.State?.StateGuid
+                    Selected = s.StateGuid.Equals(this.subscriber?.State?.StateGuid)
                 }),
                 // todo: consider refactoring this... include in GetSubscriber (add navigation property)
-                Skills = _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value),
+                Skills = await _Api.GetSkillsBySubscriberAsync(this.subscriber.SubscriberGuid.Value),
                 Files = this.subscriber?.Files,
-                WorkHistory = _Api.GetWorkHistory(this.subscriber.SubscriberGuid.Value),
-                EducationHistory = _Api.GetEducationHistory(this.subscriber.SubscriberGuid.Value)
+                WorkHistory = await _Api.GetWorkHistoryAsync(this.subscriber.SubscriberGuid.Value),
+                EducationHistory = await _Api.GetEducationHistoryAsync(this.subscriber.SubscriberGuid.Value)
             };
          
             // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
@@ -198,7 +202,7 @@ namespace UpDiddy.Controllers
             // a dependency of BaseController. that's more refactoring than i think we want to concern ourselves with now.
             foreach (var enrollment in profileViewModel.Enrollments)
             {
-                var courseLogin = _Api.CourseLogin(enrollment.EnrollmentGuid.Value);
+                var courseLogin = await _Api.CourseLoginAsync(enrollment.EnrollmentGuid.Value);
                 enrollment.CourseUrl = courseLogin.LoginUrl;
             }
 
@@ -320,9 +324,9 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpPost]
-        public IActionResult Onboard(SignupFlowViewModel signupFlowViewModel)
+        public async Task<IActionResult> OnboardAsync(SignupFlowViewModel signupFlowViewModel)
         {
-            GetSubscriber(false);
+            await GetSubscriberAsync(false);
             List<SkillDto> skillsDto = null;
             if (ModelState.IsValid)
             {
@@ -471,18 +475,18 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpGet]
         [Route("/Home/GetSkills")]
-        public JsonResult GetSkills(string userQuery)
+        public async Task<JsonResult> GetSkillsAsync(string userQuery)
         {
-            var matchedSkills = _Api.GetSkills(userQuery);
+            var matchedSkills = await _Api.GetSkillsAsync(userQuery);
             return new JsonResult(matchedSkills);
         }
 
         [Authorize]
         [HttpGet]
         [Route("/Home/GetCompanies")]
-        public JsonResult GetCompanies(string userQuery)
+        public async Task<JsonResult> GetCompaniesAsync(string userQuery)
         {
-            var matchedCompanies = _Api.GetCompanies(userQuery);
+            var matchedCompanies = await _Api.GetCompaniesAsync(userQuery);
             return new JsonResult(matchedCompanies);
         }
 
@@ -490,9 +494,9 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpGet]
         [Route("/Home/GetEducationalInstitutions")]
-        public JsonResult GetEducationalInstitutions(string userQuery)
+        public async Task<JsonResult> GetEducationalInstitutionsAsync(string userQuery)
         {
-            var matchedInstitutions = _Api.GetEducationalInstitutions(userQuery);
+            var matchedInstitutions = await _Api.GetEducationalInstitutionsAsync(userQuery);
             return new JsonResult(matchedInstitutions);
         }
 
@@ -500,9 +504,9 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpGet]
         [Route("/Home/GetEducationalDegrees")]
-        public JsonResult GetEducationalDegrees(string userQuery)
+        public async Task<JsonResult> GetEducationalDegreesAsync(string userQuery)
         {
-            var matchedDegrees = _Api.GetEducationalDegrees(userQuery);
+            var matchedDegrees = await _Api.GetEducationalDegreesAsync(userQuery);
             return new JsonResult(matchedDegrees);
         }
 
@@ -510,9 +514,9 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpGet]
         [Route("/Home/GetCompensationTypes")]
-        public JsonResult GetCompensationTypes(string userQuery)
+        public async Task<JsonResult> GetCompensationTypesAsync(string userQuery)
         {
-            var compensationTypes = _Api.GetCompanies(userQuery);
+            var compensationTypes = await _Api.GetCompaniesAsync(userQuery);
             return new JsonResult(compensationTypes);
         }
 

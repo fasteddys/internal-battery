@@ -11,56 +11,56 @@ namespace UpDiddy.Api
 {
     public interface IApi
     { 
-        IList<TopicDto> Topics();
-        TopicDto TopicById(int TopicId);
-        TopicDto TopicBySlug(string TopicSlug);
-        IList<CourseDto> getCoursesByTopicSlug(string TopicSlug);
-        CourseDto Course(string CourseSlug);
-        IList<CourseDto> Courses();
-        IList<CountryDto> GetCountries();
-        IList<StateDto> GetStatesByCountry(Guid? countryGuid);
-        CourseVariantDto GetCourseVariant(Guid courseVariantGuid);
-        SubscriberDto Subscriber(Guid subscriberGuid, bool hardRefresh);
-        PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid);
-        PromoCodeDto PromoCodeValidation(string code, string courseVariantGuid);
-        CourseLoginDto CourseLogin(Guid EnrollmentGuid);
+        Task<IList<TopicDto>> TopicsAsync();
+        Task<TopicDto> TopicByIdAsync(int TopicId);
+        Task<TopicDto> TopicBySlugAsync(string TopicSlug);
+        Task<IList<CourseDto>> getCoursesByTopicSlugAsync(string TopicSlug);
+        Task<CourseDto> CourseAsync(string CourseSlug);
+        Task<IList<CourseDto>> CoursesAsync();
+        Task<IList<CountryDto>> GetCountriesAsync();
+        Task<IList<StateDto>> GetStatesByCountryAsync(Guid? countryGuid);
+        Task<CourseVariantDto> GetCourseVariantAsync(Guid courseVariantGuid);
+        Task<SubscriberDto> SubscriberAsync(Guid subscriberGuid, bool hardRefresh);
+        Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid);
+        Task<PromoCodeDto> PromoCodeValidationAsync(string code, string courseVariantGuid);
+        Task<CourseLoginDto> CourseLoginAsync(Guid EnrollmentGuid);
         BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber);
         BasicResponseDto UpdateOnboardingStatus();
         Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto);
         SubscriberDto CreateSubscriber();
         WozCourseProgressDto UpdateStudentCourseProgress(bool FutureSchedule);
         BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto);
-        IList<CountryDto> _GetCountries();
-        IList<StateDto> _GetStatesByCountry(Guid? countryGuid);
-        CourseVariantDto _GetCourseVariant(Guid courseVariantGuid);
+        Task<IList<CountryDto>> _GetCountriesAsync();
+        Task<IList<StateDto>> _GetStatesByCountryAsync(Guid? countryGuid);
+        Task<CourseVariantDto> _GetCourseVariantAsync(Guid courseVariantGuid);
         BasicResponseDto SyncLinkedInAccount(string linkedInCode, string returnUrl);
-        IList<SkillDto> GetSkills(string userQuery);
-        IList<CompanyDto> GetCompanies(string userQuery);
-        IList<EducationalInstitutionDto> GetEducationalInstitutions(string userQuery);
-        IList<EducationalDegreeDto> GetEducationalDegrees(string userQuery);
-        IList<CompensationTypeDto> GetCompensationTypes();
-        IList<EducationalDegreeTypeDto> GetEducationalDegreeTypes();
-        IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid);
+        Task<IList<SkillDto>> GetSkillsAsync(string userQuery);
+        Task<IList<CompanyDto>> GetCompaniesAsync(string userQuery);
+        Task<IList<EducationalInstitutionDto>> GetEducationalInstitutionsAsync(string userQuery);
+        Task<IList<EducationalDegreeDto>> GetEducationalDegreesAsync(string userQuery);
+        Task<IList<CompensationTypeDto>> GetCompensationTypesAsync();
+        Task<IList<EducationalDegreeTypeDto>> GetEducationalDegreeTypesAsync();
+        Task<IList<SkillDto>> GetSkillsBySubscriberAsync(Guid subscriberGuid);
         BasicResponseDto UploadResume(ResumeDto resumeDto);
         SubscriberWorkHistoryDto AddWorkHistory(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         SubscriberWorkHistoryDto UpdateWorkHistory(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         SubscriberEducationHistoryDto UpdateEducationHistory(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory);
         SubscriberWorkHistoryDto DeleteWorkHistory(Guid subscriberGuid, Guid workHistoryGuid);
         SubscriberEducationHistoryDto DeleteEducationHistory(Guid subscriberGuid, Guid educationHistory);
-        IList<SubscriberWorkHistoryDto> GetWorkHistory(Guid subscriberGuid);
-        IList<SubscriberEducationHistoryDto> GetEducationHistory(Guid subscriberGuid);
+        Task<IList<SubscriberWorkHistoryDto>> GetWorkHistoryAsync(Guid subscriberGuid);
+        Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid);
         SubscriberEducationHistoryDto AddEducationalHistory(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
         SubscriberDto UpdateSubscriberContact(Guid contactGuid, SignUpDto signUpDto);
 
 
-        SubscriberADGroupsDto MyGroups();
+        Task<SubscriberADGroupsDto> MyGroupsAsync();
 
         #region TalentPortal
-        IList<SubscriberDto> SubscriberSearch(string searchQuery);
+        Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchQuery);
         #endregion
         #region AdminPortal
         BasicResponseDto UpdateEntitySkills(EntitySkillDto entitySkillDto);
-        IList<SkillDto> GetEntitySkills(string entityType, Guid entityGuid);
+        Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
         #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, int fileId);

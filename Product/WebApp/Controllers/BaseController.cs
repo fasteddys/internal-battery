@@ -32,13 +32,13 @@ namespace UpDiddy.Controllers
                 return Guid.Empty;
         }
 
-        public void GetSubscriber(bool HardRefresh)
+        public async System.Threading.Tasks.Task GetSubscriberAsync(bool HardRefresh)
         {
  
             if (User.Identity.IsAuthenticated)
             {
                 Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                this.subscriber = _Api.Subscriber(subscriberGuid, HardRefresh);
+                this.subscriber = await _Api.SubscriberAsync(subscriberGuid, HardRefresh);
                     
             }
             else

@@ -39,7 +39,7 @@ namespace UpDiddy.Authorization
             {
                 try
                 {
-                    SubscriberADGroupsDto dto = _api.MyGroups();
+                    SubscriberADGroupsDto dto = await _api.MyGroupsAsync();
                     groups = dto.groups;
                     _accessor.HttpContext.Session.SetString(CACHE_KEY + userId, JsonConvert.SerializeObject(groups));
                 }

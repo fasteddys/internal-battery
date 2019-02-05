@@ -28,18 +28,18 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet]
-        public PartialViewResult SubscriberGrid(String searchQuery)
+        public async Task<PartialViewResult> SubscriberGrid(String searchQuery)
         {
-            IList<SubscriberDto> subscribers = _api.SubscriberSearch(searchQuery);
+            IList<SubscriberDto> subscribers = await _api.SubscriberSearchAsync(searchQuery);
             return PartialView("_SubscriberGrid", subscribers);
         }
 
         [Authorize]
         [HttpGet]
         [Route("/Talent/Subscriber/{subscriberGuid}")]
-        public IActionResult Subscriber(Guid subscriberGuid)
+        public async Task<IActionResult> SubscriberAsync(Guid subscriberGuid)
         {
-            SubscriberDto subscriber = _api.Subscriber(subscriberGuid, false);
+            SubscriberDto subscriber = await _api.SubscriberAsync(subscriberGuid, false);
 
             SubscriberViewModel subscriberViewModel = new SubscriberViewModel()
             {
