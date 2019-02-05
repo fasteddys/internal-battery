@@ -128,7 +128,10 @@ namespace UpDiddyApi.Workflow
                     Course course = _db.Course.Where(t => t.IsDeleted == 0 && t.CourseId == EnrollmentDto.CourseId).FirstOrDefault();
                     EnrollmentLog enrollmentLog = _db.EnrollmentLog.Where(t => t.IsDeleted == 0 && t.EnrollmentGuid == EnrollmentDto.EnrollmentGuid).FirstOrDefault();
                     CourseVariant courseVariant = _db.CourseVariant.Include(cv => cv.CourseVariantType).Where(cv => cv.IsDeleted == 0 && cv.CourseVariantGuid.Value == enrollmentLog.CourseVariantGuid.Value).FirstOrDefault();
-                    Enrollment enrollment = _db.Enrollment.Where(e => e.IsDeleted == 0 && e.EnrollmentGuid.Value == enrollmentLog.EnrollmentGuid).FirstOrDefault();
+                    Enrollment enrollment = _db.Enrollment.Where(e => e.IsDeleted == 0 && e.EnrollmentGuid.Value == enrollmentLog.EnrollmentGuid)
+                        .Include(e => e.CampaignCourseVariant)
+                        .ThenInclude(ccv => ccv.RebateType)
+                        .FirstOrDefault();
                     string formattedStartDate = enrollment.SectionStartTimestamp.HasValue ? Utils.FromUnixTimeInMilliseconds(enrollment.SectionStartTimestamp.Value).ToShortDateString() : string.Empty;
                     string templateId = null;
                     switch (courseVariant.CourseVariantType.Name)
@@ -144,7 +147,23 @@ namespace UpDiddyApi.Workflow
                     }
                     string profileUrl = _configuration["Environment:BaseUrl"]; // todo: once we aren't using register links from profile page, generate link to Woz course
                     string courseType = courseVariant.CourseVariantType.Name;
-                    _sysEmail.SendPurchaseReceiptEmail(templateId, profileUrl, SubscriberDto.Email, $"Purchase Receipt For {courseType} CareerCircle Course", course.Name, enrollmentLog.CourseCost, enrollmentLog.PromoApplied, formattedStartDate, (Guid)EnrollmentDto.EnrollmentGuid);
+
+                    // check to see if the enrollment was part of a campaign
+                    string rebateToc = string.Empty;
+                    if(enrollment.CampaignCourseVariant != null)
+                    {
+                        switch(enrollment.CampaignCourseVariant.RebateType.Name)
+                        {
+                            case "Employment":
+                                rebateToc = enrollment.CampaignCourseVariant.RebateType.Terms;
+                                break;
+                            case "Course completion":
+                                rebateToc = enrollment.CampaignCourseVariant.RebateType.Terms;
+                                break;
+                        }
+                    }
+
+                    _sysEmail.SendPurchaseReceiptEmail(templateId, profileUrl, SubscriberDto.Email, $"Purchase Receipt For {courseType} CareerCircle Course", course.Name, enrollmentLog.CourseCost, enrollmentLog.PromoApplied, formattedStartDate, (Guid)EnrollmentDto.EnrollmentGuid, rebateToc);
                     SetSelfPacedOrInstructorLedStatus(Helper, EnrollmentDto);
                     BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString()));
                     return CreateResponse(CreateResponseJson(SuccessfulMessage), SuccessfulMessage, string.Empty, TransactionState.Complete);
