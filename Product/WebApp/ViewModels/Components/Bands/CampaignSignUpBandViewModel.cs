@@ -11,5 +11,7 @@ namespace UpDiddy.ViewModels
         public string CampaignCourse { get; set; }
         public Guid ContactGuid { get; set; }
         public Guid CampaignGuid { get; set; }
+        public string RibbonText { get; set; }
+        public string DisclaimerText { get; set; }
     }
 }

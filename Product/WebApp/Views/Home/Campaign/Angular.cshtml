@@ -11,17 +11,19 @@
 
     @Html.Partial("Components/Bands/_CampaignSignUpBand", new CampaignSignUpBandViewModel {
         CampaignCourse = "AngularJS",
-        ImageUrl = "/images/angular.png",
+        ImageUrl = "/images/logo_angular.png",
         CampaignGuid = Model.CampaignGuid,
-        ContactGuid = Model.ContactGuid
+        ContactGuid = Model.ContactGuid,
+        RibbonText = "<strong>REBATE:</strong> Finish this course in 8 weeks or less and it's free.",
+        DisclaimerText = "This custom offer is tailored to your JavaScript skills.<br /><strong>Please do not forward</strong>"
     })
     @{
         List<ColumnSkewBandViewModel.ColumnSkewBandElement> Elements = new List<ColumnSkewBandViewModel.ColumnSkewBandElement>()
         {
-            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/number-8-512.png", true),
-            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/number-8-512.png", true),
-            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/number-8-512.png", true),
-            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/number-8-512.png", true)
+            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_1.png", true),
+            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_2.png", true),
+            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_3.png", true),
+            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_4.png", true)
         };
     }
     @Html.Partial("Components/Bands/_ColumnSkewBand", new ColumnSkewBandViewModel
