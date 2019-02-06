@@ -657,7 +657,8 @@ namespace UpDiddy.Controllers
             SignUpDto sudto = new SignUpDto
             {
                 email = signUpViewModel.Email,
-                password = signUpViewModel.Password
+                password = signUpViewModel.Password,
+                campaignGuid = signUpViewModel.CampaignGuid
             };
 
             // Guard UX from any unforeseen server error.
