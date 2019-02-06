@@ -57,7 +57,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.CourseVariant)
                 .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.Campaign)
                 .Include(c => c.CampaignContact).ThenInclude(cc => cc.Contact).ThenInclude(co => co.Subscriber)
-                .Where(c => c.IsDeleted == 0
+                .Where(c => c.IsDeleted == 0 && c.CampaignContact.Where(cc => cc.IsDeleted == 0).Any() && c.CampaignCourseVariant.Where(ccv => ccv.IsDeleted == 0).Any()
                     // the subscriber is associated with a campaign (contact must be linked to subscriber!)
                     && c.CampaignContact.Where(cc => cc.Contact.Subscriber.SubscriberId == subscriber.SubscriberId).Any()
                     // the campaign is active (enrollment dates)
@@ -66,14 +66,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             SubscriberDto subscriberDto = _mapper.Map<SubscriberDto>(subscriber);
             subscriberDto.EligibleCampaigns = _mapper.Map<List<CampaignDto>>(eligibleCampaigns);
-                        
+
             // Populate campaign promotional message for enrollment
             // todo find a better way to do  this
-            foreach ( EnrollmentDto e in subscriberDto.Enrollments)            
+            foreach (EnrollmentDto e in subscriberDto.Enrollments)
                 e.CampaignCourseStatusInfo = CampaignFactory.EnrollmentPromoStatusAsText(e);
 
-            subscriberDto.CampaignOffer = CampaignFactory.OpenOffers(_db,subscriberDto.EligibleCampaigns, subscriberDto.Enrollments);
-            
+            subscriberDto.CampaignOffer = CampaignFactory.OpenOffers(_db, subscriberDto.EligibleCampaigns, subscriberDto.Enrollments);
+
             return subscriberDto;
         }
         public static Subscriber GetSubscriberByGuid(UpDiddyDbContext db, Guid subscriberGuid)
