@@ -28,6 +28,8 @@
         }
     });
 
+    
+
 
     // Ensure user only submits to backend if form has values for all fields.
     if ($("#SignUpComponent #Email").val() && $("#SignUpComponent #Password").val() && $("#SignUpComponent #ReenterPassword").val()) {
@@ -62,4 +64,11 @@
     
 
 }); 
+
+// Allow Enter key to submit form
+$("#SignUpComponent input").on('keypress', function (e) {
+    if (e.which === 13) {
+        $("#SignUpForm").submit();
+    }
+});
 
