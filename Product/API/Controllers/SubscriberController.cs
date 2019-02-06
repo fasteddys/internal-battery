@@ -571,14 +571,14 @@ namespace UpDiddyApi.Controllers
         {
             _syslog.Log(LogLevel.Information, "SubscriberController.UpdateSubscriberContactAsync:: {@ContactGuid} attempting to sign up with email {@Email}", contactGuid, signUpDto.email);
             Models.Contact contact = await _db.Contact.Where(c => c.ContactGuid.Equals(contactGuid)).FirstOrDefaultAsync();
-            Campaign campaign = await _db.Campaign.Where(camp => camp.CampaignGuid.Equals(signUpDto.campaignGuid)).FirstOrDefaultAsync();
+            Campaign campaign = await _db.Campaign.Where(camp => camp.CampaignGuid.Equals(signUpDto.campaignGuid) && camp.IsDeleted == 0).FirstOrDefaultAsync();
 
             #region Verify and Check Data
             if (contact == null)
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid Contact guid." });
 
             if (campaign == null)
-                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid campaign guid." });
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid Campaign guid." });
 
             // check email
             if (contact.Email != signUpDto.email)
@@ -628,7 +628,7 @@ namespace UpDiddyApi.Controllers
 
                     _db.ContactAction.Add(new ContactAction()
                     {
-                        ActionId = 3, // todo: constants or enum or something
+                        ActionId = 3, // todo: use constants or enum or something
                         CampaignId = campaign.CampaignId,
                         ContactId = contact.ContactId,
                         ContactActionGuid = Guid.NewGuid(),
