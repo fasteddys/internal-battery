@@ -62,8 +62,22 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-4 cc-campaign-sign-up-band-right-container">
-                    <div class="row">
+                @{ 
+                    string hasRibbonClass = "";
+                    bool hasRibbon = !string.IsNullOrEmpty(Model.RibbonText);
+                    if (hasRibbon) { hasRibbonClass = "has-ribbon"; }
+                }
+                <div class="col-12 col-md-4 cc-campaign-sign-up-band-right-container @hasRibbonClass no-padding">
+                    @{ 
+                        if (hasRibbon)
+                        {
+                            <div class="campaign-ribbon">
+                                @Html.Raw(Model.RibbonText)
+                            </div>
+                        }
+                    }
+                    <div class="cc-campaign-sign-up-container">
+                        <div class="row">
                         <div class="col-12 no-padding sub-header font-bold">
                             Enroll in the @Model.CampaignCourse course
                         </div>
@@ -77,8 +91,12 @@
                                 CampaignGuid = Model.CampaignGuid
                             })
                         </div>
-                        
+                        <div class="col-12 no-padding campaign-disclaimer text-left">
+                            @Html.Raw(Model.DisclaimerText)
+                        </div>
                     </div>
+                    </div>
+                    
                 </div>
             </div>
         </div>

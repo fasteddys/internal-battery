@@ -598,11 +598,19 @@ namespace UpDiddy.Controllers
                 "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
                 CampaignGuid;
 
+            // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
+            
+            CourseDto Course = _Api.GetCourseByCampaignGuid(CampaignGuid);
+            if(Course == null)
+            {
+                return NotFound();
+            }
             CampaignViewModel cvm = new CampaignViewModel()
             {
                 CampaignGuid = CampaignGuid,
                 ContactGuid = ContactGuid,
-                TrackingImgSource = _TrackingImgSource
+                TrackingImgSource = _TrackingImgSource,
+                CampaignCourse = Course
             };
             return View("Campaign/" + CampaignViewName, cvm);
         }

@@ -178,7 +178,6 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/campaign/{campaignGuid}")]
         public IActionResult GetCourseByCampaignGuid(Guid campaignGuid)
         {
-
             var _a = _db.Campaign
                 .Join(_db.CampaignCourseVariant,
                     campaign => campaign.CampaignId,
@@ -188,9 +187,12 @@ namespace UpDiddyApi.Controllers
                     ccv => ccv.campaignCourseVariant.CourseVariantId,
                     courseVariant => courseVariant.CourseVariantId,
                     (ccv, courseVariant) => new { ccv, courseVariant })
-                .Select(m => new {courseId = m.courseVariant.CourseId });
+                .Select(m => new {courseId = m.courseVariant.CourseId, campGuid = m.ccv.campaign.CampaignGuid })
+                .Where(m => m.campGuid == campaignGuid);
 
-            int courseId = _a.Select(n => n.courseId).FirstOrDefault();
+
+            int courseId = _a.Select(n => n.courseId)
+                .FirstOrDefault();
 
             CourseDto rval = null;
             rval = _db.Course

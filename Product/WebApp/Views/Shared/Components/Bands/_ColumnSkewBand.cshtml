@@ -27,7 +27,37 @@
                                         for (int i = 0; i < ElementCount; i++)
                                         {
                                             ColumnSkewBandViewModel.ColumnSkewBandElement Element = Model.Elements.ElementAt(i);
-                                            if (ElementCount == 3)
+                                            if (ElementCount == 1)
+                                            {
+                                                <div class="col-12">
+                                                    @{
+                                                        if (Element.IsImage)
+                                                        {
+                                                            <img src="@Element.ElementText" />
+                                                        }
+                                                        else
+                                                        {
+                                                            @Html.Raw(Element.ElementText);
+                                                        }
+                                                    }
+                                                </div>
+                                            }
+                                            else if (ElementCount == 2)
+                                            {
+                                                <div class="col-12 col-sm-6">
+                                                    @{
+                                                        if (Element.IsImage)
+                                                        {
+                                                            <img src="@Element.ElementText" />
+                                                        }
+                                                        else
+                                                        {
+                                                            @Html.Raw(Element.ElementText);
+                                                        }
+                                                    }
+                                                </div>
+                                            }
+                                            else if (ElementCount == 3)
                                             {
                                                 <div class="col-12 col-sm-4">
                                                     @{
@@ -37,7 +67,7 @@
                                                         }
                                                         else
                                                         {
-                                                            @Element.ElementText
+                                                            @Html.Raw(Element.ElementText);
                                                         }
                                                     }
                                                 </div>
@@ -52,7 +82,7 @@
                                                         }
                                                         else
                                                         {
-                                                            @Element.ElementText
+                                                            @Html.Raw(Element.ElementText);
                                                         }
                                                     }
                                                 </div>
