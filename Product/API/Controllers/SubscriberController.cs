@@ -570,15 +570,24 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> UpdateSubscriberContactAsync(Guid contactGuid, [FromBody] SignUpDto signUpDto)
         {
             _syslog.Log(LogLevel.Information, "SubscriberController.UpdateSubscriberContactAsync:: {@ContactGuid} attempting to sign up with email {@Email}", contactGuid, signUpDto.email);
-            Models.Contact contact = await _db.Contact.Where(c => c.ContactGuid.Equals(contactGuid)).FirstOrDefaultAsync();
-            Campaign campaign = await _db.Campaign.Where(camp => camp.CampaignGuid.Equals(signUpDto.campaignGuid) && camp.IsDeleted == 0).FirstOrDefaultAsync();
+            Models.Contact contact = await _db.Contact
+                .Where(c => c.ContactGuid.Equals(contactGuid)
+                    && c.IsDeleted == 0)
+                .FirstOrDefaultAsync();
+
+            Campaign campaign = await _db.Campaign
+                .Where(camp => camp.CampaignGuid.Equals(signUpDto.campaignGuid) 
+                    && camp.IsDeleted == 0
+                    && camp.StartDate <= DateTime.UtcNow 
+                    && (!camp.EndDate.HasValue || camp.EndDate.Value >= DateTime.UtcNow))
+                .FirstOrDefaultAsync();
 
             #region Verify and Check Data
             if (contact == null)
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid Contact guid." });
 
             if (campaign == null)
-                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid Campaign guid." });
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Signing up through this campaign is not available at this time." });
 
             // check email
             if (contact.Email != signUpDto.email)
