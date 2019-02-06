@@ -1356,6 +1356,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("RebateTypeGuid");
 
+                    b.Property<string>("Terms");
+
                     b.HasKey("RebateTypeId");
 
                     b.HasIndex("Name")

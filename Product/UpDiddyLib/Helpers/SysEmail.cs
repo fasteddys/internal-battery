@@ -40,7 +40,8 @@ namespace UpDiddyLib.Helpers
             decimal courseCost, 
             decimal promoApplied, 
             string formattedStartDate,
-            Guid enrollmentGuid)
+            Guid enrollmentGuid,
+            string rebateToc)
         {
             var client = new SendGridClient(_apiKey);
             var message = new SendGridMessage();
@@ -56,7 +57,8 @@ namespace UpDiddyLib.Helpers
                 Discount = promoApplied.ToString(),
                 Final_Price = (courseCost - promoApplied).ToString(),
                 Start_Date = formattedStartDate,
-                Enrollment_Guid = enrollmentGuid.ToString()
+                Enrollment_Guid = enrollmentGuid.ToString(),
+                Rebate_Toc = rebateToc
             };
             message.SetTemplateData(purchaseReceipt);
             var response = await client.SendEmailAsync(message);
@@ -91,6 +93,9 @@ namespace UpDiddyLib.Helpers
 
             [JsonProperty("enrollment_guid")]
             public string Enrollment_Guid { get; set; }
+
+            [JsonProperty("rebate_toc")]
+            public string Rebate_Toc { get; set; }
         }
         #endregion
     }
