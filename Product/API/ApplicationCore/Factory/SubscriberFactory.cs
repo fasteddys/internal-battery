@@ -42,8 +42,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(s => s.State).ThenInclude(c => c.Country)
                 .Include(s => s.SubscriberSkills).ThenInclude(ss => ss.Skill)
                 .Include(s => s.Enrollments).ThenInclude(e => e.Course)
-                .Include(s => s.Enrollments).ThenInclude(e => e.Campaign).ThenInclude(e => e.CampaignCourseVariant).ThenInclude(r => r.CourseVariant)
-                .Include(s => s.Enrollments).ThenInclude(e => e.Campaign).ThenInclude(e => e.CampaignCourseVariant).ThenInclude(r => r.RebateType)
+                .Include(s => s.Enrollments).ThenInclude(e => e.CampaignCourseVariant).ThenInclude(r => r.CourseVariant)
+                .Include(s => s.Enrollments).ThenInclude(e => e.CampaignCourseVariant).ThenInclude(r => r.RebateType)
                 .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.Company)
                 .Include(s => s.SubscriberWorkHistory).ThenInclude(swh => swh.CompensationType)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalInstitution)
@@ -55,6 +55,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             var eligibleCampaigns = _db.Campaign
                 .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.RebateType)
                 .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.CourseVariant)
+                .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.Campaign)
                 .Include(c => c.CampaignContact).ThenInclude(cc => cc.Contact).ThenInclude(co => co.Subscriber)
                 .Where(c => c.IsDeleted == 0
                     // the subscriber is associated with a campaign (contact must be linked to subscriber!)
@@ -69,7 +70,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
             // Populate campaign promotional message for enrollment
             // todo find a better way to do  this
             foreach ( EnrollmentDto e in subscriberDto.Enrollments)            
-                e.CampaignPromoInfo = CampaignFactory.EnrollmentPromoStatusAsText(e);
+                e.CampaignCourseStatusInfo = CampaignFactory.EnrollmentPromoStatusAsText(e);
+
+            subscriberDto.CampaignOffer = CampaignFactory.OpenOffers(_db,subscriberDto.EligibleCampaigns, subscriberDto.Enrollments);
             
             return subscriberDto;
         }

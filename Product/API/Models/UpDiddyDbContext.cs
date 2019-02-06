@@ -127,41 +127,17 @@ namespace UpDiddyApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Enrollment>()
+                .HasOne<CampaignCourseVariant>(e => e.CampaignCourseVariant)
+                .WithOne()
+                .HasForeignKey<Enrollment>(e => new { e.CampaignId, e.CourseVariantId });
+
+            modelBuilder.Entity<Contact>()
+                .HasIndex(c => c.Email)
+                .IsUnique();
+
             modelBuilder.Entity<CampaignContact>()
                 .HasKey(cc => new { cc.CampaignId, cc.ContactId });
-
-            modelBuilder.Entity<RebateType>().HasData(
-                new RebateType()
-                {
-                    RebateTypeId = 1,
-                    RebateTypeGuid = Guid.Parse("B7BE76F3-AC8D-4C64-93F3-A62CC09D8DDE"),
-                    CreateDate = DateTime.Parse("01/31/2019"),
-                    IsDeleted = 0,
-                    Name = "Employment",
-                    Description = "Get a job with an Allegis Group company, and you get a full refund!"
-                });
-
-            modelBuilder.Entity<RebateType>().HasData(
-                new RebateType()
-                {
-                    RebateTypeId = 2,
-                    RebateTypeGuid = Guid.Parse("FB69D56D-686B-4969-9465-E994E6C599A1"),
-                    CreateDate = DateTime.Parse("01/31/2019"),
-                    IsDeleted = 0,
-                    Name = "Course completion",
-                    Description = "Complete the course within the offer timeframe, and you get a full refund!"
-                });
-
-            modelBuilder.Entity<RebateType>().HasData(
-                new RebateType()
-                {
-                    RebateTypeId = 3,
-                    RebateTypeGuid = Guid.Parse("5B8591F6-AD54-45A9-A319-56E4DBC1449E"),
-                    CreateDate = DateTime.Parse("02/01/2019"),
-                    IsDeleted = 0,
-                    Name = "No incentive",
-                    Description = "Take this course to gain in-demand skills!"
-                });
 
             modelBuilder.Entity<CampaignCourseVariant>()
                 .HasKey(ccv => new { ccv.CampaignId, ccv.CourseVariantId });
@@ -206,140 +182,6 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<PromoCode>()
                 .Property(pc => pc.MaxAllowedNumberOfRedemptions)
                 .HasDefaultValue(1);
-
-            // this caused a problem when cleaning up abandoned promo codes. may still want a constraint in the future, but needs to be implemented differently
-            //modelBuilder.Entity<PromoCodeRedemption>()
-            //    .HasIndex(i => new { i.PromoCodeId, i.SubscriberId, i.CourseId, i.RedemptionStatusId, i.IsDeleted }).IsUnique();
-
-            modelBuilder.Entity<Action>().HasData(
-              new Action()
-              {
-                  ActionId = 1,
-                  ActionGuid = Guid.Parse("8653122B-74F1-4020-8812-04C355CE56E7"),
-                  CreateDate = DateTime.Parse("01/28/2019"),
-                  IsDeleted = 0,
-                  Name = "Open email"
-              });
-
-            modelBuilder.Entity<Action>().HasData(
-                new Action()
-                {
-                    ActionId = 2,
-                    ActionGuid = Guid.Parse("47D62280-213F-44F3-8085-A83BB2A5BBE3"),
-                    CreateDate = DateTime.Parse("01/28/2019"),
-                    IsDeleted = 0,
-                    Name = "Visit landing page"
-                });
-
-            modelBuilder.Entity<Action>().HasData(
-                new Action()
-                {
-                    ActionId = 3,
-                    ActionGuid = Guid.Parse("5D87152D-B0D3-4A94-A777-58B69A44950E"),
-                    CreateDate = DateTime.Parse("01/28/2019"),
-                    IsDeleted = 0,
-                    Name = "Create account"
-                });
-
-            modelBuilder.Entity<Action>().HasData(
-                new Action()
-                {
-                    ActionId = 4,
-                    ActionGuid = Guid.Parse("3FA0B888-ACC6-4DA9-8E86-03F59F3137F5"),
-                    CreateDate = DateTime.Parse("01/28/2019"),
-                    IsDeleted = 0,
-                    Name = "Course enrollment"
-                });
-
-            modelBuilder.Entity<Action>().HasData(
-                new Action()
-                {
-                    ActionId = 5,
-                    ActionGuid = Guid.Parse("CCBEE3A5-278E-4696-9CB6-AB6DC5B50D0A"),
-                    CreateDate = DateTime.Parse("01/28/2019"),
-                    IsDeleted = 0,
-                    Name = "Complete course"
-                });
-
-            modelBuilder.Entity<RedemptionStatus>().HasData(
-                new RedemptionStatus()
-                {
-                    CreateDate = DateTime.MinValue,
-                    CreateGuid = Guid.Parse("D5533B5C-6C87-4C48-B9BE-D6FFB5532A4C"), // todo: this should refer to an admin account's AD Guid
-                    IsDeleted = 0,
-                    ModifyDate = null,
-                    ModifyGuid = null,
-                    Name = "In Process",
-                    RedemptionStatusGuid = Guid.Parse("1FE97CDE-3A2D-42F1-8B8D-42824367020B"),
-                    RedemptionStatusId = 1
-                },
-                new RedemptionStatus()
-                {
-                    CreateDate = DateTime.MinValue,
-                    CreateGuid = Guid.Parse("D5533B5C-6C87-4C48-B9BE-D6FFB5532A4C"), // todo: this should refer to an admin account's AD Guid
-                    IsDeleted = 0,
-                    ModifyDate = null,
-                    ModifyGuid = null,
-                    Name = "Completed",
-                    RedemptionStatusGuid = Guid.Parse("1FE97CDE-3A2D-42F1-8B8D-42824367020B"),
-                    RedemptionStatusId = 2
-                });
-            modelBuilder.Entity<PromoType>().HasData(
-                new PromoType()
-                {
-                    CreateDate = DateTime.MinValue,
-                    CreateGuid = Guid.Parse("D5533B5C-6C87-4C48-B9BE-D6FFB5532A4C"), // todo: this should refer to an admin account's AD Guid
-                    IsDeleted = 0,
-                    ModifyDate = null,
-                    ModifyGuid = null,
-                    Description = "This type indicates that the PromoValueFactor is the dollar amount that should be subtracted from the course cost.",
-                    Name = "Dollar Amount",
-                    PromoTypeGuid = Guid.Parse("1DDB91F6-A6E5-4C01-A020-1DEA0AB77E95"),
-                    PromoTypeId = 1
-                },
-                new PromoType()
-                {
-                    CreateDate = DateTime.MinValue,
-                    CreateGuid = Guid.Parse("D5533B5C-6C87-4C48-B9BE-D6FFB5532A4C"), // todo: this should refer to an admin account's AD Guid
-                    IsDeleted = 0,
-                    ModifyDate = null,
-                    ModifyGuid = null,
-                    Description = "This type indicates that the the course cost should be reduced by the percentage value of the PromoValueFactor.",
-                    Name = "Percent Off",
-                    PromoTypeGuid = Guid.Parse("1DDB91F6-A6E5-4C01-A020-1DEA0AB77E95"),
-                    PromoTypeId = 2
-                });
-
-            /* does this get called before or after migrationBuilder during "Update-Database" operation?
-             * should this be done here or in the migration? currently keeping it in the migration since the order of operations is important 
-             * (e.g. first create a column, then populate it with data from the related table, then create the FK, then drop the unused column(s))
-             
-            modelBuilder.Entity<CourseVariantType>().HasData(
-                new CourseVariantType()
-                {
-                    CourseVariantTypeId = 1,
-                    CourseVariantGuid = Guid.Parse("97EFDC73-8295-4C6B-B68A-07F29DE55808"),
-                    CreateDate = DateTime.MinValue,
-                    IsDeleted = 0,
-                    ModifyDate = null,
-                    ModifyGuid = null,
-                    CreateGuid = Guid.Parse("EEA8EC63-0181-4566-A50C-A56271249230"),
-                    Name = "SelfPaced"
-                },
-                new CourseVariantType()
-                {
-                    CourseVariantTypeId = 2,
-                    CourseVariantGuid = Guid.Parse("D4C9E3A1-E24B-4003-8A02-65775056ACF0"),
-                    CreateDate = DateTime.MinValue,
-                    IsDeleted = 0,
-                    ModifyDate = null,
-                    ModifyGuid = null,
-                    CreateGuid = Guid.Parse("6938B064-D1A1-4DE0-B259-53BCAE9F0C9A"),
-                    Name = "InstructorLed"
-                }); 
-             */
-
-            // todo: would like to be able to add check constraints here, but it seems it is only possible by editing the migration directly: https://stackoverflow.com/questions/34245449/is-it-possible-to-add-check-constraint-with-fluent-api-in-ef7
         }
     }
 }

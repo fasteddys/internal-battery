@@ -3,10 +3,16 @@
 @using Microsoft.AspNetCore.Localization
 @using Microsoft.AspNetCore.Mvc.Localization
 @using System.Web
+
+@using Microsoft.AspNetCore.Http;
+@using Microsoft.AspNetCore.Mvc
+
 @inject IViewLocalizer Localizer
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration;
 @using Microsoft.AspNetCore.Authorization
 @inject IAuthorizationService AuthorizationService
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
 
 <!DOCTYPE html>
 <html>
@@ -37,7 +43,9 @@
         <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P78FCL3"
                 height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
+
     <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white">
+
         <div class="container">
             <a class="navbar-brand" href="~/Home/Index">
                 <img src="~/images/cc_logo.png" asp-append-version="true" />
@@ -50,8 +58,10 @@
                     <!--<li class="nav-item"><a class="nav-link" asp-controller="Topic" asp-action="Index">@Localizer["Career Skilling"]</a></li>-->
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="FAQ">FAQ</a></li>
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
+
                     <!--<li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="News">@Localizer["News"]</a></li>
-    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="ContactUs">@Localizer["Contact"]</a></li>-->
+                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="ContactUs">@Localizer["Contact"]</a></li>-->
+
 
                     @if (User.Identity.IsAuthenticated)
                     {
@@ -71,6 +81,7 @@
                             </li>
                         }
                         <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a></li>
+
                         <!--<li class="nav-item nav-link"><a class="nav-link" asp-area="" asp-controller="User" asp-action="Dashboard" asp-route-username='@User.Identity.Name'>My Circle</a></li>-->
                     }
                     else
@@ -83,21 +94,37 @@
         </div>
     </nav>
 
-    @RenderBody()
+            @{
+                string CampaignOffers = HttpContextAccessor.HttpContext.Session.GetString("CampaignOffers");
+                if (string.IsNullOrEmpty(CampaignOffers) == false)
+                {
+                    <div class="alert alert-primary mb-0 rebate-alert" role="alert">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md ">
+                                    <div class="link-wrapper"> @Html.Raw(CampaignOffers) </div>                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>  
+                    }
+                }
 
-    @await Html.PartialAsync("_Footer")
+                @RenderBody()
 
-    <script type="text/javascript">
+                    @await Html.PartialAsync("_Footer")
+
+                    <script type="text/javascript">
         var API_URL = "@Configuration["Api:ApiUrl"]";
         var SIGNALR_URL = "@Configuration["SignalR:HubUrl"]";
-    </script>
-    <environment names="Development">
-        <script type="text/javascript" src="~/js/site.dev.js" asp-append-version="true"></script>
-    </environment>
-    <environment names="Staging,Production">
-        <script type="text/javascript" src="~/js/site.min.js" asp-append-version="true"></script>
-    </environment>
+                    </script>
+                    <environment names="Development">
+                        <script type="text/javascript" src="~/js/site.dev.js" asp-append-version="true"></script>
+                    </environment>
+                    <environment names="Staging,Production">
+                        <script type="text/javascript" src="~/js/site.min.js" asp-append-version="true"></script>
+                    </environment>
 
-    @RenderSection("Scripts", false)
+                    @RenderSection("Scripts", false)
 </body>
 </html>

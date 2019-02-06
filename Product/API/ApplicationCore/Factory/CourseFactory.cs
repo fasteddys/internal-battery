@@ -62,6 +62,16 @@ namespace UpDiddyApi.ApplicationCore
                 };
             }
         }
+
+
+        public static Course GetCourseById(UpDiddyDbContext db, int courseId)
+        {
+            return db.Course
+                .Where(s => s.IsDeleted == 0 && s.CourseId == courseId)
+                .FirstOrDefault();
+        }
+
+
         #endregion
 
         #region Vendor specific methods
