@@ -459,5 +459,11 @@ namespace UpDiddyLib.Helpers
             }
             return formattedCompensation;
         }
+
+        public static string FormatWozDescriptionFields(string description)
+        {
+            return description.Replace("Description:", "<strong>Description:</strong> ")
+                .Replace("Objectives:", "<br /><br /><strong>Objectives:</strong> ");
+        }
     }
 }

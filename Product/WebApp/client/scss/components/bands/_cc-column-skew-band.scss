@@ -54,6 +54,12 @@
             }
         }
 
+        &.cc-cscheme-secondary-dark {
+            &:before {
+                background-color: $color-secondary-dark;
+            }
+        }
+
         &.cc-cscheme-tertiary {
             &:before {
                 background-color: $color-tertiary;
@@ -85,8 +91,9 @@
 
         .cc-skew-band-content {
             padding-top: 2rem;
-            > .row{
-                > div{
+
+            > .row {
+                > div {
                     margin-bottom: 2rem;
                 }
             }

@@ -1,0 +1,26 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model DisclaimersViewModel
+<div id="DisclaimersContainer" class=" @Model.ChosenColorScheme">
+    <div class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 no-padding">
+                        @{
+                            int disclaimerCount = 1;
+                            foreach (DisclaimersViewModel.Disclaimer disclaimer in Model.Disclaimers)
+                            {
+                                <div class="page-disclaimer">
+                                    <sup>@disclaimerCount</sup> @disclaimer.DisclaimerText
+                                </div>
+                                disclaimerCount++;
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
