@@ -151,17 +151,7 @@ namespace UpDiddyApi.Workflow
                     // check to see if the enrollment was part of a campaign
                     string rebateToc = string.Empty;
                     if(enrollment.CampaignCourseVariant != null)
-                    {
-                        switch(enrollment.CampaignCourseVariant.RebateType.Name)
-                        {
-                            case "Employment":
-                                rebateToc = enrollment.CampaignCourseVariant.RebateType.Terms;
-                                break;
-                            case "Course completion":
-                                rebateToc = enrollment.CampaignCourseVariant.RebateType.Terms;
-                                break;
-                        }
-                    }
+                        rebateToc = enrollment.CampaignCourseVariant.RebateType.Terms;
 
                     _sysEmail.SendPurchaseReceiptEmail(templateId, profileUrl, SubscriberDto.Email, $"Purchase Receipt For {courseType} CareerCircle Course", course.Name, enrollmentLog.CourseCost, enrollmentLog.PromoApplied, formattedStartDate, (Guid)EnrollmentDto.EnrollmentGuid, rebateToc);
                     SetSelfPacedOrInstructorLedStatus(Helper, EnrollmentDto);
