@@ -18,7 +18,7 @@ namespace UpDiddyApi.ApplicationCore
 
         #region constructor
         public CourseFactory(UpDiddyDbContext db, IConfiguration configuration, ILogger syslog, IDistributedCache distributedCache) :
-            base(db,configuration, syslog, distributedCache)
+            base(db, configuration, syslog, distributedCache)
         {
             _db = db;
         }
@@ -41,8 +41,8 @@ namespace UpDiddyApi.ApplicationCore
 
                 var courseGuid = query.Course.CourseGuid.Value;
                 var vendorGuid = query.Course.Vendor.VendorGuid.Value;
-                    
-                
+
+
                 rVal.LoginUrl = string.Empty;
                 if (vendorGuid.ToString() == _configuration["Woz:VendorGuid"])
                     rVal = GetWozCourseLogin(SubscriberGuid, courseGuid, vendorGuid);
@@ -52,7 +52,7 @@ namespace UpDiddyApi.ApplicationCore
                 _syslog.Log(LogLevel.Information, $"***** CourseFactory.GetCourseLogin completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return rVal;
             }
-            catch (Exception ex )
+            catch (Exception ex)
             {
                 _syslog.Log(LogLevel.Error, "CourseFactory.GetCourseLogin threw an exception -> " + ex.Message);
                 _syslog.Log(LogLevel.Error, $"Parameters subscriber= {SubscriberGuid}  enrollment= {EnrollmentGuid}");
@@ -62,23 +62,22 @@ namespace UpDiddyApi.ApplicationCore
                 };
             }
         }
+
+
+        public static Course GetCourseById(UpDiddyDbContext db, int courseId)
+        {
+            return db.Course
+                .Where(s => s.IsDeleted == 0 && s.CourseId == courseId)
+                .FirstOrDefault();
+        }
+
+
         #endregion
 
         #region Vendor specific methods
         private CourseLoginDto GetWozCourseLogin(Guid SubscriberGuid, Guid CourseGuid, Guid VendorGuid)
         {
-            // For woz there are no course specific course login urls so we only need to cache to the subscriber
-            string cacheKey = $"GetWozCourseLogin{SubscriberGuid}";
-            CourseLoginDto rval = GetCachedValue<CourseLoginDto>(cacheKey);
-
-            if (rval != null)
-                return rval;
-            else
-            {
-                rval = _GetWozCourseLogin(SubscriberGuid, CourseGuid, VendorGuid);
-                SetCachedValue<CourseLoginDto>(cacheKey, rval);
-            }
-            return rval;
+            return _GetWozCourseLogin(SubscriberGuid, CourseGuid, VendorGuid);
         }
 
         #endregion
@@ -86,10 +85,10 @@ namespace UpDiddyApi.ApplicationCore
         #region Helper methods 
         private CourseLoginDto _GetWozCourseLogin(Guid SubscriberGuid, Guid CourseGuid, Guid VendorGuid)
         {
-            int step = 0; 
+            int step = 0;
             try
             {
-               
+
                 _syslog.Log(LogLevel.Information, $"***** CourseFactory.GetWozCourseLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid} for course {CourseGuid} and vendor {VendorGuid}");
                 CourseLoginDto rVal = new CourseLoginDto();
                 rVal.LoginUrl = string.Empty;
@@ -136,7 +135,7 @@ namespace UpDiddyApi.ApplicationCore
                         step = 9;
                         rVal.LoginUrl = studentLogin.First().LoginUrl;
                     }
-                        
+
                 }
                 _syslog.Log(LogLevel.Information, $"***** CourseFactory.GetWozCourseLogin completed at: {DateTime.UtcNow.ToLongDateString()}");
                 step = 10;
@@ -150,7 +149,7 @@ namespace UpDiddyApi.ApplicationCore
                 {
                     LoginUrl = "Error in CourseFactory.GetWozCourseLogin"
                 };
-            }            
+            }
         }
         #endregion
     }

@@ -459,5 +459,13 @@ namespace UpDiddyLib.Helpers
             }
             return formattedCompensation;
         }
+
+        // TODO - Remove this function and its usage (campaign landing pages) 
+        //        once we're formatting the descriptions received from vendors.
+        public static string FormatWozDescriptionFields(string description)
+        {
+            return description.Replace("Description:", "<strong>Description:</strong> ")
+                .Replace("Objectives:", "<br /><br /><strong>Objectives:</strong> ");
+        }
     }
 }

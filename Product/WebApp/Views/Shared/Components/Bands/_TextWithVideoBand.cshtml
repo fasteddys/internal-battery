@@ -1,0 +1,47 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model TextWithVideoBandViewModel
+@*
+    ***Customization Options***
+
+    You can change the "cc-cscheme-secondary" class on the root div
+    below to change the color scheme of the band (other options
+    include cc-cscheme-white and cc-cscheme-primary).
+*@
+<div class="cc-text-video-band @Model.ChosenColorScheme row">
+    <div class="col-12">
+        <div class="container no-padding">
+            <div class="row">
+                <div class="col-12 col-lg-6 cc-text-video-band-left-column no-padding @{if (Model.SwitchOrder) { <text>order-2</text>; } }">
+                    <div class="cc-text-video-band-verbiage-container d-flex align-items-center">
+                        <div class="row">
+                            <div class="col-12 cc-text-video-band-header font-bold">
+                                @Model.Header
+                            </div>
+                            <div class="col-12 cc-text-video-band-description">
+                                @{ 
+                                    foreach(string description in Model.Descriptions)
+                                    {
+                                        <div>@description</div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 cc-text-video-band-right-column @{if (Model.SwitchOrder) { <text>order-1</text>; } }">
+                    <div class="career-circle-video-container d-flex align-items-center">
+                        <div class="row">
+                            <div class="col-12 no-padding">
+                                @Html.Partial("Components/Media/_Video", new VideoViewModel {
+                                    Url = Model.VideoUrl,
+                                    Thumbnail = Model.VideoThumbnailUrl
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

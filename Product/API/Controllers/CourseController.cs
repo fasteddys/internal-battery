@@ -173,5 +173,36 @@ namespace UpDiddyApi.Controllers
             else
                 return Ok(_mapper.Map<CourseVariantDto>(courseVariant));
         }
+
+        [HttpGet]
+        [Route("api/[controller]/campaign/{campaignGuid}")]
+        public IActionResult GetCourseByCampaignGuid(Guid campaignGuid)
+        {
+            var _a = _db.Campaign
+                .Join(_db.CampaignCourseVariant,
+                    campaign => campaign.CampaignId,
+                    campaignCourseVariant => campaignCourseVariant.CampaignId,
+                    (campaign, campaignCourseVariant) => new { campaign, campaignCourseVariant })
+                .Join(_db.CourseVariant,
+                    ccv => ccv.campaignCourseVariant.CourseVariantId,
+                    courseVariant => courseVariant.CourseVariantId,
+                    (ccv, courseVariant) => new { ccv, courseVariant })
+                .Select(m => new {courseId = m.courseVariant.CourseId, campGuid = m.ccv.campaign.CampaignGuid })
+                .Where(m => m.campGuid == campaignGuid);
+
+
+            int courseId = _a.Select(n => n.courseId)
+                .FirstOrDefault();
+
+            CourseDto rval = null;
+            rval = _db.Course
+                .Where(t => t.IsDeleted == 0 && t.CourseId == courseId)
+                .ProjectTo<CourseDto>(_mapper.ConfigurationProvider)
+                .FirstOrDefault();
+
+            return Ok(rval);
+
+            
+        }
     }
 }

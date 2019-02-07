@@ -1,0 +1,84 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model CampaignViewModel
+
+
+<div id="CampaignContainer">
+    @* Some of the below hardcoded values will be replaced with variables from the Model. *@
+
+    @Html.Partial("Components/Bands/_CampaignSignUpBand", new CampaignSignUpBandViewModel {
+        CampaignCourse = "AngularJS",
+        ImageUrl = "/images/logo_angular.png",
+        CampaignGuid = Model.CampaignGuid,
+        ContactGuid = Model.ContactGuid,
+        DisclaimerText = "This custom offer is tailored to your JavaScript skills.<br /><strong>Please do not forward.<sup>1</sup></strong>"
+    })
+    @{
+        List<ColumnSkewBandViewModel.ColumnSkewBandElement> Elements = new List<ColumnSkewBandViewModel.ColumnSkewBandElement>()
+    {
+        new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_1_angular.png", true),
+        new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_2_angular.png", true),
+        new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_3_angular.png", true),
+        new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_4_angular.png", true)
+    };
+    }
+    @Html.Partial("Components/Bands/_ColumnSkewBand", new ColumnSkewBandViewModel
+    {
+        SkewDirection = "skew-left-to-right",
+        Header = "Become an Angular Developer",
+        ChosenColorScheme = "cc-cscheme-secondary-dark",
+        Elements = Elements
+    })
+    @{
+        List<ColumnSkewBandViewModel.ColumnSkewBandElement> TextElements = new List<ColumnSkewBandViewModel.ColumnSkewBandElement>()
+    {
+        new ColumnSkewBandViewModel.ColumnSkewBandElement(UpDiddyLib.Helpers.Utils.FormatWozDescriptionFields(Model.CampaignCourse.Description), false)
+    };
+    }
+    @Html.Partial("Components/Bands/_ColumnSkewBand", new ColumnSkewBandViewModel
+    {
+        Header = "What You Can Expect From This Course",
+        ChosenColorScheme = "cc-cscheme-tertiary-light-gray",
+        Elements = TextElements
+    })
+    @{
+        List<string> Descriptions = new List<string>
+    {
+        "We prepare the workforce of today for the opportunities of tomorrow. Enroll in affordable courses and expand your skill set.",
+        "We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston."
+    };
+    }
+    @Html.Partial("Components/Bands/_TextWithVideoBand", new TextWithVideoBandViewModel {
+        Header = "Expand Your Skills",
+        VideoUrl = "/videos/Career_Circle.mp4",
+        VideoThumbnailUrl = "/images/FullStack_Main.png",
+        ChosenColorScheme = "cc-cscheme-secondary",
+        Descriptions = Descriptions
+    })
+
+    @Html.Partial("Components/Bands/_TripleContainerBand", new TripleContainerBandViewModel {
+        Header = "Advance Your Career With Angular",
+        ChosenColorScheme = "cc-cscheme-white",
+        C1TopValue = "82",
+        C1BottomValue = "# of Angular developer jobs open right now in Baltimore, Chicago, Charlotte and Boston",
+        C2TopValue = "647",
+        C2BottomValue = "# of Angular developers we've found jobs for this year",
+        C3TopValue = "$123,427",
+        C3BottomValue = "Average salary for Angular web developers"
+    })
+    @{
+        List<DisclaimersViewModel.Disclaimer> Disclaimers = new List<DisclaimersViewModel.Disclaimer>()
+        {
+            new DisclaimersViewModel.Disclaimer("This offer is only valid for the recipient at the email address it was sent to. In order to sign-up and enroll in another course, the user can use the home page.")
+        };
+    }
+    @Html.Partial("Components/Utilities/_Disclaimers", new DisclaimersViewModel
+    {
+        Disclaimers = Disclaimers,
+        ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
+    })
+</div>
+<img src="@Model.TrackingImgSource" />

@@ -30,6 +30,14 @@ body {
     }
 }
 
+.rebate-alert {
+    .link-wrapper {
+       a { text-decoration: underline;}
+    }
+
+}
+    
+
 @media (min-width: 0px) {
     body {
         .navbar-brand {

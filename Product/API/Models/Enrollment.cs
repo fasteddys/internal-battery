@@ -9,7 +9,7 @@ namespace UpDiddyApi.Models
 {
     public class Enrollment : BaseModel
     {
-        public int EnrollmentId { get; set; }   
+        public int EnrollmentId { get; set; }
         public Guid? EnrollmentGuid { get; set; }
         public int CourseId { get; set; }
         public Course Course { get; set; }
@@ -26,6 +26,7 @@ namespace UpDiddyApi.Models
         public int? TermsOfServiceFlag { get; set; }
         public Int64? SectionStartTimestamp { get; set; }
         public int? CampaignId { get; set; }
-        public virtual Campaign Campaign { get; set; }  
+        public int? CourseVariantId { get; set; }
+        public virtual CampaignCourseVariant CampaignCourseVariant { get; set; }
     }
 }

@@ -300,7 +300,21 @@ namespace UpDiddy.Api
             return rval;
         }
 
- 
+        public CourseDto GetCourseByCampaignGuid(Guid CampaignGuid)
+        {
+            string cacheKey = $"GetCourseByCampaignGuid{CampaignGuid}";
+            CourseDto rval = GetCachedValue<CourseDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _GetCourseByCampaignGuid(CampaignGuid);
+                SetCachedValue<CourseDto>(cacheKey, rval);
+            }
+            return rval;
+
+        }
 
 
 
@@ -419,12 +433,12 @@ namespace UpDiddy.Api
         }
         #endregion
 
-        public SubscriberDto UpdateSubscriberContact(Guid contactGuid, SignUpDto signUpDto)
+        public BasicResponseDto UpdateSubscriberContact(Guid contactGuid, SignUpDto signUpDto)
         {
             // encrypt password before sending to API
             signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
 
-            return Put<SubscriberDto>(signUpDto, string.Format("subscriber/contact/{0}", contactGuid.ToString()), false);
+            return Put<BasicResponseDto>(signUpDto, string.Format("subscriber/contact/{0}", contactGuid.ToString()), false);
         }
 
         public async Task<SubscriberADGroupsDto> MyGroupsAsync()
@@ -539,6 +553,11 @@ namespace UpDiddy.Api
         public async Task<IList<SkillDto>> GetSkillsBySubscriberAsync(Guid subscriberGuid)
         {
             return await GetAsync<IList<SkillDto>>("subscriber/" + subscriberGuid + "/skill");
+        }
+
+        public CourseDto _GetCourseByCampaignGuid(Guid CampaignGuid)
+        {
+            return Get<CourseDto>("course/campaign/" + CampaignGuid, false);
         }
         #endregion
 

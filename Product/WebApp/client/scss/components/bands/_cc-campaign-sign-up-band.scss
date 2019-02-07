@@ -1,0 +1,140 @@
+﻿@import '../../_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .cc-campaign-sign-up-band {
+        color: $color-white;
+        background-image: url("/images/img_hero.jpg");
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+
+        &:before {
+            content: "";
+            display: block;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(3, 38, 74, 0.5);
+            transition: all .3s linear;
+        }
+
+        .cc-campaign-sign-up-band-left-container {
+            padding: 5rem 0;
+
+            .img-column {
+
+
+                img {
+                    width: 100%;
+                }
+            }
+
+            .hero-header {
+                font-size: 2rem;
+                line-height: 2rem;
+            }
+
+            .campaign-bullet-list {
+                font-size: 1.25rem;
+
+                .bd-highlight {
+                    line-height: 1.75rem;
+                }
+            }
+
+            .locations-disclaimer {
+                font-size: .75rem;
+                display: inline-block;
+                padding: .5rem 0;
+                border-top: 3px solid $color-white;
+            }
+        }
+
+        .cc-campaign-sign-up-band-right-container {
+            text-align: center;
+            background-color: $color-secondary;
+
+            .campaign-ribbon {
+                background-color: $color-red;
+                padding: .5rem 2rem;
+                position: relative;
+                line-height: 1rem;
+
+
+                &:before {
+                    content: '';
+                    width: 1.5rem;
+                    background-color: $color-red;
+                    position: absolute;
+                    top: 0;
+                    left: -1.5rem;
+                    height: 100%;
+                }
+
+                &:after {
+                    content: '';
+                    position: absolute;
+                    top: 100%;
+                    left: -1.5rem;
+                    width: 0;
+                    height: 0;
+                    width: 0px;
+                    border-bottom: .75rem solid transparent;
+                    border-left: .75rem solid transparent;
+                    border-top: .75rem solid $color-darkred;
+                    border-right: .75rem solid $color-darkred;
+                }
+            }
+
+            .cc-campaign-sign-up-container {
+                padding: 5rem 2rem;
+
+                .sub-header {
+                    font-size: 1.5rem;
+                    line-height: 1.5rem;
+                    margin-bottom: .25rem;
+                }
+
+                .mini-header {
+                    margin-bottom: 1.25rem;
+                    font-size: .9rem;
+                }
+
+                .campaign-disclaimer{
+                    padding-top: 1.25rem;
+                    font-size: .75rem;
+                }
+            }
+
+            &.has-ribbon {
+                .cc-campaign-sign-up-container {
+                    padding-top: 1.25rem;
+                }
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+}

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using UpDiddy.Api;
+using System.Threading.Tasks;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -54,16 +55,16 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("/Course/Checkout/{CourseSlug}")]
-        public async System.Threading.Tasks.Task<IActionResult> Get(string CourseSlug)
+        [Route("/Course/Checkout/{CourseSlug}", Name = "CourseCheckout")]
+        public async Task<IActionResult> GetAsync(string CourseSlug)
         {
             await GetSubscriberAsync(false);
 
             var gateway = braintreeConfiguration.GetGateway();
             var clientToken = gateway.ClientToken.Generate();
             ViewBag.ClientToken = clientToken;
+
             var course = await _Api.CourseAsync(CourseSlug);
-            
             var courseVariantViewModels = course.CourseVariants.Select(dto => new CourseVariantViewModel()
             {
                 CourseVariantGuid = dto.CourseVariantGuid,
@@ -133,10 +134,27 @@ namespace UpDiddy.Controllers
             }
             courseViewModel.CourseVariant = selectedCourseVariant;
 
-            // retrieve the campaign associated with the selected course variant for this subscriber (if one exists)
-            var campaign = this.subscriber.EligibleCampaigns
-                .Where(ec => ec.CampaignCourseVariant.Exists(ccv => ccv.CourseVariant.CourseVariantGuid == selectedCourseVariant.CourseVariantGuid))
+            // retrieve the campaign course variant associated with this subscriber (if one exists)
+            var campaignCourseVariant = this.subscriber.EligibleCampaigns
+                .SelectMany(ec => ec.CampaignCourseVariant)
+                .Where(ccv => ccv.CourseVariant.CourseVariantGuid == selectedCourseVariant.CourseVariantGuid)
                 .FirstOrDefault();
+
+            if (campaignCourseVariant != null)
+            {
+                // this is kind of kludgey... after the EligibleCampaigns comes back over the wire from the API, the Campaign property
+                // is lost. this isn't happening within the API. rather than continue to troubleshoot the issue, i'm just going to set 
+                // the Campaign property of the CampaignCourseVariant using the object i already have (if a match exists on selectedCourseVariant)
+                campaignCourseVariant.Campaign = this.subscriber.EligibleCampaigns
+                    .Where(ec => ec.CampaignCourseVariant
+                        .Where(ccv => ccv.CourseVariant.CourseVariantGuid == selectedCourseVariant.CourseVariantGuid).Any())
+                    .FirstOrDefault();
+
+                // doing this because of a circular reference error during JSON serialization when trying to call UpDiddyApi. i tried
+                // adding the same code that we currently have in the api's startup to ignore circular references to the webapp's startup
+                // but still received the same exception. workaround is to null this out to prevent the circular reference.
+                campaignCourseVariant.Campaign.CampaignCourseVariant = null;
+            }
 
             // validate, consume, and apply promo code redemption. consider moving this to CourseViewModel.Validate (using IValidatableObject)
             PromoCodeDto validPromoCode = null;
@@ -215,9 +233,9 @@ namespace UpDiddy.Controllers
                     Subscriber = this.subscriber,
                     CourseVariantGuid = courseViewModel.CourseVariant.CourseVariantGuid,
                     PromoCodeRedemptionGuid = courseViewModel.PromoCodeRedemptionGuid,
-                    Campaign = campaign
+                    CampaignCourseVariant = campaignCourseVariant
                 };
-
+                
                 BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
                 {
                     PaymentAmount = enrollmentDto.PricePaid,

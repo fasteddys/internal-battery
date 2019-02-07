@@ -14,6 +14,7 @@ namespace UpDiddyLib.Helpers
             decimal courseCost,
             decimal promoApplied,
             string formattedStartDate,
-            Guid enrollmentGuid);
+            Guid enrollmentGuid,
+            string rebateToc);
     }
 }

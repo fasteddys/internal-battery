@@ -69,10 +69,11 @@ namespace UpDiddyApi.Controllers
                 EnrollmentDto.CourseId = _db.Course.Where(c => c.CourseGuid == EnrollmentDto.CourseGuid).Select(c => c.CourseId).FirstOrDefault();
                 Enrollment Enrollment = _mapper.Map<Enrollment>(EnrollmentDto);
 
-                if (Enrollment.Campaign != null)
+                if (Enrollment.CampaignCourseVariant != null)
                 {
-                    Enrollment.CampaignId = Enrollment.Campaign.CampaignId;
-                    Enrollment.Campaign = null;
+                    Enrollment.CampaignId = EnrollmentDto.CampaignCourseVariant.Campaign.CampaignId;
+                    Enrollment.CourseVariantId = EnrollmentDto.CampaignCourseVariant.CourseVariant.CourseVariantId;
+                    Enrollment.CampaignCourseVariant = null;
                 }
                 _db.Enrollment.Add(Enrollment);
 

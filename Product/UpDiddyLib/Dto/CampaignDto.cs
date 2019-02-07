@@ -13,7 +13,5 @@ namespace UpDiddyLib.Dto
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public List<CampaignCourseVariantDto> CampaignCourseVariant { get; set; } = new List<CampaignCourseVariantDto>();
-
-
     }
 }

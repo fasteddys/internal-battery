@@ -1,0 +1,101 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model ColumnSkewBandViewModel
+@*
+    ***Customization Options***
+
+    You can change the "skew-left-to-right" option to
+    "skew-right-to-left" to change the skew direction.
+*@
+
+<div class="cc-skew-band @Model.SkewDirection @Model.ChosenColorScheme row">
+    <div class="col-12">
+        <div class="container no-padding">
+            <div class="row">
+                <div class="col-12 no-padding">
+                    <div class="row">
+                        <div class="col-12 d-flex justify-content-center no-padding">
+                            <div class="cc-skew-band-header font-bold">
+                                @Model.Header
+                            </div>
+                        </div>
+                        <div class="col-12 no-padding">
+                            <div class="cc-skew-band-content">
+                                <div class="row">
+                                    @{
+                                        int ElementCount = Model.Elements.Count;
+                                        for (int i = 0; i < ElementCount; i++)
+                                        {
+                                            ColumnSkewBandViewModel.ColumnSkewBandElement Element = Model.Elements.ElementAt(i);
+                                            if (ElementCount == 1)
+                                            {
+                                                <div class="col-12">
+                                                    @{
+                                                        if (Element.IsImage)
+                                                        {
+                                                            <img src="@Element.ElementText" />
+                                                        }
+                                                        else
+                                                        {
+                                                            @Html.Raw(Element.ElementText);
+                                                        }
+                                                    }
+                                                </div>
+                                            }
+                                            else if (ElementCount == 2)
+                                            {
+                                                <div class="col-12 col-sm-6">
+                                                    @{
+                                                        if (Element.IsImage)
+                                                        {
+                                                            <img src="@Element.ElementText" />
+                                                        }
+                                                        else
+                                                        {
+                                                            @Html.Raw(Element.ElementText);
+                                                        }
+                                                    }
+                                                </div>
+                                            }
+                                            else if (ElementCount == 3)
+                                            {
+                                                <div class="col-12 col-sm-4">
+                                                    @{
+                                                        if (Element.IsImage)
+                                                        {
+                                                            <img src="@Element.ElementText" />
+                                                        }
+                                                        else
+                                                        {
+                                                            @Html.Raw(Element.ElementText);
+                                                        }
+                                                    }
+                                                </div>
+                                            }
+                                            else if (ElementCount == 4)
+                                            {
+                                                <div class="col-6 col-sm-3">
+                                                    @{
+                                                        if (Element.IsImage)
+                                                        {
+                                                            <img src="@Element.ElementText" />
+                                                        }
+                                                        else
+                                                        {
+                                                            @Html.Raw(Element.ElementText);
+                                                        }
+                                                    }
+                                                </div>
+                                            }
+                                        }
+                                    }
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

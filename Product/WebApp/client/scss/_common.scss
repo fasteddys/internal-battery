@@ -1,9 +1,18 @@
 ﻿@import '_variables';
 
+.cc-cscheme-white {
+    color: $color-secondary;
+    background-color: $color-white;
+}
+
 .f-color-primary{
     color: $color-primary;
 }
 .bg-color-primary {
+    background-color: $color-primary;
+}
+.cc-cscheme-primary {
+    color: $color-white;
     background-color: $color-primary;
 }
 
@@ -14,12 +23,26 @@
 .bg-color-secondary {
     background-color: $color-secondary;
 }
+.cc-cscheme-secondary {
+    color: $color-white;
+    background-color: $color-secondary;
+}
+
+.cc-cscheme-secondary-dark {
+    color: $color-white;
+    background-color: $color-secondary-dark;
+}
 
 .f-color-tertiary {
     color: $color-tertiary;
 }
 
 .bg-color-tertiary {
+    background-color: $color-tertiary;
+}
+
+.cc-cscheme-tertiary{
+    color: $color-white;
     background-color: $color-tertiary;
 }
 
@@ -31,10 +54,27 @@
 .f-color-tertiary-gray {
     color: $color-tertiary-gray;
 }
+.cc-cscheme-tertiary-gray{
+    color: $color-white;
+    background-color: $color-tertiary-gray;
+}
+
+.cc-cscheme-tertiary-mid-gray {
+    color: $color-secondary;
+    background-color: $color-tertiary-mid-gray;
+}
 
 
 .f-color-tertiary-light-gray {
     color: $color-tertiary-light-gray;
+}
+.cc-cscheme-tertiary-light-gray {
+    color: $color-secondary;
+    background-color: $color-tertiary-light-gray;
+}
+
+.cc-cscheme-darkred{
+    background-color: $color-darkred;
 }
 
 
@@ -50,8 +90,13 @@
     color: red;
 }
 
+.font-bold{
+    font-weight: bold;
+}
 
-
+.font-bolder{
+    font-weight: bolder;
+}
 /* Font Declarations */
 @font-face {
     font-family: "OpenSans-Bold";
@@ -299,6 +344,13 @@ a:hover{
                 }
             }
         }
+    }
+}
+
+// IE Workarounds
+.d-flex{
+    .row{
+        width: 100%;
     }
 }
 

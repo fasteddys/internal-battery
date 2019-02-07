@@ -8,5 +8,6 @@ namespace UpDiddyLib.Dto.Marketing
     {
         public string email { get; set; }
         public string password { get; set; }
+        public Guid? campaignGuid { get; set; }
     }
 }

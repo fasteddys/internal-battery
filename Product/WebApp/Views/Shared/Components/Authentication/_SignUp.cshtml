@@ -1,0 +1,29 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model SignUpViewModel
+<div id="SignUpComponent">
+    <form id="SignUpForm" asp-controller="Home" asp-action="CampaignSignUp"></form>
+    <input type="hidden" asp-for="ContactGuid" name="ContactGuid" value="@Model.ContactGuid" form="SignUpForm" />
+    <input type="hidden" asp-for="CampaignGuid" name="CampaignGuid" value="@Model.CampaignGuid" form="SignUpForm" />
+    <div class="row">
+        <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
+            <input placeholder="Your email" form="SignUpForm" name="Email" asp-for="Email" required/>
+        </div>
+        <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
+            <input placeholder="Password" type="password" form="SignUpForm" name="Password" asp-for="Password" required/>
+        </div>
+        <div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
+            <input placeholder="Re-enter password" type="password" form="SignUpForm" name="ReenterPassword" asp-for="ReenterPassword" required/>
+        </div>
+        <div id="SignUpAction" class="col-12 no-padding">
+            @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                Text = "Sign Up Now",
+                SkewDirection = "skew-left-to-right",
+                ChosenColorScheme = "cc-cscheme-darkred",
+                Form = "SignUpForm",
+                ButtonAction = ActionButtonViewModel.Action.SUBMIT
+            })
+        </div>
+    </div>
+</div>
+

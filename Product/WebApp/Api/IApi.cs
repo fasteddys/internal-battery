@@ -50,7 +50,8 @@ namespace UpDiddy.Api
         Task<IList<SubscriberWorkHistoryDto>> GetWorkHistoryAsync(Guid subscriberGuid);
         Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid);
         SubscriberEducationHistoryDto AddEducationalHistory(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
-        SubscriberDto UpdateSubscriberContact(Guid contactGuid, SignUpDto signUpDto);
+        BasicResponseDto UpdateSubscriberContact(Guid contactGuid, SignUpDto signUpDto);
+        CourseDto GetCourseByCampaignGuid(Guid CampaignGuid);
 
 
         Task<SubscriberADGroupsDto> MyGroupsAsync();
