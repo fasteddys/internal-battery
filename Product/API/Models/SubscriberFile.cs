@@ -10,8 +10,14 @@ namespace UpDiddyApi.Models
 {
     public class SubscriberFile : BaseModel
     {
+
+        public SubscriberFile()
+        {
+            Guid = Guid.NewGuid();
+        }
         // todo: add name, filetype (resume, other), maybe version
         public int Id { get; set; }
+        public Guid Guid { get; set; }
         public int SubscriberId { get; set; }
         [JsonIgnore]
         public Subscriber Subscriber { get; set; }
