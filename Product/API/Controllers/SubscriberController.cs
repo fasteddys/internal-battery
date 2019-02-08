@@ -757,7 +757,7 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(subscriberGuid))
                 .Include(s => s.SubscriberFile)
                 .First();
-            SubscriberFile file = subscriber.SubscriberFile.Where(f => f.Guid.Equals(fileGuid)).First();
+            SubscriberFile file = subscriber.SubscriberFile.Where(f => f.SubscriberFileGuid.Equals(fileGuid)).First();
 
             if (file == null)
                 return NotFound(new BasicResponseDto { StatusCode = 404, Description = "File not found. " });
@@ -776,7 +776,7 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(subscriberGuid))
                 .Include(s => s.SubscriberFile)
                 .First();
-            SubscriberFile file = subscriber.SubscriberFile.Where(f => f.Guid.Equals(fileGuid)).First();
+            SubscriberFile file = subscriber.SubscriberFile.Where(f => f.SubscriberFileGuid.Equals(fileGuid)).First();
 
             if (file == null)
                 return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "File not found." });
