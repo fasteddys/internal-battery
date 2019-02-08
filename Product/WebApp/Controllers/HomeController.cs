@@ -275,9 +275,9 @@ namespace UpDiddy.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> DownloadFile(int fileId)
+        public async Task<IActionResult> DownloadFile(Guid fileGuid)
         {
-            HttpResponseMessage response = await _Api.DownloadFileAsync(Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value), fileId);
+            HttpResponseMessage response = await _Api.DownloadFileAsync(Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value), fileGuid);
             Stream stream = await response.Content.ReadAsStreamAsync();
             return File(stream, "application/octet-stream", response.Content.Headers.ContentDisposition.FileName);
         }

@@ -87,9 +87,9 @@
                 $('.resume-control button').prop('disabled', true);
                 $('.resume-control button').addClass('disabled');
 
-                var fileId = $('.resume-control .delete').data('id');
+                var fileGuid = $('.resume-control .delete').data('guid');
                 submitting = true;
-                CareerCircleAPI.deleteFile(fileId)
+                CareerCircleAPI.deleteFile(fileGuid)
                     .then(function () {
                         location.reload();
                     })
@@ -190,9 +190,9 @@
                             @if (Model.Resume != null)
                             {
                                 <div class="resume-control">
-                                    <a class="download" href="/Home/DownloadFile?fileId=@Model.Resume.Id" target="_blank"><i class="fas fa-download" title="Download"></i> @Model.Resume.SimpleName</a>
+                                    <a class="download" href="/Home/DownloadFile?fileGuid=@Model.Resume.SubscriberFileGuid" target="_blank"><i class="fas fa-download" title="Download"></i> @Model.Resume.SimpleName</a>
                                     <button class="edit"><i class="fas fa-edit text-light-blue" title="Edit"></i></button>
-                                    <button class="delete" data-id="@Model.Resume.Id"><i class="fas fa-minus-circle text-light-blue" title="Delete"></i></button>
+                                    <button class="delete" data-guid="@Model.Resume.SubscriberFileGuid"><i class="fas fa-minus-circle text-light-blue" title="Delete"></i></button>
                                 </div>
                             }
                             <form class="resume-upload-form" method="post" action="/Home/UploadResume" enctype="multipart/form-data">

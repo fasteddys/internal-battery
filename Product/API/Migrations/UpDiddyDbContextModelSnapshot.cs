@@ -1627,6 +1627,7 @@ namespace UpDiddyApi.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnName("SubscriberFileId")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("BlobName");
@@ -1634,6 +1635,9 @@ namespace UpDiddyApi.Migrations
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
+
+                    b.Property<Guid>("Guid")
+                        .HasColumnName("SubscriberGuid");
 
                     b.Property<int>("IsDeleted");
 

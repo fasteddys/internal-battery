@@ -421,10 +421,10 @@ namespace UpDiddy.Api
             return Get<SubscriberADGroupsDto>("subscriber/me/group", true);
         }
 
-        public async Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, int fileId)
+        public async Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid)
         {
             HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
-            string ApiUrl = _ApiBaseUri + String.Format("subscriber/{0}/file/{1}", subscriberGuid, fileId);
+            string ApiUrl = _ApiBaseUri + String.Format("subscriber/{0}/file/{1}", subscriberGuid, fileGuid.ToString());
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
 
             // Add token to the Authorization header and make the request

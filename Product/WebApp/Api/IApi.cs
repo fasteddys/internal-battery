@@ -64,6 +64,6 @@ namespace UpDiddy.Api
         IList<SkillDto> GetEntitySkills(string entityType, Guid entityGuid);
         #endregion
 
-        Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, int fileId);
+        Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
     }
 }

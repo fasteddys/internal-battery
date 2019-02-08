@@ -747,8 +747,8 @@ namespace UpDiddyApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("/api/[controller]/{subscriberGuid}/file/{fileId}")]
-        public async Task<IActionResult> DownloadFile(Guid subscriberGuid, int fileId)
+        [HttpGet("/api/[controller]/{subscriberGuid}/file/{fileGuid}")]
+        public async Task<IActionResult> DownloadFile(Guid subscriberGuid, Guid fileGuid)
         {
             Guid userGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if (userGuid != subscriberGuid)
@@ -757,13 +757,17 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(subscriberGuid))
                 .Include(s => s.SubscriberFile)
                 .First();
-            SubscriberFile file = subscriber.SubscriberFile.Where(f => f.Id == fileId).First();
+            SubscriberFile file = subscriber.SubscriberFile.Where(f => f.SubscriberFileGuid.Equals(fileGuid)).First();
+
+            if (file == null)
+                return NotFound(new BasicResponseDto { StatusCode = 404, Description = "File not found. " });
+
             return File(await _cloudStorage.OpenReadAsync(file.BlobName), "application/octet-stream", Path.GetFileName(file.BlobName));
         }
 
         [Authorize]
-        [HttpDelete("/api/[controller]/{subscriberGuid}/file/{fileId}")]
-        public async Task<IActionResult> DeleteFile(Guid subscriberGuid, int fileId)
+        [HttpDelete("/api/[controller]/{subscriberGuid}/file/{fileGuid}")]
+        public async Task<IActionResult> DeleteFile(Guid subscriberGuid, Guid fileGuid)
         {
             Guid userGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if (userGuid != subscriberGuid)
@@ -772,7 +776,10 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(subscriberGuid))
                 .Include(s => s.SubscriberFile)
                 .First();
-            SubscriberFile file = subscriber.SubscriberFile.Where(f => f.Id == fileId).First();
+            SubscriberFile file = subscriber.SubscriberFile.Where(f => f.SubscriberFileGuid.Equals(fileGuid)).First();
+
+            if (file == null)
+                return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "File not found." });
 
             if (!await _cloudStorage.DeleteFileAsync(file.BlobName))
                 return BadRequest();
