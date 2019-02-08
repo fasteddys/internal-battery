@@ -16,6 +16,16 @@
         ContactGuid = Model.ContactGuid,
         DisclaimerText = "This custom offer is tailored to your JavaScript skills.<br /><strong>Please do not forward.<sup>1</sup></strong>"
     })
+    @Html.Partial("Components/Bands/_TripleContainerBand", new TripleContainerBandViewModel {
+        Header = "Advance Your Career With Angular",
+        ChosenColorScheme = "cc-cscheme-white",
+        C1TopValue = "82",
+        C1BottomValue = "# of Angular developer jobs open right now in Baltimore, Chicago, Charlotte and Boston",
+        C2TopValue = "647",
+        C2BottomValue = "# of Angular developers we've found jobs for this year",
+        C3TopValue = "$123,427",
+        C3BottomValue = "Average salary for Angular web developers"
+    })
     @{
         List<ColumnSkewBandViewModel.ColumnSkewBandElement> Elements = new List<ColumnSkewBandViewModel.ColumnSkewBandElement>()
     {
@@ -59,16 +69,7 @@
         Descriptions = Descriptions
     })
 
-    @Html.Partial("Components/Bands/_TripleContainerBand", new TripleContainerBandViewModel {
-        Header = "Advance Your Career With Angular",
-        ChosenColorScheme = "cc-cscheme-white",
-        C1TopValue = "82",
-        C1BottomValue = "# of Angular developer jobs open right now in Baltimore, Chicago, Charlotte and Boston",
-        C2TopValue = "647",
-        C2BottomValue = "# of Angular developers we've found jobs for this year",
-        C3TopValue = "$123,427",
-        C3BottomValue = "Average salary for Angular web developers"
-    })
+    
     @{
         List<DisclaimersViewModel.Disclaimer> Disclaimers = new List<DisclaimersViewModel.Disclaimer>()
         {

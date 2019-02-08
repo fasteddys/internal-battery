@@ -22,6 +22,16 @@
         ContactGuid = Model.ContactGuid,
         DisclaimerText = "This custom offer is tailored to your JavaScript skills.<br /><strong>Please do not forward.<sup>1</sup></strong>"
     })
+    @Html.Partial("Components/Bands/_TripleContainerBand", new TripleContainerBandViewModel {
+        Header = "Advance Your Career With React",
+        ChosenColorScheme = "cc-cscheme-white",
+        C1TopValue = "63",
+        C1BottomValue = "# of React developer jobs open right now in Baltimore, Chicago, Charlotte and Boston",
+        C2TopValue = "304",
+        C2BottomValue = "# of React developers we've found jobs for this year",
+        C3TopValue = "$127,358",
+        C3BottomValue = "Average salary for React web developers"
+    })
     @{
         List<ColumnSkewBandViewModel.ColumnSkewBandElement> Elements = new List<ColumnSkewBandViewModel.ColumnSkewBandElement>()
         {
@@ -58,16 +68,7 @@
         Descriptions = Descriptions
     })
 
-    @Html.Partial("Components/Bands/_TripleContainerBand", new TripleContainerBandViewModel {
-        Header = "Advance Your Career With React",
-        ChosenColorScheme = "cc-cscheme-white",
-        C1TopValue = "63",
-        C1BottomValue = "# of React developer jobs open right now in Baltimore, Chicago, Charlotte and Boston",
-        C2TopValue = "304",
-        C2BottomValue = "# of React developers we've found jobs for this year",
-        C3TopValue = "$127,358",
-        C3BottomValue = "Average salary for React web developers"
-    })
+    
     @{ 
         List<DisclaimersViewModel.Disclaimer> Disclaimers = new List<DisclaimersViewModel.Disclaimer>()
         {
@@ -78,6 +79,6 @@
     {
         Disclaimers = Disclaimers,
         ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
-    });
+    })
 </div>
 <img src="@Model.TrackingImgSource" />
