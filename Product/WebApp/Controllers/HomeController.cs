@@ -279,7 +279,8 @@ namespace UpDiddy.Controllers
         {
             HttpResponseMessage response = await _Api.DownloadFileAsync(Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value), fileGuid);
             Stream stream = await response.Content.ReadAsStreamAsync();
-            return File(stream, "application/octet-stream", response.Content.Headers.ContentDisposition.FileName);
+            return File(stream, "application/octet-stream", 
+                response.Content.Headers.ContentDisposition.FileName.Replace("\"", ""));
         }
 
         [Authorize]
