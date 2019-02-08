@@ -18,6 +18,9 @@
         "hideMethod": "fadeOut"
     };
 
+    $("body").prepend("<div class=\"overlay\" id=\"SignUpOverlay\"><div id=\"loading-img\" ></div></div>");
+    $("#SignUpOverlay").show();
+
     // Put red border on input box if field is blank.
     $("#SignUpComponent input").each(function () {
         if (!$(this).val()) {
@@ -36,6 +39,7 @@
 
         // If passwords don't match, tell user and prevent form submission.
         if ($("#SignUpComponent #Password").val() !== $("#SignUpComponent #ReenterPassword").val()) {
+            $("#SignUpOverlay").remove();
             toastr.error("The passwords you have entered do not match.", 'Whoops...', toastrOptions);
         }
         else {
@@ -45,10 +49,12 @@
                 data: $(this).serialize(),
                 success: function (html) {
                     if (html.statusCode === 200) {
+                        $("#SignUpOverlay").remove();
                         // If submission is OK, redirect them to authenticated course checkout page.
                         window.location.href = html.description;
                     }
                     else {
+                        $("#SignUpOverlay").remove();
                         // If there's an error on submission, display it to user in graceful toast message.
                         toastr.error(html.description, 'Whoops...', toastrOptions);
                     }
@@ -57,6 +63,7 @@
         }
     }
     else {
+        $("#SignUpOverlay").remove();
         toastr.error("Please enter information for all sign-up fields and try again.", toastrOptions);
     }
     
