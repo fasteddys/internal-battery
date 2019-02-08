@@ -35,7 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             this.tenant = configuration["AzureAdB2C:Tenant"];
 
             // todo: make this a constant url
-            // The AuthenticationContext is ADAL's primary class, in which you indicate the direcotry to use.
+            // The AuthenticationContext is ADAL's primary class, in which you indicate the directory to use.
             this.authContext = new AuthenticationContext("https://login.microsoftonline.com/" + tenant);
 
             this.baseUrl = "https://graph.windows.net/" + this.tenant;

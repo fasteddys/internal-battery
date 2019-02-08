@@ -53,6 +53,60 @@ namespace UpDiddy.Api
         {
             HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
             client.BaseAddress = new Uri(_ApiBaseUri);
+
+            client = await AddBearerTokenAsync(client);
+
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, endpoint);
+            using (var response = await client.SendAsync(request))
+            {
+                if (response.IsSuccessStatusCode)
+                    return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+
+                throw new Exception("Unsuccessful request");
+            }
+        }
+
+        private async Task<T> RequestAsync<T>(string clientName, HttpMethod method, string endpoint, object body = null)
+        {
+            HttpClient client = _HttpClientFactory.CreateClient(clientName);
+            client.BaseAddress = new Uri(_ApiBaseUri);
+
+            client = await AddBearerTokenAsync(client);
+
+            HttpRequestMessage request = new HttpRequestMessage(method, endpoint);
+
+            if (body != null)
+            {
+                request.Content = new StringContent(JsonConvert.SerializeObject(body));
+                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            }
+
+            using (var response = await client.SendAsync(request))
+            {
+                if (response.IsSuccessStatusCode)
+                    return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+
+                throw new Exception("Unsuccessful request");
+            }
+        }
+
+        public async Task<T> DeleteAsync<T>(string endpoint)
+        {
+            return await RequestAsync<T>(Constants.HttpDeleteClientName, HttpMethod.Delete, endpoint);
+        }
+
+        public async Task<T> PostAsync<T>(string endpoint, object body = null)
+        {
+            return await RequestAsync<T>(Constants.HttpPostClientName, HttpMethod.Post, endpoint, body);
+        }
+
+        public async Task<T> PutAsync<T>(string endpoint, object body = null)
+        {
+            return await RequestAsync<T>(Constants.HttpPutClientName, HttpMethod.Put, endpoint, body);
+        }
+
+        private async Task<HttpClient> AddBearerTokenAsync(HttpClient client)
+        {
             if (_contextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
                 var scope = AzureOptions.ApiScopes.Split(' ');
@@ -63,14 +117,7 @@ namespace UpDiddy.Api
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
             }
 
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, endpoint);
-            using (var response = await client.SendAsync(request))
-            {
-                if (response.IsSuccessStatusCode)
-                    return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
-
-                throw new Exception("TEST");
-            }
+            return client;
         }
 
         #region Public Cached Methods 
@@ -300,7 +347,7 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        public CourseDto GetCourseByCampaignGuid(Guid CampaignGuid)
+        public async Task<CourseDto> GetCourseByCampaignGuidAsync(Guid CampaignGuid)
         {
             string cacheKey = $"GetCourseByCampaignGuid{CampaignGuid}";
             CourseDto rval = GetCachedValue<CourseDto>(cacheKey);
@@ -309,20 +356,17 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _GetCourseByCampaignGuid(CampaignGuid);
+                rval = await _GetCourseByCampaignGuid(CampaignGuid);
                 SetCachedValue<CourseDto>(cacheKey, rval);
             }
             return rval;
 
         }
-
-
-
-
         #endregion
 
         #region Public UnCached Methods
 
+        #region Promocode
         public async Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid)
         {
             return await GetAsync<PromoCodeDto>("promocode/redemption-validate/" + promoCodeRedemptionGuid + "/course-variant/" + courseGuid);
@@ -332,113 +376,47 @@ namespace UpDiddy.Api
         {
             return await GetAsync<PromoCodeDto>("promocode/validate/" + code + "/course-variant/" + courseVariantGuid);
         }
+        #endregion
 
+        #region Enrollment
+        public async Task<BraintreeResponseDto> SubmitBraintreePaymentAsync(BraintreePaymentDto BraintreePaymentDto)
+        {
+            return await PostAsync<BraintreeResponseDto>("enrollment/ProcessBraintreePayment", BraintreePaymentDto);
+        }
+        public async Task<Guid> EnrollStudentAndObtainEnrollmentGUIDAsync(EnrollmentFlowDto enrollmentFlowDto)
+        {
+            return await PostAsync<Guid>("enrollment/", enrollmentFlowDto);
+        }
         public async Task<CourseLoginDto> CourseLoginAsync(Guid EnrollmentGuid)
         {
             return await GetAsync<CourseLoginDto>($"enrollment/{EnrollmentGuid}/student-login-url");
         }
+        #endregion
 
-        public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
+        #region Skills
+        private async Task<IList<SkillDto>> _GetSkillsAsync(string userQuery)
         {
-            return Put<BasicResponseDto>(Subscriber, "subscriber", true);
+            return await GetAsync<IList<SkillDto>>("skill/" + userQuery);
         }
 
-        public BasicResponseDto UpdateEntitySkills(EntitySkillDto entitySkillDto)
+        public async Task<BasicResponseDto> UpdateEntitySkillsAsync(EntitySkillDto entitySkillDto)
         {
-            return Put<BasicResponseDto>(entitySkillDto, "skill/update", true);
+            return await PutAsync<BasicResponseDto>("skill/update", entitySkillDto);
         }
 
         public async Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid)
         {
             return await GetAsync<IList<SkillDto>>($"skill/get/{entityType}/{entityGuid}");
         }
-        public BasicResponseDto UpdateOnboardingStatus()
-        {
-            return Put<BasicResponseDto>("subscriber/onboard", true);
-        }
-
-        public BasicResponseDto SyncLinkedInAccount(string linkedInCode, string returnUrl)
-        {
-            return Put<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}", true);
-        }
-
-        public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto)
-        {
-            return Post<Guid>(enrollmentFlowDto, "enrollment/", true);
-        }
-
-        public SubscriberDto CreateSubscriber()
-        {
-            return Post<SubscriberDto>("subscriber", true);
-        }
-
-        public WozCourseProgressDto UpdateStudentCourseProgress(bool FutureSchedule)
-        {
-            return Put<WozCourseProgressDto>("course/update-student-course-status/" + FutureSchedule.ToString(), true);
-        }
-
-        public BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto)
-        {
-            return Post<BraintreeResponseDto>(BraintreePaymentDto, "enrollment/ProcessBraintreePayment", true);
-        }
-
-        public BasicResponseDto UploadResume(ResumeDto resumeDto)
-        {
-            return Post<BasicResponseDto>(resumeDto, "resume/upload", true);
-        }
-
-        #region Subscriber Work History
-        public SubscriberWorkHistoryDto AddWorkHistory(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
-        {
-            return Post<SubscriberWorkHistoryDto>(workHistory, string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), true);
-        }
-        public SubscriberWorkHistoryDto UpdateWorkHistory(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
-        {
-            return Put<SubscriberWorkHistoryDto>(workHistory, string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), true);
-        }
-        
-        public async Task<IList<SubscriberWorkHistoryDto>> GetWorkHistoryAsync(Guid subscriberGuid)
-        {
-            return await GetAsync<IList<SubscriberWorkHistoryDto>>(string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()));
-        }
-        // Chris Put Delete in here and change path
-        public SubscriberWorkHistoryDto DeleteWorkHistory(Guid subscriberGuid, Guid workHistoryGuid)
-        {
-            return Delete<SubscriberWorkHistoryDto>(string.Format("subscriber/{0}/work-history/{1}",subscriberGuid.ToString(), workHistoryGuid.ToString()) , true);
-        }
         #endregion
 
-        #region Subscriber Education History
-        public SubscriberEducationHistoryDto AddEducationalHistory(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
-        {
-            return Post<SubscriberEducationHistoryDto>(educationHistory, string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), true);
-        }
-
-
-        public async Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid)
-        {
-            return await GetAsync<IList<SubscriberEducationHistoryDto>>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()));
-        }
-
-
-        public SubscriberEducationHistoryDto UpdateEducationHistory(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
-        {
-            return Put<SubscriberEducationHistoryDto>(educationHistory, string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), true);
-        }
-
-        // Chris Put Delete in here and change path
-        public SubscriberEducationHistoryDto DeleteEducationHistory(Guid subscriberGuid, Guid educationHistory)
-        {
-            return Delete<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history/{1}", subscriberGuid.ToString(), educationHistory.ToString()), true);
-        }
-        #endregion
-
-        public BasicResponseDto UpdateSubscriberContact(Guid contactGuid, SignUpDto signUpDto)
+        #region Subscriber
+        public async Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid contactGuid, SignUpDto signUpDto)
         {
             // encrypt password before sending to API
             signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
 
-            return Put<BasicResponseDto>(signUpDto, string.Format("subscriber/contact/{0}", contactGuid.ToString()), false);
+            return await PutAsync<BasicResponseDto>(string.Format("subscriber/contact/{0}", contactGuid.ToString()), signUpDto);
         }
 
         public async Task<SubscriberADGroupsDto> MyGroupsAsync()
@@ -458,11 +436,83 @@ namespace UpDiddy.Api
             HttpResponseMessage response = await client.SendAsync(request);
             return response;
         }
+
+        public async Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
+        {
+            return await PostAsync<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), educationHistory);
+        }
+
+        public async Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid)
+        {
+            return await GetAsync<IList<SubscriberEducationHistoryDto>>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()));
+        }
+
+        public async Task<SubscriberEducationHistoryDto> UpdateEducationHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
+        {
+            return await PutAsync<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), educationHistory);
+        }
+
+        public Task<SubscriberEducationHistoryDto> DeleteEducationHistoryAsync(Guid subscriberGuid, Guid educationHistory)
+        {
+            return DeleteAsync<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history/{1}", subscriberGuid.ToString(), educationHistory.ToString()));
+        }
+
+        public async Task<BasicResponseDto> UpdateProfileInformationAsync(SubscriberDto Subscriber)
+        {
+            return await PutAsync<BasicResponseDto>("subscriber", Subscriber);
+        }
+
+        public async Task<BasicResponseDto> UpdateOnboardingStatusAsync()
+        {
+            return await PutAsync<BasicResponseDto>("subscriber/onboard");
+        }
+
+        public async Task<SubscriberDto> CreateSubscriberAsync()
+        {
+            return await PostAsync<SubscriberDto>("subscriber");
+        }
+
+        public async Task<SubscriberWorkHistoryDto> AddWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
+        {
+            return await PostAsync<SubscriberWorkHistoryDto>(string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), workHistory);
+        }
+        public async Task<SubscriberWorkHistoryDto> UpdateWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
+        {
+            return await PutAsync<SubscriberWorkHistoryDto>(string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), workHistory);
+        }
+
+        public async Task<IList<SubscriberWorkHistoryDto>> GetWorkHistoryAsync(Guid subscriberGuid)
+        {
+            return await GetAsync<IList<SubscriberWorkHistoryDto>>(string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()));
+        }
+
+        public Task<SubscriberWorkHistoryDto> DeleteWorkHistoryAsync(Guid subscriberGuid, Guid workHistoryGuid)
+        {
+            return DeleteAsync<SubscriberWorkHistoryDto>(string.Format("subscriber/{0}/work-history/{1}", subscriberGuid.ToString(), workHistoryGuid.ToString()));
+        }
+        #endregion
+
+        public async Task<BasicResponseDto> SyncLinkedInAccountAsync(string linkedInCode, string returnUrl)
+        {
+            return await PutAsync<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}");
+        }
+
+        public async Task<WozCourseProgressDto> UpdateStudentCourseProgressAsync(bool FutureSchedule)
+        {
+            return await PutAsync<WozCourseProgressDto>("course/update-student-course-status/" + FutureSchedule.ToString());
+        }
+
+        public async Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumeDto)
+        {
+            return await PostAsync<BasicResponseDto>("resume/upload", resumeDto);
+        }
+
+
         #endregion
 
         #region Cache Helper Functions
 
-            private async Task<IList<TopicDto>> _TopicsAsync()
+        private async Task<IList<TopicDto>> _TopicsAsync()
         {
             return await GetAsync<IList<TopicDto>>("topic");
         }
@@ -515,12 +565,6 @@ namespace UpDiddy.Api
             return await GetAsync<CourseVariantDto>("course/course-variant/" + courseVariantGuid);
         }
 
-        private async Task<IList<SkillDto>> _GetSkillsAsync(string userQuery)
-        {
-            return await GetAsync<IList<SkillDto>>("skill/" + userQuery);
-        }
-
-
         private async Task<IList<CompanyDto>> _GetCompaniesAsync(string userQuery)
         {
             return await GetAsync<IList<CompanyDto>>("company/" + userQuery);
@@ -555,9 +599,9 @@ namespace UpDiddy.Api
             return await GetAsync<IList<SkillDto>>("subscriber/" + subscriberGuid + "/skill");
         }
 
-        public CourseDto _GetCourseByCampaignGuid(Guid CampaignGuid)
+        public async Task<CourseDto> _GetCourseByCampaignGuid(Guid CampaignGuid)
         {
-            return Get<CourseDto>("course/campaign/" + CampaignGuid, false);
+            return await GetAsync<CourseDto>("course/campaign/" + CampaignGuid);
         }
         #endregion
 
@@ -600,37 +644,6 @@ namespace UpDiddy.Api
         #endregion
 
         #region ApiHelperMsal
-        public T Put<T>(string ApiAction, bool Authorized = false)
-        {
-            Task<string> Response = _PutAsync(ApiAction, Authorized);
-            try
-            {
-                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
-                return rval;
-            }
-            catch (Exception ex)
-            {
-                // TODO instrument with json string and requested type 
-                var msg = ex.Message;
-                return (T)Convert.ChangeType(null, typeof(T));
-            }
-        }
-
-        public T Delete<T>(string ApiAction, bool Authorized = false)
-        {
-            Task<string> Response = _DeleteAsync(ApiAction, Authorized);
-            try
-            {
-                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
-                return rval;
-            }
-            catch (Exception ex)
-            {
-                // TODO instrument with json string and requested type 
-                var msg = ex.Message;
-                return (T)Convert.ChangeType(null, typeof(T));
-            }
-        }
 
         #region TalentPortal
 
@@ -647,7 +660,7 @@ namespace UpDiddy.Api
             {
                 rval = await _SubscriberAsync(subscriberGuid);
                 if (rval == null)
-                    rval = CreateSubscriber();
+                    rval = await CreateSubscriberAsync();
                 SetCachedValue<SubscriberDto>(cacheKey, rval);
             }
             return rval;
@@ -680,46 +693,6 @@ namespace UpDiddy.Api
 
         #endregion
 
-        public T Post<T>(string ApiAction, bool Authorized = false, string Content = null)
-        {
-            Task<string> Response = _PostAsync(ApiAction, Authorized, Content);
-            try
-            {
-                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
-                return rval;
-            }
-            catch (Exception ex)
-            {
-                // TODO instrument with json string and requested type 
-                var msg = ex.Message;
-                return (T)Convert.ChangeType(null, typeof(T));
-            }
-        }
-
-        public string GetAsString(string ApiAction, bool Authorized = false)
-        {
-            Task<string> Response = _GetAsync(ApiAction, Authorized);
-            return Response.Result;
-        }
-
-        public T Post<T>(BaseDto Body, string ApiAction, bool Authorized = false)
-        {
-            string jsonToSend = "{}";
-            jsonToSend = JsonConvert.SerializeObject(Body);
-            Task<string> Response = _PostAsync(jsonToSend, ApiAction, Authorized);
-            T rval = JsonConvert.DeserializeObject<T>(Response.Result);
-            return rval;
-
-        }
-
-        public T Put<T>(BaseDto Body, string ApiAction, bool Authorized = false)
-        {
-            string json = JsonConvert.SerializeObject(Body);
-            Task<string> Response = _PutAsync(json, ApiAction, Authorized);
-            T response = JsonConvert.DeserializeObject<T>(Response.Result);
-            return response;
-        }
-
         #region Helpers Functions
 
         private async Task AddBearerTokenAsync(HttpRequestMessage request)
@@ -732,216 +705,6 @@ namespace UpDiddy.Api
             AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureOptions.Authority, false);
             // Add Bearer Token for MSAL authenticatiopn
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-        }
-
-        private async Task<string> _PostAsync(string ApiAction, bool Authorized, string Content)
-        {
-            string responseString = "";
-            try
-            {
-                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
-                string ApiUrl = _ApiBaseUri + ApiAction;
-
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, ApiUrl);
-                if (!string.IsNullOrEmpty(Content))
-                    request.Content = new StringContent(Content);
-
-                // Add token to the Authorization header and make the request 
-                if (Authorized)
-                    await AddBearerTokenAsync(request);
-
-                HttpResponseMessage response = await client.SendAsync(request);
-                // Handle the response
-                switch (response.StatusCode)
-                {
-                    case HttpStatusCode.OK:
-                        responseString = await response.Content.ReadAsStringAsync();
-                        break;
-                    case HttpStatusCode.Unauthorized:
-                        responseString = $"Please sign in again. {response.ReasonPhrase}";
-                        break;
-                    default:
-                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
-                        break;
-                }
-            }
-            catch (MsalUiRequiredException ex)
-            {
-                responseString = $"Session has expired. Please sign in again. {ex.Message}";
-            }
-            catch (Exception ex)
-            {
-                responseString = $"Error calling API: {ex.Message}";
-            }
-
-            return responseString;
-
-        }
-
-        private async Task<string> _PutAsync(string ApiAction, bool Authorized = false)
-        {
-            string responseString = "";
-            try
-            {
-                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPutClientName);
-                string ApiUrl = _ApiBaseUri + ApiAction;
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, ApiUrl);
-
-                // Add token to the Authorization header and make the request 
-                if (Authorized)
-                    await AddBearerTokenAsync(request);
-
-                HttpResponseMessage response = await client.SendAsync(request);
-                // Handle the response
-                switch (response.StatusCode)
-                {
-                    case HttpStatusCode.OK:
-                        responseString = await response.Content.ReadAsStringAsync();
-                        break;
-                    case HttpStatusCode.Unauthorized:
-                        responseString = $"Please sign in again. {response.ReasonPhrase}";
-                        break;
-                    default:
-                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
-                        break;
-                }
-            }
-            catch (MsalUiRequiredException ex)
-            {
-                responseString = $"Session has expired. Please sign in again. {ex.Message}";
-            }
-            catch (Exception ex)
-            {
-                responseString = $"Error calling API: {ex.Message}";
-            }
-
-            return responseString;
-
-        }
-
-        private async Task<string> _GetAsync(string ApiAction, bool Authorized = false)
-        {
-            string responseString = "";
-            try
-            {
-                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
-                string ApiUrl = _ApiBaseUri + ApiAction;
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
-
-                // Add token to the Authorization header and make the request 
-                if (Authorized)
-                    await AddBearerTokenAsync(request);
-
-                HttpResponseMessage response = await client.SendAsync(request);
-                // Handle the response
-                switch (response.StatusCode)
-                {
-                    case HttpStatusCode.OK:
-                        responseString = await response.Content.ReadAsStringAsync();
-                        break;
-                    case HttpStatusCode.Unauthorized:
-                        responseString = $"Please sign in again. {response.ReasonPhrase}";
-                        break;
-                    default:
-                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
-                        break;
-                }
-            }
-            catch (MsalUiRequiredException ex)
-            {
-                responseString = $"Session has expired. Please sign in again. {ex.Message}";
-            }
-            catch (Exception ex)
-            {
-                responseString = $"Error calling API: {ex.Message}";
-            }
-
-            return responseString;
-
-        }
-
-        private async Task<string> _DeleteAsync(string ApiAction, bool Authorized = false)
-        {
-            string responseString = "";
-            try
-            {
-                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpDeleteClientName);
-                string ApiUrl = _ApiBaseUri + ApiAction;
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Delete, ApiUrl);
-
-                // Add token to the Authorization header and make the request 
-                if (Authorized)
-                    await AddBearerTokenAsync(request);
-
-                HttpResponseMessage response = await client.SendAsync(request);
-                // Handle the response
-                switch (response.StatusCode)
-                {
-                    case HttpStatusCode.OK:
-                        responseString = await response.Content.ReadAsStringAsync();
-                        break;
-                    case HttpStatusCode.Unauthorized:
-                        responseString = $"Please sign in again. {response.ReasonPhrase}";
-                        break;
-                    default:
-                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
-                        break;
-                }
-            }
-            catch (MsalUiRequiredException ex)
-            {
-                responseString = $"Session has expired. Please sign in again. {ex.Message}";
-            }
-            catch (Exception ex)
-            {
-                responseString = $"Error calling API: {ex.Message}";
-            }
-
-            return responseString;
-
-        }
-
-        private async Task<string> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
-        {
-            string ApiUrl = _ApiBaseUri + ApiAction;
-            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
-            var request = PostRequest(ApiAction, JsonToSend);
-            // Add token to the Authorization header and make the request 
-            if (Authorized)
-                await AddBearerTokenAsync(request);
-            var response = await client.SendAsync(request);
-            string responseString = await response.Content.ReadAsStringAsync();
-            return responseString;
-        }
-
-        private async Task<string> _PutAsync(String json, string ApiAction, bool Authorized = false)
-        {
-            string ApiUrl = _ApiBaseUri + ApiAction;
-            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPutClientName);
-            var request = Request(HttpMethod.Put, ApiAction, json);
-
-            if (Authorized)
-                await AddBearerTokenAsync(request);
-
-            var response = await client.SendAsync(request);
-            string responseString = await response.Content.ReadAsStringAsync();
-            return responseString;
-
-        }
-
-        private HttpRequestMessage Request(HttpMethod method, string ApiAction, string Content)
-        {
-            HttpRequestMessage request = new HttpRequestMessage(method, _ApiBaseUri + ApiAction)
-            {
-                Content = new StringContent(Content)
-            };
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            return request;
-        }
-
-        private HttpRequestMessage PostRequest(string ApiAction, string Content)
-        {
-            return Request(HttpMethod.Post, ApiAction, Content);
         }
         #endregion
 

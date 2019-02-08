@@ -204,7 +204,7 @@ namespace UpDiddy.Controllers
                     || this.subscriber.LastName == null || !this.subscriber.LastName.Equals(courseViewModel.SubscriberLastName)
                     || this.subscriber.PhoneNumber == null || !this.subscriber.PhoneNumber.Equals(courseViewModel.SubscriberPhoneNumber))
                 {
-                    _Api.UpdateProfileInformation(new SubscriberDto()
+                    await _Api.UpdateProfileInformationAsync(new SubscriberDto()
                     {
                         SubscriberGuid = courseViewModel.SubscriberGuid,
                         FirstName = courseViewModel.SubscriberFirstName,
@@ -259,7 +259,7 @@ namespace UpDiddy.Controllers
                     SubscriberDto = this.subscriber
                 };
 
-                _Api.EnrollStudentAndObtainEnrollmentGUID(enrollmentFlowDto);
+                _Api.EnrollStudentAndObtainEnrollmentGUIDAsync(enrollmentFlowDto);
                 return View("EnrollmentSuccess", courseViewModel);
             }
             else

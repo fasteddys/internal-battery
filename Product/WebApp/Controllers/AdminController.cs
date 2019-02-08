@@ -82,10 +82,10 @@ namespace UpDiddy.Controllers
 
         [HttpPut]
         [Route("/admin/skills")]
-        public IActionResult UpdateSkills([FromBody] EntitySkillDto entitySkillDto)
+        public async Task<IActionResult> UpdateSkills([FromBody] EntitySkillDto entitySkillDto)
         {
             // todo: exception handling
-            _api.UpdateEntitySkills(entitySkillDto);
+            await _api.UpdateEntitySkillsAsync(entitySkillDto);
             return Ok();
         }
     }
