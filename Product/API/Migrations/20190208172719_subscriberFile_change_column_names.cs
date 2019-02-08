@@ -9,7 +9,7 @@ namespace UpDiddyApi.Migrations
             migrationBuilder.RenameColumn(
                 name: "Guid",
                 table: "SubscriberFile",
-                newName: "SubscriberGuid");
+                newName: "SubscriberFileGuid");
 
             migrationBuilder.RenameColumn(
                 name: "Id",
@@ -20,7 +20,7 @@ namespace UpDiddyApi.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.RenameColumn(
-                name: "SubscriberGuid",
+                name: "SubscriberFileGuid",
                 table: "SubscriberFile",
                 newName: "Guid");
 
