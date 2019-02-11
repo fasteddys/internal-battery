@@ -1625,9 +1625,8 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberFile", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("SubscriberFileId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnName("SubscriberFileId")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("BlobName");
@@ -1636,18 +1635,17 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<Guid>("Guid")
-                        .HasColumnName("SubscriberGuid");
-
                     b.Property<int>("IsDeleted");
 
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
 
+                    b.Property<Guid>("SubscriberFileGuid");
+
                     b.Property<int>("SubscriberId");
 
-                    b.HasKey("Id");
+                    b.HasKey("SubscriberFileId");
 
                     b.HasIndex("SubscriberId");
 
