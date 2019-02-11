@@ -129,8 +129,7 @@ namespace UpDiddyApi.Models
         {
             modelBuilder.Entity<Enrollment>()
                 .HasOne<CampaignCourseVariant>(e => e.CampaignCourseVariant)
-                .WithOne()
-                .HasForeignKey<Enrollment>(e => new { e.CampaignId, e.CourseVariantId });
+                .WithMany();
 
             modelBuilder.Entity<Contact>()
                 .HasIndex(c => c.Email)

@@ -293,6 +293,7 @@ namespace UpDiddy.Controllers
                     Value = s.StateGuid.ToString()
                 });
 
+                // todo: course skills aren't present on page if model state is invalid
                 return View(courseViewModel);
             }
         }

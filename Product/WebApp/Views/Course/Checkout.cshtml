@@ -22,14 +22,13 @@
                                     if (Model.Skills != null && Model.Skills.Count > 0)
                                     {
                                         <text><h4>Acquired Skills:</h4></text>
+                                        foreach (var skill in Model.Skills)
+                                        {
+                                            <div class="skill-pill">
+                                                @Html.DisplayFor(item => skill.SkillName)
+                                            </div>
+                                        }
                                     }
-                                }
-                                @foreach (var skill in Model.Skills)
-                                {
-                                    <div class="skill-pill">
-
-                                        @Html.DisplayFor(item => skill.SkillName)
-                                    </div>
                                 }
                             </div>
                         </div>
@@ -68,26 +67,28 @@
                                                 {
                                                     <div class="col-6 @(section.IsEligibleCampaignOffer ? "campaign-offer" : "")">
                                                         <div>
-                                                            @Html.RadioButtonFor(m => m.SelectedCourseVariant, section.CourseVariantGuid, new { id = section.CourseVariantGuid, required = "required" })
-                                                            <label asp-for="SelectedCourseVariant">@(section.CourseVariantType)</label>
+                                                            <label>
+                                                                @Html.RadioButtonFor(m => m.SelectedCourseVariant, section.CourseVariantGuid, new { id = section.CourseVariantGuid, required = "required" })
+                                                                @(section.CourseVariantType)
+                                                                <span class="span-newline">Price:</span>
+                                                                <span class="price">
+                                                                    @string.Format("{0:C}", section.Price)
+                                                                </span>
+                                                                @if (section.StartDates != null)
+                                                                {
+                                                                    <span class="CourseVariantStartDate">
+                                                                        <span class="span-newline">Select a start date:</span>
+                                                                        @Html.DropDownListFor(m => m.SelectedStartDate, section.StartDates, "---", new { @class = "form-control start-date" })
+                                                                    </span>
+                                                                }
+                                                                @if (section.IsEligibleCampaignOffer)
+                                                                {
+                                                                    <span class="rebate-offer span-newline">
+                                                                        @(section.RebateOffer)
+                                                                    </span>
+                                                                }
+                                                            </label>
                                                         </div>
-                                                        <div>
-                                                            <span>Price:</span>
-                                                            <span class="price">@string.Format("{0:C}", section.Price)</span>
-                                                        </div>
-                                                        <div class="CourseVariantStartDate">
-                                                            @if (section.StartDates != null)
-                                                            {
-                                                                <span>Select a start date:</span>
-                                                                @Html.DropDownListFor(m => m.SelectedStartDate, section.StartDates, "---", new { @class = "form-control" })
-                                                            }
-                                                        </div>
-                                                        @if (section.IsEligibleCampaignOffer)
-                                                        {
-                                                            <div class="rebate-offer">
-                                                                @(section.RebateOffer)
-                                                            </div>
-                                                        }
                                                     </div>
                                                 }
                                             </div>

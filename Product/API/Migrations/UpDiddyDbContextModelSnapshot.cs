@@ -923,9 +923,7 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("SubscriberId");
 
-                    b.HasIndex("CampaignId", "CourseVariantId")
-                        .IsUnique()
-                        .HasFilter("[CampaignId] IS NOT NULL AND [CourseVariantId] IS NOT NULL");
+                    b.HasIndex("CampaignId", "CourseVariantId");
 
                     b.ToTable("Enrollment");
                 });
@@ -2259,8 +2257,8 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("UpDiddyApi.Models.CampaignCourseVariant", "CampaignCourseVariant")
-                        .WithOne()
-                        .HasForeignKey("UpDiddyApi.Models.Enrollment", "CampaignId", "CourseVariantId");
+                        .WithMany()
+                        .HasForeignKey("CampaignId", "CourseVariantId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.LinkedInToken", b =>

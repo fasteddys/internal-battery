@@ -369,7 +369,7 @@ function FormattedDateRange(startDate, endDate) {
 
 function FormattedCompensation(compensationType, compensation) {
     var formattedCompensation = '';
-    if (compensation === '' || compensation === '0') {
+    if (compensation === '' || compensation === 0 || compensation === '0.00') {
         return "No compensation specified";
     } else {
         var formatter = new Intl.NumberFormat('en-US', {
