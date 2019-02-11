@@ -53,7 +53,7 @@
     $("input[name='SelectedCourseVariant']").change(function () {
 
         var selectedCourseVariant = $("input[name='SelectedCourseVariant']:checked");
-        var selectedCourseVariantPrice = $(selectedCourseVariant).parent().next().children(".price").html();
+        var selectedCourseVariantPrice = $(selectedCourseVariant).parent().parent().next().children(".price").html();
         $("#InitialCoursePrice").html(selectedCourseVariantPrice);
 
         if ($("#PromoCodeTotal").html().startsWith("-$")) {

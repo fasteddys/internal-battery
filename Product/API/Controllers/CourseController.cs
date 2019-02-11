@@ -147,6 +147,12 @@ namespace UpDiddyApi.Controllers
                 // get start dates from WozU
                 var startDateUTCs = _wozInterface.CheckCourseSchedule(course.Code);
 
+                // REMOVE THIS!!!!
+                if (startDateUTCs == null)
+                {
+                    startDateUTCs = new List<DateTime>();
+                    startDateUTCs.Add(DateTime.UtcNow);
+                }
                 // add them to instrtuctor-led course variants
                 courseDto.CourseVariants
                     .Where(cv => cv.CourseVariantType.Name == "Instructor-Led")

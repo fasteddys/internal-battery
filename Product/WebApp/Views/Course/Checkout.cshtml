@@ -68,8 +68,10 @@
                                                 {
                                                     <div class="col-6 @(section.IsEligibleCampaignOffer ? "campaign-offer" : "")">
                                                         <div>
-                                                            @Html.RadioButtonFor(m => m.SelectedCourseVariant, section.CourseVariantGuid, new { id = section.CourseVariantGuid, required = "required" })
-                                                            <label asp-for="SelectedCourseVariant">@(section.CourseVariantType)</label>
+                                                            <label>
+                                                                @Html.RadioButtonFor(m => m.SelectedCourseVariant, section.CourseVariantGuid, new { id = section.CourseVariantGuid, required = "required" })
+                                                                @(section.CourseVariantType)
+                                                            </label>
                                                         </div>
                                                         <div>
                                                             <span>Price:</span>
