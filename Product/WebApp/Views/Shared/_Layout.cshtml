@@ -94,22 +94,6 @@
         </div>
     </nav>
 
-            @{
-                string CampaignOffers = HttpContextAccessor.HttpContext.Session.GetString("CampaignOffers");
-                if (string.IsNullOrEmpty(CampaignOffers) == false)
-                {
-                    <div class="alert alert-primary mb-0 rebate-alert" role="alert">
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-md ">
-                                    <div class="link-wrapper"> @Html.Raw(CampaignOffers) </div>                                    
-                                </div>
-                            </div>
-                        </div>
-                    </div>  
-                    }
-                }
-
                 @RenderBody()
 
                     @await Html.PartialAsync("_Footer")

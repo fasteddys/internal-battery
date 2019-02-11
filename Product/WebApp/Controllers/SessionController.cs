@@ -11,6 +11,7 @@ using Microsoft.Identity.Client;
 using System.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddy.Controllers
 {
@@ -72,6 +73,7 @@ namespace UpDiddy.Controllers
         [HttpGet]
         public IActionResult SignOut()
         {
+            HttpContext.Session.Clear();
             SetAzureAdB2CCulture();
             var callbackUrl = Url.Action(nameof(SignedOut), "Session", values: null, protocol: Request.Scheme);
             return SignOut(new AuthenticationProperties { RedirectUri = callbackUrl },
