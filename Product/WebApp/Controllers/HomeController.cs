@@ -600,9 +600,9 @@ namespace UpDiddy.Controllers
                 CampaignGuid;
 
             // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
-            
+            ContactDto Contact = _Api.Contact(ContactGuid);
             CourseDto Course = _Api.GetCourseByCampaignGuid(CampaignGuid);
-            if(Course == null)
+            if(Course == null || Contact == null)
             {
                 return NotFound();
             }

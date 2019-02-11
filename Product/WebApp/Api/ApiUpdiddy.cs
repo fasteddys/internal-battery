@@ -291,6 +291,21 @@ namespace UpDiddy.Api
 
         }
 
+        public ContactDto Contact(Guid contactGuid)
+        {
+            string cacheKey = $"Contact{contactGuid}";
+            ContactDto rval = GetCachedValue<ContactDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = _Contact(contactGuid);
+                SetCachedValue<ContactDto>(cacheKey, rval);
+            }
+            return rval;
+        }
+
 
 
 
@@ -667,6 +682,11 @@ namespace UpDiddy.Api
         private SubscriberDto _Subscriber(Guid subscriberGuid)
         {
             return Get<SubscriberDto>($"subscriber/{subscriberGuid}", true);
+        }
+
+        private ContactDto _Contact(Guid contactGuid)
+        {
+            return Get<ContactDto>($"contact/{contactGuid}", false);
         }
 
         #endregion
