@@ -20,7 +20,7 @@
         ImageUrl = "/images/logo_react.png",
         CampaignGuid = Model.CampaignGuid,
         ContactGuid = Model.ContactGuid,
-        DisclaimerText = "This custom offer is tailored to your JavaScript skills.<br /><strong>Please do not forward.<sup>1</sup></strong>"
+        DisclaimerText = "This custom offer is tailored to your JavaScript skills.<br /><strong>Please do not forward.</strong>"
     })
     @Html.Partial("Components/Bands/_TripleContainerBand", new TripleContainerBandViewModel {
         Header = "Advance Your Career With React",
@@ -66,19 +66,6 @@
         VideoThumbnailUrl = "/images/FullStack_Main.png",
         ChosenColorScheme = "cc-cscheme-secondary",
         Descriptions = Descriptions
-    })
-
-    
-    @{ 
-        List<DisclaimersViewModel.Disclaimer> Disclaimers = new List<DisclaimersViewModel.Disclaimer>()
-        {
-            new DisclaimersViewModel.Disclaimer("Our partners include Allegis Group, Aerotek, and TekSystems.")
-        };
-    }
-    @Html.Partial("Components/Utilities/_Disclaimers", new DisclaimersViewModel
-    {
-        Disclaimers = Disclaimers,
-        ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
     })
 </div>
 <img src="@Model.TrackingImgSource" />
