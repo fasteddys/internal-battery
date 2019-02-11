@@ -923,9 +923,7 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("SubscriberId");
 
-                    b.HasIndex("CampaignId", "CourseVariantId")
-                        .IsUnique()
-                        .HasFilter("[CampaignId] IS NOT NULL AND [CourseVariantId] IS NOT NULL");
+                    b.HasIndex("CampaignId", "CourseVariantId");
 
                     b.ToTable("Enrollment");
                 });
@@ -1625,9 +1623,8 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberFile", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("SubscriberFileId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnName("SubscriberFileId")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("BlobName");
@@ -1636,18 +1633,17 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<Guid>("Guid")
-                        .HasColumnName("SubscriberGuid");
-
                     b.Property<int>("IsDeleted");
 
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
 
+                    b.Property<Guid>("SubscriberFileGuid");
+
                     b.Property<int>("SubscriberId");
 
-                    b.HasKey("Id");
+                    b.HasKey("SubscriberFileId");
 
                     b.HasIndex("SubscriberId");
 
@@ -2261,8 +2257,8 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("UpDiddyApi.Models.CampaignCourseVariant", "CampaignCourseVariant")
-                        .WithOne()
-                        .HasForeignKey("UpDiddyApi.Models.Enrollment", "CampaignId", "CourseVariantId");
+                        .WithMany()
+                        .HasForeignKey("CampaignId", "CourseVariantId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.LinkedInToken", b =>

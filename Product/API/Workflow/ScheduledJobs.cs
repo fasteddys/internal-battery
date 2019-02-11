@@ -118,7 +118,7 @@ namespace UpDiddyApi.Workflow
                 WozCourseProgressDto wcp = null;
                 bool updatesMade = false;
 
-                foreach (Enrollment e in enrollments)  
+                foreach (Enrollment e in enrollments)
                 {
                     _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress looking to update enrollment {e.EnrollmentGuid}");
                     // Only Call woz if the modify date is null or if the modify date older that progress update age threshold
@@ -131,10 +131,50 @@ namespace UpDiddyApi.Workflow
                             _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress updating enrollment {e.EnrollmentGuid}");
                             updatesMade = true;
                             e.PercentComplete = Convert.ToInt32(((double)wcp.ActivitiesCompleted / (double)wcp.ActivitiesTotal) * 100);
-                            // Save the completion date 
+                            // Save the completion date
                             if (e.PercentComplete == 100 && e.CompletionDate == null)
+                            {
                                 e.CompletionDate = DateTime.UtcNow;
 
+                                Guid parsedSubscriberGuid;
+                                Guid.TryParse(SubscriberGuid, out parsedSubscriberGuid);
+                                var contact = _db.Contact
+                                    .Include(co => co.Subscriber)
+                                    .Where(co => co.IsDeleted == 0 && co.Subscriber.SubscriberGuid.HasValue && co.Subscriber.SubscriberGuid.Value == parsedSubscriberGuid)
+                                    .FirstOrDefault();
+
+                                // if there is an associated contact record for this subscriber and a campaign association for the enrollment, record that they completed the course
+                                if (contact != null && e.CampaignId.HasValue)
+                                {
+                                    var existingCourseCompletionAction = _db.ContactAction
+                                        .Where(ca => ca.ContactId == contact.ContactId && ca.CampaignId == e.CampaignId && ca.ActionId == 5)
+                                        .FirstOrDefault();
+
+                                    if (existingCourseCompletionAction != null)
+                                    {
+                                        // update if the action already exists (possible if more than one course was offered for a single campaign)
+                                        existingCourseCompletionAction.ModifyDate = DateTime.UtcNow;
+                                        existingCourseCompletionAction.OccurredDate = DateTime.UtcNow;
+                                    }
+                                    else
+                                    {
+                                        // create if the action does not already exist
+                                        _db.ContactAction.Add(new ContactAction()
+                                        {
+                                            ActionId = 5, // todo: this should not be a hard-coded reference to the PK
+                                            CampaignId = e.CampaignId.Value,
+                                            ContactActionGuid = Guid.NewGuid(),
+                                            ContactId = contact.ContactId,
+                                            CreateDate = DateTime.UtcNow,
+                                            CreateGuid = Guid.Empty,
+                                            IsDeleted = 0,
+                                            ModifyDate = DateTime.UtcNow,
+                                            ModifyGuid = Guid.Empty,
+                                            OccurredDate = DateTime.UtcNow
+                                        });
+                                    }
+                                }
+                            }
                             _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress updating enrollment {e.EnrollmentGuid} set PercentComplete={e.PercentComplete}");
                             e.ModifyDate = DateTime.UtcNow;
                         }
