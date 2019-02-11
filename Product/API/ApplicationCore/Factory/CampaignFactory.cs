@@ -59,7 +59,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     {
                         // Create anchor tag to let them navigate to promoted course checkout
                         string courseSlug = CourseVariantFactory.GetCourseVariantCourseSlug(_db, ccv.CourseVariant.CourseVariantId);
-                        rVal += c.Description + " " + ccv.RebateType.Description + " <a href='/Course/Checkout/" + courseSlug + "'>click here</a> ";
+                        rVal += c.Description + " <a href='/Course/Checkout/" + courseSlug + "'>click here</a> ";
                     }                    
                 }               
             }            
