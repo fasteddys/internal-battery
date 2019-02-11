@@ -29,16 +29,20 @@
         }
     });
 
-    if (!(new RegExp($("#SignUpEmail input").data("val-regex-pattern")).test($("#SignUpEmail input").val()))) {
-        $("#SignUpOverlay").remove();
-        toastr.error("Invalid email address. Please update your supplied email and try again.", signUpToastOptions);
-        return;
-    }
+    
 
 
     // Ensure user only submits to backend if form has values for all fields.
     if ($("#SignUpComponent #Email").val() && $("#SignUpComponent #Password").val() && $("#SignUpComponent #ReenterPassword").val()) {
-
+        if (!(new RegExp($("#SignUpEmail input").data("val-regex-pattern")).test($("#SignUpEmail input").val()))) {
+            $("#SignUpEmail input").addClass("invalid");
+            $("#SignUpOverlay").remove();
+            toastr.error("Invalid email address. Please update your supplied email and try again.", signUpToastOptions);
+            return;
+        }
+        else {
+            $("#SignUpEmail input").removeClass("invalid");
+        }
         // If passwords don't match, tell user and prevent form submission.
         if ($("#SignUpComponent #Password").val() !== $("#SignUpComponent #ReenterPassword").val()) {
             $("#SignUpOverlay").remove();
