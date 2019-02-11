@@ -280,11 +280,12 @@ namespace UpDiddy.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> DownloadFile(int fileId)
+        public async Task<IActionResult> DownloadFile(Guid fileGuid)
         {
-            HttpResponseMessage response = await _Api.DownloadFileAsync(Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value), fileId);
+            HttpResponseMessage response = await _Api.DownloadFileAsync(Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value), fileGuid);
             Stream stream = await response.Content.ReadAsStreamAsync();
-            return File(stream, "application/octet-stream", response.Content.Headers.ContentDisposition.FileName);
+            return File(stream, "application/octet-stream", 
+                response.Content.Headers.ContentDisposition.FileName.Replace("\"", ""));
         }
 
         [Authorize]
@@ -604,9 +605,9 @@ namespace UpDiddy.Controllers
                 CampaignGuid;
 
             // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
-            
+            ContactDto Contact = await _Api.ContactAsync(ContactGuid);
             CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
-            if(Course == null)
+            if(Course == null || Contact == null)
             {
                 return NotFound();
             }

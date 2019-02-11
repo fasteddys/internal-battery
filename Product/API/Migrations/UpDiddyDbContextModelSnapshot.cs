@@ -1625,7 +1625,7 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberFile", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("SubscriberFileId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -1641,9 +1641,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
+                    b.Property<Guid>("SubscriberFileGuid");
+
                     b.Property<int>("SubscriberId");
 
-                    b.HasKey("Id");
+                    b.HasKey("SubscriberFileId");
 
                     b.HasIndex("SubscriberId");
 

@@ -10,7 +10,7 @@ using UpDiddyLib.Dto.Marketing;
 namespace UpDiddy.Api
 {
     public interface IApi
-    { 
+    {
         Task<IList<TopicDto>> TopicsAsync();
         Task<TopicDto> TopicByIdAsync(int TopicId);
         Task<TopicDto> TopicBySlugAsync(string TopicSlug);
@@ -52,6 +52,8 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid contactGuid, SignUpDto signUpDto);
         Task<CourseDto> GetCourseByCampaignGuidAsync(Guid CampaignGuid);
         Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
+        Task<ContactDto> ContactAsync(Guid contactGuid);
+
 
 
         Task<SubscriberADGroupsDto> MyGroupsAsync();
@@ -64,6 +66,6 @@ namespace UpDiddy.Api
         Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
         #endregion
 
-        Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, int fileId);
+        Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
     }
 }

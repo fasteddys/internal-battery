@@ -362,6 +362,22 @@ namespace UpDiddy.Api
             return rval;
 
         }
+
+        public async Task<ContactDto> ContactAsync(Guid contactGuid)
+        {
+            string cacheKey = $"Contact{contactGuid}";
+            ContactDto rval = GetCachedValue<ContactDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _Contact(contactGuid);
+                SetCachedValue<ContactDto>(cacheKey, rval);
+            }
+            return rval;
+        }
+
         #endregion
 
         #region Public UnCached Methods
@@ -424,10 +440,10 @@ namespace UpDiddy.Api
             return await GetAsync<SubscriberADGroupsDto>("subscriber/me/group");
         }
 
-        public async Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, int fileId)
+        public async Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid)
         {
             HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
-            string ApiUrl = _ApiBaseUri + String.Format("subscriber/{0}/file/{1}", subscriberGuid, fileId);
+            string ApiUrl = _ApiBaseUri + String.Format("subscriber/{0}/file/{1}", subscriberGuid, fileGuid.ToString());
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
 
             // Add token to the Authorization header and make the request
@@ -506,7 +522,6 @@ namespace UpDiddy.Api
         {
             return await PostAsync<BasicResponseDto>("resume/upload", resumeDto);
         }
-
 
         #endregion
 
@@ -689,6 +704,11 @@ namespace UpDiddy.Api
         private async Task<SubscriberDto> _SubscriberAsync(Guid subscriberGuid)
         {
             return await GetAsync<SubscriberDto>($"subscriber/{subscriberGuid}");
+        }
+
+        private async Task<ContactDto> _Contact(Guid contactGuid)
+        {
+            return await GetAsync<ContactDto>($"contact/{contactGuid}");
         }
 
         #endregion
