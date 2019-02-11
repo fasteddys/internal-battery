@@ -73,8 +73,14 @@
     @{
         List<DisclaimersViewModel.Disclaimer> Disclaimers = new List<DisclaimersViewModel.Disclaimer>()
     {
-        new DisclaimersViewModel.Disclaimer("Course must be within 8 weeks, beginning on enrollment date."),
-        new DisclaimersViewModel.Disclaimer("Our partners include Allegis Group, Aerotek, and TekSystems.")
+        new DisclaimersViewModel.Disclaimer("Sign up and complete your self-paced course within 60 days of the date that you purchase the class and you will receive a full refund of the purchase price - $249."),
+        new DisclaimersViewModel.Disclaimer("Refund terms and conditions: Offer only eligible to original email recipient, " +
+            "users forwarding the email or related URL not eligible, must sign up, login and purchase the designated course in this " +
+            "offer to CareerCircle using the same email address. Invitee's must sign up and purchase the designated course before " +
+            "March 1, 2019 and complete the course within 60 days of the purchase date.  Course price of $249.00 can only be refunded " +
+            "to same payment card used for purchase once verified they have completed the course within the specified timeframe. " +
+            "Refunds to be issued within 30 days of all terms and conditions having been met. The class available for the full refund " +
+            "is specified in the email you received.")
     };
     }
     @Html.Partial("Components/Utilities/_Disclaimers", new DisclaimersViewModel
