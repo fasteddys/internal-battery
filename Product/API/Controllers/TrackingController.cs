@@ -49,6 +49,26 @@ namespace UpDiddyApi.Controllers
             return _pixelResponse;
         }
 
+        [HttpGet]
+        [Route("api/[controller]/{campaignGuid}/{contactGuid}/{actionGuid}")]
+        public IActionResult Get(string campaignGuid, string contactGuid, string actionGuid)
+        {
+            // construct tracking parameters
+            Dictionary<string, StringValues> parameters = new Dictionary<string, StringValues>();
+            parameters.Add(Constants.TRACKING_KEY_CAMPAIGN, campaignGuid);
+            parameters.Add(Constants.TRACKING_KEY_CONTACT, contactGuid);
+            parameters.Add(Constants.TRACKING_KEY_ACTION, actionGuid);
+
+            // serialize all headers into json
+            var headers = JsonConvert.SerializeObject(Request.Headers, Formatting.Indented, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+
+            // invoke the tracking asynchronously
+            Task.Run(() => ProcessTrackingInformation(parameters, headers));
+
+            // return the tracking pixel
+            return _pixelResponse;
+        }
+
         private void ProcessTrackingInformation(Dictionary<string, StringValues> parameters, string headers)
         {
             // look for expected parameters (contact, action, campaign)
