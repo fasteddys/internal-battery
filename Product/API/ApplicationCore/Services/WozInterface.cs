@@ -364,7 +364,8 @@ namespace UpDiddyApi.ApplicationCore
                     endDateUTC = endDateUTC,
                     isOpen = true,
                     maxStudents = 0,
-                    timeZone = "Eastern Standard Time"
+                    timeZone = "Eastern Standard Time",
+                    enrollmentType = 1
                 };
 
                 string Json = Newtonsoft.Json.JsonConvert.SerializeObject(NewSection);
