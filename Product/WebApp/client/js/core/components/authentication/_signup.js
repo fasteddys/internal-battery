@@ -19,6 +19,8 @@
     $("body").prepend("<div class=\"overlay\" id=\"SignUpOverlay\"><div id=\"loading-img\" ></div></div>");
     $("#SignUpOverlay").show();
 
+    
+
     // Put red border on input box if field is blank.
     $("#SignUpComponent input").each(function () {
         if (!$(this).val()) {
@@ -34,6 +36,27 @@
 
     // Ensure user only submits to backend if form has values for all fields.
     if ($("#SignUpComponent #Email").val() && $("#SignUpComponent #Password").val() && $("#SignUpComponent #ReenterPassword").val()) {
+
+        var failedRegexTest = false;
+
+        $("#SignUpComponent input").each(function () {
+            var regex = new RegExp($(this).data("val-regex-pattern"));
+            var regexTest = regex.test($(this).val());
+            if (!regexTest) {
+                $("#SignUpOverlay").remove();
+                $(this).addClass("invalid");
+                failedRegexTest = true;
+                toastr.error($(this).data("val-regex"), signUpToastOptions);
+            }
+            else {
+                $(this).removeClass("invalid");
+            }
+        });
+
+        if (failedRegexTest) {
+            return;
+        }
+
         if (!(new RegExp($("#SignUpEmail input").data("val-regex-pattern")).test($("#SignUpEmail input").val()))) {
             $("#SignUpEmail input").addClass("invalid");
             $("#SignUpOverlay").remove();
@@ -81,11 +104,3 @@
     
 
 }); 
-
-// Allow Enter key to submit form
-$("#SignUpComponent input").on('keypress', function (e) {
-    if (e.which === 13) {
-        $("#SignUpForm").submit();
-    }
-});
-
