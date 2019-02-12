@@ -11,6 +11,7 @@ namespace UpDiddyLib.Dto
         public long endDateUTC { get; set; }
         public bool isOpen { get; set; }
         public int maxStudents { get; set; }
-        public string timeZone { get; set; } 
+        public string timeZone { get; set; }
+        public int enrollmentType { get; set; }
     }
 }
