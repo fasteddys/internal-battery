@@ -19,10 +19,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
             {
                 if (courseInfo.RebateType.Name == Constants.CampaignRebate.CampaignRebateType.Employment)
                 {
+
                     if (enrollment.PercentComplete == 100)
-                        rVal = Constants.CampaignRebate.Employment_Completed_EligibleMsg;
+                        rVal = string.Format(Constants.CampaignRebate.Employment_Completed_EligibleMsg, courseInfo.MaxRebateEligibilityInDays);
                     else
-                        rVal = Constants.CampaignRebate.Employment_InProgress_EligibleMsg;
+                        rVal = string.Format(Constants.CampaignRebate.Employment_InProgress_EligibleMsg, courseInfo.MaxRebateEligibilityInDays);
                 }
                 else if (courseInfo.RebateType.Name == Constants.CampaignRebate.CampaignRebateType.CourseCompletion)
                 {
