@@ -31,7 +31,7 @@ namespace UpDiddyLib.Dto
         public List<SubscriberWorkHistoryDto> WorkHistory { get; set; }
         public List<SubscriberEducationHistoryDto> EducationHistory { get; set; }
         public List<SubscriberFileDto> Files { get; set; }
-        public List<CampaignDto> EligibleCampaigns { get; set; }
+        public List<CampaignDto> EligibleCampaigns { get; set; } = new List<CampaignDto>();
 
         // Marketing campaign offers that have not been used by subscriber
         public string CampaignOffer { get; set; }
