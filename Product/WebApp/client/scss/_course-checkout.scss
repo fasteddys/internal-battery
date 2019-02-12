@@ -102,12 +102,12 @@
 
                 label .span-newline::before {
                     content: "\A";
-                    white-space:pre;
+                    white-space: pre;
                 }
 
-                .start-date{
-                    display:inline;
-                    width:150px;
+                .start-date {
+                    display: inline;
+                    width: 150px;
                 }
 
                 .campaign-offer {
@@ -183,7 +183,9 @@
             }
         }
 
-        .terms-of-service-header {
+        .rebate-terms {
+            margin-top: 15px;
+            display: none;
         }
 
         .terms-of-service-scrollview {

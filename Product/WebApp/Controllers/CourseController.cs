@@ -75,7 +75,8 @@ namespace UpDiddy.Controllers
                     Value = i.ToString()
                 }),
                 IsEligibleCampaignOffer = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).Any(),
-                RebateOffer = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).FirstOrDefault()?.RebateType?.Description
+                RebateOffer = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).FirstOrDefault()?.RebateType?.Description,
+                RebateTerms = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).FirstOrDefault()?.RebateType?.Terms
             });
 
             CourseViewModel courseViewModel = new CourseViewModel()

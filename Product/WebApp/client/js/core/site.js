@@ -64,7 +64,16 @@
         } else {
             $("#CourseTotal").html(selectedCourseVariantPrice);
         }
-        
+
+        // check if we have rebate terms for the selected course variant and populate them if we do, hide the rebate terms if we do not
+        var rebateTerms = $(selectedCourseVariant).parent().find('#rebate-terms').val();
+        if (typeof rebateTerms !== 'undefined' && rebateTerms.length > 0) {
+            $('#rebate-terms-content').text(rebateTerms);
+            $('.rebate-terms').show();
+        } else {
+            $('.rebate-terms').hide();
+        }
+
         // display any child elements with class "CourseVariantStartDate", hide all sibling child elements with "CourseVariantStartDate"
         $(selectedCourseVariant).parent().children(".CourseVariantStartDate").show();
         $(selectedCourseVariant).parent().parent().parent().siblings().find(".CourseVariantStartDate").hide();

@@ -86,6 +86,7 @@
                                                                     <span class="rebate-offer span-newline">
                                                                         @(section.RebateOffer)
                                                                     </span>
+                                                                    @Html.Hidden("rebate-terms", section.RebateTerms);
                                                                 }
                                                             </label>
                                                         </div>
@@ -185,6 +186,14 @@
                                             </div>
                                             <div class="terms-of-service-scrollview">
                                                 @Model.TermsOfServiceContent
+                                            </div>
+                                            <div class="rebate-terms">
+                                                <div class="terms-of-service-header">
+                                                    <h3>Rebate Terms of Service</h3>
+                                                </div>
+                                                <div id="rebate-terms-content" class="terms-of-service-scrollview">
+                                                    @* this is populated by the course variant selection logic in site.js *@
+                                                </div>
                                             </div>
                                             <div class="form-check tos-agree">
                                                 <input type="hidden" asp-for="TermsOfServiceDocumentId" value="@Model.TermsOfServiceDocumentId" />
