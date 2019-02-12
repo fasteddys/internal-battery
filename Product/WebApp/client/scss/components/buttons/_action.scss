@@ -9,9 +9,14 @@
         text-align: center;
         position: relative;
         cursor: pointer;
+        width: 100%;
+        border: 0;
 
-        &a{
-            
+        &:focus {
+            outline: none;
+        }
+
+        &a {
         }
 
         &.skew-left-to-right {
@@ -59,6 +64,10 @@
                 &:before {
                     background-color: $color-darkred;
                 }
+            }
+
+            &:focus {
+                background-color: $color-red;
             }
         }
     }
