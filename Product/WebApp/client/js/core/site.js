@@ -53,7 +53,7 @@
     $("input[name='SelectedCourseVariant']").change(function () {
 
         var selectedCourseVariant = $("input[name='SelectedCourseVariant']:checked");
-        var selectedCourseVariantPrice = $(selectedCourseVariant).parent().next().children(".price").html();
+        var selectedCourseVariantPrice = $(selectedCourseVariant).parent().children(".price").html();
         $("#InitialCoursePrice").html(selectedCourseVariantPrice);
 
         if ($("#PromoCodeTotal").html().startsWith("-$")) {
@@ -65,9 +65,18 @@
             $("#CourseTotal").html(selectedCourseVariantPrice);
         }
 
+        // check if we have rebate terms for the selected course variant and populate them if we do, hide the rebate terms if we do not
+        var rebateTerms = $(selectedCourseVariant).parent().find('#rebate-terms').val();
+        if (typeof rebateTerms !== 'undefined' && rebateTerms.length > 0) {
+            $('#rebate-terms-content').text(rebateTerms);
+            $('.rebate-terms').show();
+        } else {
+            $('.rebate-terms').hide();
+        }
+
         // display any child elements with class "CourseVariantStartDate", hide all sibling child elements with "CourseVariantStartDate"
-        $(selectedCourseVariant).parent().parent().children(".CourseVariantStartDate").show();
-        $(selectedCourseVariant).parent().parent().siblings().children(".CourseVariantStartDate").hide();
+        $(selectedCourseVariant).parent().children(".CourseVariantStartDate").show();
+        $(selectedCourseVariant).parent().parent().parent().siblings().find(".CourseVariantStartDate").hide();
 
         if ($("#CourseTotal").html() === "$0.00")
             $('#BraintreePaymentContainer').hide();

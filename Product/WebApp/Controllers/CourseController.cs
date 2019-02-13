@@ -76,7 +76,8 @@ namespace UpDiddy.Controllers
                     Value = i.ToString()
                 }),
                 IsEligibleCampaignOffer = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).Any(),
-                RebateOffer = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).FirstOrDefault()?.RebateType?.Description
+                RebateOffer = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).FirstOrDefault()?.RebateType?.Description,
+                RebateTerms = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).FirstOrDefault()?.RebateType?.Terms
             });
 
             var countries = await _Api.GetCountriesAsync();
@@ -298,6 +299,7 @@ namespace UpDiddy.Controllers
                     Value = s.StateGuid.ToString()
                 });
 
+                // todo: course skills aren't present on page if model state is invalid
                 return View(courseViewModel);
             }
         }

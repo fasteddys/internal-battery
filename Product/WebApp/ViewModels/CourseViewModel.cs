@@ -100,5 +100,6 @@ namespace UpDiddy.ViewModels
         public string CourseVariantType { get; set; }
         public bool IsEligibleCampaignOffer { get; set; }
         public string RebateOffer { get; set; }
+        public string RebateTerms { get; set; }
     }
 }
