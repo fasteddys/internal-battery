@@ -551,10 +551,16 @@
             }
         }
     }
-
+    .linkedin{
+        margin-top: 1rem;
+    }
     .resume-file-component {
         // force height to make it more smooth
-        height: 30px;
+        margin-top: 1rem;
+        label {
+            font-size: 1rem;
+        }
+
         .resume-control,
         .resume-upload-form {
             .edit,
@@ -565,13 +571,15 @@
                 background: transparent;
                 cursor: pointer;
                 border: 0;
+
                 &:active {
-                    outline: 0; 
+                    outline: 0;
                 }
 
                 &:hover {
                     color: darken($color-primary, 10%);
                 }
+
                 &:active {
                     color: darken($color-primary, 15%)
                 }
@@ -586,7 +594,9 @@
         }
 
         .resume-upload-form {
-
+            i{
+                font-size: 1.7rem;
+            }
             .submit,
             .change-file,
             .cancel {
@@ -604,10 +614,11 @@
             }
 
             &.has-file {
-                .submit, 
+                .submit,
                 .change-file {
                     display: inline-block;
                 }
+
                 .select-file {
                     display: none;
                 }
@@ -617,6 +628,7 @@
         &.has-resume {
             .resume-upload-form {
                 display: none;
+
                 .cancel {
                     display: inline-block;
                 }
@@ -627,6 +639,7 @@
             .resume-upload-form {
                 display: block;
             }
+
             .resume-control {
                 display: none;
             }

@@ -186,6 +186,8 @@
                 </div>
                 <div class="row">
                     <div class="col-md">
+
+                        @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.SubscriberGuid })
                         <div class="resume-file-component @((Model.Resume != null) ? "has-resume" : "")">
                             @if (Model.Resume != null)
                             {
