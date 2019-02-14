@@ -62,7 +62,7 @@ namespace UpDiddy.Controllers
                 Enrollments = subscriber.Enrollments
             };
 
-            return View(subscriberViewModel);
+            return View("Subscriber", subscriberViewModel);
         }
     }
 }

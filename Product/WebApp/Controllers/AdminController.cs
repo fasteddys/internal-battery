@@ -25,7 +25,7 @@ namespace UpDiddy.Controllers
         {
             var selectListCourses = await _api.CoursesAsync();
 
-            selectListCourses
+            var list = selectListCourses
                 .Select(course => new
                 {
                     entityGuid = course.CourseGuid,
@@ -34,7 +34,7 @@ namespace UpDiddy.Controllers
                 .OrderBy(e => e.entityName)
                 .ToList();
 
-            return new JsonResult(selectListCourses);
+            return new JsonResult(list);
         }
 
         [HttpGet]
@@ -43,7 +43,7 @@ namespace UpDiddy.Controllers
         {
             IList<SubscriberDto> subs = await _api.SubscriberSearchAsync(string.Empty);
 
-            subs
+            var list = subs
                 .Select(subscriber => new
                 {
                     entityGuid = subscriber.SubscriberGuid,
@@ -52,7 +52,7 @@ namespace UpDiddy.Controllers
                 .OrderBy(e => e.entityName)
                 .ToList();
 
-            return new JsonResult(subs);
+            return new JsonResult(list);
         }
 
         [HttpGet]
@@ -61,7 +61,7 @@ namespace UpDiddy.Controllers
         {
             var selectListSkills = await _api.GetEntitySkillsAsync(entityType, entityGuid);
 
-            selectListSkills
+            var list = selectListSkills
                 .Select(skill => new
                 {
                     skillGuid = skill.SkillGuid,
@@ -70,7 +70,7 @@ namespace UpDiddy.Controllers
                 .OrderBy(s => s.skillName)
                 .ToList();
 
-            return new JsonResult(selectListSkills);
+            return new JsonResult(list);
         }
 
         [HttpGet]

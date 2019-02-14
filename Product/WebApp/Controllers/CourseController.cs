@@ -46,7 +46,7 @@ namespace UpDiddy.Controllers
         [ValidateAntiForgeryToken]
         [HttpPost]
         [Route("/Course/PromoCodeValidation/{code}/{courseVariantGuid}")]
-        public async System.Threading.Tasks.Task<IActionResult> PromoCodeValidation(string code, string courseVariantGuid)
+        public async Task<IActionResult> PromoCodeValidation(string code, string courseVariantGuid)
         {
             PromoCodeDto promoCodeDto = await _Api.PromoCodeValidationAsync(code, courseVariantGuid);
             return new ObjectResult(promoCodeDto);
@@ -64,55 +64,63 @@ namespace UpDiddy.Controllers
             var clientToken = gateway.ClientToken.Generate();
             ViewBag.ClientToken = clientToken;
 
-            var course = await _Api.CourseAsync(CourseSlug);
-            var courseVariantViewModels = course.CourseVariants.Select(dto => new CourseVariantViewModel()
+            try
             {
-                CourseVariantGuid = dto.CourseVariantGuid,
-                CourseVariantType = dto.CourseVariantType.Name,
-                Price = dto.Price,
-                StartDates = dto.StartDateUTCs?.Select(i => new SelectListItem()
-                {
-                    Text = i.ToShortDateString(),
-                    Value = i.ToString()
-                }),
-                IsEligibleCampaignOffer = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).Any(),
-                RebateOffer = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).FirstOrDefault()?.RebateType?.Description,
-                RebateTerms = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).FirstOrDefault()?.RebateType?.Terms
-            });
+                var course = await _Api.CourseAsync(CourseSlug);
 
-            var countries = await _Api.GetCountriesAsync();
-            CourseViewModel courseViewModel = new CourseViewModel()
+                var courseVariantViewModels = course.CourseVariants.Select(dto => new CourseVariantViewModel()
+                {
+                    CourseVariantGuid = dto.CourseVariantGuid,
+                    CourseVariantType = dto.CourseVariantType.Name,
+                    Price = dto.Price,
+                    StartDates = dto.StartDateUTCs?.Select(i => new SelectListItem()
+                    {
+                        Text = i.ToShortDateString(),
+                        Value = i.ToString()
+                    }),
+                    IsEligibleCampaignOffer = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).Any(),
+                    RebateOffer = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).FirstOrDefault()?.RebateType?.Description,
+                    RebateTerms = this.subscriber.EligibleCampaigns.SelectMany(ec => ec.CampaignCourseVariant).Where(ccv => ccv.CourseVariant.CourseVariantGuid == dto.CourseVariantGuid).FirstOrDefault()?.RebateType?.Terms
+                });
+
+                var countries = await _Api.GetCountriesAsync();
+                CourseViewModel courseViewModel = new CourseViewModel()
+                {
+                    Name = course.Name,
+                    Description = course.Description,
+                    Code = course.Code,
+                    Slug = course.Slug,
+                    CourseGuid = course.CourseGuid.Value,
+                    CourseVariants = courseVariantViewModels,
+                    SubscriberFirstName = this.subscriber.FirstName,
+                    SubscriberLastName = this.subscriber.LastName,
+                    FormattedPhone = this.subscriber.PhoneNumber,
+                    SubscriberGuid = this.subscriber.SubscriberGuid.Value,
+                    TermsOfServiceContent = course.TermsOfServiceContent,
+                    TermsOfServiceDocumentId = course.TermsOfServiceDocumentId,
+                    Skills = course.Skills,
+                    Countries = countries.Select(c => new SelectListItem()
+                    {
+                        Text = c.DisplayName,
+                        Value = c.CountryGuid.ToString()
+                    }),
+                    States = new List<StateViewModel>().Select(s => new SelectListItem()
+                    {
+                        Text = s.Name,
+                        Value = s.StateGuid.ToString()
+                    })
+                };
+
+                return View("Checkout", courseViewModel);
+            }
+            catch(ApiException ex)
             {
-                Name = course.Name,
-                Description = course.Description,
-                Code = course.Code,
-                Slug = course.Slug,
-                CourseGuid = course.CourseGuid.Value,
-                CourseVariants = courseVariantViewModels,
-                SubscriberFirstName = this.subscriber.FirstName,
-                SubscriberLastName = this.subscriber.LastName,
-                FormattedPhone = this.subscriber.PhoneNumber,
-                SubscriberGuid = this.subscriber.SubscriberGuid.Value,
-                TermsOfServiceContent = course.TermsOfServiceContent,
-                TermsOfServiceDocumentId = course.TermsOfServiceDocumentId,
-                Skills = course.Skills,
-                Countries = countries.Select(c => new SelectListItem()
-                {
-                    Text = c.DisplayName,
-                    Value = c.CountryGuid.ToString()
-                }),
-                States = new List<StateViewModel>().Select(s => new SelectListItem()
-                {
-                    Text = s.Name,
-                    Value = s.StateGuid.ToString()
-                })
-            };
-
-            return View("Checkout", courseViewModel);
+                return StatusCode((int) ex.StatusCode);
+            }
         }
 
         [HttpPost]
-        public async System.Threading.Tasks.Task<IActionResult> Checkout(CourseViewModel courseViewModel)
+        public async Task<IActionResult> Checkout(CourseViewModel courseViewModel)
         {
             DateTime currentDate = DateTime.UtcNow;
             await GetSubscriberAsync(false);
@@ -260,7 +268,7 @@ namespace UpDiddy.Controllers
                     SubscriberDto = this.subscriber
                 };
 
-                _Api.EnrollStudentAndObtainEnrollmentGUIDAsync(enrollmentFlowDto);
+                await _Api.EnrollStudentAndObtainEnrollmentGUIDAsync(enrollmentFlowDto);
                 return View("EnrollmentSuccess", courseViewModel);
             }
             else

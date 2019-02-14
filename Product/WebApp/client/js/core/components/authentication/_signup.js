@@ -75,23 +75,16 @@
             $.ajax({
                 type: "POST",
                 url: '/Home/CampaignSignUp',
-                data: $(this).serialize(),
-                success: function (html) {
-                    if (html.statusCode === 200) {
-                        $("#SignUpOverlay").remove();
-                        // If submission is OK, redirect them to authenticated course checkout page.
-                        window.location.href = html.description;
-                    }
-                    else {
-                        $("#SignUpOverlay").remove();
-                        // If there's an error on submission, display it to user in graceful toast message.
-                        toastr.error(html.description, 'Whoops...', signUpToastOptions);
-                    }
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    $("#SignUpOverlay").remove();
-                    toastr.error("Unfortunately, there was an error with your submission. Please try again later.", signUpToastOptions);
-                }
+                data: $(this).serialize()
+            }).done(res => {
+                window.location.href = res.description;
+            }).fail(res => {
+                var errorText = "Unfortunately, there was an error with your submission. Please try again later.";
+                if (res.responseJSON.description != null)
+                    errorText = res.responseJSON.description;
+                toastr.error(errorText, signUpToastOptions);
+            }).always(() => {
+                $("#SignUpOverlay").remove();
             });
         }
     }
@@ -99,8 +92,4 @@
         $("#SignUpOverlay").remove();
         toastr.error("Please enter information for all sign-up fields and try again.", signUpToastOptions);
     }
-    
-    
-    
-
 }); 

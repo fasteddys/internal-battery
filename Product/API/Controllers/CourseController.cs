@@ -126,12 +126,13 @@ namespace UpDiddyApi.Controllers
                 .Where(t => t.IsDeleted == 0 && t.Slug == CourseSlug)
                 .FirstOrDefault();
 
+            if (course == null)
+                return NotFound();
+
             // not the greatest implementation performance-wise, but the alternative requires JOIN syntax and this is easier to read
             course.CourseSkills = course.CourseSkills.Where(cs => cs.IsDeleted == 0).ToList();
             course.CourseVariants = course.CourseVariants.Where(cv => cv.IsDeleted == 0).ToList();
 
-            if (course == null)
-                return NotFound();
 
             CourseDto courseDto = _mapper.Map<CourseDto>(course);
 
@@ -190,6 +191,10 @@ namespace UpDiddyApi.Controllers
                 .Select(m => new {courseId = m.courseVariant.CourseId, campGuid = m.ccv.campaign.CampaignGuid })
                 .Where(m => m.campGuid == campaignGuid);
 
+            var camp = _a.FirstOrDefault();
+
+            if (camp == null)
+                return NotFound(new BasicResponseDto() { StatusCode = 400, Description = "Unable to find campaign with specified GUID." });
 
             int courseId = _a.Select(n => n.courseId)
                 .FirstOrDefault();

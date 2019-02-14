@@ -31,7 +31,6 @@ namespace UpDiddy.Api
         protected IHttpClientFactory _HttpClientFactory { get; set; }
         public AzureAdB2COptions AzureOptions { get; set; }
         private IHttpContextAccessor _contextAccessor { get; set; }
-
         public IDistributedCache _cache { get; set; }
 
         #region Constructor
@@ -49,24 +48,8 @@ namespace UpDiddy.Api
         }
         #endregion
 
-        public async Task<T> GetAsync<T>(string endpoint)
-        {
-            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
-            client.BaseAddress = new Uri(_ApiBaseUri);
-
-            client = await AddBearerTokenAsync(client);
-
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, endpoint);
-            using (var response = await client.SendAsync(request))
-            {
-                if (response.IsSuccessStatusCode)
-                    return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
-
-                throw new Exception("Unsuccessful request");
-            }
-        }
-
-        private async Task<T> RequestAsync<T>(string clientName, HttpMethod method, string endpoint, object body = null)
+        #region Request Methods
+        private async Task<HttpResponseMessage> RequestAsync(string clientName, HttpMethod method, string endpoint, object body = null)
         {
             HttpClient client = _HttpClientFactory.CreateClient(clientName);
             client.BaseAddress = new Uri(_ApiBaseUri);
@@ -81,18 +64,23 @@ namespace UpDiddy.Api
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             }
 
-            using (var response = await client.SendAsync(request))
+            return await client.SendAsync(request);
+        }
+
+        private async Task<T> RequestAsync<T>(string clientName, HttpMethod method, string endpoint, object body = null)
+        {
+            using (var response = await RequestAsync(clientName, method, endpoint, body))
             {
                 if (response.IsSuccessStatusCode)
                     return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
 
-                throw new Exception("Unsuccessful request");
+                throw new ApiException(response, JsonConvert.DeserializeObject<BasicResponseDto>(await response.Content.ReadAsStringAsync()));
             }
         }
 
-        public async Task<T> DeleteAsync<T>(string endpoint)
+        public async Task<T> GetAsync<T>(string endpoint)
         {
-            return await RequestAsync<T>(Constants.HttpDeleteClientName, HttpMethod.Delete, endpoint);
+            return await RequestAsync<T>(Constants.HttpGetClientName, HttpMethod.Get, endpoint);
         }
 
         public async Task<T> PostAsync<T>(string endpoint, object body = null)
@@ -105,20 +93,33 @@ namespace UpDiddy.Api
             return await RequestAsync<T>(Constants.HttpPutClientName, HttpMethod.Put, endpoint, body);
         }
 
+        public async Task<T> DeleteAsync<T>(string endpoint)
+        {
+            return await RequestAsync<T>(Constants.HttpDeleteClientName, HttpMethod.Delete, endpoint);
+        }
+
+        private async Task<AuthenticationResult> GetBearerTokenAsync()
+        {
+            // Retrieve the token with the specified scopes
+            var scope = AzureOptions.ApiScopes.Split(' ');
+            string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).GetMsalCacheInstance();
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureOptions.ClientId, AzureOptions.Authority, AzureOptions.RedirectUri, new ClientCredential(AzureOptions.ClientSecret), userTokenCache, null);
+            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureOptions.Authority, false);
+            return result;
+        }
+
         private async Task<HttpClient> AddBearerTokenAsync(HttpClient client)
         {
             if (_contextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
-                var scope = AzureOptions.ApiScopes.Split(' ');
-                string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).GetMsalCacheInstance();
-                ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureOptions.ClientId, AzureOptions.Authority, AzureOptions.RedirectUri, new ClientCredential(AzureOptions.ClientSecret), userTokenCache, null);
-                AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureOptions.Authority, false);
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+                AuthenticationResult authResult = await GetBearerTokenAsync();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
             }
 
             return client;
         }
+        #endregion
 
         #region Public Cached Methods 
         public async Task<IList<TopicDto>> TopicsAsync()
@@ -442,15 +443,7 @@ namespace UpDiddy.Api
 
         public async Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid)
         {
-            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
-            string ApiUrl = _ApiBaseUri + String.Format("subscriber/{0}/file/{1}", subscriberGuid, fileGuid.ToString());
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
-
-            // Add token to the Authorization header and make the request
-            await AddBearerTokenAsync(request);
-
-            HttpResponseMessage response = await client.SendAsync(request);
-            return response;
+            return await RequestAsync(Constants.HttpGetClientName, HttpMethod.Get, String.Format("subscriber/{0}/file/{1}", subscriberGuid, fileGuid.ToString()));
         }
 
         public async Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
@@ -620,7 +613,7 @@ namespace UpDiddy.Api
         }
         #endregion
 
-        #region Private Helper Functions
+        #region Private Cache Functions
 
         private bool SetCachedValue<T>(string CacheKey, T Value)
         {
@@ -657,8 +650,6 @@ namespace UpDiddy.Api
         }
 
         #endregion
-
-        #region ApiHelperMsal
 
         #region TalentPortal
 
@@ -712,25 +703,5 @@ namespace UpDiddy.Api
         }
 
         #endregion
-
-        #region Helpers Functions
-
-        private async Task AddBearerTokenAsync(HttpRequestMessage request)
-        {
-            // Retrieve the token with the specified scopes
-            var scope = AzureOptions.ApiScopes.Split(' ');
-            string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureOptions.ClientId, AzureOptions.Authority, AzureOptions.RedirectUri, new ClientCredential(AzureOptions.ClientSecret), userTokenCache, null);
-            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureOptions.Authority, false);
-            // Add Bearer Token for MSAL authenticatiopn
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-        }
-        #endregion
-
-        #endregion
     }
 }
-
-
-

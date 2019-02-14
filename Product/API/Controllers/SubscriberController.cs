@@ -730,7 +730,7 @@ namespace UpDiddyApi.Controllers
             return Json(_mapper.Map<List<SubscriberDto>>(subscribers));
         }
 
-        // Can we remove subscriberGuid from this route and get it from the user context?
+        // todo: add security to check token to this route
         [HttpGet("/api/[controller]/{subscriberGuid}/skill")]
         public IActionResult GetSkillsBySubscriber(Guid subscriberGuid)
         {

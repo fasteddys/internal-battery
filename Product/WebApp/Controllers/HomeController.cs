@@ -26,6 +26,7 @@ using System.Security.Claims;
 using UpDiddy.Helpers;
 using System.Security.Claims;
 using UpDiddyLib.Dto.Marketing;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace UpDiddy.Controllers
 {
@@ -56,9 +57,6 @@ namespace UpDiddy.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // TODO remove test code 
-            await GetSubscriberAsync(false);
-
             HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
             return View(HomeViewModel);
         }
@@ -290,43 +288,6 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> UploadResume(ResumeViewModel resumeViewModel)
-        {
-            var hubId = Request.Cookies[Constants.SignalR.CookieKey];
-
-            // Check that the resume is a valid text file
-            if (!Utils.IsValidTextFile(resumeViewModel.Resume.FileName))
-            {
-                return BadRequest();
-            }
-
-            BasicResponseDto basicResponseDto = null;
-
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    basicResponseDto = await _Api.UploadResumeAsync(new ResumeDto()
-                    {
-                        SubscriberGuid = this.GetSubscriberGuid(),
-                        Base64EncodedResume = Utils.ToBase64EncodedString(resumeViewModel.Resume),
-                    });
-                }
-                else
-                {
-                    return BadRequest();
-                }
-            }
-            catch (Exception ex)
-            {
-                return Error(ex.Message);
-            }
-
-            return Ok(basicResponseDto);
-        }
-
-        [Authorize]
-        [HttpPost]
         public async Task<IActionResult> OnboardAsync(SignupFlowViewModel signupFlowViewModel)
         {
             await GetSubscriberAsync(false);
@@ -436,30 +397,24 @@ namespace UpDiddy.Controllers
             return View();
         }
 
-        [HttpGet]
-        [Route("/Home/TierLevel")]
-        public string TierLevel()
-        {
-            return "{\"Tier\": \"1\"}";
-        }
-
-        public IActionResult Error(string message)
-        {
-            ViewBag.Message = message;
-            Response.StatusCode = 500;
-            return View();
-        }
-
         public IActionResult PageNotFound()
         {
-            ViewBag.InvalidPath = this.HttpContext.Request.Path;
-            Response.StatusCode = 404;
-            return View();
+            ViewBag.OriginalPath = this.HttpContext.Request.Path;
+            return View("404");
         }
 
-        public IActionResult Forbidden()
+        public IActionResult Error(int? statusCode = null)
         {
-            Response.StatusCode = 401;
+            var feature = HttpContext.Features.Get<IStatusCodeReExecuteFeature>();
+            ViewBag.OriginalPath = feature?.OriginalPath;
+            if (statusCode.HasValue)
+            {
+                if (statusCode.Value == 404 || statusCode.Value == 500)
+                {
+                    var viewName = statusCode.ToString();
+                    return View(viewName);
+                }
+            }
             return View();
         }
 
@@ -529,11 +484,18 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> AddWorkHistoryAsync([FromBody] SubscriberWorkHistoryDto wh )
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (wh != null)                            
-                return Ok(await _Api.AddWorkHistoryAsync(subscriberGuid, wh));            
-            else
+            if (wh == null)
                 return BadRequest("Oops, We're sorry somthing when wrong!");
-            
+
+            try
+            {
+                return Ok(await _Api.AddWorkHistoryAsync(subscriberGuid, wh));
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return Json(ex.ResponseDto);
+            }
         }
 
         [Authorize]
@@ -604,21 +566,24 @@ namespace UpDiddy.Controllers
                 "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
                 CampaignGuid;
 
-            // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
-            ContactDto Contact = await _Api.ContactAsync(ContactGuid);
-            CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
-            if(Course == null || Contact == null)
+            try
             {
-                return NotFound();
+                ContactDto Contact = await _Api.ContactAsync(ContactGuid);
+                CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
+
+                CampaignViewModel cvm = new CampaignViewModel()
+                {
+                    CampaignGuid = CampaignGuid,
+                    ContactGuid = ContactGuid,
+                    TrackingImgSource = _TrackingImgSource,
+                    CampaignCourse = Course
+                };
+                return View("Campaign/" + CampaignViewName, cvm);
             }
-            CampaignViewModel cvm = new CampaignViewModel()
+            catch (ApiException ex)
             {
-                CampaignGuid = CampaignGuid,
-                ContactGuid = ContactGuid,
-                TrackingImgSource = _TrackingImgSource,
-                CampaignCourse = Course
-            };
-            return View("Campaign/" + CampaignViewName, cvm);
+                return StatusCode((int) ex.StatusCode);
+            }
         }
         
         [HttpPost]
@@ -673,40 +638,18 @@ namespace UpDiddy.Controllers
                 // Convert contact to subscriber and create ADB2C account for them.
                 BasicResponseDto subscriberResponse = await _Api.UpdateSubscriberContactAsync(signUpViewModel.ContactGuid, sudto);
 
-                switch (subscriberResponse.StatusCode)
-                {
-                    
-                    case 200:
-                        // If contact-to-subscriber conversion is successful, fetch course user is enrolling in.
-                        CourseDto Course = await _Api.GetCourseByCampaignGuidAsync((Guid)signUpViewModel.CampaignGuid);
-
-                        // Return url to course checkout page to front-end. This will prompt user to log in
-                        // now that their ADB2C account is created.
-                        return new BasicResponseDto
-                        {
-                            StatusCode = subscriberResponse.StatusCode,
-                            Description = "/Course/Checkout/" + Course.Slug
-                        };
-                    default:
-                        // If there's an error from contact-to-subscriber converstion API call,
-                        // return that error description to a toast to the user.
-                        return subscriberResponse;
-                }
-            }
-            catch(Exception e)
-            {
-                // Generic server error to display gracefully to the user.
+                CourseDto Course = await _Api.GetCourseByCampaignGuidAsync((Guid)signUpViewModel.CampaignGuid);
                 return new BasicResponseDto
                 {
-                    StatusCode = 500,
-                    Description = "Unfortunately, an error has occured with your submission. Please try again later."
+                    StatusCode = subscriberResponse.StatusCode,
+                    Description = "/Course/Checkout/" + Course.Slug
                 };
             }
-            
-            
+            catch(ApiException ex)
+            {
+                Response.StatusCode = (int) ex.StatusCode;
+                return ex.ResponseDto;
+            }
         }
-
-
-
     }
 }

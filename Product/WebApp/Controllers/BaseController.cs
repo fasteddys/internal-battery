@@ -7,7 +7,7 @@ using System.Security.Claims;
 using UpDiddy.Api;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.Dto;
-
+using System.Threading.Tasks;
 
 namespace UpDiddy.Controllers
 {
@@ -32,7 +32,7 @@ namespace UpDiddy.Controllers
                 return Guid.Empty;
         }
 
-        public async System.Threading.Tasks.Task GetSubscriberAsync(bool HardRefresh)
+        public async Task GetSubscriberAsync(bool HardRefresh)
         {
  
             if (User.Identity.IsAuthenticated)
