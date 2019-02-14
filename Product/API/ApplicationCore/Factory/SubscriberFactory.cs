@@ -76,6 +76,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     e.CampaignCourseStatusInfo = CampaignFactory.EnrollmentPromoStatusAsText(e);
 
                 subscriberDto.CampaignOffer = CampaignFactory.OpenOffers(_db, subscriberDto.EligibleCampaigns, subscriberDto.Enrollments);
+
+                // todo move to when creating subscriber once we have automated process that will associate the subscriber to the contact upon contact
+                // creation.  When that is done, it will only be necessary to do this check when we create  a new subscriber since the create contact logic
+                // will handle the case of associating the contact with existing subscribers
+                ContactFactory.AssociateSubscriber(_db, subscriberDto.Email, subscriber.SubscriberId);
             }
 
             return subscriberDto;

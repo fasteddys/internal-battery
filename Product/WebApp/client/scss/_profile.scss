@@ -36,7 +36,12 @@
                         color: red;
                     }
                 }
-                
+
+                .profile-edit-date-picker {
+                    background-color: $color-white; 
+                }
+
+
                 .modal-edit-input-label {
                     position: absolute;
                     top: -10px;
@@ -125,7 +130,6 @@
                     background-color: white;
                     width: 100%;
                 }
-
                 /* this is my sad attempt at fixing the selectize dropdowns... probably can remove most of this */
                 .selectize-control.form-control.single {
                     padding: 0;
