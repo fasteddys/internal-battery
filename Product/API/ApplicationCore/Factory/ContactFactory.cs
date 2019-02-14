@@ -19,8 +19,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static void AssociateSubscriber(UpDiddyDbContext db, string email, int subscriberId)
         {
-            Contact c = GetContactByEmail(db, email);
-            if ( c?.SubscriberId != subscriberId)
+            Contact c = GetContactByEmail(db, email );
+
+            if ( c != null && c?.SubscriberId != subscriberId)
             {
                 c.SubscriberId = subscriberId;
                 db.SaveChanges();
