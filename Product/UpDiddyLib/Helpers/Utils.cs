@@ -4,19 +4,40 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using UpDiddyLib.Dto;
-using System.Xml.XPath;
 using System.Xml;
 using System.Globalization;
-//using UpDiddy.Helpers;
+using System.Reflection;
 
 namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+        /// <remarks>
+        /// Shamelessly stolen from https://stackoverflow.com/questions/457676/check-if-a-class-is-derived-from-a-generic-class
+        /// </remarks>
+        /// <summary>
+        /// Checks to see if a type is derived from a generic type
+        /// </summary>
+        /// <param name="generic"></param>
+        /// <param name="toCheck"></param>
+        /// <returns></returns>
+        public static bool IsSubclassOfRawGeneric(Type generic, Type toCheck)
+        {
+            while (toCheck != null && toCheck != typeof(object))
+            {
+                var cur = toCheck.GetTypeInfo().IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
+                if (generic == cur)
+                {
+                    return true;
+                }
+                toCheck = toCheck.GetTypeInfo().BaseType;
+            }
+            return false;
+        }
+
         public static string FormatPhoneNumber(string phoneNumber)
         {
             if (string.IsNullOrWhiteSpace(phoneNumber) || phoneNumber.Length < 10 || phoneNumber.Length > 15)
@@ -385,7 +406,7 @@ namespace UpDiddyLib.Helpers
             return PriorDay;
         }
 
-        
+
 
         public static string ToTitleCase(string value)
         {
@@ -396,7 +417,7 @@ namespace UpDiddyLib.Helpers
             return ti.ToTitleCase(value.ToLower());
         }
 
-       
+
 
         public static string RemoveNonNumericCharacters(string val)
         {
@@ -410,14 +431,14 @@ namespace UpDiddyLib.Helpers
         public static string FormattedDateRange(DateTime? startDate, DateTime? endDate)
         {
             string formattedDateRange = string.Empty;
-            if(!startDate.HasValue || startDate.Value == DateTime.MinValue)
+            if (!startDate.HasValue || startDate.Value == DateTime.MinValue)
             {
                 return "No date range specified";
             }
             else
             {
                 formattedDateRange = startDate.Value.ToString("MMMM yyyy") + " - ";
-            }            
+            }
             DateTime effectiveEndDate;
             if (!endDate.HasValue || endDate.Value == DateTime.MinValue)
             {
@@ -441,7 +462,7 @@ namespace UpDiddyLib.Helpers
             formattedDateRange += " (" + period.Year + " years " + period.Month + " months)";
             return formattedDateRange;
         }
-        [Obsolete("Remove this once we are certain we cannot make use of it",false)]
+        [Obsolete("Remove this once we are certain we cannot make use of it", false)]
         public static string FormattedCompensation(string compensationType, decimal compensation)
         {
             string formattedCompensation = string.Empty;
@@ -452,7 +473,7 @@ namespace UpDiddyLib.Helpers
             else
             {
                 formattedCompensation = $"{compensation:C}";
-                if(!string.IsNullOrWhiteSpace(compensationType))
+                if (!string.IsNullOrWhiteSpace(compensationType))
                 {
                     formattedCompensation += $" ({compensationType})";
                 }
