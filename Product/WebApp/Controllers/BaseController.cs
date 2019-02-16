@@ -45,7 +45,6 @@ namespace UpDiddy.Controllers
             }
             else
                 this.subscriber = null;
-            
         }
     }
 }

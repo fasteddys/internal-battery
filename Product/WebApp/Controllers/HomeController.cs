@@ -485,7 +485,7 @@ namespace UpDiddy.Controllers
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if (wh == null)
-                return BadRequest("Oops, We're sorry somthing when wrong!");
+                return BadRequest("Oops, We're sorry somthing went wrong!");
 
             try
             {
@@ -494,7 +494,7 @@ namespace UpDiddy.Controllers
             catch (ApiException ex)
             {
                 Response.StatusCode = (int)ex.StatusCode;
-                return Json(ex.ResponseDto);
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
             }
         }
 
@@ -504,11 +504,18 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> UpdateWorkHistoryAsync([FromBody] SubscriberWorkHistoryDto wh)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (wh != null)              
-                return Ok(await _Api.UpdateWorkHistoryAsync(subscriberGuid, wh));           
-            else
-                return BadRequest("Oops, We're sorry somthing when wrong!");
+            if (wh == null)              
+                return BadRequest("Oops, We're sorry somthing went wrong!");
 
+            try
+            {
+                return Ok(await _Api.UpdateWorkHistoryAsync(subscriberGuid, wh));
+            }
+            catch(ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }
         }
 
         [Authorize]
@@ -517,8 +524,15 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> DeleteWorkHistoryAsync(Guid WorkHistoryGuid)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            return Ok(await _Api.DeleteWorkHistoryAsync(subscriberGuid, WorkHistoryGuid));
-                
+            try
+            {
+                return Ok(await _Api.DeleteWorkHistoryAsync(subscriberGuid, WorkHistoryGuid));
+            }
+            catch(ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }
         }
 
         [Authorize]
@@ -527,10 +541,18 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> AddEducationalHistoryAsync([FromBody] SubscriberEducationHistoryDto eh)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (eh != null)
-               return Ok(await _Api.AddEducationalHistoryAsync(subscriberGuid, eh));
-            else
-                return BadRequest("Oops, We're sorry somthing when wrong!");            
+            if (eh == null)
+                return BadRequest("Oops, We're sorry somthing went wrong!");
+
+            try
+            {
+                return Ok(await _Api.AddEducationalHistoryAsync(subscriberGuid, eh));
+            }
+            catch(ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }
         }
 
         [Authorize]
@@ -539,11 +561,18 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> UpdateEducationHistoryAsync([FromBody] SubscriberEducationHistoryDto eh)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (eh != null)
-                return Ok(await _Api.UpdateEducationHistoryAsync(subscriberGuid, eh));
-            else
-                return BadRequest("Oops, We're sorry somthing when wrong!");
+            if (eh == null)
+                return BadRequest("Oops, We're sorry somthing went wrong!");
 
+            try
+            {
+                return Ok(await _Api.UpdateEducationHistoryAsync(subscriberGuid, eh));
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }
         }
 
         [Authorize]
@@ -552,8 +581,15 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> DeleteEducationHistoryAsync(Guid EducationHistoryGuid)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            return Ok(await _Api.DeleteEducationHistoryAsync(subscriberGuid, EducationHistoryGuid));
-
+            try
+            {
+                return Ok(await _Api.DeleteEducationHistoryAsync(subscriberGuid, EducationHistoryGuid));
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }
         }
 
         [HttpGet]
@@ -597,6 +633,7 @@ namespace UpDiddy.Controllers
             // Make sure user has filled out all fields.
             if (!modelHasAllFields)
             {
+                Response.StatusCode = 400;
                 return new BasicResponseDto
                 {
                     StatusCode = 400,
@@ -607,6 +644,7 @@ namespace UpDiddy.Controllers
             // This is basically the same check as above, but to be safe...
             if (!ModelState.IsValid)
             {
+                Response.StatusCode = 400;
                 return new BasicResponseDto
                 {
                     StatusCode = 400,
@@ -617,9 +655,10 @@ namespace UpDiddy.Controllers
             // Make sure user's password and re-enter password values match.
             if (!signUpViewModel.Password.Equals(signUpViewModel.ReenterPassword))
             {
+                Response.StatusCode = 400;
                 return new BasicResponseDto
                 {
-                    StatusCode = 403,
+                    StatusCode = 400,
                     Description = "User's passwords do not match."
                 };
             }
