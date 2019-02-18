@@ -50,7 +50,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/{campaignGuid}/{contactGuid}/{actionGuid}")]
+        [Route("api/[controller]/{campaignGuid?}/{contactGuid?}/{actionGuid?}")]
         public IActionResult Get(string campaignGuid, string contactGuid, string actionGuid)
         {
             // construct tracking parameters
