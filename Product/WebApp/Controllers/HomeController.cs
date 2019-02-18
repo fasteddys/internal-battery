@@ -26,6 +26,7 @@ using System.Security.Claims;
 using UpDiddy.Helpers;
 using System.Security.Claims;
 using UpDiddyLib.Dto.Marketing;
+using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
 
 namespace UpDiddy.Controllers
@@ -66,22 +67,20 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         public async Task<IActionResult> SignUp()
         {
-            await GetSubscriberAsync(false);
-
             // This will check to see if the subscriber has onboarded. If not, it flips the flag.
             // This means the onboarding flow should only ever work the first time a user logs into their account.
-            if(subscriber.HasOnboarded != 1)
+            if (subscriber.HasOnboarded != 1)
                 await _Api.UpdateOnboardingStatusAsync();
-
 
             var countries = await _Api.GetCountriesAsync();
             var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
             SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
             {
-                SubscriberGuid = (Guid) subscriber.SubscriberGuid,
+                SubscriberGuid = (Guid)subscriber.SubscriberGuid,
                 Countries = countries.Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
@@ -136,10 +135,10 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: false)]
         [Authorize]
         public async Task<IActionResult> ProfileLogin()
         {
-            await GetSubscriberAsync(true);
             // todo: consider updating the course status on the API side when a request is made to retrieve the courses or something instead of
             // logic being determined in web app for managing API data
             if (this.subscriber != null)
@@ -151,13 +150,13 @@ namespace UpDiddy.Controllers
                 return RedirectToAction("Signup", "Home");
         }
 
+        [LoadSubscriber(isHardRefresh: true, isSubscriberRequired: true)]
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            await GetSubscriberAsync(true);
-
             var countries = await _Api.GetCountriesAsync();
             var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
+
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
                 SubscriberGuid = this.subscriber?.SubscriberGuid,
@@ -196,7 +195,7 @@ namespace UpDiddy.Controllers
                 WorkHistory = await _Api.GetWorkHistoryAsync(this.subscriber.SubscriberGuid.Value),
                 EducationHistory = await _Api.GetEducationHistoryAsync(this.subscriber.SubscriberGuid.Value)
             };
-         
+
             // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
             // i considered overloading the existing GetSubscriber method to do this, but then that makes CourseController 
             // a dependency of BaseController. that's more refactoring than i think we want to concern ourselves with now.
@@ -282,15 +281,15 @@ namespace UpDiddy.Controllers
         {
             HttpResponseMessage response = await _Api.DownloadFileAsync(Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value), fileGuid);
             Stream stream = await response.Content.ReadAsStreamAsync();
-            return File(stream, "application/octet-stream", 
+            return File(stream, "application/octet-stream",
                 response.Content.Headers.ContentDisposition.FileName.Replace("\"", ""));
         }
 
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> OnboardAsync(SignupFlowViewModel signupFlowViewModel)
         {
-            await GetSubscriberAsync(false);
             List<SkillDto> skillsDto = null;
             if (ModelState.IsValid)
             {
@@ -504,6 +503,7 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> UpdateWorkHistoryAsync([FromBody] SubscriberWorkHistoryDto wh)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
             if (wh == null)              
                 return BadRequest("Oops, We're sorry somthing went wrong!");
 
@@ -524,6 +524,7 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> DeleteWorkHistoryAsync(Guid WorkHistoryGuid)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
             try
             {
                 return Ok(await _Api.DeleteWorkHistoryAsync(subscriberGuid, WorkHistoryGuid));
@@ -541,6 +542,7 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> AddEducationalHistoryAsync([FromBody] SubscriberEducationHistoryDto eh)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
             if (eh == null)
                 return BadRequest("Oops, We're sorry somthing went wrong!");
 
@@ -604,6 +606,7 @@ namespace UpDiddy.Controllers
 
             try
             {
+                // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
                 ContactDto Contact = await _Api.ContactAsync(ContactGuid);
                 CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
 
@@ -621,7 +624,7 @@ namespace UpDiddy.Controllers
                 return StatusCode((int) ex.StatusCode);
             }
         }
-        
+
         [HttpPost]
         [Route("/Home/CampaignSignUp")]
         public async Task<BasicResponseDto> CampaignSignUpAsync(SignUpViewModel signUpViewModel)

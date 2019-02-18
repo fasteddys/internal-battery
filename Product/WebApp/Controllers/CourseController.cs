@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using UpDiddy.Api;
+using UpDiddy.Authentication;
 using System.Threading.Tasks;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -52,14 +53,12 @@ namespace UpDiddy.Controllers
             return new ObjectResult(promoCodeDto);
         }
 
-
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpGet]
         [Route("/Course/Checkout/{CourseSlug}", Name = "CourseCheckout")]
         public async Task<IActionResult> GetAsync(string CourseSlug)
         {
-            await GetSubscriberAsync(false);
-
             var gateway = braintreeConfiguration.GetGateway();
             var clientToken = gateway.ClientToken.Generate();
             ViewBag.ClientToken = clientToken;
@@ -118,12 +117,11 @@ namespace UpDiddy.Controllers
                 return StatusCode((int) ex.StatusCode);
             }
         }
-
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [HttpPost]
         public async Task<IActionResult> Checkout(CourseViewModel courseViewModel)
         {
             DateTime currentDate = DateTime.UtcNow;
-            await GetSubscriberAsync(true);
 
             // get the course variant based on the Guid selected by the user
             // normally we would want everything to come back via the view model, but we don't want to trust this because it contains price information
@@ -243,7 +241,7 @@ namespace UpDiddy.Controllers
                     PromoCodeRedemptionGuid = courseViewModel.PromoCodeRedemptionGuid,
                     CampaignCourseVariant = campaignCourseVariant
                 };
-                
+
                 BraintreePaymentDto BraintreePaymentDto = new BraintreePaymentDto
                 {
                     PaymentAmount = enrollmentDto.PricePaid,
