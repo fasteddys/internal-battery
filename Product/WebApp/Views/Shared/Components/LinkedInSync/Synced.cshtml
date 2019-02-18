@@ -5,9 +5,20 @@
 @using System;
 @model LinkedInSyncViewModel
 <a href="@Model.SyncLink" class="linkedin btn btn-large btn-primary">
-    <div class="linkedin-profile-img">
-        <img src="@Model.ProfileImageUrl" />
-        <i class="fab fa-linkedin"></i>
-    </div>
-    <span class="text font-bold">Synced!</span> 
+    @{
+        if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+        {
+            <div class="linkedin-profile-img">
+                <img src="@Model.ProfileImageUrl" />
+                <i class="fab fa-linkedin"></i>
+            </div>
+
+        }
+        else
+        {
+            <i class="fab fa-linkedin float-left mr-2"></i>
+        }
+    }
+
+    <span class="text font-bold">Synced!</span>
 </a>
