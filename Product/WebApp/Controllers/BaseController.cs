@@ -8,14 +8,12 @@ using UpDiddy.Api;
 using UpDiddyLib.Helpers;
 using UpDiddyLib.Dto;
 
-
 namespace UpDiddy.Controllers
 {
-
     public class BaseController : Controller
     {
         public SubscriberDto subscriber;
-        protected IApi _Api  = null;
+        protected IApi _Api = null;
 
         public BaseController(IApi api)
         {
@@ -30,22 +28,6 @@ namespace UpDiddy.Controllers
                 return subscriberGuid;
             else
                 return Guid.Empty;
-        }
-
-        public void GetSubscriber(bool HardRefresh)
-        {
- 
-            if (User.Identity.IsAuthenticated)
-            {
-                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                this.subscriber = _Api.Subscriber(subscriberGuid, HardRefresh);
-                if(this.subscriber.CampaignOffer != null)
-                    HttpContext.Session.SetString("CampaignOffers", this.subscriber.CampaignOffer);
-                    
-            }
-            else
-                this.subscriber = null;
-            
         }
     }
 }
