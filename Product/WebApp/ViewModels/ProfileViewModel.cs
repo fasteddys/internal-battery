@@ -13,7 +13,6 @@ namespace UpDiddy.ViewModels
 {
     public class ProfileViewModel : BaseViewModel
     {
-        //
         public IList<SubscriberWorkHistoryDto> WorkHistory { get; set; }
         public IList<SubscriberEducationHistoryDto> EducationHistory { get; set; }
         public IList<CompensationTypeDto> WorkCompensationTypes{ get; set; }
@@ -34,6 +33,7 @@ namespace UpDiddy.ViewModels
         public string City { get; set; }
         public string PostalCode { get; set; }
         private string _FormattedPhone;
+        public bool HasSyncedWithLinkedIn { get; set; }
 
         // todo: refactor for future use
         public SubscriberFileDto Resume

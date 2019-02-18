@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
+using UpDiddy.ViewModels;
 
 namespace UpDiddy.ViewComponents
 {
@@ -35,6 +36,14 @@ namespace UpDiddy.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync(Guid SubscriberGuid)
         {
+            LinkedInProfileDto lidto = _Api.GetLinkedInProfile();
+            if(lidto != null)
+            {
+                return View(LinkedInSyncViewComponent.SYNCED_VIEW, new LinkedInSyncViewModel {
+                    SyncLink = GetLinkedInRequestAuthCodeUrl(),
+                    ProfileImageUrl = lidto.PictureUrl
+                });
+            }
             var responseQuery = _httpContextAccessor.HttpContext.Request.Query;
             var returnUrl = UriHelper.GetDisplayUrl(_httpContextAccessor.HttpContext.Request);
          

@@ -352,6 +352,11 @@ namespace UpDiddy.Api
             return Put<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}", true);
         }
 
+        public LinkedInProfileDto GetLinkedInProfile()
+        {
+            return Get<LinkedInProfileDto>("linkedin", true);
+        }
+
         public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto)
         {
             return Post<Guid>(enrollmentFlowDto, "enrollment/", true);
