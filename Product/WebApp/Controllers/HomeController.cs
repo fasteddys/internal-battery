@@ -152,7 +152,6 @@ namespace UpDiddy.Controllers
         [Authorize]
         public IActionResult Profile()
         {
-            LinkedInProfileDto LinkedInProfileDto = _Api.GetLinkedInProfile();
 
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
@@ -190,8 +189,7 @@ namespace UpDiddy.Controllers
                 Skills = _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value),
                 Files = this.subscriber?.Files,
                 WorkHistory = _Api.GetWorkHistory(this.subscriber.SubscriberGuid.Value),
-                EducationHistory = _Api.GetEducationHistory(this.subscriber.SubscriberGuid.Value),
-                HasSyncedWithLinkedIn = LinkedInProfileDto != null
+                EducationHistory = _Api.GetEducationHistory(this.subscriber.SubscriberGuid.Value)
             };
 
             // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.

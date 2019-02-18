@@ -33,7 +33,6 @@ namespace UpDiddy.ViewModels
         public string City { get; set; }
         public string PostalCode { get; set; }
         private string _FormattedPhone;
-        public bool HasSyncedWithLinkedIn { get; set; }
 
         // todo: refactor for future use
         public SubscriberFileDto Resume

@@ -554,6 +554,7 @@
     .resume-file-component {
         // force height to make it more smooth
         margin-top: 1rem;
+
         label {
             font-size: 1rem;
         }
@@ -591,9 +592,12 @@
         }
 
         .resume-upload-form {
-            i{
-                font-size: 1.7rem;
+            i {
+                &.upload-resume-icon {
+                    font-size: 1.5rem;
+                }
             }
+
             .submit,
             .change-file,
             .cancel {
