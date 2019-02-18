@@ -52,7 +52,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             string name = Path.GetFileNameWithoutExtension(filename);
             string ext = Path.GetExtension(filename);
-            return string.Format("{0:10}_{1}{2}", DateTime.Now.Ticks, name, ext);
+            return string.Format("{0:10}_{1}{2}", DateTime.UtcNow.Ticks, name, ext);
         }
 
         public async Task<string> UploadFileAsync(string path, string fileName, Stream fileStream)
