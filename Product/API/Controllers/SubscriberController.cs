@@ -688,6 +688,8 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         public IActionResult Search(string searchQuery)
         {
+            searchQuery = HttpUtility.UrlDecode(searchQuery);
+
             List<Subscriber> subscribers = _db.Subscriber
                 .Include(s => s.SubscriberSkills)
                 .ThenInclude(s => s.Skill)
@@ -711,8 +713,6 @@ namespace UpDiddyApi.Controllers
                 .ToList();
 
             return Json(_mapper.Map<List<SubscriberDto>>(subscribers));
-
-            return View();
         }
 
         [HttpGet("/api/[controller]/search")]
