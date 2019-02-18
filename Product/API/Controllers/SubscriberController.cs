@@ -255,10 +255,10 @@ namespace UpDiddyApi.Controllers
             SubscriberWorkHistory WorkHistory = new SubscriberWorkHistory()
             {
                 SubscriberWorkHistoryGuid = Guid.NewGuid(),
-                CreateGuid = Guid.NewGuid(),
-                ModifyGuid = Guid.NewGuid(),
-                CreateDate = DateTime.Now,
-                ModifyDate = DateTime.Now,
+                CreateGuid = Guid.Empty,
+                ModifyGuid = Guid.Empty,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = DateTime.UtcNow,
                 IsDeleted = 0,
                 SubscriberId = subscriber.SubscriberId,
                 StartDate = WorkHistoryDto.StartDate,
@@ -312,7 +312,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest();
 
             // Update the company ID
-            WorkHistory.ModifyDate = DateTime.Now;
+            WorkHistory.ModifyDate = DateTime.UtcNow;
             WorkHistory.CompanyId = companyId;
             WorkHistory.StartDate = WorkHistoryDto.StartDate;
             WorkHistory.EndDate = WorkHistoryDto.EndDate;
@@ -511,7 +511,7 @@ namespace UpDiddyApi.Controllers
                 educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
             educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
 
-            EducationHistory.ModifyDate = DateTime.Now;
+            EducationHistory.ModifyDate = DateTime.UtcNow;
             EducationHistory.StartDate = EducationHistoryDto.StartDate;
             EducationHistory.EndDate = EducationHistoryDto.EndDate;
             EducationHistory.DegreeDate = EducationHistoryDto.DegreeDate;
