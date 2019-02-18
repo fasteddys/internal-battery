@@ -2,6 +2,8 @@ $linkedInBlue: #0077B5;
 $linkedInAccentBlue: #00A0DC;
 
 .linkedin {
+    margin-top: 1rem;
+
     &.linkedin-syncing {
         background-color: $linkedInAccentBlue;
         border: 0;
@@ -13,7 +15,8 @@ $linkedInAccentBlue: #00A0DC;
         font-weight: 400;
         text-align: center;
         vertical-align: middle;
-        i{
+
+        i {
             font-size: 1.5rem;
         }
     }
@@ -27,7 +30,7 @@ $linkedInAccentBlue: #00A0DC;
             font-size: 28px;
         }
 
-        .text { 
+        .text {
             vertical-align: middle;
         }
 
