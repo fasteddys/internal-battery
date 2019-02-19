@@ -1,0 +1,89 @@
+﻿.toast {
+    background-color: white;
+    opacity: 1;
+    box-shadow: 1px 7px 14px -5px rgba(0,0,0,0.2) !important;
+    border-left: 5px solid;
+    border-radius: 5px 0 0 5px;
+
+    &:before {
+        font-family: 'Font Awesome 5 Free';
+        font-size: 24px;
+        position: absolute;
+        left: 10px;
+        top: 25%;
+    }
+
+    .toast-close-button {
+        position: absolute;
+        top: 38%;
+        right: 5px;
+        color: grey;
+    }
+
+    .toast-progress {
+        opacity: 1;
+    }
+
+    &-success {
+        border-left-color: green;
+
+        .toast-progress {
+            background-color: green;
+        }
+
+        &:before {
+            color: green;
+            content: "\f058";
+        }
+    }
+
+    &-error {
+        border-left-color: #d64541;
+
+        .toast-progress {
+            background-color: #d64541;
+        }
+
+        &:before {
+            color: #d64541;
+            content: "\f06a";
+            font-weight: 900;
+        }
+    }
+
+    &-info {
+        border-left-color: #1D72F3;
+
+        .toast-progress {
+            background-color: #1D72F3;
+        }
+
+        &:before {
+            color: #1D72F3;
+            content: "\f05a";
+            font-weight: 900;
+        }
+    }
+
+    &-warning {
+        border-left-color: #FFC007;
+
+        .toast-progress {
+            background-color: #FFC007;
+        }
+
+        &:before {
+            color: #FFC007;
+            content: "\f06a";
+            font-weight: 900;
+        }
+    }
+
+    &-title {
+        color: black;
+    }
+
+    &-message {
+        color: #878787;
+    }
+}
