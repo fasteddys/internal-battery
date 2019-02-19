@@ -24,3 +24,59 @@
         background: url('http://www.hsi.com.hk/HSI-Net/pages/images/en/share/ajax-loader.gif') no-repeat center center;
     }
 }
+
+.mvc-grid {
+    .table.admin-grid {
+        background-color: white;
+
+        th {
+            background-color: transparent;
+        }
+
+        .far {
+            &.fa-eye {
+                color: $color-primary;
+            }
+        }
+
+        &.table-primary {
+            thead {
+                tr {
+                    background-color: gray;
+                    font-weight: normal;
+                    color: #fff;
+                }
+            }
+
+            .mvc-grid-filter {
+                color: white;
+
+                &:hover {
+                    background-color: #135f79;
+                }
+            }
+        }
+    }
+}
+
+
+.mvc-grid-pager.admin-pager{
+    button {
+        color: $color-secondary;
+
+        &.active {
+            background-color: gray;
+            border-color: $color-primary;
+
+            &:hover {
+                background-color: #135f79;
+                border-color: #135f79;
+            }
+        }
+
+        &:focus,
+        &:hover {
+            border-color: $color-primary;
+        }
+    }
+}

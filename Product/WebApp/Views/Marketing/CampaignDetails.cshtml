@@ -5,15 +5,19 @@
 @using System;
 @model CampaignDetailsViewModel
 
-<div class="container-fluid bg-color-primary">
+<div id="AdminContainer"  class="container-fluid bg-color-primary">
     <div class="container">
         <div class="row">
             <div class="col-md">
-                <ul class="nav nav-talent">
-                    <li class="nav-link active">
-                        <a class="text-white" href="/marketing/campaignstatistics"> < Campaign Statistics</a>
+                <ul class="nav nav-nav-admin">
+                    <li class="nav-link">
+                        <a class="text-white" href="/admin/skills">Skills</a>
                     </li>
-                   
+
+                    <li class="nav-link">
+                        <a class="text-white" href="/marketing/campaignstatistics">Campaign Statistics</a>
+                    </li>
+
                 </ul>
             </div>
         </div>
@@ -33,6 +37,7 @@
 
             @(Html
                                 .Grid(Model.CampaignDetails)
+                                .Css("admin-grid")
                                 .Build(columns =>
                                 {
                                     columns.Add(model => model.CourseName).Sortable(true).Titled("Course Name");
@@ -44,7 +49,7 @@
                                     columns.Add(model => model.CreateAcount).Titled("Accounts Created");
                                     columns.Add(model => model.CourseEnrollment).Titled("Course Enrollments");
                                     columns.Add(model => model.CourseCompletion).Titled("Courses Completed");
-              
+
                                 })
                                 .AppendCss("table table-primary table-striped")
                                 .Empty("No data found")
@@ -53,6 +58,7 @@
                                     pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
                                     pager.ShowPageSizes = true;
                                     pager.RowsPerPage = 10;
+                                    pager.CssClasses = "admin-pager";
                                 })
             )
 

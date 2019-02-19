@@ -5,11 +5,14 @@
 @using System;
 @model IEnumerable<CampaignStatisticDto>
 
-<div class="container-fluid bg-color-primary">
+<div id="AdminContainer"  class="container-fluid bg-color-primary">
     <div class="container">
         <div class="row">
             <div class="col-md">
-                <ul class="nav nav-talent">
+                <ul class="nav nav-admin">
+                    <li class="nav-link">
+                        <a class="text-white" href="/admin/skills">Skills</a>
+                    </li>
                     <li class="nav-link active">
                         <a class="text-white" href="#">Campaign Statistics</a>
                     </li>
@@ -32,7 +35,8 @@
         <div class="col-sm">
 
             @(Html
-                                        .Grid(Model)
+                                        .Grid(Model)                               
+                                        .Css("admin-grid")
                                         .Build(columns =>
                                         {
                                             columns.Add(model => model.Name).Sortable(true).Titled("Campaign Name");
@@ -53,6 +57,7 @@
                                             pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
                                             pager.ShowPageSizes = true;
                                             pager.RowsPerPage = 10;
+                                            pager.CssClasses = "admin-pager";
                                         })
             )
 
