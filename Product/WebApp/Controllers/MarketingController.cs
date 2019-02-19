@@ -38,11 +38,12 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("/Marketing/CampaignDetails/{CampaignGuid}")]
-        public IActionResult CampaignDetails(Guid CampaignGuid)
+        [Route("/Marketing/CampaignDetails/{CampaignGuid}/{CampaignName?}")]
+        public IActionResult CampaignDetails(Guid CampaignGuid, string CampaignName)
         {
             CampaignDetailsViewModel viewModel = new CampaignDetailsViewModel();
             viewModel.CampaignGuid = CampaignGuid;
+            viewModel.CampaignName = CampaignName;
             viewModel.CampaignDetails = _api.CampaignDetailsSearch(CampaignGuid);
             return View(viewModel);
         }
