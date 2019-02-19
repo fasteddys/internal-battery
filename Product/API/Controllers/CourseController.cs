@@ -180,6 +180,9 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetCourseByCampaignGuid(Guid campaignGuid)
         {
             var _a = _db.Campaign
+                .Where(c => c.IsDeleted == 0
+                    && c.StartDate <= DateTime.UtcNow
+                    && (!c.EndDate.HasValue || c.EndDate.Value >= DateTime.UtcNow))
                 .Join(_db.CampaignCourseVariant,
                     campaign => campaign.CampaignId,
                     campaignCourseVariant => campaignCourseVariant.CampaignId,
@@ -188,7 +191,7 @@ namespace UpDiddyApi.Controllers
                     ccv => ccv.campaignCourseVariant.CourseVariantId,
                     courseVariant => courseVariant.CourseVariantId,
                     (ccv, courseVariant) => new { ccv, courseVariant })
-                .Select(m => new {courseId = m.courseVariant.CourseId, campGuid = m.ccv.campaign.CampaignGuid })
+                .Select(m => new { courseId = m.courseVariant.CourseId, campGuid = m.ccv.campaign.CampaignGuid })
                 .Where(m => m.campGuid == campaignGuid);
 
             var camp = _a.FirstOrDefault();
@@ -207,7 +210,7 @@ namespace UpDiddyApi.Controllers
 
             return Ok(rval);
 
-            
+
         }
     }
 }

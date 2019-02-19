@@ -60,7 +60,7 @@
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
 
                     <!--<li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="News">@Localizer["News"]</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="ContactUs">@Localizer["Contact"]</a></li>-->
+    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="ContactUs">@Localizer["Contact"]</a></li>-->
 
 
                     @if (User.Identity.IsAuthenticated)
@@ -79,6 +79,7 @@
                             <li>
                                 <a class="nav-link" id="AdminPortal" asp-controller="Admin" asp-action="Skills">Admin</a>
                             </li>
+                      
                         }
                         <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a></li>
 

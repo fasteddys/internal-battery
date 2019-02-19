@@ -501,6 +501,24 @@ namespace UpDiddy.Api
         }
         #endregion
 
+        #region Campaign
+        public async Task<IList<CampaignDetailDto>> CampaignDetailsSearchAsync(Guid CampaginGuid)
+        {
+            return await GetAsync<IList<CampaignDetailDto>>("marketing/campaign-detail/" + CampaginGuid);
+        }
+
+        public async Task<IList<CampaignStatisticDto>> CampaignStatisticsSearchAsync()
+        {
+            return await GetAsync<IList<CampaignStatisticDto>>("marketing/campaign-statistic");
+        }
+        #endregion
+
+        #region LinkedIn
+        public async Task<LinkedInProfileDto> GetLinkedInProfileAsync()
+        {
+            return await GetAsync<LinkedInProfileDto>("linkedin");
+        }
+        #endregion
         public async Task<BasicResponseDto> SyncLinkedInAccountAsync(string linkedInCode, string returnUrl)
         {
             return await PutAsync<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}");

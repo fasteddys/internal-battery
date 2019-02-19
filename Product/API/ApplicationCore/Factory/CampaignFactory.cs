@@ -38,7 +38,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     }
                     else
                     {
-                        int daysLeft = promoMaxDays - (int)Math.Floor((DateTime.Now - enrollment.DateEnrolled).TotalDays);
+                        int daysLeft = promoMaxDays - (int)Math.Floor((DateTime.UtcNow - enrollment.DateEnrolled).TotalDays);
                         if (daysLeft > 0)
                             rVal = string.Format(Constants.CampaignRebate.CourseCompletion_InProgress_EligibleMsg, daysLeft);
                         else

@@ -13,7 +13,6 @@ namespace UpDiddy.ViewModels
 {
     public class ProfileViewModel : BaseViewModel
     {
-        //
         public IList<SubscriberWorkHistoryDto> WorkHistory { get; set; }
         public IList<SubscriberEducationHistoryDto> EducationHistory { get; set; }
         public IList<CompensationTypeDto> WorkCompensationTypes{ get; set; }

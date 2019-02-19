@@ -284,6 +284,62 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("CampaignCourseVariant");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.CampaignDetail", b =>
+                {
+                    b.Property<string>("CourseName")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("CourseCompletion");
+
+                    b.Property<int>("CourseEnrollment");
+
+                    b.Property<int>("CreateAcount");
+
+                    b.Property<string>("Email");
+
+                    b.Property<string>("FirstName");
+
+                    b.Property<string>("LastName");
+
+                    b.Property<int>("OpenEmail");
+
+                    b.Property<string>("Rebatetype");
+
+                    b.Property<int>("VisitLandingPage");
+
+                    b.HasKey("CourseName");
+
+                    b.ToTable("CampaignDetail");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CampaignStatistic", b =>
+                {
+                    b.Property<string>("Name")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<Guid>("CampaignGuid");
+
+                    b.Property<int>("CourseCompletion");
+
+                    b.Property<int>("CourseEnrollment");
+
+                    b.Property<int>("CreateAcount");
+
+                    b.Property<int>("EmailsSent");
+
+                    b.Property<DateTime?>("EndDate");
+
+                    b.Property<int>("OpenEmail");
+
+                    b.Property<DateTime?>("StartDate");
+
+                    b.Property<int>("VisitLandingPage");
+
+                    b.HasKey("Name");
+
+                    b.ToTable("CampaignStatistic");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.CommunicationSubscription", b =>
                 {
                     b.Property<int>("CommunicationSubscriptionId")

@@ -50,7 +50,7 @@
                     document.getElementById('GridSearch').value = '';
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
                 var search = document.getElementById('GridSearch').value;
-                grid.query.set('searchQuery', search);
+                grid.query.set('searchQuery', encodeURIComponent(search));
                 grid.reload();
             }
         </script>}
