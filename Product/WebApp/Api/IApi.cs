@@ -66,6 +66,12 @@ namespace UpDiddy.Api
         IList<SkillDto> GetEntitySkills(string entityType, Guid entityGuid);
         #endregion
 
+        #region Marketing
+        IList<CampaignStatisticDto> CampaignStatisticsSearch();
+        IList<CampaignDetailDto> CampaignDetailsSearch(Guid campaignGuid);
+        #endregion
+
+
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
     }
 }

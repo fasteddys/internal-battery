@@ -313,6 +313,15 @@ namespace UpDiddy.Api
 
         #region Public UnCached Methods
 
+        public IList<CampaignDetailDto> CampaignDetailsSearch(Guid CampaginGuid)
+        {
+            return Get<IList<CampaignDetailDto>>("marketing/campaign-detail/" + CampaginGuid, true);
+        }
+
+        public IList<CampaignStatisticDto> CampaignStatisticsSearch()
+        {
+            return Get<IList<CampaignStatisticDto>>("marketing/campaign-statistic", true);
+        }
         public PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid)
         {
             return Get<PromoCodeDto>("promocode/redemption-validate/" + promoCodeRedemptionGuid + "/course-variant/" + courseGuid, true);
