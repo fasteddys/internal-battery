@@ -124,8 +124,8 @@ namespace UpDiddyApi.Models
         public DbSet<CampaignCourseVariant> CampaignCourseVariant { get; set; }
         public DbSet<RebateType> RebateType { get; set; }
         public DbSet<CampaignContact> CampaignContact { get; set; }
-        public DbSet<CampaignStatistic> CampaignStatistic { get; set; }
-        public DbSet<CampaignDetail> CampaignDetail { get; set; }
+        public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
+        public DbQuery<CampaignDetail> CampaignDetail { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

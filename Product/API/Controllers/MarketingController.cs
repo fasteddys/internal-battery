@@ -46,6 +46,12 @@ namespace UpDiddyApi.Controllers
             var campaignInfo = _db.CampaignDetail.FromSql("System_CampaignDetails '" + CampaignGuid + "'")
                 .ProjectTo<CampaignDetailDto>(_mapper.ConfigurationProvider)
                 .ToList();
+
+
+    
+
+
+
             return Ok(campaignInfo);
         }
 
@@ -54,8 +60,7 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/campaign-statistic")]
         public IActionResult CampaignStatistics()
-        {
-
+        {     
             var campaignInfo = _db.CampaignStatistic.FromSql("System_CampaignStatistics")
                 .ProjectTo<CampaignStatisticDto>(_mapper.ConfigurationProvider)
                 .ToList();                               
