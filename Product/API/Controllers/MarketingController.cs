@@ -47,11 +47,6 @@ namespace UpDiddyApi.Controllers
                 .ProjectTo<CampaignDetailDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
-
-    
-
-
-
             return Ok(campaignInfo);
         }
 
