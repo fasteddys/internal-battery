@@ -13,6 +13,7 @@
             columns.Add(model => model.PhoneNumber).Sortable(true).Titled("Phone").RenderedAs(model => Utils.FormatPhoneNumber(model.PhoneNumber));
             columns.Add(model => model.City).Sortable(true).Titled("City");
             columns.Add(model => model.State.Name).Titled("State");
+            columns.Add(model => model.ModifyDate).Sortable(true).Titled("Last Modified").RenderedAs(model => model.ModifyDate.HasValue ? model.ModifyDate.Value.ToShortDateString() : string.Empty);
             columns.Add(model => $"<a href=\"Subscriber/{model.SubscriberGuid}\"><i class=\"far fa-eye\"></i></a>").Titled("Actions").Encoded(false).AppendCss("text-center");
 })
         .AppendCss("table table-primary table-striped")

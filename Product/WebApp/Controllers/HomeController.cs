@@ -26,6 +26,7 @@ using System.Security.Claims;
 using UpDiddy.Helpers;
 using System.Security.Claims;
 using UpDiddyLib.Dto.Marketing;
+using UpDiddy.Authentication;
 
 namespace UpDiddy.Controllers
 {
@@ -54,11 +55,9 @@ namespace UpDiddy.Controllers
             return Ok(Json(_Api.GetStatesByCountry(countryGuid)));
         }
 
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: false)]
         public IActionResult Index()
         {
-            // TODO remove test code 
-            GetSubscriber(false);
-
             HomeViewModel HomeViewModel = new HomeViewModel(_configuration, _Api.Topics());
             return View(HomeViewModel);
         }
@@ -68,19 +67,18 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         public IActionResult SignUp()
         {
-            GetSubscriber(false);
-
             // This will check to see if the subscriber has onboarded. If not, it flips the flag.
             // This means the onboarding flow should only ever work the first time a user logs into their account.
-            if(subscriber.HasOnboarded != 1)
+            if (subscriber.HasOnboarded != 1)
                 _Api.UpdateOnboardingStatus();
 
             SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
             {
-                SubscriberGuid = (Guid) subscriber.SubscriberGuid,
+                SubscriberGuid = (Guid)subscriber.SubscriberGuid,
                 Countries = _Api.GetCountries().Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
@@ -135,10 +133,10 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: false)]
         [Authorize]
         public IActionResult ProfileLogin()
         {
-            GetSubscriber(true);
             // todo: consider updating the course status on the API side when a request is made to retrieve the courses or something instead of
             // logic being determined in web app for managing API data
             if (this.subscriber != null)
@@ -150,10 +148,10 @@ namespace UpDiddy.Controllers
                 return RedirectToAction("Signup", "Home");
         }
 
+        [LoadSubscriber(isHardRefresh: true, isSubscriberRequired: true)]
         [Authorize]
         public IActionResult Profile()
         {
-            GetSubscriber(true);
 
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
@@ -193,7 +191,7 @@ namespace UpDiddy.Controllers
                 WorkHistory = _Api.GetWorkHistory(this.subscriber.SubscriberGuid.Value),
                 EducationHistory = _Api.GetEducationHistory(this.subscriber.SubscriberGuid.Value)
             };
-         
+
             // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
             // i considered overloading the existing GetSubscriber method to do this, but then that makes CourseController 
             // a dependency of BaseController. that's more refactoring than i think we want to concern ourselves with now.
@@ -279,7 +277,7 @@ namespace UpDiddy.Controllers
         {
             HttpResponseMessage response = await _Api.DownloadFileAsync(Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value), fileGuid);
             Stream stream = await response.Content.ReadAsStreamAsync();
-            return File(stream, "application/octet-stream", 
+            return File(stream, "application/octet-stream",
                 response.Content.Headers.ContentDisposition.FileName.Replace("\"", ""));
         }
 
@@ -320,11 +318,11 @@ namespace UpDiddy.Controllers
             return Ok(basicResponseDto);
         }
 
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpPost]
         public IActionResult Onboard(SignupFlowViewModel signupFlowViewModel)
         {
-            GetSubscriber(false);
             List<SkillDto> skillsDto = null;
             if (ModelState.IsValid)
             {
@@ -521,14 +519,14 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpPost]
         [Route("/Home/AddWorkHistory")]
-        public IActionResult AddWorkHistory([FromBody] SubscriberWorkHistoryDto wh )
+        public IActionResult AddWorkHistory([FromBody] SubscriberWorkHistoryDto wh)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (wh != null)                            
-                return Ok(_Api.AddWorkHistory(subscriberGuid, wh));            
+            if (wh != null)
+                return Ok(_Api.AddWorkHistory(subscriberGuid, wh));
             else
                 return BadRequest("Oops, We're sorry somthing when wrong!");
-            
+
         }
 
         [Authorize]
@@ -537,8 +535,8 @@ namespace UpDiddy.Controllers
         public IActionResult UpdateWorkHistory([FromBody] SubscriberWorkHistoryDto wh)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (wh != null)              
-                return Ok(_Api.UpdateWorkHistory(subscriberGuid, wh));           
+            if (wh != null)
+                return Ok(_Api.UpdateWorkHistory(subscriberGuid, wh));
             else
                 return BadRequest("Oops, We're sorry somthing when wrong!");
 
@@ -551,7 +549,7 @@ namespace UpDiddy.Controllers
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             return Ok(_Api.DeleteWorkHistory(subscriberGuid, WorkHistoryGuid));
-                
+
         }
 
         [Authorize]
@@ -561,9 +559,9 @@ namespace UpDiddy.Controllers
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if (eh != null)
-               return Ok( _Api.AddEducationalHistory(subscriberGuid, eh));
+                return Ok(_Api.AddEducationalHistory(subscriberGuid, eh));
             else
-                return BadRequest("Oops, We're sorry somthing when wrong!");            
+                return BadRequest("Oops, We're sorry somthing when wrong!");
         }
 
         [Authorize]
@@ -602,7 +600,7 @@ namespace UpDiddy.Controllers
             // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
             ContactDto Contact = _Api.Contact(ContactGuid);
             CourseDto Course = _Api.GetCourseByCampaignGuid(CampaignGuid);
-            if(Course == null || Contact == null)
+            if (Course == null || Contact == null)
             {
                 return NotFound();
             }
@@ -615,7 +613,7 @@ namespace UpDiddy.Controllers
             };
             return View("Campaign/" + CampaignViewName, cvm);
         }
-        
+
         [HttpPost]
         [Route("/Home/CampaignSignUp")]
         public BasicResponseDto CampaignSignUp(SignUpViewModel signUpViewModel)
@@ -670,7 +668,7 @@ namespace UpDiddy.Controllers
 
                 switch (subscriberResponse.StatusCode)
                 {
-                    
+
                     case 200:
                         // If contact-to-subscriber conversion is successful, fetch course user is enrolling in.
                         CourseDto Course = _Api.GetCourseByCampaignGuid((Guid)signUpViewModel.CampaignGuid);
@@ -688,7 +686,7 @@ namespace UpDiddy.Controllers
                         return subscriberResponse;
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 // Generic server error to display gracefully to the user.
                 return new BasicResponseDto
@@ -697,8 +695,8 @@ namespace UpDiddy.Controllers
                     Description = "Unfortunately, an error has occured with your submission. Please try again later."
                 };
             }
-            
-            
+
+
         }
 
 

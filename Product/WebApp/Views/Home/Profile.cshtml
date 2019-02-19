@@ -186,6 +186,8 @@
                 </div>
                 <div class="row">
                     <div class="col-md">
+
+                        @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.SubscriberGuid })
                         <div class="resume-file-component @((Model.Resume != null) ? "has-resume" : "")">
                             @if (Model.Resume != null)
                             {
@@ -198,7 +200,7 @@
                             <form class="resume-upload-form" method="post" action="/Home/UploadResume" enctype="multipart/form-data">
                                 <div>
                                     <label for="resume-file-input" class="btn btn-sm btn-light-blue select-file mb-0">
-                                        <i class="fas fa-file-upload"></i>&nbsp;Upload Resume
+                                        <i class="fas fa-file-upload float-left pr-2 upload-resume-icon"></i>&nbsp;Upload Resume
                                     </label>
                                     <label for="resume-file-input" class="change-file mb-0">
                                         <span class="file-name"></span>&nbsp;<i class="fas fa-exchange-alt"></i>
