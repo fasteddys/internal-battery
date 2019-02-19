@@ -1,25 +1,8 @@
 ﻿$("#SignUpForm").submit(function (e) {
     e.preventDefault();
-    var signUpToastOptions = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": false,
-        "positionClass": "toast-top-full-width",
-        "preventDuplicates": false,
-        "onclick": null,
-        "timeOut": "0",
-        "extendedTimeOut": "0",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    };
 
     $("body").prepend("<div class=\"overlay\" id=\"SignUpOverlay\"><div id=\"loading-img\" ></div></div>");
     $("#SignUpOverlay").show();
-
-    
 
     // Put red border on input box if field is blank.
     $("#SignUpComponent input").each(function () {
@@ -46,7 +29,7 @@
                 $("#SignUpOverlay").remove();
                 $(this).addClass("invalid");
                 failedRegexTest = true;
-                toastr.error($(this).data("val-regex"), signUpToastOptions);
+                ToastService.error($(this).data("val-regex"));
             }
             else {
                 $(this).removeClass("invalid");
@@ -60,7 +43,7 @@
         if (!(new RegExp($("#SignUpEmail input").data("val-regex-pattern")).test($("#SignUpEmail input").val()))) {
             $("#SignUpEmail input").addClass("invalid");
             $("#SignUpOverlay").remove();
-            toastr.error("Invalid email address. Please update your supplied email and try again.", signUpToastOptions);
+            ToastService.error("Invalid email address. Please update your supplied email and try again.");
             return;
         }
         else {
@@ -69,7 +52,7 @@
         // If passwords don't match, tell user and prevent form submission.
         if ($("#SignUpComponent #Password").val() !== $("#SignUpComponent #ReenterPassword").val()) {
             $("#SignUpOverlay").remove();
-            toastr.error("The passwords you have entered do not match.", 'Whoops...', signUpToastOptions);
+            ToastService.error("The passwords you have entered do not match.", 'Whoops...');
         }
         else {
             $.ajax({
@@ -85,19 +68,19 @@
                     else {
                         $("#SignUpOverlay").remove();
                         // If there's an error on submission, display it to user in graceful toast message.
-                        toastr.error(html.description, 'Whoops...', signUpToastOptions);
+                        ToastService.error(html.description, 'Whoops...');
                     }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     $("#SignUpOverlay").remove();
-                    toastr.error("Unfortunately, there was an error with your submission. Please try again later.", signUpToastOptions);
+                    ToastService.error("Unfortunately, there was an error with your submission. Please try again later.");
                 }
             });
         }
     }
     else {
         $("#SignUpOverlay").remove();
-        toastr.error("Please enter information for all sign-up fields and try again.", signUpToastOptions);
+        ToastService.error("Please enter information for all sign-up fields and try again.");
     }
     
     

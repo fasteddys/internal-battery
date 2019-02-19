@@ -16,26 +16,6 @@ class Education {
     }
 }
 
-
-
-var toastrOptions = {
-    "closeButton": true,
-    "debug": false,
-    "newestOnTop": false,
-    "progressBar": false,
-    "positionClass": "toast-top-full-width",
-    "preventDuplicates": false,
-    "onclick": null,
-    "showDuration": "300",
-    "hideDuration": "1000",
-    "timeOut": "3000",
-    "extendedTimeOut": "1000",
-    "showEasing": "swing",
-    "hideEasing": "linear",
-    "showMethod": "fadeIn",
-    "hideMethod": "fadeOut"
-};
-
 $(document).ready(function () {
 
     
@@ -166,11 +146,11 @@ $(document).ready(function () {
         CareerCircleAPI.uploadResume($('#UploadedResume')[0].files[0], true)
             .then(function (result) {
                 removeSkipFunctionalityOnResumeUpload();
-                toastr.success('We have recieved your resume and are currently processing it; please wait...', 'Great!', toastrOptions);
+                ToastService.success('We have recieved your resume and are currently processing it; please wait...', 'Great!');
             })
             .catch(function (err) {
                 EnableResumeNextButton();
-                toastr.warning('We were not able to process this file. Please select another file and try again. Alternatively, you can skip this and move to the next step.', 'Warning!', toastrOptions);
+                ToastService.warning('We were not able to process this file. Please select another file and try again. Alternatively, you can skip this and move to the next step.');
             });
     });
 
@@ -345,7 +325,7 @@ var ResumeUploadTimeout = function () {
         if (resumeUploadInProgress == true) {
             $('.overlay').hide(); 
             resumeUploadInProgress = false;
-            toastr.warning("Unfortunately, parsing your resume took longer than we expected. Please proceed and manually enter your information.", toastrOptions);
+            ToastService.warning("Unfortunately, parsing your resume took longer than we expected. Please proceed and manually enter your information.");
             EnableResumeNextButton();
         }
     }, 20000);
