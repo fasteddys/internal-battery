@@ -152,6 +152,7 @@ namespace UpDiddy.Controllers
         [Authorize]
         public IActionResult Profile()
         {
+
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
                 SubscriberGuid = this.subscriber?.SubscriberGuid,
