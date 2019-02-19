@@ -42,6 +42,10 @@ namespace UpDiddyApi.Helpers
             CreateMap<RebateType, RebateTypeDto>().ReverseMap();
             CreateMap<Refund, RefundDto>().ReverseMap();
             CreateMap<Contact, ContactDto>().ReverseMap();
+            CreateMap<CampaignStatistic, CampaignStatisticDto>().ReverseMap();
+            CreateMap<CampaignDetail, CampaignDetailDto>().ReverseMap();
+
+            
             // mappings that ignore properties in the Dto that don't exist in the model object
             CreateMap<PromoCode, PromoCodeDto>()
                 .ForMember(x => x.IsValid, opt => opt.Ignore())

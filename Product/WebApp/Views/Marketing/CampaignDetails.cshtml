@@ -1,0 +1,67 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model CampaignDetailsViewModel
+
+<div class="container-fluid bg-color-primary">
+    <div class="container">
+        <div class="row">
+            <div class="col-md">
+                <ul class="nav nav-talent">
+                    <li class="nav-link active">
+                        <a class="text-white" href="/marketing/campaignstatistics"> < Campaign Statistics</a>
+                    </li>
+                   
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container talent">
+
+    <div class="row">
+        <div class="col-sm mt-3 mb-3">
+            <div class="form-inline">
+        
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm">
+
+            @(Html
+                                .Grid(Model.CampaignDetails)
+                                .Build(columns =>
+                                {
+                                    columns.Add(model => model.CourseName).Sortable(true).Titled("Course Name");
+                                    columns.Add(model => model.Rebatetype).Sortable(true).Titled("Rebate Type");
+                                    columns.Add(model => model.FirstName).Sortable(true).Titled("First Name");
+                                    columns.Add(model => model.LastName).Sortable(true).Titled("Last Name");
+                                    columns.Add(model => model.OpenEmail).Sortable(true).Titled("Emails Opened");
+                                    columns.Add(model => model.VisitLandingPage).Sortable(true).Titled("Landing Page Visits");
+                                    columns.Add(model => model.CreateAcount).Titled("Accounts Created");
+                                    columns.Add(model => model.CourseEnrollment).Titled("Course Enrollments");
+                                    columns.Add(model => model.CourseCompletion).Titled("Courses Completed");
+              
+                                })
+                                .AppendCss("table table-primary table-striped")
+                                .Empty("No data found")
+                                .Pageable(pager =>
+                                {
+                                    pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
+                                    pager.ShowPageSizes = true;
+                                    pager.RowsPerPage = 10;
+                                })
+            )
+
+        </div>
+    </div>
+    @section Scripts{
+        <script type="text/javascript">
+            window.onload = function () {
+                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+            }       
+        </script>}
+</div>
