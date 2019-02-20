@@ -12,6 +12,7 @@
         }
     }
 }
+
 .admin-skills-container {
     label { 
         line-height: 30px;
@@ -22,6 +23,15 @@
         cursor: wait !important;
         font-style: italic;
         background: url('http://www.hsi.com.hk/HSI-Net/pages/images/en/share/ajax-loader.gif') no-repeat center center;
+    }
+}
+
+.admin-breadcrumb {
+    font-size: 12px;
+    color: dimgray;
+
+    a {
+        color: $color-secondary;
     }
 }
 

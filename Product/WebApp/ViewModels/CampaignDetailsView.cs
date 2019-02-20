@@ -9,6 +9,7 @@ namespace UpDiddy.ViewModels
     public class CampaignDetailsViewModel
     {
         public Guid CampaignGuid { get; set; }
-       public IList<CampaignDetailDto> CampaignDetails { get; set; }
+        public string CampaignName { get; set; }
+        public IList<CampaignDetailDto> CampaignDetails { get; set; }
     }
 }
