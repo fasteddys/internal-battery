@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Dto.Marketing;
 
 namespace UpDiddyApi.Controllers
 {
@@ -61,5 +62,21 @@ namespace UpDiddyApi.Controllers
                 .ToList();                               
             return Ok(campaignInfo);
         }
+
+
+        // create a email contact list in send grid
+        [HttpPost]
+        //[Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("api/[controller]/marketing-campaign/contact-list")]
+        public IActionResult CreateCampaignEmailList([FromBody] SendGridListDto List)
+        {
+            var campaignInfo = _db.CampaignStatistic.FromSql("System_CampaignStatistics")
+                .ProjectTo<CampaignStatisticDto>(_mapper.ConfigurationProvider)
+                .ToList();
+            return Ok(campaignInfo);
+        }
+
+
+
     }
 }
