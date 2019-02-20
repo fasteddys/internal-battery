@@ -135,14 +135,14 @@ namespace UpDiddy.Controllers
             return View();
         }
 
-        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: false)]
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         public async Task<IActionResult> ProfileLogin()
         {
             // todo: consider updating the course status on the API side when a request is made to retrieve the courses or something instead of
             // logic being determined in web app for managing API data
-            if (this.subscriber != null)
-                await _Api.UpdateStudentCourseProgressAsync(true);
+
+            await _Api.UpdateStudentCourseProgressAsync(true);
 
             if (this.subscriber.HasOnboarded > 0)
                 return RedirectToAction("Profile", "Home");

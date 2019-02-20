@@ -584,19 +584,35 @@ namespace UpDiddyApi.Controllers
 
             #region Verify and Check Data
             if (contact == null)
-                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid Contact guid." });
+            {
+                var response = new BasicResponseDto() { StatusCode = 400, Description = "Invalid Contact guid." };
+                _syslog.Log(LogLevel.Warning, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request {Description}", response.Description);
+                return BadRequest(response);
+            }
 
             if (campaign == null)
-                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Signing up through this campaign is not available at this time." });
+            {
+                var response = new BasicResponseDto() { StatusCode = 400, Description = "Signing up through this campaign is not available at this time." };
+                _syslog.Log(LogLevel.Warning, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request {Description}", response.Description);
+                return BadRequest(response);
+            }
 
             // check email
             if (contact.Email != signUpDto.email)
-                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "This offer is only good for the recepient of this email campaign." });
+            {
+                var response = new BasicResponseDto() { StatusCode = 400, Description = "This offer is only good for the recepient of this email campaign." };
+                _syslog.Log(LogLevel.Warning, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request {Description} {Email}", response.Description, signUpDto.email);
+                return BadRequest(response);
+            }
 
             // check if subscriber is in database
             Subscriber subscriber = await _db.Subscriber.Where(s => s.Email == contact.Email).FirstOrDefaultAsync();
             if (subscriber != null)
-                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Subscriber already exists, please login to continue." });
+            {
+                var response = new BasicResponseDto() { StatusCode = 400, Description = "Subscriber already exists, please login to continue." };
+                _syslog.Log(LogLevel.Warning, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request {Description}", response.Description);
+                return BadRequest(response);
+            }
             #endregion
 
             // check if user exits in AD if the user does then we skip this step
