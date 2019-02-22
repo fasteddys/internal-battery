@@ -1,4 +1,8 @@
-﻿#toast-container > div {
+﻿#toast-container {
+    z-index: 2147483646;
+}
+
+#toast-container > div {
     opacity: 1;
 }
 
