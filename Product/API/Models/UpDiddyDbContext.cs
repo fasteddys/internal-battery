@@ -126,10 +126,18 @@ namespace UpDiddyApi.Models
         public DbSet<CampaignContact> CampaignContact { get; set; }
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
         public DbQuery<CampaignDetail> CampaignDetail { get; set; }
-
+        public DbSet<Partner> Partner { get; set; }
+        public DbSet<PartnerContact> PartnerContact { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<PartnerContact>()
+                .HasKey(pc => new { pc.PartnerId, pc.ContactId });
+            
+            modelBuilder.Entity<PartnerContact>()
+                .Property<string>("MetaDataJSON")
+                .HasField("_metadata");
+
             modelBuilder.Entity<Enrollment>()
                 .HasOne<CampaignCourseVariant>(e => e.CampaignCourseVariant)
                 .WithMany();
