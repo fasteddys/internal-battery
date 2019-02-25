@@ -15,7 +15,7 @@ namespace UpDiddyApi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024")
+                .HasAnnotation("ProductVersion", "2.1.8-servicing-32085")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -282,62 +282,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("RefundId");
 
                     b.ToTable("CampaignCourseVariant");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.CampaignDetail", b =>
-                {
-                    b.Property<string>("CourseName")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("CourseCompletion");
-
-                    b.Property<int>("CourseEnrollment");
-
-                    b.Property<int>("CreateAcount");
-
-                    b.Property<string>("Email");
-
-                    b.Property<string>("FirstName");
-
-                    b.Property<string>("LastName");
-
-                    b.Property<int>("OpenEmail");
-
-                    b.Property<string>("Rebatetype");
-
-                    b.Property<int>("VisitLandingPage");
-
-                    b.HasKey("CourseName");
-
-                    b.ToTable("CampaignDetail");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.CampaignStatistic", b =>
-                {
-                    b.Property<string>("Name")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<Guid>("CampaignGuid");
-
-                    b.Property<int>("CourseCompletion");
-
-                    b.Property<int>("CourseEnrollment");
-
-                    b.Property<int>("CreateAcount");
-
-                    b.Property<int>("EmailsSent");
-
-                    b.Property<DateTime?>("EndDate");
-
-                    b.Property<int>("OpenEmail");
-
-                    b.Property<DateTime?>("StartDate");
-
-                    b.Property<int>("VisitLandingPage");
-
-                    b.HasKey("Name");
-
-                    b.ToTable("CampaignStatistic");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CommunicationSubscription", b =>
@@ -1175,6 +1119,63 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("NewsTypeId");
 
                     b.ToTable("NewsType");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.Partner", b =>
+                {
+                    b.Property<int>("PartnerId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Description");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<Guid?>("PartnerGuid");
+
+                    b.HasKey("PartnerId");
+
+                    b.ToTable("Partner");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerContact", b =>
+                {
+                    b.Property<int>("PartnerId");
+
+                    b.Property<int>("ContactId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<string>("MetaDataJSON");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<Guid?>("PartnerContactGuid");
+
+                    b.Property<string>("SourceSystemIdentifier");
+
+                    b.HasKey("PartnerId", "ContactId");
+
+                    b.HasIndex("ContactId");
+
+                    b.ToTable("PartnerContact");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Payment", b =>
@@ -2322,6 +2323,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
                         .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerContact", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Contact", "Contact")
+                        .WithMany()
+                        .HasForeignKey("ContactId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Partner", "Partner")
+                        .WithMany()
+                        .HasForeignKey("PartnerId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
