@@ -112,6 +112,7 @@ namespace UpDiddy.Controllers
         public IActionResult Checkout(CourseViewModel courseViewModel)
         {
             DateTime currentDate = DateTime.UtcNow;
+       
 
             // get the course variant based on the Guid selected by the user
             // normally we would want everything to come back via the view model, but we don't want to trust this because it contains price information
@@ -208,6 +209,11 @@ namespace UpDiddy.Controllers
                         PhoneNumber = courseViewModel.SubscriberPhoneNumber
                     });
                 }
+
+
+                // TODO JAB Test if Campaign Phase is set 
+                string CampaignPhase = Request.Cookies[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
+                // TODO JAB add campaign phase to enrollmentDTO 
 
                 // create the enrollment object
                 EnrollmentDto enrollmentDto = new EnrollmentDto

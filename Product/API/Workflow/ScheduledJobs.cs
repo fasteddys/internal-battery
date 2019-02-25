@@ -406,7 +406,7 @@ namespace UpDiddyApi.Workflow
             return result;
         }
 
-        public void StoreTrackingInformation(Guid campaignGuid, Guid contactGuid, Guid actionGuid, string headers)
+        public void StoreTrackingInformation(Guid campaignGuid, Guid contactGuid, Guid actionGuid, string campaignPhase, string headers)
         {
             var campaignEntity = _db.Campaign.Where(c => c.CampaignGuid == campaignGuid && c.IsDeleted == 0).FirstOrDefault();
             var contactEntity = _db.Contact.Where(c => c.ContactGuid == contactGuid && c.IsDeleted == 0).FirstOrDefault();
@@ -429,6 +429,7 @@ namespace UpDiddyApi.Workflow
                 else
                 {
                     // create a unique record for the tracking event
+                    // TODO JAB Add campaign phase to contact action 
                     _db.ContactAction.Add(new ContactAction()
                     {
                         ActionId = actionEntity.ActionId,

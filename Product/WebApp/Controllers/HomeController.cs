@@ -24,9 +24,10 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Security.Claims;
 using UpDiddy.Helpers;
-using System.Security.Claims;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddy.Authentication;
+
+ 
 
 namespace UpDiddy.Controllers
 {
@@ -592,12 +593,16 @@ namespace UpDiddy.Controllers
         public IActionResult Campaign(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
         {
 
-            // TODO JAB capture query param to track phase for landing page view
+            // DONE TODO JAB capture query param to track phase for landing page view
+            // capture any campaign phase information that has been passed
+            string CampaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
+            // Set cookie in user browser 
+            Response.Cookies.Append(Constants.TRACKING_KEY_CAMPAIGN_PHASE, CampaignPhase);
             string _TrackingImgSource = _configuration["Api:ApiUrl"] +
                 "tracking?contact=" +
                 ContactGuid +
                 "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
-                CampaignGuid;
+                CampaignGuid + "&campaignphase=" + WebUtility.UrlEncode(CampaignPhase);
 
             // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
             ContactDto Contact = _Api.Contact(ContactGuid);
@@ -607,14 +612,15 @@ namespace UpDiddy.Controllers
                 return NotFound();
             }
 
-            // TODO JAB add phase to campaign view model to support phase capture on signup
+            // DONE TODO JAB add phase to campaign view model to support phase capture on signup
             CampaignViewModel cvm = new CampaignViewModel()
             {
               
                 CampaignGuid = CampaignGuid,
                 ContactGuid = ContactGuid,
                 TrackingImgSource = _TrackingImgSource,
-                CampaignCourse = Course
+                CampaignCourse = Course,
+                CampaignPhase = CampaignPhase
             };
             return View("Campaign/" + CampaignViewName, cvm);
         }
@@ -663,7 +669,8 @@ namespace UpDiddy.Controllers
             {
                 email = signUpViewModel.Email,
                 password = signUpViewModel.Password,
-                campaignGuid = signUpViewModel.CampaignGuid
+                campaignGuid = signUpViewModel.CampaignGuid,
+                campaignPhase = signUpViewModel.CampaignPhase
             };
 
             // Guard UX from any unforeseen server error.

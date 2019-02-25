@@ -202,6 +202,7 @@ namespace UpDiddyApi.ApplicationCore
                         else
                         {
                             // create if the action does not already exist
+                            // TODO JAB Add campaign phase from Enrollment to contact action
                             _db.ContactAction.Add(new ContactAction()
                             {
                                 ActionId = 4, // todo: this should not be a hard-coded reference to the PK
