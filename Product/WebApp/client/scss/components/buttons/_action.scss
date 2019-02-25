@@ -2,6 +2,11 @@
 
 // Base Styles
 @media (min-width: 0px) {
+
+    a.action-container{
+        display: block;
+    }
+
     .button-container {
         padding: .5rem 0rem;
         border-radius: .25rem;
@@ -16,8 +21,7 @@
             outline: none;
         }
 
-        &a {
-        }
+        
 
         &.skew-left-to-right {
             &:before {

@@ -1,0 +1,46 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model CampaignDetailsViewModel
+
+<div id="AdminContainer" class="container-fluid bg-color-primary">
+    <div class="container">
+        <div class="row">
+            <div class="col-md">
+                <ul class="nav nav-nav-admin">
+                    <li class="nav-link">
+                        <a class="text-white" href="/admin/skills">Skills</a>
+                    </li>
+                    <li class="nav-link">
+                        <a class="text-white" href="/marketing/campaignstatistics">Campaign Statistics</a>
+                    </li>
+                    <li class="nav-link active">
+                        <a class="text-white" href="/admin/partners">Partners</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="PartnersContainer" class="row mt-4">
+    <div class="col-12">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex flex-row-reverse">
+                        <div id="AddPartnerAction" class="col-2 no-padding">
+                            @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                                Text = "Add <i class=\"fas fa-plus\"></i>",
+                                Hyperlink = "/",
+                                ChosenColorScheme = "cc-cscheme-secondary",
+                                ButtonAction = ActionButtonViewModel.Action.CTA
+                            })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

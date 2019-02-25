@@ -88,5 +88,14 @@ namespace UpDiddy.Controllers
             await _api.UpdateEntitySkillsAsync(entitySkillDto);
             return Ok();
         }
+
+        [Authorize]
+        [HttpGet]
+        [Route("/admin/partners")]
+        public async Task<IActionResult> Partners()
+        {
+
+            return View();
+        }
     }
 }

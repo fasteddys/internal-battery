@@ -4,11 +4,13 @@
 
 @{
     string tag = "div";
+    string innerTag = "button";
     string dataFormAttribute = "";
     string hyperLinkAttribute = "";
     if(Model.ButtonAction == ActionButtonViewModel.Action.CTA && !string.IsNullOrEmpty(Model.Hyperlink))
     {
         tag = "a";
+        innerTag = "div";
         hyperLinkAttribute = "href=" + Model.Hyperlink;
     }
     else if(Model.ButtonAction == ActionButtonViewModel.Action.SUBMIT)
@@ -17,10 +19,12 @@
     }
 }
 
-<@tag @hyperLinkAttribute>
-    <button id="ButtonComponent" class="button-container @Model.ChosenColorScheme @Model.SkewDirection font-bold" @dataFormAttribute>
-        @Model.Text
-    </button>
+<@tag @hyperLinkAttribute class="action-container">
+    <@innerTag id="ButtonComponent" 
+               class="button-container @Model.ChosenColorScheme @Model.SkewDirection font-bold" @dataFormAttribute
+               data-action-type="@Model.ButtonAction">
+        @Html.Raw(Model.Text)
+    </@innerTag>
 </@tag>
 
 
