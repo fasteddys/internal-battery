@@ -70,6 +70,8 @@ namespace UpDiddyApi.Migrations
                 name: "IX_PartnerContact_ContactId",
                 table: "PartnerContact",
                 column: "ContactId");
+
+            migrationBuilder.Sql("ALTER TABLE dbo.PartnerContact ADD CONSTRAINT CK_MetaDataJSON_IsJSON CHECK (ISJSON(MetaDataJSON) > 0)");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
