@@ -650,7 +650,7 @@ namespace UpDiddyApi.Controllers
                     // Save subscriber to database 
                     _db.Subscriber.Add(subscriber);
                     await _db.SaveChangesAsync();
-
+                    // TODO JAB save phase from SignUpDto into ContactActions
                     _db.ContactAction.Add(new ContactAction()
                     {
                         ActionId = 3, // todo: use constants or enum or something
@@ -673,6 +673,7 @@ namespace UpDiddyApi.Controllers
                 }
                 catch(Exception ex)
                 {
+                    
                     _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Error occured while attempting save Subscriber and contact DB updates for {@ContactGuid} (email: {@Email}). Exception: {@Exception}", contactGuid, signUpDto.email, ex);
                     return StatusCode(500);
                 }

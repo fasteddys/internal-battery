@@ -85,6 +85,7 @@
                             Create an account to get started
                         </div>
                         <div class="col-12 no-padding">
+                            @* TODO JAB Extend the SignUpViewModel with campaign phase information from CampaignSignUpBandViewModel *@
                             @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel
                             {
                                 ContactGuid = Model.ContactGuid,

@@ -591,6 +591,8 @@ namespace UpDiddy.Controllers
         [Route("/Home/Campaign/{CampaignViewName}/{CampaignGuid}/{ContactGuid}")]
         public IActionResult Campaign(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
         {
+
+            // TODO JAB capture query param to track phase for landing page view
             string _TrackingImgSource = _configuration["Api:ApiUrl"] +
                 "tracking?contact=" +
                 ContactGuid +
@@ -604,8 +606,11 @@ namespace UpDiddy.Controllers
             {
                 return NotFound();
             }
+
+            // TODO JAB add phase to campaign view model to support phase capture on signup
             CampaignViewModel cvm = new CampaignViewModel()
             {
+              
                 CampaignGuid = CampaignGuid,
                 ContactGuid = ContactGuid,
                 TrackingImgSource = _TrackingImgSource,
@@ -653,6 +658,7 @@ namespace UpDiddy.Controllers
             }
 
             // If all checks pass, assemble SignUpDto from information user entered.
+            // TODO Jab extend SignUpDto to support campaign phase 
             SignUpDto sudto = new SignUpDto
             {
                 email = signUpViewModel.Email,
