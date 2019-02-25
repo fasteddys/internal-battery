@@ -192,6 +192,8 @@ namespace UpDiddy
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }
 
+            app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
+
             var supportedCultures = new[]
                 {
                 new CultureInfo("en-US"),
