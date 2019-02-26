@@ -21,10 +21,10 @@ namespace UpDiddy.Controllers
 
         [HttpGet]
         [Route("/Topic/{TopicSlug}")]
-        public IActionResult Get(string TopicSlug)
+        public async System.Threading.Tasks.Task<IActionResult> GetAsync(string TopicSlug)
         {         
-            TopicDto Topic = _Api.TopicBySlug(TopicSlug);
-            TopicViewModel TopicViewModel = new TopicViewModel(_configuration, _Api.getCoursesByTopicSlug(TopicSlug), Topic);
+            TopicDto Topic = await _Api.TopicBySlugAsync(TopicSlug);
+            TopicViewModel TopicViewModel = new TopicViewModel(_configuration, await _Api.getCoursesByTopicSlugAsync(TopicSlug), Topic);
         
             return View("Details", TopicViewModel);
         }

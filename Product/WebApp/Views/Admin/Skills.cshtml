@@ -131,7 +131,7 @@
                 processData: false,
                 contentType: 'application/json',
                 success: function (result) {
-                    toastr.success('Skills saved!');
+                    ToastService.success('Skills saved!');
                     select_entity_type.clear();
                     select_skills.clear();
                     select_entity.clear();
@@ -140,7 +140,7 @@
                     $('#btnSaveEntitySkills').attr('disabled', 'disabled');
                 },
                 error: function (jqXHR) {
-                    toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions)
+                    ToastService.error('Oops! Something unexpected happened, and we are looking into it.')
                 },
                 complete: function (jqXHR, status) {
 

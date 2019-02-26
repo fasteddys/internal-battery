@@ -36,7 +36,7 @@ namespace UpDiddy.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync(Guid SubscriberGuid)
         {
-            LinkedInProfileDto lidto = _Api.GetLinkedInProfile();
+            LinkedInProfileDto lidto = await _Api.GetLinkedInProfileAsync();
             if(lidto != null)
             {
                 return View(LinkedInSyncViewComponent.SYNCED_VIEW, new LinkedInSyncViewModel {
@@ -50,7 +50,7 @@ namespace UpDiddy.ViewComponents
             // if true then send code to API
             if (CheckGetParams(responseQuery))
             {
-                BasicResponseDto apiResponse = _Api.SyncLinkedInAccount(responseQuery["code"], returnUrl);
+                BasicResponseDto apiResponse = await _Api.SyncLinkedInAccountAsync(responseQuery["code"], returnUrl);
 
                 // todo: perhaps display error in some way if this failed
                 // if error then they will need to get another authcode and try again

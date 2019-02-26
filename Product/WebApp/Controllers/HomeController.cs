@@ -27,6 +27,7 @@ using UpDiddy.Helpers;
 using System.Security.Claims;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddy.Authentication;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace UpDiddy.Controllers
 {
@@ -36,9 +37,9 @@ namespace UpDiddy.Controllers
         private readonly IHostingEnvironment _env;
 
         [HttpGet]
-        public IActionResult GetCountries()
+        public async Task<IActionResult> GetCountries()
         {
-            return Ok(Json(_Api.GetCountries()));
+            return Ok(Json(await _Api.GetCountriesAsync()));
         }
 
         public HomeController(IApi api,
@@ -50,15 +51,14 @@ namespace UpDiddy.Controllers
             _configuration = configuration;
         }
         [HttpGet]
-        public IActionResult GetStatesByCountry(Guid countryGuid)
+        public async Task<IActionResult> GetStatesByCountry(Guid countryGuid)
         {
-            return Ok(Json(_Api.GetStatesByCountry(countryGuid)));
+            return Ok(Json(await _Api.GetStatesByCountryAsync(countryGuid)));
         }
 
-        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: false)]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            HomeViewModel HomeViewModel = new HomeViewModel(_configuration, _Api.Topics());
+            HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
             return View(HomeViewModel);
         }
 
@@ -69,22 +69,24 @@ namespace UpDiddy.Controllers
 
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
-        public IActionResult SignUp()
+        public async Task<IActionResult> SignUp()
         {
             // This will check to see if the subscriber has onboarded. If not, it flips the flag.
             // This means the onboarding flow should only ever work the first time a user logs into their account.
             if (subscriber.HasOnboarded != 1)
-                _Api.UpdateOnboardingStatus();
+                await _Api.UpdateOnboardingStatusAsync();
 
+            var countries = await _Api.GetCountriesAsync();
+            var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
             SignupFlowViewModel signupFlowViewModel = new SignupFlowViewModel()
             {
                 SubscriberGuid = (Guid)subscriber.SubscriberGuid,
-                Countries = _Api.GetCountries().Select(c => new SelectListItem()
+                Countries = countries.Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
                     Value = c.CountryGuid.ToString(),
                 }),
-                States = _Api.GetStatesByCountry(this.subscriber?.State?.Country?.CountryGuid).Select(s => new SelectListItem()
+                States = states.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
                     Value = s.StateGuid.ToString(),
@@ -135,12 +137,12 @@ namespace UpDiddy.Controllers
 
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
-        public IActionResult ProfileLogin()
+        public async Task<IActionResult> ProfileLogin()
         {
             // todo: consider updating the course status on the API side when a request is made to retrieve the courses or something instead of
             // logic being determined in web app for managing API data
 
-            _Api.UpdateStudentCourseProgress(true);
+            await _Api.UpdateStudentCourseProgressAsync(true);
 
             if (this.subscriber.HasOnboarded > 0)
                 return RedirectToAction("Profile", "Home");
@@ -150,8 +152,10 @@ namespace UpDiddy.Controllers
 
         [LoadSubscriber(isHardRefresh: true, isSubscriberRequired: true)]
         [Authorize]
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
+            var countries = await _Api.GetCountriesAsync();
+            var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
 
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
@@ -172,24 +176,24 @@ namespace UpDiddy.Controllers
                 StackOverflowUrl = this.subscriber?.StackOverflowUrl,
                 TwitterUrl = this.subscriber?.TwitterUrl,
                 Enrollments = this.subscriber?.Enrollments,
-                WorkCompensationTypes = _Api.GetCompensationTypes(),
-                EducationDegreeTypes = _Api.GetEducationalDegreeTypes(),
-                Countries = _Api.GetCountries().Select(c => new SelectListItem()
+                WorkCompensationTypes = await _Api.GetCompensationTypesAsync(),
+                EducationDegreeTypes = await _Api.GetEducationalDegreeTypesAsync(),
+                Countries = countries.Select(c => new SelectListItem()
                 {
                     Text = c.DisplayName,
                     Value = c.CountryGuid.ToString(),
                 }),
-                States = _Api.GetStatesByCountry(this.subscriber?.State?.Country?.CountryGuid).Select(s => new SelectListItem()
+                States = states.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
                     Value = s.StateGuid.ToString(),
-                    Selected = s.StateGuid == this.subscriber?.State?.StateGuid
+                    Selected = s.StateGuid.Equals(this.subscriber?.State?.StateGuid)
                 }),
                 // todo: consider refactoring this... include in GetSubscriber (add navigation property)
-                Skills = _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value),
+                Skills = await _Api.GetSkillsBySubscriberAsync(this.subscriber.SubscriberGuid.Value),
                 Files = this.subscriber?.Files,
-                WorkHistory = _Api.GetWorkHistory(this.subscriber.SubscriberGuid.Value),
-                EducationHistory = _Api.GetEducationHistory(this.subscriber.SubscriberGuid.Value)
+                WorkHistory = await _Api.GetWorkHistoryAsync(this.subscriber.SubscriberGuid.Value),
+                EducationHistory = await _Api.GetEducationHistoryAsync(this.subscriber.SubscriberGuid.Value)
             };
 
             // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
@@ -197,7 +201,7 @@ namespace UpDiddy.Controllers
             // a dependency of BaseController. that's more refactoring than i think we want to concern ourselves with now.
             foreach (var enrollment in profileViewModel.Enrollments)
             {
-                var courseLogin = _Api.CourseLogin(enrollment.EnrollmentGuid.Value);
+                var courseLogin = await _Api.CourseLoginAsync(enrollment.EnrollmentGuid.Value);
                 enrollment.CourseUrl = courseLogin.LoginUrl;
             }
 
@@ -206,7 +210,7 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpPost]
-        public BasicResponseDto UpdateProfileInformation(ProfileViewModel profileViewModel)
+        public async Task<BasicResponseDto> UpdateProfileInformation(ProfileViewModel profileViewModel)
         {
             List<SkillDto> skillsDto = null;
             if (ModelState.IsValid)
@@ -243,7 +247,7 @@ namespace UpDiddy.Controllers
                     SubscriberGuid = profileViewModel.SubscriberGuid,
                     Skills = skillsDto
                 };
-                _Api.UpdateProfileInformation(Subscriber);
+                await _Api.UpdateProfileInformationAsync(Subscriber);
                 return new BasicResponseDto
                 {
                     StatusCode = 200,
@@ -281,47 +285,10 @@ namespace UpDiddy.Controllers
                 response.Content.Headers.ContentDisposition.FileName.Replace("\"", ""));
         }
 
-        [Authorize]
-        [HttpPost]
-        public IActionResult UploadResume(ResumeViewModel resumeViewModel)
-        {
-            var hubId = Request.Cookies[Constants.SignalR.CookieKey];
-
-            // Check that the resume is a valid text file
-            if (!Utils.IsValidTextFile(resumeViewModel.Resume.FileName))
-            {
-                return BadRequest();
-            }
-
-            BasicResponseDto basicResponseDto = null;
-
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    basicResponseDto = _Api.UploadResume(new ResumeDto()
-                    {
-                        SubscriberGuid = this.GetSubscriberGuid(),
-                        Base64EncodedResume = Utils.ToBase64EncodedString(resumeViewModel.Resume),
-                    });
-                }
-                else
-                {
-                    return BadRequest();
-                }
-            }
-            catch (Exception ex)
-            {
-                return Error(ex.Message);
-            }
-
-            return Ok(basicResponseDto);
-        }
-
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpPost]
-        public IActionResult Onboard(SignupFlowViewModel signupFlowViewModel)
+        public async Task<IActionResult> OnboardAsync(SignupFlowViewModel signupFlowViewModel)
         {
             List<SkillDto> skillsDto = null;
             if (ModelState.IsValid)
@@ -353,7 +320,7 @@ namespace UpDiddy.Controllers
                     SubscriberGuid = (Guid)this.subscriber.SubscriberGuid,
                     Skills = skillsDto
                 };
-                _Api.UpdateProfileInformation(Subscriber);
+                await _Api.UpdateProfileInformationAsync(Subscriber);
                 return RedirectToAction("Profile");
             }
             else
@@ -429,30 +396,24 @@ namespace UpDiddy.Controllers
             return View();
         }
 
-        [HttpGet]
-        [Route("/Home/TierLevel")]
-        public string TierLevel()
-        {
-            return "{\"Tier\": \"1\"}";
-        }
-
-        public IActionResult Error(string message)
-        {
-            ViewBag.Message = message;
-            Response.StatusCode = 500;
-            return View();
-        }
-
         public IActionResult PageNotFound()
         {
-            ViewBag.InvalidPath = this.HttpContext.Request.Path;
-            Response.StatusCode = 404;
-            return View();
+            ViewBag.OriginalPath = this.HttpContext.Request.Path;
+            return View("404");
         }
 
-        public IActionResult Forbidden()
+        public IActionResult Error(int? statusCode = null)
         {
-            Response.StatusCode = 401;
+            var feature = HttpContext.Features.Get<IStatusCodeReExecuteFeature>();
+            ViewBag.OriginalPath = feature?.OriginalPath;
+            if (statusCode.HasValue)
+            {
+                if (statusCode.Value == 404 || statusCode.Value == 500)
+                {
+                    var viewName = statusCode.ToString();
+                    return View(viewName);
+                }
+            }
             return View();
         }
 
@@ -471,18 +432,18 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpGet]
         [Route("/Home/GetSkills")]
-        public JsonResult GetSkills(string userQuery)
+        public async Task<JsonResult> GetSkillsAsync(string userQuery)
         {
-            var matchedSkills = _Api.GetSkills(userQuery);
+            var matchedSkills = await _Api.GetSkillsAsync(userQuery);
             return new JsonResult(matchedSkills);
         }
 
         [Authorize]
         [HttpGet]
         [Route("/Home/GetCompanies")]
-        public JsonResult GetCompanies(string userQuery)
+        public async Task<JsonResult> GetCompaniesAsync(string userQuery)
         {
-            var matchedCompanies = _Api.GetCompanies(userQuery);
+            var matchedCompanies = await _Api.GetCompaniesAsync(userQuery);
             return new JsonResult(matchedCompanies);
         }
 
@@ -490,9 +451,9 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpGet]
         [Route("/Home/GetEducationalInstitutions")]
-        public JsonResult GetEducationalInstitutions(string userQuery)
+        public async Task<JsonResult> GetEducationalInstitutionsAsync(string userQuery)
         {
-            var matchedInstitutions = _Api.GetEducationalInstitutions(userQuery);
+            var matchedInstitutions = await _Api.GetEducationalInstitutionsAsync(userQuery);
             return new JsonResult(matchedInstitutions);
         }
 
@@ -500,9 +461,9 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpGet]
         [Route("/Home/GetEducationalDegrees")]
-        public JsonResult GetEducationalDegrees(string userQuery)
+        public async Task<JsonResult> GetEducationalDegreesAsync(string userQuery)
         {
-            var matchedDegrees = _Api.GetEducationalDegrees(userQuery);
+            var matchedDegrees = await _Api.GetEducationalDegreesAsync(userQuery);
             return new JsonResult(matchedDegrees);
         }
 
@@ -510,86 +471,132 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpGet]
         [Route("/Home/GetCompensationTypes")]
-        public JsonResult GetCompensationTypes(string userQuery)
+        public async Task<JsonResult> GetCompensationTypesAsync(string userQuery)
         {
-            var compensationTypes = _Api.GetCompanies(userQuery);
+            var compensationTypes = await _Api.GetCompaniesAsync(userQuery);
             return new JsonResult(compensationTypes);
         }
 
         [Authorize]
         [HttpPost]
         [Route("/Home/AddWorkHistory")]
-        public IActionResult AddWorkHistory([FromBody] SubscriberWorkHistoryDto wh)
+        public async Task<IActionResult> AddWorkHistoryAsync([FromBody] SubscriberWorkHistoryDto wh )
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (wh != null)
-                return Ok(_Api.AddWorkHistory(subscriberGuid, wh));
-            else
-                return BadRequest("Oops, We're sorry somthing when wrong!");
+            if (wh == null)
+                return BadRequest("Oops, We're sorry somthing went wrong!");
 
+            try
+            {
+                return Ok(await _Api.AddWorkHistoryAsync(subscriberGuid, wh));
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }
         }
 
         [Authorize]
         [HttpPost]
         [Route("/Home/UpdateWorkHistory")]
-        public IActionResult UpdateWorkHistory([FromBody] SubscriberWorkHistoryDto wh)
+        public async Task<IActionResult> UpdateWorkHistoryAsync([FromBody] SubscriberWorkHistoryDto wh)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (wh != null)
-                return Ok(_Api.UpdateWorkHistory(subscriberGuid, wh));
-            else
-                return BadRequest("Oops, We're sorry somthing when wrong!");
 
+            if (wh == null)              
+                return BadRequest("Oops, We're sorry somthing went wrong!");
+
+            try
+            {
+                return Ok(await _Api.UpdateWorkHistoryAsync(subscriberGuid, wh));
+            }
+            catch(ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }
         }
 
         [Authorize]
         [HttpPost]
         [Route("/Home/DeleteWorkHistory/{WorkHistoryGuid}")]
-        public IActionResult DeleteWorkHistory(Guid WorkHistoryGuid)
+        public async Task<IActionResult> DeleteWorkHistoryAsync(Guid WorkHistoryGuid)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            return Ok(_Api.DeleteWorkHistory(subscriberGuid, WorkHistoryGuid));
 
+            try
+            {
+                return Ok(await _Api.DeleteWorkHistoryAsync(subscriberGuid, WorkHistoryGuid));
+            }
+            catch(ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }
         }
 
         [Authorize]
         [HttpPost]
         [Route("/Home/AddEducationalHistory")]
-        public IActionResult AddEducationalHistory([FromBody] SubscriberEducationHistoryDto eh)
+        public async Task<IActionResult> AddEducationalHistoryAsync([FromBody] SubscriberEducationHistoryDto eh)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (eh != null)
-                return Ok(_Api.AddEducationalHistory(subscriberGuid, eh));
-            else
-                return BadRequest("Oops, We're sorry somthing when wrong!");
+
+            if (eh == null)
+                return BadRequest("Oops, We're sorry somthing went wrong!");
+
+            try
+            {
+                return Ok(await _Api.AddEducationalHistoryAsync(subscriberGuid, eh));
+            }
+            catch(ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }
         }
 
         [Authorize]
         [HttpPost]
         [Route("/Home/UpdateEducationHistory")]
-        public IActionResult UpdateEducationHistory([FromBody] SubscriberEducationHistoryDto eh)
+        public async Task<IActionResult> UpdateEducationHistoryAsync([FromBody] SubscriberEducationHistoryDto eh)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (eh != null)
-                return Ok(_Api.UpdateEducationHistory(subscriberGuid, eh));
-            else
-                return BadRequest("Oops, We're sorry somthing when wrong!");
+            if (eh == null)
+                return BadRequest("Oops, We're sorry somthing went wrong!");
 
+            try
+            {
+                return Ok(await _Api.UpdateEducationHistoryAsync(subscriberGuid, eh));
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }
         }
 
         [Authorize]
         [HttpPost]
         [Route("/Home/DeleteEducationHistory/{EducationHistoryGuid}")]
-        public IActionResult DeleteEducationHistory(Guid EducationHistoryGuid)
+        public async Task<IActionResult> DeleteEducationHistoryAsync(Guid EducationHistoryGuid)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            return Ok(_Api.DeleteEducationHistory(subscriberGuid, EducationHistoryGuid));
-
+            try
+            {
+                return Ok(await _Api.DeleteEducationHistoryAsync(subscriberGuid, EducationHistoryGuid));
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }
         }
 
         [HttpGet]
         [Route("/Home/Campaign/{CampaignViewName}/{CampaignGuid}/{ContactGuid}")]
-        public IActionResult Campaign(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
+        public async Task<IActionResult> CampaignAsync(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
         {
             string _TrackingImgSource = _configuration["Api:ApiUrl"] +
                 "tracking?contact=" +
@@ -597,26 +604,30 @@ namespace UpDiddy.Controllers
                 "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
                 CampaignGuid;
 
-            // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
-            ContactDto Contact = _Api.Contact(ContactGuid);
-            CourseDto Course = _Api.GetCourseByCampaignGuid(CampaignGuid);
-            if (Course == null || Contact == null)
+            try
             {
-                return NotFound();
+                // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
+                ContactDto Contact = await _Api.ContactAsync(ContactGuid);
+                CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
+
+                CampaignViewModel cvm = new CampaignViewModel()
+                {
+                    CampaignGuid = CampaignGuid,
+                    ContactGuid = ContactGuid,
+                    TrackingImgSource = _TrackingImgSource,
+                    CampaignCourse = Course
+                };
+                return View("Campaign/" + CampaignViewName, cvm);
             }
-            CampaignViewModel cvm = new CampaignViewModel()
+            catch (ApiException ex)
             {
-                CampaignGuid = CampaignGuid,
-                ContactGuid = ContactGuid,
-                TrackingImgSource = _TrackingImgSource,
-                CampaignCourse = Course
-            };
-            return View("Campaign/" + CampaignViewName, cvm);
+                return StatusCode((int) ex.StatusCode);
+            }
         }
 
         [HttpPost]
         [Route("/Home/CampaignSignUp")]
-        public BasicResponseDto CampaignSignUp(SignUpViewModel signUpViewModel)
+        public async Task<BasicResponseDto> CampaignSignUpAsync(SignUpViewModel signUpViewModel)
         {
             bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.Email) &&
                 !string.IsNullOrEmpty(signUpViewModel.Password) &&
@@ -625,6 +636,7 @@ namespace UpDiddy.Controllers
             // Make sure user has filled out all fields.
             if (!modelHasAllFields)
             {
+                Response.StatusCode = 400;
                 return new BasicResponseDto
                 {
                     StatusCode = 400,
@@ -635,6 +647,7 @@ namespace UpDiddy.Controllers
             // This is basically the same check as above, but to be safe...
             if (!ModelState.IsValid)
             {
+                Response.StatusCode = 400;
                 return new BasicResponseDto
                 {
                     StatusCode = 400,
@@ -645,9 +658,10 @@ namespace UpDiddy.Controllers
             // Make sure user's password and re-enter password values match.
             if (!signUpViewModel.Password.Equals(signUpViewModel.ReenterPassword))
             {
+                Response.StatusCode = 400;
                 return new BasicResponseDto
                 {
-                    StatusCode = 403,
+                    StatusCode = 400,
                     Description = "User's passwords do not match."
                 };
             }
@@ -664,42 +678,20 @@ namespace UpDiddy.Controllers
             try
             {
                 // Convert contact to subscriber and create ADB2C account for them.
-                BasicResponseDto subscriberResponse = _Api.UpdateSubscriberContact(signUpViewModel.ContactGuid, sudto);
+                BasicResponseDto subscriberResponse = await _Api.UpdateSubscriberContactAsync(signUpViewModel.ContactGuid, sudto);
 
-                switch (subscriberResponse.StatusCode)
-                {
-
-                    case 200:
-                        // If contact-to-subscriber conversion is successful, fetch course user is enrolling in.
-                        CourseDto Course = _Api.GetCourseByCampaignGuid((Guid)signUpViewModel.CampaignGuid);
-
-                        // Return url to course checkout page to front-end. This will prompt user to log in
-                        // now that their ADB2C account is created.
-                        return new BasicResponseDto
-                        {
-                            StatusCode = subscriberResponse.StatusCode,
-                            Description = "/Course/Checkout/" + Course.Slug
-                        };
-                    default:
-                        // If there's an error from contact-to-subscriber converstion API call,
-                        // return that error description to a toast to the user.
-                        return subscriberResponse;
-                }
-            }
-            catch (Exception e)
-            {
-                // Generic server error to display gracefully to the user.
+                CourseDto Course = await _Api.GetCourseByCampaignGuidAsync((Guid)signUpViewModel.CampaignGuid);
                 return new BasicResponseDto
                 {
-                    StatusCode = 500,
-                    Description = "Unfortunately, an error has occured with your submission. Please try again later."
+                    StatusCode = subscriberResponse.StatusCode,
+                    Description = "/Course/Checkout/" + Course.Slug
                 };
             }
-
-
+            catch(ApiException ex)
+            {
+                Response.StatusCode = (int) ex.StatusCode;
+                return ex.ResponseDto;
+            }
         }
-
-
-
     }
 }
