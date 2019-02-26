@@ -31,6 +31,13 @@
     <div class="container admin">
         <div class="row">
             <div class="col-sm mt-3 mb-3">
+                <h4>Choose Partner:</h4>
+                [dropdown list goes here]
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm mt-3 mb-3">
+                <h4>Choose CSV file(s):</h4>
                 <form id="upload" method="post" action="uploadcontacts" enctype="multipart/form-data">
                     <div id="drop">
                         Drop Here
@@ -43,6 +50,41 @@
                         <!-- The file uploads will be shown here -->
                     </ul>
                 </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm mt-3 mb-3">
+                <h4>Contact Preview</h4>
+                <table id="contactTablePreview" class="table">
+                    <thead>
+                        <tr>
+                            <!-- Column headers from the uploaded file will be placed here -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Preview record data will be placed here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm mt-3 mb-3">
+                <h4>Initial validation</h4>
+                <ul id="importValidationSummary" class="list-group">
+                    <!-- Import validation messages will be added here -->
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm mt-3 mb-3">
+                <h4>Import the data</h4>
+                <!-- Create controls to initiate the import here -->
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm mt-3 mb-3">
+                <h4>Processing results</h4>
+                <!-- This is where we will put information about what *actually* happened during the import process - note that this may be different than the initial validation -->
             </div>
         </div>
     </div>
@@ -115,11 +157,59 @@
                     }
                 },
 
+                done: function (e, data) {
+
+                    // load the preview data for the contacts 
+                    var contactsPreview = data.result.contactsPreview;
+                    var isHeaderProcessed = false;
+                    contactsPreview.forEach(function (row) {
+                        // create table header (if it does not yet exist)
+                        if (!isHeaderProcessed) {
+                            Object.keys(row).forEach(function (key, idx) {
+                                if (key === 'metadata') {
+                                    Object.keys(row[key]).forEach(function (metadataKey, i) {
+                                        $('#contactTablePreview thead tr').append('<th scope="col" style="background-color: yellow">' + metadataKey + '</th>');
+                                    });
+                                } else {
+                                    $('#contactTablePreview thead tr').append('<th scope="col">' + key + '</th>');
+                                }
+                            });
+                            isHeaderProcessed = true;
+                        }
+                        // create table rows
+                        var rowHtml = '<tr>';
+                        Object.keys(row).forEach(function (key, idx) {
+                            if (key === 'metadata') {
+                                Object.keys(row[key]).forEach(function (metadataKey, i) {
+                                    rowHtml += '<td>';
+                                    rowHtml += (row[key])[metadataKey];
+                                    rowHtml += '</td>';
+                                });
+                            } else {
+                                rowHtml += '<td>';
+                                rowHtml += row[key];
+                                rowHtml += '</td>';
+                            }
+                        });
+                        rowHtml += '</tr>';
+                        $('#contactTablePreview tbody').append(rowHtml);
+                    });
+
+                    // show summary of validation actions which will occur if the file is processed (e.g. removed duplicate rows by email)
+                    var importActions = data.result.importActions;
+                    importActions.forEach(function (importAction, idx) {
+
+                        var importActionHtml = '<li>';
+                        importActionHtml += importAction.reason;
+                        importActionHtml += '</li>';
+                        $('#importValidationSummary').append(importActionHtml);
+                    });
+                },
+
                 fail: function (e, data) {
-                    // Something has gone wrong!
+                    // todo: add toast message?
                     data.context.addClass('error');
                 }
-
             });
 
             // Prevent the default action when a file is dropped on the window

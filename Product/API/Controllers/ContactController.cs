@@ -55,7 +55,7 @@ namespace UpDiddyApi.Controllers
                 .Where(t => t.IsDeleted == 0 && t.ContactGuid == ContactGuid)
                 .ProjectTo<ContactDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefault();
-            if(rval == null)
+            if (rval == null)
             {
                 return NotFound();
             }
@@ -63,6 +63,34 @@ namespace UpDiddyApi.Controllers
             {
                 return Ok(rval);
             }
+        }
+
+
+        [HttpPut]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("api/[controller]/import/{partnerGuid}/{cacheKey}")]
+        public IActionResult ImportContacts(Guid? partnerGuid, string cacheKey, [FromBody] List<ContactDto> contacts)
+        {
+            if (!partnerGuid.HasValue || partnerGuid.Value == Guid.Empty || cacheKey == null)
+                return BadRequest();
+
+            // todo: existing contacts
+
+            var newContacts =
+                from db in _db.Contact
+                join upload in contacts on db.Email equals upload.Email into temp
+                from upload in temp.DefaultIfEmpty()
+                select new
+                {
+                    db.ContactId,
+                    Email = upload.Email,
+                    SourceSystemIdentifier = upload.SourceSystemIdentifier,
+                    Metadata = upload.Metadata
+                };
+
+            // todo: can we yield return records as they are processed? do we want to process them one at a time?
+
+            return Ok();
         }
     }
 }
