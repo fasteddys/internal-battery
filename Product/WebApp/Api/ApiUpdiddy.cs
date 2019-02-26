@@ -667,6 +667,19 @@ namespace UpDiddy.Api
             }
         }
 
+        private bool RemoveCachedValue<T>(string CacheKey)
+        {
+            try
+            {
+                _cache.Remove(CacheKey);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region TalentPortal
@@ -718,6 +731,43 @@ namespace UpDiddy.Api
         private async Task<ContactDto> _Contact(Guid contactGuid)
         {
             return await GetAsync<ContactDto>($"contact/{contactGuid}");
+        }
+
+        #endregion
+
+        #region AdminPortal
+
+        public async Task<IList<PartnerDto>> GetPartnersAsync()
+        {
+            string cacheKey = $"Partners";
+            IList<PartnerDto> rval = GetCachedValue<IList<PartnerDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _PartnersAsync();
+                SetCachedValue<IList<PartnerDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        private async Task<IList<PartnerDto>> _PartnersAsync()
+        {
+            return await GetAsync<IList<PartnerDto>>("partners");
+        }
+
+        public async Task<PartnerDto> CreatePartnerAsync(PartnerDto partnerDto)
+        {
+            // Create the new partner and store it for return
+            PartnerDto newPartner = await PostAsync<PartnerDto>("partners", partnerDto);
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Partners";
+            RemoveCachedValue<IList<PartnerDto>>(cacheKey);
+
+            // Return the newly created partner
+            return newPartner;
         }
 
         #endregion

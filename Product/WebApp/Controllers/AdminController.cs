@@ -10,11 +10,11 @@ using UpDiddyLib.Dto;
 namespace UpDiddy.Controllers
 {
     [Authorize(Policy = "IsCareerCircleAdmin")]
-    public class AdminController : Controller
+    public class AdminController : BaseController
     {
         private IApi _api;
 
-        public AdminController(IApi api)
+        public AdminController(IApi api) : base(api)
         {
             _api = api;
         }
@@ -94,8 +94,30 @@ namespace UpDiddy.Controllers
         [Route("/admin/partners")]
         public async Task<IActionResult> Partners()
         {
-
             return View();
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<PartialViewResult> PartnerGrid(String searchQuery)
+        {
+            IList<PartnerDto> partners = await _api.GetPartnersAsync();
+            return PartialView("_PartnerGrid", partners);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult AddPartner()
+        {
+            return View();
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> CreatePartnerAsync(PartnerDto NewPartner)
+        {
+            PartnerDto newPartnerFromDb = await _api.CreatePartnerAsync(NewPartner);
+            return RedirectToAction("Partners");
         }
     }
 }
