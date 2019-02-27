@@ -81,9 +81,6 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]")]
         public IActionResult Get()
         {
-            // todo: testing, remove this!!
-            
-
             IList<CourseDto> rval = null;
             rval = _db.Course
                 .Where(t => t.IsDeleted == 0)
