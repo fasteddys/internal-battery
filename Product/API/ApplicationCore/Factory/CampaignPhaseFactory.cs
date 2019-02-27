@@ -19,16 +19,19 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefault();
         }
 
+
+        // todo - this function assumes that the campaign phases will be created in the same chronological order
+        // e.g.  as they will be sent.  this needs to be changed to allow the user to specify the chronological 
+        // order of the phases irregardless of the order in which they are created
+
         // get the first phase of the specified campaign
         public static CampaignPhase GetCampaignInitialPhase(UpDiddyDbContext db, int CampaignId)
         {
             return db.CampaignPhase
                 .Where(s => s.IsDeleted == 0 && s.CampaignId == CampaignId)
-                .OrderBy(s => s.CampaignId)
+                .OrderBy(s => s.CampaignPhaseId)
                 .FirstOrDefault();
         }
-
-
         // get the specified campaign by name if possible, if not return the first phase of the campaign
         public static CampaignPhase GetCampaignPhaseByNameOrInitial(UpDiddyDbContext db, int CampaignId, string CampaignPhaseName)
         {
@@ -56,6 +59,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 campaignPhase = db.CampaignPhase
                     .Where(cp => cp.IsDeleted == 0 && cp.CampaignPhaseId == action.CampaignPhaseId)
                     .FirstOrDefault();
+            }
+            else // if the user does not have any actions, default to the first campaign phase 
+            {
+                campaignPhase = GetCampaignInitialPhase(db, CampaignId);
             }
 
             return campaignPhase;
