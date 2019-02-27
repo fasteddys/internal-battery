@@ -84,10 +84,7 @@ namespace UpDiddyApi.Controllers
             if (Response.StatusCode == HttpStatusCode.Created)
                 return Ok(ResponseJson);
             else
-                return BadRequest(ResponseJson);
-            
-
-            return Ok();
+                return BadRequest(ResponseJson);            
         }
         #endregion
 
@@ -158,9 +155,6 @@ namespace UpDiddyApi.Controllers
                 return Ok(ResponseJson);
             else
                 return BadRequest(ResponseJson);
-             
-
-            return Ok();
         }
 
         // Create new contact list and add contacts to it. will also work with an existing named list.
@@ -176,9 +170,7 @@ namespace UpDiddyApi.Controllers
             if (Response.StatusCode == HttpStatusCode.Created)
                 return Ok(ResponseJson);
             else
-                return BadRequest(ResponseJson);
-            
-            return Ok();
+                return BadRequest(ResponseJson);   
         }
         #endregion
     }

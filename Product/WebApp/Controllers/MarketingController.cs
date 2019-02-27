@@ -20,30 +20,31 @@ namespace UpDiddy.Controllers
         
         [Authorize]
         [HttpGet]
-        public PartialViewResult CampaignStatisticsGrid()
+        public async Task<PartialViewResult> CampaignStatisticsGrid()
         {
-            IList<CampaignStatisticDto> campaignsStatistics = _api.CampaignStatisticsSearch();
+            IList<CampaignStatisticDto> campaignsStatistics = await _api.CampaignStatisticsSearchAsync();
             return PartialView("_CampaignStatisticsGrid", campaignsStatistics);
         }
         
         [Authorize]
         [HttpGet]
         [Route("/Marketing/CampaignStatistics")]
-        public IActionResult CampaignStatistics()
+        public async Task<IActionResult> CampaignStatistics()
         {            
-                IList<CampaignStatisticDto> campaignsStatistics = _api.CampaignStatisticsSearch();
+                IList<CampaignStatisticDto> campaignsStatistics = await _api.CampaignStatisticsSearchAsync();
                 return View(campaignsStatistics);
         }
 
 
         [Authorize]
         [HttpGet]
-        [Route("/Marketing/CampaignDetails/{CampaignGuid}")]
-        public IActionResult CampaignDetails(Guid CampaignGuid)
+        [Route("/Marketing/CampaignDetails/{CampaignGuid}/{CampaignName?}")]
+        public async Task<IActionResult> CampaignDetails(Guid CampaignGuid, string CampaignName)
         {
             CampaignDetailsViewModel viewModel = new CampaignDetailsViewModel();
             viewModel.CampaignGuid = CampaignGuid;
-            viewModel.CampaignDetails = _api.CampaignDetailsSearch(CampaignGuid);
+            viewModel.CampaignName = CampaignName;
+            viewModel.CampaignDetails = await _api.CampaignDetailsSearchAsync(CampaignGuid);
             return View(viewModel);
         }
 

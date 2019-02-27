@@ -5,8 +5,8 @@
       "bower_components/bootstrap/dist/css/bootstrap.css",
       "node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.css",
       "wwwroot/lib/mvc-grid/mvc-grid.css",
-      "wwwroot/css/bundle.css",
       "node_modules/toastr/build/toastr.css",
+      "wwwroot/css/bundle.css",
       "bower_components/selectize/dist/css/selectize.css",
       "bower_components/selectize/dist/css/selectize.default.css",
       "node_modules/jquery-ui-dist/jquery-ui.css"
@@ -48,8 +48,8 @@
       "bower_components/bootstrap/dist/css/bootstrap.css",
       "node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.css",
       "wwwroot/lib/mvc-grid/mvc-grid.css",
-      "wwwroot/css/bundle.css",
       "node_modules/toastr/build/toastr.css",
+      "wwwroot/css/bundle.css",
       "bower_components/selectize/dist/css/selectize.css",
       "bower_components/selectize/dist/css/selectize.default.css",
       "node_modules/jquery-ui-dist/jquery-ui.css"

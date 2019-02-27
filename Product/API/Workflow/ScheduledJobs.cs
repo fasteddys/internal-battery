@@ -158,20 +158,26 @@ namespace UpDiddyApi.Workflow
                                     }
                                     else
                                     {
-                                        // create if the action does not already exist
-                                        _db.ContactAction.Add(new ContactAction()
+                                        // create if the action does not already exist, and associate it with the highest phase                   
+                                        // of the campaign that the user has interacted with and assume that is what led them to buy
+                                        CampaignPhase lastCampaignPhaseInteraction = CampaignPhaseFactory.GetContactsLastPhaseInteraction(_db, e.CampaignId.Value, contact.ContactId);
+                                        if ( lastCampaignPhaseInteraction != null )
                                         {
-                                            ActionId = 5, // todo: this should not be a hard-coded reference to the PK
-                                            CampaignId = e.CampaignId.Value,
-                                            ContactActionGuid = Guid.NewGuid(),
-                                            ContactId = contact.ContactId,
-                                            CreateDate = DateTime.UtcNow,
-                                            CreateGuid = Guid.Empty,
-                                            IsDeleted = 0,
-                                            ModifyDate = DateTime.UtcNow,
-                                            ModifyGuid = Guid.Empty,
-                                            OccurredDate = DateTime.UtcNow
-                                        });
+                                            _db.ContactAction.Add(new ContactAction()
+                                            {
+                                                ActionId = 5, // todo: this should not be a hard-coded reference to the PK
+                                                CampaignId = e.CampaignId.Value,
+                                                ContactActionGuid = Guid.NewGuid(),
+                                                ContactId = contact.ContactId,
+                                                CreateDate = DateTime.UtcNow,
+                                                CreateGuid = Guid.Empty,
+                                                IsDeleted = 0,
+                                                ModifyDate = DateTime.UtcNow,
+                                                ModifyGuid = Guid.Empty,
+                                                OccurredDate = DateTime.UtcNow,
+                                                CampaignPhaseId = lastCampaignPhaseInteraction.CampaignPhaseId
+                                             });
+                                        }                                                                                    
                                     }
                                 }
                             }
@@ -406,17 +412,19 @@ namespace UpDiddyApi.Workflow
             return result;
         }
 
-        public void StoreTrackingInformation(Guid campaignGuid, Guid contactGuid, Guid actionGuid, string campaignPhase, string headers)
+        public void StoreTrackingInformation(Guid campaignGuid, Guid contactGuid, Guid actionGuid, string campaignPhaseName, string headers)
         {
             var campaignEntity = _db.Campaign.Where(c => c.CampaignGuid == campaignGuid && c.IsDeleted == 0).FirstOrDefault();
             var contactEntity = _db.Contact.Where(c => c.ContactGuid == contactGuid && c.IsDeleted == 0).FirstOrDefault();
             var actionEntity = _db.Action.Where(a => a.ActionGuid == actionGuid && a.IsDeleted == 0).FirstOrDefault();
-
+            CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaignEntity.CampaignId, campaignPhaseName);
             // validate that the referenced entities exist
-            if (campaignEntity != null && contactEntity != null && actionEntity != null)
+            if (campaignEntity != null && contactEntity != null && actionEntity != null && campaignPhase != null)
             {
-                // look for an existing contact action
-                var existingContactAction = _db.ContactAction.Where(ca => ca.CampaignId == campaignEntity.CampaignId && ca.ContactId == contactEntity.ContactId && ca.ActionId == actionEntity.ActionId).FirstOrDefault();
+                // locate the campaign phase 
+     
+                // look for an existing contact action               
+                var existingContactAction = ContactActionFactory.GetContactAction(_db,campaignEntity, contactEntity, actionEntity, campaignPhase);
 
                 if (existingContactAction != null)
                 {
@@ -429,7 +437,6 @@ namespace UpDiddyApi.Workflow
                 else
                 {
                     // create a unique record for the tracking event
-                    // TODO JAB Add campaign phase to contact action 
                     _db.ContactAction.Add(new ContactAction()
                     {
                         ActionId = actionEntity.ActionId,
@@ -442,8 +449,11 @@ namespace UpDiddyApi.Workflow
                         ModifyDate = DateTime.UtcNow,
                         ModifyGuid = Guid.Empty,
                         OccurredDate = DateTime.UtcNow,
-                        Headers = !string.IsNullOrWhiteSpace(headers) ? headers : null
+                        Headers = !string.IsNullOrWhiteSpace(headers) ? headers : null,
+                        CampaignPhaseId = campaignPhase.CampaignPhaseId
                     });
+
+
                 }
                 _db.SaveChanges();
             }

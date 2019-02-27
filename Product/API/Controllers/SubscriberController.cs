@@ -568,7 +568,7 @@ namespace UpDiddyApi.Controllers
         [AllowAnonymous]
         [HttpPut("/api/[controller]/contact/{contactGuid}")]
         public async Task<IActionResult> UpdateSubscriberContactAsync(Guid contactGuid, [FromBody] SignUpDto signUpDto)
-        {
+        {      
             _syslog.Log(LogLevel.Information, "SubscriberController.UpdateSubscriberContactAsync:: {@ContactGuid} attempting to sign up with email {@Email}", contactGuid, signUpDto.email);
             Models.Contact contact = await _db.Contact
                 .Where(c => c.ContactGuid.Equals(contactGuid)
@@ -650,7 +650,8 @@ namespace UpDiddyApi.Controllers
                     // Save subscriber to database 
                     _db.Subscriber.Add(subscriber);
                     await _db.SaveChangesAsync();
-                    // TODO JAB save phase from SignUpDto into ContactActions
+                    CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaign.CampaignId, signUpDto.campaignPhase);
+                    
                     _db.ContactAction.Add(new ContactAction()
                     {
                         ActionId = 3, // todo: use constants or enum or something
@@ -662,7 +663,8 @@ namespace UpDiddyApi.Controllers
                         IsDeleted = 0,
                         ModifyDate = DateTime.UtcNow,
                         ModifyGuid = Guid.Empty,
-                        OccurredDate = DateTime.UtcNow
+                        OccurredDate = DateTime.UtcNow,
+                        CampaignPhaseId = campaignPhase.CampaignPhaseId
                     });
 
                     // update contact in database
@@ -673,7 +675,7 @@ namespace UpDiddyApi.Controllers
                 }
                 catch(Exception ex)
                 {
-                    
+                    transaction.Rollback();
                     _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Error occured while attempting save Subscriber and contact DB updates for {@ContactGuid} (email: {@Email}). Exception: {@Exception}", contactGuid, signUpDto.email, ex);
                     return StatusCode(500);
                 }
@@ -747,7 +749,7 @@ namespace UpDiddyApi.Controllers
             return Json(_mapper.Map<List<SubscriberDto>>(subscribers));
         }
 
-        // Can we remove subscriberGuid from this route and get it from the user context?
+        // todo: add security to check token to this route
         [HttpGet("/api/[controller]/{subscriberGuid}/skill")]
         public IActionResult GetSkillsBySubscriber(Guid subscriberGuid)
         {

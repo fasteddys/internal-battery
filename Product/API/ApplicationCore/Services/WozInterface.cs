@@ -19,6 +19,7 @@ using UpDiddyLib.Helpers;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using UpDiddyApi.ApplicationCore.Factory;
 
 namespace UpDiddyApi.ApplicationCore
 {
@@ -201,21 +202,26 @@ namespace UpDiddyApi.ApplicationCore
                         }
                         else
                         {
-                            // create if the action does not already exist
-                            // TODO JAB Add campaign phase from Enrollment to contact action
-                            _db.ContactAction.Add(new ContactAction()
+                            // if the action does not already exist create it, and associate it with the highest phase                   
+                            // of the campaign that the user has interacted with and assume that is what led them to enroll
+                            CampaignPhase lastCampaignPhaseInteraction = CampaignPhaseFactory.GetContactsLastPhaseInteraction(_db, (int) Enrollment.CampaignId, contact.ContactId);
+                            if ( lastCampaignPhaseInteraction != null )
                             {
-                                ActionId = 4, // todo: this should not be a hard-coded reference to the PK
-                                CampaignId = Enrollment.CampaignId.Value,
-                                ContactActionGuid = Guid.NewGuid(),
-                                ContactId = contact.ContactId,
-                                CreateDate = DateTime.UtcNow,
-                                CreateGuid = Guid.Empty,
-                                IsDeleted = 0,
-                                ModifyDate = DateTime.UtcNow,
-                                ModifyGuid = Guid.Empty,
-                                OccurredDate = DateTime.UtcNow
-                            });
+                                _db.ContactAction.Add(new ContactAction()
+                                {
+                                    ActionId = 4, // todo: this should not be a hard-coded reference to the PK
+                                    CampaignId = Enrollment.CampaignId.Value,
+                                    ContactActionGuid = Guid.NewGuid(),
+                                    ContactId = contact.ContactId,
+                                    CreateDate = DateTime.UtcNow,
+                                    CreateGuid = Guid.Empty,
+                                    IsDeleted = 0,
+                                    ModifyDate = DateTime.UtcNow,
+                                    ModifyGuid = Guid.Empty,
+                                    OccurredDate = DateTime.UtcNow,
+                                    CampaignPhaseId = lastCampaignPhaseInteraction.CampaignPhaseId
+                                });                                  
+                            }
                         }
                     }
                 }

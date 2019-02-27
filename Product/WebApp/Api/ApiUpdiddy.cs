@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Web;
 using System.Linq;
 using UpDiddy.Models;
 using UpDiddyLib.Dto;
@@ -30,7 +31,6 @@ namespace UpDiddy.Api
         protected IHttpClientFactory _HttpClientFactory { get; set; }
         public AzureAdB2COptions AzureOptions { get; set; }
         private IHttpContextAccessor _contextAccessor { get; set; }
-
         public IDistributedCache _cache { get; set; }
 
         #region Constructor
@@ -48,8 +48,81 @@ namespace UpDiddy.Api
         }
         #endregion
 
+        #region Request Methods
+        private async Task<HttpResponseMessage> RequestAsync(string clientName, HttpMethod method, string endpoint, object body = null)
+        {
+            HttpClient client = _HttpClientFactory.CreateClient(clientName);
+            client.BaseAddress = new Uri(_ApiBaseUri);
+
+            client = await AddBearerTokenAsync(client);
+
+            HttpRequestMessage request = new HttpRequestMessage(method, endpoint);
+
+            if (body != null)
+            {
+                request.Content = new StringContent(JsonConvert.SerializeObject(body));
+                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            }
+
+            return await client.SendAsync(request);
+        }
+
+        private async Task<T> RequestAsync<T>(string clientName, HttpMethod method, string endpoint, object body = null)
+        {
+            using (var response = await RequestAsync(clientName, method, endpoint, body))
+            {
+                if (response.IsSuccessStatusCode)
+                    return JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+
+                throw new ApiException(response, JsonConvert.DeserializeObject<BasicResponseDto>(await response.Content.ReadAsStringAsync()));
+            }
+        }
+
+        public async Task<T> GetAsync<T>(string endpoint)
+        {
+            return await RequestAsync<T>(Constants.HttpGetClientName, HttpMethod.Get, endpoint);
+        }
+
+        public async Task<T> PostAsync<T>(string endpoint, object body = null)
+        {
+            return await RequestAsync<T>(Constants.HttpPostClientName, HttpMethod.Post, endpoint, body);
+        }
+
+        public async Task<T> PutAsync<T>(string endpoint, object body = null)
+        {
+            return await RequestAsync<T>(Constants.HttpPutClientName, HttpMethod.Put, endpoint, body);
+        }
+
+        public async Task<T> DeleteAsync<T>(string endpoint)
+        {
+            return await RequestAsync<T>(Constants.HttpDeleteClientName, HttpMethod.Delete, endpoint);
+        }
+
+        private async Task<AuthenticationResult> GetBearerTokenAsync()
+        {
+            // Retrieve the token with the specified scopes
+            var scope = AzureOptions.ApiScopes.Split(' ');
+            string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).GetMsalCacheInstance();
+            ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureOptions.ClientId, AzureOptions.Authority, AzureOptions.RedirectUri, new ClientCredential(AzureOptions.ClientSecret), userTokenCache, null);
+            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureOptions.Authority, false);
+            return result;
+        }
+
+        private async Task<HttpClient> AddBearerTokenAsync(HttpClient client)
+        {
+            if (_contextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            {
+                AuthenticationResult authResult = await GetBearerTokenAsync();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
+            }
+
+            return client;
+        }
+        #endregion
+
         #region Public Cached Methods 
-        public IList<TopicDto> Topics()
+        public async Task<IList<TopicDto>> TopicsAsync()
         {
             string cacheKey = "Topics";
             IList<TopicDto> rval = GetCachedValue<IList<TopicDto>>(cacheKey);
@@ -58,13 +131,13 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _Topics();
+                rval = await _TopicsAsync();
                 SetCachedValue<IList<TopicDto>>(cacheKey, rval);
             }
             return rval;
         }
 
-        public TopicDto TopicById(int TopicId)
+        public async Task<TopicDto> TopicByIdAsync(int TopicId)
         {
             string cacheKey = $"TopicById{TopicId}";
             TopicDto rval = GetCachedValue<TopicDto>(cacheKey);
@@ -73,13 +146,13 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _TopicById(TopicId);
+                rval = await _TopicByIdAsync(TopicId);
                 SetCachedValue<TopicDto>(cacheKey, rval);
             }
             return rval;
         }
 
-        public TopicDto TopicBySlug(string TopicSlug)
+        public async Task<TopicDto> TopicBySlugAsync(string TopicSlug)
         {
             string cacheKey = $"TopicBySlug{TopicSlug}";
             TopicDto rval = GetCachedValue<TopicDto>(cacheKey);
@@ -88,13 +161,13 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _TopicBySlug(TopicSlug);
+                rval = await _TopicBySlugAsync(TopicSlug);
                 SetCachedValue<TopicDto>(cacheKey, rval);
             }
             return rval;
         }
 
-        public IList<CourseDto> getCoursesByTopicSlug(string TopicSlug)
+        public async Task<IList<CourseDto>> getCoursesByTopicSlugAsync(string TopicSlug)
         {
             string cacheKey = $"getCousesByTopicSlug{TopicSlug}";
             IList<CourseDto> rval = GetCachedValue<IList<CourseDto>>(cacheKey);
@@ -103,13 +176,13 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _getCoursesByTopicSlug(TopicSlug);
+                rval = await _getCoursesByTopicSlugAsync(TopicSlug);
                 SetCachedValue<IList<CourseDto>>(cacheKey, rval);
             }
             return rval;
         }
 
-        public IList<CourseDto> Courses()
+        public async Task<IList<CourseDto>> CoursesAsync()
         {
             string cacheKey = $"getCourses";
             IList<CourseDto> rval = GetCachedValue<IList<CourseDto>>(cacheKey);
@@ -118,13 +191,13 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _Courses();
+                rval = await _CoursesAsync();
                 SetCachedValue<IList<CourseDto>>(cacheKey, rval);
             }
             return rval;
         }
 
-        public CourseDto Course(string CourseSlug)
+        public async Task<CourseDto> CourseAsync(string CourseSlug)
         {
             string cacheKey = $"Course{CourseSlug}";
             CourseDto rval = GetCachedValue<CourseDto>(cacheKey);
@@ -133,14 +206,14 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _Course(CourseSlug);
+                rval = await _CourseAsync(CourseSlug);
                 SetCachedValue<CourseDto>(cacheKey, rval);
             }
             return rval;
 
         }
 
-        public IList<CountryDto> GetCountries()
+        public async Task<IList<CountryDto>> GetCountriesAsync()
         {
             string cacheKey = $"GetCountries";
             IList<CountryDto> rval = GetCachedValue<IList<CountryDto>>(cacheKey);
@@ -149,12 +222,12 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _GetCountries();
+                rval = await _GetCountriesAsync();
                 SetCachedValue<IList<CountryDto>>(cacheKey, rval);
             }
             return rval;
         }
-        public IList<StateDto> GetStatesByCountry(Guid? countryGuid)
+        public async Task<IList<StateDto>> GetStatesByCountryAsync(Guid? countryGuid)
         {
             string cacheKey = $"GetStatesByCountry{countryGuid}";
             IList<StateDto> rval = GetCachedValue<IList<StateDto>>(cacheKey);
@@ -163,13 +236,13 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _GetStatesByCountry(countryGuid);
+                rval = await _GetStatesByCountryAsync(countryGuid);
                 SetCachedValue<IList<StateDto>>(cacheKey, rval);
             }
             return rval;
         }
 
-        public CourseVariantDto GetCourseVariant(Guid courseVariantGuid)
+        public async Task<CourseVariantDto> GetCourseVariantAsync(Guid courseVariantGuid)
         {
             string cacheKey = $"GetCourseVariant{courseVariantGuid}";
             CourseVariantDto rval = GetCachedValue<CourseVariantDto>(cacheKey);
@@ -178,13 +251,13 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _GetCourseVariant(courseVariantGuid);
+                rval = await _GetCourseVariantAsync(courseVariantGuid);
                 SetCachedValue<CourseVariantDto>(cacheKey, rval);
             }
             return rval;
         }
 
-        public IList<SkillDto> GetSkills(string userQuery)
+        public async Task<IList<SkillDto>> GetSkillsAsync(string userQuery)
         {
             string cacheKey = $"GetSkills{userQuery}";
            IList<SkillDto> rval = GetCachedValue<IList<SkillDto>>(cacheKey);
@@ -193,13 +266,13 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _GetSkills(userQuery);
+                rval = await _GetSkillsAsync(userQuery);
                 SetCachedValue<IList<SkillDto>>(cacheKey, rval);
             }
             return rval;
         }
 
-        public IList<CompanyDto> GetCompanies(string userQuery)
+        public async Task<IList<CompanyDto>> GetCompaniesAsync(string userQuery)
         {
             string cacheKey = $"GetCompanies{userQuery}";
             IList<CompanyDto> rval = GetCachedValue<IList<CompanyDto>>(cacheKey);
@@ -208,13 +281,13 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _GetCompanies(userQuery);
+                rval = await _GetCompaniesAsync(userQuery);
                 SetCachedValue<IList<CompanyDto>>(cacheKey, rval);
             }
             return rval;
         }
 
-        public IList<EducationalInstitutionDto> GetEducationalInstitutions(string userQuery)
+        public async Task<IList<EducationalInstitutionDto>> GetEducationalInstitutionsAsync(string userQuery)
         {
             string cacheKey = $"GetEducationalInstitutions{userQuery}";
             IList<EducationalInstitutionDto> rval = GetCachedValue<IList<EducationalInstitutionDto>>(cacheKey);
@@ -223,13 +296,13 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _GetEducationalInstitutions(userQuery);
+                rval = await _GetEducationalInstitutionsAsync(userQuery);
                 SetCachedValue<IList<EducationalInstitutionDto>>(cacheKey, rval);
             }
             return rval;
         }
 
-        public IList<EducationalDegreeDto> GetEducationalDegrees(string userQuery)
+        public async Task<IList<EducationalDegreeDto>> GetEducationalDegreesAsync(string userQuery)
         {
             string cacheKey = $"GetEducationalDegrees{userQuery}";
             IList<EducationalDegreeDto> rval = GetCachedValue<IList<EducationalDegreeDto>>(cacheKey);
@@ -238,13 +311,13 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _GetEducationalDegrees(userQuery);
+                rval = await _GetEducationalDegreesAsync(userQuery);
                 SetCachedValue<IList<EducationalDegreeDto>>(cacheKey, rval);
             }
             return rval;
         }
 
-        public IList<CompensationTypeDto> GetCompensationTypes()
+        public async Task<IList<CompensationTypeDto>> GetCompensationTypesAsync()
         {
             string cacheKey = $"GetCompensationTypes";
             IList<CompensationTypeDto> rval = GetCachedValue<IList<CompensationTypeDto>>(cacheKey);
@@ -253,14 +326,14 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _GetCompensationTypes();
+                rval = await _GetCompensationTypesAsync();
                 SetCachedValue<IList<CompensationTypeDto>>(cacheKey, rval);
             }
             return rval;
         }
 
 
-        public IList<EducationalDegreeTypeDto> GetEducationalDegreeTypes()
+        public async Task<IList<EducationalDegreeTypeDto>> GetEducationalDegreeTypesAsync()
         {
             string cacheKey = $"GetEducationDegreeTypes";
             IList<EducationalDegreeTypeDto> rval = GetCachedValue<IList<EducationalDegreeTypeDto>>(cacheKey);
@@ -269,13 +342,13 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _GetEducationalDegreeTypes();
+                rval = await _GetEducationalDegreeTypesAsync();
                 SetCachedValue<IList<EducationalDegreeTypeDto>>(cacheKey, rval);
             }
             return rval;
         }
 
-        public CourseDto GetCourseByCampaignGuid(Guid CampaignGuid)
+        public async Task<CourseDto> GetCourseByCampaignGuidAsync(Guid CampaignGuid)
         {
             string cacheKey = $"GetCourseByCampaignGuid{CampaignGuid}";
             CourseDto rval = GetCachedValue<CourseDto>(cacheKey);
@@ -284,14 +357,14 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _GetCourseByCampaignGuid(CampaignGuid);
+                rval = await _GetCourseByCampaignGuid(CampaignGuid);
                 SetCachedValue<CourseDto>(cacheKey, rval);
             }
             return rval;
 
         }
 
-        public ContactDto Contact(Guid contactGuid)
+        public async Task<ContactDto> ContactAsync(Guid contactGuid)
         {
             string cacheKey = $"Contact{contactGuid}";
             ContactDto rval = GetCachedValue<ContactDto>(cacheKey);
@@ -300,272 +373,265 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _Contact(contactGuid);
+                rval = await _Contact(contactGuid);
                 SetCachedValue<ContactDto>(cacheKey, rval);
             }
             return rval;
         }
 
-
-
-
         #endregion
 
         #region Public UnCached Methods
 
-        public IList<CampaignDetailDto> CampaignDetailsSearch(Guid CampaginGuid)
+        #region Promocode
+        public async Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid)
         {
-            return Get<IList<CampaignDetailDto>>("marketing/campaign-detail/" + CampaginGuid, true);
+            return await GetAsync<PromoCodeDto>("promocode/redemption-validate/" + promoCodeRedemptionGuid + "/course-variant/" + courseGuid);
         }
 
-        public IList<CampaignStatisticDto> CampaignStatisticsSearch()
+        public async Task<PromoCodeDto> PromoCodeValidationAsync(string code, string courseVariantGuid)
         {
-            return Get<IList<CampaignStatisticDto>>("marketing/campaign-statistic", true);
-        }
-        public PromoCodeDto PromoCodeRedemptionValidation(string promoCodeRedemptionGuid, string courseGuid)
-        {
-            return Get<PromoCodeDto>("promocode/redemption-validate/" + promoCodeRedemptionGuid + "/course-variant/" + courseGuid, true);
-        }
-
-        public PromoCodeDto PromoCodeValidation(string code, string courseVariantGuid)
-        {
-            return Get<PromoCodeDto>("promocode/validate/" + code + "/course-variant/" + courseVariantGuid, true);
-        }
-
-        public CourseLoginDto CourseLogin(Guid EnrollmentGuid)
-        {
-            return Get<CourseLoginDto>($"enrollment/{EnrollmentGuid}/student-login-url", true);
-        }
-
-        public BasicResponseDto UpdateProfileInformation(SubscriberDto Subscriber)
-        {
-            return Put<BasicResponseDto>(Subscriber, "subscriber", true);
-        }
-
-        public BasicResponseDto UpdateEntitySkills(EntitySkillDto entitySkillDto)
-        {
-            return Put<BasicResponseDto>(entitySkillDto, "skill/update", true);
-        }
-
-        public IList<SkillDto> GetEntitySkills(string entityType, Guid entityGuid)
-        {
-            return Get<IList<SkillDto>>($"skill/get/{entityType}/{entityGuid}", true);
-        }
-        public BasicResponseDto UpdateOnboardingStatus()
-        {
-            return Put<BasicResponseDto>("subscriber/onboard", true);
-        }
-
-        public BasicResponseDto SyncLinkedInAccount(string linkedInCode, string returnUrl)
-        {
-            return Put<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}", true);
-        }
-
-        public LinkedInProfileDto GetLinkedInProfile()
-        {
-            return Get<LinkedInProfileDto>("linkedin", true);
-        }
-
-        public Guid EnrollStudentAndObtainEnrollmentGUID(EnrollmentFlowDto enrollmentFlowDto)
-        {
-            return Post<Guid>(enrollmentFlowDto, "enrollment/", true);
-        }
-
-        public SubscriberDto CreateSubscriber()
-        {
-            return Post<SubscriberDto>("subscriber", true);
-        }
-
-        public WozCourseProgressDto UpdateStudentCourseProgress(bool FutureSchedule)
-        {
-            return Put<WozCourseProgressDto>("course/update-student-course-status/" + FutureSchedule.ToString(), true);
-        }
-
-        public BraintreeResponseDto SubmitBraintreePayment(BraintreePaymentDto BraintreePaymentDto)
-        {
-            return Post<BraintreeResponseDto>(BraintreePaymentDto, "enrollment/ProcessBraintreePayment", true);
-        }
-
-        public BasicResponseDto UploadResume(ResumeDto resumeDto)
-        {
-            return Post<BasicResponseDto>(resumeDto, "resume/upload", true);
-        }
-
-        #region Subscriber Work History
-        public SubscriberWorkHistoryDto AddWorkHistory(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
-        {
-            return Post<SubscriberWorkHistoryDto>(workHistory, string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), true);
-        }
-        public SubscriberWorkHistoryDto UpdateWorkHistory(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
-        {
-            return Put<SubscriberWorkHistoryDto>(workHistory, string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), true);
-        }
-        
-        public IList<SubscriberWorkHistoryDto> GetWorkHistory(Guid subscriberGuid)
-        {
-            return Get<IList<SubscriberWorkHistoryDto>>(string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), true);
-        }
-        // Chris Put Delete in here and change path
-        public SubscriberWorkHistoryDto DeleteWorkHistory(Guid subscriberGuid, Guid workHistoryGuid)
-        {
-            return Delete<SubscriberWorkHistoryDto>(string.Format("subscriber/{0}/work-history/{1}",subscriberGuid.ToString(), workHistoryGuid.ToString()) , true);
+            return await GetAsync<PromoCodeDto>("promocode/validate/" + code + "/course-variant/" + courseVariantGuid);
         }
         #endregion
 
-        #region Subscriber Education History
-        public SubscriberEducationHistoryDto AddEducationalHistory(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
+        #region Enrollment
+        public async Task<BraintreeResponseDto> SubmitBraintreePaymentAsync(BraintreePaymentDto BraintreePaymentDto)
         {
-            return Post<SubscriberEducationHistoryDto>(educationHistory, string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), true);
+            return await PostAsync<BraintreeResponseDto>("enrollment/ProcessBraintreePayment", BraintreePaymentDto);
         }
-
-
-        public IList<SubscriberEducationHistoryDto> GetEducationHistory(Guid subscriberGuid)
+        public async Task<Guid> EnrollStudentAndObtainEnrollmentGUIDAsync(EnrollmentFlowDto enrollmentFlowDto)
         {
-            return Get<IList<SubscriberEducationHistoryDto>>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), true);
+            return await PostAsync<Guid>("enrollment/", enrollmentFlowDto);
         }
-
-
-        public SubscriberEducationHistoryDto UpdateEducationHistory(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
+        public async Task<CourseLoginDto> CourseLoginAsync(Guid EnrollmentGuid)
         {
-            return Put<SubscriberEducationHistoryDto>(educationHistory, string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), true);
-        }
-
-        // Chris Put Delete in here and change path
-        public SubscriberEducationHistoryDto DeleteEducationHistory(Guid subscriberGuid, Guid educationHistory)
-        {
-            return Delete<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history/{1}", subscriberGuid.ToString(), educationHistory.ToString()), true);
+            return await GetAsync<CourseLoginDto>($"enrollment/{EnrollmentGuid}/student-login-url");
         }
         #endregion
 
-        public BasicResponseDto UpdateSubscriberContact(Guid contactGuid, SignUpDto signUpDto)
+        #region Skills
+        private async Task<IList<SkillDto>> _GetSkillsAsync(string userQuery)
+        {
+            return await GetAsync<IList<SkillDto>>("skill/" + userQuery);
+        }
+
+        public async Task<BasicResponseDto> UpdateEntitySkillsAsync(EntitySkillDto entitySkillDto)
+        {
+            return await PutAsync<BasicResponseDto>("skill/update", entitySkillDto);
+        }
+
+        public async Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid)
+        {
+            return await GetAsync<IList<SkillDto>>($"skill/get/{entityType}/{entityGuid}");
+        }
+        #endregion
+
+        #region Subscriber
+        public async Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid contactGuid, SignUpDto signUpDto)
         {
             // encrypt password before sending to API
             signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
 
-            return Put<BasicResponseDto>(signUpDto, string.Format("subscriber/contact/{0}", contactGuid.ToString()), false);
+            return await PutAsync<BasicResponseDto>(string.Format("subscriber/contact/{0}", contactGuid.ToString()), signUpDto);
         }
 
-        public SubscriberADGroupsDto MyGroups()
+        public async Task<SubscriberADGroupsDto> MyGroupsAsync()
         {
-            return Get<SubscriberADGroupsDto>("subscriber/me/group", true);
+            return await GetAsync<SubscriberADGroupsDto>("subscriber/me/group");
         }
 
         public async Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid)
         {
-            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
-            string ApiUrl = _ApiBaseUri + String.Format("subscriber/{0}/file/{1}", subscriberGuid, fileGuid.ToString());
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
-
-            // Add token to the Authorization header and make the request
-            await AddBearerTokenAsync(request);
-
-            HttpResponseMessage response = await client.SendAsync(request);
-            return response;
+            return await RequestAsync(Constants.HttpGetClientName, HttpMethod.Get, String.Format("subscriber/{0}/file/{1}", subscriberGuid, fileGuid.ToString()));
         }
+
+        public async Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
+        {
+            return await PostAsync<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), educationHistory);
+        }
+
+        public async Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid)
+        {
+            return await GetAsync<IList<SubscriberEducationHistoryDto>>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()));
+        }
+
+        public async Task<SubscriberEducationHistoryDto> UpdateEducationHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory)
+        {
+            return await PutAsync<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), educationHistory);
+        }
+
+        public Task<SubscriberEducationHistoryDto> DeleteEducationHistoryAsync(Guid subscriberGuid, Guid educationHistory)
+        {
+            return DeleteAsync<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history/{1}", subscriberGuid.ToString(), educationHistory.ToString()));
+        }
+
+        public async Task<BasicResponseDto> UpdateProfileInformationAsync(SubscriberDto Subscriber)
+        {
+            return await PutAsync<BasicResponseDto>("subscriber", Subscriber);
+        }
+
+        public async Task<BasicResponseDto> UpdateOnboardingStatusAsync()
+        {
+            return await PutAsync<BasicResponseDto>("subscriber/onboard");
+        }
+
+        public async Task<SubscriberDto> CreateSubscriberAsync()
+        {
+            return await PostAsync<SubscriberDto>("subscriber");
+        }
+
+        public async Task<SubscriberWorkHistoryDto> AddWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
+        {
+            return await PostAsync<SubscriberWorkHistoryDto>(string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), workHistory);
+        }
+        public async Task<SubscriberWorkHistoryDto> UpdateWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
+        {
+            return await PutAsync<SubscriberWorkHistoryDto>(string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), workHistory);
+        }
+
+        public async Task<IList<SubscriberWorkHistoryDto>> GetWorkHistoryAsync(Guid subscriberGuid)
+        {
+            return await GetAsync<IList<SubscriberWorkHistoryDto>>(string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()));
+        }
+
+        public Task<SubscriberWorkHistoryDto> DeleteWorkHistoryAsync(Guid subscriberGuid, Guid workHistoryGuid)
+        {
+            return DeleteAsync<SubscriberWorkHistoryDto>(string.Format("subscriber/{0}/work-history/{1}", subscriberGuid.ToString(), workHistoryGuid.ToString()));
+        }
+        #endregion
+
+        #region Campaign
+        public async Task<IList<CampaignDetailDto>> CampaignDetailsSearchAsync(Guid CampaginGuid)
+        {
+            return await GetAsync<IList<CampaignDetailDto>>("marketing/campaign-detail/" + CampaginGuid);
+        }
+
+        public async Task<IList<CampaignStatisticDto>> CampaignStatisticsSearchAsync()
+        {
+            return await GetAsync<IList<CampaignStatisticDto>>("marketing/campaign-statistic");
+        }
+        #endregion
+
+        #region LinkedIn
+        public async Task<LinkedInProfileDto> GetLinkedInProfileAsync()
+        {
+            return await GetAsync<LinkedInProfileDto>("linkedin");
+        }
+        #endregion
+        public async Task<BasicResponseDto> SyncLinkedInAccountAsync(string linkedInCode, string returnUrl)
+        {
+            return await PutAsync<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}");
+        }
+
+        public async Task<WozCourseProgressDto> UpdateStudentCourseProgressAsync(bool FutureSchedule)
+        {
+            return await PutAsync<WozCourseProgressDto>("course/update-student-course-status/" + FutureSchedule.ToString());
+        }
+
+        public async Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumeDto)
+        {
+            return await PostAsync<BasicResponseDto>("resume/upload", resumeDto);
+        }
+
         #endregion
 
         #region Cache Helper Functions
 
-            private IList<TopicDto> _Topics()
+        private async Task<IList<TopicDto>> _TopicsAsync()
         {
-            return Get<IList<TopicDto>>("topic", false);
+            return await GetAsync<IList<TopicDto>>("topic");
         }
 
-        private TopicDto _TopicById(int TopicId)
+        private async Task<TopicDto> _TopicByIdAsync(int TopicId)
         {
-            return Get<TopicDto>($"topic/{TopicId}", false);
+            return await GetAsync<TopicDto>($"topic/{TopicId}");
         }
 
-        private TopicDto _TopicBySlug(string TopicSlug)
+        private async Task<TopicDto> _TopicBySlugAsync(string TopicSlug)
         {
-            return Get<TopicDto>("topic/slug/" + TopicSlug, false);
+            return await GetAsync<TopicDto>("topic/slug/" + TopicSlug);
         }
 
-        public IList<CountryDto> _GetCountries()
+        public async Task<IList<CountryDto>> _GetCountriesAsync()
         {
-            return Get<IList<CountryDto>>("country", false);
+            return await GetAsync<IList<CountryDto>>("country");
         }
 
-        public IList<StateDto> _GetStatesByCountry(Guid? countryGuid)
+        public async Task<IList<StateDto>> _GetStatesByCountryAsync(Guid? countryGuid)
         {
             if (!countryGuid.HasValue)
-                return GetStates();
+                return await GetStatesAsync();
 
-            return Get<IList<StateDto>>("country/" + countryGuid?.ToString() + "/state", false);
+            return await GetAsync<IList<StateDto>>("country/" + countryGuid?.ToString() + "/state");
         }
 
-        public IList<StateDto> GetStates()
+        public async Task<IList<StateDto>> GetStatesAsync()
         {
-            return Get<IList<StateDto>>("state/", false);
+            return await GetAsync<IList<StateDto>>("state/");
         }
 
-        private IList<CourseDto> _getCoursesByTopicSlug(string TopicSlug)
+        private async Task<IList<CourseDto>> _getCoursesByTopicSlugAsync(string TopicSlug)
         {
-            return Get<IList<CourseDto>>("course/topic/" + TopicSlug, false);
+            return await GetAsync<IList<CourseDto>>("course/topic/" + TopicSlug);
         }
-        private IList<CourseDto> _Courses()
+        private async Task<IList<CourseDto>> _CoursesAsync()
         {
-            return Get<IList<CourseDto>>("course/", false);
+            return await GetAsync<IList<CourseDto>>("course/");
         }
 
-        private CourseDto _Course(string CourseSlug)
+        private async Task<CourseDto> _CourseAsync(string CourseSlug)
         {
-            CourseDto retVal = Get<CourseDto>("course/slug/" + CourseSlug, false);
+            CourseDto retVal = await GetAsync<CourseDto>("course/slug/" + CourseSlug);
             return retVal;
         }
 
-        public CourseVariantDto _GetCourseVariant(Guid courseVariantGuid)
+        public async Task<CourseVariantDto> _GetCourseVariantAsync(Guid courseVariantGuid)
         {
-            return Get<CourseVariantDto>("course/course-variant/" + courseVariantGuid, false);
+            return await GetAsync<CourseVariantDto>("course/course-variant/" + courseVariantGuid);
         }
 
-        private IList<SkillDto> _GetSkills(string userQuery)
+        private async Task<IList<CompanyDto>> _GetCompaniesAsync(string userQuery)
         {
-            return Get<IList<SkillDto>>("skill/" + userQuery, true);
+            return await GetAsync<IList<CompanyDto>>("company/" + userQuery);
         }
 
-
-        private IList<CompanyDto> _GetCompanies(string userQuery)
+        private async Task<IList<EducationalInstitutionDto>> _GetEducationalInstitutionsAsync(string userQuery)
         {
-            return Get<IList<CompanyDto>>("company/" + userQuery, true);
+            return await GetAsync<IList<EducationalInstitutionDto>>("educational-institution/" + userQuery);
         }
 
-        private IList<EducationalInstitutionDto> _GetEducationalInstitutions(string userQuery)
+        private async Task<IList<EducationalDegreeDto>> _GetEducationalDegreesAsync(string userQuery)
         {
-            return Get<IList<EducationalInstitutionDto>>("educational-institution/" + userQuery, true);
-        }
-
-        private IList<EducationalDegreeDto> _GetEducationalDegrees(string userQuery)
-        {
-            return Get<IList<EducationalDegreeDto>>("educational-degree/" + userQuery, true);
+            return await GetAsync<IList<EducationalDegreeDto>>("educational-degree/" + userQuery);
         }
 
 
-        private IList<CompensationTypeDto> _GetCompensationTypes()
+        private async Task<IList<CompensationTypeDto>> _GetCompensationTypesAsync()
         {
-            return Get<IList<CompensationTypeDto>>("compensation-types" , true);
+            return await GetAsync<IList<CompensationTypeDto>>("compensation-types");
         }
 
 
 
-        private IList<EducationalDegreeTypeDto> _GetEducationalDegreeTypes()
+        private async Task<IList<EducationalDegreeTypeDto>> _GetEducationalDegreeTypesAsync()
         { 
-            return Get<IList<EducationalDegreeTypeDto>>("educational-degree-types", true);
+            return await GetAsync<IList<EducationalDegreeTypeDto>>("educational-degree-types");
         }
 
 
-        public IList<SkillDto> GetSkillsBySubscriber(Guid subscriberGuid)
+        public async Task<IList<SkillDto>> GetSkillsBySubscriberAsync(Guid subscriberGuid)
         {
-            return Get<IList<SkillDto>>("subscriber/" + subscriberGuid + "/skill", true);
+            return await GetAsync<IList<SkillDto>>("subscriber/" + subscriberGuid + "/skill");
         }
 
-        public CourseDto _GetCourseByCampaignGuid(Guid CampaignGuid)
+        public async Task<CourseDto> _GetCourseByCampaignGuid(Guid CampaignGuid)
         {
-            return Get<CourseDto>("course/campaign/" + CampaignGuid, false);
+            return await GetAsync<CourseDto>("course/campaign/" + CampaignGuid);
         }
         #endregion
 
-        #region Private Helper Functions
+        #region Private Cache Functions
 
         private bool SetCachedValue<T>(string CacheKey, T Value)
         {
@@ -603,58 +669,9 @@ namespace UpDiddy.Api
 
         #endregion
 
-        #region ApiHelperMsal
-        public T Put<T>(string ApiAction, bool Authorized = false)
-        {
-            Task<string> Response = _PutAsync(ApiAction, Authorized);
-            try
-            {
-                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
-                return rval;
-            }
-            catch (Exception ex)
-            {
-                // TODO instrument with json string and requested type 
-                var msg = ex.Message;
-                return (T)Convert.ChangeType(null, typeof(T));
-            }
-        }
-
-        public T Get<T>(string ApiAction, bool Authorized = false)
-        {
-            Task<string> Response = _GetAsync(ApiAction, Authorized);
-            try
-            {
-                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
-                return rval;
-            }
-            catch (Exception ex)
-            {
-                // TODO instrument with json string and requested type 
-                var msg = ex.Message;
-                return (T)Convert.ChangeType(null, typeof(T));
-            }
-        }
-
-        public T Delete<T>(string ApiAction, bool Authorized = false)
-        {
-            Task<string> Response = _DeleteAsync(ApiAction, Authorized);
-            try
-            {
-                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
-                return rval;
-            }
-            catch (Exception ex)
-            {
-                // TODO instrument with json string and requested type 
-                var msg = ex.Message;
-                return (T)Convert.ChangeType(null, typeof(T));
-            }
-        }
-
         #region TalentPortal
 
-        public SubscriberDto Subscriber(Guid subscriberGuid, bool hardRefresh)
+        public async Task<SubscriberDto> SubscriberAsync(Guid subscriberGuid, bool hardRefresh)
         {
             string cacheKey = $"Subscriber{subscriberGuid}";
             SubscriberDto rval = null;
@@ -665,15 +682,15 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _Subscriber(subscriberGuid);
+                rval = await _SubscriberAsync(subscriberGuid);
                 if (rval == null)
-                    rval = CreateSubscriber();
+                    rval = await CreateSubscriberAsync();
                 SetCachedValue<SubscriberDto>(cacheKey, rval);
             }
             return rval;
         }
 
-        public IList<SubscriberDto> SubscriberSearch(string searchQuery)
+        public async Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchQuery)
         {
             string cacheKey = $"SubscriberSearch{searchQuery}";
             IList<SubscriberDto> rval = GetCachedValue<IList<SubscriberDto>>(cacheKey);
@@ -682,325 +699,27 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                rval = _SubscriberSearch(searchQuery);
+                rval = await _SubscriberSearchAsync(searchQuery);
                 SetCachedValue<IList<SubscriberDto>>(cacheKey, rval);
             }
             return rval;
         }
 
-        private IList<SubscriberDto> _SubscriberSearch(string searchQuery)
+        private async Task<IList<SubscriberDto>> _SubscriberSearchAsync(string searchQuery)
         {
-            return Get<IList<SubscriberDto>>($"subscriber/search/{searchQuery}", true);
+            return await GetAsync<IList<SubscriberDto>>($"subscriber/search/{searchQuery}");
         }
 
-        private SubscriberDto _Subscriber(Guid subscriberGuid)
+        private async Task<SubscriberDto> _SubscriberAsync(Guid subscriberGuid)
         {
-            return Get<SubscriberDto>($"subscriber/{subscriberGuid}", true);
+            return await GetAsync<SubscriberDto>($"subscriber/{subscriberGuid}");
         }
 
-        private ContactDto _Contact(Guid contactGuid)
+        private async Task<ContactDto> _Contact(Guid contactGuid)
         {
-            return Get<ContactDto>($"contact/{contactGuid}", false);
+            return await GetAsync<ContactDto>($"contact/{contactGuid}");
         }
-
-        #endregion
-
-        public T Post<T>(string ApiAction, bool Authorized = false, string Content = null)
-        {
-            Task<string> Response = _PostAsync(ApiAction, Authorized, Content);
-            try
-            {
-                T rval = JsonConvert.DeserializeObject<T>(Response.Result);
-                return rval;
-            }
-            catch (Exception ex)
-            {
-                // TODO instrument with json string and requested type 
-                var msg = ex.Message;
-                return (T)Convert.ChangeType(null, typeof(T));
-            }
-        }
-
-        public string GetAsString(string ApiAction, bool Authorized = false)
-        {
-            Task<string> Response = _GetAsync(ApiAction, Authorized);
-            return Response.Result;
-        }
-
-        public T Post<T>(BaseDto Body, string ApiAction, bool Authorized = false)
-        {
-            string jsonToSend = "{}";
-            jsonToSend = JsonConvert.SerializeObject(Body);
-            Task<string> Response = _PostAsync(jsonToSend, ApiAction, Authorized);
-            T rval = JsonConvert.DeserializeObject<T>(Response.Result);
-            return rval;
-
-        }
-
-        public T Put<T>(BaseDto Body, string ApiAction, bool Authorized = false)
-        {
-            string json = JsonConvert.SerializeObject(Body);
-            Task<string> Response = _PutAsync(json, ApiAction, Authorized);
-            T response = JsonConvert.DeserializeObject<T>(Response.Result);
-            return response;
-        }
-
-        #region Helpers Functions
-
-        private async Task AddBearerTokenAsync(HttpRequestMessage request)
-        {
-            // Retrieve the token with the specified scopes
-            var scope = AzureOptions.ApiScopes.Split(' ');
-            string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureOptions.ClientId, AzureOptions.Authority, AzureOptions.RedirectUri, new ClientCredential(AzureOptions.ClientSecret), userTokenCache, null);
-            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureOptions.Authority, false);
-            // Add Bearer Token for MSAL authenticatiopn
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
-        }
-
-        private async Task<string> _PostAsync(string ApiAction, bool Authorized, string Content)
-        {
-            string responseString = "";
-            try
-            {
-                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
-                string ApiUrl = _ApiBaseUri + ApiAction;
-
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, ApiUrl);
-                if (!string.IsNullOrEmpty(Content))
-                    request.Content = new StringContent(Content);
-
-                // Add token to the Authorization header and make the request 
-                if (Authorized)
-                    await AddBearerTokenAsync(request);
-
-                HttpResponseMessage response = await client.SendAsync(request);
-                // Handle the response
-                switch (response.StatusCode)
-                {
-                    case HttpStatusCode.OK:
-                        responseString = await response.Content.ReadAsStringAsync();
-                        break;
-                    case HttpStatusCode.Unauthorized:
-                        responseString = $"Please sign in again. {response.ReasonPhrase}";
-                        break;
-                    default:
-                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
-                        break;
-                }
-            }
-            catch (MsalUiRequiredException ex)
-            {
-                responseString = $"Session has expired. Please sign in again. {ex.Message}";
-            }
-            catch (Exception ex)
-            {
-                responseString = $"Error calling API: {ex.Message}";
-            }
-
-            return responseString;
-
-        }
-
-        private async Task<string> _PutAsync(string ApiAction, bool Authorized = false)
-        {
-            string responseString = "";
-            try
-            {
-                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPutClientName);
-                string ApiUrl = _ApiBaseUri + ApiAction;
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, ApiUrl);
-
-                // Add token to the Authorization header and make the request 
-                if (Authorized)
-                    await AddBearerTokenAsync(request);
-
-                HttpResponseMessage response = await client.SendAsync(request);
-                // Handle the response
-                switch (response.StatusCode)
-                {
-                    case HttpStatusCode.OK:
-                        responseString = await response.Content.ReadAsStringAsync();
-                        break;
-                    case HttpStatusCode.Unauthorized:
-                        responseString = $"Please sign in again. {response.ReasonPhrase}";
-                        break;
-                    default:
-                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
-                        break;
-                }
-            }
-            catch (MsalUiRequiredException ex)
-            {
-                responseString = $"Session has expired. Please sign in again. {ex.Message}";
-            }
-            catch (Exception ex)
-            {
-                responseString = $"Error calling API: {ex.Message}";
-            }
-
-            return responseString;
-
-        }
-
-        private async Task<string> _GetAsync(string ApiAction, bool Authorized = false)
-        {
-            string responseString = "";
-            try
-            {
-                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpGetClientName);
-                string ApiUrl = _ApiBaseUri + ApiAction;
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiUrl);
-
-                // Add token to the Authorization header and make the request 
-                if (Authorized)
-                    await AddBearerTokenAsync(request);
-
-                HttpResponseMessage response = await client.SendAsync(request);
-                // Handle the response
-                switch (response.StatusCode)
-                {
-                    case HttpStatusCode.OK:
-                        responseString = await response.Content.ReadAsStringAsync();
-                        break;
-                    case HttpStatusCode.Unauthorized:
-                        responseString = $"Please sign in again. {response.ReasonPhrase}";
-                        break;
-                    default:
-                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
-                        break;
-                }
-            }
-            catch (MsalUiRequiredException ex)
-            {
-                responseString = $"Session has expired. Please sign in again. {ex.Message}";
-            }
-            catch (Exception ex)
-            {
-                responseString = $"Error calling API: {ex.Message}";
-            }
-
-            return responseString;
-
-        }
-
-        private async Task<string> _DeleteAsync(string ApiAction, bool Authorized = false)
-        {
-            string responseString = "";
-            try
-            {
-                HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpDeleteClientName);
-                string ApiUrl = _ApiBaseUri + ApiAction;
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Delete, ApiUrl);
-
-                // Add token to the Authorization header and make the request 
-                if (Authorized)
-                    await AddBearerTokenAsync(request);
-
-                HttpResponseMessage response = await client.SendAsync(request);
-                // Handle the response
-                switch (response.StatusCode)
-                {
-                    case HttpStatusCode.OK:
-                        responseString = await response.Content.ReadAsStringAsync();
-                        break;
-                    case HttpStatusCode.Unauthorized:
-                        responseString = $"Please sign in again. {response.ReasonPhrase}";
-                        break;
-                    default:
-                        responseString = $"Error calling API. StatusCode=${response.StatusCode}";
-                        break;
-                }
-            }
-            catch (MsalUiRequiredException ex)
-            {
-                responseString = $"Session has expired. Please sign in again. {ex.Message}";
-            }
-            catch (Exception ex)
-            {
-                responseString = $"Error calling API: {ex.Message}";
-            }
-
-            return responseString;
-
-        }
-
-        private async Task<string> _PostAsync(String JsonToSend, string ApiAction, bool Authorized = false)
-        {
-            string ApiUrl = _ApiBaseUri + ApiAction;
-            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPostClientName);
-            var request = PostRequest(ApiAction, JsonToSend);
-            // Add token to the Authorization header and make the request 
-            if (Authorized)
-                await AddBearerTokenAsync(request);
-            var response = await client.SendAsync(request);
-            string responseString = await response.Content.ReadAsStringAsync();
-            return responseString;
-        }
-
-        private async Task<string> _PutAsync(String json, string ApiAction, bool Authorized = false)
-        {
-            string ApiUrl = _ApiBaseUri + ApiAction;
-            HttpClient client = _HttpClientFactory.CreateClient(Constants.HttpPutClientName);
-            var request = Request(HttpMethod.Put, ApiAction, json);
-
-            if (Authorized)
-                await AddBearerTokenAsync(request);
-
-            var response = await client.SendAsync(request);
-            string responseString = await response.Content.ReadAsStringAsync();
-            return responseString;
-
-        }
-
-        private HttpRequestMessage Request(HttpMethod method, string ApiAction, string Content)
-        {
-            HttpRequestMessage request = new HttpRequestMessage(method, _ApiBaseUri + ApiAction)
-            {
-                Content = new StringContent(Content)
-            };
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            return request;
-        }
-
-        private HttpRequestMessage PostRequest(string ApiAction, string Content)
-        {
-            return Request(HttpMethod.Post, ApiAction, Content);
-        }
-
-        public static void SerializeJsonIntoStream(object value, Stream stream)
-        {
-            using (var sw = new StreamWriter(stream, new UTF8Encoding(false), 1024, true))
-            using (var jtw = new JsonTextWriter(sw) { Formatting = Formatting.None })
-            {
-                var js = new JsonSerializer();
-                js.Serialize(jtw, value);
-                jtw.Flush();
-            }
-        }
-
-        private static HttpContent CreateHttpContent(object content)
-        {
-            HttpContent httpContent = null;
-
-            if (content != null)
-            {
-                var ms = new MemoryStream();
-                SerializeJsonIntoStream(content, ms);
-                ms.Seek(0, SeekOrigin.Begin);
-                httpContent = new StreamContent(ms);
-                httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            }
-
-            return httpContent;
-        }
-
-        #endregion
 
         #endregion
     }
 }
-
-
-

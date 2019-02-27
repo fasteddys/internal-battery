@@ -263,7 +263,7 @@ function UpdateWorkHistory() {
         contentType: "application/json",
         data: objJson,
         error: function (data) {
-            toastr.warning(JSON.stringify(data), 'Oops, Something went wrong.');
+            ToastService.warning('Unable to save work history.', 'Oops, Something went wrong.');
         },
         success: function (res) {
             var html = CreateWorkHistoryDiv(res);
@@ -285,7 +285,7 @@ function AddWorkHistory() {
         contentType: "application/json",
         data: objJson,
         error: function (data) {
-            toastr.warning(JSON.stringify(data), 'Oops, Something went wrong.');
+            ToastService.warning('Unable to add work history.', 'Oops, Something went wrong.');
         },
         success: function (res) {
             var html = CreateWorkHistoryDiv(res);
@@ -319,7 +319,7 @@ function DeleteWorkHistory(WorkHistoryGuid) {
                     type: 'POST',
                     contentType: "application/json",
                     error: function (data) {
-                        toastr.warning(JSON.stringify(data), 'Oops, Something went wrong.');
+                        ToastService.warning('Unable to delete work history.', 'Oops, Something went wrong.');
                     },
                     success: function (res) {
                         $("#ProfileWorkHistory_" + res.subscriberWorkHistoryGuid).remove();
@@ -586,7 +586,7 @@ function UpdateEducationHistory() {
         contentType: "application/json",
         data: objJson,
         error: function (data) {
-            toastr.warning(JSON.stringify(data), 'Oops, Something went wrong.');
+            ToastService.warning('Unable to save education history.', 'Oops, Something went wrong.');
         },
         success: function (res) {
             var html = CreateEducationHistoryDiv(res);
@@ -609,7 +609,7 @@ function AddEducationHistory() {
         contentType: "application/json",
         data: objJson,
         error: function (data) {
-            toastr.warning(JSON.stringify(data), 'Oops, Something went wrong.');
+            ToastService.warning('Unable to add education history.', 'Oops, Something went wrong.');
         },
         success: function (res) {
             var html = CreateEducationHistoryDiv(res);
@@ -643,7 +643,7 @@ function DeleteEducationHistory(EducationHistoryGuid) {
                     type: 'POST',
                     contentType: "application/json",
                     error: function (data) {
-                        toastr.warning(JSON.stringify(data), 'Oops, Something went wrong.');
+                        ToastService.warning('Unable to delete education history.', 'Oops, Something went wrong.');
                     },
                     success: function (res) {
                         $("#ProfileEducationHistory_" + res.subscriberEducationHistoryGuid).remove();

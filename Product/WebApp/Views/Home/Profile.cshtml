@@ -26,13 +26,13 @@
                             var errorsList = html.description.split("|");
                             for (var i = 0; i < errorsList.length; i++) {
                                 if (errorsList[i] !== "") {
-                                    toastr.warning(errorsList[i], 'Warning!');
+                                    ToastService.warning(errorsList[i]);
                                 }
 
                             }
                         }
                         else {
-                            toastr.error("Something went wrong. You may want to try reloading the page before retrying your last action.", "Error!");
+                            ToastService.error("Something went wrong. You may want to try reloading the page before retrying your last action.");
                         }
                     }
                 });
@@ -41,23 +41,6 @@
         });
 
         $(document).ready(function () {
-            var toastrOptions = {
-                "closeButton": true,
-                "debug": false,
-                "newestOnTop": false,
-                "progressBar": false,
-                "positionClass": "toast-top-full-width",
-                "preventDuplicates": false,
-                "onclick": null,
-                "showDuration": "300",
-                "hideDuration": "1000",
-                "timeOut": "3000",
-                "extendedTimeOut": "1000",
-                "showEasing": "swing",
-                "hideEasing": "linear",
-                "showMethod": "fadeIn",
-                "hideMethod": "fadeOut"
-            };
 
             // resume upload component
             $('.resume-upload-form .file-input').on('change', function () {
@@ -94,7 +77,7 @@
                         location.reload();
                     })
                     .catch(function (err) {
-                        toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions);
+                        ToastService.error('Something unexpected happened, and we are looking into it.');
                     })
                     .finally(function () {
                         $('.resume-control button').prop('disabled', false);
@@ -118,7 +101,7 @@
                         location.reload();
                     })
                     .catch(function (err) {
-                        toastr.error('Oops! Something unexpected happened, and we are looking into it.', 'Error!', toastrOptions);
+                        ToastService.error('Something unexpected happened, and we are looking into it.');
                     })
                     .finally(function () {
                         $('.resume-upload-form').removeClass('loading');
