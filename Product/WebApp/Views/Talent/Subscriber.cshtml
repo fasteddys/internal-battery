@@ -120,9 +120,12 @@
                                                     effectiveEndDate = workHistory.EndDate.Value;
                                                     periodDisplay += workHistory.EndDate.Value.ToString("MMMM yyyy");
                                                 }
-                                                var period = new DateTime(effectiveEndDate.Subtract(workHistory.StartDate.Value).Ticks);
 
-                                                periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
+                                                if(workHistory.EndDate > workHistory.StartDate)
+                                                {
+                                                    var period = new DateTime(effectiveEndDate.Subtract(workHistory.StartDate.Value).Ticks);
+                                                    periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
+                                                }
                                             }
                                         }
                                         @Html.Raw(periodDisplay)

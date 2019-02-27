@@ -19,7 +19,7 @@ namespace UpDiddy.Authentication
     /// to retrieve the subscriber object and load it for use within the action method being executed. If a subscriber
     /// cannot be found and the subscriber is required, the request is redirected to the session signin controller method.
     /// </summary>
-    public class LoadSubscriber : ActionFilterAttribute
+    public class LoadSubscriber : ActionFilterAttribute, IAsyncActionFilter
     {
         bool _isHardRefresh = false;
         bool _isSubscriberRequired = false;
@@ -33,9 +33,10 @@ namespace UpDiddy.Authentication
         /// This method is evaluated before any code in a controller method is evaluated.
         /// </summary>
         /// <param name="filterContext"></param>
-        public override void OnActionExecuting(ActionExecutingContext filterContext)
+        /// <param name="next"></param>
+        /// <returns></returns>
+        public override async Task OnActionExecutionAsync(ActionExecutingContext filterContext, ActionExecutionDelegate next)
         {
-            base.OnActionExecuting(filterContext);
             bool isSubscriberExists = false;
             if (filterContext.HttpContext.User.Identity.IsAuthenticated)
             {
@@ -44,7 +45,8 @@ namespace UpDiddy.Authentication
                 {
                     // retrieve the UpDiddyApi using the DependencyInjection extension method
                     var api = filterContext.HttpContext.RequestServices.GetService<IApi>();
-                    var subscriber = api.Subscriber(subscriberGuid, this._isHardRefresh);
+
+                    var subscriber = await api.SubscriberAsync(subscriberGuid, this._isHardRefresh);
                     if (subscriber != null)
                     {
                         if (subscriber.CampaignOffer != null)
@@ -71,6 +73,10 @@ namespace UpDiddy.Authentication
                         }
                     )
                 );
+            }
+            else
+            {
+                var resultContext = await next();
             }
         }
     }

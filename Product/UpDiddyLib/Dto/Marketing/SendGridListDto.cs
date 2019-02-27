@@ -6,8 +6,8 @@ namespace UpDiddyLib.Dto.Marketing
 {
     public class SendGridListDto
     {
-        int Id { get; set; }
-        string Name { get; set; }
-        int Recipient_Count { get; set; } 
+        public int id { get; set; }
+        public string name { get; set; }
+        public int recipient_count { get; set; } 
     }
 }
