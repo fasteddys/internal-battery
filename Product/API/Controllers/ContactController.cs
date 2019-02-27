@@ -20,10 +20,10 @@ using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using Hangfire;
 using UpDiddyApi.Workflow;
+using Newtonsoft.Json;
 
 namespace UpDiddyApi.Controllers
 {
-    [Route("api/[controller]")]
     public class ContactController : ControllerBase
     {
         private readonly UpDiddyDbContext _db = null;
@@ -47,7 +47,7 @@ namespace UpDiddyApi.Controllers
             _distributedCache = distributedCache;
         }
 
-        [HttpGet("{contactGuid}")]
+        [HttpGet("api/[controller]/{contactGuid}")]
         public IActionResult Get(Guid ContactGuid)
         {
             ContactDto rval = null;
@@ -74,21 +74,30 @@ namespace UpDiddyApi.Controllers
             if (partnerGuid == null || partnerGuid == Guid.Empty || cacheKey == null)
                 return BadRequest();
 
-            // todo: load contacts by cache key (from redis)
+            // todo: TRY to load contacts by cache key (from redis)
+            var cachedContactsForImport = _distributedCache.GetString(cacheKey);
+
+            if (cachedContactsForImport != null)
+            {
+                List<ContactDto> contacts = JsonConvert.DeserializeObject<List<ContactDto>>(cachedContactsForImport);
+
+
+                var newContacts =
+                    from db in _db.Contact
+                    join upload in contacts on db.Email equals upload.Email into temp
+                    from upload in temp.DefaultIfEmpty()
+                    select new
+                    {
+                        db.ContactId,
+                        Email = upload.Email,
+                        SourceSystemIdentifier = upload.SourceSystemIdentifier,
+                        Metadata = upload.Metadata
+                    };
+            }
+
 
             // todo: existing contacts
 
-            //var newContacts =
-            //    from db in _db.Contact
-            //    join upload in contacts on db.Email equals upload.Email into temp
-            //    from upload in temp.DefaultIfEmpty()
-            //    select new
-            //    {
-            //        db.ContactId,
-            //        Email = upload.Email,
-            //        SourceSystemIdentifier = upload.SourceSystemIdentifier,
-            //        Metadata = upload.Metadata
-            //    };
 
             /* should the records be processed in parallel?
              * what happens if one record conflicts with another?

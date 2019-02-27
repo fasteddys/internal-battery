@@ -119,7 +119,7 @@ namespace UpDiddy.Controllers
         }
 
         [HttpPost]
-        [Route("/admin/uploadcontacts")]
+        [Route("/admin/contacts/upload")]
         public IActionResult UploadContacts(IFormFile contactsFile)
         {
             ImportValidationSummaryDto importValidationSummary = new ImportValidationSummaryDto();
@@ -184,7 +184,7 @@ namespace UpDiddy.Controllers
         {
             int cacheTtl = int.Parse(_configuration["redis:cacheTTLInMinutes"]);
             string contactsJson = Newtonsoft.Json.JsonConvert.SerializeObject(contacts);
-            string cacheKey = subscriberGuid.ToString() + ":" + fileName + ":" + DateTime.UtcNow.ToLongTimeString();
+            string cacheKey = $"contactImport:{Guid.NewGuid()}";
             _cache.SetString(cacheKey, contactsJson, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(cacheTtl) });
             return cacheKey;
         }
