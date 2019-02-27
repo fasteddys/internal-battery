@@ -752,6 +752,19 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public async Task<PartnerDto> GetPartnerAsync(Guid PartnerGuid)
+        {
+            IList<PartnerDto> _partners = await GetPartnersAsync();
+            foreach(PartnerDto partner in _partners)
+            {
+                if(partner.PartnerGuid == PartnerGuid)
+                {
+                    return partner;
+                }
+            }
+            return null;
+        }
+
         private async Task<IList<PartnerDto>> _PartnersAsync()
         {
             return await GetAsync<IList<PartnerDto>>("partners");
@@ -769,6 +782,35 @@ namespace UpDiddy.Api
             // Return the newly created partner
             return newPartner;
         }
+
+        public async Task<BasicResponseDto> UpdatePartnerAsync(PartnerDto partnerDto)
+        {
+            // Update partner
+            BasicResponseDto updatedPartnerResponse = await PutAsync<BasicResponseDto>("partners", partnerDto);
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Partners";
+            RemoveCachedValue<IList<PartnerDto>>(cacheKey);
+
+            // Return the newly created partner
+            return updatedPartnerResponse;
+            
+        }
+
+        
+        public async Task<BasicResponseDto> DeletePartnerAsync(Guid partnerGuid)
+        {
+            // Update partner
+            BasicResponseDto deletedPartnerResponse = await DeleteAsync<BasicResponseDto>(string.Format("partners/{0}", partnerGuid));
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Partners";
+            RemoveCachedValue<IList<PartnerDto>>(cacheKey);
+
+            // Return the newly created partner
+            return deletedPartnerResponse;
+        }
+        
 
         #endregion
     }

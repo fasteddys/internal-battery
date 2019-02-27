@@ -109,6 +109,7 @@ namespace UpDiddyApi.Controllers
             var isAuth = await _authorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin");
             if (isAuth.Succeeded)
             {
+                Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 Partner partner = new Partner();
                 partner.Name = partnerDto.Name;
                 partner.Description = partnerDto.Description;
@@ -117,7 +118,7 @@ namespace UpDiddyApi.Controllers
                 partner.ModifyDate = DateTime.UtcNow;
                 partner.IsDeleted = 0;
                 partner.ModifyGuid = Guid.Empty;
-                partner.CreateGuid = Guid.Empty;
+                partner.CreateGuid = loggedInUserGuid;
                 _db.Partner.Add(partner);
                 _db.SaveChanges();
                 return Created(_configuration["Environment:ApiUrl"] + "partners/" + partner.PartnerGuid, partnerDto);
@@ -125,6 +126,70 @@ namespace UpDiddyApi.Controllers
             }
             else
                 return Unauthorized();
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> ModifyPartner([FromBody] PartnerDto NewPartnerDto)
+        {
+            if (NewPartnerDto == null || NewPartnerDto.PartnerGuid == null)
+                return BadRequest();
+            
+
+            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin");
+            if (isAuth.Succeeded)
+            {
+                Partner ExistingPartner = _db.Partner
+                                .Where(t => t.IsDeleted == 0 && t.PartnerGuid == NewPartnerDto.PartnerGuid).FirstOrDefault();
+                Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+                ExistingPartner.Name = NewPartnerDto.Name ?? ExistingPartner.Name;
+                ExistingPartner.Description = NewPartnerDto.Description ?? ExistingPartner.Description;
+                ExistingPartner.ModifyDate = DateTime.UtcNow;
+                ExistingPartner.ModifyGuid = loggedInUserGuid;
+                
+
+                _db.Partner.Update(ExistingPartner);
+                _db.SaveChanges();
+
+                return Ok(new BasicResponseDto { StatusCode = 200, Description = "Partner " + NewPartnerDto.PartnerGuid + " successfully updated."});
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
+        [HttpDelete("{PartnerGuid}")]
+        public async Task<IActionResult> DeletePartner(Guid PartnerGuid)
+        {
+            if (PartnerGuid == null)
+                return BadRequest();
+
+            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin");
+            if (isAuth.Succeeded)
+            {
+                Partner ExistingPartner = _db.Partner
+                                .Where(t => t.IsDeleted == 0 && t.PartnerGuid == PartnerGuid).FirstOrDefault();
+
+                if (ExistingPartner == null)
+                    return BadRequest();
+
+                Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+                ExistingPartner.IsDeleted = 1;
+                ExistingPartner.ModifyDate = DateTime.UtcNow;
+                ExistingPartner.ModifyGuid = loggedInUserGuid;
+
+
+                _db.Partner.Update(ExistingPartner);
+                _db.SaveChanges();
+
+                return Ok(new BasicResponseDto { StatusCode = 200, Description = "Partner " + PartnerGuid + " successfully logically deleted." });
+            }
+            else
+            {
+                return Unauthorized();
+            }
         }
     }
 }

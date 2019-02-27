@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddy.Api;
+using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
@@ -91,10 +92,45 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("/admin/partners")]
-        public async Task<IActionResult> Partners()
+        public IActionResult Partners()
         {
             return View();
+        }
+
+        [Authorize]
+        [HttpGet("/admin/modifypartner/{PartnerGuid}")]
+        public async Task<IActionResult> ModifyPartnerAsync(Guid PartnerGuid)
+        {
+            PartnerDto partner = await _api.GetPartnerAsync(PartnerGuid);
+
+            if (partner == null)
+                return NotFound();
+
+            return View("ModifyPartner", partner);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> UpdatePartnerAsync(PartnerViewModel UpdatedPartner)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    BasicResponseDto NewPartnerResponse = await _api.UpdatePartnerAsync(new PartnerDto
+                    {
+                        PartnerGuid = UpdatedPartner.PartnerGuid,
+                        Name = UpdatedPartner.Name,
+                        Description = UpdatedPartner.Description
+                    });
+                    return RedirectToAction("Partners");
+                }
+                catch (ApiException e)
+                {
+                    // Log exception
+                }
+            }
+            return BadRequest();
         }
 
         [Authorize]
@@ -114,10 +150,46 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> CreatePartnerAsync(PartnerDto NewPartner)
+        public async Task<IActionResult> CreatePartnerAsync(PartnerViewModel NewPartner)
         {
-            PartnerDto newPartnerFromDb = await _api.CreatePartnerAsync(NewPartner);
-            return RedirectToAction("Partners");
+
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    PartnerDto newPartnerFromDb = await _api.CreatePartnerAsync(new PartnerDto
+                    {
+                        PartnerGuid = NewPartner.PartnerGuid,
+                        Name = NewPartner.Name,
+                        Description = NewPartner.Description
+                    });
+                    return RedirectToAction("Partners");
+                }
+                catch(ApiException e)
+                {
+                    // Log error
+                }                
+            }
+            return BadRequest();
+        }
+
+        [Authorize]
+        [HttpGet("/admin/deletepartner/{PartnerGuid}")]
+        public async Task<IActionResult> DeleteParterAsync(Guid PartnerGuid)
+        {
+            try
+            {
+                BasicResponseDto response = await _api.DeletePartnerAsync(PartnerGuid);
+                if (response.StatusCode != 200)
+                    return BadRequest();
+                return RedirectToAction("Partners");
+            }
+            catch(ApiException e)
+            {
+                // Log error
+            }
+            return BadRequest();
         }
     }
 }

@@ -7,19 +7,26 @@
     string innerTag = "button";
     string dataFormAttribute = "";
     string hyperLinkAttribute = "";
-    if(Model.ButtonAction == ActionButtonViewModel.Action.CTA && !string.IsNullOrEmpty(Model.Hyperlink))
+    string buttonDisplay = "";
+    if (Model.ButtonAction == ActionButtonViewModel.Action.CTA && !string.IsNullOrEmpty(Model.Hyperlink))
     {
         tag = "a";
         innerTag = "div";
         hyperLinkAttribute = "href=" + Model.Hyperlink;
     }
-    else if(Model.ButtonAction == ActionButtonViewModel.Action.SUBMIT)
+    else if (Model.ButtonAction == ActionButtonViewModel.Action.SUBMIT)
     {
         dataFormAttribute = "data-form=" + Model.Form;
     }
+    if (Model.FitToText)
+    {
+        buttonDisplay = "fit-to-text";
+    }
+
+
 }
 
-<@tag @hyperLinkAttribute class="action-container">
+<@tag @hyperLinkAttribute class="action-container @buttonDisplay">
     <@innerTag id="ButtonComponent" 
                class="button-container @Model.ChosenColorScheme @Model.SkewDirection font-bold" @dataFormAttribute
                data-action-type="@Model.ButtonAction">

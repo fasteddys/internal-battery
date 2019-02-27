@@ -2,9 +2,20 @@
 
 // Base Styles
 @media (min-width: 0px) {
+    .action-container {
+        &.fit-to-text {
+            display: inline-block;
 
+            .button-container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+    }
     a.action-container{
         display: block;
+
+        
     }
 
     .button-container {

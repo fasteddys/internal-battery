@@ -66,7 +66,10 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdateEntitySkillsAsync(EntitySkillDto entitySkillDto);
         Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
         Task<IList<PartnerDto>> GetPartnersAsync();
+        Task<PartnerDto> GetPartnerAsync(Guid partnerGuid);
         Task<PartnerDto> CreatePartnerAsync(PartnerDto partnerDto);
+        Task<BasicResponseDto> UpdatePartnerAsync(PartnerDto partnerDto);
+        Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);
         #endregion
 
         #region Marketing

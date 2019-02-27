@@ -14,5 +14,6 @@ namespace UpDiddy.ViewModels
         public string SkewDirection { get; set; }
         public string Form { get; set; }
         public string Hyperlink { get; set; }
+        public bool FitToText { get; set; }
     }
 }
