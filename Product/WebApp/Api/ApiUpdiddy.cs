@@ -383,6 +383,11 @@ namespace UpDiddy.Api
 
         #region Public UnCached Methods
 
+        public async Task<ImportValidationSummaryDto> ImportContactsAsync(Guid partnerGuid, string cacheKey)
+        {
+            return await PutAsync<ImportValidationSummaryDto>("contact/import/" + partnerGuid + "/" + cacheKey);
+        }
+
         #region Promocode
         public async Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid)
         {

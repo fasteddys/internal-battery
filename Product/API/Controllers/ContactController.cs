@@ -69,26 +69,32 @@ namespace UpDiddyApi.Controllers
         [HttpPut]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/import/{partnerGuid}/{cacheKey}")]
-        public IActionResult ImportContacts(Guid? partnerGuid, string cacheKey, [FromBody] List<ContactDto> contacts)
+        public IActionResult ImportContacts(Guid partnerGuid, string cacheKey)
         {
-            if (!partnerGuid.HasValue || partnerGuid.Value == Guid.Empty || cacheKey == null)
+            if (partnerGuid == null || partnerGuid == Guid.Empty || cacheKey == null)
                 return BadRequest();
+
+            // todo: load contacts by cache key (from redis)
 
             // todo: existing contacts
 
-            var newContacts =
-                from db in _db.Contact
-                join upload in contacts on db.Email equals upload.Email into temp
-                from upload in temp.DefaultIfEmpty()
-                select new
-                {
-                    db.ContactId,
-                    Email = upload.Email,
-                    SourceSystemIdentifier = upload.SourceSystemIdentifier,
-                    Metadata = upload.Metadata
-                };
+            //var newContacts =
+            //    from db in _db.Contact
+            //    join upload in contacts on db.Email equals upload.Email into temp
+            //    from upload in temp.DefaultIfEmpty()
+            //    select new
+            //    {
+            //        db.ContactId,
+            //        Email = upload.Email,
+            //        SourceSystemIdentifier = upload.SourceSystemIdentifier,
+            //        Metadata = upload.Metadata
+            //    };
 
-            // todo: can we yield return records as they are processed? do we want to process them one at a time?
+            /* should the records be processed in parallel?
+             * what happens if one record conflicts with another?
+             * can we skip records that cause errors and move to the next?
+             * how long does the operation take?
+             */
 
             return Ok();
         }

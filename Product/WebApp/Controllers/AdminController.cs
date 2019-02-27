@@ -109,12 +109,20 @@ namespace UpDiddy.Controllers
             return View();
         }
 
-        [Authorize]
+        [HttpPut]
+        [Route("admin/contacts/import/{partnerGuid}/{cacheKey}")]
+        public IActionResult ImportContacts(Guid partnerGuid, string cacheKey)
+        {
+            var response = _api.ImportContactsAsync(partnerGuid, cacheKey);
+            // replace with the import validation summary dto object returned
+            return new JsonResult(new ImportValidationSummaryDto());
+        }
+
         [HttpPost]
         [Route("/admin/uploadcontacts")]
         public IActionResult UploadContacts(IFormFile contactsFile)
         {
-            ImportValidationSummary importValidationSummary = new ImportValidationSummary();
+            ImportValidationSummaryDto importValidationSummary = new ImportValidationSummaryDto();
             List<ContactDto> contacts;
             using (var reader = new StreamReader(contactsFile.OpenReadStream()))
             {
@@ -139,12 +147,12 @@ namespace UpDiddy.Controllers
 
                     contacts = csv.GetRecords<ContactDto>().ToList();
 
-                    // sample validation message - remove this
-                    importValidationSummary.ImportActions.Add(new ImportAction()
+                    // sample validation message - remove this once implemented
+                    importValidationSummary.ImportActions.Add(new ImportActionDto()
                     {
                         Count = contacts.Count,
                         ImportBehavior = ImportBehavior.Created,
-                        Reason = "because they do not yet exist for {Partner}"
+                        Message = string.Empty
                     });
 
                     /* todo: perform all validation (including server-side)
@@ -179,29 +187,6 @@ namespace UpDiddy.Controllers
             string cacheKey = subscriberGuid.ToString() + ":" + fileName + ":" + DateTime.UtcNow.ToLongTimeString();
             _cache.SetString(cacheKey, contactsJson, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(cacheTtl) });
             return cacheKey;
-        }
-
-        public class ImportValidationSummary
-        {
-            public string CacheKey { get; set; }
-            public List<ImportAction> ImportActions { get; set; } = new List<ImportAction>();
-            public List<ContactDto> ContactsPreview { get; set; } = new List<ContactDto>();
-        }
-
-        public class ImportAction
-        {
-            // todo: create constructor that encapsulates logic for presenting this information?
-            // e.g. formatted message combining the import behavior, count of records affected, and reason (which may include the partner name)
-            public ImportBehavior ImportBehavior { get; set; }
-            public string Reason { get; set; }
-            public int Count { get; set; }
-        }
-
-        public enum ImportBehavior
-        {
-            Ignored = 0,
-            Created = 1,
-            Updated = 2
         }
 
         public sealed class ContactDtoMap : ClassMap<ContactDto>
