@@ -7,7 +7,9 @@
     "@babel/core": "^7.2.2",
     "@babel/polyfill": "^7.2.5",
     "@babel/preset-env": "^7.3.1",
+    "@babel/preset-react": "^7.0.0",
     "@fortawesome/fontawesome-free": "^5.6.3",
+    "babel-loader": "^8.0.5",
     "bower": "^1.8.4",
     "del": "^3.0.0",
     "gulp": "^3.9.1",
@@ -20,17 +22,22 @@
     "gulp-uglify": "^3.0.1",
     "merge-stream": "^1.0.1",
     "node-sass": "^4.10.0",
-    "sass": "^1.14.3"
+    "sass": "^1.14.3",
+    "webpack-stream": "^5.2.1"
   },
   "dependencies": {
+    "@aspnet/signalr": "^1.1.0",
     "axios": "^0.18.0",
     "bootbox": "^4.4.0",
     "bootstrap-datepicker": "^1.8.0",
-    "@aspnet/signalr": "^1.1.0",
     "braintree-web-drop-in": "1.13.0",
     "jquery-ui": "^1.12.1",
     "jquery-ui-dist": "^1.12.1",
     "moment": "^2.23.0",
+    "react": "^16.8.3",
+    "react-datepicker": "^2.1.0",
+    "react-dom": "^16.8.3",
+    "react-table": "^6.9.2",
     "toastr": "^2.1.4"
   }
 }

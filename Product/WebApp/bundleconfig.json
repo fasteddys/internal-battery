@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "outputFileName": "wwwroot/css/site.dev.css",
     "inputFiles": [
@@ -9,7 +9,8 @@
       "wwwroot/css/bundle.css",
       "bower_components/selectize/dist/css/selectize.css",
       "bower_components/selectize/dist/css/selectize.default.css",
-      "node_modules/jquery-ui-dist/jquery-ui.css"
+      "node_modules/jquery-ui-dist/jquery-ui.css",
+      "node_modules/react-table/react-table.css"
     ],
     "minify": {
       "enabled": false,
@@ -34,13 +35,13 @@
       "bower_components/bluebird/js/browser/bluebird.js",
       "node_modules/moment/moment.js",
       "node_modules/bootbox/bootbox.js",
-      "client/dist/js/core.js"
+      "client/dist/js/core.js",
+      "client/dist/js/bundle.js"
     ],
     "minify": {
       "enabled": false,
       "renameLocals": false
-    },
-    "sourceMap": false
+    }
   },
   {
     "outputFileName": "wwwroot/css/site.min.css",
@@ -52,7 +53,8 @@
       "wwwroot/css/bundle.css",
       "bower_components/selectize/dist/css/selectize.css",
       "bower_components/selectize/dist/css/selectize.default.css",
-      "node_modules/jquery-ui-dist/jquery-ui.css"
+      "node_modules/jquery-ui-dist/jquery-ui.css",
+      "node_modules/react-table/react-table.css"
     ],
     "minify": {
       "enabled": true,
@@ -76,11 +78,18 @@
       "node_modules/braintree-web-drop-in/dist/browser/dropin.js",
       "node_modules/moment/moment.js",
       "node_modules/bootbox/bootbox.min.js",
-      "client/dist/js/core.js"
+      "client/dist/js/core.js",
+      "client/dist/js/bundle.js"
     ],
     "minify": {
       "enabled": true,
       "renameLocals": true
     }
+  },
+  {
+    "outputFileName": "wwwroot/js/modules/admin/ContactMultiSelect.min.js",
+    "inputFiles": [
+      "wwwroot/js/modules/admin/ContactMultiSelect.js"
+    ]
   }
 ]

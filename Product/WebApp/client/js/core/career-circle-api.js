@@ -31,7 +31,7 @@ var CareerCircleAPI = (function (apiUrl) {
     var getToken = function () {
         var jwt = SessionStorage.get(_session_key);
 
-        if (jwt == null ? new Date() : new Date(jwt.ExpiresOn)) {
+        if (jwt == null || new Date() >= new Date(jwt.ExpiresOn)) {
             return new Promise(function(resolve) {
                 retrieveToken().done(function (response) {
                     SessionStorage.set(_session_key, JSON.stringify(response.data));
@@ -75,6 +75,27 @@ var CareerCircleAPI = (function (apiUrl) {
         });
     }
 
+    var getContacts = async function(page, pageSize, sorted, filtered) {
+        var pageIndex = page <= 0 ? 1 : page;
+        var params = "";
+        if(sorted && sorted.length > 0) {
+            var params = "&sort=";
+            for(var i = 0; i < sorted.length; i++) {
+                var col = sorted[i];
+                var sortType = col.desc ? "desc" : "asc";
+                params += encodeURI(col.id + " " + sortType) 
+            } 
+        }
+        if(filtered && filtered.length > 0) {
+            for(var i = 0; i < filtered.length; i++) {
+                var col = filtered[i];
+                params += "&" + encodeURI(col.id) + "=" + encodeURI(col.value);
+            }
+        }
+
+        return await _http.get('/contact?page=' + pageIndex + '&pageSize=' + pageSize + params);
+    }
+
     var deleteFile = function (fileId) {
         return new Promise(function(resolve) {
             getToken().then(function (jwt) {
@@ -88,6 +109,7 @@ var CareerCircleAPI = (function (apiUrl) {
         getProfile: getProfile,
         uploadResume: uploadResume,
         deleteFile: deleteFile,
-        signOut: signOut
+        signOut: signOut,
+        getContacts: getContacts
     };
 })(API_URL);

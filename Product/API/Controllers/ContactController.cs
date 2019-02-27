@@ -47,6 +47,62 @@ namespace UpDiddyApi.Controllers
             _distributedCache = distributedCache;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllAsync(string sort, string name, string email, int? page = null, int? pageSize = 10)
+        {
+            if (!page.HasValue)
+                return Ok(await _db.Contact.ToListAsync());
+
+            var contactQuery = from c in _db.Contact select c;
+
+            if (name != null)
+            {
+                var names = name.Split(" ");
+                if(names.Length == 2)
+                {
+                    contactQuery = contactQuery.Where(c => c.FirstName.Contains(names[0]) && c.LastName.Contains(names[1]));
+                }
+                else
+                {
+                    contactQuery = contactQuery.Where(c => c.FirstName.Contains(names[0]) || c.LastName.Contains(names[0]));
+                }
+            }
+
+            if (email != null)
+                contactQuery = contactQuery.Where(c => c.Email.Contains(email));
+
+            switch (sort)
+            {
+                case "email asc":
+                    contactQuery = contactQuery.OrderBy(c => c.Email);
+                    break;
+                case "email desc":
+                    contactQuery = contactQuery.OrderByDescending(c => c.Email);
+                    break;
+                case "name asc":
+                    contactQuery = contactQuery
+                        .OrderBy(c => c.LastName)
+                        .ThenBy(c => c.FirstName);
+                    break;
+                case "name desc":
+                    contactQuery = contactQuery
+                        .OrderByDescending(c => c.LastName)
+                        .ThenByDescending(c => c.FirstName);
+                    break;  
+            }
+
+
+            var contacts = await contactQuery.AsNoTracking().Skip((page.Value - 1) * pageSize.Value).Take(pageSize.Value).ToListAsync();
+            var num_contacts = await contactQuery.CountAsync();
+            var num_pages = (num_contacts + pageSize.Value - 1) / pageSize.Value;
+            return Ok(new
+            {
+                totalRecords = num_contacts,
+                pages = num_pages,
+                data = contacts
+            });
+        }
+
         [HttpGet("{contactGuid}")]
         public IActionResult Get(Guid ContactGuid)
         {

@@ -6,6 +6,7 @@ var csso = require('gulp-csso');
 var babel = require('gulp-babel');
 var concat = require('gulp-concat');
 var merge = require('merge-stream');
+var webpack = require('webpack-stream');
 
 var babelConfig = {
     presets: ['@babel/env']
@@ -42,12 +43,15 @@ gulp.task('js', function () {
         .pipe(babel(babelConfig))
         .pipe(gulp.dest('./wwwroot/js/modules'));
 
+    var react = gulp.src('./client/js/react/index.js')
+        .pipe(webpack(require('./webpack.config')))
+        .pipe(gulp.dest('./client/dist/js'));
 
-    return merge(core, modules);
+    return merge(core, modules, react);
 });
 
 gulp.task('js:watch', function () {
-    gulp.watch('./client/js/**/*.js', ['js'])
+    gulp.watch(['./client/js/**/*.js', './client/react/**/*.js'], ['js']);
 });
 
 gulp.task('compile', ['fonts', 'sass', 'js']);
