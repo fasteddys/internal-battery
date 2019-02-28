@@ -75,7 +75,7 @@ var CareerCircleAPI = (function (apiUrl) {
         });
     }
 
-    var getContacts = async function(page, pageSize, sorted, filtered) {
+    var getContacts = async function(page, pageSize, sorted, filtered, startDate, endDate) {
         var pageIndex = page <= 0 ? 1 : page;
         var params = "";
         if(sorted && sorted.length > 0) {
@@ -92,6 +92,12 @@ var CareerCircleAPI = (function (apiUrl) {
                 params += "&" + encodeURI(col.id) + "=" + encodeURI(col.value);
             }
         }
+
+        if(startDate)
+            params += "&startDate=" + moment(startDate).endOf('day').valueOf();
+
+        if(endDate)
+            params += "&endDate=" + moment(endDate).endOf('day').valueOf();
 
         return await _http.get('/contact?page=' + pageIndex + '&pageSize=' + pageSize + params);
     }

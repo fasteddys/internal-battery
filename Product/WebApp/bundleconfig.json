@@ -10,7 +10,8 @@
       "bower_components/selectize/dist/css/selectize.css",
       "bower_components/selectize/dist/css/selectize.default.css",
       "node_modules/jquery-ui-dist/jquery-ui.css",
-      "node_modules/react-table/react-table.css"
+      "node_modules/react-table/react-table.css",
+      "node_modules/react-datepicker/dist/react-datepicker.css"
     ],
     "minify": {
       "enabled": false,
@@ -54,7 +55,8 @@
       "bower_components/selectize/dist/css/selectize.css",
       "bower_components/selectize/dist/css/selectize.default.css",
       "node_modules/jquery-ui-dist/jquery-ui.css",
-      "node_modules/react-table/react-table.css"
+      "node_modules/react-table/react-table.css",
+      "node_modules/react-datepicker/dist/react-datepicker.css"
     ],
     "minify": {
       "enabled": true,

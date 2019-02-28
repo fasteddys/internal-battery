@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactTable from 'react-table';
+import DatePicker from 'react-datepicker';
 
 class TableMultiSelect extends React.Component {
 
@@ -8,12 +9,13 @@ class TableMultiSelect extends React.Component {
         this.state = {
             totalRecords: 0,
             contacts: [],
-            selected: {},
-            selectAll: 0,
-            selectAllFlag: false,
-            pageIndex: 1,
-            pageSize: 3,
-            pages: 0
+            startDate: null,
+            endDate: null,
+            page: 0,
+            pages: 0,
+            pageSize: 20,
+            sorted: [],
+            filtered: []
         };
 
         this.columns = [
@@ -27,11 +29,15 @@ class TableMultiSelect extends React.Component {
                 accessor: 'email'
             },
             {
-                Header: 'CreateDate',
-                accessor: 'createDate'
+                Header: "Create Date",
+                accessor: d => moment(new Date(d.createDate)).format('L'),
+                id: "createDate",
+                filterable: false
             }
         ];
         this.fetchData = this.fetchData.bind(this);
+        this.handleStartDateChange = this.handleStartDateChange.bind(this);
+        this.handleEndDateChange = this.handleEndDateChange.bind(this);
     }
     
     componentDidMount() {
@@ -39,51 +45,67 @@ class TableMultiSelect extends React.Component {
         this.timer = null;
     }
 
-    getRecordsSelected() {
-        if(this.state.selectAllFlag)
-            return this.state.totalRecords - Object.keys(this.state.selected).length;
-
-        return Object.keys(this.state.selected).length;
-    }
-
-    isChecked(contactId) {
-        const isSelected = this.state.selected[contactId] !== undefined;
-        if(this.state.selectAll !== 0 && this.state.selectAllFlag)
-            return !isSelected;
-
-        return isSelected;
-    }
-
     fetchData(state, instance) {
         clearTimeout(this.timer);
-        this.timer = setTimeout(() => { this.triggerChange(state) }, this.WAIT_INTERVAL);
+        this.timer = setTimeout(() => { this.triggerChange(state, this.state.startDate, this.state.endDate) }, this.WAIT_INTERVAL);
     }
 
-    triggerChange(state) {
-        CareerCircleAPI.getContacts(state.page + 1, state.pageSize, state.sorted, state.filtered).then((res) => {
-            this.setState({ contacts: res.data.data, pages: res.data.pages, totalRecords: res.data.totalRecords });
+    handleStartDateChange(date) {
+        this.setState({startDate: date, page: 0}, () => {
+            this.triggerChange(this.state);
         });
     }
 
-    toggleRow(contactId) {
-        const newSelected = Object.assign({}, this.state.selected);
-        newSelected[contactId] = !this.state.selected[contactId];
-
-        if(!newSelected[contactId])
-            delete newSelected[contactId];
-
-        this.setState({selected: newSelected, selectAll: 2});
+    handleEndDateChange(date) {
+        this.setState({endDate: date, page: 0}, () => {
+            this.triggerChange(this.state);
+        });
     }
 
-    toggleSelectAll() {
-        this.setState({selectAll: this.state.selectAll === 0 ? 1 : 0, selectAllFlag: this.state.selectAll === 0, selected: {}});
+    triggerChange(state) {
+        CareerCircleAPI.getContacts(state.page + 1, state.pageSize, state.sorted, state.filtered, this.state.startDate, this.state.endDate).then((res) => {
+            this.setState({ 
+                page: state.page,
+                contacts: res.data.data,
+                pages: res.data.pages,
+                totalRecords: res.data.totalRecords
+            });
+        });
     }
 
     render() {
         return (
             <div>
-                <div>{this.getRecordsSelected()}</div>
-                <ReactTable manual filterable data={this.state.contacts} columns={this.columns} onFetchData={this.fetchData} pages={this.state.pages}/>
+                <div>{this.state.totalRecords}</div>
+                <DatePicker
+                    selected={this.state.startDate}
+                    onChange={this.handleStartDateChange}
+                    showYearDropdown
+                    maxDate={new Date()}
+                />
+                <DatePicker
+                    selected={this.state.endDate}
+                    selectsEnd
+                    startDate={this.state.startDate}
+                    endDate={this.state.endDate}
+                    onChange={this.handleEndDateChange}
+                />
+                <ReactTable 
+                    manual 
+                    filterable 
+                    data={this.state.contacts}
+                    columns={this.columns}
+                    onFetchData={this.fetchData}
+                    page={this.state.page}
+                    pages={this.state.pages}
+                    pageSize={this.state.pageSize}
+                    filtered={this.state.filtered}
+                    sorted={this.state.sorted}
+                    onPageSize={pageSize => this.setState({pageSize})}
+                    onPageChange={page => this.setState({page})}
+                    onFilteredChange={filtered =>   this.setState({ filtered }) }
+                    onSortedChange={sorted => this.setState({ sorted })}
+                />
             </div>
         );
     }

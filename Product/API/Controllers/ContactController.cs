@@ -48,7 +48,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllAsync(string sort, string name, string email, int? page = null, int? pageSize = 10)
+        public async Task<IActionResult> GetAllAsync(string sort, string name, string email, double? startDate, double? endDate, int? page = null, int? pageSize = 10)
         {
             if (!page.HasValue)
                 return Ok(await _db.Contact.ToListAsync());
@@ -58,7 +58,7 @@ namespace UpDiddyApi.Controllers
             if (name != null)
             {
                 var names = name.Split(" ");
-                if(names.Length == 2)
+                if (names.Length == 2)
                 {
                     contactQuery = contactQuery.Where(c => c.FirstName.Contains(names[0]) && c.LastName.Contains(names[1]));
                 }
@@ -70,6 +70,29 @@ namespace UpDiddyApi.Controllers
 
             if (email != null)
                 contactQuery = contactQuery.Where(c => c.Email.Contains(email));
+
+
+            if (startDate.HasValue)
+            {
+                // Example of a UNIX timestamp for 11-29-2013 4:58:30
+                double timestamp = startDate.Value;
+
+                // Format our new DateTime object to start at the UNIX Epoch
+                DateTime dateTime = new System.DateTime(1970, 1, 1, 0, 0, 0, 0);
+
+                // Add the timestamp (number of seconds since the Epoch) to be converted
+                dateTime = dateTime.AddMilliseconds(timestamp);
+                contactQuery = contactQuery.Where(c => c.CreateDate >= dateTime);
+            }
+
+            if(endDate.HasValue)
+            {
+                double timestamp = endDate.Value;
+                // Format our new DateTime object to start at the UNIX Epoch
+                DateTime dateTime = new System.DateTime(1970, 1, 1, 0, 0, 0, 0);
+                dateTime = dateTime.AddMilliseconds(timestamp);
+                contactQuery = contactQuery.Where(c => dateTime >= c.CreateDate);
+            }
 
             switch (sort)
             {
@@ -88,9 +111,14 @@ namespace UpDiddyApi.Controllers
                     contactQuery = contactQuery
                         .OrderByDescending(c => c.LastName)
                         .ThenByDescending(c => c.FirstName);
-                    break;  
+                    break;
+                case "createDate asc":
+                    contactQuery = contactQuery.OrderBy(c => c.CreateDate);
+                    break;
+                case "createDate desc":
+                    contactQuery = contactQuery.OrderByDescending(c => c.CreateDate);
+                    break;
             }
-
 
             var contacts = await contactQuery.AsNoTracking().Skip((page.Value - 1) * pageSize.Value).Take(pageSize.Value).ToListAsync();
             var num_contacts = await contactQuery.CountAsync();
