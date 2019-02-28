@@ -681,6 +681,15 @@ namespace UpDiddy.Controllers
                 BasicResponseDto subscriberResponse = await _Api.UpdateSubscriberContactAsync(signUpViewModel.ContactGuid, sudto);
 
                 CourseDto Course = await _Api.GetCourseByCampaignGuidAsync((Guid)signUpViewModel.CampaignGuid);
+                if(Course == null)
+                {
+                    return new BasicResponseDto
+                    {
+                        StatusCode = subscriberResponse.StatusCode,
+                        Description = "/Home/Signup"
+                    };
+                }
+
                 return new BasicResponseDto
                 {
                     StatusCode = subscriberResponse.StatusCode,
