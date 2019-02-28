@@ -3,7 +3,13 @@
 // Base Styles
 @media (min-width: 0px) {
     #PartnersContainer{
-
+        
+        a{
+            color: $color-primary;
+            &:hover{
+                color: $color-secondary;
+            }
+        }
     }
 }
 

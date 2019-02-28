@@ -22,11 +22,21 @@
         </div>
     </div>
 </div>
-<div id="PartnerModifyContainer" class="row mt-5">
+<div id="PartnerModifyContainer" class="row">
     <div class="col-12">
         <div class="container">
+            <div class="row breadcrumbs">
+                <div class="col-12 no-padding">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a asp-controller="admin" asp-action="partners">Partners</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">ModifyPartner</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
             <div class="row">
-                <div class="col-12">
+                <div class="col-12 no-padding">
                     <form id="ModifyPartnerForm" asp-controller="Admin" asp-action="UpdatePartnerAsync">
                         <input type="hidden" value="@Model.PartnerGuid" asp-for="PartnerGuid" />
                         <div class="form-group row">
