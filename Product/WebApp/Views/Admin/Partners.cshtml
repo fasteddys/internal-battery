@@ -25,25 +25,8 @@
     </div>
 </div>
 
-<div id="AdminContainer" class="container-fluid bg-color-primary">
-    <div class="container">
-        <div class="row">
-            <div class="col-md">
-                <ul class="nav nav-nav-admin">
-                    <li class="nav-link">
-                        <a class="text-white" href="/admin/skills">Skills</a>
-                    </li>
-                    <li class="nav-link">
-                        <a class="text-white" href="/marketing/campaignstatistics">Campaign Statistics</a>
-                    </li>
-                    <li class="nav-link active">
-                        <a class="text-white" href="/admin/partners">Partners</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
+@Html.Partial("Admin/_AdminNavigation")
+
 <div id="PartnersContainer" class="row mt-4">
     <div class="col-12">
         <div class="container">
@@ -64,22 +47,26 @@
             </div>
             <div class="row">
                 <div class="col-sm">
-                    @Html.AjaxGrid(Url.Action("PartnerGrid"))
+                    @Html.AjaxGrid(Url.Action("PartnerGridAsync"))
                 </div>
             </div>
             @section Scripts{
-                <script type="text/javascript">window.onload = function () {
-                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-            }
+                <script type="text/javascript">
+                    $(".admin-nav-partners").addClass("active");
+                    window.onload = function () {
+                        var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                    }
 
-            function doSearch(isReset) {
-                if (isReset)
-                    document.getElementById('GridSearch').value = '';
-                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-                var search = document.getElementById('GridSearch').value;
-                grid.query.set('searchQuery', encodeURIComponent(search));
-                grid.reload();
-            }</script>}
+                    function doSearch(isReset) {
+                        if (isReset)
+                            document.getElementById('GridSearch').value = '';
+                        var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                        var search = document.getElementById('GridSearch').value;
+                        grid.query.set('searchQuery', encodeURIComponent(search));
+                        grid.reload();
+                    }
+                </script>
+            }
         </div>
     </div>
 </div>

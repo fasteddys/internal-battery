@@ -1,13 +1,22 @@
-﻿@import '_variables';
+﻿@import '../_variables';
 
 // Base Styles
 @media (min-width: 0px) {
+    #AdminContactsContainer {
+        #drop {
+            border: 3px dashed $color-secondary;
+            border-radius: 1rem;
+            padding: 1rem;
+            text-align: center;
+
+        }
+    }
 }
 
 // Extra Small Styles
 @media (min-width: 320px) {
 }
-
+ 
 // Small Styles
 @media (min-width: 576px) {
 }

@@ -34,7 +34,11 @@
       "bower_components/bluebird/js/browser/bluebird.js",
       "node_modules/moment/moment.js",
       "node_modules/bootbox/bootbox.js",
-      "client/dist/js/core.js"
+      "client/dist/js/core.js",
+      "wwwroot/lib/fileupload/jquery.fileupload.js",
+      "wwwroot/lib/fileupload/jquery.iframe-transport.js",
+      "wwwroot/lib/knob/jquery.knob.js",
+      "wwwroot/lib/jquery-ui/jquery.ui.widget.js"
     ],
     "minify": {
       "enabled": false,

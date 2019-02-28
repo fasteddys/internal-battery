@@ -260,7 +260,7 @@ namespace UpDiddy.Api
         public async Task<IList<SkillDto>> GetSkillsAsync(string userQuery)
         {
             string cacheKey = $"GetSkills{userQuery}";
-           IList<SkillDto> rval = GetCachedValue<IList<SkillDto>>(cacheKey);
+            IList<SkillDto> rval = GetCachedValue<IList<SkillDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
@@ -382,6 +382,11 @@ namespace UpDiddy.Api
         #endregion
 
         #region Public UnCached Methods
+
+        public async Task<ImportValidationSummaryDto> ImportContactsAsync(Guid partnerGuid, string cacheKey)
+        {
+            return await PutAsync<ImportValidationSummaryDto>("contact/import/" + partnerGuid + "/" + HttpUtility.UrlEncode(cacheKey));
+        }
 
         #region Promocode
         public async Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid)
@@ -615,7 +620,7 @@ namespace UpDiddy.Api
 
 
         private async Task<IList<EducationalDegreeTypeDto>> _GetEducationalDegreeTypesAsync()
-        { 
+        {
             return await GetAsync<IList<EducationalDegreeTypeDto>>("educational-degree-types");
         }
 
@@ -688,7 +693,7 @@ namespace UpDiddy.Api
         {
             string cacheKey = $"Subscriber{subscriberGuid}";
             SubscriberDto rval = null;
-            if(!hardRefresh)
+            if (!hardRefresh)
                 rval = GetCachedValue<SubscriberDto>(cacheKey);
 
             if (rval != null)
