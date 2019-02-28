@@ -23,6 +23,7 @@ using UpDiddyApi.Workflow;
 using Newtonsoft.Json;
 using System.Data.SqlClient;
 using System.Data;
+using System.Collections.Concurrent;
 
 namespace UpDiddyApi.Controllers
 {
@@ -66,56 +67,73 @@ namespace UpDiddyApi.Controllers
                 return Ok(rval);
             }
         }
-        
+        /// <summary>
+        /// Handles the list of contacts to be imported into the system. This method retrieves the list of contacts from the cache and processes 
+        /// them individually. This is intentionally so that one error does not prevent the rest of the contacts from being processed. 
+        /// </summary>
+        /// <param name="partnerGuid">Identifies the partner for which the contact will be inserted or updated</param>
+        /// <param name="cacheKey">The key in redis which uniquely identifies the list of contacts to be imported</param>
+        /// <returns></returns>
         [HttpPut]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/import/{partnerGuid}/{cacheKey}")]
         public IActionResult ImportContacts(Guid partnerGuid, string cacheKey)
         {
-            // todo: change endpoint to return JSON object of type ImportValidationSummaryDto
+            // define the variable that will be returned to the caller
+            List<ImportActionDto> importActions = new List<ImportActionDto>();
 
-            // todo: exception handling?
+            // if these values aren't defined, return a bad request response
             if (partnerGuid == null || partnerGuid == Guid.Empty || cacheKey == null)
                 return BadRequest();
 
+            // retrieve the contacts to be imported from the cache
             var cachedContactsForImport = _distributedCache.GetString(cacheKey);
 
-            if (cachedContactsForImport != null)
+            if (cachedContactsForImport == null)
             {
+                // if there is no corresponding item in the cache, return a not found response
+                return NotFound();
+            }
+            else
+            {
+                // deserialize the value from the cache into a list of contacts
                 List<ContactDto> contacts = JsonConvert.DeserializeObject<List<ContactDto>>(cachedContactsForImport);
 
-                // replace this with parallel for each after done w/ debugging
+                // parallel for each was causing problems with the dbcontext, do not use it
                 foreach (var contact in contacts)
                 {
-                    var test = ImportContactAsync(partnerGuid, contact);
+                    importActions.Add(ImportContact(partnerGuid, contact));
                 }
 
-
-                //Parallel.ForEach(contacts, (contact) =>
-                //{
-                //    // aggregate all import actions in parallel, best way?
-                //    ImportContact(partnerGuid, contact);
-                //});
-
-                // todo: group import actions by ImportBehavior and Reason, calculate 'Count'
+                // group all import actions by behavior and reason with a count for each
+                importActions = importActions
+                    .GroupBy(ivr => new { ivr.ImportBehavior, ivr.Reason })
+                    .Select(group => new ImportActionDto()
+                    {
+                        ImportBehavior = group.Key.ImportBehavior,
+                        Reason = group.Key.Reason,
+                        Count = group.Count()
+                    })
+                    .ToList();
             }
 
-            return Ok();
+            return Ok(importActions);
         }
 
         /// <summary>
-        /// Handles the import of a contact into the system. This process evaluates whether the contact already exists and handles the create and update operation
+        /// Handles the import of a contact into the system. This method evaluates whether the contact already exists and handles the create and update operation
         /// accordingly. Information is returned to the caller indicating what action was taken (Nothing, Insert, Update, Error) and a corresponding reason (for errors).
         /// </summary>
         /// <param name="partnerGuid">Identifies the partner for which the contact will be inserted or updated</param>
         /// <param name="contact">The contact to be inserted or updated (based on the partner specified)</param>
         /// <returns></returns>
-        private async Task<ImportActionDto> ImportContactAsync(Guid partnerGuid, ContactDto contact)
+        private ImportActionDto ImportContact(Guid partnerGuid, ContactDto contact)
         {
+            // default value if no action is taken
             ImportActionDto importAction = new ImportActionDto()
             {
-                ImportBehavior = ImportBehavior.Nothing,
-                Reason = null
+                ImportBehavior = ImportBehavior.Ignored,
+                Reason = "Something went wrong!"
             };
 
             try
@@ -127,11 +145,10 @@ namespace UpDiddyApi.Controllers
                 var sqlMetadata = new SqlParameter { ParameterName = "@Metadata", SqlDbType = SqlDbType.NVarChar, Direction = ParameterDirection.Input, Size = 5000, Value = JsonConvert.SerializeObject(contact.Metadata) };
                 var sqlImportAction = new SqlParameter { ParameterName = "@ImportAction", SqlDbType = SqlDbType.NVarChar, Size = 10, Direction = ParameterDirection.Output };
                 var sqlReason = new SqlParameter { ParameterName = "@Reason", SqlDbType = SqlDbType.NVarChar, Size = 500, Direction = ParameterDirection.Output };
-
                 var spParams = new object[] { sqlPartnerGuid, sqlEmail, sqlSourceSystemIdentifier, sqlMetadata, sqlImportAction, sqlReason };
 
-                var rowsAffected = _db.Database.ExecuteSqlCommand(@"
-                EXEC [dbo].[System_Import_Contact] 
+                // invoke the stored procedure
+                var rowsAffected = _db.Database.ExecuteSqlCommand(@"EXEC [dbo].[System_Import_Contact] 
                     @PartnerGuid,
                     @Email,
                     @SourceSystemIdentifier,
@@ -140,17 +157,19 @@ namespace UpDiddyApi.Controllers
                     @Reason OUTPUT", spParams);
 
                 // transform sql output parameters into an ImportActionDto response
-                importAction.ImportBehavior = (ImportBehavior) Enum.Parse(typeof(ImportBehavior), sqlImportAction.Value.ToString());
+                importAction.ImportBehavior = (ImportBehavior)Enum.Parse(typeof(ImportBehavior), sqlImportAction.Value.ToString());
                 importAction.Reason = sqlReason.Value == DBNull.Value ? null : sqlReason.Value.ToString();
+                
             }
-            catch(Exception e)
+            catch (Exception e)
             {
+                // log the exception and return with import behavior of error
                 _syslog.LogError($"Exception occurred in ContactController.ImportContact: {e.Message}");
                 importAction.Reason = e.Message;
                 importAction.ImportBehavior = ImportBehavior.Error;
             }
 
-            return await Task.FromResult<ImportActionDto>(importAction);
+            return importAction;
         }
     }
 }

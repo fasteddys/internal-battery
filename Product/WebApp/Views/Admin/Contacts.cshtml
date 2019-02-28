@@ -106,8 +106,10 @@
                 url: contactsUrl + '/import/' + $('#partnerGuid').val() + '/' + encodeURIComponent($('#cacheKey').val()),
                 success: function (results) {
                    // toast message for success - display import results
+                    alert('win');
                 },
                 error: function () {
+                    alert('lose');
                     // toast message on error - clear form - etc
                 }
             });
@@ -220,7 +222,7 @@
                     importActions.forEach(function (importAction, idx) {
                         var importActionHtml = '<li>';
                         // todo: come up with a better way to format messages
-                        importActionHtml += importAction.count + ' records identified for ' + importAction.importBehavior + '(' + importAction.message + ')';
+                        importActionHtml += importAction.count + ' contacts are ' + importAction.importBehavior.toLowerCase() + ' because they ' + importAction.reason;
                         importActionHtml += '</li>';
                         $('#importValidationSummary').append(importActionHtml);
                     });

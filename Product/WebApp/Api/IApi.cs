@@ -62,7 +62,7 @@ namespace UpDiddy.Api
         #region AdminPortal
         Task<BasicResponseDto> UpdateEntitySkillsAsync(EntitySkillDto entitySkillDto);
         Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
-        Task<ImportValidationSummaryDto> ImportContactsAsync(Guid partnerGuid, string cacheKey);
+        Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey);
         #endregion
 
         #region Marketing

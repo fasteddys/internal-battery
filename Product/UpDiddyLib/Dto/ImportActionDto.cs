@@ -6,9 +6,10 @@ namespace UpDiddyLib.Dto
 {
     public enum ImportBehavior
     {
-        Nothing,
-        Insert,
-        Update,
+        Pending,
+        Ignored,
+        Inserted,
+        Updated,
         Error
     }
 
