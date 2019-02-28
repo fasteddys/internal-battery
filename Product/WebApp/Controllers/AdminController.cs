@@ -151,8 +151,8 @@ namespace UpDiddy.Controllers
                     importValidationSummary.ImportActions.Add(new ImportActionDto()
                     {
                         Count = contacts.Count,
-                        ImportBehavior = ImportBehavior.Created,
-                        Message = string.Empty
+                        ImportBehavior = ImportBehavior.Insert,
+                        Reason = string.Empty
                     });
 
                     /* todo: perform all validation (including server-side)

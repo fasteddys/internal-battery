@@ -15,7 +15,7 @@ namespace UpDiddyLib.Dto
     public class ImportActionDto
     {
         public ImportBehavior ImportBehavior { get; set; }
-        public string Message { get; set; }
+        public string Reason { get; set; }
         public int Count { get; set; }
     }
 }
