@@ -2,6 +2,7 @@
 @using UpDiddyLib.Dto
 @using UpDiddyLib.Helpers
 @model IEnumerable<PartnerDto>
+
 @(Html
             .Grid(Model)
             .Build(columns =>
@@ -13,7 +14,7 @@
                 columns.Add(model => $"<a href=\"#\"><i class=\"fas fa-user-circle\"></i></a>").Titled("Update Contacts").Encoded(false).AppendCss("text-center");
             })
             .AppendCss("table table-primary table-striped")
-            .Empty("No data found")
+            .Empty("No partners found. You can add one using the \"Add+\" button above.")
             .Pageable(pager =>
             {
                 pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };

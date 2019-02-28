@@ -118,7 +118,7 @@ namespace UpDiddyApi.Controllers
                 partner.ModifyDate = DateTime.UtcNow;
                 partner.IsDeleted = 0;
                 partner.ModifyGuid = Guid.Empty;
-                partner.CreateGuid = loggedInUserGuid;
+                partner.CreateGuid = Guid.Empty;
                 _db.Partner.Add(partner);
                 _db.SaveChanges();
                 return Created(_configuration["Environment:ApiUrl"] + "partners/" + partner.PartnerGuid, partnerDto);
@@ -145,7 +145,6 @@ namespace UpDiddyApi.Controllers
                 ExistingPartner.Name = NewPartnerDto.Name ?? ExistingPartner.Name;
                 ExistingPartner.Description = NewPartnerDto.Description ?? ExistingPartner.Description;
                 ExistingPartner.ModifyDate = DateTime.UtcNow;
-                ExistingPartner.ModifyGuid = loggedInUserGuid;
                 
 
                 _db.Partner.Update(ExistingPartner);
@@ -178,7 +177,6 @@ namespace UpDiddyApi.Controllers
 
                 ExistingPartner.IsDeleted = 1;
                 ExistingPartner.ModifyDate = DateTime.UtcNow;
-                ExistingPartner.ModifyGuid = loggedInUserGuid;
 
 
                 _db.Partner.Update(ExistingPartner);
