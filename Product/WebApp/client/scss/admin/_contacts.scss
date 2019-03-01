@@ -9,6 +9,31 @@
             padding: 7rem 0;
             text-align: center;
         }
+
+        #ContactUploadPreviewProgress {
+            border: 2px solid $color-secondary;
+            border-radius: .5rem;
+            padding: 1rem 0;
+
+            #ContactUploadTripleContainer {
+                
+
+                #UploadProgressWheelContainer {
+                    p {
+                        margin: 0;
+                    }
+
+                    border-left: 2px solid $color-secondary;
+                    border-right: 2px solid $color-secondary;
+                }
+            }
+        }
+
+        #ImportValidationSummary {
+            li {
+                list-style-type: none;
+            }
+        }
     }
 }
 

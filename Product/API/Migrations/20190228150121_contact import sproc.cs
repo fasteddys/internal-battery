@@ -15,7 +15,7 @@ EXEC('
 </remarks>
 <description>
 Handles the import of a contact into the system. This process evaluates whether the contact already exists and handles the create and update operation
-accordingly. Information is returned to the caller indicating what action was taken (Nothing, Insert, Update, Error) and a corresponding reason (for errors).
+accordingly. Information is returned to the caller indicating what action was taken (Ignore, Insert, Update, Error) and a corresponding reason (for errors).
 </description>
 <example>
 DECLARE @ImportActionOutput NVARCHAR(10), @ReasonOutput NVARCHAR(500)
@@ -41,7 +41,7 @@ AS
 BEGIN	
 	SET NOCOUNT ON
 	-- this should never get returned; if it does, something went wrong with the logic
-	SET @ImportAction = ''Nothing''
+	SET @ImportAction = ''Ignore''
 	
 	BEGIN TRANSACTION;
 	BEGIN TRY

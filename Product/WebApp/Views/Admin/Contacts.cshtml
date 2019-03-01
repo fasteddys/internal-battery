@@ -30,23 +30,30 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <div id="ContactUploadPreviewProgress" class="row">
-                        <div id="UploadProgressFileContainer" class="col-10">
 
-                        </div>
-                        <div id="UploadProgressWheelContainer" class="col-2">
 
-                        </div>
-                    </div>
-                    <ul>
-                        <!-- The file uploads will be shown here -->
-                    </ul>
+
                 </form>
+                <div id="ContactUploadPreviewProgress" class="row hidden">
+                    <div class="col-12 name no-padding">
+                        <div id="ContactUploadTripleContainer" class="row d-flex align-items-center ">
+                            <div id="UploadProgressFileContainer" class="col-4 no-padding text-center">
+                            </div>
+                            <div id="UploadProgressWheelContainer" class="col-4 no-padding text-center">
+
+                            </div>
+                            <div id="UploadProgressSizeContainer" class="col-4 no-padding text-center">
+
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
             </div>
         </div>
         <div id="ContactsPreviewContainer" class="hidden">
-            <div class="row">
+            <div id="ContactPreviewTableContainer" class="row hidden">
                 <div class="col-sm mt-3 mb-3">
                     <h4>Contact Preview</h4>
                     <table id="contactTablePreview" class="table">
@@ -63,8 +70,8 @@
             </div>
             <div class="row">
                 <div class="col-sm mt-3 mb-3">
-                    <h4>Initial validation</h4>
-                    <ul id="importValidationSummary" class="list-group">
+                    <h4>Preview validation</h4>
+                    <ul id="ImportValidationSummary" class="list-group">
                         <!-- Import validation messages will be added here -->
                     </ul>
                 </div>
@@ -77,14 +84,16 @@
                     <!-- Create controls to initiate the import here -->
                 </div>
             </div>
-            <div class="row">
-                <div class="col-sm mt-3 mb-3">
-                    <h4>Processing results</h4>
+            
+        </div>
+        <div id="ContactUploadResultsSummary" class="row hidden">
+            <div class="col-sm mt-3 mb-3">
+                <h4>Processing results</h4>
+                <ul id="processingResultsSummary">
                     <!-- This is where we will put information about what *actually* happened during the import process - note that this may be different than the initial validation -->
-                </div>
+                </ul>
             </div>
         </div>
-        
     </div>
 </div>
 
@@ -94,6 +103,6 @@
         $(".admin-nav-contacts").addClass("active");
         var contactsUrl = '@Url.Action("Contacts", "Admin")';
 
-       
+        
     </script>
 }

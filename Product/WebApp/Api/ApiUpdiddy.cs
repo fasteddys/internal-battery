@@ -383,9 +383,9 @@ namespace UpDiddy.Api
 
         #region Public UnCached Methods
 
-        public async Task<ImportValidationSummaryDto> ImportContactsAsync(Guid partnerGuid, string cacheKey)
+        public async Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey)
         {
-            return await PutAsync<ImportValidationSummaryDto>("contact/import/" + partnerGuid + "/" + HttpUtility.UrlEncode(cacheKey));
+            return await PutAsync<List<ImportActionDto>>("contact/import/" + partnerGuid + "/" + HttpUtility.UrlEncode(cacheKey));
         }
 
         #region Promocode

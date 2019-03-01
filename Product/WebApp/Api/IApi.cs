@@ -67,7 +67,8 @@ namespace UpDiddy.Api
         Task<PartnerDto> CreatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> UpdatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);
-        Task<ImportValidationSummaryDto> ImportContactsAsync(Guid partnerGuid, string cacheKey);
+        Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey);
+
         #endregion
 
         #region Marketing
