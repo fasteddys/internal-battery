@@ -76,7 +76,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="row">
+            <div id="ImportContactsButtonContainer" class="row">
                 <div class="col-sm mt-3 mb-3">
                     <h4>Import the data</h4>
                     <input type="hidden" id="cacheKey" />
@@ -92,6 +92,15 @@
                 <ul id="processingResultsSummary">
                     <!-- This is where we will put information about what *actually* happened during the import process - note that this may be different than the initial validation -->
                 </ul>
+            </div>
+            <div class="col-12 text-right">
+                @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                    Text = "Back to partners",
+                    Hyperlink = "/admin/partners",
+                    FitToText = true,
+                    ChosenColorScheme = "cc-cscheme-secondary",
+                    ButtonAction = ActionButtonViewModel.Action.CTA
+                })
             </div>
         </div>
     </div>

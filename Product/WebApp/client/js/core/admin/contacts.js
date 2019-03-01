@@ -6,6 +6,7 @@
             // show summary of import actions which have occurred (if the file was processed)
             $("#ContactUploadResultsSummary").show();
             var importActions = data.result;
+            $("#ImportContactsButtonContainer").hide();
             importActions.forEach(function (importAction, idx) {
                 var importActionHtml = '<li>';
                 // todo: come up with a better way to format messages
@@ -106,7 +107,7 @@ $(function () {
                         Object.keys(row).forEach(function (key, idx) {
                             if (key === 'metadata') {
                                 Object.keys(row[key]).forEach(function (metadataKey, i) {
-                                    $('#contactTablePreview thead tr').append('<th scope="col" style="background-color: yellow">' + metadataKey + '</th>');
+                                    $('#contactTablePreview thead tr').append('<th scope="col">' + metadataKey + '</th>');
                                 });
                             } else {
                                 $('#contactTablePreview thead tr').append('<th scope="col">' + key + '</th>');
