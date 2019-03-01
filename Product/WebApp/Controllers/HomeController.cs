@@ -598,7 +598,7 @@ namespace UpDiddy.Controllers
         [HttpGet]
         [Route("/Home/Campaign/{CampaignViewName}/{CampaignGuid}/{ContactGuid}")]
         public async Task<IActionResult> CampaignAsync(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
-        {  
+        {
             // capture any campaign phase information that has been passed.  
             string CampaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
 
@@ -614,24 +614,32 @@ namespace UpDiddy.Controllers
                 "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
                 CampaignGuid + "&campaignphase=" + WebUtility.UrlEncode(CampaignPhase);
 
-            // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
-            ContactDto Contact = await _Api.ContactAsync(ContactGuid);
-            CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
-            if (Course == null || Contact == null)
+            try
             {
-                return NotFound();
+                // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
+                ContactDto Contact = await _Api.ContactAsync(ContactGuid);
+                CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
+                if (Course == null || Contact == null)
+                {
+                    return NotFound();
+                }
+
+                CampaignViewModel cvm = new CampaignViewModel()
+                {
+
+                    CampaignGuid = CampaignGuid,
+                    ContactGuid = ContactGuid,
+                    TrackingImgSource = _TrackingImgSource,
+                    CampaignCourse = Course,
+                    CampaignPhase = CampaignPhase
+                };
+                return View("Campaign/" + CampaignViewName, cvm);
             }
 
-            CampaignViewModel cvm = new CampaignViewModel()
+            catch (ApiException ex)
             {
-              
-                CampaignGuid = CampaignGuid,
-                ContactGuid = ContactGuid,
-                TrackingImgSource = _TrackingImgSource,
-                CampaignCourse = Course,
-                CampaignPhase = CampaignPhase
-            };
-            return View("Campaign/" + CampaignViewName, cvm);
+                return StatusCode((int)ex.StatusCode);
+            }
         }
 
         [HttpPost]
@@ -682,7 +690,7 @@ namespace UpDiddy.Controllers
                 email = signUpViewModel.Email,
                 password = signUpViewModel.Password,
                 campaignGuid = signUpViewModel.CampaignGuid,
-                campaignPhase = signUpViewModel.CampaignPhase
+                campaignPhase = WebUtility.UrlDecode(signUpViewModel.CampaignPhase)
             };
 
             // Guard UX from any unforeseen server error.
