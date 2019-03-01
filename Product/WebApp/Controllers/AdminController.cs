@@ -121,7 +121,8 @@ namespace UpDiddy.Controllers
                 if (partner == null)
                     return NotFound();
 
-                return View("Contacts", PartnerGuid);
+
+                return View("Contacts", partner);
             }
             catch(ApiException e)
             {
