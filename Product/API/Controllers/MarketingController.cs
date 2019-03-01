@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
@@ -40,6 +42,80 @@ namespace UpDiddyApi.Controllers
         }
 
         #region Campaigns 
+
+
+        [HttpPost]
+       // TODO JAB ennable auth [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("api/[controller]/campaign")]
+        public IActionResult CreateCampaign([FromBody] CampaignCreateDto campaignCreateDto)    
+        {
+
+            CampaignCreateResponseDto rVal = new CampaignCreateResponseDto();
+            // transact operation that are fatal failures 
+            using (var transaction = _db.Database.BeginTransaction())
+            {
+                try
+                {
+                    // create campaign 
+                    Campaign campaign = CampaignFactory.CreateCampaign(campaignCreateDto.Name, campaignCreateDto.Terms,
+                        campaignCreateDto.Description, campaignCreateDto.StartDate, campaignCreateDto.EndDate);
+                    
+                    _db.Campaign.Add(campaign);
+                    // save changes to get the campaign id
+                    _db.SaveChanges();
+
+                    // Create campaign phase 
+                    CampaignPhase campaignPhase = CampaignPhaseFactory.CreateCampaignPhase(campaignCreateDto.PhaseName, campaignCreateDto.PhaseDescription, campaign.CampaignId);                    
+                    _db.CampaignPhase.Add(campaignPhase);
+                                                          
+                    // Create campaign course invariants 
+                    foreach ( CampaignCourseVariantCreateDto ccvCreate in campaignCreateDto.CourseVariants )
+                    {
+                        CampaignCourseVariant ccv = CampaignCourseVariantFactory.CreateCampaignCourseVariant(campaign.CampaignId, ccvCreate.CourseVariantId, ccvCreate.MaxRebateEligibilityInDays,
+                            ccvCreate.IsEligibleForRebate, ccvCreate.RebateTypeId, ccvCreate.RefundId);                                           
+                        _db.CampaignCourseVariant.Add(ccv);
+ 
+                    }
+
+                    // save changes 
+                    _db.SaveChanges();
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    string CreateJson = JsonConvert.SerializeObject(campaignCreateDto);
+                    _syslog.Log(LogLevel.Error, "MarketingController.CreateCampaign:  Exception: {@Exception} CampaignCreateDto: {CreateJson}", ex,CreateJson);
+                    return StatusCode(500);
+                }
+
+                // Note failures and return them to caller 
+                // Create campaign contacts
+
+
+                // Create list in send grid
+
+
+                // return dto with results including sample landing page url and tracking image url
+
+
+
+
+
+            }
+
+
+
+
+
+
+
+            // return Ok(campaignInfo);
+            return Ok();
+
+        }
+
+
 
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
@@ -175,3 +251,5 @@ namespace UpDiddyApi.Controllers
         #endregion
     }
 }
+ 
+ 

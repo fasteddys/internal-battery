@@ -15,7 +15,7 @@ namespace UpDiddyApi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.8-servicing-32085")
+                .HasAnnotation("ProductVersion", "2.1.4-rtm-31024")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -217,7 +217,12 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<DateTime>("StartDate");
 
+                    b.Property<string>("Terms");
+
                     b.HasKey("CampaignId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Campaign");
                 });
@@ -524,7 +529,7 @@ namespace UpDiddyApi.Migrations
 
                     b.HasKey("ContactId", "CampaignId", "ActionId", "CampaignPhaseId");
 
-                    b.HasAlternateKey("ActionId", "CampaignId", "CampaignPhaseId", "ContactId");
+                    b.HasIndex("ActionId");
 
                     b.HasIndex("CampaignId");
 

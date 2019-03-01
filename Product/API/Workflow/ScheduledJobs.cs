@@ -161,6 +161,7 @@ namespace UpDiddyApi.Workflow
                                         // create if the action does not already exist, and associate it with the highest phase                   
                                         // of the campaign that the user has interacted with and assume that is what led them to buy
                                         CampaignPhase lastCampaignPhaseInteraction = CampaignPhaseFactory.GetContactsLastPhaseInteraction(_db, e.CampaignId.Value, contact.ContactId);
+                          
                                         if ( lastCampaignPhaseInteraction != null )
                                         {
                                             _db.ContactAction.Add(new ContactAction()

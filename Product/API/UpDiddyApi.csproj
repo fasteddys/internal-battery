@@ -27,6 +27,8 @@
     <Compile Remove="Migrations\20190219123554_Campaign Reporting.Designer.cs" />
     <Compile Remove="Migrations\20190219134311_test.cs" />
     <Compile Remove="Migrations\20190219134311_test.Designer.cs" />
+    <Compile Remove="Migrations\20190228135226_Adding Terms to Campaigns.cs" />
+    <Compile Remove="Migrations\20190228135226_Adding Terms to Campaigns.Designer.cs" />
     <Compile Remove="Models\_Company.cs" />
     <Compile Remove="Models\_Country.cs" />
     <Compile Remove="Models\_EducationalDegree.cs" />

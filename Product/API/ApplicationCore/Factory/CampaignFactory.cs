@@ -10,6 +10,26 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class CampaignFactory
     {
+
+        public static Campaign CreateCampaign(string Name, string Terms, string Description, DateTime StartDate, DateTime EndDate)
+        {
+            return new Campaign()
+            {
+                CreateDate = DateTime.Now,
+                ModifyDate = DateTime.Now,
+                IsDeleted = 0,
+                CreateGuid = Guid.Empty,
+                ModifyGuid = Guid.Empty,
+                Name = Name,
+                CampaignGuid = Guid.NewGuid(),
+                Terms = Terms,
+                StartDate = StartDate,
+                EndDate = EndDate,
+                Description = Description
+            };
+
+        }
+
         public static string EnrollmentPromoStatusAsText(EnrollmentDto enrollment)
         {
             string rVal = string.Empty;

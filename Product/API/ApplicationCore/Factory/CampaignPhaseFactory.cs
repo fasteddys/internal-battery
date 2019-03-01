@@ -11,6 +11,24 @@ namespace UpDiddyApi.ApplicationCore.Factory
     public class CampaignPhaseFactory
     {
      
+        public static CampaignPhase CreateCampaignPhase(string PhaseName, string PhaseDescription, int CampaignId)
+        {
+            return new CampaignPhase()
+            {
+                CreateDate = DateTime.Now,
+                ModifyDate = DateTime.Now,
+                IsDeleted = 0,
+                CreateGuid = Guid.Empty,
+                ModifyGuid = Guid.Empty,
+                CampaignPhaseGuid = Guid.NewGuid(),
+                Name = PhaseName,
+                CampaignId = CampaignId,
+                Description = PhaseDescription
+            };
+
+        }
+
+
         // get a campaign phase by name for the given campaign
         public static CampaignPhase GetCampaignPhaseByName(UpDiddyDbContext db, int CampaignId, string CampaignPhaseName)
         {

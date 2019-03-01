@@ -137,6 +137,11 @@ namespace UpDiddyApi.Models
         #endregion
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<Campaign>()
+                .HasIndex(pc => pc.Name)
+                .IsUnique();
+
             modelBuilder.Entity<PartnerContact>()
                 .HasKey(pc => new { pc.PartnerId, pc.ContactId });
             
