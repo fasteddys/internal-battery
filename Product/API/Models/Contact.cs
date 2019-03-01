@@ -12,13 +12,16 @@ namespace UpDiddyApi.Models
         public int ContactId { get; set; }
         [Required]
         public string Email { get; set; }
+        [Obsolete("This property is being moved to PartnerContact and will be removed from the model very soon.", false)]
         public string FirstName { get; set; }
+        [Obsolete("This property is being moved to PartnerContact and will be removed from the model very soon.", false)]
         public string LastName { get; set; }
         [Required]
         public Guid ContactGuid { get; set; }
         public int? SubscriberId { get; set; }
         public virtual Subscriber Subscriber { get; set; }
 
+        [Obsolete("This supporting values for this property is being moved to PartnerContact and will be removed from the model very soon.", false)]
         [NotMapped]
         public string FullName
         {
