@@ -1,8 +1,14 @@
 ﻿function importContacts() {
+    $("body").prepend("<div class=\"overlay\"><div id=\"loading-img\" ></div ></div >");
+    $("body").css("position", "relative");
+    $("#loading-img").css("background-position", "center");
+    $(".overlay").css("top", "initial");
+    $(".overlay").show();
     $.ajax({
         type: 'PUT',
         url: contactsUrl + '/import/' + $('#partnerGuid').val() + '/' + encodeURIComponent($('#cacheKey').val()),
         success: function (data) {
+            $(".overlay").remove();
             // show summary of import actions which have occurred (if the file was processed)
             $("#ContactUploadResultsSummary").show();
             var importActions = data.result;
@@ -18,6 +24,7 @@
             });
         },
         error: function () {
+            $(".overlay").remove();
             // todo: add toast message?
             alert('replace with toast, reset form, disable import button, etc');
         }
