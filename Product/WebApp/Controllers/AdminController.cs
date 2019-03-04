@@ -331,7 +331,7 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> UpdatePartnerAsync(PartnerViewModel UpdatedPartner)
+        public async Task<IActionResult> UpdatePartnerAsync(PartnersViewModel UpdatedPartner)
         {
             if (ModelState.IsValid)
             {
@@ -370,7 +370,7 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> CreatePartnerAsync(PartnerViewModel NewPartner)
+        public async Task<IActionResult> CreatePartnerAsync(PartnersViewModel NewPartner)
         {
 
 
