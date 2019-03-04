@@ -4,7 +4,6 @@
 @using UpDiddyLib.Helpers
 @using System.Collections.Generic;
 @using System;
-
 @section Scripts
     {
     <script type="text/javascript">
@@ -13,7 +12,7 @@
          *  what is redundant with code that exists elsewhere? find it and remove it
          *  what else...?
          */
-
+        $(".admin-nav-skills").addClass("active");
         var coursesUrl = '@Url.Action("CourseLookup", "Admin")';
         var subscribersUrl = '@Url.Action("SubscriberLookup", "Admin")';
         var skillsUrl = '@Url.Action("SkillsLookup", "Admin")';
@@ -155,23 +154,7 @@
         select_skills.disable();
     </script>
 }
-
-<div id="AdminContainer" class="container-fluid bg-color-primary">
-    <div class="container">
-        <div class="row">
-            <div class="col-md">
-                <ul class="nav nav-admin">
-                    <li class="nav-link active">
-                        <a class="text-white" href="/Admin/Skills">Skills</a>
-                    </li>
-                    <li class="nav-link" href="#">
-                        <a class="text-white" href="/marketing/campaignstatistics">Campaign Statistics</a> 
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
+@Html.Partial("Admin/_AdminNavigation")
 <div class="admin-skills-container">
     <div class="container admin">
         <div class="row">
