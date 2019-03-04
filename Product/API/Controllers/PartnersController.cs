@@ -122,7 +122,6 @@ namespace UpDiddyApi.Controllers
                 _db.Partner.Add(partner);
                 _db.SaveChanges();
                 return Created(_configuration["Environment:ApiUrl"] + "partners/" + partner.PartnerGuid, partnerDto);
-                return Ok();
             }
             else
                 return Unauthorized();
