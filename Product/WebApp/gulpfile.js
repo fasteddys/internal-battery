@@ -9,7 +9,8 @@ var merge = require('merge-stream');
 var webpack = require('webpack-stream');
 
 var babelConfig = {
-    presets: ['@babel/env']
+    presets: ['@babel/env', '@babel/preset-react'],
+    plugins: ['@babel/plugin-proposal-class-properties']
 };
 
 sass.compiler = require('node-sass');

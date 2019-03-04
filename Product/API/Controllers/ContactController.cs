@@ -91,7 +91,7 @@ namespace UpDiddyApi.Controllers
                 // Format our new DateTime object to start at the UNIX Epoch
                 DateTime dateTime = new System.DateTime(1970, 1, 1, 0, 0, 0, 0);
                 dateTime = dateTime.AddMilliseconds(timestamp);
-                contactQuery = contactQuery.Where(c => dateTime >= c.CreateDate);
+                contactQuery = contactQuery.Where(c => c.CreateDate <= dateTime);
             }
 
             switch (sort)

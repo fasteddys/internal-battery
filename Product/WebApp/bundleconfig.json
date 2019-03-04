@@ -87,11 +87,5 @@
       "enabled": true,
       "renameLocals": true
     }
-  },
-  {
-    "outputFileName": "wwwroot/js/modules/admin/ContactMultiSelect.min.js",
-    "inputFiles": [
-      "wwwroot/js/modules/admin/ContactMultiSelect.js"
-    ]
   }
 ]

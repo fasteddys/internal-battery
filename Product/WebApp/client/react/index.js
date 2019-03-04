@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import ContactMultiSelect from './ContactMultiSelect';
-import TableMultiSelect from './TableMultiSelect';
+import ContactSelect from './ContactSelect';
 
-var contactMultiSelectEl = document.querySelector('#contact-multi-select');
-if(contactMultiSelectEl)
-    ReactDOM.render(<TableMultiSelect />, contactMultiSelectEl);
+var contactSelectEle = document.querySelector('#contact-multi-select');
+if(contactSelectEle)
+    ReactDOM.render(<ContactSelect />, contactSelectEle);

@@ -94,7 +94,7 @@ var CareerCircleAPI = (function (apiUrl) {
         }
 
         if(startDate)
-            params += "&startDate=" + moment(startDate).endOf('day').valueOf();
+            params += "&startDate=" + moment(startDate).startOf('day').valueOf();
 
         if(endDate)
             params += "&endDate=" + moment(endDate).endOf('day').valueOf();
