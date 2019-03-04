@@ -5,28 +5,8 @@
 @using System;
 @model CampaignDetailsViewModel
 
-<div id="AdminContainer"  class="container-fluid bg-color-primary">
-    <div class="container">
-        <div class="row">
-            <div class="col-md">
-                <ul class="nav nav-nav-admin">
-                    <li class="nav-link">
-                        <a class="text-white" href="/admin/skills">Skills</a>
-                    </li>
-                    <li class="nav-link">
-                        <a class="text-white" href="/marketing/campaignstatistics">Campaign Statistics</a>
-                    </li>
-                    <li class="nav-link" href="#">
-                        <a class="text-white" href="/Admin/Contacts">Contacts</a>
-                    </li>
-                    <li class="nav-link" href="#">
-                        <a class="text-white" href="/admin/partners">Partners</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
+@Html.Partial("Admin/_AdminNavigation")
+
 <div class="container admin">
     <div class="row">
         <div class="col-sm-2 mt-3 mb-3 admin-breadcrumb">
@@ -41,39 +21,38 @@
     </div>
     <div class="row">
         <div class="col-sm">
-
             @(Html
-                                        .Grid(Model.CampaignDetails)
-                                        .Css("admin-grid")
-                                        .Build(columns =>
-                                        {
-                                            columns.Add(model => model.CourseName).Sortable(true).Titled("Course Name");
-                                            columns.Add(model => model.Rebatetype).Sortable(true).Titled("Rebate Type");
-                                            columns.Add(model => model.Email).Sortable(true).Titled("Email");
-                                            columns.Add(model => model.FirstName).Sortable(true).Titled("First Name");
-                                            columns.Add(model => model.LastName).Sortable(true).Titled("Last Name");
-                                            columns.Add(model => model.OpenEmail).Sortable(true).Titled("Emails Opened");
-                                            columns.Add(model => model.VisitLandingPage).Sortable(true).Titled("Landing Page Visits");
-                                            columns.Add(model => model.CreateAcount).Sortable(true).Titled("Accounts Created");
-                                            columns.Add(model => model.CourseEnrollment).Sortable(true).Titled("Course Enrollments");
-                                            columns.Add(model => model.CourseCompletion).Sortable(true).Titled("Courses Completed");
+                                                .Grid(Model.CampaignDetails)
+                                                .Css("admin-grid")
+                                                .Build(columns =>
+                                                {
+                                                    columns.Add(model => model.CourseName).Sortable(true).Titled("Course Name");
+                                                    columns.Add(model => model.Rebatetype).Sortable(true).Titled("Rebate Type");
+                                                    columns.Add(model => model.Email).Sortable(true).Titled("Email");
+                                                    columns.Add(model => model.FirstName).Sortable(true).Titled("First Name");
+                                                    columns.Add(model => model.LastName).Sortable(true).Titled("Last Name");
+                                                    columns.Add(model => model.OpenEmail).Sortable(true).Titled("Emails Opened");
+                                                    columns.Add(model => model.VisitLandingPage).Sortable(true).Titled("Landing Page Visits");
+                                                    columns.Add(model => model.CreateAcount).Sortable(true).Titled("Accounts Created");
+                                                    columns.Add(model => model.CourseEnrollment).Sortable(true).Titled("Course Enrollments");
+                                                    columns.Add(model => model.CourseCompletion).Sortable(true).Titled("Courses Completed");
 
-                                        })
-                                        .AppendCss("table table-primary table-striped")
-                                        .Empty("No data found")
-                                        .Pageable(pager =>
-                                        {
-                                            pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
-                                            pager.ShowPageSizes = true;
-                                            pager.RowsPerPage = 10;
-                                            pager.CssClasses = "admin-pager";
-                                        })
+                                                })
+                                                .AppendCss("table table-primary table-striped")
+                                                .Empty("No data found")
+                                                .Pageable(pager =>
+                                                {
+                                                    pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
+                                                    pager.ShowPageSizes = true;
+                                                    pager.RowsPerPage = 10;
+                                                    pager.CssClasses = "admin-pager";
+                                                })
             )
-
         </div>
     </div>
     @section Scripts{
         <script type="text/javascript">
+            $(".admin-nav-campaign-stats").addClass("active");
             window.onload = function () {
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
             }
