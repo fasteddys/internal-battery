@@ -172,7 +172,13 @@ namespace UpDiddy
             // Enable session DI
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             // Add Api
-            services.AddScoped<IApi, ApiUpdiddy>();
+            services.AddScoped<IApi, ApiUpdiddy>();        
+            
+            services.AddMvc().AddJsonOptions(options =>
+            {
+                options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,0 +1,58 @@
+﻿@using UpDiddyLib.Dto
+@using UpDiddy.ViewModels
+@model PartnerDto
+
+
+@Html.Partial("Admin/_AdminNavigation")
+
+<div id="PartnerCreationContainer" class="row">
+    <div class="col-12">
+        <div class="container">
+            <div class="row breadcrumbs">
+                <div class="col-12 no-padding">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a asp-controller="admin" asp-action="partners">Partners</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">AddPartner</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 no-padding">
+                    <form id="CreatePartnerForm" asp-controller="Admin" asp-action="CreatePartnerAsync">
+                        <div class="form-group row">
+                            <label for="Name" class="col-sm-2 col-form-label">Partner Name:</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" asp-for="Name">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="Description" class="col-sm-2 col-form-label">Partner Description:</label>
+                            <div class="col-sm-10">
+                                <textarea class="form-control" rows="3" asp-for="Description"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-12 text-right">
+                                @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                                    Text = "Create",
+                                    ChosenColorScheme = "cc-cscheme-secondary",
+                                    Form = "CreatePartnerForm",
+                                    FitToText = true,
+                                    ButtonAction = ActionButtonViewModel.Action.SUBMIT
+                                })
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script>
+        $(".admin-nav-partners").addClass("active");
+    </script>
+}

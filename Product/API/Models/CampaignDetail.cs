@@ -10,7 +10,6 @@ namespace UpDiddyApi.Models
     [NotMapped]
     public class CampaignDetail
     {
-        [Key]
         public string CourseName { get; set; }
         public string Rebatetype{ get; set; }
         public string Email { get; set; }

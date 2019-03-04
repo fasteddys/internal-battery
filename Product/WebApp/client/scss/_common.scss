@@ -121,6 +121,34 @@
 
 .opensans-light {font-family: $opensans-light}
 
+.breadcrumbs {
+    nav {
+        border-bottom: 0;
+        height: initial;
+
+        ol {
+            background-color: transparent;
+            text-transform: initial;
+            font-size: .75rem;
+
+            a {
+                color: $color-primary;
+
+                &:hover {
+                    color: $color-secondary;
+                }
+            }
+        }
+    }
+}
+
+a{
+    cursor: pointer;
+    &:hover{
+        cursor: pointer;
+    }
+}
+
 .brand-button-light{
     background-color: #fff;
     border-radius: 1rem;

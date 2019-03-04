@@ -16,13 +16,14 @@
         };
     }
     @Html.Partial("Components/Bands/_CampaignSignUpBand", new CampaignSignUpBandViewModel {
-        CampaignCourse = "React",
-        ImageUrl = "/images/logo_react.png",
-        CampaignGuid = Model.CampaignGuid,
-        ContactGuid = Model.ContactGuid,
-        RibbonText = "<strong>LIMITED TIME OFFER:</strong> Finish this course in 8 weeks or less and it's free.<sup>1</sup>",
-        DisclaimerText = "To take advantage of this offer, which is tailored to your JavaScript skills, you must sign up with the email address the offer was sent to.<br /><strong>Please do not share this link.<sup>2</sup></strong>"
-    })
+    CampaignCourse = "React",
+    ImageUrl = "/images/logo_react.png",
+    CampaignGuid = Model.CampaignGuid,
+    ContactGuid = Model.ContactGuid,
+    RibbonText = "<strong>LIMITED TIME OFFER:</strong> Finish this course in 8 weeks or less and it's free.<sup>1</sup>",
+    DisclaimerText = "To take advantage of this offer, which is tailored to your JavaScript skills, you must sign up with the email address the offer was sent to.<br /><strong>Please do not share this link.<sup>2</sup></strong>",
+    CampaignPhase = Model.CampaignPhase
+})
     @Html.Partial("Components/Bands/_TripleContainerBand", new TripleContainerBandViewModel {
         Header = "Advance Your Career With React",
         ChosenColorScheme = "cc-cscheme-white",

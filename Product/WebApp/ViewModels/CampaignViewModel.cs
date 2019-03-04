@@ -11,6 +11,7 @@ namespace UpDiddy.ViewModels
         public Guid ContactGuid { get; set; }
         public string TrackingImgSource { get; set; }
         public CourseDto CampaignCourse { get; set; }
+        public string CampaignPhase { get; set; }
 
     }
 }

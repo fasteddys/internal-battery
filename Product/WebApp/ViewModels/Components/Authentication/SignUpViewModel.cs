@@ -17,6 +17,7 @@ namespace UpDiddy.ViewModels
         public string ReenterPassword { get; set; }
         public Guid ContactGuid { get; set; }
         public Guid? CampaignGuid { get; set; }
+        public string CampaignPhase { get; set; }
     }
 }
 
