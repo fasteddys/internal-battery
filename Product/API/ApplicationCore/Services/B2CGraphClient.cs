@@ -25,6 +25,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private AuthenticationContext authContext;
         private ClientCredential credential;
 
+        private IConfiguration _configuration;
         private HttpClient _http;
 
         public B2CGraphClient(HttpClient client, IConfiguration configuration)
@@ -33,6 +34,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             this.clientId = configuration["AzureAdB2C:AppId"];
             this.clientSecret = configuration["AzureAdB2C:AppSecret"];
             this.tenant = configuration["AzureAdB2C:Tenant"];
+            this._configuration = configuration;
 
             // todo: make this a constant url
             // The AuthenticationContext is ADAL's primary class, in which you indicate the directory to use.
@@ -82,7 +84,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     password = password,
                     forceChangePasswordNextLogin = false
-                }
+                },
+                extension_47050304da9246388e45d8b1156dfa92_AgreeToCareerCircleMarketing = "True",
+                extension_47050304da9246388e45d8b1156dfa92_AgreeToCareerCircleTerms = _configuration["TermsOfServiceVersion"]
             };
 
             string json = JsonConvert.SerializeObject(user);
