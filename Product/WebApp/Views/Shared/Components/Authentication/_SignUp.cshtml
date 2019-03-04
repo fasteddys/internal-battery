@@ -1,10 +1,12 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
+@using System.Net
 @model SignUpViewModel
 <div id="SignUpComponent">
     <form id="SignUpForm" asp-controller="Home" asp-action="CampaignSignUp">
         <input type="hidden" asp-for="ContactGuid" name="ContactGuid" value="@Model.ContactGuid" form="SignUpForm" />
         <input type="hidden" asp-for="CampaignGuid" name="CampaignGuid" value="@Model.CampaignGuid" form="SignUpForm" />
+        <input type="hidden" asp-for="CampaignPhase" name="CampaignPhase" value="@WebUtility.UrlEncode(Model.CampaignPhase)" form="SignUpForm" />
         <div class="row">
             <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
                 <input placeholder="Your email" form="SignUpForm" name="Email" asp-for="Email" required />

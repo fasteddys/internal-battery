@@ -24,10 +24,11 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using System.Security.Claims;
 using UpDiddy.Helpers;
-using System.Security.Claims;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
+
+ 
 
 namespace UpDiddy.Controllers
 {
@@ -598,30 +599,46 @@ namespace UpDiddy.Controllers
         [Route("/Home/Campaign/{CampaignViewName}/{CampaignGuid}/{ContactGuid}")]
         public async Task<IActionResult> CampaignAsync(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
         {
+            // capture any campaign phase information that has been passed.  
+            string CampaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
+
+            // cookie campaign tracking information for future tracking enhacments, such as
+            // task 304
+            Response.Cookies.Append(Constants.TRACKING_KEY_CAMPAIGN_PHASE, CampaignPhase);
+            Response.Cookies.Append(Constants.TRACKING_KEY_CAMPAIGN, CampaignGuid.ToString());
+            Response.Cookies.Append(Constants.TRACKING_KEY_CONTACT, ContactGuid.ToString());
+            // build trackign string url
             string _TrackingImgSource = _configuration["Api:ApiUrl"] +
                 "tracking?contact=" +
                 ContactGuid +
                 "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
-                CampaignGuid;
+                CampaignGuid + "&campaignphase=" + WebUtility.UrlEncode(CampaignPhase);
 
             try
             {
                 // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
                 ContactDto Contact = await _Api.ContactAsync(ContactGuid);
                 CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
+                if (Course == null || Contact == null)
+                {
+                    return NotFound();
+                }
 
                 CampaignViewModel cvm = new CampaignViewModel()
                 {
+
                     CampaignGuid = CampaignGuid,
                     ContactGuid = ContactGuid,
                     TrackingImgSource = _TrackingImgSource,
-                    CampaignCourse = Course
+                    CampaignCourse = Course,
+                    CampaignPhase = CampaignPhase
                 };
                 return View("Campaign/" + CampaignViewName, cvm);
             }
+
             catch (ApiException ex)
             {
-                return StatusCode((int) ex.StatusCode);
+                return StatusCode((int)ex.StatusCode);
             }
         }
 
@@ -666,12 +683,14 @@ namespace UpDiddy.Controllers
                 };
             }
 
-            // If all checks pass, assemble SignUpDto from information user entered.
+            // If all checks pass, assemble SignUpDto from information user entered. Included in the SignUpDto is the 
+            // campaign phase name that was provided via querystring parameter to the landing page            
             SignUpDto sudto = new SignUpDto
             {
                 email = signUpViewModel.Email,
                 password = signUpViewModel.Password,
-                campaignGuid = signUpViewModel.CampaignGuid
+                campaignGuid = signUpViewModel.CampaignGuid,
+                campaignPhase = WebUtility.UrlDecode(signUpViewModel.CampaignPhase)
             };
 
             // Guard UX from any unforeseen server error.
