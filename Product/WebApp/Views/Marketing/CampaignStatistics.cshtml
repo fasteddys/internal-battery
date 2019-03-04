@@ -5,63 +5,49 @@
 @using System;
 @model IEnumerable<CampaignStatisticDto>
 
-<div id="AdminContainer" class="container-fluid bg-color-primary">
-    <div class="container">
-        <div class="row">
-            <div class="col-md">
-                <ul class="nav nav-admin">
-                    <li class="nav-link">
-                        <a class="text-white" href="/admin/skills">Skills</a>
-                    </li>
-                    <li class="nav-link active">
-                        <a class="text-white" href="#">Campaign Statistics</a>
-                    </li>
 
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
+@Html.Partial("Admin/_AdminNavigation")
+
 <div class="container admin">
     <div class="row">
         <div class="col-sm mt-3 mb-3">
             <div class="form-inline">
-
             </div>
         </div>
     </div>
     <div class="row">
         <div class="col-sm">
             @(Html
-                        .Grid(Model)
-                        .Css("admin-grid")
-                        .Build(columns =>
-                        {
-                            columns.Add(model => model.Name).Sortable(true).Titled("Campaign Name");
-                            columns.Add(model => model.StartDate).Sortable(true).Titled("Start Date");
-                            columns.Add(model => model.EndDate).Sortable(true).Titled("End Date");
-                            columns.Add(model => model.EmailsSent).Sortable(true).Titled("Emails Sent");
-                            columns.Add(model => model.OpenEmail).Sortable(true).Titled("Emails Opened");
-                            columns.Add(model => model.VisitLandingPage).Sortable(true).Titled("Landing Page Visits");
-                            columns.Add(model => model.CreateAcount).Sortable(true).Titled("Accounts Created");
-                            columns.Add(model => model.CourseEnrollment).Sortable(true).Titled("Course Enrollments");
-                            columns.Add(model => model.CourseCompletion).Sortable(true).Titled("Courses Completed");
-                            columns.Add(model => $"<a href=\"campaigndetails/{model.CampaignGuid}/{model.Name}\"><i class=\"far fa-eye\"></i></a>").Titled("View Details").Encoded(false).AppendCss("text-center");
-                        })
-                        .AppendCss("table table-primary table-striped")
-                        .Empty("No data found")
-                        .Pageable(pager =>
-                        {
-                            pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
-                            pager.ShowPageSizes = true;
-                            pager.RowsPerPage = 10;
-                            pager.CssClasses = "admin-pager";
-                        })
+                                .Grid(Model)
+                                .Css("admin-grid")
+                                .Build(columns =>
+                                {
+                                    columns.Add(model => model.Name).Sortable(true).Titled("Campaign Name");
+                                    columns.Add(model => model.StartDate).Sortable(true).Titled("Start Date");
+                                    columns.Add(model => model.EndDate).Sortable(true).Titled("End Date");
+                                    columns.Add(model => model.EmailsSent).Sortable(true).Titled("Emails Sent");
+                                    columns.Add(model => model.OpenEmail).Sortable(true).Titled("Emails Opened");
+                                    columns.Add(model => model.VisitLandingPage).Sortable(true).Titled("Landing Page Visits");
+                                    columns.Add(model => model.CreateAcount).Sortable(true).Titled("Accounts Created");
+                                    columns.Add(model => model.CourseEnrollment).Sortable(true).Titled("Course Enrollments");
+                                    columns.Add(model => model.CourseCompletion).Sortable(true).Titled("Courses Completed");
+                                    columns.Add(model => $"<a href=\"campaigndetails/{model.CampaignGuid}/{model.Name}\"><i class=\"far fa-eye\"></i></a>").Titled("View Details").Encoded(false).AppendCss("text-center");
+                                })
+                                .AppendCss("table table-primary table-striped")
+                                .Empty("No data found")
+                                .Pageable(pager =>
+                                {
+                                    pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
+                                    pager.ShowPageSizes = true;
+                                    pager.RowsPerPage = 10;
+                                    pager.CssClasses = "admin-pager";
+                                })
             )
         </div>
     </div>
     @section Scripts{
         <script type="text/javascript">
+            $(".admin-nav-campaign-stats").addClass("active");
             window.onload = function () {
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
             }

@@ -124,12 +124,26 @@ namespace UpDiddyApi.Models
         public DbSet<CampaignCourseVariant> CampaignCourseVariant { get; set; }
         public DbSet<RebateType> RebateType { get; set; }
         public DbSet<CampaignContact> CampaignContact { get; set; }
+        public DbSet<CampaignPhase> CampaignPhase { get; set; }
+
+
+        #region DBQueries
+
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
         public DbQuery<CampaignDetail> CampaignDetail { get; set; }
+        public DbSet<Partner> Partner { get; set; }
+        public DbSet<PartnerContact> PartnerContact { get; set; }
 
-
+        #endregion
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<PartnerContact>()
+                .HasKey(pc => new { pc.PartnerId, pc.ContactId });
+            
+            modelBuilder.Entity<PartnerContact>()
+                .Property<string>("MetaDataJSON")
+                .HasField("_metadata");
+
             modelBuilder.Entity<Enrollment>()
                 .HasOne<CampaignCourseVariant>(e => e.CampaignCourseVariant)
                 .WithMany();
@@ -145,7 +159,7 @@ namespace UpDiddyApi.Models
                 .HasKey(ccv => new { ccv.CampaignId, ccv.CourseVariantId });
 
             modelBuilder.Entity<ContactAction>()
-                .HasKey(ca => new { ca.ContactId, ca.CampaignId, ca.ActionId });
+                .HasKey(ca => new { ca.ContactId, ca.CampaignId, ca.ActionId, ca.CampaignPhaseId });
 
             modelBuilder.Entity<ContactAction>()
                 .Property(ca => ca.OccurredDate)

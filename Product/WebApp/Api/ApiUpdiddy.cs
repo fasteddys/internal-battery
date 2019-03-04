@@ -260,7 +260,7 @@ namespace UpDiddy.Api
         public async Task<IList<SkillDto>> GetSkillsAsync(string userQuery)
         {
             string cacheKey = $"GetSkills{userQuery}";
-           IList<SkillDto> rval = GetCachedValue<IList<SkillDto>>(cacheKey);
+            IList<SkillDto> rval = GetCachedValue<IList<SkillDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
@@ -382,6 +382,11 @@ namespace UpDiddy.Api
         #endregion
 
         #region Public UnCached Methods
+
+        public async Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey)
+        {
+            return await PutAsync<List<ImportActionDto>>("contact/import/" + partnerGuid + "/" + HttpUtility.UrlEncode(cacheKey));
+        }
 
         #region Promocode
         public async Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid)
@@ -615,7 +620,7 @@ namespace UpDiddy.Api
 
 
         private async Task<IList<EducationalDegreeTypeDto>> _GetEducationalDegreeTypesAsync()
-        { 
+        {
             return await GetAsync<IList<EducationalDegreeTypeDto>>("educational-degree-types");
         }
 
@@ -667,6 +672,19 @@ namespace UpDiddy.Api
             }
         }
 
+        private bool RemoveCachedValue<T>(string CacheKey)
+        {
+            try
+            {
+                _cache.Remove(CacheKey);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region TalentPortal
@@ -675,7 +693,7 @@ namespace UpDiddy.Api
         {
             string cacheKey = $"Subscriber{subscriberGuid}";
             SubscriberDto rval = null;
-            if(!hardRefresh)
+            if (!hardRefresh)
                 rval = GetCachedValue<SubscriberDto>(cacheKey);
 
             if (rval != null)
@@ -719,6 +737,85 @@ namespace UpDiddy.Api
         {
             return await GetAsync<ContactDto>($"contact/{contactGuid}");
         }
+
+        #endregion
+
+        #region AdminPortal
+
+        public async Task<IList<PartnerDto>> GetPartnersAsync()
+        {
+            string cacheKey = $"Partners";
+            IList<PartnerDto> rval = GetCachedValue<IList<PartnerDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _PartnersAsync();
+                SetCachedValue<IList<PartnerDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public async Task<PartnerDto> GetPartnerAsync(Guid PartnerGuid)
+        {
+            IList<PartnerDto> _partners = await GetPartnersAsync();
+            foreach(PartnerDto partner in _partners)
+            {
+                if(partner.PartnerGuid == PartnerGuid)
+                {
+                    return partner;
+                }
+            }
+            return null;
+        }
+
+        private async Task<IList<PartnerDto>> _PartnersAsync()
+        {
+            return await GetAsync<IList<PartnerDto>>("partners");
+        }
+
+        public async Task<PartnerDto> CreatePartnerAsync(PartnerDto partnerDto)
+        {
+            // Create the new partner and store it for return
+            PartnerDto newPartner = await PostAsync<PartnerDto>("partners", partnerDto);
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Partners";
+            RemoveCachedValue<IList<PartnerDto>>(cacheKey);
+
+            // Return the newly created partner
+            return newPartner;
+        }
+
+        public async Task<BasicResponseDto> UpdatePartnerAsync(PartnerDto partnerDto)
+        {
+            // Update partner
+            BasicResponseDto updatedPartnerResponse = await PutAsync<BasicResponseDto>("partners", partnerDto);
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Partners";
+            RemoveCachedValue<IList<PartnerDto>>(cacheKey);
+
+            // Return the newly created partner
+            return updatedPartnerResponse;
+            
+        }
+
+        
+        public async Task<BasicResponseDto> DeletePartnerAsync(Guid partnerGuid)
+        {
+            // Update partner
+            BasicResponseDto deletedPartnerResponse = await DeleteAsync<BasicResponseDto>(string.Format("partners/{0}", partnerGuid));
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Partners";
+            RemoveCachedValue<IList<PartnerDto>>(cacheKey);
+
+            // Return the newly created partner
+            return deletedPartnerResponse;
+        }
+        
 
         #endregion
     }

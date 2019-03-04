@@ -13,5 +13,6 @@ namespace UpDiddy.ViewModels
         public Guid CampaignGuid { get; set; }
         public string RibbonText { get; set; }
         public string DisclaimerText { get; set; }
+        public string CampaignPhase { get; set; }
     }
 }

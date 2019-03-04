@@ -1,5 +1,8 @@
 ﻿$("#ButtonComponent").on("click", function (e) {
-    e.preventDefault();
-    var form = $(this).data("form");
-    $("#" + form).submit();
+    if ($(this).data("action-type") === "SUBMIT") {
+        e.preventDefault();
+        var form = $(this).data("form");
+        $("#" + form).submit();
+    }
+    
 });

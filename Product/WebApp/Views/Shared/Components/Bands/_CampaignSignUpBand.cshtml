@@ -13,10 +13,13 @@
             <div class="row">
                 <div class="col-12 col-md-8 cc-campaign-sign-up-band-left-container">
                     <div class="row">
-                        <div class="col-2 img-column no-padding">
-                            <img src="@Model.ImageUrl"/>
-                        </div>
-                        <div class="col-10 no-padding">
+                        @if(Model.ImageUrl != null)
+                        {
+                            <div class="col-2 img-column no-padding">
+                                <img src="@Model.ImageUrl"/>
+                            </div>
+                        }
+                        <div class="col no-padding">
                             <div class="row">
                                 <div class="col-12 hero-header font-bold">
                                     @{
@@ -85,10 +88,13 @@
                             Create an account to get started
                         </div>
                         <div class="col-12 no-padding">
+                            @* Extend the SignUpViewModel with campaign phase information from CampaignSignUpBandViewModel *@
                             @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel
                             {
                                 ContactGuid = Model.ContactGuid,
-                                CampaignGuid = Model.CampaignGuid
+                                CampaignGuid = Model.CampaignGuid,
+                                CampaignPhase = Model.CampaignPhase
+                                
                             })
                         </div>
                         <div class="col-12 no-padding campaign-disclaimer text-left">

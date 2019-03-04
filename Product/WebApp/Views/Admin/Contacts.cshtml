@@ -1,0 +1,117 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using UpDiddyLib.Helpers
+@using System.Collections.Generic;
+@using System;
+@model UpDiddyLib.Dto.PartnerDto;
+
+
+@Html.Partial("Admin/_AdminNavigation")
+
+<div id="AdminContactsContainer" class="admin-contacts-container">
+    <input type="hidden" id="partnerGuid" value="@Model.PartnerGuid" />
+    <div class="container admin">
+        <div class="row">
+            <div class="col-12 mt-5">
+                <h3>Update contacts for @Model.Name</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm mt-3 mb-3">
+                <form id="upload" method="post" asp-controller="admin" asp-action="UploadContacts" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-12 no-padding">
+                            <div id="drop">
+                                <div id="DropHeader">
+                                    <h2>Drop .csv file here</h2>
+                                </div>
+                                <input type="file" name="contactsFile" multiple />
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                </form>
+                <div id="ContactUploadPreviewProgress" class="row hidden">
+                    <div class="col-12 name no-padding">
+                        <div id="ContactUploadTripleContainer" class="row d-flex align-items-center ">
+                            <div id="UploadProgressFileContainer" class="col-4 no-padding text-center">
+                            </div>
+                            <div id="UploadProgressWheelContainer" class="col-4 no-padding text-center">
+
+                            </div>
+                            <div id="UploadProgressSizeContainer" class="col-4 no-padding text-center">
+
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        <div id="ContactsPreviewContainer" class="hidden">
+            <div id="ContactPreviewTableContainer" class="row hidden">
+                <div class="col-sm mt-3 mb-3">
+                    <h4>Contact Preview</h4>
+                    <table id="contactTablePreview" class="table">
+                        <thead>
+                            <tr>
+                                <!-- Column headers from the uploaded file will be placed here -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Preview record data will be placed here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm mt-3 mb-3">
+                    <h4>Preview validation</h4>
+                    <ul id="ImportValidationSummary" class="list-group">
+                        <!-- Import validation messages will be added here -->
+                    </ul>
+                </div>
+            </div>
+            <div id="ImportContactsButtonContainer" class="row">
+                <div class="col-sm mt-3 mb-3">
+                    <h4>Import the data</h4>
+                    <input type="hidden" id="cacheKey" />
+                    <button type="button" id="btnImportContacts" class="btn btn-primary" onclick="importContacts()">Import Contacts</button>
+                    <!-- Create controls to initiate the import here -->
+                </div>
+            </div>
+            
+        </div>
+        <div id="ContactUploadResultsSummary" class="row hidden">
+            <div class="col-sm mt-3 mb-3">
+                <h4>Processing results</h4>
+                <ul id="processingResultsSummary">
+                    <!-- This is where we will put information about what *actually* happened during the import process - note that this may be different than the initial validation -->
+                </ul>
+            </div>
+            <div class="col-12 text-right">
+                @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                    Text = "Back to partners",
+                    Hyperlink = "/admin/partners",
+                    FitToText = true,
+                    ChosenColorScheme = "cc-cscheme-secondary",
+                    ButtonAction = ActionButtonViewModel.Action.CTA
+                })
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+    {
+    <script type="text/javascript">
+        $(".admin-nav-contacts").addClass("active");
+        var contactsUrl = '@Url.Action("Contacts", "Admin")';
+
+        
+    </script>
+}
