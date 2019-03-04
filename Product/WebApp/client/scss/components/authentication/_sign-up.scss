@@ -6,20 +6,27 @@
         .sign-up-input {
             margin-bottom: 1rem;
 
-            input {
-                border-radius: .25rem; 
+            .wide-input {
+                border-radius: .25rem;
                 width: 100%;
                 padding: .5rem;
                 padding-left: 1.5rem;
                 font-size: .8rem;
                 border: none;
+            }
 
-                &:focus{
+            input {
+
+                &:focus {
                     outline: none;
                 }
 
-                &.invalid{
+                &.invalid {
                     border: 2px solid $color-red;
+
+                    &.form-check-input {
+                        outline: 1.5px solid $color-red;
+                    }
                 }
             }
         }
