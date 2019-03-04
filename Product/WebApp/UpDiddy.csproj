@@ -50,7 +50,6 @@
   <ItemGroup>
     <Folder Include="Resources\" />
     <Folder Include="wwwroot\lib\font-awesome\" />
-    <Folder Include="wwwroot\lib\jquery-ui\" />
     <Folder Include="wwwroot\webfonts\" />
     <Folder Include="wwwroot\videos\" />
   </ItemGroup>
