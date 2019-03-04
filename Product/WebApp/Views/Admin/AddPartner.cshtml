@@ -3,25 +3,8 @@
 @model PartnerDto
 
 
-<div id="AdminContainer" class="container-fluid bg-color-primary">
-    <div class="container">
-        <div class="row">
-            <div class="col-md">
-                <ul class="nav nav-nav-admin">
-                    <li class="nav-link">
-                        <a class="text-white" href="/admin/skills">Skills</a>
-                    </li>
-                    <li class="nav-link">
-                        <a class="text-white" href="/marketing/campaignstatistics">Campaign Statistics</a>
-                    </li>
-                    <li class="nav-link active">
-                        <a class="text-white" href="/admin/partners">Partners</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
+@Html.Partial("Admin/_AdminNavigation")
+
 <div id="PartnerCreationContainer" class="row">
     <div class="col-12">
         <div class="container">
@@ -67,3 +50,9 @@
         </div>
     </div>
 </div>
+
+@section Scripts{
+    <script>
+        $(".admin-nav-partners").addClass("active");
+    </script>
+}
