@@ -15,7 +15,7 @@ namespace UpDiddyApi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.8-servicing-32085")
+                .HasAnnotation("ProductVersion", "2.2.2-servicing-10034")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -524,7 +524,7 @@ namespace UpDiddyApi.Migrations
 
                     b.HasKey("ContactId", "CampaignId", "ActionId", "CampaignPhaseId");
 
-                    b.HasAlternateKey("ActionId", "CampaignId", "CampaignPhaseId", "ContactId");
+                    b.HasIndex("ActionId");
 
                     b.HasIndex("CampaignId");
 
@@ -807,6 +807,32 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("CourseVariantType");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.EducationLevel", b =>
+                {
+                    b.Property<int>("EducationLevelId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<Guid?>("EducationLevelGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<string>("Level")
+                        .IsRequired();
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.HasKey("EducationLevelId");
+
+                    b.ToTable("EducationLevel");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.EducationalDegree", b =>
                 {
                     b.Property<int>("EducationalDegreeId")
@@ -880,32 +906,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("EducationalInstitutionId");
 
                     b.ToTable("EducationalInstitution");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.EducationLevel", b =>
-                {
-                    b.Property<int>("EducationLevelId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<Guid?>("EducationLevelGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<string>("Level")
-                        .IsRequired();
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.HasKey("EducationLevelId");
-
-                    b.ToTable("EducationLevel");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Enrollment", b =>
