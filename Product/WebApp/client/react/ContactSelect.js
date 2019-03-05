@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactTable from 'react-table';
 import DatePicker from 'react-datepicker';
+import Select from './Select';
 
 class ContactSelect extends React.Component {
 
@@ -11,18 +12,28 @@ class ContactSelect extends React.Component {
             contacts: [],
             startDate: null,
             endDate: null,
+            partner: null,
             page: 0,
             pages: 0,
             pageSize: 20,
             sorted: [],
-            filtered: []
+            filtered: [],
+            partners: []
         };
 
         this.columns = [
             {
                 Header: 'Name',
                 id: 'name',
-                accessor: d => d.firstName + " " + d.lastName
+                filterable: false,
+                sortable: false,
+                accessor: d => {
+                    if(d.partnerContacts.length == 0)
+                        return 'N/A';
+                    
+                    const metaData = d.partnerContacts[d.partnerContacts.length - 1].metadata;
+                    return metaData.FirstName + " " + metaData.LastName;
+                }
             },
             {
                 Header: 'Email',
@@ -33,13 +44,44 @@ class ContactSelect extends React.Component {
                 accessor: d => moment(new Date(d.createDate)).format('L'),
                 id: "createDate",
                 filterable: false
+            },
+            {
+                Header: "Partners",
+                id: "partners",
+                sortable: false,
+                filterable: false,
+                accessor: d => d.partnerContacts,
+                Cell: props => {
+                    const partners = props
+                        .value
+                        .map((pc) => <span className='badge badge-secondary'>{ this.partnerMap[pc.partnerId].name }</span>);
+                    return <div>{ partners }</div>
+                }
             }
         ];
     }
+
+    mapPartnerToOption = (option) => { return { value: option.partnerId, label: option.name }};
     
     componentDidMount() {
         this.WAIT_INTERVAL = 500;
         this.timer = null;
+        this.partnerMap = {};
+
+        CareerCircleAPI.getPartners().then((res) => {
+            this.partnerMap = res.data.reduce((map, obj) => {
+                map[obj.partnerId] = obj;
+                return map
+            }, {});
+            this.setState({ partners: res.data });
+        });
+
+    }
+
+    handlePartnerChange = (option) => {
+        this.setState({ partner: option, page: 0 }, () => {
+            this.triggerChange(this.state);
+        });
     }
 
     fetchData = (state, instance) => {
@@ -65,8 +107,8 @@ class ContactSelect extends React.Component {
     }
 
     triggerChange(state) {
-        CareerCircleAPI.getContacts(state.page + 1, state.pageSize, state.sorted, state.filtered, this.state.startDate, this.state.endDate).then((res) => {
-            this.setState({ 
+        CareerCircleAPI.getContacts(state.page + 1, state.pageSize, state.sorted, state.filtered, this.state.startDate, this.state.endDate, this.state.partner).then((res) => {
+            this.setState({
                 page: state.page,
                 contacts: res.data.data,
                 pages: res.data.pages,
@@ -86,9 +128,10 @@ class ContactSelect extends React.Component {
                     </div>
                     <div className="row no-gutters mb-3">
                         <div className="col-md-3">
-                            <div>
-                                <div>Start Date:</div>
+                            <div className="form-group">
+                                <label>Start Date:</label>
                                 <DatePicker
+                                    className="form-control"
                                     selected={this.state.startDate}
                                     onChange={this.handleStartDateChange}
                                     showYearDropdown
@@ -98,15 +141,31 @@ class ContactSelect extends React.Component {
                             </div>
                         </div>
                         <div className="col-md-3">
-                            <div>End Date:</div>
-                            <DatePicker
-                                selected={this.state.endDate}
-                                selectsEnd
-                                startDate={this.state.startDate}
-                                endDate={this.state.endDate}
-                                isClearable={true}
-                                onChange={this.handleEndDateChange}
-                            />
+                            <div className="form-group">
+                                <label>End Date:</label>
+                                <DatePicker
+                                    className="form-control"
+                                    selected={this.state.endDate}
+                                    selectsEnd
+                                    startDate={this.state.startDate}
+                                    endDate={this.state.endDate}
+                                    isClearable={true}
+                                    onChange={this.handleEndDateChange}
+                                />
+                            </div>
+                        </div>
+                        <div className="col-md-3">
+                            <div class="form-group">
+                                <label>
+                                    Partners:
+                                </label>
+                                <Select 
+                                    options={this.state.partners}
+                                    accessor={(option) => { return {label: option.name, value: option.partnerId };}}
+                                    onChange={this.handlePartnerChange}
+                                    value={this.state.partner}
+                                />
+                            </div>
                         </div>
                     </div>
                     <div className="row no-gutters">

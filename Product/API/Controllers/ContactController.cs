@@ -51,12 +51,14 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet("api/[controller]")]
-        public async Task<IActionResult> GetAllAsync(string sort, string name, string email, double? startDate, double? endDate, int? page = null, int? pageSize = 10)
+        public async Task<IActionResult> GetAllAsync(string sort, string name, string email, int? partnerId, double? startDate, double? endDate, int? page = null, int? pageSize = 10)
         {
             if (!page.HasValue)
                 return Ok(await _db.Contact.ToListAsync());
 
-            var contactQuery = from c in _db.Contact select c;
+            var contactQuery = from c in _db.Contact
+                                .Include(c => c.PartnerContacts)
+                               select c;
 
             if (name != null)
             {
@@ -74,6 +76,8 @@ namespace UpDiddyApi.Controllers
             if (email != null)
                 contactQuery = contactQuery.Where(c => c.Email.Contains(email));
 
+            if(partnerId.HasValue)
+                contactQuery = contactQuery.Where(c => c.PartnerContacts.Any(pc => pc.PartnerId == partnerId));
 
             if (startDate.HasValue)
             {

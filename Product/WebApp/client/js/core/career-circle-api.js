@@ -75,7 +75,7 @@ var CareerCircleAPI = (function (apiUrl) {
         });
     }
 
-    var getContacts = async function(page, pageSize, sorted, filtered, startDate, endDate) {
+    var getContacts = async function(page, pageSize, sorted, filtered, startDate, endDate, partner) {
         var pageIndex = page <= 0 ? 1 : page;
         var params = "";
         if(sorted && sorted.length > 0) {
@@ -99,7 +99,14 @@ var CareerCircleAPI = (function (apiUrl) {
         if(endDate)
             params += "&endDate=" + moment(endDate).endOf('day').valueOf();
 
+        if(partner)
+            params += "&partnerId=" + partner;
+
         return await _http.get('/contact?page=' + pageIndex + '&pageSize=' + pageSize + params);
+    }
+
+    var getPartners = async function() {
+        return await _http.get('/partners');
     }
 
     var deleteFile = function (fileId) {
@@ -116,6 +123,7 @@ var CareerCircleAPI = (function (apiUrl) {
         uploadResume: uploadResume,
         deleteFile: deleteFile,
         signOut: signOut,
-        getContacts: getContacts
+        getContacts: getContacts,
+        getPartners: getPartners
     };
 })(API_URL);
