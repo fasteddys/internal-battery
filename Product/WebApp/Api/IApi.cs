@@ -54,9 +54,6 @@ namespace UpDiddy.Api
         Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
         Task<ContactDto> ContactAsync(Guid contactGuid);
         Task<LinkedInProfileDto> GetLinkedInProfileAsync();
-
-
-
         Task<SubscriberADGroupsDto> MyGroupsAsync();
 
         #region TalentPortal
@@ -65,13 +62,19 @@ namespace UpDiddy.Api
         #region AdminPortal
         Task<BasicResponseDto> UpdateEntitySkillsAsync(EntitySkillDto entitySkillDto);
         Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
+        Task<IList<PartnerDto>> GetPartnersAsync();
+        Task<PartnerDto> GetPartnerAsync(Guid partnerGuid);
+        Task<PartnerDto> CreatePartnerAsync(PartnerDto partnerDto);
+        Task<BasicResponseDto> UpdatePartnerAsync(PartnerDto partnerDto);
+        Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);
+        Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey);
+
         #endregion
 
         #region Marketing
         Task<IList<CampaignStatisticDto>> CampaignStatisticsSearchAsync();
         Task<IList<CampaignDetailDto>> CampaignDetailsSearchAsync(Guid campaignGuid);
         #endregion
-
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
     }

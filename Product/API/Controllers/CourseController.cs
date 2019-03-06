@@ -182,8 +182,14 @@ namespace UpDiddyApi.Controllers
             var _a = _db.Campaign
                 .Where(c => c.IsDeleted == 0
                     && c.StartDate <= DateTime.UtcNow
-                    && (!c.EndDate.HasValue || c.EndDate.Value >= DateTime.UtcNow))
-                .Join(_db.CampaignCourseVariant,
+                    && (!c.EndDate.HasValue || c.EndDate.Value >= DateTime.UtcNow));
+
+
+            var camp = _a.FirstOrDefault();
+            if (camp == null)
+                return NotFound(new BasicResponseDto() { StatusCode = 400, Description = "Unable to find campaign with specified GUID." });
+
+            var _b = _a.Join(_db.CampaignCourseVariant,
                     campaign => campaign.CampaignId,
                     campaignCourseVariant => campaignCourseVariant.CampaignId,
                     (campaign, campaignCourseVariant) => new { campaign, campaignCourseVariant })
@@ -194,12 +200,12 @@ namespace UpDiddyApi.Controllers
                 .Select(m => new { courseId = m.courseVariant.CourseId, campGuid = m.ccv.campaign.CampaignGuid })
                 .Where(m => m.campGuid == campaignGuid);
 
-            var camp = _a.FirstOrDefault();
+            var campCourseVar = _b.FirstOrDefault();
 
-            if (camp == null)
-                return NotFound(new BasicResponseDto() { StatusCode = 400, Description = "Unable to find campaign with specified GUID." });
+            if (campCourseVar == null)
+                return Ok(null);
 
-            int courseId = _a.Select(n => n.courseId)
+            int courseId = _b.Select(n => n.courseId)
                 .FirstOrDefault();
 
             CourseDto rval = null;

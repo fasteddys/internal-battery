@@ -1,0 +1,24 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using UpDiddyLib.Helpers
+@model IEnumerable<PartnerDto>
+
+@(Html
+            .Grid(Model)
+            .Build(columns =>
+            {
+                columns.Add(model => model.Name).Sortable(true).Titled("Partner");
+                columns.Add(model => model.Description).Sortable(true).Titled("Description");
+                columns.Add(model => $"<a href=\"/admin/modifypartner/" + model.PartnerGuid + "\"><i class=\"fas fa-pencil-alt\"></i></a>").Titled("Edit").Encoded(false).AppendCss("text-center");
+                columns.Add(model => $"<a class=\"partner-delete\" data-partner=\"" + model.PartnerGuid + "\" data-partner-name=\"" + model.Name + "\"><i class=\"fas fa-trash\"></i></a>").Titled("Delete").Encoded(false).AppendCss("text-center");
+                columns.Add(model => $"<a href=\"/admin/partners/contacts/" + model.PartnerGuid + "\"><i class=\"fas fa-user-circle\"></i></a>").Titled("Update Contacts").Encoded(false).AppendCss("text-center");
+            })
+            .AppendCss("table table-primary table-striped")
+            .Empty("No partners found. You can add one using the \"Add+\" button above.")
+            .Pageable(pager =>
+            {
+                pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
+                pager.ShowPageSizes = true;
+                pager.RowsPerPage = 10;
+            })
+)

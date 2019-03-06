@@ -17,7 +17,7 @@
                 type: 'GET',
                 dataType: 'json',
                 data: {
-                    userQuery: query
+                    userQuery: encodeURIComponent(query)
                 },
                 error: function () {
                     callback();

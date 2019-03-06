@@ -122,6 +122,7 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> Checkout(CourseViewModel courseViewModel)
         {
             DateTime currentDate = DateTime.UtcNow;
+       
 
             // get the course variant based on the Guid selected by the user
             // normally we would want everything to come back via the view model, but we don't want to trust this because it contains price information

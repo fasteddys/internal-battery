@@ -80,13 +80,13 @@ namespace UpDiddyApi.Controllers
             return Ok(states.OrderBy(s => s.Sequence).ProjectTo<StateDto>(_mapper.ConfigurationProvider));
         }
 
-
-
         // TODO find a better home for these lookup endpoints - maybe a new lookup or data endpoint?
         [HttpGet]
         [Route("api/skill/{userQuery}")]
         public IActionResult GetSkills(string userQuery)
         {
+            userQuery = HttpUtility.UrlDecode(userQuery);
+
             var skills = _db.Skill
                 .Where(s => s.IsDeleted == 0 && s.SkillName.Contains(userQuery))
                 .OrderBy(s => s.SkillName)
@@ -106,28 +106,19 @@ namespace UpDiddyApi.Controllers
                 .Select(c => new Company()
                   {
                       CompanyName = HttpUtility.HtmlDecode(c.CompanyName),
-
                       CompanyGuid = c.CompanyGuid,
-
                       CompanyId = c.CompanyId,
-
                       CreateDate = c.CreateDate,
-
                       CreateGuid = c.CreateGuid,
-
                       IsDeleted = c.IsDeleted,
-
                       ModifyDate = c.ModifyDate,
-
                       ModifyGuid = c.ModifyGuid
-
                   })
                 .ProjectTo<CompanyDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
             return Ok(companies);
         }
-
 
         [HttpGet]
         [Route("api/educational-institution/{userQuery}")]
@@ -137,33 +128,23 @@ namespace UpDiddyApi.Controllers
                 .Where(c => c.IsDeleted == 0 && c.Name.Contains(userQuery))
                 .OrderBy(c => c.Name)
                 .Select(ei => new EducationalInstitution()
-
                 {
-
                     Name = HttpUtility.HtmlDecode(ei.Name),
-
                     EducationalInstitutionGuid = ei.EducationalInstitutionGuid,
-
                     CreateDate = ei.CreateDate,
-
                     CreateGuid = ei.CreateGuid,
-
                     EducationalInstitutionId = ei.EducationalInstitutionId,
-
                     IsDeleted = ei.IsDeleted,
-
                     ModifyDate = ei.ModifyDate,
-
                     ModifyGuid = ei.ModifyGuid
-
                 })
                 .ProjectTo<EducationalInstitutionDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
             return Ok(educationalInstitutions);
         }
-        [HttpGet]
 
+        [HttpGet]
         [Route("api/educational-degree/{userQuery}")]
         public IActionResult GetEducationalDegrees(string userQuery)
         {
@@ -172,23 +153,14 @@ namespace UpDiddyApi.Controllers
                 .OrderBy(c => c.Degree)
                 .Select(ed => new EducationalDegree()
                 {
-
                     Degree = HttpUtility.HtmlDecode(ed.Degree),
-
                     EducationalDegreeGuid = ed.EducationalDegreeGuid,
-
                     CreateDate = ed.CreateDate,
-
                     CreateGuid = ed.CreateGuid,
-
                     EducationalDegreeId = ed.EducationalDegreeId,
-
                     IsDeleted = ed.IsDeleted,
-
                     ModifyDate = ed.ModifyDate,
-
                     ModifyGuid = ed.ModifyGuid
-
                 })
                 .ProjectTo<EducationalDegreeDto>(_mapper.ConfigurationProvider)
                 .ToList();
