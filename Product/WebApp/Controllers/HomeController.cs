@@ -95,6 +95,11 @@ namespace UpDiddy.Controllers
             return View(signupFlowViewModel);
         }
 
+        public IActionResult JoinNow()
+        {
+            return View("ExpressSignUp", new SignUpViewModel());
+        }
+
         public IActionResult News()
         {
 

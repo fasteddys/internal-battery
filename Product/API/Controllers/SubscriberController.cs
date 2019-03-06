@@ -681,6 +681,66 @@ namespace UpDiddyApi.Controllers
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
         }
 
+        [AllowAnonymous]
+        [HttpPost("/api/[controller]/express-sign-up")]
+        public async Task<IActionResult> ExpressSignUp([FromBody] SignUpDto signUpDto)
+        {
+            // check if subscriber is in database
+            Subscriber subscriber = await _db.Subscriber.Where(s => s.Email == signUpDto.email).FirstOrDefaultAsync();
+            if (subscriber != null)
+            {
+                var response = new BasicResponseDto() { StatusCode = 400, Description = "Bad Request." };
+                _syslog.Log(LogLevel.Warning, "SubscriberController.ExpressSignUp:: Bad Request, user tried to sign up with an email that already exists. {@Email}", signUpDto.email);
+                return BadRequest(response);
+            }
+
+            // check if user exits in AD if the user does then we skip this step
+            Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(signUpDto.email);
+            if (user == null)
+            {
+                try
+                {
+                    user = await _graphClient.CreateUser(null, signUpDto.email, Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password));
+                }
+                catch (Exception ex)
+                {
+                    _syslog.Log(LogLevel.Error, "SubscriberController.ExpressSignUp:: Error occured while attempting to create a user in Azure Active Directory. Exception: {@Exception}", ex);
+                    return StatusCode(500);
+                }
+            }
+
+            // create subscriber for user
+            subscriber = new Subscriber();
+            subscriber.SubscriberGuid = Guid.Parse(user.AdditionalData["objectId"].ToString());
+            subscriber.Email = signUpDto.email;
+            subscriber.CreateDate = DateTime.UtcNow;
+            subscriber.ModifyDate = DateTime.UtcNow;
+            subscriber.IsDeleted = 0;
+            subscriber.ModifyGuid = Guid.Empty;
+            subscriber.CreateGuid = Guid.Empty;
+            subscriber.ProfileImage = "express-sign-up";
+
+            // use transaction to verify that both changes 
+            using (var transaction = _db.Database.BeginTransaction())
+            {
+                try
+                {
+                    // Save subscriber to database 
+                    _db.Subscriber.Add(subscriber);
+                    await _db.SaveChangesAsync();
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    _syslog.Log(LogLevel.Error, "SubscriberController.ExpressSignUp:: Error occured while attempting save Subscriber and contact DB updates for (email: {@Email}). Exception: {@Exception}", signUpDto.email, ex);
+                    return StatusCode(500);
+                }
+            }
+
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
+        }
+
         [HttpGet("/api/[controller]/me/group")]
         public async Task<IActionResult> MyGroupsAsync()
         {
