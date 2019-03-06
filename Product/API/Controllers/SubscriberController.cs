@@ -718,7 +718,6 @@ namespace UpDiddyApi.Controllers
             subscriber.IsDeleted = 0;
             subscriber.ModifyGuid = Guid.Empty;
             subscriber.CreateGuid = Guid.Empty;
-            subscriber.ProfileImage = "express-sign-up";
 
             // use transaction to verify that both changes 
             using (var transaction = _db.Database.BeginTransaction())
@@ -727,6 +726,20 @@ namespace UpDiddyApi.Controllers
                 {
                     // Save subscriber to database 
                     _db.Subscriber.Add(subscriber);
+                    await _db.SaveChangesAsync();
+                    SubscriberProfileStagingStore store = new SubscriberProfileStagingStore()
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        ModifyDate = DateTime.UtcNow,
+                        ModifyGuid = Guid.Empty,
+                        CreateGuid = Guid.Empty,
+                        SubscriberId = subscriber.SubscriberId,
+                        ProfileSource = Constants.DataSource.CareerCircle,
+                        IsDeleted = 0,
+                        ProfileFormat = Constants.DataFormat.Json,
+                        ProfileData = JsonConvert.SerializeObject(new { source = "express-sign-up"})
+                    };
+                    _db.SubscriberProfileStagingStore.Add(store);
                     await _db.SaveChangesAsync();
                     transaction.Commit();
                 }
