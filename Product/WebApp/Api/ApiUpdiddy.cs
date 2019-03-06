@@ -445,6 +445,16 @@ namespace UpDiddy.Api
             return Put<BasicResponseDto>(signUpDto, string.Format("subscriber/contact/{0}", contactGuid.ToString()), false);
         }
 
+        // THROW AWAY
+
+        public BasicResponseDto ExpressUpdateSubscriberContact(SignUpDto signUpDto)
+        {
+            // encrypt password before sending to API
+            signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
+
+            return Put<BasicResponseDto>(signUpDto, "subscriber/contact/express-sign-up", false);
+        }
+
         public SubscriberADGroupsDto MyGroups()
         {
             return Get<SubscriberADGroupsDto>("subscriber/me/group", true);
