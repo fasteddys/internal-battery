@@ -619,10 +619,6 @@ namespace UpDiddy.Controllers
                 // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
                 ContactDto Contact = await _Api.ContactAsync(ContactGuid);
                 CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
-                if (Course == null || Contact == null)
-                {
-                    return NotFound();
-                }
 
                 CampaignViewModel cvm = new CampaignViewModel()
                 {
@@ -700,6 +696,15 @@ namespace UpDiddy.Controllers
                 BasicResponseDto subscriberResponse = await _Api.UpdateSubscriberContactAsync(signUpViewModel.ContactGuid, sudto);
 
                 CourseDto Course = await _Api.GetCourseByCampaignGuidAsync((Guid)signUpViewModel.CampaignGuid);
+                if(Course == null)
+                {
+                    return new BasicResponseDto
+                    {
+                        StatusCode = subscriberResponse.StatusCode,
+                        Description = "/Home/Signup"
+                    };
+                }
+
                 return new BasicResponseDto
                 {
                     StatusCode = subscriberResponse.StatusCode,

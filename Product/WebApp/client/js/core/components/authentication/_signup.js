@@ -14,11 +14,11 @@
         }
     });
 
-    
-
+    var agreedTos = $('#SignUpComponent #termsAndConditionsCheck').is(':checked');
+    $('#SignUpComponent #termsAndConditionsCheck').toggleClass('invalid', !agreedTos);
 
     // Ensure user only submits to backend if form has values for all fields.
-    if ($("#SignUpComponent #Email").val() && $("#SignUpComponent #Password").val() && $("#SignUpComponent #ReenterPassword").val()) {
+    if ($("#SignUpComponent #Email").val() && $("#SignUpComponent #Password").val() && $("#SignUpComponent #ReenterPassword").val() && agreedTos) {
 
         var failedRegexTest = false;
 

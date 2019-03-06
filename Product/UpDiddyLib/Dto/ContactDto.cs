@@ -1,15 +1,14 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-    public class ContactDto : BaseDto
+    public class ContactDto 
     {
         public string Email { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public Guid ContactGuid { get; set; }   
-        public string FullName { get; set; }
+        public string SourceSystemIdentifier { get; set; }
+        public Dictionary<string,string> Metadata { get; set; }
     }
 }
