@@ -11,6 +11,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
     public class CampaignFactory
     {
 
+        public static Campaign GetCampaignByGuid(UpDiddyDbContext db, Guid campaignGuid )
+        {
+            return db.Campaign
+                .Where(s => s.IsDeleted == 0 && s.CampaignGuid == campaignGuid)
+                .FirstOrDefault();
+        }
         public static Campaign CreateCampaign(string Name, string Terms, string Description, DateTime StartDate, DateTime EndDate)
         {
             return new Campaign()
@@ -30,6 +36,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         }
 
+ 
         public static string EnrollmentPromoStatusAsText(EnrollmentDto enrollment)
         {
             string rVal = string.Empty;
@@ -99,6 +106,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             return rVal;
         }
+
+   
 
     }
 }

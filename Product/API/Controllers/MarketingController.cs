@@ -18,6 +18,8 @@ using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
+using System.Net;
+using Microsoft.SqlServer.Server;
 
 namespace UpDiddyApi.Controllers
 {
@@ -45,7 +47,7 @@ namespace UpDiddyApi.Controllers
 
 
         [HttpPost]
-       // TODO JAB ennable auth [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/campaign")]
         public IActionResult CreateCampaign([FromBody] CampaignCreateDto campaignCreateDto)    
         {
@@ -76,10 +78,13 @@ namespace UpDiddyApi.Controllers
                         _db.CampaignCourseVariant.Add(ccv);
  
                     }
-
-                    // save changes 
+                    // save changes                     
+                    rVal.LandingPageUrl = $"https://careercircle.com/Home/Campaign/{campaign.CampaignGuid}/[%contact_guid%]?campaignphase={WebUtility.UrlEncode(campaignCreateDto.PhaseName)}";
+                    rVal.TrackingImageUrl= $"'https://api.careercircle.io/api/tracking/{campaign.CampaignGuid}/[%contact_guid%]/8653122B-74F1-4020-8812-04C355CE56E7?campaignphase={WebUtility.UrlEncode(campaignCreateDto.PhaseName)}";
+ 
                     _db.SaveChanges();
                     transaction.Commit();
+                    return Ok(rVal);
                 }
                 catch (Exception ex)
                 {
@@ -88,35 +93,11 @@ namespace UpDiddyApi.Controllers
                     _syslog.Log(LogLevel.Error, "MarketingController.CreateCampaign:  Exception: {@Exception} CampaignCreateDto: {CreateJson}", ex,CreateJson);
                     return StatusCode(500);
                 }
-
-                // Note failures and return them to caller 
-                // Create campaign contacts
-
-
-                // Create list in send grid
-
-
-                // return dto with results including sample landing page url and tracking image url
-
-
-
-
-
             }
-
-
-
-
-
-
-
-            // return Ok(campaignInfo);
-            return Ok();
-
         }
 
 
-
+        // get information about specified campaign
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/campaign-detail/{CampaignGuid}")]
@@ -130,7 +111,7 @@ namespace UpDiddyApi.Controllers
             return Ok(campaignInfo);
         }
 
-
+        // get statstics about specified campaign
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/campaign-statistic")]
@@ -144,13 +125,118 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
+        #region Campaign Contacts
 
-        #region Contacts
+
+        // Create contacts in the email provider 
+        [HttpPost]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("api/[controller]/campaign/{CampaignGuid}/publish-contact/{ContactListname}")]
+        public IActionResult CreateProviderContactList(Guid campaignGuid, string ContactListName)
+        {
+            var campaign = CampaignFactory.GetCampaignByGuid(_db, campaignGuid);
+            if (campaign == null)
+                return BadRequest();
+            ContactListName = WebUtility.UrlDecode(ContactListName);
+
+            IList<EmailContactDto> TheList = _db.CampaignContact
+                .Include(cc => cc.Contact)
+                .ThenInclude(c => c.Subscriber)
+                .Where(c => c.IsDeleted == 0 && c.CampaignId == campaign.CampaignId)
+                .Select(c => new EmailContactDto
+                {
+                    first_name = c.Contact.FirstName,
+                    last_name = c.Contact.LastName,
+                    contact_guid = c.Contact.ContactGuid.ToString(),
+                    email = c.Contact.Email,
+                    subscriber_guid = c.Contact.Subscriber != null ? c.Contact.Subscriber.SubscriberGuid.ToString() : string.Empty
+                }                                                
+                )                
+                .ToList();
+
+            string ResponseJson = string.Empty;
+            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            HttpResponseMessage Response = sendGridInterface.CreateListAndAddContacts(ContactListName, TheList, ref ResponseJson);
+
+
+            return Ok(Response);
+        }
+    
+        // add contacts to the specified campaign.  This routine will add new contacts to the specified campaign as well as undelete
+        // any contacts that have been logically deleted from the speciried campaign.
+        [HttpPut]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("api/[controller]/campaign/{CampaignGuid}/contact")]
+        public IActionResult AddContacts(Guid campaignGuid, [FromBody] IList<Guid> contacts)
+        {
+            var campaign = CampaignFactory.GetCampaignByGuid(_db,campaignGuid);
+            if (campaign == null)
+                return BadRequest();
+
+            DataTable table = new DataTable();
+            table.Columns.Add("Guid", typeof(Guid));
+            foreach (Guid ContactGuid in contacts)
+            {
+                table.Rows.Add(ContactGuid);
+            }
+            var contactGuids = new SqlParameter("@ContactGuids", table);            
+            contactGuids.SqlDbType = SqlDbType.Structured;
+            contactGuids.TypeName = "dbo.GuidList";
+            var campaignId = new SqlParameter("@CampaignId", campaign.CampaignId);
+
+            var spParams = new object[] { campaignId, contactGuids };
+            // call stored procedure 
+            var rowsAffected = _db.Database.ExecuteSqlCommand(@"
+                EXEC [dbo].[System_Insert_CampaignContacts] 
+                    @CampaignId,
+                    @ContactGuids"
+                    ,spParams);
+
+            return Ok(rowsAffected);
+        }
+
+        // remove contacts from the specified campaign via a logical delete        
+        [HttpDelete]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("api/[controller]/campaign/{CampaignGuid}/contact")]
+        public IActionResult RemoveContacts(Guid campaignGuid, [FromBody] IList<Guid> contacts)
+        {
+            var campaign = CampaignFactory.GetCampaignByGuid(_db, campaignGuid);
+            if (campaign == null)
+                return BadRequest();
+
+            DataTable table = new DataTable();
+            table.Columns.Add("Guid", typeof(Guid));
+            foreach (Guid ContactGuid in contacts)
+            {
+                table.Rows.Add(ContactGuid);
+            }
+            var contactGuids = new SqlParameter("@ContactGuids", table);
+            contactGuids.SqlDbType = SqlDbType.Structured;
+            contactGuids.TypeName = "dbo.GuidList";
+            var campaignId = new SqlParameter("@CampaignId", campaign.CampaignId);
+
+            var spParams = new object[] { campaignId, contactGuids };
+            // call stored procedure 
+            var rowsAffected = _db.Database.ExecuteSqlCommand(@"
+                EXEC [dbo].[System_Delete_CampaignContacts] 
+                    @CampaignId,
+                    @ContactGuids"
+                    , spParams);
+
+            return Ok(rowsAffected);
+        }
+
+
+
+        #endregion
+
+        #region Campaign Provider (currently SendGrid) Contacts 
 
         // add contacts to send grid
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("api/[controller]/campaign/contact")]
+        [Route("api/[controller]/campaign-provider/contact")]
         public IActionResult AddContacts([FromBody] IList<EmailContactDto> contacts)
         {
             string ResponseJson = string.Empty;
@@ -164,13 +250,12 @@ namespace UpDiddyApi.Controllers
         }
         #endregion
 
-
-        #region Contact Lists 
+        #region Campaign Provider (currently SendGrid) Contact Lists 
 
         // create an email contact list in send grid
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("api/[controller]/campaign/contact-list")]
+        [Route("api/[controller]/campaign-provider/contact-list")]
         public IActionResult CreateCampaignEmailList([FromBody] SendGridListDto List)
         {
             string ResponseJson = string.Empty;
@@ -186,7 +271,7 @@ namespace UpDiddyApi.Controllers
         // get all send grid contact lists 
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("api/[controller]/campaign/contact-list")]
+        [Route("api/[controller]/campaign-provider/contact-list")]
         public IActionResult GetCampaignEmailLists()
         {
             string ResponseJson = string.Empty;
@@ -202,7 +287,7 @@ namespace UpDiddyApi.Controllers
         // get a specific contact list by name 
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("api/[controller]/campaign/contact-list/{ListName}")]
+        [Route("api/[controller]/campaign-provider/contact-list/{ListName}")]
         public IActionResult GetCampaignEmailList(string ListName)
         {
             string ResponseJson = string.Empty;
@@ -220,7 +305,7 @@ namespace UpDiddyApi.Controllers
         // add contacts to the specified contact list
         [HttpPut]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("api/[controller]/campaign/contact-list/{ListId}")]
+        [Route("api/[controller]/campaign-provider/contact-list/{ListId}")]
         public IActionResult AddContactstoList(string ListId, [FromBody] IList<EmailContactDto> contacts)
         {
             string ResponseJson = string.Empty;
@@ -236,7 +321,7 @@ namespace UpDiddyApi.Controllers
         // Create new contact list and add contacts to it. will also work with an existing named list.
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
-        [Route("api/[controller]/campaign/contact-list/{ListName}")]
+        [Route("api/[controller]/campaign-provider/contact-list/{ListName}")]
         public IActionResult CreateListAndContacts(string ListName, [FromBody] IList<EmailContactDto> contacts)
         {
             string ResponseJson = string.Empty;
@@ -248,7 +333,7 @@ namespace UpDiddyApi.Controllers
             else
                 return BadRequest(ResponseJson);   
         }
-        #endregion
+        #endregion 
     }
 }
  
