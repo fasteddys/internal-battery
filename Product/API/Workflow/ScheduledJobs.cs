@@ -52,9 +52,6 @@ namespace UpDiddyApi.Workflow
             try
             {
 
-
-
-
                 _syslog.Log(LogLevel.Information, $"***** UpdateWozStudentLastLogin started at: {DateTime.UtcNow.ToLongDateString()} for subscriber {SubscriberGuid.ToString()}");
                 Subscriber subscriber = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == Guid.Parse(SubscriberGuid))
@@ -97,6 +94,45 @@ namespace UpDiddyApi.Workflow
         }
 
 
+        // batch job to call woz to get students course progress
+        // todo consider some form of rate limiting once we have numerous enrollments
+        public bool UpdateAllStudentsProgress()
+        {
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** UpdateAllStudentsProgress started at: {DateTime.UtcNow.ToLongDateString()}");
+                // get all enrollments that are not complete
+                List<Enrollment> enrollments = _db.Enrollment
+                    .Include(s => s.Subscriber)
+                    .Where(e => e.IsDeleted == 0 && e.PercentComplete < 100)
+                    .ToList();
+
+                bool updatesMade = false;
+                foreach ( Enrollment e in enrollments)
+                {
+                    if (e.Subscriber != null)
+                        UpdateWozEnrollment(e.Subscriber.SubscriberGuid.ToString(), e, ref updatesMade);
+                }
+
+                if (updatesMade)
+                    _db.SaveChanges();
+
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Error, "ScheduledJobs:UpdateAllStudentsProgress threw an exception -> " + e.Message);
+                throw e;
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** UpdateAllStudentsProgress completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+
+            return true;
+
+        }
+
+
 
         public bool UpdateStudentProgress(string SubscriberGuid, int ProgressUpdateAgeThresholdInHours)
         {
@@ -109,7 +145,6 @@ namespace UpDiddyApi.Workflow
 
                 if (subscriber == null)
                     return false;
-
 
                 IList<Enrollment> enrollments = _db.Enrollment
                     .Where(e => e.IsDeleted == 0 && e.SubscriberId == subscriber.SubscriberId && e.CompletionDate == null && e.DroppedDate == null)
@@ -125,72 +160,7 @@ namespace UpDiddyApi.Workflow
                     if (e.ModifyDate == null || ((DateTime)e.ModifyDate).AddHours(ProgressUpdateAgeThresholdInHours) <= DateTime.UtcNow)
                     {
                         _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress calling woz for enrollment {e.EnrollmentGuid}");
-                        wcp = GetWozCourseProgress(e);
-                        if (wcp != null && wcp.ActivitiesCompleted > 0 && wcp.ActivitiesTotal > 0)
-                        {
-                            _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress updating enrollment {e.EnrollmentGuid}");
-                            updatesMade = true;
-                            e.PercentComplete = Convert.ToInt32(((double)wcp.ActivitiesCompleted / (double)wcp.ActivitiesTotal) * 100);
-                            // Save the completion date
-                            if (e.PercentComplete == 100 && e.CompletionDate == null)
-                            {
-                                e.CompletionDate = DateTime.UtcNow;
-
-                                Guid parsedSubscriberGuid;
-                                Guid.TryParse(SubscriberGuid, out parsedSubscriberGuid);
-                                var contact = _db.Contact
-                                    .Include(co => co.Subscriber)
-                                    .Where(co => co.IsDeleted == 0 && co.Subscriber.SubscriberGuid.HasValue && co.Subscriber.SubscriberGuid.Value == parsedSubscriberGuid)
-                                    .FirstOrDefault();
-
-                                // if there is an associated contact record for this subscriber and a campaign association for the enrollment, record that they completed the course
-                                if (contact != null && e.CampaignId.HasValue)
-                                {
-                                    var existingCourseCompletionAction = _db.ContactAction
-                                        .Where(ca => ca.ContactId == contact.ContactId && ca.CampaignId == e.CampaignId && ca.ActionId == 5)
-                                        .FirstOrDefault();
-
-                                    if (existingCourseCompletionAction != null)
-                                    {
-                                        // update if the action already exists (possible if more than one course was offered for a single campaign)
-                                        existingCourseCompletionAction.ModifyDate = DateTime.UtcNow;
-                                        existingCourseCompletionAction.OccurredDate = DateTime.UtcNow;
-                                    }
-                                    else
-                                    {
-                                        // create if the action does not already exist, and associate it with the highest phase                   
-                                        // of the campaign that the user has interacted with and assume that is what led them to buy
-                                        CampaignPhase lastCampaignPhaseInteraction = CampaignPhaseFactory.GetContactsLastPhaseInteraction(_db, e.CampaignId.Value, contact.ContactId);
-                                        if ( lastCampaignPhaseInteraction != null )
-                                        {
-                                            _db.ContactAction.Add(new ContactAction()
-                                            {
-                                                ActionId = 5, // todo: this should not be a hard-coded reference to the PK
-                                                CampaignId = e.CampaignId.Value,
-                                                ContactActionGuid = Guid.NewGuid(),
-                                                ContactId = contact.ContactId,
-                                                CreateDate = DateTime.UtcNow,
-                                                CreateGuid = Guid.Empty,
-                                                IsDeleted = 0,
-                                                ModifyDate = DateTime.UtcNow,
-                                                ModifyGuid = Guid.Empty,
-                                                OccurredDate = DateTime.UtcNow,
-                                                CampaignPhaseId = lastCampaignPhaseInteraction.CampaignPhaseId
-                                             });
-                                        }                                                                                    
-                                    }
-                                }
-                            }
-                            _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress updating enrollment {e.EnrollmentGuid} set PercentComplete={e.PercentComplete}");
-                            e.ModifyDate = DateTime.UtcNow;
-                        }
-                        else
-                        {
-                            if (wcp == null)
-                                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress GetWozCourseProgress returned null for enrollment {e.EnrollmentGuid}");
-                            else
-                                _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress GetWozCourseProgress returned ActivitiesCompleted = {wcp.ActivitiesCompleted} ActivitiesTotal = {wcp.ActivitiesTotal}");
-                        }
+                        UpdateWozEnrollment(SubscriberGuid, e, ref updatesMade);                       
                     }
                     else
                     {
@@ -219,7 +189,6 @@ namespace UpDiddyApi.Workflow
 
         public Boolean ReconcileFutureEnrollments()
         {
-
             bool result = false;
             try
             {
@@ -257,6 +226,104 @@ namespace UpDiddyApi.Workflow
 
         #region Woz Private Helper Functions
 
+
+
+        private void AssociateCampaignToCourseCompletion(string SubscriberGuid, Enrollment e)
+        {
+            Guid parsedSubscriberGuid;
+            Guid.TryParse(SubscriberGuid, out parsedSubscriberGuid);
+            var contact = _db.Contact
+                .Include(co => co.Subscriber)
+                .Where(co => co.IsDeleted == 0 && co.Subscriber.SubscriberGuid.HasValue && co.Subscriber.SubscriberGuid.Value == parsedSubscriberGuid)
+                .FirstOrDefault();
+
+            // if there is an associated contact record for this subscriber and a campaign association for the enrollment, record that they completed the course
+            if (contact != null && e.CampaignId.HasValue)
+            {
+                var existingCourseCompletionAction = _db.ContactAction
+                    .Where(ca => ca.ContactId == contact.ContactId && ca.CampaignId == e.CampaignId && ca.ActionId == 5)
+                    .FirstOrDefault();
+
+                if (existingCourseCompletionAction != null)
+                {
+                    // update if the action already exists (possible if more than one course was offered for a single campaign)
+                    existingCourseCompletionAction.ModifyDate = DateTime.UtcNow;
+                    existingCourseCompletionAction.OccurredDate = DateTime.UtcNow;
+                }
+                else
+                {
+                    // create if the action does not already exist, and associate it with the highest phase                   
+                    // of the campaign that the user has interacted with and assume that is what led them to buy
+                    CampaignPhase lastCampaignPhaseInteraction = CampaignPhaseFactory.GetContactsLastPhaseInteraction(_db, e.CampaignId.Value, contact.ContactId);
+                    if (lastCampaignPhaseInteraction != null)
+                    {
+                        _db.ContactAction.Add(new ContactAction()
+                        {
+                            ActionId = 5, // todo: this should not be a hard-coded reference to the PK
+                            CampaignId = e.CampaignId.Value,
+                            ContactActionGuid = Guid.NewGuid(),
+                            ContactId = contact.ContactId,
+                            CreateDate = DateTime.UtcNow,
+                            CreateGuid = Guid.Empty,
+                            IsDeleted = 0,
+                            ModifyDate = DateTime.UtcNow,
+                            ModifyGuid = Guid.Empty,
+                            OccurredDate = DateTime.UtcNow,
+                            CampaignPhaseId = lastCampaignPhaseInteraction.CampaignPhaseId
+                        });
+                    }
+                }
+            }
+        }
+
+
+        // check to see if student has completed the course and set completion date
+        private void UpdateWozCourseCompletion(string SubscriberGuid, Enrollment e )
+        {
+            // Set the enrollments course completion date if the course has been completed and 
+            // a completion date has not been noted
+            if (e.PercentComplete == 100 && e.CompletionDate == null)
+            {
+                e.CompletionDate = DateTime.UtcNow;
+                // See if we can 
+                AssociateCampaignToCourseCompletion(SubscriberGuid, e);
+            }
+
+        }
+
+        // update the subscribers woz course progress 
+        private void UpdateWozEnrollment(string SubscriberGuid, Enrollment e, ref bool updatesMade )
+        {
+            WozCourseProgressDto wcp = null;            
+            wcp = GetWozCourseProgress(e);
+            if (wcp != null && wcp.ActivitiesCompleted > 0 && wcp.ActivitiesTotal > 0)
+            {
+                _syslog.Log(LogLevel.Information, $"***** UpdateWozEnrollment updating enrollment {e.EnrollmentGuid}");
+                int PercentComplete = Convert.ToInt32(((double)wcp.ActivitiesCompleted / (double)wcp.ActivitiesTotal) * 100);
+                // update the percent completion if it's changed 
+                if (e.PercentComplete != PercentComplete )
+                {                    
+                    e.PercentComplete = PercentComplete;
+                    updatesMade = true;
+                    UpdateWozCourseCompletion(SubscriberGuid, e);                         
+                    _syslog.Log(LogLevel.Information, $"***** UpdateWozEnrollment updating enrollment {e.EnrollmentGuid} set PercentComplete={e.PercentComplete}");
+                    e.ModifyDate = DateTime.UtcNow;
+                }
+                else
+                    _syslog.Log(LogLevel.Information, $"***** UpdateWozEnrollment no progress for {e.EnrollmentGuid}");
+            }
+            else
+            {
+                if (wcp == null)
+                    _syslog.Log(LogLevel.Information, $"***** UpdateWozEnrollment GetWozCourseProgress returned null for enrollment {e.EnrollmentGuid}");
+                else
+                    _syslog.Log(LogLevel.Information, $"***** UpdateWozEnrollment GetWozCourseProgress returned ActivitiesCompleted = {wcp.ActivitiesCompleted} ActivitiesTotal = {wcp.ActivitiesTotal}");
+            }
+
+        }
+
+
+        // call woz to get the students progress on their woz course 
         private WozCourseProgressDto GetWozCourseProgress(Enrollment enrollment)
         {
             try
