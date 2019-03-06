@@ -95,6 +95,7 @@ namespace UpDiddy.Controllers
             return View(signupFlowViewModel);
         }
 
+        [HttpGet("/ClinicalResearchFastrack")]
         public IActionResult JoinNow()
         {
             return View("ExpressSignUp", new SignUpViewModel());
@@ -765,7 +766,7 @@ namespace UpDiddy.Controllers
                         return new BasicResponseDto
                         {
                             StatusCode = subscriberResponse.StatusCode,
-                            Description = "/Home/Profile"
+                            Description = "/Home/Signup"
                         };
                     default:
                         // If there's an error from contact-to-subscriber converstion API call,

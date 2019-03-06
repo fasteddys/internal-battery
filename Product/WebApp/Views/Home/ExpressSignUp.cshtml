@@ -16,25 +16,32 @@
     };
     }
 
-    <div class="cc-campaign-sign-up-band row">
+    <div class="cc-campaign-sign-up-band row" style="background-image: url('/images/versionctweakedagain.jpg'); background-position: top">
         <div class="col-12">
             <div class="container">
                 <div class="row">
-                    <div class="col-12 col-md-8 cc-campaign-sign-up-band-left-container">
+                    <div class="col-12 col-md-8 cc-campaign-sign-up-band-left-container  d-flex align-items-end">
                         <div class="row">
                             <div class="col no-padding">
                                 <div class="row">
-                                    <div class="col-12 hero-header font-bold">
-                                        It's your time!
+                                    <div class="col-2 no-padding d-none d-lg-block">
+                                        <i class="fas fa-user-md" style="font-size: 7rem"></i>
                                     </div>
-                                    <div class="col-12 campaign-bullet-list">
-                                        <div class="d-flex flex-column bd-highlight mb-3 mt-3">
-                                            <div class="bd-highlight font-bold">Sign up.</div>
-                                            <div class="bd-highlight font-bold">Enroll.</div>
-                                            <div class="bd-highlight font-bold">UpSkill.</div>
-                                            <div class="bd-highlight font-bold">Get a new job.</div>
+                                    <div class="col-10 no-padding">
+                                        <div class="row">
+                                            <div class="col-12 hero-header font-bold" style="line-height: 2.5rem">
+                                                Clinical Research<br />Coordinators Positions<br />Available
+                                            </div>
+                                            <div class="col-12 campaign-bullet-list">
+                                                <div class="d-flex flex-column bd-highlight mb-3 mt-3">
+                                                    <div class="bd-highlight font-bold">Sign up.</div>
+                                                    <div class="bd-highlight font-bold">Create your profile.</div>
+                                                    <div class="bd-highlight font-bold">Get a new job.</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -75,7 +82,7 @@
                                     </div>
                                 </div>
                                 <div class="col-12 no-padding campaign-disclaimer text-left">
-                                    You must sign up with the email address the offer was sent to.
+                                    By clicking Sign Up Now, you agree to our <a href='/Home/TermsOfService' target='_blank'>Terms Of Service</a>.
                                 </div>
                             </div>
                         </div>
@@ -92,15 +99,15 @@
                 <div class="row">
                     <div class="col-12 no-padding">
                         <div class="row">
-                            <div class="col-12 d-flex justify-content-center no-padding">
+                            <div class="col-12 d-flex justify-content-center no-padding mt-4">
                                 <div class="cc-skew-band-header font-bold">
-                                    At CareerCircle Our Focus Is You
+                                    At CareerCircle, Our Focus Is You
                                 </div>
                             </div>
-                            <div class="col-12 no-padding">
+                            <div class="col-lg-8 offset-lg-2 mb-4 no-padding">
                                 <div class="cc-skew-band-content">
                                     <div class="row">
-                                        We are passionate about creating a community where people can access the skills/training they need to prepare for the role they want. CareerCircle is committed to building this for you . . by you!
+                                        Clinical Research Fastrack is partnering  with CareerCircle to support specific hiring needs for Clinical Research Coordinators in your market!  We want to support you in finding your ideal role based on the training you recently acquired.  We invite you to set up an account and fill out your talent profile to get linked to recruiters that are specifically aligned with finding you the job you have been training for.
                                     </div>
                                 </div>
                             </div>
@@ -110,11 +117,4 @@
             </div>
         </div>
     </div>
-    @Html.Partial("Components/Bands/_TextWithVideoBand", new TextWithVideoBandViewModel {
-        Header = "Expand Your Skills",
-        VideoUrl = "/videos/Career_Circle.mp4",
-        VideoThumbnailUrl = "/images/FullStack_Main.png",
-        ChosenColorScheme = "cc-cscheme-secondary",
-        Descriptions = Descriptions
-    })
 </div>

@@ -452,7 +452,7 @@ namespace UpDiddy.Api
             // encrypt password before sending to API
             signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
 
-            return Put<BasicResponseDto>(signUpDto, "subscriber/contact/express-sign-up", false);
+            return Post<BasicResponseDto>(signUpDto, "subscriber/express-sign-up", false);
         }
 
         public SubscriberADGroupsDto MyGroups()

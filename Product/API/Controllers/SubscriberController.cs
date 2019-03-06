@@ -689,7 +689,7 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = await _db.Subscriber.Where(s => s.Email == signUpDto.email).FirstOrDefaultAsync();
             if (subscriber != null)
             {
-                var response = new BasicResponseDto() { StatusCode = 400, Description = "Bad Request." };
+                var response = new BasicResponseDto() { StatusCode = 400, Description = "Unable to create new account. Perhaps this account already exists. The login page can be found by clicking the Login/Signup button at the top of the page." };
                 _syslog.Log(LogLevel.Warning, "SubscriberController.ExpressSignUp:: Bad Request, user tried to sign up with an email that already exists. {@Email}", signUpDto.email);
                 return BadRequest(response);
             }
@@ -700,7 +700,7 @@ namespace UpDiddyApi.Controllers
             {
                 try
                 {
-                    user = await _graphClient.CreateUser(null, signUpDto.email, Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password));
+                    user = await _graphClient.CreateUser(signUpDto.email, signUpDto.email, Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password));
                 }
                 catch (Exception ex)
                 {
