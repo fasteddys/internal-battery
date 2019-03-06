@@ -40,6 +40,7 @@ namespace UpDiddyLib.Helpers
         {
             public static readonly string Sovren = "Sovren";
             public static readonly string LinkedIn = "LinkedIn";
+            public static readonly string CareerCircle = "CareerCircle";
         }
 
         public static class SignalR
