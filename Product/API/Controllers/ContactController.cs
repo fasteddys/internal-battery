@@ -51,6 +51,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet("api/[controller]")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         public async Task<IActionResult> GetAllAsync(string sort, string name, string email, int? partnerId, double? startDate, double? endDate, int? page = null, int? pageSize = 10)
         {
             if (!page.HasValue)
