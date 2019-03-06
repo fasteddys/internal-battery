@@ -1,7 +1,10 @@
 {
   "scripts": {
     "gulp": "./node_modules/.bin/gulp",
-    "bower": "./node_modules/.bin/bower"
+    "bower": "./node_modules/.bin/bower",
+    "webpack": "./node_modules/.bin/webpack",
+    "build": "./node_modules/.bin/webpack --config webpack.prod.js",
+    "build:dev": "./node_modules/.bin/webpack --config webpack.dev.js"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
@@ -24,6 +27,8 @@
     "merge-stream": "^1.0.1",
     "node-sass": "^4.10.0",
     "sass": "^1.14.3",
+    "webpack-cli": "^3.2.3",
+    "webpack-merge": "^4.2.1",
     "webpack-stream": "^5.2.1"
   },
   "dependencies": {

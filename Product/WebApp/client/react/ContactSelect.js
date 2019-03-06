@@ -54,7 +54,7 @@ class ContactSelect extends React.Component {
                 Cell: props => {
                     const partners = props
                         .value
-                        .map((pc) => <span className='badge badge-secondary'>{ this.partnerMap[pc.partnerId].name }</span>);
+                        .map((pc) => <span key={'badge-' + pc.partnerId} className='badge badge-secondary'>{ this.partnerMap[pc.partnerId].name }</span>);
                     return <div>{ partners }</div>
                 }
             }
@@ -155,13 +155,13 @@ class ContactSelect extends React.Component {
                             </div>
                         </div>
                         <div className="col-md-3">
-                            <div class="form-group">
+                            <div className="form-group">
                                 <label>
                                     Partners:
                                 </label>
                                 <Select 
                                     options={this.state.partners}
-                                    accessor={(option) => { return {label: option.name, value: option.partnerId };}}
+                                    accessor={(option) => { return {key: 'contact-'+option.partnerId, label: option.name, value: option.partnerId };}}
                                     onChange={this.handlePartnerChange}
                                     value={this.state.partner}
                                 />
