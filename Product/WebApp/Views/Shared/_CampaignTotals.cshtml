@@ -1,0 +1,16 @@
+﻿@using Microsoft.AspNetCore.Mvc.Rendering;
+@using NonFactors.Mvc.Grid;
+@using UpDiddyLib.Dto
+
+@model IGrid<CampaignStatisticDto>
+
+<tr>
+    <td colspan="3" style="text-align:right"><b>Campaign Totals:</b></td>
+    <td><b>@(Model.Rows.Sum(row => row.Model.EmailsSent))</b></td>
+    <td><b>@(Model.Rows.Sum(row => row.Model.OpenEmail))</b></td>
+    <td><b>@(Model.Rows.Sum(row => row.Model.VisitLandingPage))</b></td>
+    <td><b>@(Model.Rows.Sum(row => row.Model.CreateAcount))</b></td>
+    <td><b>@(Model.Rows.Sum(row => row.Model.CourseEnrollment))</b></td>
+    <td><b>@(Model.Rows.Sum(row => row.Model.CourseCompletion))</b></td>
+    <td></td>
+</tr>

@@ -36,17 +36,11 @@
                                                     columns.Add(model => model.CreateAcount).Sortable(true).Titled("Accounts Created");
                                                     columns.Add(model => model.CourseEnrollment).Sortable(true).Titled("Course Enrollments");
                                                     columns.Add(model => model.CourseCompletion).Sortable(true).Titled("Courses Completed");
-
                                                 })
                                                 .AppendCss("table table-primary table-striped")
                                                 .Empty("No data found")
-                                                .Pageable(pager =>
-                                                {
-                                                    pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
-                                                    pager.ShowPageSizes = true;
-                                                    pager.RowsPerPage = 10;
-                                                    pager.CssClasses = "admin-pager";
-                                                })
+                                                .AppendCss("detail-grid")
+                                                .Filterable()
             )
         </div>
     </div>
@@ -56,5 +50,11 @@
             window.onload = function () {
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
             }
-        </script>}
+        </script>
+        <style>
+            .detail-grid {
+                font-size: 10px;
+            }
+        </style>
+        }
 </div>

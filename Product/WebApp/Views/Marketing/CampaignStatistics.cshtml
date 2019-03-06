@@ -23,8 +23,8 @@
                                 .Build(columns =>
                                 {
                                     columns.Add(model => model.Name).Sortable(true).Titled("Campaign Name");
-                                    columns.Add(model => model.StartDate).Sortable(true).Titled("Start Date");
-                                    columns.Add(model => model.EndDate).Sortable(true).Titled("End Date");
+                                    columns.Add(model => model.StartDate).Sortable(true).InitialSort(GridSortOrder.Desc).Titled("Start Date").RenderedAs(model => model.StartDate.HasValue ? model.StartDate.Value.ToShortDateString() : string.Empty);
+                                    columns.Add(model => model.EndDate).Sortable(true).Titled("End Date").RenderedAs(model => model.EndDate.HasValue ? model.EndDate.Value.ToShortDateString() : string.Empty);
                                     columns.Add(model => model.EmailsSent).Sortable(true).Titled("Emails Sent");
                                     columns.Add(model => model.OpenEmail).Sortable(true).Titled("Emails Opened");
                                     columns.Add(model => model.VisitLandingPage).Sortable(true).Titled("Landing Page Visits");
@@ -42,6 +42,7 @@
                                     pager.RowsPerPage = 10;
                                     pager.CssClasses = "admin-pager";
                                 })
+                                .WithFooter("_CampaignTotals")
             )
         </div>
     </div>
