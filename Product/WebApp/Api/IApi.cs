@@ -52,6 +52,7 @@ namespace UpDiddy.Api
         IList<SubscriberEducationHistoryDto> GetEducationHistory(Guid subscriberGuid);
         SubscriberEducationHistoryDto AddEducationalHistory(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
         BasicResponseDto UpdateSubscriberContact(Guid contactGuid, SignUpDto signUpDto);
+        BasicResponseDto ExpressUpdateSubscriberContact(SignUpDto signUpDto);
         CourseDto GetCourseByCampaignGuid(Guid CampaignGuid);
         ContactDto Contact(Guid contactGuid);
 
