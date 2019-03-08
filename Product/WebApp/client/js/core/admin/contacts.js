@@ -23,10 +23,9 @@
                 $('#processingResultsSummary').append(importActionHtml);
             });
         },
-        error: function () {
-            $(".overlay").remove();
-            // todo: add toast message?
-            alert('replace with toast, reset form, disable import button, etc');
+        error: function (jqXHR, textStatus, errorThrown) {
+            $(".overlay").remove(); 
+            ToastService.error(textStatus, errorThrown);
         }
     });
 }
@@ -102,7 +101,7 @@ $(function () {
         done: function (e, data) {
             
             $("#ContactsPreviewContainer").show();
-
+            ToastService.warning(data.result.errorMessage, 'There was a problem processing the file');
             // load the preview data for the contacts
             var contactsPreview = data.result.contactsPreview;
             if (contactsPreview.length > 0) {
@@ -160,8 +159,7 @@ $(function () {
         },
 
         fail: function (e, data) {
-            // todo: add toast message?
-            alert('replace with toast, reset form, disable import button, etc');
+            ToastService.error(e, data);
         }
     });
 
