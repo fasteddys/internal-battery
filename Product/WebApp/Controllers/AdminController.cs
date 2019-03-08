@@ -125,12 +125,12 @@ namespace UpDiddy.Controllers
 
                 return View("Contacts", partner);
             }
-            catch(ApiException e)
+            catch (ApiException e)
             {
                 return BadRequest();
             }
-            
-            
+
+
         }
 
         [HttpPut]
@@ -144,30 +144,35 @@ namespace UpDiddy.Controllers
         public IActionResult UploadContacts(IFormFile contactsFile)
         {
             ImportValidationSummaryDto importValidationSummary = new ImportValidationSummaryDto();
-
-            var contacts = LoadContactsFromCsv(contactsFile);
-            if (contacts != null)
+            try
             {
-                // perform basic validation on the contacts loaded from the csv file 
-                importValidationSummary.ImportActions = PerformBasicValidationOnContacts(ref contacts);
-                // load a handful of contact records for the UI preview
-                importValidationSummary.ContactsPreview = contacts.Take(5).ToList();
-                // store all contact data to be imported in redis (after removing items that will be skipped)
-                string cacheKey = StashContactForImportInRedis(contacts, Guid.Parse(this.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
-                // return the cache key to the UI so that the data can be retrieved later if processing continues
-                importValidationSummary.CacheKey = cacheKey;
-            }
-            else
-            {
-                // no contacts could be loaded; indicate this in the import action
-                importValidationSummary.ImportActions.Add(new ImportActionDto()
+                var contacts = LoadContactsFromCsv(contactsFile);
+                if (contacts != null)
                 {
-                    Count = 0,
-                    ImportBehavior = ImportBehavior.Pending,
-                    Reason = "No records could be loaded from the selected file(s)"
-                });
+                    // perform basic validation on the contacts loaded from the csv file 
+                    importValidationSummary.ImportActions = PerformBasicValidationOnContacts(ref contacts);
+                    // load a handful of contact records for the UI preview
+                    importValidationSummary.ContactsPreview = contacts.Take(5).ToList();
+                    // store all contact data to be imported in redis (after removing items that will be skipped)
+                    string cacheKey = StashContactForImportInRedis(contacts, Guid.Parse(this.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
+                    // return the cache key to the UI so that the data can be retrieved later if processing continues
+                    importValidationSummary.CacheKey = cacheKey;
+                }
+                else
+                {
+                    // no contacts could be loaded; indicate this in the import action
+                    importValidationSummary.ImportActions.Add(new ImportActionDto()
+                    {
+                        Count = 0,
+                        ImportBehavior = ImportBehavior.Pending,
+                        Reason = "No records could be loaded from the selected file(s)"
+                    });
+                }
             }
-
+            catch (Exception e)
+            {
+                importValidationSummary.ErrorMessage = e.Message;
+            }
             return new JsonResult(importValidationSummary);
         }
 
@@ -206,7 +211,7 @@ namespace UpDiddy.Controllers
                         ImportBehavior = ImportBehavior.Ignored,
                         Reason = "missing required field(s): FirstName, LastName"
                     });
-                contactsToBeProcessed -= contacts.RemoveAll(c => !c.Metadata.ContainsKey("FirstName") || !c.Metadata.ContainsKey("LastName"));
+                contactsToBeProcessed -= contacts.RemoveAll(c => !c.Metadata.ContainsKey("FirstName") || c.Metadata.ContainsKeyValue("FirstName", string.Empty) || !c.Metadata.ContainsKey("LastName") || c.Metadata.ContainsKeyValue("LastName", string.Empty));
             }
 
             // duplicate check
@@ -386,10 +391,10 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Partners");
                 }
-                catch(ApiException e)
+                catch (ApiException e)
                 {
                     // Log error
-                }                
+                }
             }
             return BadRequest();
         }
@@ -405,7 +410,7 @@ namespace UpDiddy.Controllers
                     return BadRequest();
                 return RedirectToAction("Partners");
             }
-            catch(ApiException e)
+            catch (ApiException e)
             {
                 // Log error
             }
