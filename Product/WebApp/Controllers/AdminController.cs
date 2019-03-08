@@ -125,12 +125,12 @@ namespace UpDiddy.Controllers
 
                 return View("Contacts", partner);
             }
-            catch(ApiException e)
+            catch (ApiException e)
             {
                 return BadRequest();
             }
-            
-            
+
+
         }
 
         [HttpPut]
@@ -143,7 +143,7 @@ namespace UpDiddy.Controllers
         [HttpPost]
         public IActionResult UploadContacts(IFormFile contactsFile)
         {
-                ImportValidationSummaryDto importValidationSummary = new ImportValidationSummaryDto();
+            ImportValidationSummaryDto importValidationSummary = new ImportValidationSummaryDto();
             try
             {
                 var contacts = LoadContactsFromCsv(contactsFile);
@@ -169,7 +169,7 @@ namespace UpDiddy.Controllers
                     });
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 importValidationSummary.ErrorMessage = e.Message;
             }
@@ -211,7 +211,7 @@ namespace UpDiddy.Controllers
                         ImportBehavior = ImportBehavior.Ignored,
                         Reason = "missing required field(s): FirstName, LastName"
                     });
-                contactsToBeProcessed -= contacts.RemoveAll(c => !c.Metadata.ContainsKey("FirstName") || !c.Metadata.ContainsKey("LastName"));
+                contactsToBeProcessed -= contacts.RemoveAll(c => !c.Metadata.ContainsKey("FirstName") || c.Metadata.ContainsKeyValue("FirstName", string.Empty) || !c.Metadata.ContainsKey("LastName") || c.Metadata.ContainsKeyValue("LastName", string.Empty));
             }
 
             // duplicate check
@@ -391,10 +391,10 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Partners");
                 }
-                catch(ApiException e)
+                catch (ApiException e)
                 {
                     // Log error
-                }                
+                }
             }
             return BadRequest();
         }
@@ -410,7 +410,7 @@ namespace UpDiddy.Controllers
                     return BadRequest();
                 return RedirectToAction("Partners");
             }
-            catch(ApiException e)
+            catch (ApiException e)
             {
                 // Log error
             }
