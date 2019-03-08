@@ -441,6 +441,14 @@ namespace UpDiddy.Api
             return await PutAsync<BasicResponseDto>(string.Format("subscriber/contact/{0}", contactGuid.ToString()), signUpDto);
         }
 
+        public async Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto)
+        {
+            // encrypt password before sending to API
+            signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
+
+            return await PostAsync<BasicResponseDto>("subscriber/express-sign-up", signUpDto);
+        }
+
         public async Task<SubscriberADGroupsDto> MyGroupsAsync()
         {
             return await GetAsync<SubscriberADGroupsDto>("subscriber/me/group");

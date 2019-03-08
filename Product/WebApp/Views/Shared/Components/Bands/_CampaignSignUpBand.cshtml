@@ -4,7 +4,7 @@
 @*
     ***Customization Options***
 
-    
+
 *@
 
 <div class="cc-campaign-sign-up-band row">
@@ -65,13 +65,13 @@
                         </div>
                     </div>
                 </div>
-                @{ 
+                @{
                     string hasRibbonClass = "";
                     bool hasRibbon = !string.IsNullOrEmpty(Model.RibbonText);
                     if (hasRibbon) { hasRibbonClass = "has-ribbon"; }
                 }
                 <div class="col-12 col-md-4 cc-campaign-sign-up-band-right-container @hasRibbonClass no-padding">
-                    @{ 
+                    @{
                         if (hasRibbon)
                         {
                             <div class="campaign-ribbon">
@@ -102,7 +102,7 @@
                         </div>
                     </div>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
