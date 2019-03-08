@@ -24,6 +24,7 @@ using Newtonsoft.Json;
 using System.Data.SqlClient;
 using System.Data;
 using System.Collections.Concurrent;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Controllers
 {
@@ -131,11 +132,12 @@ namespace UpDiddyApi.Controllers
             var contacts = await contactQuery.AsNoTracking().Skip((page.Value - 1) * pageSize.Value).Take(pageSize.Value).ToListAsync();
             var num_contacts = await contactQuery.CountAsync();
             var num_pages = (num_contacts + pageSize.Value - 1) / pageSize.Value;
-            return Ok(new
+
+            return Ok(new PageResultDto<Contact>()
             {
-                totalRecords = num_contacts,
-                pages = num_pages,
-                data = contacts
+                TotalRecords = num_contacts,
+                Pages = num_pages,
+                Data = contacts
             });
         }
 
