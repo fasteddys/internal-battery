@@ -217,7 +217,12 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<DateTime>("StartDate");
 
+                    b.Property<string>("Terms");
+
                     b.HasKey("CampaignId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Campaign");
                 });
