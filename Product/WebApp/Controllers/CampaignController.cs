@@ -27,12 +27,6 @@ namespace UpDiddy.Controllers
             _configuration = configuration;
         }
 
-        [HttpGet("/Community")]
-        public IActionResult Community()
-        {
-            return View();
-        }
-
         [HttpGet]
         [Route("/Community/{CampaignGuid}/{ContactGuid}")]
         public async Task<IActionResult> CampaignAsync(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
