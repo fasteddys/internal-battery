@@ -139,6 +139,9 @@ namespace UpDiddyApi.Models
         {
             modelBuilder.Entity<PartnerContact>()
                 .HasKey(pc => new { pc.PartnerId, pc.ContactId });
+
+            modelBuilder.Entity<Contact>()
+                .HasMany<PartnerContact>(c => c.PartnerContacts);
             
             modelBuilder.Entity<PartnerContact>()
                 .Property<string>("MetaDataJSON")

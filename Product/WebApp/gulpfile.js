@@ -8,7 +8,8 @@ var concat = require('gulp-concat');
 var merge = require('merge-stream');
 
 var babelConfig = {
-    presets: ['@babel/env']
+    presets: ['@babel/env', '@babel/preset-react'],
+    plugins: ['@babel/plugin-proposal-class-properties']
 };
 
 sass.compiler = require('node-sass');
@@ -42,12 +43,11 @@ gulp.task('js', function () {
         .pipe(babel(babelConfig))
         .pipe(gulp.dest('./wwwroot/js/modules'));
 
-
     return merge(core, modules);
 });
 
 gulp.task('js:watch', function () {
-    gulp.watch('./client/js/**/*.js', ['js'])
+    gulp.watch(['./client/js/**/*.js'], ['js']);
 });
 
 gulp.task('compile', ['fonts', 'sass', 'js']);

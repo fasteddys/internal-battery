@@ -20,6 +20,7 @@ namespace UpDiddyApi.Models
         public Guid ContactGuid { get; set; }
         public int? SubscriberId { get; set; }
         public virtual Subscriber Subscriber { get; set; }
+        public virtual List<PartnerContact> PartnerContacts { get; set; }
 
         [Obsolete("This supporting values for this property is being moved to PartnerContact and will be removed from the model very soon.", false)]
         [NotMapped]

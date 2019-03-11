@@ -44,6 +44,11 @@ steps:
   workingDirectory: Product/WebApp
 
 - script: |
+    npm run build
+  displayName: Build js bundle (react)
+  workingDirectory: Product/WebApp
+
+- script: |
     dotnet build Product/WebApp --configuration $(buildConfiguration)
   displayName: Compile
 

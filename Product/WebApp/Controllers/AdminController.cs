@@ -89,6 +89,13 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
+        [Route("/admin/contact")]
+        public IActionResult Contact()
+        {
+            return View();
+        }
+
+        [HttpGet]
         [Route("/admin/skills")]
         public IActionResult Skills()
         {

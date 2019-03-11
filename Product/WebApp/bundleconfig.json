@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "outputFileName": "wwwroot/css/site.dev.css",
     "inputFiles": [
@@ -9,7 +9,9 @@
       "wwwroot/css/bundle.css",
       "bower_components/selectize/dist/css/selectize.css",
       "bower_components/selectize/dist/css/selectize.default.css",
-      "node_modules/jquery-ui-dist/jquery-ui.css"
+      "node_modules/jquery-ui-dist/jquery-ui.css",
+      "node_modules/react-table/react-table.css",
+      "node_modules/react-datepicker/dist/react-datepicker.css"
     ],
     "minify": {
       "enabled": false,
@@ -44,8 +46,7 @@
     "minify": {
       "enabled": false,
       "renameLocals": false
-    },
-    "sourceMap": false
+    }
   },
   {
     "outputFileName": "wwwroot/css/site.min.css",
@@ -57,7 +58,9 @@
       "wwwroot/css/bundle.css",
       "bower_components/selectize/dist/css/selectize.css",
       "bower_components/selectize/dist/css/selectize.default.css",
-      "node_modules/jquery-ui-dist/jquery-ui.css"
+      "node_modules/jquery-ui-dist/jquery-ui.css",
+      "node_modules/react-table/react-table.css",
+      "node_modules/react-datepicker/dist/react-datepicker.css"
     ],
     "minify": {
       "enabled": true,
