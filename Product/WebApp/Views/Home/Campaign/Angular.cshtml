@@ -62,12 +62,13 @@ new ColumnSkewBandViewModel.ColumnSkewBandElement(UpDiddyLib.Helpers.Utils.Forma
 "We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston."
 };
     }
-    @Html.Partial("Components/Bands/_TextWithVideoBand", new TextWithVideoBandViewModel {
+    @Html.Partial("Components/Bands/_TextWithMediaBand", new TextWithMediaBandViewModel {
         Header = "Expand Your Skills",
-        VideoUrl = "/videos/Career_Circle.mp4",
+        MediaUrl = "/videos/Career_Circle.mp4",
         VideoThumbnailUrl = "/images/FullStack_Main.png",
         ChosenColorScheme = "cc-cscheme-secondary",
-        Descriptions = Descriptions
+        Descriptions = Descriptions,
+        Media = TextWithMediaBandViewModel.MediaType.VIDEO
     })
 
 

@@ -4,7 +4,10 @@
 @media (min-width: 0px) {
     .cc-text-video-band {
         padding: 2rem 0;
+        img{ 
+            width: 100%
 
+        }
         &.cc-bg-white {
             background-color: $color-white;
             color: $color-secondary;

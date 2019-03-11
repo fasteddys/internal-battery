@@ -61,12 +61,13 @@
         ChosenColorScheme = "cc-cscheme-white",
         Elements = TextElements
     })
-    @Html.Partial("Components/Bands/_TextWithVideoBand", new TextWithVideoBandViewModel {
+    @Html.Partial("Components/Bands/_TextWithMediaBand", new TextWithMediaBandViewModel {
         Header = "Expand Your Skills",
-        VideoUrl = "/videos/Career_Circle.mp4",
+        MediaUrl = "/videos/Career_Circle.mp4",
         VideoThumbnailUrl = "/images/FullStack_Main.png",
         ChosenColorScheme = "cc-cscheme-secondary",
-        Descriptions = Descriptions
+        Descriptions = Descriptions,
+        Media = TextWithMediaBandViewModel.MediaType.VIDEO
     })
 </div>
 <img src="@Model.TrackingImgSource" />
