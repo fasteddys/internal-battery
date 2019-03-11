@@ -621,12 +621,12 @@ namespace UpDiddyApi.Controllers
             {
                 try
                 {
-                    user = await _graphClient.CreateUser(contact.FullName, contact.Email, Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password));
+                    user = await _graphClient.CreateUser(contact.Email, contact.Email, Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password));
                 }
                 catch (Exception ex)
                 {
                     _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Error occured while attempting to create a user in Azure Active Directory. Exception: {@Exception}", ex);
-                    return StatusCode(500);
+                    return StatusCode(500, new BasicResponseDto() { StatusCode = 500, Description = "An error occured while attempting to create an account for you." });
                 }
             }
 
