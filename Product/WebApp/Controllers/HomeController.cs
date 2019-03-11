@@ -767,7 +767,8 @@ namespace UpDiddy.Controllers
             {
                 email = signUpViewModel.Email,
                 password = signUpViewModel.Password,
-                campaignGuid = signUpViewModel.CampaignGuid
+                campaignGuid = signUpViewModel.CampaignGuid,
+                referer = Request.Headers["Referer"].ToString()
             };
 
             // Guard UX from any unforeseen server error.

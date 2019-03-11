@@ -722,6 +722,8 @@ namespace UpDiddyApi.Controllers
             subscriber.ModifyGuid = Guid.Empty;
             subscriber.CreateGuid = Guid.Empty;
 
+            var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
+
             // use transaction to verify that both changes 
             using (var transaction = _db.Database.BeginTransaction())
             {
@@ -740,7 +742,7 @@ namespace UpDiddyApi.Controllers
                         ProfileSource = Constants.DataSource.CareerCircle,
                         IsDeleted = 0,
                         ProfileFormat = Constants.DataFormat.Json,
-                        ProfileData = JsonConvert.SerializeObject(new { source = "express-sign-up"})
+                        ProfileData = JsonConvert.SerializeObject(new { source = "express-sign-up", referer = referer })
                     };
                     _db.SubscriberProfileStagingStore.Add(store);
                     await _db.SaveChangesAsync();

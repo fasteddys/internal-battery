@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace UpDiddyLib.Dto.Marketing
 {
@@ -10,6 +8,7 @@ namespace UpDiddyLib.Dto.Marketing
         public string password { get; set; }
         public Guid? campaignGuid { get; set; }
         public string campaignPhase { get; set; }
+        public string referer { get; set; }
     }
 }
  

@@ -2,6 +2,7 @@
 using Microsoft.Graph;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -84,12 +85,16 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     password = password,
                     forceChangePasswordNextLogin = false
-                },
-                extension_47050304da9246388e45d8b1156dfa92_AgreeToCareerCircleMarketing = "True",
-                extension_47050304da9246388e45d8b1156dfa92_AgreeToCareerCircleTerms = _configuration["TermsOfServiceVersion"]
+                }
             };
 
-            string json = JsonConvert.SerializeObject(user);
+            Dictionary<string, string> b2cExtensionProps = new Dictionary<string, string>();
+            b2cExtensionProps.Add(_configuration["AzureAdB2C:ExtensionFields:AgreeToCareerCircleMarketing"],"True");
+            b2cExtensionProps.Add(_configuration["AzureAdB2C:ExtensionFields:AgreeToCareerCircleTerms"],_configuration["TermsOfServiceVersion"]);
+
+            var body = JObject.FromObject(user);
+            body.Merge(JObject.FromObject(b2cExtensionProps));
+            string json = body.ToString();
             string response = await SendGraphPostRequest("/users", json);
 
             User responseUser = JsonConvert.DeserializeObject<User>(response);
