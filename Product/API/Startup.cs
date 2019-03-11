@@ -158,13 +158,18 @@ namespace UpDiddyApi
             // Have the workflow monitor run every minute 
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ReconcileFutureEnrollments(), Cron.Daily);
-
+            // Batch job for updating woz student course progress 
+            int CourseProgressSyncIntervalInHours = 12;
+            int.TryParse(Configuration["Woz:CourseProgressSyncIntervalInHours"].ToString(), out CourseProgressSyncIntervalInHours); 
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.UpdateAllStudentsProgress(), Cron.HourInterval(CourseProgressSyncIntervalInHours));
+ 
             // PromoCodeRedemption cleanup
             int promoCodeRedemptionCleanupScheduleInMinutes = 5;
             int promoCodeRedemptionLookbackInMinutes = 30;
             int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
             int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
+
             // Add Polly 
             // Create Policies  
             int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
