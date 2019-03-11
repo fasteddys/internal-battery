@@ -48,6 +48,7 @@
     <PackageReference Include="Sendgrid" Version="9.10.0" />
     </ItemGroup>
   <ItemGroup>
+    <Folder Include="client\react\" />
     <Folder Include="Resources\" />
     <Folder Include="wwwroot\lib\font-awesome\" />
     <Folder Include="wwwroot\webfonts\" />

@@ -23,12 +23,15 @@
                 $('#processingResultsSummary').append(importActionHtml);
             });
         },
-        error: function () {
+        error: function (jqXHR, textStatus, errorThrown) {
             $(".overlay").remove();
-            // todo: add toast message?
-            alert('replace with toast, reset form, disable import button, etc');
+            ToastService.error(textStatus, errorThrown);
         }
     });
+}
+
+function resetPage() {
+    window.location.reload();
 }
 
 $(function () {
@@ -60,7 +63,7 @@ $(function () {
             data.context = $("#UploadProgressWheelContainer");
             // Append the file name and file size
             //tpl.find('p').text(data.files[0].name)
-                //.append('<i>' + formatFileSize(data.files[0].size) + '</i>');
+            //.append('<i>' + formatFileSize(data.files[0].size) + '</i>');
 
             // Add the HTML to the UL element
             //data.context = tpl.appendTo(ul);
@@ -100,68 +103,75 @@ $(function () {
         },
 
         done: function (e, data) {
-            
-            $("#ContactsPreviewContainer").show();
 
-            // load the preview data for the contacts
-            var contactsPreview = data.result.contactsPreview;
-            if (contactsPreview.length > 0) {
-                $("#ContactPreviewTableContainer").show();
-                var isHeaderProcessed = false;
-                contactsPreview.forEach(function (row) {
-                    // create table header (if it does not yet exist)
-                    if (!isHeaderProcessed) {
+            if (data.result.errorMessage !== null && data.result.errorMessage.length > 0) {
+                $("#drop").show();
+                $("#UploadProgressSizeContainer").empty();
+                $("#UploadProgressWheelContainer").empty();
+                $("#UploadProgressFileContainer").empty();
+                $("#ContactUploadPreviewProgress").hide();
+                ToastService.warning(data.result.errorMessage, 'There was a problem processing the file');
+            } else {
+                $("#ContactsPreviewContainer").show();
+                // load the preview data for the contacts
+                var contactsPreview = data.result.contactsPreview;
+                if (contactsPreview.length > 0) {
+                    $("#ContactPreviewTableContainer").show();
+                    var isHeaderProcessed = false;
+                    contactsPreview.forEach(function (row) {
+                        // create table header (if it does not yet exist)
+                        if (!isHeaderProcessed) {
+                            Object.keys(row).forEach(function (key, idx) {
+                                if (key === 'metadata') {
+                                    Object.keys(row[key]).forEach(function (metadataKey, i) {
+                                        $('#contactTablePreview thead tr').append('<th scope="col">' + metadataKey + '</th>');
+                                    });
+                                } else {
+                                    $('#contactTablePreview thead tr').append('<th scope="col">' + key + '</th>');
+                                }
+                            });
+                            isHeaderProcessed = true;
+                        }
+                        // create table rows
+                        var rowHtml = '<tr>';
                         Object.keys(row).forEach(function (key, idx) {
                             if (key === 'metadata') {
                                 Object.keys(row[key]).forEach(function (metadataKey, i) {
-                                    $('#contactTablePreview thead tr').append('<th scope="col">' + metadataKey + '</th>');
+                                    rowHtml += '<td>';
+                                    rowHtml += (row[key])[metadataKey];
+                                    rowHtml += '</td>';
                                 });
                             } else {
-                                $('#contactTablePreview thead tr').append('<th scope="col">' + key + '</th>');
+                                rowHtml += '<td>';
+                                rowHtml += row[key];
+                                rowHtml += '</td>';
                             }
                         });
-                        isHeaderProcessed = true;
-                    }
-                    // create table rows
-                    var rowHtml = '<tr>';
-                    Object.keys(row).forEach(function (key, idx) {
-                        if (key === 'metadata') {
-                            Object.keys(row[key]).forEach(function (metadataKey, i) {
-                                rowHtml += '<td>';
-                                rowHtml += (row[key])[metadataKey];
-                                rowHtml += '</td>';
-                            });
-                        } else {
-                            rowHtml += '<td>';
-                            rowHtml += row[key];
-                            rowHtml += '</td>';
-                        }
+                        rowHtml += '</tr>';
+                        $('#contactTablePreview tbody').append(rowHtml);
                     });
-                    rowHtml += '</tr>';
-                    $('#contactTablePreview tbody').append(rowHtml);
+                }
+
+
+                // show summary of validation actions which will occur if the file is processed (e.g. removed duplicate rows by email)
+                var importActions = data.result.importActions;
+                importActions.forEach(function (importAction, idx) {
+                    var importActionHtml = '<li>';
+                    // todo: come up with a better way to format messages
+                    importActionHtml += importAction.count + ' contacts will be ' + importAction.importBehavior.toLowerCase();
+                    if (importAction.reason !== null)
+                        importActionHtml += ' for the following reason: ' + importAction.reason;
+                    importActionHtml += '</li>';
+                    $('#ImportValidationSummary').append(importActionHtml);
                 });
+
+                // set cache key for import operation
+                $('#cacheKey').val(data.result.cacheKey);
             }
-            
-
-            // show summary of validation actions which will occur if the file is processed (e.g. removed duplicate rows by email)
-            var importActions = data.result.importActions;
-            importActions.forEach(function (importAction, idx) {
-                var importActionHtml = '<li>';
-                // todo: come up with a better way to format messages
-                importActionHtml += importAction.count + ' contacts will be ' + importAction.importBehavior.toLowerCase();
-                if (importAction.reason !== null)
-                    importActionHtml += ' for the following reason: ' + importAction.reason;
-                importActionHtml += '</li>';
-                $('#ImportValidationSummary').append(importActionHtml);
-            });
-
-            // set cache key for import operation
-            $('#cacheKey').val(data.result.cacheKey);
         },
 
         fail: function (e, data) {
-            // todo: add toast message?
-            alert('replace with toast, reset form, disable import button, etc');
+            ToastService.error(e, data);
         }
     });
 
