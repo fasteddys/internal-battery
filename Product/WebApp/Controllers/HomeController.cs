@@ -295,7 +295,7 @@ namespace UpDiddy.Controllers
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> OnboardAsync(SignupFlowViewModel signupFlowViewModel)
+        public async Task<IActionResult> Onboard(SignupFlowViewModel signupFlowViewModel)
         {
             List<SkillDto> skillsDto = null;
             if (ModelState.IsValid)
