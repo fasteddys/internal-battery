@@ -1,0 +1,117 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model CampaignViewModel
+
+<div id="CommunityCampaignContainer">
+    <div id="CommunityCampaignHero" class="row">
+        <div class="col">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-xl-5">
+                        <div class="f-color-white mb-3 hero-header">Who's in Your Circle?</div>
+                        <div class="f-color-tertiary hero-subheader">At CareerCircle Our Focus Is You</div>
+                        <span class="f-color-white">We are passionate about creating a community where people can access the educational training they need to prepare for the role they want.  CareerCircle is committed to partnering with you on this journey to help grow your skills, grow your circle, grow your career!</span>
+                        <div class="mt-3">
+
+                            @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                                Text = "Sign Up Today!",
+                                Hyperlink = "/Home/SignUp",
+                                FitToText = true,
+                                ChosenColorScheme = "cc-cscheme-white",
+                                ButtonAction = ActionButtonViewModel.Action.CTA
+                            })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="TextImgContainer" class="cc-text-video-band cc-cscheme-white row">
+        <div class="col-12">
+            <div class="container no-padding">
+                <div class="row">
+                    <div class="col-12 col-md-6 cc-text-video-band-left-column no-padding order-2">
+                        <div class="cc-text-video-band-verbiage-container d-flex align-items-center">
+                            <div class="row">
+                                <div class="col-12 cc-text-video-band-header font-bold">
+                                    Expand Your Skills
+                                </div>
+                                <div class="col-12 cc-text-video-band-description">
+                                    <div>We prepare the workforce of today for the opportunities of tomorrow. Enroll in the affordable courses and expand your skill set.</div>
+                                    <div>Our partner companies cover the entire United States.</div>
+                                </div>
+                                <div class="col-12 mt-3">
+
+                                    @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                                        Text = "Join Our Community",
+                                        Hyperlink = "#CommunityCampaignBottomContainer",
+                                        FitToText = true,
+                                        ChosenColorScheme = "cc-cscheme-secondary",
+                                        ButtonAction = ActionButtonViewModel.Action.CTA
+                                    })
+                                </div>
+                                <div class="col-12 mt-2 acct-disclaimer">
+                                    If you already have an account, <a href="/Session/SignIn">login here</a>.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 cc-text-video-band-right-column order-1">
+                        <div class="career-circle-video-container d-flex align-items-center">
+                            <div class="row">
+                                <div class="col-12 no-padding">
+                                    <img src="~/images/skills.png" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="CommunityCampaignBottomContainer" class="row">
+        <div class="col">
+            <div class="container">
+                <div class="row d-flex align-items-center">
+                    <div class="col-12 col-md-6 signup-left-col">
+                        <div class="f-color-white signup-bottom-container-header">Sign Up, it’s Free!</div>
+                        <div class="f-color-white signup-bottom-container-subheader">At CareerCircle Our Focus Is You</div>
+                        <span class="f-color-white">Join CareerCircle to start growing your Circle, learn about training opportunities, industry insights and connecting with the CareerCircle community.</span>
+
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div id="SignUpContainer">
+                            <div id="SignUpContainerHeader">
+                                Create an account to get started
+                            </div>
+                            <div id="SignUpComponentContainer">
+                                @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel
+                                {
+                                    ContactGuid = Model.ContactGuid,
+                                    CampaignGuid = Model.CampaignGuid,
+                                    CampaignPhase = Model.CampaignPhase
+
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<img src="@Model.TrackingImgSource" />
+
+@section Scripts{
+    <script>
+        $("#TextImgContainer .button-container").on("click", function (e) {
+            e.preventDefault();
+            $("#CommunityCampaignBottomContainer").scrollTop()
+            $("#Email").get(0).focus();
+        });
+    </script>
+}
