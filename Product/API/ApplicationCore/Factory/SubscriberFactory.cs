@@ -56,7 +56,24 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             if (subscriber != null)
             {
-                var eligibleCampaigns = _db.Campaign
+                var eligibleCampaigns =
+                    _db.Contact
+                    .Where(co => co.IsDeleted == 0 && co.Subscriber.SubscriberId == subscriber.SubscriberId)
+                    .Join(
+                        _db.CampaignContact.Where(cc => cc.IsDeleted == 0),
+                        co => co.ContactId,
+                        cc => cc.ContactId,
+                        (co, cc) => cc)
+                    .Join(
+                        _db.Campaign.Where(ca => ca.IsDeleted == 0),
+                        cc => cc.CampaignId,
+                        ca => ca.CampaignId,
+                        (cc, ca) => ca)
+                    .Where(ca => ca.StartDate <= DateTime.UtcNow && (!ca.EndDate.HasValue || ca.EndDate.Value >= DateTime.UtcNow))
+                    .ToList();
+                
+                /*
+                var eligibleCampaignsBadSql = _db.Campaign
                     .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.RebateType)
                     .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.CourseVariant)
                     .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.Campaign)
@@ -67,6 +84,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                         // the campaign is active (enrollment dates)
                         && c.StartDate <= DateTime.UtcNow && (!c.EndDate.HasValue || c.EndDate.Value >= DateTime.UtcNow))
                     .ToList();
+                */
 
                 subscriberDto.EligibleCampaigns = _mapper.Map<List<CampaignDto>>(eligibleCampaigns);
 
