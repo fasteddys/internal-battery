@@ -173,11 +173,19 @@ namespace UpDiddyApi
             // Add Polly 
             // Create Policies  
             int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
-            int PollyBreakDurationInMinutes = int.Parse(Configuration["Polly:BreakDurationInMinutes"]);
-            // Define default api policy with async retries and exponential backoff            
-            var ApiGetPolicy = HttpPolicyExtensions
+            int PollyTimeoutInSeconds = int.Parse(Configuration["Polly:PollyTimeoutInSeconds"]);
+
+            // Create a timeout policy that will prevent  api  get calls from taking more that PollyTimeoutInSeconds 
+            // in total.  This timeout is inclusive of the intitial get call and any subsequent polly retries.  For example
+            // if PollyTimeoutInSeconds = 8 and PollyRetries = 5 and a get call responds with an error at 4 seconds, the 
+            // operation will fail after the second retry since the PollyTimeoutInSeconds has been exceeded.
+            var ApiGetTimeoutPolicy = Policy.TimeoutAsync(PollyTimeoutInSeconds);
+            // Create retry policy          
+            var ApiGetRetryPolicy = HttpPolicyExtensions
                 .HandleTransientHttpError()
                 .WaitAndRetryAsync(PollyRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+            // Combine timeout and retry policies to create Get policy       
+            var ApiGetPolicy = ApiGetTimeoutPolicy.WrapAsync(ApiGetRetryPolicy);
 
             // Define a policy without retries for non idempotenic operations
             // FMI: https://www.stevejgordon.co.uk/httpclientfactory-using-polly-for-transient-fault-handling

@@ -9,6 +9,7 @@ using UpDiddyLib.Dto;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading;
 
 namespace UpDiddyApi.Controllers
 {
