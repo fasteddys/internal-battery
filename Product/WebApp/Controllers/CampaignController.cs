@@ -27,6 +27,12 @@ namespace UpDiddy.Controllers
             _configuration = configuration;
         }
 
+        [HttpGet("/MomProject")]
+        public IActionResult MomProject()
+        {
+            return View(new SignUpViewModel());
+        }
+
         [HttpGet]
         [Route("/Community/{CampaignGuid}/{ContactGuid}")]
         public async Task<IActionResult> CampaignAsync(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
