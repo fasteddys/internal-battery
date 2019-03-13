@@ -21,6 +21,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
+using System.Threading;
 
 namespace UpDiddy.Api
 {
@@ -135,6 +136,7 @@ namespace UpDiddy.Api
                 SetCachedValue<IList<TopicDto>>(cacheKey, rval);
             }
             return rval;
+             
         }
 
         public async Task<TopicDto> TopicByIdAsync(int TopicId)
