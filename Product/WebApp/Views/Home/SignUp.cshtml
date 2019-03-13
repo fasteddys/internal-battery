@@ -84,54 +84,60 @@
             <div id="SignupFlowCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
                 <div class="carousel-inner">
                     <div class="carousel-item active carousel-item-first">
-                        <div class="resume-intro-container">
-                            <div>
-                                <h1 id="TypewriterHeader">Hi there...</h1>
-                            </div>
-                            <div>
-                                <h2 id="ResumeUploadHeader">Let's get started by uploading your resume!</h2>
-                            </div>
-                            <form asp-controller="Home" asp-action="UploadResume" enctype="multipart/form-data" id="ResumeUploadForm">
-
-                                <div class="form-group">
-                                    <div id="UploadedResumeText" class="appear-on-resume-attach">
-
-                                    </div>
-                                    <label id="UploadedResumeLabel" for="UploadedResume" class="custom-file-upload">
-                                        <i class="fas fa-file-upload"></i>&nbsp;&nbsp;Choose File
-                                    </label>
-                                    <label id="ChangeResumeLabel" for="UploadedResume" class="custom-file-upload">
-                                        <i class="fas fa-exchange-alt"></i>&nbsp;&nbsp;Change
-                                    </label>
-                                    <input id="hdnConnectionId" type="hidden" />
-                                    <input type="hidden" id="hdnSubscriberGuid" value="@Model.SubscriberGuid" />
-                                    <input id="UploadedResume" type="file" asp-for="Resume" accept=".doc,.docx,.odt,.pdf,.rtf,.tex,.txt,.wks,.wps,.wpd" />
-                                    <input id="SubmitResumeUpload" type="submit" value="Upload" class="appear-on-resume-attach btn-resume-submit">
-
-                                </div>
-                            </form>
-                            <div id="ResumeUploadDisclaimer">
-                                <i class="fas fa-exclamation"></i>&nbsp;Note: clicking "upload" above allows us to create an entry for you in our system, using information extracted from your resume.
-                            </div>
-
-
-                        </div>
-                        <div class="container">
+                        <div class="container h-100">
                             <div class="row">
                                 <div class="col-12">
-                                    <div class="skip-next-container">
-                                        <div id="SkipResumeSlide" class="skip-container animated">
-                                            <a role="button" href="#SignupFlowCarousel" onclick="clearInputForResumeSlide()" data-slide="next">Skip</a>
+                                    <div class="resume-intro-container">
+                                        <div>
+                                            <h1 id="TypewriterHeader">Hi there...</h1>
                                         </div>
-                                        <div id="ResumeNextButton" class="flow-next-button disabled signup-flow-next-button">
-                                            <a role="button" data-slide="next">Next</a>
+                                        <div>
+                                            <h2 id="ResumeUploadHeader">Let's get started by uploading your resume!</h2>
                                         </div>
+                                        <form asp-controller="Home" asp-action="UploadResume" enctype="multipart/form-data" id="ResumeUploadForm">
+
+                                            <div class="form-group">
+                                                <div id="UploadedResumeText" class="appear-on-resume-attach">
+
+                                                </div>
+                                                <label id="UploadedResumeLabel" for="UploadedResume" class="custom-file-upload">
+                                                    <i class="fas fa-file-upload"></i>&nbsp;&nbsp;Choose File
+                                                </label>
+                                                <label id="ChangeResumeLabel" for="UploadedResume" class="custom-file-upload">
+                                                    <i class="fas fa-exchange-alt"></i>&nbsp;&nbsp;Change
+                                                </label>
+                                                <input id="hdnConnectionId" type="hidden" />
+                                                <input type="hidden" id="hdnSubscriberGuid" value="@Model.SubscriberGuid" />
+                                                <input id="UploadedResume" type="file" asp-for="Resume" accept=".doc,.docx,.odt,.pdf,.rtf,.tex,.txt,.wks,.wps,.wpd" />
+                                                <input id="SubmitResumeUpload" type="submit" value="Upload" class="appear-on-resume-attach btn-resume-submit">
+
+                                            </div>
+                                        </form>
+                                        <div id="ResumeUploadDisclaimer">
+                                            <i class="fas fa-exclamation"></i>&nbsp;Note: clicking "upload" above allows us to create an entry for you in our system, using information extracted from your resume.
+                                        </div>
+
 
                                     </div>
                                 </div>
                             </div>
+                            <div class="container w-100 control-wrapper text-right">
+                                <div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="skip-next-container">
+                                                <div id="SkipResumeSlide" class="skip-container animated">
+                                                    <a role="button" href="#SignupFlowCarousel" onclick="clearInputForResumeSlide()" data-slide="next">Skip</a>
+                                                </div>
+                                                <div id="ResumeNextButton" class="flow-next-button disabled signup-flow-next-button">
+                                                    <a role="button" data-slide="next">Next</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-
                     </div>
                     @*
                         <div class="carousel-item carousel-item-second">
@@ -162,26 +168,33 @@
                         </div>
                     *@
                     <div class="carousel-item">
-                        <div class="name-container">
-                            <div>
-                                <h2>Tell us a little about yourself. What's your name?</h2>
-                                <input form="SignupForm" type="text" id="FirstNameInput" asp-for="FirstName" data-container-name="name" placeholder="First name" autocomplete="false" />
-                                <input form="SignupForm" type="text" id="LastNameInput" asp-for="LastName" data-container-name="name" placeholder="Last name" autocomplete="false" />
-                                <div class="input-disclaimer">Please enter a valid first and last name, or leave this slide blank.</div>
-                            </div>
-
-                        </div>
                         <div class="container">
-                            <div class="row">
+                            <div class="row no-gutters">
                                 <div class="col-12">
-                                    <div class="previous-container animated">
-                                        <div class="flow-prev-button">
-                                            <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                                    <div class="name-container">
+                                        <div>
+                                            <h2>Tell us a little about yourself. What's your name?</h2>
+                                            <input form="SignupForm" type="text" id="FirstNameInput" asp-for="FirstName" data-container-name="name" placeholder="First name" autocomplete="false" />
+                                            <input form="SignupForm" type="text" id="LastNameInput" asp-for="LastName" data-container-name="name" placeholder="Last name" autocomplete="false" />
+                                            <div class="input-disclaimer">Please enter a valid first and last name, or leave this slide blank.</div>
                                         </div>
                                     </div>
-                                    <div class="skip-next-container">
-                                        <div class="flow-next-button signup-flow-next-button">
-                                            <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
+                                </div>
+                            </div>
+                            <div class="control-wrapper container w-100 text-right">
+                                <div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="previous-container animated">
+                                                <div class="flow-prev-button">
+                                                    <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                                                </div>
+                                            </div>
+                                            <div class="skip-next-container">
+                                                <div class="flow-next-button signup-flow-next-button">
+                                                    <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -190,41 +203,43 @@
                     </div>
 
                     <div class="carousel-item">
-                        <div class="phone-number-container">
-                            <div>
-                                <h2>What's the best phone number to reach you?</h2>
-                                <div class="phone-number-input-container">
-                                    <input form="SignupForm" type="text" class="form-control phone-number-input" maxlength="14" placeholder="(###) ###-####" data-container-name="phone-number" asp-for="FormattedPhone" />
-                                    <div class="input-disclaimer">Please enter a valid phone number beginning with 2-9, or leave this slide blank.</div>
-                                </div>
-
-                            </div>
-                        </div>
                         <div class="container">
-                            <div class="row">
+                            <div class="row no-gutters">
                                 <div class="col-12">
-                                    <div class="previous-container animated">
-                                        <div class="flow-prev-button">
-                                            <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                                    <div class="phone-number-container">
+                                        <div>
+                                            <h2>What's the best phone number to reach you?</h2>
+                                            <div class="phone-number-input-container">
+                                                <input form="SignupForm" type="text" class="form-control phone-number-input" maxlength="14" placeholder="(###) ###-####" data-container-name="phone-number" asp-for="FormattedPhone" />
+                                                <div class="input-disclaimer">Please enter a valid phone number beginning with 2-9, or leave this slide blank.</div>
+                                            </div>
+
                                         </div>
                                     </div>
-                                    <div class="skip-next-container">
-                                        <div class="flow-next-button signup-flow-next-button">
-                                            <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
-                                        </div>
+                                </div>
+                            </div>
+                            <div class="control-wrapper container w-100 text-right">
+                                <div class="previous-container animated">
+                                    <div class="flow-prev-button">
+                                        <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                                    </div>
+                                </div>
+                                <div class="skip-next-container">
+                                    <div class="flow-next-button signup-flow-next-button">
+                                        <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <div class="address-container">
-                            <div>
-                                <h2>What's your address?</h2>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="container">
-                                            <div class="row">
+                        <div class="container">
+                            <div class="row no-gutters">
+                                <div class="col-12">
+                                    <div class="address-container">
+                                        <div>
+                                            <h2>What's your address?</h2>
+                                            <div class="row no-gutters">
                                                 <div class="col-12">
                                                     <div class="address-format-container">
                                                         <div class="row">
@@ -250,7 +265,7 @@
                                                             </div>
 
                                                         </div>
-                                                        <div class="row">
+                                                        <div class="row no-gutters mt-0">
                                                             <div class="col-12">
                                                                 <div class="input-disclaimer">Please enter your full address, or leave this slide blank.<br />Note: to remove your state, select the "Select State" option.</div>
                                                             </div>
@@ -262,44 +277,43 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="previous-container animated">
-                                        <div class="flow-prev-button">
-                                            <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
-                                        </div>
+                            <div class="control-wrapper container w-100 text-right">
+                                <div class="previous-container animated">
+                                    <div class="flow-prev-button">
+                                        <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
                                     </div>
-                                    <div class="skip-next-container">
-                                        <div class="flow-next-button signup-flow-next-button">
-                                            <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
-                                        </div>
+                                </div>
+                                <div class="skip-next-container">
+                                    <div class="flow-next-button signup-flow-next-button">
+                                        <a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <div class="skills-container">
-                            <div>
-                                <h2>What skills could you bring to a team?</h2>
-                                <input form="SignupForm" type="text" asp-for="SelectedSkills" placeholder="Type a skill..." />
-                            </div>
-                        </div>
                         <div class="container">
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="previous-container animated">
-                                        <div class="flow-prev-button">
-                                            <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                            <div class="row no-gutters">
+                                <div class="col-md-10 offset-md-1 col-sm-10 offset-sm-1 col-lg-10 offset-lg-1">
+                                    <div class="skills-container">
+                                        <div>
+                                            <h2>What skills could you bring to a team?</h2>
+                                            <input form="SignupForm" type="text" asp-for="SelectedSkills" class="pt-3" placeholder="Type a skill..." />
+                                            <small class="form-text text-muted">Type your skills in the box above.</small>
                                         </div>
                                     </div>
-                                    <div class="skip-next-container submit">
-                                        <div class="flow-next-button signup-flow-next-button">
-                                            @*<a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>*@
-                                            <input form="SignupForm" type="submit" value="Finish" class="btn-signup-submit">
-                                        </div>
+                                </div>
+                            </div>
+                            <div class="control-wrapper container w-100 text-right">
+                                <div class="previous-container animated">
+                                    <div class="flow-prev-button">
+                                        <a href="#SignupFlowCarousel" role="button" data-slide="prev">Previous</a>
+                                    </div>
+                                </div>
+                                <div class="skip-next-container submit">
+                                    <div class="flow-next-button signup-flow-next-button finish">
+                                        @*<a role="button" href="#SignupFlowCarousel" data-slide="next">Next</a>*@
+                                        <input form="SignupForm" type="submit" value="Finish" class="btn-signup-submit">
                                     </div>
                                 </div>
                             </div>

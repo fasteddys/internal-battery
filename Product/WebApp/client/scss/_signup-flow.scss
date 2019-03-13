@@ -62,8 +62,15 @@
             font-size: 1.4rem;
         }
 
+        .skills-container {
+            .selectize-control {
+                .selectize-input {
+                    border: 2px solid $color-secondary;
+                }
+            }
+        }
+
         .signup-flow-row {
-            overflow: hidden;
 
 
 
@@ -73,10 +80,17 @@
                 text-align: center;
 
                 .carousel {
-                    padding-top: 5rem;
-
+                    
                     .carousel-item {
-                        padding-bottom: 10rem;
+                        padding-bottom: 50px;
+                        overflow-y: auto;
+                        padding-top: 10%;
+
+                        .control-wrapper {
+                            position: absolute;
+                            bottom: 0;
+                            left: 0;
+                        }
 
                         .name-container,
                         .phone-number-container,
@@ -108,7 +122,6 @@
                             }
 
                             .input-disclaimer {
-                                margin-top: 2rem;
                                 display: none;
                                 font-size: .75rem;
                             }
@@ -152,22 +165,6 @@
                                         outline: none;
                                         box-shadow: none;
                                     }
-                                }
-                            }
-                        }
-
-                        .skills-container {
-                            .selectize-input {
-                                width: 14rem;
-                                margin-top: 3rem;
-                                border: 2px solid $color-secondary;
-
-                                > div {
-                                    background-color: $color-secondary;
-                                    background-image: none;
-                                    border: 1px solid $color-secondary;
-                                    padding: .5rem 1rem;
-                                    font-size: .75rem;
                                 }
                             }
                         }
@@ -279,20 +276,11 @@
                                 padding: 1.25rem;
                             }
                         }
-
-                        > .container {
-                            position: absolute;
-                            bottom: 0;
-                            left: 0;
-                            right: 0;
-                        }
                     }
                 }
 
                 .previous-container {
-                    position: absolute;
-                    bottom: .5rem;
-                    left: 1rem;
+                    display: inline-block;
 
                     > div {
                         display: inline-block;
@@ -305,6 +293,7 @@
 
                     .flow-prev-button {
                         @include button-with-box-shadow;
+                        background-color: $color-primary;
                         padding: 6px 0;
 
                         a {
@@ -314,10 +303,7 @@
                 }
 
                 .skip-next-container {
-                    position: absolute;
-                    bottom: .5rem;
-                    right: 1rem;
-
+                    display: inline-block;
                     a {
                         color: $color-white;
                     }
@@ -332,6 +318,12 @@
                         @include button-with-box-shadow;
                         padding: 6px 0;
                         margin-left: 1rem;
+
+                        &.finish {
+                            .btn-signup-submit {
+                                background-color: $color-tertiary;
+                            }
+                        }
 
                         a {
                             padding: 7px 12px;
@@ -366,7 +358,7 @@
 
 // Extra Small Styles
 @media (min-width: 320px) {
-    
+
 }
 
 // Small Styles
@@ -430,7 +422,6 @@
         }
 
         .signup-flow-row {
-            overflow: hidden;
 
 
 
@@ -440,10 +431,8 @@
                 text-align: center;
 
                 .carousel {
-                    padding-top: 5rem;
 
                     .carousel-item {
-                        min-height: 170px;
 
                         .name-container,
                         .phone-number-container,
@@ -491,22 +480,6 @@
                                         outline: none;
                                         box-shadow: none;
                                     }
-                                }
-                            }
-                        }
-
-                        .skills-container {
-                            .selectize-input {
-                                width: 14rem;
-                                margin-top: 3rem;
-                                border: 2px solid $color-secondary;
-
-                                > div {
-                                    background-color: $color-secondary;
-                                    background-image: none;
-                                    border: 1px solid $color-secondary;
-                                    padding: .5rem 1rem;
-                                    font-size: 1rem;
                                 }
                             }
                         }
@@ -627,17 +600,10 @@
                                 padding: 1.25rem;
                             }
                         }
-
-                        > .container {
-                            margin-top: 10rem;
-                        }
                     }
                 }
 
                 .previous-container {
-                    position: absolute;
-                    bottom: .5rem;
-                    left: 1rem;
 
                     > div {
                         display: inline-block;
@@ -648,20 +614,9 @@
                         }
                     }
 
-                    .flow-prev-button {
-                        @include button-with-box-shadow;
-                        padding: 6px 0;
-
-                        a {
-                            padding: 7px 12px;
-                        }
-                    }
                 }
 
                 .skip-next-container {
-                    position: absolute;
-                    bottom: .5rem;
-                    right: 1rem;
 
                     a {
                         color: $color-white;
@@ -678,17 +633,6 @@
                         }
                     }
 
-                    .flow-next-button {
-                        @include button-with-box-shadow;
-                        padding: 6px 0;
-                        margin-left: 1rem;
-
-
-
-                        a {
-                            padding: 7px 12px;
-                        }
-                    }
 
                     .btn-signup-submit {
                         @include button-with-box-shadow;
@@ -767,7 +711,6 @@
         }
 
         .signup-flow-row {
-            overflow: hidden;
 
 
 
@@ -777,10 +720,8 @@
                 text-align: center;
 
                 .carousel {
-                    padding-top: 15rem;
 
                     .carousel-item {
-                        min-height: 170px;
                         
                         .name-container,
                         .phone-number-container,
@@ -830,22 +771,6 @@
                                         outline: none;
                                         box-shadow: none;
                                     }
-                                }
-                            }
-                        }
-
-                        .skills-container {
-                            .selectize-input {
-                                width: 40rem;
-                                margin-top: 3rem;
-                                border: 2px solid $color-secondary;
-
-                                > div {
-                                    background-color: $color-secondary;
-                                    background-image: none;
-                                    border: 1px solid $color-secondary;
-                                    padding: .5rem 1rem;
-                                    font-size: 1rem;
                                 }
                             }
                         }
@@ -935,17 +860,10 @@
                                 @include button-with-box-shadow;
                             }
                         }
-
-                        > .container {
-                            margin-top: 15rem;
-                        }
                     }
                 }
 
                 .previous-container {
-                    position: absolute;
-                    bottom: .5rem;
-                    left: 1rem;
 
                     > div {
                         display: inline-block;
@@ -955,21 +873,9 @@
                             color: $color-white;
                         }
                     }
-
-                    .flow-prev-button {
-                        @include button-with-box-shadow;
-                        padding: 6px 0;
-
-                        a {
-                            padding: 7px 12px;
-                        }
-                    }
                 }
 
                 .skip-next-container {
-                    position: absolute;
-                    bottom: .5rem;
-                    right: 1rem;
 
                     a {
                         color: $color-white;
@@ -978,16 +884,6 @@
                     > div {
                         display: inline-block;
                         cursor: pointer;
-                    }
-
-                    .flow-next-button {
-                        @include button-with-box-shadow;
-                        padding: 6px 0;
-                        margin-left: 1rem;
-
-                        a {
-                            padding: 7px 12px;
-                        }
                     }
 
                     .btn-signup-submit {
@@ -1018,7 +914,6 @@
         }
 
         .signup-flow-row {
-            overflow: hidden;
 
 
 
@@ -1028,11 +923,8 @@
                 text-align: center;
 
                 .carousel {
-                    padding-top: 15rem;
 
                     .carousel-item {
-                        min-height: 170px;
-                        padding-bottom: 6rem;
                         .name-container,
                         .phone-number-container,
                         .address-container {
@@ -1082,12 +974,6 @@
                                         box-shadow: none;
                                     }
                                 }
-                            }
-                        }
-
-                        .skills-container {
-                            .selectize-input {
-                                width: 50rem;
                             }
                         }
                     }
@@ -1105,7 +991,6 @@
         }
 
         .signup-flow-row {
-            overflow: hidden;
 
 
 
@@ -1115,10 +1000,8 @@
                 text-align: center;
 
                 .carousel {
-                    padding-top: 15rem;
 
                     .carousel-item {
-                        min-height: 170px;
 
                         .name-container,
                         .phone-number-container,
@@ -1169,12 +1052,6 @@
                                         box-shadow: none;
                                     }
                                 }
-                            }
-                        }
-
-                        .skills-container {
-                            .selectize-input {
-                                width: 62rem;
                             }
                         }
                     }
