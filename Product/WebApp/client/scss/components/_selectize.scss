@@ -12,6 +12,10 @@
                 font-size: .75rem;
                 font-size: 13px;
                 font-weight: 400;
+
+                @media (max-width: 850px) {
+                    padding: .5rem 10px;
+                }
             }
         }
     }
@@ -20,11 +24,19 @@
         .selectize-input {
             [data-value] {
                 padding-right: 25px !important;
-                
                 .remove {
                     padding-top: 5px;
                     width: 20px;
                     border-color: $color-primary;
+                }
+
+                @media (max-width: 850px) {
+                    padding-right: 40px !important;
+
+                    .remove {
+                        padding-top: 8px;
+                        width: 30px;
+                    }
                 }
             }
         }
