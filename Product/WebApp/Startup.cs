@@ -114,7 +114,7 @@ namespace UpDiddy
             int PollyTimeoutInSeconds = int.Parse(Configuration["Polly:PollyTimeoutInSeconds"]);
 
             // Create a timeout policy that will prevent  api  get calls from taking more that PollyTimeoutInSeconds 
-            // in total.  This timeout is inclusive of the intial get call and any subsugent polly retries.  For example
+            // in total.  This timeout is inclusive of the intitial get call and any subsequent polly retries.  For example
             // if PollyTimeoutInSeconds = 8 and PollyRetries = 5 and a get call responds with an error at 4 seconds, the 
             // operation will fail after the second retry since the PollyTimeoutInSeconds has been exceeded.
             var ApiGetTimeoutPolicy = Policy.TimeoutAsync(PollyTimeoutInSeconds);
