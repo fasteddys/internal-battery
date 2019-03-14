@@ -88,13 +88,21 @@
                                 Create an account to get started
                             </div>
                             <div id="SignUpComponentContainer">
-                                @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel
-                                {
-                                    ContactGuid = Model.ContactGuid,
-                                    CampaignGuid = Model.CampaignGuid,
-                                    CampaignPhase = Model.CampaignPhase
-
-                                })
+                                @{ 
+                                    SignUpViewModel suvm = new SignUpViewModel();
+                                    if (Model.IsExpressCampaign)
+                                    {
+                                        suvm.IsExpressSignUp = true;
+                                    }
+                                    else
+                                    {
+                                        suvm.ContactGuid = Model.ContactGuid;
+                                        suvm.CampaignGuid = Model.CampaignGuid;
+                                        suvm.CampaignPhase = Model.CampaignPhase;
+                                        suvm.IsExpressSignUp = false;
+                                    }
+                                }
+                                @Html.Partial("Components/Authentication/_SignUp", suvm)
                             </div>
                         </div>
                     </div>

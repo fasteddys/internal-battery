@@ -30,13 +30,21 @@ namespace UpDiddy.Controllers
         [HttpGet("/MomProject")]
         public IActionResult MomProject()
         {
-            return View(new SignUpViewModel());
+            return View();
         }
 
         [HttpGet]
-        [Route("/Community/{CampaignGuid}/{ContactGuid}")]
-        public async Task<IActionResult> CampaignAsync(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
+        [Route("/Community/{CampaignGuid?}/{ContactGuid?}")]
+        public async Task<IActionResult> CampaignAsync(Guid CampaignGuid, Guid ContactGuid)
         {
+            if (CampaignGuid == Guid.Empty || ContactGuid == Guid.Empty)
+            {
+                return View("Community", new CampaignViewModel()
+                {
+                    IsExpressCampaign = true
+                });
+            }
+
             // capture any campaign phase information that has been passed.  
             string CampaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
 
@@ -65,7 +73,8 @@ namespace UpDiddy.Controllers
                     ContactGuid = ContactGuid,
                     TrackingImgSource = _TrackingImgSource,
                     CampaignCourse = Course,
-                    CampaignPhase = CampaignPhase
+                    CampaignPhase = CampaignPhase,
+                    IsExpressCampaign = false
                 };
                 return View("Community", cvm);
             }
