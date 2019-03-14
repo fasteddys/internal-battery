@@ -171,6 +171,7 @@ namespace UpDiddy.Controllers
                 LastName = this.subscriber?.LastName,
                 FormattedPhone = this.subscriber?.PhoneNumber,
                 Email = this.subscriber?.Email,
+                IsVerified = this.subscriber.IsVerified,
                 Address = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.Address),
                 City = UpDiddyLib.Helpers.Utils.ToTitleCase(this.subscriber?.City),
                 PostalCode = this.subscriber?.PostalCode,
@@ -335,6 +336,13 @@ namespace UpDiddy.Controllers
                 // todo: implement logic to tell user modelstate was invalid
                 return RedirectToAction("Profile");
             }
+        }
+
+        [Authorize]
+        [HttpGet("/email/confirm-verification/{token}")]
+        public async Task<IActionResult> VerifyEmailAsync(Guid token)
+        {
+            return View("EmailVerification/Success");
         }
 
         [HttpPost]
@@ -806,8 +814,5 @@ namespace UpDiddy.Controllers
 
 
         }
-
-
-
     }
 }

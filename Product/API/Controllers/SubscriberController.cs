@@ -561,6 +561,49 @@ namespace UpDiddyApi.Controllers
             return Ok();
         }
 
+        [HttpPost("/api/[controller]/request-verification")]
+        public async Task<IActionResult> RequestVerificationAsync()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                return BadRequest();
+
+            Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefault();
+            if (subscriber == null || subscriber.IsVerified)
+                return BadRequest();
+
+            // todo: move ths logic
+            if (subscriber.EmailVerification == null)
+                subscriber.EmailVerification = new EmailVerification();
+
+            if (subscriber.EmailVerification.ExpirationDateTime > DateTime.UtcNow)
+                subscriber.EmailVerification.RefreshToken();
+
+            await _db.SaveChangesAsync();
+
+            return Ok(new { message = "Hello from api. Request granted", emailVerification = subscriber.EmailVerification });
+        }
+
+        [HttpPost("/api/[controller]/verify-email/{token}")]
+        public async Task<IActionResult> Verify(Guid Token)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                return BadRequest();
+
+            Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid && !t.IsVerified).FirstOrDefault();
+            if (subscriber == null || subscriber.IsVerified)
+                return BadRequest();
+
+            if (!subscriber.EmailVerification.Token.Equals(Token) || subscriber.EmailVerification.ExpirationDateTime > DateTime.UtcNow)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid verification token." });
+
+            subscriber.IsVerified = true;
+            await _db.SaveChangesAsync();
+
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Verification successful." });
+        }
+
         /// <summary>
         /// This will verify the contact guid to email, make sure user does not exist already, and create one if it doesn't exist
         /// </summary>

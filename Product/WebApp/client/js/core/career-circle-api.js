@@ -59,6 +59,15 @@ var CareerCircleAPI = (function (apiUrl) {
         return _http.get('/profile');
     };
 
+    var deleteFile = function (fileId) {
+        return new Promise(function(resolve) {
+            getToken().then(function (jwt) {
+                var path = '/subscriber/' + jwt.UniqueId + '/file/' + fileId;
+                resolve(_http.delete(path));
+            });
+        });
+    }
+
     var uploadResume = function (resume, parseResume) {
         var formData = new FormData();
         formData.append("resume", resume);
@@ -109,13 +118,8 @@ var CareerCircleAPI = (function (apiUrl) {
         return await _http.get('/partners');
     }
 
-    var deleteFile = function (fileId) {
-        return new Promise(function(resolve) {
-            getToken().then(function (jwt) {
-                var path = '/subscriber/' + jwt.UniqueId + '/file/' + fileId;
-                resolve(_http.delete(path));
-            });
-        });
+    var requestVerification = function () {
+        return _http.post('/subscriber/request-verification');
     }
 
     return {
@@ -124,6 +128,7 @@ var CareerCircleAPI = (function (apiUrl) {
         deleteFile: deleteFile,
         signOut: signOut,
         getContacts: getContacts,
-        getPartners: getPartners
+        getPartners: getPartners,
+        requestVerification: requestVerification
     };
 })(API_URL);

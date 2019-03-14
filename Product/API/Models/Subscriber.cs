@@ -15,6 +15,7 @@ namespace UpDiddyApi.Models
         public string LastName { get; set; }
         [Required]
         public string Email { get; set; }
+        public bool IsVerified { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
@@ -36,5 +37,6 @@ namespace UpDiddyApi.Models
         public List<SubscriberEducationHistory> SubscriberEducationHistory { get; } = new List<SubscriberEducationHistory>();
         public List<SubscriberWorkHistory> SubscriberWorkHistory { get; } = new List<SubscriberWorkHistory>();
         public List<SubscriberFile> SubscriberFile { get; set; } = new List<SubscriberFile>();
+        public EmailVerification EmailVerification {get; set;}
     }
 }
