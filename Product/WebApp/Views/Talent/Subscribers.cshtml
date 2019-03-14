@@ -29,6 +29,12 @@
                     <label for="GridSearch" class="sr-only">Search</label>
                     <input id="GridSearch" class="form-control" placeholder="Search" />
                 </div>
+                <label for="select-referral">Referral:</label>
+                <select id="select-referral" placeholder="Select a Referral Type:">
+                    <option value="" selected="selected"></option>
+                    <option value="None">None</option>
+                    <option value="ClinicalFastTrack">ClinicalFastTrack</option>
+                </select>
                 <button class="btn btn-primary" onclick="doSearch(false);">Search</button>
                 <button class="btn btn-primary" onclick="doSearch(true);">Reset</button>
             </div>
@@ -41,17 +47,19 @@
     </div>
     @section Scripts{
         <script type="text/javascript">
-            window.onload = function () {
-                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-            }
+        var url = '@Url.Action("Subscriber", "Talent")';
 
-            function doSearch(isReset) {
-                if (isReset)
-                    document.getElementById('GridSearch').value = '';
-                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-                var search = document.getElementById('GridSearch').value;
-                grid.query.set('searchQuery', encodeURIComponent(search));
-                grid.reload();
-            }
+        window.onload = function () {
+            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+        }
+
+        function doSearch(isReset) {
+            if (isReset)
+                document.getElementById('GridSearch').value = '';
+            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+            var search = document.getElementById('GridSearch').value;
+            grid.query.set('searchQuery', encodeURIComponent(search));
+            grid.reload();
+        }
         </script>}
 </div>

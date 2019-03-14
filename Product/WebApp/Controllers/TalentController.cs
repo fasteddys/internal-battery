@@ -10,7 +10,7 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
 {
-    [Authorize(Policy= "IsRecruiterPolicy")]
+    [Authorize(Policy = "IsRecruiterPolicy")]
     public class TalentController : Controller
     {
         private IApi _api;
@@ -30,7 +30,7 @@ namespace UpDiddy.Controllers
         [HttpGet]
         public async Task<PartialViewResult> SubscriberGrid(String searchQuery)
         {
-            IList<SubscriberDto> subscribers = await _api.SubscriberSearchAsync(searchQuery);
+            IList<SubscriberDto> subscribers = await _api.SubscriberSearchAsync("None", searchQuery);
             return PartialView("_SubscriberGrid", subscribers);
         }
 
@@ -63,6 +63,15 @@ namespace UpDiddy.Controllers
             };
 
             return View("Subscriber", subscriberViewModel);
+        }
+
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [HttpDelete]
+        [Route("/Talent/Subscriber/{subscriberGuid}")]
+        public async Task<IActionResult> DeleteSubscriberAsync(Guid subscriberGuid)
+        {
+            var isSubscriberDeleted = await _api.DeleteSubscriberAsync(subscriberGuid);
+            return new JsonResult(isSubscriberDeleted);
         }
     }
 }

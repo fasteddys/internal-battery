@@ -2383,7 +2383,7 @@ namespace UpDiddyApi.Migrations
             modelBuilder.Entity("UpDiddyApi.Models.PartnerContact", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Contact", "Contact")
-                        .WithMany()
+                        .WithMany("PartnerContacts")
                         .HasForeignKey("ContactId")
                         .OnDelete(DeleteBehavior.Cascade);
 
