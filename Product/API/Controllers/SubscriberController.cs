@@ -677,7 +677,7 @@ namespace UpDiddyApi.Controllers
                 {
                     transaction.Rollback();
                     _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Error occured while attempting save Subscriber and contact DB updates for {@ContactGuid} (email: {@Email}). Exception: {@Exception}", contactGuid, signUpDto.email, ex);
-                    return StatusCode(500);
+                    return StatusCode(500, new BasicResponseDto() { StatusCode = 500, Description = "An error occured while attempting to create an account for you." });
                 }
             }
 
@@ -708,7 +708,7 @@ namespace UpDiddyApi.Controllers
                 catch (Exception ex)
                 {
                     _syslog.Log(LogLevel.Error, "SubscriberController.ExpressSignUp:: Error occured while attempting to create a user in Azure Active Directory. Exception: {@Exception}", ex);
-                    return StatusCode(500);
+                    return StatusCode(500, new BasicResponseDto() { StatusCode = 500, Description = "An error occured while attempting to create an account for you." });
                 }
             }
 
