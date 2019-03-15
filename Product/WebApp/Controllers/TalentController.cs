@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json.Linq;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
@@ -23,14 +25,37 @@ namespace UpDiddy.Controllers
         [HttpGet]
         public ViewResult Subscribers()
         {
-            return View();
+            var subscriberSourcesDto = _api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);
+
+            var selectListItems = subscriberSourcesDto.Select(ss => new SelectListItem()
+            {
+                Text = $"{ss.Referrer} ({ss.Count})",
+                Value = ss.Referrer
+            })
+            .AsEnumerable();
+
+            return View(new TalentSubscriberViewModel() { SubscriberSources = selectListItems });
         }
 
         [Authorize]
         [HttpGet]
-        public async Task<PartialViewResult> SubscriberGrid(String searchQuery)
+        public async Task<PartialViewResult> SubscriberGrid(string searchAndFilter)
         {
-            IList<SubscriberDto> subscribers = await _api.SubscriberSearchAsync("None", searchQuery);
+            string searchFilter;
+            string searchQuery;
+
+            if (searchAndFilter != null)
+            {
+                var jObject = JObject.Parse(searchAndFilter);
+                searchFilter = jObject["searchFilter"].Value<string>();
+                searchQuery = jObject["searchQuery"].Value<string>();
+            }
+            else
+            {
+                searchFilter = "any";
+                searchQuery = string.Empty;
+            }
+            IList<SubscriberDto> subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery);
             return PartialView("_SubscriberGrid", subscribers);
         }
 

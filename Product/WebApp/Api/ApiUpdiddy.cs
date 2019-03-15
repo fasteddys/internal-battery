@@ -724,6 +724,11 @@ namespace UpDiddy.Api
             return await GetAsync<IList<SubscriberDto>>($"subscriber/search/{searchFilter}/{searchQuery}");
         }
 
+        public async Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync()
+        {
+            return await GetAsync<IList<SubscriberSourceDto>>("subscriber/sources");
+        }
+
         private async Task<SubscriberDto> _SubscriberAsync(Guid subscriberGuid)
         {
             return await GetAsync<SubscriberDto>($"subscriber/{subscriberGuid}");

@@ -811,16 +811,17 @@ namespace UpDiddyApi.Controllers
             return Json(new { groups = response });
         }
 
-        [HttpGet("/api/[controller]/search/{searchFilter}/{searchQuery}")]
+        [HttpGet("/api/[controller]/search/{searchFilter}/{searchQuery?}")]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
-        public IActionResult Search(string searchFilter, string searchQuery)
+        public IActionResult Search(string searchFilter, string searchQuery = null)
         {
             searchQuery = HttpUtility.UrlDecode(searchQuery);
+            searchFilter = HttpUtility.UrlDecode(searchFilter);
 
-            var filter = new SqlParameter("@Filter", searchFilter);
-            var query = new SqlParameter("@Query", searchQuery);
+            var filter = new SqlParameter("@Filter", searchFilter.ToLower() == "any" ? string.Empty : searchFilter);
+            var query = new SqlParameter("@Query", searchQuery == null ? string.Empty : searchQuery);
             var spParams = new object[] { filter, query };
-            
+
             var result = _db.SubscriberSearch.FromSql("[dbo].[System_Search_Subscribers] @Filter, @Query", spParams)
                 .ProjectTo<SubscriberDto>(_mapper.ConfigurationProvider)
                 .ToList();
@@ -828,19 +829,11 @@ namespace UpDiddyApi.Controllers
             return Json(result);
         }
 
-        [HttpGet("/api/[controller]/search")]
-        [Authorize(Policy = "IsRecruiterOrAdmin")]
-        public IActionResult Search()
+        [Authorize]
+        [HttpGet("/api/[controller]/sources")]
+        public IActionResult GetSubscriberSources()
         {
-            List<Subscriber> subscribers = _db.Subscriber
-                .Where(s => s.IsDeleted == 0)
-                .Include(s => s.SubscriberSkills)
-                .ThenInclude(s => s.Skill)
-                .Include(s => s.State)
-                .ThenInclude(s => s.Country)
-                .ToList();
-
-            return Json(_mapper.Map<List<SubscriberDto>>(subscribers));
+            return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceDto>(_mapper.ConfigurationProvider).ToList());
         }
 
         // todo: add security to check token to this route

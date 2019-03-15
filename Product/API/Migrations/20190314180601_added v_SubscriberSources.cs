@@ -36,6 +36,10 @@ AS
 	SELECT Source, Referrer, Count(1) [Count]
 	FROM subscriberSources
 	GROUP BY Source, Referrer
+	UNION ALL
+	SELECT ''Any'', ''Any'', COUNT(s.SubscriberId)
+	FROM Subscriber s WITH(NOLOCK) 
+	WHERE s.IsDeleted = 0
 ')
             ");
         }

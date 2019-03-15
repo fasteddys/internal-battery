@@ -22,13 +22,13 @@
             columns.Add(model => model.Email).Sortable(true).Titled("Email");
             columns.Add(model => model.PhoneNumber).Sortable(true).Titled("Phone").RenderedAs(model => Utils.FormatPhoneNumber(model.PhoneNumber));
             columns.Add(model => model.City).Sortable(true).Titled("City");
-            columns.Add(model => model.State.Name).Titled("State");
+            columns.Add(model => model.State.Name).Titled("State").Sortable(true).Filterable(true);
             columns.Add(model => model.ModifyDate).Sortable(true).Titled("Last Modified").RenderedAs(model => model.ModifyDate.HasValue ? model.ModifyDate.Value.ToShortDateString() : string.Empty);
             columns.Add(model => $"<a href=\"Subscriber/{model.SubscriberGuid}\"><i class=\"far fa-eye\"></i></a>").Titled("View").Encoded(false).AppendCss("text-center");
             if (isCareerCircleAdmin)
                 columns.Add(model => $"<a href=\"javascript:deleteSubscriber('{model.SubscriberGuid}');\"><i class=\"fa fa-trash\"></i></a>").Titled("Delete").Encoded(false).AppendCss("text-center");
         })
-        .AppendCss("table table-primary table-striped list-grid")
+        .AppendCss("table table-primary table-striped")
         .Empty("No data found")
         .Pageable(pager =>
         {
@@ -36,12 +36,5 @@
             pager.ShowPageSizes = true;
             pager.RowsPerPage = 20;
         })
+        .AppendCss("list-grid")
 )
-
-@section Scripts{
-    <style>
-        .list-grid {
-            font-size: 12px;
-        }
-    </style>
-}

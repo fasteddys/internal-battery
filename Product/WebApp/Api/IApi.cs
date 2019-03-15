@@ -60,6 +60,7 @@ namespace UpDiddy.Api
 
         #region TalentPortal
         Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery);
+        Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync();
         #endregion
         #region AdminPortal
         Task<BasicResponseDto> UpdateEntitySkillsAsync(EntitySkillDto entitySkillDto);

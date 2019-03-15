@@ -3,8 +3,7 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
-@model IEnumerable<SubscriberDto>
-
+@model TalentSubscriberViewModel
 <div class="container-fluid bg-color-primary">
     <div class="container">
         <div class="row">
@@ -29,12 +28,8 @@
                     <label for="GridSearch" class="sr-only">Search</label>
                     <input id="GridSearch" class="form-control" placeholder="Search" />
                 </div>
-                <label for="select-referral">Referral:</label>
-                <select id="select-referral" placeholder="Select a Referral Type:">
-                    <option value="" selected="selected"></option>
-                    <option value="None">None</option>
-                    <option value="ClinicalFastTrack">ClinicalFastTrack</option>
-                </select>
+                <label for="select-filter">Subscriber Sources:</label>
+                @Html.DropDownListFor(model => model.SelectedSubscriberSource, Model.SubscriberSources, new { @class = "form-control" })
                 <button class="btn btn-primary" onclick="doSearch(false);">Search</button>
                 <button class="btn btn-primary" onclick="doSearch(true);">Reset</button>
             </div>
@@ -47,19 +42,30 @@
     </div>
     @section Scripts{
         <script type="text/javascript">
-        var url = '@Url.Action("Subscriber", "Talent")';
+            var url = '@Url.Action("Subscriber", "Talent")';
 
-        window.onload = function () {
-            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-        }
+            window.onload = function () {
+                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+            }
 
-        function doSearch(isReset) {
-            if (isReset)
-                document.getElementById('GridSearch').value = '';
-            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-            var search = document.getElementById('GridSearch').value;
-            grid.query.set('searchQuery', encodeURIComponent(search));
-            grid.reload();
+            function doSearch(isReset) {
+                if (isReset)
+                    document.getElementById('GridSearch').value = '';
+                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                var search = document.getElementById('GridSearch').value;
+                var searchAndFilter = {
+                    searchFilter: encodeURIComponent(document.getElementById('SelectedSubscriberSource').value),
+                    searchQuery: encodeURIComponent(search)
+                };
+                // combining the filter and search because of a limitation with the mvc grid
+                grid.query.set('searchAndFilter', JSON.stringify(searchAndFilter));
+                grid.reload();
+            }
+        </script>
+        <style>
+            .list-grid {
+                font-size: 12px;
+            }
+        </style>
         }
-        </script>}
-</div>
+    </div>
