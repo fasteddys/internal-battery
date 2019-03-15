@@ -378,6 +378,7 @@ namespace UpDiddy.Api
             }
             return rval;
         }
+        
 
         #endregion
 
@@ -523,6 +524,39 @@ namespace UpDiddy.Api
         public async Task<IList<CampaignStatisticDto>> CampaignStatisticsSearchAsync()
         {
             return await GetAsync<IList<CampaignStatisticDto>>("marketing/campaign-statistic");
+        }
+
+        public async Task<IList<CampaignDto>> GetCampaignsAsync()
+        {
+            string cacheKey = $"Campaigns";
+            IList<CampaignDto> rval = GetCachedValue<IList<CampaignDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _CampaignsAsync();
+                SetCachedValue<IList<CampaignDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public async Task<CampaignDto> GetCampaignAsync(Guid CampaignGuid)
+        {
+            IList<CampaignDto> _campaigns = await GetCampaignsAsync();
+            foreach (CampaignDto campaign in _campaigns)
+            {
+                if (campaign.CampaignGuid == CampaignGuid)
+                {
+                    return campaign;
+                }
+            }
+            return null;
+        }
+
+        private async Task<IList<CampaignDto>> _CampaignsAsync()
+        {
+            return await GetAsync<IList<CampaignDto>>("campaigns");
         }
         #endregion
 
@@ -823,7 +857,9 @@ namespace UpDiddy.Api
             // Return the newly created partner
             return deletedPartnerResponse;
         }
+
         
+
 
         #endregion
     }

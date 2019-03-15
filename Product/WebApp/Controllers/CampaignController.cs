@@ -30,20 +30,30 @@ namespace UpDiddy.Controllers
         [HttpGet("/MomProject")]
         public IActionResult MomProject()
         {
-            return View();
+            return View(new CampaignViewModel()
+            {
+                IsExpressCampaign = true,
+                IsActive = true
+            });
         }
 
         [HttpGet]
-        [Route("/Community/{CampaignGuid?}/{ContactGuid?}")]
-        public async Task<IActionResult> CampaignAsync(Guid CampaignGuid, Guid ContactGuid)
+        [Route("/JoinNow/{CampaignGuid?}/{ContactGuid?}")]
+        public async Task<IActionResult> JoinNowAsync(Guid CampaignGuid, Guid ContactGuid)
         {
+            
+
             if (CampaignGuid == Guid.Empty || ContactGuid == Guid.Empty)
             {
                 return View("Community", new CampaignViewModel()
                 {
-                    IsExpressCampaign = true
+                    IsExpressCampaign = true,
+                    IsActive = true
                 });
             }
+
+            // If function gets here, this is a tracked campaign.
+            CampaignDto campaign = await _Api.GetCampaignAsync(CampaignGuid);
 
             // capture any campaign phase information that has been passed.  
             string CampaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
@@ -74,7 +84,65 @@ namespace UpDiddy.Controllers
                     TrackingImgSource = _TrackingImgSource,
                     CampaignCourse = Course,
                     CampaignPhase = CampaignPhase,
-                    IsExpressCampaign = false
+                    IsExpressCampaign = false,
+                    IsActive = (campaign.EndDate == null || campaign.EndDate > DateTime.UtcNow)
+                };
+                return View("Community", cvm);
+            }
+
+            catch (ApiException ex)
+            {
+                return StatusCode((int)ex.StatusCode);
+            }
+        }
+
+        // Can't delete this endpoint until community campaign is expired.
+        [HttpGet]
+        [Route("/Community/{CampaignGuid?}/{ContactGuid?}")]
+        public async Task<IActionResult> CampaignAsync(Guid CampaignGuid, Guid ContactGuid)
+        {
+            if (CampaignGuid == Guid.Empty || ContactGuid == Guid.Empty)
+            {
+                return View("Community", new CampaignViewModel()
+                {
+                    IsExpressCampaign = true,
+                    IsActive = true
+                });
+            }
+
+            CampaignDto campaign = await _Api.GetCampaignAsync(CampaignGuid);
+
+            // capture any campaign phase information that has been passed.  
+            string CampaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
+
+            // cookie campaign tracking information for future tracking enhacments, such as
+            // task 304
+            Response.Cookies.Append(Constants.TRACKING_KEY_CAMPAIGN_PHASE, CampaignPhase);
+            Response.Cookies.Append(Constants.TRACKING_KEY_CAMPAIGN, CampaignGuid.ToString());
+            Response.Cookies.Append(Constants.TRACKING_KEY_CONTACT, ContactGuid.ToString());
+            // build trackign string url
+            string _TrackingImgSource = _configuration["Api:ApiUrl"] +
+                "tracking?contact=" +
+                ContactGuid +
+                "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
+                CampaignGuid + "&campaignphase=" + WebUtility.UrlEncode(CampaignPhase);
+
+            try
+            {
+                // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
+                ContactDto Contact = await _Api.ContactAsync(ContactGuid);
+                CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
+
+                CampaignViewModel cvm = new CampaignViewModel()
+                {
+
+                    CampaignGuid = CampaignGuid,
+                    ContactGuid = ContactGuid,
+                    TrackingImgSource = _TrackingImgSource,
+                    CampaignCourse = Course,
+                    CampaignPhase = CampaignPhase,
+                    IsExpressCampaign = false,
+                    IsActive = (campaign.EndDate == null || campaign.EndDate > DateTime.UtcNow)
                 };
                 return View("Community", cvm);
             }

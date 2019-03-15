@@ -16,13 +16,14 @@
     };
     }
     @Html.Partial("Components/Bands/_CampaignSignUpBand", new CampaignSignUpBandViewModel {
-        CampaignCourse = "React",
-        ImageUrl = "/images/logo_react.png",
-        CampaignGuid = Model.CampaignGuid,
-        ContactGuid = Model.ContactGuid,
-        DisclaimerText = "You must sign up with the email address the offer was sent to.",
-        CampaignPhase = Model.CampaignPhase
-    })
+    CampaignCourse = "React",
+    ImageUrl = "/images/logo_react.png",
+    CampaignGuid = Model.CampaignGuid,
+    ContactGuid = Model.ContactGuid,
+    DisclaimerText = "You must sign up with the email address the offer was sent to.",
+    CampaignPhase = Model.CampaignPhase,
+    IsActive = Model.IsActive
+})
     @Html.Partial("Components/Bands/_TripleContainerBand", new TripleContainerBandViewModel {
         Header = "Advance Your Career With React",
         ChosenColorScheme = "cc-cscheme-white",

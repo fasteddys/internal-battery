@@ -3,7 +3,7 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
-@model SignUpViewModel;
+@model CampaignViewModel;
 
 <div id="CampaignContainer">
     <div class="cc-campaign-sign-up-band row" style="background-image: url('https://careercirclestaging.blob.core.windows.net/assets/AdobeStock_119520712_169_crop_optimize.jpg')">
@@ -24,9 +24,9 @@
                                             </div>
                                             <div class="col-12 campaign-bullet-list">
                                                 <div class="d-flex flex-column bd-highlight mb-3 mt-3">
-                                                    <div class="bd-highlight font-bold">Sign up.</div>
-                                                    <div class="bd-highlight font-bold">Create your profile.</div>
-                                                    <div class="bd-highlight font-bold">Get a new job.</div>
+                                                    <div class="bd-highlight font-bold">Sign up</div>
+                                                    <div class="bd-highlight font-bold">Create a profile</div>
+                                                    <div class="bd-highlight font-bold">Restart your career</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -47,32 +47,24 @@
                                 </div>
                                 <div class="col-12 no-padding">
                                     <div id="SignUpComponent">
-                                        <form id="ExpressSignUpForm" asp-controller="Home" asp-action="ExpressSignUp">
-                                            <div class="row">
-                                                <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
-                                                    <input placeholder="Your email" form="ExpressSignUpForm" name="Email" asp-for="Email" required class="wide-input" />
-                                                </div>
-                                                <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
-                                                    <input placeholder="Password" type="password" form="ExpressSignUpForm" name="Password" asp-for="Password" required class="wide-input" />
-                                                </div>
-                                                <div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
-                                                    <input placeholder="Re-enter password" type="password" form="ExpressSignUpForm" name="ReenterPassword" asp-for="ReenterPassword" required class="wide-input" />
-                                                </div>
-                                                <div id="SignUpAction" class="col-12 no-padding">
-                                                    @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                                                        Text = "Sign Up Now",
-                                                        SkewDirection = "skew-left-to-right",
-                                                        ChosenColorScheme = "cc-cscheme-darkred",
-                                                        Form = "ExpressSignUpForm",
-                                                        ButtonAction = ActionButtonViewModel.Action.SUBMIT
-                                                    })
-                                                </div>
-                                            </div>
-                                        </form>
+                                        @{
+                                            SignUpViewModel suvm = new SignUpViewModel();
+                                            if (Model.IsExpressCampaign)
+                                            {
+                                                suvm.IsExpressSignUp = true;
+                                            }
+                                            else
+                                            {
+                                                suvm.ContactGuid = Model.ContactGuid;
+                                                suvm.CampaignGuid = Model.CampaignGuid;
+                                                suvm.CampaignPhase = Model.CampaignPhase;
+                                                suvm.IsExpressSignUp = false;
+                                            }
+
+
+                                        }
+                                        @Html.Partial("Components/Authentication/_SignUp", suvm)
                                     </div>
-                                </div>
-                                <div class="col-12 no-padding campaign-disclaimer text-left">
-                                    By clicking Sign Up Now, you agree to our <a href='/Home/TermsOfService' target='_blank'>Terms Of Service</a>.
                                 </div>
                             </div>
                         </div>
@@ -95,7 +87,7 @@
                             <div class="col-lg-8 offset-lg-2 mb-4 no-padding">
                                 <div class="cc-skew-band-content">
                                     <div class="row">
-                                        Clinical Research Fastrack is partnering  with CareerCircle to support specific hiring needs for Clinical Research Coordinators in your market!  We want to support you in finding your ideal role based on the training you recently acquired.  We invite you to set up an account and fill out your talent profile to get linked to recruiters that are specifically aligned with finding you the job you have been training for.
+                                        The Mom Project is partnering with CareerCircle to support hiring needs within Information Technology in Chicago. Together we want to provide you access to the education you need to upskill you for the career you want. Our family of companies will be partnering to introduce you to world-class employers once your training is complete. Be part of a community that you will be able to trust over the years with your careerskilling needs and career pathing. We invite you to set up an account and fill out your talent profile to get the partnership started!
                                     </div>
                                 </div>
                             </div>

@@ -13,6 +13,7 @@ namespace UpDiddy.ViewModels
         public CourseDto CampaignCourse { get; set; }
         public string CampaignPhase { get; set; }
         public bool IsExpressCampaign { get; set; }
+        public bool IsActive { get; set; }
 
     }
 }

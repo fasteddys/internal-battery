@@ -14,5 +14,6 @@ namespace UpDiddy.ViewModels
         public string RibbonText { get; set; }
         public string DisclaimerText { get; set; }
         public string CampaignPhase { get; set; }
+        public bool IsActive { get; set; }
     }
 }
