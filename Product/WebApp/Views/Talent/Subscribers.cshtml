@@ -49,8 +49,10 @@
             }
 
             function doSearch(isReset) {
-                if (isReset)
+                if (isReset) {
                     document.getElementById('GridSearch').value = '';
+                    $('#SelectedSubscriberSource option:eq(0)').prop('selected', true);
+                }
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
                 var search = document.getElementById('GridSearch').value;
                 var searchAndFilter = {
