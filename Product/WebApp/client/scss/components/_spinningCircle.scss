@@ -1,38 +1,44 @@
-﻿.center {
-    width: 76px;
-    height: 76px;
-    top: -200px;
-    margin: 0 auto;
-    position: relative;
+﻿.circle-wrapper {
+    height: 70px;
+    width: 70px;
+}
+
+.center {
+    width: 70px;    
+    margin-top: -53px;
+    position: absolute;
     text-align: center;
 }
 
 .outerCircle {
+    display: inline-block;
     background-color: transparent;
-    border: 8px solid rgba(97, 82, 72, 0.9);
+    border: 5px solid $color-secondary;
     opacity: .9;
     border-right: 5px solid transparent;
     border-left: 5px solid transparent;
     border-radius: 100px;
-    width: 103px;
-    height: 103px;
+    width: 70px;
+    height: 70px;
     margin: 0 auto;
     -moz-animation: spinPulse 3s infinite ease-in-out;
     -webkit-animation: spinPulse 3s infinite ease-in-out;
 }
 
 .innerCircle {
+    display: inline-block;
     background-color: transparent;
-    border: 5px solid rgba(189, 215, 60, 0.6);
+    border: 3.5px solid $color-primary;
     opacity: .9;
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-radius: 100px;
-    top: -110px;
-    width: 92px;
-    height: 92px;
+    width: 50px;
+    height: 50px;
     margin: 0 auto;
-    position: relative;
+    position: absolute;
+    left: 25px;
+    margin-top: -65px;
     -moz-animation: spinoffPulse 1s infinite linear;
     -webkit-animation: spinoffPulse 1s infinite linear;
 }
