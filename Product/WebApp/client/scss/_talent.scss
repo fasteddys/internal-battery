@@ -280,6 +280,12 @@
             }
         }
 
+        .fa {
+            &.fa-trash {
+                color: $color-primary;
+            }
+        }
+
         &.table-primary {
             thead {
                 tr {
