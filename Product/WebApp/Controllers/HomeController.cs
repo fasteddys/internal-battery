@@ -726,7 +726,7 @@ namespace UpDiddy.Controllers
 
         [HttpPost]
         [Route("/Home/ExpressSignUp")]
-        public async Task<BasicResponseDto> ExpressSignUpAsync(SignUpViewModel signUpViewModel)
+        public async Task<IActionResult> ExpressSignUpAsync(SignUpViewModel signUpViewModel)
         {
             bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.Email) &&
                 !string.IsNullOrEmpty(signUpViewModel.Password) &&
@@ -735,31 +735,31 @@ namespace UpDiddy.Controllers
             // Make sure user has filled out all fields.
             if (!modelHasAllFields)
             {
-                return new BasicResponseDto
+                return BadRequest(new BasicResponseDto
                 {
                     StatusCode = 400,
                     Description = "Please enter all sign-up fields and try again."
-                };
+                });
             }
 
             // This is basically the same check as above, but to be safe...
             if (!ModelState.IsValid)
             {
-                return new BasicResponseDto
+                return BadRequest(new BasicResponseDto
                 {
                     StatusCode = 400,
                     Description = "Unfortunately, an error has occured with your submission. Please try again."
-                };
+                });
             }
 
             // Make sure user's password and re-enter password values match.
             if (!signUpViewModel.Password.Equals(signUpViewModel.ReenterPassword))
             {
-                return new BasicResponseDto
+                return BadRequest(new BasicResponseDto
                 {
                     StatusCode = 403,
                     Description = "User's passwords do not match."
-                };
+                });
             }
 
             // If all checks pass, assemble SignUpDto from information user entered.
@@ -783,25 +783,25 @@ namespace UpDiddy.Controllers
                     case 200:
                         // Return url to course checkout page to front-end. This will prompt user to log in
                         // now that their ADB2C account is created.
-                        return new BasicResponseDto
+                        return BadRequest(new BasicResponseDto
                         {
                             StatusCode = subscriberResponse.StatusCode,
                             Description = "/Home/Signup"
-                        };
+                        });
                     default:
                         // If there's an error from contact-to-subscriber converstion API call,
                         // return that error description to a toast to the user.
-                        return subscriberResponse;
+                        return StatusCode(500, subscriberResponse);
                 }
             }
             catch (Exception e)
             {
                 // Generic server error to display gracefully to the user.
-                return new BasicResponseDto
+                return StatusCode(500, new BasicResponseDto
                 {
                     StatusCode = 500,
                     Description = "Unfortunately, an error has occured with your submission. Please try again later."
-                };
+                });
             }
 
 
