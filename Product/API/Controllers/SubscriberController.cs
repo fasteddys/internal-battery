@@ -85,6 +85,39 @@ namespace UpDiddyApi.Controllers
                 return Unauthorized();
         }
 
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [HttpDelete("{subscriberGuid}")]
+        public IActionResult DeleteSubscriber(Guid subscriberGuid)
+        {
+            try
+            {
+                if (subscriberGuid == null)
+                    return BadRequest(new { code = 400, message = "No subscriber identifier was provided" });
+
+                var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();
+
+                if (subscriber == null)
+                    return BadRequest(new { code = 404, message = "No subscriber could be found with that identifier" });
+
+                // perform logical delete on the subscriber entity only (no modification to related tables)
+                subscriber.IsDeleted = 1;
+                subscriber.ModifyDate = DateTime.UtcNow;
+                subscriber.ModifyGuid = Guid.Empty;
+                _db.SaveChanges();
+
+                // disable the AD account associated with the subscriber
+                _graphClient.DisableUser(subscriberGuid);
+
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Error, $"SubscriberController.DeleteSubscriber:: An error occured while attempting to delete the subscriber. Message: {e.Message}", e);
+                return StatusCode(500, false);
+            }
+
+            return Ok(true);
+        }
+
         [HttpPost("/api/[controller]")]
         public IActionResult NewSubscriber()
         {
@@ -644,7 +677,7 @@ namespace UpDiddyApi.Controllers
         [AllowAnonymous]
         [HttpPut("/api/[controller]/contact/{contactGuid}")]
         public async Task<IActionResult> UpdateSubscriberContactAsync(Guid contactGuid, [FromBody] SignUpDto signUpDto)
-        {      
+        {
             _syslog.Log(LogLevel.Information, "SubscriberController.UpdateSubscriberContactAsync:: {@ContactGuid} attempting to sign up with email {@Email}", contactGuid, signUpDto.email);
             Models.Contact contact = await _db.Contact
                 .Where(c => c.ContactGuid.Equals(contactGuid)
@@ -652,9 +685,9 @@ namespace UpDiddyApi.Controllers
                 .FirstOrDefaultAsync();
 
             Campaign campaign = await _db.Campaign
-                .Where(camp => camp.CampaignGuid.Equals(signUpDto.campaignGuid) 
+                .Where(camp => camp.CampaignGuid.Equals(signUpDto.campaignGuid)
                     && camp.IsDeleted == 0
-                    && camp.StartDate <= DateTime.UtcNow 
+                    && camp.StartDate <= DateTime.UtcNow
                     && (!camp.EndDate.HasValue || camp.EndDate.Value >= DateTime.UtcNow))
                 .FirstOrDefaultAsync();
 
@@ -693,7 +726,7 @@ namespace UpDiddyApi.Controllers
 
             // check if user exits in AD if the user does then we skip this step
             Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(contact.Email);
-            if(user == null)
+            if (user == null)
             {
                 try
                 {
@@ -728,7 +761,7 @@ namespace UpDiddyApi.Controllers
                     _db.Subscriber.Add(subscriber);
                     await _db.SaveChangesAsync();
                     CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaign.CampaignId, signUpDto.campaignPhase);
-                    
+
                     _db.ContactAction.Add(new ContactAction()
                     {
                         ActionId = 3, // todo: use constants or enum or something
@@ -750,7 +783,7 @@ namespace UpDiddyApi.Controllers
 
                     transaction.Commit();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     transaction.Rollback();
                     _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Error occured while attempting save Subscriber and contact DB updates for {@ContactGuid} (email: {@Email}). Exception: {@Exception}", contactGuid, signUpDto.email, ex);
@@ -856,50 +889,29 @@ namespace UpDiddyApi.Controllers
             return Json(new { groups = response });
         }
 
-        [HttpGet("/api/[controller]/search/{searchQuery}")]
+        [HttpGet("/api/[controller]/search/{searchFilter}/{searchQuery?}")]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
-        public IActionResult Search(string searchQuery)
+        public IActionResult Search(string searchFilter, string searchQuery = null)
         {
             searchQuery = HttpUtility.UrlDecode(searchQuery);
+            searchFilter = HttpUtility.UrlDecode(searchFilter);
 
-            List<Subscriber> subscribers = _db.Subscriber
-                .Include(s => s.SubscriberSkills)
-                .ThenInclude(s => s.Skill)
-                .Include(s => s.State)
-                .ThenInclude(s => s.Country)
-                .Where(s => s.IsDeleted == 0
-                && (s.Email.Contains(searchQuery)
-                    || s.FirstName.Contains(searchQuery)
-                    || s.LastName.Contains(searchQuery)
-                    || s.PhoneNumber.Contains(searchQuery)
-                    || s.Address.Contains(searchQuery)
-                    || s.City.Contains(searchQuery)
-                    || s.SubscriberSkills.Where(k => k.Skill.SkillName.Contains(searchQuery)).Any()
-                    || s.SubscriberWorkHistory.Where(w => w.JobDecription.Contains(searchQuery)).Any()
-                    || s.SubscriberWorkHistory.Where(w => w.Title.Contains(searchQuery)).Any()
-                    || s.SubscriberWorkHistory.Where(w => w.Company.CompanyName.Contains(searchQuery)).Any()
-                    || s.SubscriberEducationHistory.Where(e => e.EducationalDegree.Degree.Contains(searchQuery)).Any()
-                    || s.SubscriberEducationHistory.Where(e => e.EducationalDegreeType.DegreeType.Contains(searchQuery)).Any()
-                    || s.SubscriberEducationHistory.Where(e => e.EducationalInstitution.Name.Contains(searchQuery)).Any())
-                )
+            var filter = new SqlParameter("@Filter", searchFilter.ToLower() == "any" ? string.Empty : searchFilter);
+            var query = new SqlParameter("@Query", searchQuery == null ? string.Empty : searchQuery);
+            var spParams = new object[] { filter, query };
+
+            var result = _db.SubscriberSearch.FromSql("[dbo].[System_Search_Subscribers] @Filter, @Query", spParams)
+                .ProjectTo<SubscriberDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
-            return Json(_mapper.Map<List<SubscriberDto>>(subscribers));
+            return Json(result);
         }
 
-        [HttpGet("/api/[controller]/search")]
-        [Authorize(Policy = "IsRecruiterOrAdmin")]
-        public IActionResult Search()
+        [Authorize]
+        [HttpGet("/api/[controller]/sources")]
+        public IActionResult GetSubscriberSources()
         {
-            List<Subscriber> subscribers = _db.Subscriber
-                .Where(s => s.IsDeleted == 0)
-                .Include(s => s.SubscriberSkills)
-                .ThenInclude(s => s.Skill)
-                .Include(s => s.State)
-                .ThenInclude(s => s.Country)
-                .ToList();
-
-            return Json(_mapper.Map<List<SubscriberDto>>(subscribers));
+            return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceDto>(_mapper.ConfigurationProvider).ToList());
         }
 
         // todo: add security to check token to this route

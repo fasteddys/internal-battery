@@ -114,6 +114,12 @@
                         font-family: FontAwesome, "Open Sans", Verdana, sans-serif;
                         color: #495057;
                     }
+
+                    .selectize-input {
+                        background: transparent;
+                        border: 0;
+                        box-shadow: none;
+                    }
                 }
 
                 input {
@@ -123,70 +129,6 @@
 
                 select {
                     border: 0;
-                }
-
-                .selectize-dropdown [data-selectable].option {
-                    opacity: 1;
-                    background-color: white;
-                    width: 100%;
-                }
-                /* this is my sad attempt at fixing the selectize dropdowns... probably can remove most of this */
-                .selectize-control.form-control.single {
-                    padding: 0;
-                    margin-top: 5px;
-                    border: 0;
-                    background-color: white;
-                    background-image: none;
-
-                    .selectize-input {
-                        box-shadow: none;
-                        border: 0;
-                        background-image: none;
-                        background-color: white;
-
-                        .items {
-                            background-color: white;
-                            background-image: none;
-                        }
-
-                        .item {
-                            color: #495057;
-                            background-color: transparent;
-                            background-image: none;
-                            border: 0;
-                            margin: 0;
-                            padding: 0;
-                            font-size: 16px;
-                            font-weight: 400;
-                            font-family: FontAwesome, "Open Sans", Verdana, sans-serif;
-                        }
-
-                        .selectize-dropdown-content {
-
-                            .option {
-                                background-color: white;
-                                background-image: none;
-                            }
-                        }
-                    }
-                }
-
-                .selectize-control {
-                    padding: .25rem;
-
-                    .selectize-input {
-                        box-shadow: none;
-                        border: 0;
-
-                        .item {
-                            background-color: $color-secondary;
-                            background-image: none;
-                            border: $color-secondary;
-                            padding: 6px 10px;
-                            border-radius: 8px;
-                            margin-top: .5rem;
-                        }
-                    }
                 }
             }
         }
