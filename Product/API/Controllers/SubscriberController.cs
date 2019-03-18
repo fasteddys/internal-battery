@@ -103,6 +103,7 @@ namespace UpDiddyApi.Controllers
             subscriber.IsDeleted = 0;
             subscriber.ModifyGuid = Guid.Empty;
             subscriber.CreateGuid = Guid.Empty;
+            subscriber.IsVerified = true;
 
             // Save subscriber to database 
             _db.Subscriber.Add(subscriber);
@@ -716,6 +717,7 @@ namespace UpDiddyApi.Controllers
             subscriber.IsDeleted = 0;
             subscriber.ModifyGuid = Guid.Empty;
             subscriber.CreateGuid = Guid.Empty;
+            subscriber.IsVerified = true;
 
             // use transaction to verify that both changes 
             using (var transaction = _db.Database.BeginTransaction())

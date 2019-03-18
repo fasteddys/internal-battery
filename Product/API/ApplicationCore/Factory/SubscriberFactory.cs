@@ -100,9 +100,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 // creation.  When that is done, it will only be necessary to do this check when we create  a new subscriber since the create contact logic
                 // will handle the case of associating the contact with existing subscribers
                 ContactFactory.AssociateSubscriber(_db, subscriberDto.Email, subscriber.SubscriberId);
+
+                subscriberDto.HasVerificationEmail = subscriber.EmailVerification != null;
             }
 
-            subscriberDto.HasVerificationEmail = subscriber.EmailVerification != null;
 
             return subscriberDto;
         }
