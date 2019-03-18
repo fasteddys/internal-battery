@@ -33,6 +33,12 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        [HttpGet("/Wozu")]
+        public IActionResult WozU()
+        {
+            return View();
+        }
+
         [HttpGet]
         [Route("/Community/{CampaignGuid?}/{ContactGuid?}")]
         public async Task<IActionResult> CampaignAsync(Guid CampaignGuid, Guid ContactGuid)
