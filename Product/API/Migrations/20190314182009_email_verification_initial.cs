@@ -12,7 +12,7 @@ namespace UpDiddyApi.Migrations
                 name: "IsVerified",
                 table: "Subscriber",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: true);
 
             // find subscribers that need to verify their email still
             migrationBuilder.Sql(@"

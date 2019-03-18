@@ -796,6 +796,7 @@ namespace UpDiddyApi.Controllers
             subscriber.IsDeleted = 0;
             subscriber.ModifyGuid = Guid.Empty;
             subscriber.CreateGuid = Guid.Empty;
+            subscriber.IsVerified = false;
 
             var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
 
