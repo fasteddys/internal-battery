@@ -28,6 +28,7 @@ using System.Data;
 using System.Web;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
+using Hangfire;
 
 namespace UpDiddyApi.Controllers
 {
@@ -42,6 +43,7 @@ namespace UpDiddyApi.Controllers
         private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
+        private ISysEmail _sysEmail;
 
         public SubscriberController(UpDiddyDbContext db,
             IMapper mapper,
@@ -50,6 +52,7 @@ namespace UpDiddyApi.Controllers
             IDistributedCache distributedCache,
             IB2CGraph client,
             ICloudStorage cloudStorage,
+            ISysEmail sysEmail,
             IAuthorizationService authorizationService)
         {
             _db = db;
@@ -58,6 +61,7 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
             _graphClient = client;
             _cloudStorage = cloudStorage;
+            _sysEmail = sysEmail;
             _authorizationService = authorizationService;
         }
 
@@ -564,24 +568,45 @@ namespace UpDiddyApi.Controllers
         [HttpPost("/api/[controller]/request-verification")]
         public async Task<IActionResult> RequestVerificationAsync()
         {
+            // check token guid claim
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if (subscriberGuid == null || subscriberGuid == Guid.Empty)
                 return BadRequest();
 
-            Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefault();
-            if (subscriber == null || subscriber.IsVerified)
+            Subscriber subscriber = _db.Subscriber
+                .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid && !t.IsVerified)
+                .Include(t => t.EmailVerification)
+                .FirstOrDefault();
+
+            // check if subscriber is in system and is NOT verified
+            if (subscriber == null)
                 return BadRequest();
 
-            // todo: move ths logic
+            int tokenTtlMinutes = int.Parse(_configuration["EmailVerification:TokenExpirationInMinutes"]);
+
+            // create or reset/refresh token
             if (subscriber.EmailVerification == null)
-                subscriber.EmailVerification = new EmailVerification();
+                subscriber.EmailVerification = new EmailVerification(tokenTtlMinutes);
 
-            if (subscriber.EmailVerification.ExpirationDateTime > DateTime.UtcNow)
-                subscriber.EmailVerification.RefreshToken();
+            subscriber.EmailVerification.RefreshToken(tokenTtlMinutes);
 
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(); // save changes
 
-            return Ok(new { message = "Hello from api. Request granted", emailVerification = subscriber.EmailVerification });
+            string link = string.Format("{0}/email/confirm-verification/{1}",
+                _configuration["Environment:BaseUrl"],
+                subscriber.EmailVerification.Token);
+
+            // send verification email in background
+            BackgroundJob.Enqueue(() =>
+                _sysEmail.SendTemplatedEmailAsync(
+                    subscriber.Email,
+                    "d-f1eab71626494594bebd20d0907d673d",
+                    new {
+                        verificationLink = link
+                    }, null
+                ));
+
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Email verification token successfully created. Email queued." });
         }
 
         [HttpPost("/api/[controller]/verify-email/{token}")]
@@ -591,11 +616,18 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid == null || subscriberGuid == Guid.Empty)
                 return BadRequest();
 
-            Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid && !t.IsVerified).FirstOrDefault();
-            if (subscriber == null || subscriber.IsVerified)
-                return BadRequest();
+            Subscriber subscriber = _db
+                .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid && !t.IsVerified)
+                .Include(t => t.EmailVerification)
+                .FirstOrDefault();
 
-            if (!subscriber.EmailVerification.Token.Equals(Token) || subscriber.EmailVerification.ExpirationDateTime > DateTime.UtcNow)
+            if (subscriber == null)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid subscriber." });
+
+            if (subscriber.IsVerified)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Subscriber already verified." });
+
+            if (!subscriber.EmailVerification.Token.Equals(Token) || subscriber.EmailVerification.ExpirationDateTime < DateTime.UtcNow)
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid verification token." });
 
             subscriber.IsVerified = true;

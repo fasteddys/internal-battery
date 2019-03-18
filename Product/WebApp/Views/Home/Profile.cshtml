@@ -117,10 +117,9 @@
             init: function () {
                 $('.email-verification-btn').click(function (e) {
                     var $this = $(this);
-                    console.log("Send email");
                     $this.prop('disabled', true);
                     CareerCircleAPI.requestVerification().then(function (res) {
-                        console.log(res);
+                        ToastService.success('Verification email sent.')
                     }).finally(function () {
                         $this.prop('disabled', false);
                     });
@@ -183,9 +182,12 @@
                                 <div class="career-circle-profile-email">
                                     <i class="fa fa-envelope" aria-hidden="true"></i>
                                     @Model.Email
+                                    @{ 
+                                        string send = Model.HasVerificationEmail ? "Resend" : "Send";
+                                    }
                                     @if(!Model.IsVerified)
                                     {
-                                        <span class="badge badge-light">Unverified <i class="fas fa-exclamation-triangle"></i></span> <button class="btn btn-link email-verification-btn">Send Verification Email</button>
+                                        <span class="badge badge-light">Unverified <i class="fas fa-exclamation-triangle"></i></span> <button class="btn btn-link email-verification-btn">@send Verification Email</button>
                                     }
                                 </div>
                             </div>

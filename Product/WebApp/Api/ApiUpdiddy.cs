@@ -538,7 +538,7 @@ namespace UpDiddy.Api
         #region EmailVerification
         public async Task<BasicResponseDto> VerifyEmailAsync(Guid token)
         {
-            return await PostAsync<BasicResponseDto>($"/subscriber/verify-email/{token}");
+            return await PostAsync<BasicResponseDto>($"subscriber/verify-email/{token}");
         }
         #endregion
 

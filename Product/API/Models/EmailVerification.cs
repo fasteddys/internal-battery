@@ -7,18 +7,20 @@ namespace UpDiddyApi.Models
 {
     public class EmailVerification
     {
-        public EmailVerification()
+        public EmailVerification() { }
+
+        public EmailVerification(int tokenLifetimeMinutes)
         {
             EmailVerificationGuid = Guid.NewGuid();
             Token = Guid.NewGuid();
-            ExpirationDateTime = DateTime.UtcNow.AddMinutes(5);
+            ExpirationDateTime = DateTime.UtcNow.AddMinutes(tokenLifetimeMinutes);
             CreatedDate = DateTime.UtcNow;
             ModifyDate = DateTime.UtcNow;
         }
 
-        public void RefreshToken()
+        public void RefreshToken(int tokenLifetimeMinutes)
         {
-            ExpirationDateTime = DateTime.UtcNow.AddMinutes(5);
+            ExpirationDateTime = DateTime.UtcNow.AddMinutes(tokenLifetimeMinutes);
             Token = Guid.NewGuid();
             ModifyDate = DateTime.UtcNow;
         }

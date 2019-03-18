@@ -1,11 +1,21 @@
 ﻿<div class="container">
     <div class="row">
-        <div class="col-12">
-            <div class="mt-3">
+        <div class="col-10 offset-1">
+            <div class="mt-3 pt-3">
                 <h2>Error: Unable to verify email</h2>
-                <p>
-                    @ViewBag.Message
-                </p>
+                @if(ViewBag.Message != null)
+                {
+                    <p>We were unable to complete the verification process due to the following error:</p>
+                    <p>
+                        <i>
+                            @ViewBag.Message
+                        </i>
+                    </p>
+                } else
+                {
+                    <p>We were unable to complete the verification process. Please try again by requesting another verification email.</p>
+                }
+                <a href="/Home/Profile" class="btn btn-primary">Continue</a>
             </div>
         </div>
     </div>
