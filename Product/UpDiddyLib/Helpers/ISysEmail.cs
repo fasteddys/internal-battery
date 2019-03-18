@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace UpDiddyLib.Helpers
 {
     public interface ISysEmail
     {
         bool SendEmail(string email, string subject, string htmlContent);
+
+        Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, string subject = null);
+
         void SendPurchaseReceiptEmail(
             string sendgridTemplateId,
             string profileUrl,

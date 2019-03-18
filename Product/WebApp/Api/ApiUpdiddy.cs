@@ -537,6 +537,14 @@ namespace UpDiddy.Api
             return await GetAsync<LinkedInProfileDto>("linkedin");
         }
         #endregion
+
+        #region EmailVerification
+        public async Task<BasicResponseDto> VerifyEmailAsync(Guid token)
+        {
+            return await PostAsync<BasicResponseDto>($"subscriber/verify-email/{token}");
+        }
+        #endregion
+
         public async Task<BasicResponseDto> SyncLinkedInAccountAsync(string linkedInCode, string returnUrl)
         {
             return await PutAsync<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}");

@@ -913,6 +913,32 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("EducationalInstitution");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.EmailVerification", b =>
+                {
+                    b.Property<int>("EmailVerificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreatedDate");
+
+                    b.Property<Guid>("EmailVerificationGuid");
+
+                    b.Property<DateTime>("ExpirationDateTime");
+
+                    b.Property<DateTime>("ModifyDate");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.Property<Guid>("Token");
+
+                    b.HasKey("EmailVerificationId");
+
+                    b.HasIndex("SubscriberId")
+                        .IsUnique();
+
+                    b.ToTable("EmailVerification");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Enrollment", b =>
                 {
                     b.Property<int>("EnrollmentId")
@@ -1645,6 +1671,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
+                    b.Property<bool>("IsVerified");
+
                     b.Property<string>("LastName");
 
                     b.Property<string>("LinkedInUrl");
@@ -2352,6 +2380,14 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.CourseVariantType", "CourseVariantType")
                         .WithMany()
                         .HasForeignKey("CourseVariantTypeId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.EmailVerification", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Subscriber")
+                        .WithOne("EmailVerification")
+                        .HasForeignKey("UpDiddyApi.Models.EmailVerification", "SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

@@ -40,75 +40,96 @@
             });
         });
 
+
+        var resumeUpload = {
+            init: function () {
+                // resume upload component
+                $('.resume-upload-form .file-input').on('change', function () {
+                    var $input = $('.file-input');
+                    if ($input[0].files.length > 0) {
+                        $('.resume-upload-form').addClass('has-file');
+                        $('.resume-upload-form .change-file .file-name').text($input[0].files[0].name);
+                    } else {
+                        $('.resume-upload-form').removeClass('has-file');
+                        $('.resume-upload-form .change-file .file-name').text('');
+                    }
+                });
+
+                $('.resume-control .edit').click(function (event) {
+                    event.preventDefault();
+                    $('.resume-file-component').toggleClass('editing');
+                });
+
+                $('.resume-upload-form .cancel').click(function (event) {
+                    event.preventDefault();
+                    $('.resume-file-component').toggleClass('editing');
+                });
+
+                $('.resume-control .delete').click(function () {
+                    event.preventDefault();
+
+                    $('.resume-control button').prop('disabled', true);
+                    $('.resume-control button').addClass('disabled');
+
+                    var fileGuid = $('.resume-control .delete').data('guid');
+                    submitting = true;
+                    CareerCircleAPI.deleteFile(fileGuid)
+                        .then(function () {
+                            location.reload();
+                        })
+                        .catch(function (err) {
+                            ToastService.error('Something unexpected happened, and we are looking into it.');
+                        })
+                        .finally(function () {
+                            $('.resume-control button').prop('disabled', false);
+                            $('.resume-control button').removeClass('disabled');
+                        });
+                });
+
+                $('.resume-upload-form').submit(function (event) {
+                    event.preventDefault();
+                    var $input = $('.file-input');
+
+                    if ($input[0].files.length == 0)
+                        return;
+
+                    $('.resume-upload-form').addClass('loading');
+                    $('.resume-upload-form .btn').prop('disabled', true);
+                    $('.resume-upload-form .btn').addClass('disabled');
+
+                    CareerCircleAPI.uploadResume($input[0].files[0])
+                        .then(function (x) {
+                            location.reload();
+                        })
+                        .catch(function (err) {
+                            ToastService.error('Something unexpected happened, and we are looking into it.');
+                        })
+                        .finally(function () {
+                            $('.resume-upload-form').removeClass('loading');
+                            $('.resume-upload-form .btn').prop('disabled', false);
+                            $('.resume-upload-form .btn').removeClass('disabled');
+                        });
+                });
+            }
+        }
+
+        var emailVerification = {
+            init: function () {
+                $('.email-verification-btn').click(function (e) {
+                    var $this = $(this);
+                    $this.prop('disabled', true);
+                    CareerCircleAPI.requestVerification().then(function (res) {
+                        ToastService.success('Verification email sent.')
+                    }).finally(function () {
+                        $this.prop('disabled', false);
+                    });
+                });
+            }
+        }
+
         $(document).ready(function () {
-
-            // resume upload component
-            $('.resume-upload-form .file-input').on('change', function () {
-                var $input = $('.file-input');
-                if ($input[0].files.length > 0) {
-                    $('.resume-upload-form').addClass('has-file');
-                    $('.resume-upload-form .change-file .file-name').text($input[0].files[0].name);
-                } else {
-                    $('.resume-upload-form').removeClass('has-file');
-                    $('.resume-upload-form .change-file .file-name').text('');
-                }
-            });
-
-            $('.resume-control .edit').click(function (event) {
-                event.preventDefault();
-                $('.resume-file-component').toggleClass('editing');
-            });
-
-            $('.resume-upload-form .cancel').click(function (event) {
-                event.preventDefault();
-                $('.resume-file-component').toggleClass('editing');
-            });
-
-            $('.resume-control .delete').click(function () {
-                event.preventDefault();
-
-                $('.resume-control button').prop('disabled', true);
-                $('.resume-control button').addClass('disabled');
-
-                var fileGuid = $('.resume-control .delete').data('guid');
-                submitting = true;
-                CareerCircleAPI.deleteFile(fileGuid)
-                    .then(function () {
-                        location.reload();
-                    })
-                    .catch(function (err) {
-                        ToastService.error('Something unexpected happened, and we are looking into it.');
-                    })
-                    .finally(function () {
-                        $('.resume-control button').prop('disabled', false);
-                        $('.resume-control button').removeClass('disabled');
-                    });
-            });
-
-            $('.resume-upload-form').submit(function (event) {
-                event.preventDefault();
-                var $input = $('.file-input');
-
-                if ($input[0].files.length == 0)
-                    return;
-
-                $('.resume-upload-form').addClass('loading');
-                $('.resume-upload-form .btn').prop('disabled', true);
-                $('.resume-upload-form .btn').addClass('disabled');
-
-                CareerCircleAPI.uploadResume($input[0].files[0])
-                    .then(function (x) {
-                        location.reload();
-                    })
-                    .catch(function (err) {
-                        ToastService.error('Something unexpected happened, and we are looking into it.');
-                    })
-                    .finally(function () {
-                        $('.resume-upload-form').removeClass('loading');
-                        $('.resume-upload-form .btn').prop('disabled', false);
-                        $('.resume-upload-form .btn').removeClass('disabled');
-                    });
-            });
+            resumeUpload.init();
+            emailVerification.init();
 
         });
         
@@ -161,6 +182,13 @@
                                 <div class="career-circle-profile-email">
                                     <i class="fa fa-envelope" aria-hidden="true"></i>
                                     @Model.Email
+                                    @{ 
+                                        string send = Model.HasVerificationEmail ? "Resend" : "Send";
+                                    }
+                                    @if(!Model.IsVerified)
+                                    {
+                                        <span class="badge badge-light">Unverified <i class="fas fa-exclamation-triangle"></i></span> <button class="btn btn-link email-verification-btn">@send Verification Email</button>
+                                    }
                                 </div>
                             </div>
                         </div>

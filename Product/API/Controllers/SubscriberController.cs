@@ -28,6 +28,7 @@ using System.Data;
 using System.Web;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
+using Hangfire;
 
 namespace UpDiddyApi.Controllers
 {
@@ -42,6 +43,7 @@ namespace UpDiddyApi.Controllers
         private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
+        private ISysEmail _sysEmail;
 
         public SubscriberController(UpDiddyDbContext db,
             IMapper mapper,
@@ -50,6 +52,7 @@ namespace UpDiddyApi.Controllers
             IDistributedCache distributedCache,
             IB2CGraph client,
             ICloudStorage cloudStorage,
+            ISysEmail sysEmail,
             IAuthorizationService authorizationService)
         {
             _db = db;
@@ -58,6 +61,7 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
             _graphClient = client;
             _cloudStorage = cloudStorage;
+            _sysEmail = sysEmail;
             _authorizationService = authorizationService;
         }
 
@@ -132,6 +136,7 @@ namespace UpDiddyApi.Controllers
             subscriber.IsDeleted = 0;
             subscriber.ModifyGuid = Guid.Empty;
             subscriber.CreateGuid = Guid.Empty;
+            subscriber.IsVerified = true;
 
             // Save subscriber to database 
             _db.Subscriber.Add(subscriber);
@@ -594,6 +599,77 @@ namespace UpDiddyApi.Controllers
             return Ok();
         }
 
+        [HttpPost("/api/[controller]/request-verification")]
+        public async Task<IActionResult> RequestVerificationAsync()
+        {
+            // check token guid claim
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                return BadRequest();
+
+            Subscriber subscriber = _db.Subscriber
+                .Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid && !t.IsVerified)
+                .Include(t => t.EmailVerification)
+                .FirstOrDefault();
+
+            // check if subscriber is in system and is NOT verified
+            if (subscriber == null)
+                return BadRequest();
+
+            int tokenTtlMinutes = int.Parse(_configuration["EmailVerification:TokenExpirationInMinutes"]);
+
+            // create or reset/refresh token
+            if (subscriber.EmailVerification == null)
+                subscriber.EmailVerification = new EmailVerification(tokenTtlMinutes);
+
+            subscriber.EmailVerification.RefreshToken(tokenTtlMinutes);
+
+            await _db.SaveChangesAsync(); // save changes
+
+            string link = string.Format("{0}/email/confirm-verification/{1}",
+                _configuration["Environment:BaseUrl"],
+                subscriber.EmailVerification.Token);
+
+            // send verification email in background
+            BackgroundJob.Enqueue(() =>
+                _sysEmail.SendTemplatedEmailAsync(
+                    subscriber.Email,
+                    "d-f1eab71626494594bebd20d0907d673d",
+                    new {
+                        verificationLink = link
+                    }, null
+                ));
+
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Email verification token successfully created. Email queued." });
+        }
+
+        [HttpPost("/api/[controller]/verify-email/{token}")]
+        public async Task<IActionResult> Verify(Guid Token)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                return BadRequest();
+
+            Subscriber subscriber = _db
+                .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid && !t.IsVerified)
+                .Include(t => t.EmailVerification)
+                .FirstOrDefault();
+
+            if (subscriber == null)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid subscriber." });
+
+            if (subscriber.IsVerified)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Subscriber already verified." });
+
+            if (!subscriber.EmailVerification.Token.Equals(Token) || subscriber.EmailVerification.ExpirationDateTime < DateTime.UtcNow)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid verification token." });
+
+            subscriber.IsVerified = true;
+            await _db.SaveChangesAsync();
+
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Verification successful." });
+        }
+
         /// <summary>
         /// This will verify the contact guid to email, make sure user does not exist already, and create one if it doesn't exist
         /// </summary>
@@ -674,6 +750,7 @@ namespace UpDiddyApi.Controllers
             subscriber.IsDeleted = 0;
             subscriber.ModifyGuid = Guid.Empty;
             subscriber.CreateGuid = Guid.Empty;
+            subscriber.IsVerified = true;
 
             // use transaction to verify that both changes 
             using (var transaction = _db.Database.BeginTransaction())
@@ -754,6 +831,7 @@ namespace UpDiddyApi.Controllers
             subscriber.IsDeleted = 0;
             subscriber.ModifyGuid = Guid.Empty;
             subscriber.CreateGuid = Guid.Empty;
+            subscriber.IsVerified = false;
 
             var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
 
