@@ -125,6 +125,13 @@ namespace UpDiddyApi.Models
         public DbSet<RebateType> RebateType { get; set; }
         public DbSet<CampaignContact> CampaignContact { get; set; }
         public DbSet<CampaignPhase> CampaignPhase { get; set; }
+        public DbSet<JobPosting> JobPosting { get; set; }
+        public DbSet<EmploymentType> EmploymentType { get; set; }
+        public DbSet<SecurityClearance> SecurityClearance { get; set; }
+        public DbSet<Industry> Industry { get; set; }
+
+
+
 
 
         #region DBQueries

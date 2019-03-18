@@ -10,5 +10,9 @@ namespace UpDiddyApi.Models
         public int CompanyId { get; set; }
         public Guid CompanyGuid { get; set; }
         public string CompanyName { get; set; }
+        /// <summary>
+        /// The uri returned from google talent cloud for identifying the company
+        /// </summary>
+        public string GoogleCloudUri { get; set; }
     }
 }
