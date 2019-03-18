@@ -783,7 +783,7 @@ namespace UpDiddy.Controllers
                     case 200:
                         // Return url to course checkout page to front-end. This will prompt user to log in
                         // now that their ADB2C account is created.
-                        return BadRequest(new BasicResponseDto
+                        return Ok(new BasicResponseDto
                         {
                             StatusCode = subscriberResponse.StatusCode,
                             Description = "/Home/Signup"
