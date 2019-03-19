@@ -1,0 +1,22 @@
+.mom-project-signup {
+    .cc-campaign-sign-up-band {
+        .cc-campaign-sign-up-band-left-container {
+            text-align: left;
+
+            @media(min-width: 768px) {
+                text-align: right;
+            }
+
+            @media(max-width: 768px) {
+                .hero-header {
+                    font-size: 1.6em;
+                    line-height: 1.25em;
+                }
+
+                .campaign-bullet-list {
+                    font-size: 1em;
+                }
+            }
+        }
+    }
+}

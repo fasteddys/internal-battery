@@ -2,20 +2,31 @@
 @using UpDiddyLib.Dto
 @using System.Net
 @model SignUpViewModel
+
+@{ 
+    string _form = Model.IsExpressSignUp ? "ExpressSignUpForm" : "SignUpForm";
+    string _aspAction = Model.IsExpressSignUp ? "ExpressSignUp" : "CampaignSignUp";
+}
+
 <div id="SignUpComponent">
-    <form id="SignUpForm" asp-controller="Home" asp-action="CampaignSignUp">
-        <input type="hidden" asp-for="ContactGuid" name="ContactGuid" value="@Model.ContactGuid" form="SignUpForm" />
-        <input type="hidden" asp-for="CampaignGuid" name="CampaignGuid" value="@Model.CampaignGuid" form="SignUpForm" />
-        <input type="hidden" asp-for="CampaignPhase" name="CampaignPhase" value="@WebUtility.UrlEncode(Model.CampaignPhase)" form="SignUpForm" />
+    <form id="@_form" asp-controller="Home" asp-action="@_aspAction" data-action="@_aspAction">
+        @{
+            if (!Model.IsExpressSignUp)
+            {
+                <input type="hidden" asp-for="ContactGuid" name="ContactGuid" value="@Model.ContactGuid" form="SignUpForm" />
+                <input type="hidden" asp-for="CampaignGuid" name="CampaignGuid" value="@Model.CampaignGuid" form="SignUpForm" />
+                <input type="hidden" asp-for="CampaignPhase" name="CampaignPhase" value="@WebUtility.UrlEncode(Model.CampaignPhase)" form="SignUpForm" />
+            }
+        }
         <div class="row">
             <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
-                <input class="wide-input" placeholder="Your email" form="SignUpForm" name="Email" asp-for="Email" required />
+                <input class="wide-input" placeholder="Your email" form="@_form" name="Email" asp-for="Email" required />
             </div>
             <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
-                <input class="wide-input" placeholder="Password" type="password" form="SignUpForm" name="Password" asp-for="Password" required />
+                <input class="wide-input" placeholder="Password" type="password" form="@_form" name="Password" asp-for="Password" required />
             </div>
             <div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
-                <input class="wide-input" placeholder="Re-enter password" type="password" form="SignUpForm" name="ReenterPassword" asp-for="ReenterPassword" required />
+                <input class="wide-input" placeholder="Re-enter password" type="password" form="@_form" name="ReenterPassword" asp-for="ReenterPassword" required />
             </div>
             <div>
                 <div class="form-check sign-up-input">
@@ -28,7 +39,7 @@
                     Text = "Sign Up Now",
                     SkewDirection = "skew-left-to-right",
                     ChosenColorScheme = "cc-cscheme-darkred",
-                    Form = "SignUpForm",
+                    Form = _form,
                     ButtonAction = ActionButtonViewModel.Action.SUBMIT
                 })
             </div>

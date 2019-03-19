@@ -11,7 +11,7 @@
     <div class="col-12">
         <div class="container">
             <div class="row">
-                <div class="col-12 col-md-8 cc-campaign-sign-up-band-left-container">
+                <div class="col-12 col-md-7 col-lg-8 cc-campaign-sign-up-band-left-container">
                     <div class="row">
                         @if(Model.ImageUrl != null)
                         {
@@ -70,7 +70,7 @@
                     bool hasRibbon = !string.IsNullOrEmpty(Model.RibbonText);
                     if (hasRibbon) { hasRibbonClass = "has-ribbon"; }
                 }
-                <div class="col-12 col-md-4 cc-campaign-sign-up-band-right-container @hasRibbonClass no-padding">
+                <div class="col-12 col-md-5 col-lg-4 cc-campaign-sign-up-band-right-container @hasRibbonClass no-padding">
                     @{
                         if (hasRibbon)
                         {
