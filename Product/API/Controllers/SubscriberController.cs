@@ -889,9 +889,9 @@ namespace UpDiddyApi.Controllers
             return Json(new { groups = response });
         }
 
-        [HttpGet("/api/[controller]/search/{searchFilter}/{searchQuery?}")]
+        [HttpGet("/api/[controller]/search")]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
-        public IActionResult Search(string searchFilter, string searchQuery = null)
+        public IActionResult Search(string searchFilter = "any", string searchQuery = null)
         {
             searchQuery = HttpUtility.UrlDecode(searchQuery);
             searchFilter = HttpUtility.UrlDecode(searchFilter);
