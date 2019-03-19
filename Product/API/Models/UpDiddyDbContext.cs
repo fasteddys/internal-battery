@@ -156,6 +156,9 @@ namespace UpDiddyApi.Models
                 .Property<string>("MetaDataJSON")
                 .HasField("_metadata");
 
+            modelBuilder.Entity<Partner>()
+                .HasMany<PartnerReferrer>(e => e.Referrers);
+
             modelBuilder.Entity<Enrollment>()
                 .HasOne<CampaignCourseVariant>(e => e.CampaignCourseVariant)
                 .WithMany();
