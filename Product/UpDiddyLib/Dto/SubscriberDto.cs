@@ -11,6 +11,7 @@ namespace UpDiddyLib.Dto
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
+        public bool IsVerified { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
@@ -35,5 +36,6 @@ namespace UpDiddyLib.Dto
 
         // Marketing campaign offers that have not been used by subscriber
         public string CampaignOffer { get; set; }
+        public bool HasVerificationEmail { get; set; }
     }
 }

@@ -25,6 +25,7 @@ using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
 using AutoMapper.Configuration;
 using AutoMapper;
 using Microsoft.Extensions.Caching.Distributed;
+using UpDiddyApi.ApplicationCore;
 
 namespace UpDiddyApi.Controllers
 {
@@ -49,12 +50,56 @@ namespace UpDiddyApi.Controllers
 
 
 
+
+
+        [HttpPost]
+        // TODO Jab [Authorize(Policy = "IsRecruiterOrAdmin")]         
+        [Route("api/[controller]/{jobPostingDto}")]
+        public IActionResult CreateJobPosting([FromBody] JobPostingDto jobPostingDto)
+        {
+                       
+            JobPosting jobPosting = _mapper.Map<JobPosting>(jobPostingDto);
+            // use factory method to make sure all the base data values are set just 
+            // in case the caller didn't set them
+            BaseModelFactory.SetDefaultsForAddNew(jobPosting);
+            jobPosting.GoogleCloudIndexStatus = (int) JobPostingIndexStatus.NotIndexed;
+            _db.JobPosting.Add(jobPosting);
+
+            return Ok(_mapper.Map<SubscriberDto>(jobPosting));
+        }
+
+        //TODO JAB Remove test endpoint
+        [HttpGet]         
+        [Route("api/[controller]")]
+        public IActionResult GetJobPosting()
+        {
+
+            JobPostingDto posting = new JobPostingDto()
+            {
+                Title = "C# developers needed",
+                Description = "need some devs for something or another",
+                PostingDateUTC = DateTime.UtcNow,
+                JobPostingGuid = Guid.NewGuid()
+
+
+            };
+            
+            return Ok(posting);
+        }
+
+
+
+
+        /*
+
         CloudTalentSolution.Job j = new Google.Apis.CloudTalentSolution.v3.Data.Job()
         {
 
            
             
         };
+
+    */
 
 
     }

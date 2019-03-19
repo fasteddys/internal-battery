@@ -1,7 +1,17 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
 @using UpDiddyLib.Helpers
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 @model IEnumerable<SubscriberDto>
+
+@{
+    var isCareerCircleAdmin = false;
+    if ((await AuthorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin")).Succeeded)
+    {
+        isCareerCircleAdmin = true;
+    }
+}
 
 @(Html
         .Grid(Model)
@@ -12,16 +22,19 @@
             columns.Add(model => model.Email).Sortable(true).Titled("Email");
             columns.Add(model => model.PhoneNumber).Sortable(true).Titled("Phone").RenderedAs(model => Utils.FormatPhoneNumber(model.PhoneNumber));
             columns.Add(model => model.City).Sortable(true).Titled("City");
-            columns.Add(model => model.State.Name).Titled("State");
+            columns.Add(model => model.State.Name).Titled("State").Sortable(true).Filterable(true);
             columns.Add(model => model.ModifyDate).Sortable(true).Titled("Last Modified").RenderedAs(model => model.ModifyDate.HasValue ? model.ModifyDate.Value.ToShortDateString() : string.Empty);
-            columns.Add(model => $"<a href=\"Subscriber/{model.SubscriberGuid}\"><i class=\"far fa-eye\"></i></a>").Titled("Actions").Encoded(false).AppendCss("text-center");
-})
+            columns.Add(model => $"<a href=\"Subscriber/{model.SubscriberGuid}\"><i class=\"far fa-eye\"></i></a>").Titled("View").Encoded(false).AppendCss("text-center");
+            if (isCareerCircleAdmin)
+                columns.Add(model => $"<a href=\"javascript:deleteSubscriber('{model.SubscriberGuid}');\"><i class=\"fa fa-trash\"></i></a>").Titled("Delete").Encoded(false).AppendCss("text-center");
+        })
         .AppendCss("table table-primary table-striped")
         .Empty("No data found")
         .Pageable(pager =>
         {
-            pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
+            pager.PageSizes = new Dictionary<Int32, String> { { 20, "20" }, { 50, "50" }, { 0, "All" } };
             pager.ShowPageSizes = true;
-            pager.RowsPerPage = 10;
+            pager.RowsPerPage = 20;
         })
+        .AppendCss("list-grid")
 )

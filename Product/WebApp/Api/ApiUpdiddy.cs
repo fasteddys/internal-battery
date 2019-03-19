@@ -21,6 +21,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
+using System.Threading;
 
 namespace UpDiddy.Api
 {
@@ -135,6 +136,7 @@ namespace UpDiddy.Api
                 SetCachedValue<IList<TopicDto>>(cacheKey, rval);
             }
             return rval;
+             
         }
 
         public async Task<TopicDto> TopicByIdAsync(int TopicId)
@@ -493,7 +495,10 @@ namespace UpDiddy.Api
         {
             return await PostAsync<SubscriberDto>("subscriber");
         }
-
+        public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid)
+        {
+            return await DeleteAsync<bool>($"subscriber/{subscriberGuid}");
+        }
         public async Task<SubscriberWorkHistoryDto> AddWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory)
         {
             return await PostAsync<SubscriberWorkHistoryDto>(string.Format("subscriber/{0}/work-history", subscriberGuid.ToString()), workHistory);
@@ -532,6 +537,14 @@ namespace UpDiddy.Api
             return await GetAsync<LinkedInProfileDto>("linkedin");
         }
         #endregion
+
+        #region EmailVerification
+        public async Task<BasicResponseDto> VerifyEmailAsync(Guid token)
+        {
+            return await PostAsync<BasicResponseDto>($"subscriber/verify-email/{token}");
+        }
+        #endregion
+
         public async Task<BasicResponseDto> SyncLinkedInAccountAsync(string linkedInCode, string returnUrl)
         {
             return await PutAsync<BasicResponseDto>($"linkedin/sync-profile/{linkedInCode}?returnUrl={returnUrl}");
@@ -716,24 +729,14 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        public async Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchQuery)
+        public async Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery)
         {
-            string cacheKey = $"SubscriberSearch{searchQuery}";
-            IList<SubscriberDto> rval = GetCachedValue<IList<SubscriberDto>>(cacheKey);
-
-            if (rval != null)
-                return rval;
-            else
-            {
-                rval = await _SubscriberSearchAsync(searchQuery);
-                SetCachedValue<IList<SubscriberDto>>(cacheKey, rval);
-            }
-            return rval;
+            return await GetAsync<IList<SubscriberDto>>($"subscriber/search/{searchFilter}/{searchQuery}");
         }
 
-        private async Task<IList<SubscriberDto>> _SubscriberSearchAsync(string searchQuery)
+        public async Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync()
         {
-            return await GetAsync<IList<SubscriberDto>>($"subscriber/search/{searchQuery}");
+            return await GetAsync<IList<SubscriberSourceDto>>("subscriber/sources");
         }
 
         private async Task<SubscriberDto> _SubscriberAsync(Guid subscriberGuid)
@@ -768,9 +771,9 @@ namespace UpDiddy.Api
         public async Task<PartnerDto> GetPartnerAsync(Guid PartnerGuid)
         {
             IList<PartnerDto> _partners = await GetPartnersAsync();
-            foreach(PartnerDto partner in _partners)
+            foreach (PartnerDto partner in _partners)
             {
-                if(partner.PartnerGuid == PartnerGuid)
+                if (partner.PartnerGuid == PartnerGuid)
                 {
                     return partner;
                 }
@@ -807,10 +810,10 @@ namespace UpDiddy.Api
 
             // Return the newly created partner
             return updatedPartnerResponse;
-            
+
         }
 
-        
+
         public async Task<BasicResponseDto> DeletePartnerAsync(Guid partnerGuid)
         {
             // Update partner
@@ -823,7 +826,7 @@ namespace UpDiddy.Api
             // Return the newly created partner
             return deletedPartnerResponse;
         }
-        
+
 
         #endregion
     }

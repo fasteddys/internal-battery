@@ -4,11 +4,8 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-    public class JobPostingDto
-    {
-        
-        public int JobPostingId { get; set; }
-        
+    public class JobPostingDto : BaseDto
+    {       
         public Guid? JobPostingGuid { get; set; }
         
         public DateTime PostingDateUTC { get; set; }
@@ -28,10 +25,8 @@ namespace UpDiddyLib.Dto
        
         public string Description { get; set; }
        
-
         SecurityClearanceDto SecurityClearance { get; set; }
- 
- 
+  
         public List<EmploymentTypeDto> EmploymentTypes { get; set; } = new List<EmploymentTypeDto>();
         public bool H2Visa { get; set; }
         public int TelecommutePercentage { get; set; }
@@ -42,10 +37,6 @@ namespace UpDiddyLib.Dto
         public Boolean ThirdPartyApply { get; set; }
         public string ThirdPartyApplicationUrl { get; set; }
         public string Location { get; set; }
-
-
         
-
-
     }
 }

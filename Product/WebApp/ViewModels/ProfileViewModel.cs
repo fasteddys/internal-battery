@@ -105,6 +105,8 @@ namespace UpDiddy.ViewModels
         }
         // no validation data annotation required for email since this has been validated by MSAL and cannot be modified by the user
         public string Email { get; set; }
+        public bool IsVerified { get; set; }
+        public bool HasVerificationEmail { get; set; }
         [RegularExpression(@"^http(s)?://([\w]+.)?facebook.com/[A-z0-9_]+/?$", ErrorMessage = "The Facebook profile URL is not valid.")]
         public string FacebookUrl { get; set; }
         [RegularExpression(@"^http(s)?://([\w]+.)?linkedin.com/in/[A-z0-9_-]+/?$", ErrorMessage = "The LinkedIn profile URL is not valid.")]

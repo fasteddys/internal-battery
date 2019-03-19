@@ -52,6 +52,7 @@
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Braintree" Version="4.7.0" />
     <PackageReference Include="Google.Apis.CloudTalentSolution.v3" Version="1.38.0.1525" />
+    <PackageReference Include="Google.Protobuf" Version="3.7.0" />
     <PackageReference Include="Hangfire" Version="1.6.21" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.8.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.5.1" />

@@ -1,0 +1,38 @@
+﻿
+<div class="container">
+    <div class="row">
+        <div class="col-10 offset-1">
+            <div class="mt-3 pt-3">
+                <h2>Email Verification Successful!</h2>
+                <p>
+                    Thank you for verifying your email. You will now be redirected to your profile.
+                    If for some reason you are not redirected, don't worry, just click <a href="/Home/Profile">here</a>.
+                </p>
+                <div class="circle-wrapper">
+                    <div class="outerCircle"></div>
+                    <div class="innerCircle"></div>
+                    <div class="center"><span id="count"></span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var count = 7;
+            $('#count').text(count);
+            var timer = setInterval(function () {
+                if (count <= 0) {
+                    window.location = "/Home/Profile";
+                    clearInterval(timer);
+                    $('.circle-wrapper').html('Redirecting...');
+                    return;
+                }
+                count -= 1;
+                $('#count').text(count);
+            }, 1000);
+        });
+    </script>
+}

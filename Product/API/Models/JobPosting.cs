@@ -7,10 +7,12 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Models
 {
-    public class JobPosting : BaseModel
-    {
 
-        
+
+    public enum JobPostingIndexStatus { NotIndexed = 0, Indexed, DeletedFromIndex, IndexError  };
+
+    public class JobPosting : BaseModel
+    {        
         public int JobPostingId { get; set; }
         /// <summary>
         /// Posting Guid
@@ -43,7 +45,7 @@ namespace UpDiddyApi.Models
 
         public int CompanyId { get; set; } 
 
-        Company Company { get; set; }
+        public Company Company { get; set; }
         /// <summary>
         /// Guid of industry associated with the job 
         /// </summary>
