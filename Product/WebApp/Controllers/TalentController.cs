@@ -29,7 +29,7 @@ namespace UpDiddy.Controllers
 
             var selectListItems = subscriberSourcesDto.Select(ss => new SelectListItem()
             {
-                Text = $"{ss.Referrer} ({ss.Count})",
+                Text = $"{ss.Name} ({ss.Count})",
                 Value = ss.Referrer
             })
             .AsEnumerable();
