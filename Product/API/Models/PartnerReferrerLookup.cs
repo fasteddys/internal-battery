@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    [NotMapped]
-    public class v_SubscriberSources
+    public class PartnerReferrer
     {
-        public string Source { get; set; }
-        public string Referrer { get; set; }
-        public int Count { get; set; }
+        public int PartnerReferrerId { get; set; }
+        [Column(TypeName = "varchar(3000)")]
+        public string Path { get; set; }
         public int PartnerId { get; set; }
-        public string Name { get; set; }
     }
 }

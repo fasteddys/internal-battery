@@ -28,8 +28,10 @@
                     <label for="GridSearch" class="sr-only">Search</label>
                     <input id="GridSearch" class="form-control" placeholder="Search" />
                 </div>
-                <label for="select-filter">Subscriber Sources:</label>
-                @Html.DropDownListFor(model => model.SelectedSubscriberSource, Model.SubscriberSources, new { @class = "form-control" })
+                <div class="form-group ml-3">
+                    <label for="select-filter">Subscriber Sources:</label>
+                    @Html.DropDownListFor(model => model.SelectedSubscriberSource, Model.SubscriberSources, new { @class = "form-control" })
+                </div>
                 <button class="btn btn-primary" onclick="doSearch(false);">Search</button>
                 <button class="btn btn-primary" onclick="doSearch(true);">Reset</button>
             </div>

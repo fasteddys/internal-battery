@@ -1245,6 +1245,24 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("PartnerContact");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerReferrer", b =>
+                {
+                    b.Property<int>("PartnerReferrerId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("PartnerId");
+
+                    b.Property<string>("Path")
+                        .HasColumnType("varchar(3000)");
+
+                    b.HasKey("PartnerReferrerId");
+
+                    b.HasIndex("PartnerId");
+
+                    b.ToTable("PartnerReferrer");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Payment", b =>
                 {
                     b.Property<int>("PaymentId")
@@ -2425,6 +2443,14 @@ namespace UpDiddyApi.Migrations
 
                     b.HasOne("UpDiddyApi.Models.Partner", "Partner")
                         .WithMany()
+                        .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerReferrer", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Partner")
+                        .WithMany("Referrers")
                         .HasForeignKey("PartnerId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
