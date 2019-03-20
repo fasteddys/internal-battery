@@ -23,6 +23,10 @@
 
             input {
 
+                &.form-check-input {
+                    top: .2em;
+                    margin-top: 0;
+                }
                 &:focus {
                     outline: none;
                 }
