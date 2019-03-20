@@ -153,7 +153,7 @@
             }
 
             .hero-subheader {
-                font-size: 2rem;
+                font-size: 1.75rem;
                 margin-bottom: 1.5rem;
             }
         }
@@ -181,4 +181,15 @@
         }
     }
     
+}
+
+@media(max-width: 500px) {
+    #CommunityCampaignContainer {
+        #CommunityCampaignHero {
+
+            .hero-subheader {
+                color: lighten($color-tertiary, 17.5%);
+            }
+        }
+    }
 }
