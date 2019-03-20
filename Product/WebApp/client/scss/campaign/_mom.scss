@@ -1,4 +1,10 @@
 .mom-project-signup {
+    @media(max-width: 768px) {
+        .cc-campaign-sign-up-band {
+            background-position: -165px 0px !important;
+        }
+    }    
+
     .cc-campaign-sign-up-band {
         .cc-campaign-sign-up-band-left-container {
             text-align: left;
