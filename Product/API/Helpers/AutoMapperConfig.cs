@@ -45,7 +45,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<Contact, ContactDto>().ReverseMap();
             CreateMap<CampaignStatistic, CampaignStatisticDto>().ReverseMap();
             CreateMap<CampaignDetail, CampaignDetailDto>().ReverseMap();
-
+            CreateMap<v_SubscriberSources, SubscriberSourceDto>().ReverseMap();
 
             CreateMap<Contact, EmailContactDto>()
             .ForMember(c => c.email, opt => opt.MapFrom(src => src.Email))

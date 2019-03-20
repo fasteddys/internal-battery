@@ -8,11 +8,15 @@
     string dataFormAttribute = "";
     string hyperLinkAttribute = "";
     string buttonDisplay = "";
+    string outerClass = "";
+    string innerClass = Model.ButtonClass;
     if (Model.ButtonAction == ActionButtonViewModel.Action.CTA && !string.IsNullOrEmpty(Model.Hyperlink))
     {
         tag = "a";
         innerTag = "div";
         hyperLinkAttribute = "href=" + Model.Hyperlink;
+        outerClass = Model.ButtonClass;
+        innerClass = "";
     }
     else if (Model.ButtonAction == ActionButtonViewModel.Action.SUBMIT)
     {
@@ -26,9 +30,9 @@
 
 }
 
-<@tag @hyperLinkAttribute class="action-container @buttonDisplay">
-    <@innerTag id="ButtonComponent" 
-               class="button-container @Model.ChosenColorScheme @Model.SkewDirection font-bold" @dataFormAttribute
+<@tag @hyperLinkAttribute class="action-container @buttonDisplay @outerClass">
+    <@innerTag id="ButtonComponent"
+               class="button-container @Model.ChosenColorScheme @Model.SkewDirection font-bold @innerClass" @dataFormAttribute
                data-action-type="@Model.ButtonAction">
         @Html.Raw(Model.Text)
     </@innerTag>

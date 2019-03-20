@@ -1,0 +1,44 @@
+.selectize-control {
+    &.multi {
+        .selectize-input {
+            > div.item,
+            > div.item.active {
+                font-family: FontAwesome, "Open Sans", Verdana, sans-serif;
+                background: $color-secondary;
+                color: white;
+                border: 0;
+                background-image: none;
+                padding: .25rem 5px;
+                font-size: .75rem;
+                font-size: 13px;
+                font-weight: 400;
+
+                @media (max-width: 850px) {
+                    padding: .5rem 10px;
+                }
+            }
+        }
+    }
+
+    &.plugin-remove_button {
+        .selectize-input {
+            [data-value] {
+                padding-right: 25px !important;
+                .remove {
+                    padding-top: 5px;
+                    width: 20px;
+                    border-color: $color-primary;
+                }
+
+                @media (max-width: 850px) {
+                    padding-right: 40px !important;
+
+                    .remove {
+                        padding-top: 8px;
+                        width: 30px;
+                    }
+                }
+            }
+        }
+    }
+}

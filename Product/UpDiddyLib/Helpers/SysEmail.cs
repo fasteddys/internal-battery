@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using UpDiddyLib.Dto;
+using System.Threading.Tasks;
 
 namespace UpDiddyLib.Helpers
 {
@@ -29,6 +30,22 @@ namespace UpDiddyLib.Helpers
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = AsyncHelper.RunSync<Response>(() => client.SendEmailAsync(msg));
             return true;
+        }
+
+        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, string subject = null)
+        {
+            var client = new SendGridClient(_apiKey);
+            var message = new SendGridMessage();
+            message.SetFrom(new EmailAddress("support@careercircle.com", "CareerCircle Support"));
+            message.AddTo(new EmailAddress(email));
+            message.SetTemplateId(templateId);
+            message.SetTemplateData(templateData);
+            if (subject != null)
+                message.SetSubject(subject);
+            var response = await client.SendEmailAsync(message);
+            int statusCode = (int)response.StatusCode;
+
+            return statusCode >= 200 && statusCode <= 299;
         }
         
         public async void SendPurchaseReceiptEmail(
@@ -62,7 +79,6 @@ namespace UpDiddyLib.Helpers
             };
             message.SetTemplateData(purchaseReceipt);
             var response = await client.SendEmailAsync(message);
-                    
         }
 
         #region Private Helper Classes

@@ -39,6 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             Subscriber subscriber = _db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                .Include(s => s.EmailVerification)
                 .Include(s => s.State).ThenInclude(c => c.Country)
                 .Include(s => s.SubscriberSkills).ThenInclude(ss => ss.Skill)
                 .Include(s => s.Enrollments).ThenInclude(e => e.Course)
@@ -99,7 +100,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 // creation.  When that is done, it will only be necessary to do this check when we create  a new subscriber since the create contact logic
                 // will handle the case of associating the contact with existing subscribers
                 ContactFactory.AssociateSubscriber(_db, subscriberDto.Email, subscriber.SubscriberId);
+
+                subscriberDto.HasVerificationEmail = subscriber.EmailVerification != null;
             }
+
 
             return subscriberDto;
         }

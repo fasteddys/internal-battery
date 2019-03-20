@@ -101,6 +101,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             return responseUser;
         }
 
+        public async Task<string> DisableUser(Guid subscriberGuid)
+        {
+            // todo: do we care about the response?
+            return await SendGraphPatchRequest($"/users/{subscriberGuid}", "{ \"accountEnabled\" : false}");
+        }
+
         public async Task<string> SendGraphGetRequest(string api, string query)
         {
             // First, use ADAL to acquire a token using the app's identity (the credential)
@@ -127,6 +133,27 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             string responseJson = await response.Content.ReadAsStringAsync();
             return responseJson;
+        }
+
+        private async Task<string> SendGraphPatchRequest(string api, string json)
+        {
+            // NOTE: This client uses ADAL v2, not ADAL v4
+            AuthenticationResult result = await authContext.AcquireTokenAsync("https://graph.windows.net", credential);
+            string url = this.baseUrl + api + "?api-version=1.6";
+
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Patch, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await _http.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                string error = await response.Content.ReadAsStringAsync();
+                object formatted = JsonConvert.DeserializeObject(error);
+                throw new WebException("Error Calling the Graph API: \n" + JsonConvert.SerializeObject(formatted, Formatting.Indented));
+            }
+
+            return await response.Content.ReadAsStringAsync();
         }
 
         private async Task<string> SendGraphPostRequest(string api, string json)

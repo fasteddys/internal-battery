@@ -404,11 +404,10 @@ var findMaxCarouselItemHeight = function () {
 
 var setCarouselHeight = function () {
     var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
-    if (width >= 768) {
-        $('.carousel-item').css("height", 'initial');
-        $('.carousel-item').css("min-height", findMaxCarouselItemHeight());
-    }
-   
+    var offset = (width >= 768) ? 150 : 100;
+    var height = (window.innerHeight > 1000) ? 650 : window.innerHeight;
+    $('.carousel-item').css("height", 'initial');
+    $('.carousel-item').css("min-height", height - offset);
 };
 
 String.prototype.toProperCase = function () {

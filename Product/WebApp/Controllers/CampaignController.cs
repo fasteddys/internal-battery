@@ -96,9 +96,14 @@ namespace UpDiddy.Controllers
             }
         }
 
-        // Can't delete this endpoint until community campaign is expired.
+        [HttpGet("/Wozu")]
+        public IActionResult WozU()
+        {
+            return View();
+        }
+
         [HttpGet]
-        [Route("/Community/{CampaignGuid?}/{ContactGuid?}")]
+        [Route("/Join/{CampaignGuid?}/{ContactGuid?}")]
         public async Task<IActionResult> CampaignAsync(Guid CampaignGuid, Guid ContactGuid)
         {
             if (CampaignGuid == Guid.Empty || ContactGuid == Guid.Empty)

@@ -3,40 +3,36 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
-@model CampaignViewModel;
+@model SignUpViewModel;
 
-<div id="CampaignContainer">
-    <div class="cc-campaign-sign-up-band row" style="background-image: url('https://careercirclestaging.blob.core.windows.net/assets/AdobeStock_119520712_169_crop_optimize.jpg')">
+<div id="CampaignContainer" class="mom-project-signup">
+    <div class="cc-campaign-sign-up-band row" style="background-image: url('/images/handshake-hero.jpg'); background-position: top">
         <div class="col-12">
             <div class="container">
                 <div class="row">
-                    <div class="col-12 col-md-8 cc-campaign-sign-up-band-left-container  d-flex align-items-end">
+                    <div class="col-12 col-md-7 col-lg-8 cc-campaign-sign-up-band-left-container  d-flex align-items-center">
                         <div class="row">
                             <div class="col no-padding">
                                 <div class="row">
-                                    <div class="col-2 no-padding d-none d-lg-block">
-                                        <i class="fas fa-briefcase"></i>
-                                    </div>
-                                    <div class="col-10 no-padding">
+                                    <div class="col-12 no-padding">
                                         <div class="row">
                                             <div class="col-12 hero-header font-bold">
-                                                Welcome, Mom Project!
+                                                CareerCircle welcomes<br /> <span>The Mom Project</span>
                                             </div>
                                             <div class="col-12 campaign-bullet-list">
                                                 <div class="d-flex flex-column bd-highlight mb-3 mt-3">
-                                                    <div class="bd-highlight font-bold">Sign up</div>
-                                                    <div class="bd-highlight font-bold">Create a profile</div>
-                                                    <div class="bd-highlight font-bold">Restart your career</div>
+                                                    <div class="bd-highlight font-bold">Sign up.</div>
+                                                    <div class="bd-highlight font-bold">Create your profile.</div>
+                                                    <div class="bd-highlight font-bold">Restart you career.</div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-md-4 cc-campaign-sign-up-band-right-container no-padding">
+                    <div class="col-12 col-md-5 col-lg-4 cc-campaign-sign-up-band-right-container no-padding">
                         <div class="cc-campaign-sign-up-container">
                             <div class="row">
                                 <div class="col-12 no-padding sub-header font-bold">
@@ -47,23 +43,34 @@
                                 </div>
                                 <div class="col-12 no-padding">
                                     <div id="SignUpComponent">
-                                        @{
-                                            SignUpViewModel suvm = new SignUpViewModel();
-                                            if (Model.IsExpressCampaign)
-                                            {
-                                                suvm.IsExpressSignUp = true;
-                                            }
-                                            else
-                                            {
-                                                suvm.ContactGuid = Model.ContactGuid;
-                                                suvm.CampaignGuid = Model.CampaignGuid;
-                                                suvm.CampaignPhase = Model.CampaignPhase;
-                                                suvm.IsExpressSignUp = false;
-                                            }
-
-
-                                        }
-                                        @Html.Partial("Components/Authentication/_SignUp", suvm)
+                                        <form id="ExpressSignUpForm" asp-controller="Home" asp-action="ExpressSignUp">
+                                            <div class="row">
+                                                <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
+                                                    <input placeholder="Your email" form="ExpressSignUpForm" name="Email" asp-for="Email" required class="wide-input" />
+                                                </div>
+                                                <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
+                                                    <input placeholder="Password" type="password" form="ExpressSignUpForm" name="Password" asp-for="Password" required class="wide-input" />
+                                                </div>
+                                                <div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
+                                                    <input placeholder="Re-enter password" type="password" form="ExpressSignUpForm" name="ReenterPassword" asp-for="ReenterPassword" required class="wide-input" />
+                                                </div>
+                                                <div>
+                                                    <div class="form-check sign-up-input">
+                                                        <input type="checkbox" class="form-check-input" id="termsAndConditionsCheck" value="agree" required>
+                                                        <label class="form-check-label text-left" for="termsAndConditionsCheck">I agree to CareerCircle website <a target="_blank" href="/Home/TermsOfService">terms and conditions</a></label>
+                                                    </div>
+                                                </div>
+                                                <div id="SignUpAction" class="col-12 no-padding">
+                                                    @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                                                        Text = "Sign Up Now",
+                                                        SkewDirection = "skew-left-to-right",
+                                                        ChosenColorScheme = "cc-cscheme-darkred",
+                                                        Form = "ExpressSignUpForm",
+                                                        ButtonAction = ActionButtonViewModel.Action.SUBMIT
+                                                    })
+                                                </div>
+                                            </div>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -87,7 +94,7 @@
                             <div class="col-lg-8 offset-lg-2 mb-4 no-padding">
                                 <div class="cc-skew-band-content">
                                     <div class="row">
-                                        The Mom Project is partnering with CareerCircle to support hiring needs within Information Technology in Chicago. Together we want to provide you access to the education you need to upskill you for the career you want. Our family of companies will be partnering to introduce you to world-class employers once your training is complete. Be part of a community that you will be able to trust over the years with your careerskilling needs and career pathing. We invite you to set up an account and fill out your talent profile to get the partnership started!
+                                        The Mom Project is partnering with CareerCircle to support Information Technology hiring needs in the greater Chicago area.  Together we want to provide you access to the education you need to prepare you for the career you want. Our family of companies will be partnering to introduce you to world-class employers once your training is complete. Be part of a community that you will be able to trust over the years with your careerskilling needs as your career progresses. We invite you to set up an account and fill out your talent profile to get the partnership started!
                                     </div>
                                 </div>
                             </div>

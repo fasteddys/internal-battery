@@ -1,5 +1,6 @@
 ﻿$(document).ready(function () {
     $('#SelectedSkills').selectize({
+        plugins: ['remove_button'],
         valueField: 'skillGuid',
         labelField: 'skillName',
         searchField: 'skillName',

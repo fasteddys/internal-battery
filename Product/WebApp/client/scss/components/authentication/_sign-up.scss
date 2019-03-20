@@ -3,6 +3,12 @@
 // Base Styles
 @media (min-width: 0px) {
     #SignUpComponent {
+        .form-check {
+            .form-check-label {
+                line-height: 1.3em;
+            }
+        }
+
         .sign-up-input {
             margin-bottom: 1rem;
 
@@ -17,6 +23,10 @@
 
             input {
 
+                &.form-check-input {
+                    top: .2em;
+                    margin-top: 0;
+                }
                 &:focus {
                     outline: none;
                 }

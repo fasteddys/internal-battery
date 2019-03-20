@@ -126,17 +126,21 @@ namespace UpDiddyApi.Models
         public DbSet<CampaignContact> CampaignContact { get; set; }
         public DbSet<CampaignPhase> CampaignPhase { get; set; }
 
-
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
         public DbQuery<CampaignDetail> CampaignDetail { get; set; }
         public DbSet<Partner> Partner { get; set; }
         public DbSet<PartnerContact> PartnerContact { get; set; }
+        public DbQuery<v_SubscriberSources> SubscriberSources {get; set; }
+        public DbQuery<SubscriberSearch> SubscriberSearch { get; set; }
 
         #endregion
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder
+                .Query<v_SubscriberSources>()
+                .ToView("v_SubscriberSources");
 
             modelBuilder.Entity<Campaign>()
                 .HasIndex(pc => pc.Name)
@@ -151,6 +155,9 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<PartnerContact>()
                 .Property<string>("MetaDataJSON")
                 .HasField("_metadata");
+
+            modelBuilder.Entity<Partner>()
+                .HasMany<PartnerReferrer>(e => e.Referrers);
 
             modelBuilder.Entity<Enrollment>()
                 .HasOne<CampaignCourseVariant>(e => e.CampaignCourseVariant)
