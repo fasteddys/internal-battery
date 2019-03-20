@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    public class SecurityClearance
+    public class SecurityClearance : BaseModel
     {
         public int SecurityClearanceId { get; set; }
         public Guid SecurityClearanceGuid { get; set; }

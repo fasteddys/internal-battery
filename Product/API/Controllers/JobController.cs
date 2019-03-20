@@ -29,32 +29,34 @@ using UpDiddyApi.ApplicationCore;
 
 namespace UpDiddyApi.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
+ 
     public class JobController : ControllerBase
     {
-
+ 
         private readonly UpDiddyDbContext _db = null;
         private readonly IMapper _mapper;
-        private readonly IConfiguration _configuration;
+        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly ILogger _syslog;
+        private readonly IHttpClientFactory _httpClientFactory = null;
 
-        public JobController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<TopicController> sysLog, IDistributedCache distributedCache)
 
-        {
+        public JobController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory)
+
+        {   
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
+            _httpClientFactory = httpClientFactory;
         }
 
 
 
-
+        
 
         [HttpPost]
         // TODO Jab [Authorize(Policy = "IsRecruiterOrAdmin")]         
-        [Route("api/[controller]/{jobPostingDto}")]
+        [Route("api/[controller]")]
         public IActionResult CreateJobPosting([FromBody] JobPostingDto jobPostingDto)
         {
                        
@@ -62,32 +64,136 @@ namespace UpDiddyApi.Controllers
             // use factory method to make sure all the base data values are set just 
             // in case the caller didn't set them
             BaseModelFactory.SetDefaultsForAddNew(jobPosting);
+            // map company id 
+            if ( jobPostingDto.Company != null )
+            {
+                Company company = CompanyFactory.GetCompanyByGuid(_db, jobPostingDto.Company.CompanyGuid);
+                if (company != null)
+                    jobPosting.CompanyId = company.CompanyId;
+            }
+            // map industry id
+            if ( jobPostingDto.Industry != null )
+            {
+                Industry industry = IndustryFactory.GetIndustryByGuid(_db, jobPostingDto.Industry.IndustryGuid);
+                if (industry != null)
+                    jobPosting.IndustryId = industry.IndustryId;
+            }
+
+            // map security clearance 
+            if (jobPostingDto.SecurityClearance != null)
+            {
+                SecurityClearance securityClearance = SecurityClearanceFactory.GetSecurityClearanceByGuid(_db, jobPostingDto.SecurityClearance.SecurityClearanceGuid);
+                if (securityClearance != null)
+                    jobPosting.SecurityClearanceId = securityClearance.SecurityClearanceId;
+            }
+
+            // map employment type
+            if (jobPostingDto.EmploymentType != null)
+            {
+                EmploymentType employmentType = EmploymentTypeFactory.GetEmploymentTypeByGuid(_db, jobPostingDto.EmploymentType.EmploymentTypeGuid);
+                if (employmentType != null)
+                    jobPosting.EmploymentTypeId = employmentType.EmploymentTypeId;
+            }
+
             jobPosting.GoogleCloudIndexStatus = (int) JobPostingIndexStatus.NotIndexed;
             _db.JobPosting.Add(jobPosting);
+            _db.SaveChangesAsync();
 
-            return Ok(_mapper.Map<SubscriberDto>(jobPosting));
+            return Ok(_mapper.Map<JobPostingDto>(jobPosting));
+        }
+        
+        //TODO JAB Remove test endpoint
+
+        [HttpGet]
+        [Route("api/[controller]")]
+        public IActionResult test()
+        {
+            return Ok();
         }
 
+        
         //TODO JAB Remove test endpoint
         [HttpGet]         
-        [Route("api/[controller]")]
+        [Route("api/[controller]/test-job")]
         public IActionResult GetJobPosting()
         {
+            CompanyDto company = new CompanyDto()
+            {
+                CompanyGuid = Guid.NewGuid(),
+                CompanyName = "Jim's Test Company",
+                CreateDate = DateTime.Now,
+                IsDeleted = 0,
+                CreateGuid = Guid.NewGuid(),
+                ModifyDate = DateTime.Now,
+                ModifyGuid = Guid.NewGuid()
+
+            };
+
+            IndustryDto industry = new IndustryDto()
+            {
+                IndustryGuid = Guid.NewGuid(),
+                Name = "Jim's test industry"
+            };
+
+            CompensationTypeDto compensationType = new CompensationTypeDto()
+            {
+                CompensationTypeName = "Hourly",
+                IsDeleted = 0,
+                CreateDate = DateTime.Now,
+                ModifyDate = DateTime.Now,
+                CompensationTypeGuid = Guid.NewGuid(),
+                CreateGuid = Guid.NewGuid(),
+                ModifyGuid = Guid.NewGuid()
+
+
+            };
+
+            SecurityClearanceDto securityClearanceDto = new SecurityClearanceDto()
+            {
+                SecurityClearanceGuid = Guid.NewGuid(),
+                Name = "Super Duper Secreter"
+            };
+
+            EmploymentTypeDto employmentTypeDto = new EmploymentTypeDto()
+            {
+                EmploymentTypeGuid = Guid.NewGuid(),
+                Name = "Hourly"
+            };
+
+        
 
             JobPostingDto posting = new JobPostingDto()
             {
                 Title = "C# developers needed",
                 Description = "need some devs for something or another",
                 PostingDateUTC = DateTime.UtcNow,
-                JobPostingGuid = Guid.NewGuid()
+                JobPostingGuid = Guid.NewGuid(),
+                IsDeleted = 0,
+                Company = company,
+                H2Visa = false,
+                Industry = industry,
+                Compensation = 35.00M,
+                CompensationTypeId = 1,
+                CreateDate = DateTime.Now,
+                ModifyDate = DateTime.Now,
+                PostingExpirationDateUTC = DateTime.Now,
+                CreateGuid = Guid.NewGuid(),
+                ModifyGuid = Guid.NewGuid(),
+                Location = "21204",
+                CompensationType = compensationType,
+                GoogleCloudIndexStatus = 1,
+                GoogleCloudUri = "/projects/projectId/JobGuid",
+                TelecommutePercentage = 10,
+                ThirdPartyApply = false,
+                ThirdPartyApplicationUrl = "http://www.ebay.com",
+                SecurityClearance   = securityClearanceDto,
+                EmploymentType = employmentTypeDto
 
-
-            };
-            
+            };            
             return Ok(posting);
         }
 
-
+        
 
 
         /*

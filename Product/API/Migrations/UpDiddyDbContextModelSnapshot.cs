@@ -915,35 +915,6 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("EducationalInstitution");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.EmploymentType", b =>
-                {
-                    b.Property<int>("EmploymentTypeId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<Guid>("EmploymentTypeGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<int?>("JobPostingId");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("Name");
-
-                    b.HasKey("EmploymentTypeId");
-
-                    b.HasIndex("JobPostingId");
-
-                    b.ToTable("EmploymentType");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.EmailVerification", b =>
                 {
                     b.Property<int>("EmailVerificationId")
@@ -968,6 +939,31 @@ namespace UpDiddyApi.Migrations
                         .IsUnique();
 
                     b.ToTable("EmailVerification");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.EmploymentType", b =>
+                {
+                    b.Property<int>("EmploymentTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<Guid>("EmploymentTypeGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("EmploymentTypeId");
+
+                    b.ToTable("EmploymentType");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Enrollment", b =>
@@ -1131,7 +1127,17 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
                     b.Property<Guid>("IndustryGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
 
                     b.Property<string>("Name");
 
@@ -1157,6 +1163,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid>("CreateGuid");
 
                     b.Property<string>("Description");
+
+                    b.Property<int?>("EmploymentTypeId");
 
                     b.Property<int>("GoogleCloudIndexStatus");
 
@@ -1191,6 +1199,10 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("Title");
 
                     b.HasKey("JobPostingId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("EmploymentTypeId");
 
                     b.HasIndex("IndustryId");
 
@@ -1682,6 +1694,16 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("SecurityClearanceId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
 
                     b.Property<string>("Name");
 
@@ -2509,13 +2531,6 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.EmploymentType", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.JobPosting")
-                        .WithMany("EmploymentTypes")
-                        .HasForeignKey("JobPostingId");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.Enrollment", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Course", "Course")
@@ -2535,6 +2550,15 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.JobPosting", b =>
                 {
+                    b.HasOne("UpDiddyApi.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.EmploymentType", "EmploymentType")
+                        .WithMany()
+                        .HasForeignKey("EmploymentTypeId");
+
                     b.HasOne("UpDiddyApi.Models.Industry", "Industry")
                         .WithMany()
                         .HasForeignKey("IndustryId");

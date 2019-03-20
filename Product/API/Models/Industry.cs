@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    public class Industry
+    public class Industry : BaseModel
     {
 
         public int IndustryId { get; set; }

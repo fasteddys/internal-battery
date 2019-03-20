@@ -9,7 +9,7 @@ namespace UpDiddyApi.Models
 {
 
 
-    public enum JobPostingIndexStatus { NotIndexed = 0, Indexed, DeletedFromIndex, IndexError  };
+    public enum JobPostingIndexStatus { NotIndexed = 0, Indexed, DeletedFromIndex, IndexError, IndexDeleteError, IndexUpdateError  };
 
     public class JobPosting : BaseModel
     {        
@@ -68,7 +68,10 @@ namespace UpDiddyApi.Models
         /// <summary>
         /// Position employment type  e.g. direct hire, contractor, part time, etc 
         /// </summary>
-        public List<EmploymentType> EmploymentTypes { get; set; } = new List<EmploymentType>();
+        
+        public int? EmploymentTypeId { get; set; }
+
+        public EmploymentType EmploymentType { get; set; }
         /// <summary>
         /// Flag indicating if company offer H2 Visas
         /// </summary>

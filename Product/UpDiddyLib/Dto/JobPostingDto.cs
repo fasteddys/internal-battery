@@ -25,15 +25,16 @@ namespace UpDiddyLib.Dto
        
         public string Description { get; set; }
        
-        SecurityClearanceDto SecurityClearance { get; set; }
+        public SecurityClearanceDto SecurityClearance { get; set; }
   
-        public List<EmploymentTypeDto> EmploymentTypes { get; set; } = new List<EmploymentTypeDto>();
+        public EmploymentTypeDto EmploymentType { get; set; } 
+
         public bool H2Visa { get; set; }
         public int TelecommutePercentage { get; set; }
         public Decimal Compensation { get; set; }
         public int? CompensationTypeId { get; set; }
 
-        CompensationTypeDto CompensationType { get; set; }
+        public CompensationTypeDto CompensationType { get; set; }
         public Boolean ThirdPartyApply { get; set; }
         public string ThirdPartyApplicationUrl { get; set; }
         public string Location { get; set; }

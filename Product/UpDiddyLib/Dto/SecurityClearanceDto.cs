@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-    public class SecurityClearanceDto
+    public class SecurityClearanceDto : BaseDto
     {
       
         public Guid SecurityClearanceGuid { get; set; }
