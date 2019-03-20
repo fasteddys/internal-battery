@@ -18,7 +18,7 @@ namespace UpDiddyApi.Migrations
             migrationBuilder.Sql(@"
                 update Subscriber set IsVerified = 0 where SubscriberId in
                     (SELECT sub.SubscriberId
-                        FROM [careercircledb].[dbo].[Subscriber] sub
+                        FROM Subscriber sub
 	                        inner join SubscriberProfileStagingStore store on store.SubscriberId = sub.SubscriberId
 	                    Where ProfileSource = 'CareerCircle')
             ");
