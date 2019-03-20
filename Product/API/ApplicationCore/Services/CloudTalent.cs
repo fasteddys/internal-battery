@@ -48,18 +48,41 @@ namespace UpDiddyApi.ApplicationCore.Services
             // in GOOGLE_APPLICATION_CREDENTIALS environmental variable
             _credential = GoogleCredential.GetApplicationDefaultAsync().Result;
 
+            // Specify the Service scope.
+            if (_credential.IsCreateScopedRequired)
+            {
+                _credential = _credential.CreateScoped(new[]
+                {
+                    Google.Apis.CloudTalentSolution.v3.CloudTalentSolutionService.Scope.Jobs
+                });
+            }
+
+
             _jobServiceClient = new CloudTalentSolutionService(new BaseClientService.Initializer
             {
                 HttpClientInitializer = _credential,
                 GZipEnabled = false
             });
+
+ 
+
+
+
         }
         #endregion
-
+        /// <summary>
+        /// Add a job posting to the google cloud talent solution
+        /// </summary>
+        /// <param name="jobPosting"></param>
+        /// <returns></returns>
         public Job IndexJob(JobPosting jobPosting)
         {            
             try
             {
+
+                var x = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
+                var y = Environment.GetEnvironmentVariable("windir");
+
                 Job TalentCloudJob = JobPostingFactory.ToGoogleJob(jobPosting);           
                 CreateJobRequest CreateJobRequest = new CreateJobRequest();
                 CreateJobRequest.Job = TalentCloudJob;

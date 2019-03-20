@@ -32,11 +32,11 @@ namespace UpDiddyApi.Models
         /// The uri returned from google talent cloud for identifying the posting in the
         /// talent cloud
         /// </summary>
-        public string GoogleCloudUri { get; set; }
+        public string CloudTalentUri { get; set; }
         /// <summary>
         ///  The postings google cloud indexing status
         /// </summary>
-        public int GoogleCloudIndexStatus { get; set; } // status of posting in google cloud job index 
+        public int CloudTalentIndexStatus { get; set; } // status of posting in google cloud job index 
 
         /**************** job posting data   ****************************/
         /// <summary>

@@ -12,9 +12,9 @@ namespace UpDiddyLib.Dto
         
         public DateTime PostingExpirationDateUTC { get; set; }
         
-        public string GoogleCloudUri { get; set; }
+        public string CloudTalentUri { get; set; }
         
-        public int GoogleCloudIndexStatus { get; set; }  
+        public int CloudTalentIndexStatus { get; set; }  
      
         public CompanyDto  Company { get; set; }
      

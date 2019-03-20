@@ -10,6 +10,7 @@ using Google.Protobuf.WellKnownTypes;
 using Google.Apis.CloudTalentSolution.v3;
 using Google.Apis.Services;
 using Google.Apis.Auth.OAuth2;
+using UpDiddyApi.ApplicationCore.Services;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
@@ -66,6 +67,29 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 jobToBeCreated.CustomAttributes = customAttributes;
 
             return jobToBeCreated;
+        }
+
+
+
+        static public bool AddJobToCloudTalent(UpDiddyDbContext db, CloudTalent ct,  JobPosting jobPosting)
+        {
+            try
+            {
+                // index the job to google 
+                Job job = ct.IndexJob(jobPosting);
+                // capture the jobs cloud talent name 
+                jobPosting.CloudTalentUri = job.Name;
+                db.SaveChanges();
+              
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+
         }
 
 

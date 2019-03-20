@@ -21,6 +21,7 @@ using UpDiddyApi.Helpers.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using UpDiddyApi.ApplicationCore.Services;
 
 namespace UpDiddyApi.Workflow
 {
@@ -578,6 +579,23 @@ namespace UpDiddyApi.Workflow
 
 
         #endregion
+
+
+
+        #region Cloud Talent
+       
+        public bool CloudTalentAddJob(JobPosting jobPosting)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+
+            JobPostingFactory.AddJobToCloudTalent(_db, ct, jobPosting);
+
+            return true;
+        }
+
+
+        #endregion
+
 
 
 

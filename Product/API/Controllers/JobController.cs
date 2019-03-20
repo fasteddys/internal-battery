@@ -26,6 +26,8 @@ using AutoMapper.Configuration;
 using AutoMapper;
 using Microsoft.Extensions.Caching.Distributed;
 using UpDiddyApi.ApplicationCore;
+using Hangfire;
+using UpDiddyApi.Workflow;
 
 namespace UpDiddyApi.Controllers
 {
@@ -38,6 +40,7 @@ namespace UpDiddyApi.Controllers
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
+        private readonly int _postingTTL = 30;
 
 
         public JobController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory)
@@ -48,11 +51,9 @@ namespace UpDiddyApi.Controllers
             _configuration = configuration;
             _syslog = sysLog;
             _httpClientFactory = httpClientFactory;
+            _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
+         
         }
-
-
-
-        
 
         [HttpPost]
         // TODO Jab [Authorize(Policy = "IsRecruiterOrAdmin")]         
@@ -95,118 +96,25 @@ namespace UpDiddyApi.Controllers
                     jobPosting.EmploymentTypeId = employmentType.EmploymentTypeId;
             }
 
-            jobPosting.GoogleCloudIndexStatus = (int) JobPostingIndexStatus.NotIndexed;
+            jobPosting.CloudTalentIndexStatus = (int) JobPostingIndexStatus.NotIndexed;
+            jobPosting.JobPostingGuid = Guid.NewGuid();
+            if (jobPosting.PostingDateUTC < DateTime.UtcNow  ) 
+                jobPosting.PostingDateUTC = DateTime.UtcNow;
+            if (jobPosting.PostingExpirationDateUTC < DateTime.UtcNow)
+            {
+                jobPosting.PostingExpirationDateUTC = DateTime.UtcNow.AddDays( _postingTTL );
+            }
+ 
+
             _db.JobPosting.Add(jobPosting);
-            _db.SaveChangesAsync();
+            _db.SaveChanges();
+
+            //index job into google 
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting));
 
             return Ok(_mapper.Map<JobPostingDto>(jobPosting));
         }
-        
-        //TODO JAB Remove test endpoint
-
-        [HttpGet]
-        [Route("api/[controller]")]
-        public IActionResult test()
-        {
-            return Ok();
-        }
-
-        
-        //TODO JAB Remove test endpoint
-        [HttpGet]         
-        [Route("api/[controller]/test-job")]
-        public IActionResult GetJobPosting()
-        {
-            CompanyDto company = new CompanyDto()
-            {
-                CompanyGuid = Guid.NewGuid(),
-                CompanyName = "Jim's Test Company",
-                CreateDate = DateTime.Now,
-                IsDeleted = 0,
-                CreateGuid = Guid.NewGuid(),
-                ModifyDate = DateTime.Now,
-                ModifyGuid = Guid.NewGuid()
-
-            };
-
-            IndustryDto industry = new IndustryDto()
-            {
-                IndustryGuid = Guid.NewGuid(),
-                Name = "Jim's test industry"
-            };
-
-            CompensationTypeDto compensationType = new CompensationTypeDto()
-            {
-                CompensationTypeName = "Hourly",
-                IsDeleted = 0,
-                CreateDate = DateTime.Now,
-                ModifyDate = DateTime.Now,
-                CompensationTypeGuid = Guid.NewGuid(),
-                CreateGuid = Guid.NewGuid(),
-                ModifyGuid = Guid.NewGuid()
-
-
-            };
-
-            SecurityClearanceDto securityClearanceDto = new SecurityClearanceDto()
-            {
-                SecurityClearanceGuid = Guid.NewGuid(),
-                Name = "Super Duper Secreter"
-            };
-
-            EmploymentTypeDto employmentTypeDto = new EmploymentTypeDto()
-            {
-                EmploymentTypeGuid = Guid.NewGuid(),
-                Name = "Hourly"
-            };
-
-        
-
-            JobPostingDto posting = new JobPostingDto()
-            {
-                Title = "C# developers needed",
-                Description = "need some devs for something or another",
-                PostingDateUTC = DateTime.UtcNow,
-                JobPostingGuid = Guid.NewGuid(),
-                IsDeleted = 0,
-                Company = company,
-                H2Visa = false,
-                Industry = industry,
-                Compensation = 35.00M,
-                CompensationTypeId = 1,
-                CreateDate = DateTime.Now,
-                ModifyDate = DateTime.Now,
-                PostingExpirationDateUTC = DateTime.Now,
-                CreateGuid = Guid.NewGuid(),
-                ModifyGuid = Guid.NewGuid(),
-                Location = "21204",
-                CompensationType = compensationType,
-                GoogleCloudIndexStatus = 1,
-                GoogleCloudUri = "/projects/projectId/JobGuid",
-                TelecommutePercentage = 10,
-                ThirdPartyApply = false,
-                ThirdPartyApplicationUrl = "http://www.ebay.com",
-                SecurityClearance   = securityClearanceDto,
-                EmploymentType = employmentTypeDto
-
-            };            
-            return Ok(posting);
-        }
-
-        
-
-
-        /*
-
-        CloudTalentSolution.Job j = new Google.Apis.CloudTalentSolution.v3.Data.Job()
-        {
-
-           
-            
-        };
-
-    */
-
-
+ 
     }
 }

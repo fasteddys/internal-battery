@@ -1152,6 +1152,10 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int>("CloudTalentIndexStatus");
+
+                    b.Property<string>("CloudTalentUri");
+
                     b.Property<int>("CompanyId");
 
                     b.Property<decimal>("Compensation");
@@ -1165,10 +1169,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("Description");
 
                     b.Property<int?>("EmploymentTypeId");
-
-                    b.Property<int>("GoogleCloudIndexStatus");
-
-                    b.Property<string>("GoogleCloudUri");
 
                     b.Property<bool>("H2Visa");
 
