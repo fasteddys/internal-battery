@@ -77,7 +77,7 @@
                         if ((await AuthorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin")).Succeeded)
                         {
                             <li>
-                                <a class="nav-link" id="AdminPortal" asp-controller="Admin" asp-action="Skills">Admin</a>
+                                <a class="nav-link" id="AdminPortal" asp-controller="Admin" asp-action="Dashboard">Admin</a>
                             </li>
                         }
                         <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a></li>

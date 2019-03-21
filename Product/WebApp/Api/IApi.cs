@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Net.Http;
 using UpDiddyLib.Dto.Marketing;
+using UpDiddyLib.Dto.Reporting;
 
 namespace UpDiddy.Api
 {
@@ -80,6 +81,10 @@ namespace UpDiddy.Api
         Task<IList<CampaignDetailDto>> CampaignDetailsSearchAsync(Guid campaignGuid);
         #endregion
 
+        #region Reporting
+        Task<SubscriberReportDto> GetSubscriberReportAsync(List<DateTime> dates = null);
+        Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync();
+        #endregion
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
     }
 }

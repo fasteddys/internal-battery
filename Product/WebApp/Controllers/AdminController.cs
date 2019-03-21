@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Dto.Reporting;
 using UpDiddyLib.Helpers;
 
 namespace UpDiddy.Controllers
@@ -100,6 +101,25 @@ namespace UpDiddy.Controllers
         public IActionResult Skills()
         {
             return View();
+        }
+
+        [HttpGet]
+        [Route("/[controller]/dashboard")]
+        public async Task<IActionResult> DashboardAsync()
+        {
+            List<DateTime> dates = new List<DateTime>();
+            // get monday
+            int delta = DayOfWeek.Monday - DateTime.Today.DayOfWeek;
+            DateTime monday = DateTime.Today.AddDays(delta);
+            for (int i = 0; i < 3; i++)
+            {
+                dates.Add(monday);
+                monday = monday.AddDays(-7);
+            }
+
+            ViewBag.subscriberReport = await _api.GetSubscriberReportAsync(dates);
+            ViewBag.partnerReport = await _api.GetSubscriberReportByPartnerAsync();
+            return View("Dashboard");
         }
 
         [HttpPut]

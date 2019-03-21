@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using UpDiddyLib.Shared;
+using UpDiddyApi.Models.Views;
 
 namespace UpDiddyApi.Models
 {
@@ -126,6 +127,8 @@ namespace UpDiddyApi.Models
         public DbSet<CampaignContact> CampaignContact { get; set; }
         public DbSet<CampaignPhase> CampaignPhase { get; set; }
 
+        public DbSet<PartnerReferrer> PartnerReferrer { get; set; }
+
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
@@ -133,6 +136,7 @@ namespace UpDiddyApi.Models
         public DbSet<Partner> Partner { get; set; }
         public DbSet<PartnerContact> PartnerContact { get; set; }
         public DbQuery<v_SubscriberSources> SubscriberSources {get; set; }
+        public DbQuery<v_SubscriberSignUpPartnerReference> SubscriberSignUpPartnerReferences { get; set; }
         public DbQuery<SubscriberSearch> SubscriberSearch { get; set; }
 
         #endregion
@@ -141,6 +145,10 @@ namespace UpDiddyApi.Models
             modelBuilder
                 .Query<v_SubscriberSources>()
                 .ToView("v_SubscriberSources");
+
+            modelBuilder
+                .Query<v_SubscriberSignUpPartnerReference>()
+                .ToView("v_SubscriberSignUpPartnerReferences");
 
             modelBuilder.Entity<Campaign>()
                 .HasIndex(pc => pc.Name)
