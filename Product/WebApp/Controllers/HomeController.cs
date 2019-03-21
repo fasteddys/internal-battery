@@ -805,7 +805,7 @@ namespace UpDiddy.Controllers
                         return Ok(new BasicResponseDto
                         {
                             StatusCode = subscriberResponse.StatusCode,
-                            Description = "/Home/LoggingIn"
+                            Description = "/session/signin"
                         });
                     default:
                         // If there's an error from contact-to-subscriber converstion API call,
