@@ -813,13 +813,13 @@ namespace UpDiddy.Controllers
                         return StatusCode(500, subscriberResponse);
                 }
             }
-            catch (Exception e)
+            catch (ApiException e)
             {
                 // Generic server error to display gracefully to the user.
                 return StatusCode(500, new BasicResponseDto
                 {
                     StatusCode = 500,
-                    Description = "Unfortunately, an error has occured with your submission. Please try again later."
+                    Description = e.ResponseDto.Description
                 });
             }
 
