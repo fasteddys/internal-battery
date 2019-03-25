@@ -1068,6 +1068,38 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("EnrollmentStatus");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.EntityType", b =>
+                {
+                    b.Property<int>("EntityTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Description");
+
+                    b.Property<Guid>("EntityTypeGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(50);
+
+                    b.HasKey("EntityTypeId");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[Name] IS NOT NULL");
+
+                    b.ToTable("EntityType");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Gender", b =>
                 {
                     b.Property<int>("GenderId")
@@ -1761,6 +1793,41 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("StateId");
 
                     b.ToTable("Subscriber");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberAction", b =>
+                {
+                    b.Property<int>("SubscriberId");
+
+                    b.Property<int>("ActionId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int?>("EntityId");
+
+                    b.Property<int?>("EntityTypeId");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<DateTime>("OccurredDate")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid>("SubscriberActionGuid");
+
+                    b.HasKey("SubscriberId", "ActionId");
+
+                    b.HasIndex("ActionId");
+
+                    b.HasIndex("EntityTypeId");
+
+                    b.ToTable("SubscriberAction");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberEducationHistory", b =>
@@ -2550,6 +2617,23 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.State", "State")
                         .WithMany()
                         .HasForeignKey("StateId");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberAction", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Action", "Action")
+                        .WithMany()
+                        .HasForeignKey("ActionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.EntityType", "EntityType")
+                        .WithMany()
+                        .HasForeignKey("EntityTypeId");
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberEducationHistory", b =>
