@@ -418,6 +418,12 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("CloudTalentIndexInfo");
+
+                    b.Property<int>("CloudTalentIndexStatus");
+
+                    b.Property<string>("CloudTalentUri");
+
                     b.Property<Guid>("CompanyGuid");
 
                     b.Property<string>("CompanyName");
@@ -426,9 +432,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<string>("GoogleCloudUri");
-
                     b.Property<int>("IsDeleted");
+
+                    b.Property<int>("IsHiringAgency");
+
+                    b.Property<int>("IsJobPoster");
 
                     b.Property<DateTime?>("ModifyDate");
 
@@ -1152,6 +1160,8 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("CloudTalentIndexInfo");
+
                     b.Property<int>("CloudTalentIndexStatus");
 
                     b.Property<string>("CloudTalentUri");
@@ -1176,7 +1186,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<Guid?>("JobPostingGuid");
+                    b.Property<Guid>("JobPostingGuid");
 
                     b.Property<string>("Location");
 
@@ -1205,6 +1215,8 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("EmploymentTypeId");
 
                     b.HasIndex("IndustryId");
+
+                    b.HasIndex("SecurityClearanceId");
 
                     b.ToTable("JobPosting");
                 });
@@ -2562,6 +2574,10 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Industry", "Industry")
                         .WithMany()
                         .HasForeignKey("IndustryId");
+
+                    b.HasOne("UpDiddyApi.Models.SecurityClearance", "SecurityClearance")
+                        .WithMany()
+                        .HasForeignKey("SecurityClearanceId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.LinkedInToken", b =>

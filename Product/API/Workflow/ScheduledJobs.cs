@@ -584,12 +584,10 @@ namespace UpDiddyApi.Workflow
 
         #region Cloud Talent
        
-        public bool CloudTalentAddJob(JobPosting jobPosting)
+        public bool CloudTalentAddJob(Guid jobPostingGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
-
-            JobPostingFactory.AddJobToCloudTalent(_db, ct, jobPosting);
-
+            JobPostingFactory.AddJobToCloudTalent(_db, ct, jobPostingGuid);
             return true;
         }
 

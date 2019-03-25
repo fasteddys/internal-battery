@@ -13,18 +13,18 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Helpers;
-using Google.Apis.CloudTalentSolution.v3.Data;
+using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
 using Google.Protobuf.WellKnownTypes;
 using Google.Apis.CloudTalentSolution.v3;
 using Google.Apis.Services;
 using Google.Apis.Auth.OAuth2;
 using UpDiddyApi.ApplicationCore.Factory;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class CloudTalent : BusinessVendorBase
     {
-
         private string _projectId = string.Empty;
         private string _projectPath = string.Empty;
         private CloudTalentSolutionService _jobServiceClient = null;
@@ -57,16 +57,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                 });
             }
 
-
             _jobServiceClient = new CloudTalentSolutionService(new BaseClientService.Initializer
             {
                 HttpClientInitializer = _credential,
                 GZipEnabled = false
             });
-
- 
-
-
 
         }
         #endregion
@@ -75,28 +70,158 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="jobPosting"></param>
         /// <returns></returns>
-        public Job IndexJob(JobPosting jobPosting)
+        public CloudTalentSolution.Job IndexJob(JobPosting jobPosting)
         {            
             try
             {
-
-                var x = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
-                var y = Environment.GetEnvironmentVariable("windir");
-
-                Job TalentCloudJob = JobPostingFactory.ToGoogleJob(jobPosting);           
-                CreateJobRequest CreateJobRequest = new CreateJobRequest();
+                CloudTalentSolution.Job TalentCloudJob = JobPostingFactory.ToGoogleJob(jobPosting);
+                CloudTalentSolution.CreateJobRequest CreateJobRequest = new CloudTalentSolution.CreateJobRequest();
                 CreateJobRequest.Job = TalentCloudJob;
-                // 
-                Job jobCreated = _jobServiceClient.Projects.Jobs.Create(CreateJobRequest, _projectPath).Execute();
- 
+                // "Google.Apis.Requests.RequestError\r\nInvalid value at 'job.posting_expire_time' (type.googleapis.com/google.protobuf.Timestamp), Field 'postingExpireTime', Illegal timestamp format; timestamps must end with 'Z' or have a valid timezone offset. [400]\r\nErrors [\r\n\tMessage[Invalid value at 'job.posting_expire_time' (type.googleapis.com/google.protobuf.Timestamp), Field 'postingExpireTime', Illegal timestamp format; timestamps must end with 'Z' or have a valid timezone offset.] Location[ - ] Reason[badRequest] Domain[global]\r\n]\r\n"
+                CloudTalentSolution.Job jobCreated = _jobServiceClient.Projects.Jobs.Create(CreateJobRequest, _projectPath).Execute();
+                // Update job posting with index error
+                jobPosting.CloudTalentUri = jobCreated.Name;
+                jobPosting.CloudTalentIndexInfo = "Indexed on " + Utils.ISO8601DateString(DateTime.Now);
+                jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.Indexed;
+                _db.SaveChanges();
+
                 return jobCreated;
             }
             catch (Exception e)
             {
-                _syslog.LogError(e, "CloudTalent.IndexJob Error", jobPosting);
+                // Update job posting with index error
+                jobPosting.CloudTalentIndexInfo = e.Message;
+                jobPosting.CloudTalentIndexStatus = (int) JobPostingIndexStatus.IndexError;
+                _db.SaveChanges();
+                _syslog.LogError(e, "CloudTalent.IndexJob Error", e, jobPosting);
                 throw e;
             }
         }
+
+        /// <summary>
+        /// Add company to google cloud talent solution
+        /// </summary>
+        /// <param name="company"></param>
+        /// <returns></returns>
+        public CloudTalentSolution.Company IndexCompany(Models.Company company)
+        {
+            try
+            {
+                bool isHiringAgency = false;
+                if (company.IsHiringAgency == 1)
+                    isHiringAgency = true;
+
+                CloudTalentSolution.Company companyToBeCreated = new CloudTalentSolution.Company()
+                {
+                    DisplayName = company.CompanyName,
+                    ExternalId = company.CompanyGuid.ToString(),
+                    HiringAgency = isHiringAgency
+                };
+
+                CloudTalentSolution.CreateCompanyRequest createCompanyRequest = new CloudTalentSolution.CreateCompanyRequest();
+                createCompanyRequest.Company = companyToBeCreated;
+                CloudTalentSolution.Company companyCreated = _jobServiceClient.Projects.Companies.Create(createCompanyRequest, _projectPath).Execute();
+
+                company.CloudTalentUri = companyCreated.Name;
+                company.CloudTalentIndexInfo = "Indexed on " + Utils.ISO8601DateString(DateTime.Now);
+                company.CloudTalentIndexStatus = (int)JobPostingIndexStatus.Indexed;
+                _db.SaveChanges();
+                return companyCreated;
+            }
+            catch (Exception e)
+            {
+                // Update job posting with index error
+                company.CloudTalentIndexInfo = e.Message;
+                company.CloudTalentIndexStatus = (int)JobPostingIndexStatus.IndexError;
+                _db.SaveChanges();
+                _syslog.LogError(e, "CloudTalent.IndexJob Error", e, company);
+                throw e;
+            }
+        }
+
+        #region job searching 
+
+
+        public JobSearchResultDto Search()
+        {
+            CloudTalentSolution.RequestMetadata requestMetadata = new CloudTalentSolution.RequestMetadata()
+            {
+                UserId = "CareerCircle.com",
+                SessionId = "n/a",
+                Domain = "www.careercircle.com"
+            };
+
+            // Create job query 
+            CloudTalentSolution.JobQuery jobQuery = new CloudTalentSolution.JobQuery();
+            // TODO JAB  pass in query 
+            string query = "javascript c#";
+            jobQuery.Query = query;
+
+            // Add CompanyFilters - Not sure if this is company URI name or company display name 
+            string companyName = "";
+            //jobQuery.CompanyNames = companyName;
+
+            // Add Custom Attribute Filter 
+            string customAttributeFilter = "LOWER(Skills) = \"javascript\"";
+            //jobQuery.CustomAttributeFilter = customAttributeFilter;
+
+            // Add Location Filter             
+            CloudTalentSolution.LocationFilter locationFilter = new CloudTalentSolution.LocationFilter()
+            {
+                // Address = ,
+                Address = "Towson MD",
+                DistanceInMiles = 300
+
+            };
+
+            jobQuery.LocationFilters = new List<CloudTalentSolution.LocationFilter>()
+            {
+                locationFilter
+            };
+
+            // Add histograms 
+            CloudTalentSolution.HistogramFacets histogramFacets = new CloudTalentSolution.HistogramFacets()
+            {
+                SimpleHistogramFacets = new List<String>
+                {
+                    "COMPANY_ID",
+                    "CITY",
+                    "DATE_PUBLISHED",
+                    "EMPLOYMENT_TYPE",
+                    "CATEGORY"
+
+                },
+                CustomAttributeHistogramFacets = new List<CloudTalentSolution.CustomAttributeHistogramRequest>
+               {
+                   new CloudTalentSolution.CustomAttributeHistogramRequest()
+                   {
+                      Key = "Skills",
+                      StringValueHistogram = true
+                   }
+               }
+            };
+
+            // Build search request 
+            CloudTalentSolution.SearchJobsRequest searchJobRequest = new CloudTalentSolution.SearchJobsRequest()
+            {
+                RequestMetadata = requestMetadata,
+                JobQuery = jobQuery,
+                SearchMode = "JOB_SEARCH",
+                HistogramFacets = histogramFacets
+            };
+            CloudTalentSolution.SearchJobsResponse searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
+
+      
+            JobSearchResultDto rval =  JobPostingFactory.MapSearchResults(_mapper, searchJobsResponse);
+            return rval;
+        }
+
+
+
+
+
+        #endregion
+
 
 
 

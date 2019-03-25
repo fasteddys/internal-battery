@@ -6,6 +6,8 @@ using AutoMapper;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
+using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
+
 
 namespace UpDiddyApi.Helpers
 {
@@ -51,6 +53,16 @@ namespace UpDiddyApi.Helpers
             CreateMap<Industry, IndustryDto>().ReverseMap();
             CreateMap<JobPosting, JobPostingDto>().ReverseMap();
 
+ 
+
+
+            // TODO JAB finish this mapping      
+            CreateMap<JobPostingDto, CloudTalentSolution.Job >()
+            .ForMember(c => c.Title, opt => opt.MapFrom(src => src.Title))
+            .ForMember(c => c.Description, opt => opt.MapFrom(src => src.Description))
+            .ForMember(c => c.Name, opt => opt.MapFrom(src => src.CloudTalentUri))             
+            .ReverseMap();
+
 
             CreateMap<Contact, EmailContactDto>()
             .ForMember(c => c.email, opt => opt.MapFrom(src => src.Email))
@@ -59,8 +71,8 @@ namespace UpDiddyApi.Helpers
             .ForMember(c => c.contact_guid, opt => opt.MapFrom(src => src.ContactGuid))
             .ReverseMap();
 
-        // mappings that ignore properties in the Dto that don't exist in the model object
-        CreateMap<PromoCode, PromoCodeDto>()
+             // mappings that ignore properties in the Dto that don't exist in the model object
+            CreateMap<PromoCode, PromoCodeDto>()
                 .ForMember(x => x.IsValid, opt => opt.Ignore())
                 .ForMember(x => x.ValidationMessage, opt => opt.Ignore())
                 .ForMember(x => x.Discount, opt => opt.Ignore())

@@ -11,13 +11,64 @@ namespace UpDiddyApi.Models
 
     public enum JobPostingIndexStatus { NotIndexed = 0, Indexed, DeletedFromIndex, IndexError, IndexDeleteError, IndexUpdateError  };
 
+
+    /*
+         /Job/state/md/city/towson/zip/21204/skills/java-
+     * 
+     * 
+     */
+
+
+
+
+    /*
+     * 
+     * 
+     * Job postings in CareerCircle need to allow the following elements to asssit with navigating or filtering jobs as follows:
+ 
+Job location - This could be a number of elements to assist:
+  Country, ZIP, State, City, address, lat/long
+  enabling distance to job/commute search capabilities
+  enabling filtering by city,state
+ 
+ 
+Salary - hourly and annually values
+ 
+Job Type: Full-time, internship, contract, contract to hire, temporary, commission, ??
+ 
+Company: TEKsystems, Aerotek, outside entities, "Private"
+ 
+Experience Level: Entry level, Mid Level, Senior Level
+ 
+date expires
+ 
+Date posted (date posting became visible to public)
+ 
+Last updated (date posting was updated or extended)
+ 
+Category / Industry
+ 
+Sub-Category
+ 
+Application Deadline
+ 
+Apply Type - Apply via CareerCircle or 3rd Party/Offsite
+ 
+Skills ( 0 or more per posting)
+ 
+Educational Level
+
+  Telecommute 
+ */
+
+
     public class JobPosting : BaseModel
     {        
         public int JobPostingId { get; set; }
         /// <summary>
         /// Posting Guid
         /// </summary>
-        public Guid? JobPostingGuid { get; set; }
+        public Guid JobPostingGuid { get; set; }
         /// <summary>
         ///  Date posting goes live
         /// </summary>
@@ -27,6 +78,11 @@ namespace UpDiddyApi.Models
         /// </summary>
         public DateTime PostingExpirationDateUTC { get; set; }
 
+        /// <summary>
+        /// The date until which applications will be accepted 
+        /// </summary>
+        public DateTime ApplicationDeadlineUTC { get; set; }
+
         /****************  google talent cloud information   ****************************/
         /// <summary>
         /// The uri returned from google talent cloud for identifying the posting in the
@@ -34,9 +90,13 @@ namespace UpDiddyApi.Models
         /// </summary>
         public string CloudTalentUri { get; set; }
         /// <summary>
-        ///  The postings google cloud indexing status
+        ///  The postings google cloud indexing status, see enum JobPostingIndexStatus
         /// </summary>
-        public int CloudTalentIndexStatus { get; set; } // status of posting in google cloud job index 
+        public int CloudTalentIndexStatus { get; set; }  
+        /// <summary>
+        /// Additional information such as error received from cloud talent
+        /// </summary>
+        public string CloudTalentIndexInfo { get; set; } 
 
         /**************** job posting data   ****************************/
         /// <summary>
@@ -64,7 +124,7 @@ namespace UpDiddyApi.Models
         /// Security level required for position 
         /// </summary>
         public int? SecurityClearanceId { get; set; }
-        SecurityClearance SecurityClearance { get; set; }
+        public SecurityClearance SecurityClearance { get; set; }
         /// <summary>
         /// Position employment type  e.g. direct hire, contractor, part time, etc 
         /// </summary>

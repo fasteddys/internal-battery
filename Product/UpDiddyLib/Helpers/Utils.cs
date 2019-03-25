@@ -10,11 +10,56 @@ using UpDiddyLib.Dto;
 using System.Xml;
 using System.Globalization;
 using System.Reflection;
+using GoogleTypes = Google.Protobuf.WellKnownTypes;
 
 namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+
+        public static string ISO8601DateString(DateTime dt)
+        {
+            return dt.ToString("o");
+        }
+        /// <summary>
+        /// Return the specified datetime as a google timestamp string 
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static string GetTimestampAsString(DateTime dt)
+        {
+            var NumSeconds = new DateTimeOffset(dt).ToUnixTimeSeconds();
+            GoogleTypes.Timestamp ts = new GoogleTypes.Timestamp();
+            ts.Seconds = NumSeconds;
+            return TimeStampToISO8601String(ts);
+        }
+
+        /// <summary>
+        /// Convert datetime to google timestampe
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static GoogleTypes.Timestamp GetTimestamp(DateTime dt)
+        {
+            var NumSeconds = new DateTimeOffset(dt).ToUnixTimeSeconds();
+            GoogleTypes.Timestamp ts = new GoogleTypes.Timestamp();
+            ts.Seconds = NumSeconds;
+            return ts; 
+        }
+
+        /// <summary>
+        /// Convert google timestampe to a string.  For some reason the Timestamp.ToString() function
+        /// returns a string with enclosed in escaped double quotes such as "\"2020-10-02T15:01:23.045123456Z\""
+        /// not "2020-10-02T15:01:23.045123456Z" which this function returns
+        /// </summary>
+        /// <param name="ts"></param>
+        /// <returns></returns>
+        public static string TimeStampToISO8601String(GoogleTypes.Timestamp ts)
+        {
+            DateTime tsDateTime = ts.ToDateTime();
+            return tsDateTime.ToString("o");
+        }
+
         /// <remarks>
         /// Shamelessly stolen from https://stackoverflow.com/questions/457676/check-if-a-class-is-derived-from-a-generic-class
         /// </remarks>
