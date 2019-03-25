@@ -180,9 +180,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetCourseByCampaignGuid(Guid campaignGuid)
         {
             var _a = _db.Campaign
-                .Where(c => c.IsDeleted == 0
-                    && c.StartDate <= DateTime.UtcNow
-                    && (!c.EndDate.HasValue || c.EndDate.Value >= DateTime.UtcNow));
+                .Where(c => c.IsDeleted == 0);
 
 
             var camp = _a.FirstOrDefault();

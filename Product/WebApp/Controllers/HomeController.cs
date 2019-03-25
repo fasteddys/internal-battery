@@ -624,6 +624,8 @@ namespace UpDiddy.Controllers
         [Route("/Home/Campaign/{CampaignViewName}/{CampaignGuid}/{ContactGuid}")]
         public async Task<IActionResult> CampaignAsync(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
         {
+            CampaignDto campaign = await _Api.GetCampaignAsync(CampaignGuid);
+
             // capture any campaign phase information that has been passed.  
             string CampaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
 
@@ -652,7 +654,8 @@ namespace UpDiddy.Controllers
                     ContactGuid = ContactGuid,
                     TrackingImgSource = _TrackingImgSource,
                     CampaignCourse = Course,
-                    CampaignPhase = CampaignPhase
+                    CampaignPhase = CampaignPhase,
+                    IsActive = (campaign.EndDate == null || campaign.EndDate > DateTime.UtcNow)
                 };
                 return View("Campaign/" + CampaignViewName, cvm);
             }

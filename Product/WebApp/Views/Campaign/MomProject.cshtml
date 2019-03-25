@@ -3,7 +3,7 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
-@model SignUpViewModel;
+@model CampaignViewModel;
 
 <div id="CampaignContainer" class="mom-project-signup">
     <div class="cc-campaign-sign-up-band row" style="background-image: url('/images/handshake-hero.jpg'); background-position: top">
@@ -42,36 +42,14 @@
                                     Create an account to get started
                                 </div>
                                 <div class="col-12 no-padding">
-                                    <div id="SignUpComponent">
-                                        <form id="ExpressSignUpForm" asp-controller="Home" asp-action="ExpressSignUp">
-                                            <div class="row">
-                                                <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
-                                                    <input placeholder="Your email" form="ExpressSignUpForm" name="Email" asp-for="Email" required class="wide-input" />
-                                                </div>
-                                                <div id="SignUpPassword" class="col-12 sign-up-input no-padding">
-                                                    <input placeholder="Password" type="password" form="ExpressSignUpForm" name="Password" asp-for="Password" required class="wide-input" />
-                                                </div>
-                                                <div id="SignUpPasswordRetype" class="col-12 sign-up-input no-padding">
-                                                    <input placeholder="Re-enter password" type="password" form="ExpressSignUpForm" name="ReenterPassword" asp-for="ReenterPassword" required class="wide-input" />
-                                                </div>
-                                                <div>
-                                                    <div class="form-check sign-up-input">
-                                                        <input type="checkbox" class="form-check-input" id="termsAndConditionsCheck" value="agree" required>
-                                                        <label class="form-check-label text-left" for="termsAndConditionsCheck">I agree to CareerCircle website <a target="_blank" href="/Home/TermsOfService">terms and conditions</a></label>
-                                                    </div>
-                                                </div>
-                                                <div id="SignUpAction" class="col-12 no-padding">
-                                                    @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                                                        Text = "Sign Up Now",
-                                                        SkewDirection = "skew-left-to-right",
-                                                        ChosenColorScheme = "cc-cscheme-darkred",
-                                                        Form = "ExpressSignUpForm",
-                                                        ButtonAction = ActionButtonViewModel.Action.SUBMIT
-                                                    })
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
+                                    @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel
+                                    {
+                                        ContactGuid = Model.ContactGuid,
+                                        CampaignGuid = Model.CampaignGuid,
+                                        CampaignPhase = Model.CampaignPhase,
+                                        IsExpressSignUp = Model.IsExpressCampaign
+
+                                    })
                                 </div>
                             </div>
                         </div>

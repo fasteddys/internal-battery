@@ -59,6 +59,8 @@ namespace UpDiddy.Api
         Task<LinkedInProfileDto> GetLinkedInProfileAsync();
         Task<SubscriberADGroupsDto> MyGroupsAsync();
         Task<BasicResponseDto> VerifyEmailAsync(Guid token);
+        Task<IList<CampaignDto>> GetCampaignsAsync();
+        Task<CampaignDto> GetCampaignAsync(Guid campaignGuid);
 
         #region TalentPortal
         Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery);

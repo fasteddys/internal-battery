@@ -83,30 +83,36 @@
                         <span class="f-color-white">Join CareerCircle to start growing your Circle, learn about training opportunities, industry insights and connecting with the CareerCircle community.</span>
 
                     </div>
-                    <div class="col-12 col-md-6">
-                        <div id="SignUpContainer">
-                            <div id="SignUpContainerHeader">
-                                Create an account to get started
-                            </div>
-                            <div id="SignUpComponentContainer">
-                                @{ 
-                                    SignUpViewModel suvm = new SignUpViewModel();
-                                    if (Model.IsExpressCampaign)
-                                    {
-                                        suvm.IsExpressSignUp = true;
+                    @if (Model.IsActive)
+                    {
+                        <div class="col-12 col-md-6">
+                            <div id="SignUpContainer">
+                                <div id="SignUpContainerHeader">
+                                    Create an account to get started
+                                </div>
+                                <div id="SignUpComponentContainer">
+                                    @{
+                                        SignUpViewModel suvm = new SignUpViewModel();
+                                        if (Model.IsExpressCampaign)
+                                        {
+                                            suvm.IsExpressSignUp = true;
+                                        }
+                                        else
+                                        {
+                                            suvm.ContactGuid = Model.ContactGuid;
+                                            suvm.CampaignGuid = Model.CampaignGuid;
+                                            suvm.CampaignPhase = Model.CampaignPhase;
+                                            suvm.IsExpressSignUp = false;
+                                        }
+
                                     }
-                                    else
-                                    {
-                                        suvm.ContactGuid = Model.ContactGuid;
-                                        suvm.CampaignGuid = Model.CampaignGuid;
-                                        suvm.CampaignPhase = Model.CampaignPhase;
-                                        suvm.IsExpressSignUp = false;
-                                    }
-                                }
-                                @Html.Partial("Components/Authentication/_SignUp", suvm)
+                                    @Html.Partial("Components/Authentication/_SignUp", suvm)
+
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }
+
                 </div>
             </div>
         </div>

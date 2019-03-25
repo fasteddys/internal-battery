@@ -16,7 +16,8 @@
     ContactGuid = Model.ContactGuid,
     RibbonText = "<strong>LIMITED TIME OFFER:</strong> Get hired by one of our partners, and your course is free.<sup>1</sup>",
     DisclaimerText = "To take advantage of this offer, which is tailored to your JavaScript skills, you must sign up with the email address the offer was sent to.<br /><strong>Please do not share this link.<sup>2</sup></strong>",
-    CampaignPhase = Model.CampaignPhase
+    CampaignPhase = Model.CampaignPhase,
+    IsActive = Model.IsActive
 })
     @Html.Partial("Components/Bands/_TripleContainerBand", new TripleContainerBandViewModel {
         Header = "Advance Your Career With Angular",
@@ -30,12 +31,12 @@
     })
     @{
         List<ColumnSkewBandViewModel.ColumnSkewBandElement> Elements = new List<ColumnSkewBandViewModel.ColumnSkewBandElement>()
-        {
-            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_1_angular.png", true),
-            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_2_angular.png", true),
-            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_3_angular.png", true),
-            new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_4_angular.png", true)
-        };
+    {
+        new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_1_angular.png", true),
+        new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_2_angular.png", true),
+        new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_3_angular.png", true),
+        new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_4_angular.png", true)
+    };
     }
     @Html.Partial("Components/Bands/_ColumnSkewBand", new ColumnSkewBandViewModel
     {
@@ -47,7 +48,7 @@
     @{
         List<ColumnSkewBandViewModel.ColumnSkewBandElement> TextElements = new List<ColumnSkewBandViewModel.ColumnSkewBandElement>()
 {
-    new ColumnSkewBandViewModel.ColumnSkewBandElement(UpDiddyLib.Helpers.Utils.FormatWozDescriptionFields(Model.CampaignCourse.Description), false)
+new ColumnSkewBandViewModel.ColumnSkewBandElement(UpDiddyLib.Helpers.Utils.FormatWozDescriptionFields(Model.CampaignCourse.Description), false)
 };
     }
     @Html.Partial("Components/Bands/_ColumnSkewBand", new ColumnSkewBandViewModel
@@ -59,8 +60,8 @@
     @{
         List<string> Descriptions = new List<string>
 {
-    "We prepare the workforce of today for the opportunities of tomorrow. Enroll in affordable courses and expand your skill set.",
-    "We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston."
+"We prepare the workforce of today for the opportunities of tomorrow. Enroll in affordable courses and expand your skill set.",
+"We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston."
 };
     }
     @Html.Partial("Components/Bands/_TextWithMediaBand", new TextWithMediaBandViewModel {
@@ -72,8 +73,9 @@
         Media = TextWithMediaBandViewModel.MediaType.VIDEO
     })
 
-    
-    @{
+    @if (Model.IsActive)
+    {
+        
         List<DisclaimersViewModel.Disclaimer> Disclaimers = new List<DisclaimersViewModel.Disclaimer>()
         {
             new DisclaimersViewModel.Disclaimer("Complete the course and find a job with an Allegis Group company within 180 days of completing your course and you will receive a full refund of the purchase price - $249."),
@@ -85,11 +87,13 @@
             "by an Allegis Group Company within 180 days of course enrollment.  Refunds to be issued within 30 days of all terms and " +
             "conditions having been met. The class available for the full refund is specified in the email you received.")
         };
+        
+        @Html.Partial("Components/Utilities/_Disclaimers", new DisclaimersViewModel
+        {
+            Disclaimers = Disclaimers,
+            ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
+        })
     }
-    @Html.Partial("Components/Utilities/_Disclaimers", new DisclaimersViewModel
-    {
-        Disclaimers = Disclaimers,
-        ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
-    })
+
 </div>
 <img src="@Model.TrackingImgSource" />

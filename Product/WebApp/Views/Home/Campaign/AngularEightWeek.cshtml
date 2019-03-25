@@ -16,7 +16,8 @@
     ContactGuid = Model.ContactGuid,
     RibbonText = "<strong>LIMITED TIME OFFER:</strong> Finish this course in 8 weeks or less and it's free.<sup>1</sup>",
     DisclaimerText = "To take advantage of this offer, which is tailored to your JavaScript skills, you must sign up with the email address the offer was sent to.<br /><strong>Please do not share this link.<sup>2</sup></strong>",
-    CampaignPhase = Model.CampaignPhase
+    CampaignPhase = Model.CampaignPhase,
+    IsActive = Model.IsActive
 })
     @Html.Partial("Components/Bands/_TripleContainerBand", new TripleContainerBandViewModel {
         Header = "Advance Your Career With Angular",
@@ -72,24 +73,25 @@
         Media = TextWithMediaBandViewModel.MediaType.VIDEO
     })
 
-    
-    @{
+    @if (Model.IsActive)
+    {
         List<DisclaimersViewModel.Disclaimer> Disclaimers = new List<DisclaimersViewModel.Disclaimer>()
-    {
-        new DisclaimersViewModel.Disclaimer("Sign up and complete your self-paced course within 60 days of the date that you purchase the class and you will receive a full refund of the purchase price - $249."),
-        new DisclaimersViewModel.Disclaimer("Refund terms and conditions: Offer only eligible to original email recipient, " +
-            "users forwarding the email or related URL not eligible, must sign up, login and purchase the designated course in this " +
-            "offer to CareerCircle using the same email address. Invitee's must sign up and purchase the designated course before " +
-            "March 1, 2019 and complete the course within 60 days of the purchase date.  Course price of $249.00 can only be refunded " +
-            "to same payment card used for purchase once verified they have completed the course within the specified timeframe. " +
-            "Refunds to be issued within 30 days of all terms and conditions having been met. The class available for the full refund " +
-            "is specified in the email you received.")
-    };
+        {
+            new DisclaimersViewModel.Disclaimer("Sign up and complete your self-paced course within 60 days of the date that you purchase the class and you will receive a full refund of the purchase price - $249."),
+            new DisclaimersViewModel.Disclaimer("Refund terms and conditions: Offer only eligible to original email recipient, " +
+                "users forwarding the email or related URL not eligible, must sign up, login and purchase the designated course in this " +
+                "offer to CareerCircle using the same email address. Invitee's must sign up and purchase the designated course before " +
+                "March 1, 2019 and complete the course within 60 days of the purchase date.  Course price of $249.00 can only be refunded " +
+                "to same payment card used for purchase once verified they have completed the course within the specified timeframe. " +
+                "Refunds to be issued within 30 days of all terms and conditions having been met. The class available for the full refund " +
+                "is specified in the email you received.")
+        };
+        @Html.Partial("Components/Utilities/_Disclaimers", new DisclaimersViewModel
+        {
+            Disclaimers = Disclaimers,
+            ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
+        })
     }
-    @Html.Partial("Components/Utilities/_Disclaimers", new DisclaimersViewModel
-    {
-        Disclaimers = Disclaimers,
-        ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
-    })
+   
 </div>
 <img src="@Model.TrackingImgSource" />

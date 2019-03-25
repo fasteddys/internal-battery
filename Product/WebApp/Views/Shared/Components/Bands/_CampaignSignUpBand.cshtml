@@ -13,10 +13,10 @@
             <div class="row">
                 <div class="col-12 col-md-7 col-lg-8 cc-campaign-sign-up-band-left-container">
                     <div class="row">
-                        @if(Model.ImageUrl != null)
+                        @if (Model.ImageUrl != null)
                         {
                             <div class="col-2 img-column no-padding">
-                                <img src="@Model.ImageUrl"/>
+                                <img src="@Model.ImageUrl" />
                             </div>
                         }
                         <div class="col no-padding">
@@ -48,19 +48,40 @@
 
 
                                 </div>
-                                <div class="col-12 campaign-bullet-list">
-                                    <div class="d-flex flex-column bd-highlight mb-3 mt-3">
-                                        <div class="bd-highlight font-bold">Enroll today.</div>
-                                        <div class="bd-highlight font-bold">Learn @Model.CampaignCourse online.</div>
-                                        <div class="bd-highlight font-bold">Get a new job.</div>
+                                @if (Model.IsActive)
+                                {
+                                    <div class="col-12 campaign-bullet-list">
+                                        <div class="d-flex flex-column bd-highlight mb-3 mt-3">
+                                            <div class="bd-highlight font-bold">Enroll today.</div>
+                                            <div class="bd-highlight font-bold">Learn @Model.CampaignCourse online.</div>
+                                            <div class="bd-highlight font-bold">Get a new job.</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-12 locations-disclaimer-container">
-                                    <div class="locations-disclaimer">
-                                        Openings in Chicago, Baltimore, Charlotte, and Boston
+                                    <div class="col-12 locations-disclaimer-container">
+                                        <div class="locations-disclaimer">
+                                            Openings in Chicago, Baltimore, Charlotte, and Boston
 
+                                        </div>
                                     </div>
-                                </div>
+                                }
+                                else
+                                {
+                                    <div class="col-12 mt-4">
+                                        Unfortunately, this campaign has ended. However, you can still become a member of our blossoming community by clicking the button below!
+                                    </div>
+                                    <div class="col-12 mt-4">
+                                        @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                                            Text = "Join Our Community",
+                                            Hyperlink = "/join#CommunityCampaignBottomContainer",
+                                            FitToText = true,
+                                            ChosenColorScheme = "cc-cscheme-white",
+                                            ButtonAction = ActionButtonViewModel.Action.CTA,
+                                            ButtonClass = "signup-cta"
+                                        })
+                                    </div>
+                                    
+                                }
+
                             </div>
                         </div>
                     </div>
@@ -70,40 +91,44 @@
                     bool hasRibbon = !string.IsNullOrEmpty(Model.RibbonText);
                     if (hasRibbon) { hasRibbonClass = "has-ribbon"; }
                 }
-                <div class="col-12 col-md-5 col-lg-4 cc-campaign-sign-up-band-right-container @hasRibbonClass no-padding">
-                    @{
-                        if (hasRibbon)
-                        {
-                            <div class="campaign-ribbon">
-                                @Html.Raw(Model.RibbonText)
-                            </div>
-                        }
-                    }
-                    <div class="cc-campaign-sign-up-container">
-                        <div class="row">
-                        <div class="col-12 no-padding sub-header font-bold">
-                            Enroll in the @Model.CampaignCourse course
-                        </div>
-                        <div class="col-12 no-padding mini-header">
-                            Create an account to get started
-                        </div>
-                        <div class="col-12 no-padding">
-                            @* Extend the SignUpViewModel with campaign phase information from CampaignSignUpBandViewModel *@
-                            @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel
+                @if (Model.IsActive)
+                {
+                    <div class="col-12 col-md-4 cc-campaign-sign-up-band-right-container @hasRibbonClass no-padding">
+                        @{
+                            if (hasRibbon)
                             {
-                                ContactGuid = Model.ContactGuid,
-                                CampaignGuid = Model.CampaignGuid,
-                                CampaignPhase = Model.CampaignPhase
-                                
-                            })
-                        </div>
-                        <div class="col-12 no-padding campaign-disclaimer text-left">
-                            @Html.Raw(Model.DisclaimerText)
-                        </div>
-                    </div>
-                    </div>
+                                <div class="campaign-ribbon">
+                                    @Html.Raw(Model.RibbonText)
+                                </div>
+                            }
+                        }
+                        <div class="cc-campaign-sign-up-container">
+                            <div class="row">
+                                <div class="col-12 no-padding sub-header font-bold">
+                                    Enroll in the @Model.CampaignCourse course
+                                </div>
+                                <div class="col-12 no-padding mini-header">
+                                    Create an account to get started
+                                </div>
+                                <div class="col-12 no-padding">
+                                    @* Extend the SignUpViewModel with campaign phase information from CampaignSignUpBandViewModel *@
+                                    @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel
+                                    {
+                                        ContactGuid = Model.ContactGuid,
+                                        CampaignGuid = Model.CampaignGuid,
+                                        CampaignPhase = Model.CampaignPhase
 
-                </div>
+                                    })
+                                </div>
+                                <div class="col-12 no-padding campaign-disclaimer text-left">
+                                    @Html.Raw(Model.DisclaimerText)
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                }
+
             </div>
         </div>
     </div>
