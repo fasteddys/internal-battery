@@ -126,8 +126,8 @@ namespace UpDiddyApi.Models
         public DbSet<RebateType> RebateType { get; set; }
         public DbSet<CampaignContact> CampaignContact { get; set; }
         public DbSet<CampaignPhase> CampaignPhase { get; set; }
-
         public DbSet<PartnerReferrer> PartnerReferrer { get; set; }
+        public DbSet<SubscriberAction> SubscriberAction { get; set; }
 
         #region DBQueries
 
@@ -140,8 +140,16 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberSearch> SubscriberSearch { get; set; }
 
         #endregion
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<SubscriberAction>()
+                .HasKey(sa => new { sa.SubscriberId, sa.ActionId });
+
+            modelBuilder.Entity<SubscriberAction>()
+                .Property(sa => sa.OccurredDate)
+                .HasDefaultValueSql("GETUTCDATE()");
+
             modelBuilder
                 .Query<v_SubscriberSources>()
                 .ToView("v_SubscriberSources");

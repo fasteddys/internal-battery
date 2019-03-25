@@ -1720,6 +1720,39 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("Subscriber");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberAction", b =>
+                {
+                    b.Property<int>("SubscriberId");
+
+                    b.Property<int>("ActionId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("EntityId");
+
+                    b.Property<string>("EntityType");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<DateTime>("OccurredDate")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid>("SubscriberActionGuid");
+
+                    b.HasKey("SubscriberId", "ActionId");
+
+                    b.HasIndex("ActionId");
+
+                    b.ToTable("SubscriberAction");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberEducationHistory", b =>
                 {
                     b.Property<int>("SubscriberEducationHistoryId")
@@ -2499,6 +2532,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.State", "State")
                         .WithMany()
                         .HasForeignKey("StateId");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberAction", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Action", "Action")
+                        .WithMany()
+                        .HasForeignKey("ActionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberEducationHistory", b =>
