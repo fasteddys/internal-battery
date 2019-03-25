@@ -103,6 +103,7 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
+        [Route("/Community/{CampaignGuid?}/{ContactGuid?}")]
         [Route("/Join/{CampaignGuid?}/{ContactGuid?}")]
         public async Task<IActionResult> CampaignAsync(Guid CampaignGuid, Guid ContactGuid)
         {

@@ -893,7 +893,7 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         public IActionResult Search(string searchFilter = "any", string searchQuery = null)
         {
-            searchQuery = HttpUtility.UrlDecode(searchQuery);
+            searchQuery = Utils.ToSqlServerFullTextQuery(searchQuery);
             searchFilter = HttpUtility.UrlDecode(searchFilter);
 
             var filter = new SqlParameter("@Filter", searchFilter.ToLower() == "any" ? string.Empty : searchFilter);

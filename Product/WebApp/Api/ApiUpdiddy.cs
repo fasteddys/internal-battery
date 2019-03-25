@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Mvc;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 using System.Threading;
+using UpDiddyLib.Dto.Reporting;
 
 namespace UpDiddy.Api
 {
@@ -790,6 +791,21 @@ namespace UpDiddy.Api
         #endregion
 
         #region AdminPortal
+        public async Task<SubscriberReportDto> GetSubscriberReportAsync(List<DateTime> dates = null)
+        {
+            string query = string.Empty;
+            if(dates.Any())
+            {
+                query += "?dates=" + string.Join("&dates=", dates);
+            }
+
+            return await GetAsync<SubscriberReportDto>($"report/subscribers{query}");
+        }
+
+        public async Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync()
+        {
+            return await GetAsync<SubscriberReportDto>($"report/partners");
+        }
 
         public async Task<IList<PartnerDto>> GetPartnersAsync()
         {
@@ -864,10 +880,6 @@ namespace UpDiddy.Api
             // Return the newly created partner
             return deletedPartnerResponse;
         }
-
-        
-
-
         #endregion
     }
 }

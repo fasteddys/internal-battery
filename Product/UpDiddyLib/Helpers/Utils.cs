@@ -38,6 +38,23 @@ namespace UpDiddyLib.Helpers
             return false;
         }
 
+        /// <summary>
+        /// Convert muli-words search queries into a sql full text search query e.g. "gmail com" -> "gmail* AND com"
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string ToSqlServerFullTextQuery(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+                return s;
+
+            s = Regex.Replace(s, @"[(,)'""]", string.Empty).Trim();
+            s = Regex.Replace(s, @"(\b )", @"* AND ");
+            s = Regex.Replace(s, @"(\b$)", @"*");
+
+            return s;
+        }
+
         public static string FormatPhoneNumber(string phoneNumber)
         {
             if (string.IsNullOrWhiteSpace(phoneNumber) || phoneNumber.Length < 10 || phoneNumber.Length > 15)
