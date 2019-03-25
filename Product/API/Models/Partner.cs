@@ -13,7 +13,7 @@ namespace UpDiddyApi.Models
         [Required]
         public string Name { get; set; }
         public string Description { get; set; }
-
+        public string LogoUrl { get; set; }
         public List<PartnerReferrer> Referrers { get; set; }
     }
 }

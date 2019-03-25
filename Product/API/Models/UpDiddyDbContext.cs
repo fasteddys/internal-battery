@@ -126,6 +126,9 @@ namespace UpDiddyApi.Models
         public DbSet<RebateType> RebateType { get; set; }
         public DbSet<CampaignContact> CampaignContact { get; set; }
         public DbSet<CampaignPhase> CampaignPhase { get; set; }
+        public DbSet<Offer> Offer { get; set; }
+        public DbSet<Partner> Partner { get; set; }
+        public DbSet<PartnerContact> PartnerContact { get; set; }
         public DbSet<PartnerReferrer> PartnerReferrer { get; set; }
         public DbSet<SubscriberAction> SubscriberAction { get; set; }
         public DbSet<EntityType> EntityType { get; set; }
@@ -134,9 +137,7 @@ namespace UpDiddyApi.Models
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
         public DbQuery<CampaignDetail> CampaignDetail { get; set; }
-        public DbSet<Partner> Partner { get; set; }
-        public DbSet<PartnerContact> PartnerContact { get; set; }
-        public DbQuery<v_SubscriberSources> SubscriberSources { get; set; }
+        public DbQuery<v_SubscriberSources> SubscriberSources {get; set; }
         public DbQuery<v_SubscriberSignUpPartnerReference> SubscriberSignUpPartnerReferences { get; set; }
         public DbQuery<SubscriberSearch> SubscriberSearch { get; set; }
 
