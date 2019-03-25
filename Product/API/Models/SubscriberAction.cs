@@ -13,7 +13,8 @@ namespace UpDiddyApi.Models
         public virtual Action Action { get; set; }
         public int ActionId { get; set; }
         public DateTime OccurredDate { get; set; }
-        public int EntityId { get; set; }
-        public string EntityType { get; set; }
+        public int? EntityId { get; set; }
+        public virtual EntityType EntityType { get; set; }
+        public int? EntityTypeId { get; set; }
     }
 }
