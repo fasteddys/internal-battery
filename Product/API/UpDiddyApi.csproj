@@ -29,16 +29,6 @@
     <Compile Remove="Migrations\20190219134311_test.Designer.cs" />
     <Compile Remove="Migrations\20190228135226_Adding Terms to Campaigns.cs" />
     <Compile Remove="Migrations\20190228135226_Adding Terms to Campaigns.Designer.cs" />
-    <Compile Remove="Migrations\20190325192350_Added offer table and added logo url to partners.cs" />
-    <Compile Remove="Migrations\20190325192350_Added offer table and added logo url to partners.Designer.cs" />
-    <Compile Remove="Migrations\20190325193247_Added partner foreign key constraint.cs" />
-    <Compile Remove="Migrations\20190325193247_Added partner foreign key constraint.Designer.cs" />
-    <Compile Remove="Migrations\20190325194004_Preloading database with offer.cs" />
-    <Compile Remove="Migrations\20190325194004_Preloading database with offer.Designer.cs" />
-    <Compile Remove="Migrations\20190325201158_Fixed guid data type.cs" />
-    <Compile Remove="Migrations\20190325201158_Fixed guid data type.Designer.cs" />
-    <Compile Remove="Migrations\20190325201319_Fixed guid data type.cs" />
-    <Compile Remove="Migrations\20190325201319_Fixed guid data type.Designer.cs" />
     <Compile Remove="Models\_Company.cs" />
     <Compile Remove="Models\_Country.cs" />
     <Compile Remove="Models\_EducationalDegree.cs" />
