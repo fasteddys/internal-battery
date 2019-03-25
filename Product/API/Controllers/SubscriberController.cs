@@ -29,6 +29,7 @@ using System.Web;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 using Hangfire;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddyApi.Controllers
 {
@@ -651,7 +652,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest();
 
             Subscriber subscriber = _db
-                .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid && !t.IsVerified)
+                .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid)
                 .Include(t => t.EmailVerification)
                 .FirstOrDefault();
 
@@ -659,7 +660,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid subscriber." });
 
             if (subscriber.IsVerified)
-                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Subscriber already verified." });
+                return StatusCode(StatusCodes.Status409Conflict, new BasicResponseDto() { StatusCode = 409, Description = "Subscriber/User email already verified. No additional action required to verify this account." });
 
             if (!subscriber.EmailVerification.Token.Equals(Token) || subscriber.EmailVerification.ExpirationDateTime < DateTime.UtcNow)
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid verification token." });
