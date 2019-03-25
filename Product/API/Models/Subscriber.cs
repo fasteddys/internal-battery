@@ -38,5 +38,6 @@ namespace UpDiddyApi.Models
         public List<SubscriberWorkHistory> SubscriberWorkHistory { get; } = new List<SubscriberWorkHistory>();
         public List<SubscriberFile> SubscriberFile { get; set; } = new List<SubscriberFile>();
         public EmailVerification EmailVerification {get; set;}
+        public List<SubscriberProfileStagingStore> ProfileStagingStore { get; set; } = new List<SubscriberProfileStagingStore>();
     }
 }
