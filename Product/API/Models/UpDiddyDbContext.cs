@@ -129,6 +129,7 @@ namespace UpDiddyApi.Models
         public DbSet<EmploymentType> EmploymentType { get; set; }
         public DbSet<SecurityClearance> SecurityClearance { get; set; }
         public DbSet<Industry> Industry { get; set; }
+        public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
 
 
 

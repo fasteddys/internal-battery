@@ -9,7 +9,7 @@ namespace UpDiddyApi.Models
     public class EducationLevel : BaseModel
     {
         public int EducationLevelId { get; set; }
-        public Guid? EducationLevelGuid { get; set; }
+        public Guid EducationLevelGuid { get; set; }
         [Required]
         public string Level { get; set; }
 

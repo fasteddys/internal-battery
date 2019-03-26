@@ -832,7 +832,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<Guid?>("EducationLevelGuid");
+                    b.Property<Guid>("EducationLevelGuid");
 
                     b.Property<int>("IsDeleted");
 
@@ -1103,6 +1103,33 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("EnrollmentStatus");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.ExperienceLevel", b =>
+                {
+                    b.Property<int>("ExperienceLevelId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Code");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("DisplayName");
+
+                    b.Property<Guid>("ExperienceLevelGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.HasKey("ExperienceLevelId");
+
+                    b.ToTable("ExperienceLevel");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Gender", b =>
                 {
                     b.Property<int>("GenderId")
@@ -1160,6 +1187,8 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("ApplicationDeadlineUTC");
+
                     b.Property<string>("CloudTalentIndexInfo");
 
                     b.Property<int>("CloudTalentIndexStatus");
@@ -1178,7 +1207,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("Description");
 
+                    b.Property<int?>("EducationLevelId");
+
                     b.Property<int?>("EmploymentTypeId");
+
+                    b.Property<int?>("ExperienceLevelId");
 
                     b.Property<bool>("H2Visa");
 
@@ -1212,7 +1245,13 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("CompanyId");
 
+                    b.HasIndex("CompensationTypeId");
+
+                    b.HasIndex("EducationLevelId");
+
                     b.HasIndex("EmploymentTypeId");
+
+                    b.HasIndex("ExperienceLevelId");
 
                     b.HasIndex("IndustryId");
 
@@ -2567,9 +2606,21 @@ namespace UpDiddyApi.Migrations
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("UpDiddyApi.Models.CompensationType", "CompensationType")
+                        .WithMany()
+                        .HasForeignKey("CompensationTypeId");
+
+                    b.HasOne("UpDiddyApi.Models.EducationLevel", "EducationLevel")
+                        .WithMany()
+                        .HasForeignKey("EducationLevelId");
+
                     b.HasOne("UpDiddyApi.Models.EmploymentType", "EmploymentType")
                         .WithMany()
                         .HasForeignKey("EmploymentTypeId");
+
+                    b.HasOne("UpDiddyApi.Models.ExperienceLevel", "ExperienceLevel")
+                        .WithMany()
+                        .HasForeignKey("ExperienceLevelId");
 
                     b.HasOne("UpDiddyApi.Models.Industry", "Industry")
                         .WithMany()

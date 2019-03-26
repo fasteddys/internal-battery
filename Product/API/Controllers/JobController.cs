@@ -100,7 +100,24 @@ namespace UpDiddyApi.Controllers
                 EmploymentType employmentType = EmploymentTypeFactory.GetEmploymentTypeByGuid(_db, jobPostingDto.EmploymentType.EmploymentTypeGuid);
                 if (employmentType != null)
                     jobPosting.EmploymentTypeId = employmentType.EmploymentTypeId;
+            }            
+            // map educational level type
+            if (jobPostingDto.EducationLevel != null)
+            {
+                EducationLevel educationLevel = EducationLevelFactory.GetEducationLevelByGuid(_db, jobPostingDto.EducationLevel.EducationLevelGuid);
+                if (educationLevel != null)
+                    jobPosting.EducationLevelId = educationLevel.EducationLevelId;
+            }        
+            // map level experience type
+            if (jobPostingDto.ExperienceLevel != null)
+            {
+                ExperienceLevel experienceLevel = ExperienceLevelFactory.GetExperienceLevelByGuid(_db, jobPostingDto.ExperienceLevel.ExperienceLevelGuid);
+                if (experienceLevel != null)
+                    jobPosting.ExperienceLevelId = experienceLevel.ExperienceLevelId;
             }
+
+
+
             string msg = string.Empty;
             if (JobPostingFactory.ValidateJobPosting(jobPosting, ref msg) == false)
             {

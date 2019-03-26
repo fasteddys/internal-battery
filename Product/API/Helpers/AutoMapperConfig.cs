@@ -7,6 +7,7 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
+using UpDiddyLib.Helpers;
 
 
 namespace UpDiddyApi.Helpers
@@ -52,16 +53,43 @@ namespace UpDiddyApi.Helpers
             CreateMap<EmploymentType, EmploymentTypeDto>().ReverseMap();
             CreateMap<Industry, IndustryDto>().ReverseMap();
             CreateMap<JobPosting, JobPostingDto>().ReverseMap();
-
- 
+            CreateMap<ExperienceLevel, ExperienceLevelDto>().ReverseMap();
+            CreateMap<EducationLevel, EducationLevelDto>().ReverseMap();
 
 
             // TODO JAB finish this mapping      
-            CreateMap<JobPostingDto, CloudTalentSolution.Job >()
-            .ForMember(c => c.Title, opt => opt.MapFrom(src => src.Title))
-            .ForMember(c => c.Description, opt => opt.MapFrom(src => src.Description))
-            .ForMember(c => c.Name, opt => opt.MapFrom(src => src.CloudTalentUri))             
-            .ReverseMap();
+
+            CreateMap<JobViewDto, CloudTalentSolution.MatchingJob>()
+              .ForMember(c => c.JobSummary, opt => opt.MapFrom(src => src.JobSummary))
+              .ForMember(c => c.JobTitleSnippet, opt => opt.MapFrom(src => src.JobTitleSnippet))
+              .ForMember(c => c.SearchTextSnippet, opt => opt.MapFrom(src => src.SearchTextSnippet))          
+              .ForPath(c => c.Job.RequisitionId, opt => opt.MapFrom(src => src.JobPostingGuid))
+              .ForMember(c => c.SearchTextSnippet, opt => opt.MapFrom(src => src.SearchTextSnippet))
+              .ForPath(c => c.Job.PostingExpireTime, opt => opt.MapFrom(src => src.PostingExpirationDateUTC))
+              .ForPath(c => c.Job.Name, opt => opt.MapFrom(src => src.CloudTalentUri))
+              .ForPath(c => c.Job.CompanyName, opt => opt.MapFrom(src => src.CompanyName))
+              .ForPath(c => c.Job.Title, opt => opt.MapFrom(src => src.Title))
+              .ForPath(c => c.Job.Description, opt => opt.MapFrom(src => src.Description))
+              .ForPath(c => c.Job.PostingPublishTime, opt => opt.MapFrom(src => src.PostingDateUTC))
+              .ReverseMap();
+            /*
+             * 
+             *
+ TODO JAB Index the following PostingDateUTC,ApplicationDeadlineUTC
+ 
+
+ 
+        
+ 
+        
+        public string Description { get; set; }
+             * 
+             * 
+             * 
+             */
+
+
+
 
 
             CreateMap<Contact, EmailContactDto>()

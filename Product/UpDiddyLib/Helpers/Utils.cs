@@ -16,7 +16,11 @@ namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
-
+        /// <summary>
+        /// Convert a datetime object to a ISO8601 date string 
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
         public static string ISO8601DateString(DateTime dt)
         {
             return dt.ToString("o");

@@ -11,7 +11,9 @@ namespace UpDiddyLib.Dto
         public DateTime PostingDateUTC { get; set; }
         
         public DateTime PostingExpirationDateUTC { get; set; }
-        
+ 
+        public DateTime ApplicationDeadlineUTC { get; set; }
+
         public string CloudTalentUri { get; set; }
         
         public int CloudTalentIndexStatus { get; set; }  
@@ -38,6 +40,9 @@ namespace UpDiddyLib.Dto
         public Boolean ThirdPartyApply { get; set; }
         public string ThirdPartyApplicationUrl { get; set; }
         public string Location { get; set; }
-        
+        public ExperienceLevelDto ExperienceLevel { get; set; }
+
+        public EducationLevelDto EducationLevel { get; set; }
+
     }
 }

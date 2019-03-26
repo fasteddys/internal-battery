@@ -36,13 +36,11 @@ Salary - hourly and annually values
  
 Job Type: Full-time, internship, contract, contract to hire, temporary, commission, ??
  
-Company: TEKsystems, Aerotek, outside entities, "Private"
- 
-Experience Level: Entry level, Mid Level, Senior Level
+  
  
 date expires
  
-Date posted (date posting became visible to public)
+
  
 Last updated (date posting was updated or extended)
  
@@ -63,7 +61,7 @@ Educational Level
 
 
     public class JobPosting : BaseModel
-    {        
+    {
         public int JobPostingId { get; set; }
         /// <summary>
         /// Posting Guid
@@ -92,26 +90,26 @@ Educational Level
         /// <summary>
         ///  The postings google cloud indexing status, see enum JobPostingIndexStatus
         /// </summary>
-        public int CloudTalentIndexStatus { get; set; }  
+        public int CloudTalentIndexStatus { get; set; }
         /// <summary>
         /// Additional information such as error received from cloud talent
         /// </summary>
-        public string CloudTalentIndexInfo { get; set; } 
+        public string CloudTalentIndexInfo { get; set; }
 
         /**************** job posting data   ****************************/
         /// <summary>
         /// Guid of the company that owns the posting
         /// </summary>
 
-        public int CompanyId { get; set; } 
+        public int CompanyId { get; set; }
 
         public Company Company { get; set; }
         /// <summary>
         /// Guid of industry associated with the job 
         /// </summary>
-        public int? IndustryId { get; set; } 
+        public int? IndustryId { get; set; }
 
-        public Industry Industry { get; set; }
+        public virtual Industry Industry { get; set; }
         /// <summary>
         /// Job posting's title 
         /// </summary>
@@ -124,18 +122,18 @@ Educational Level
         /// Security level required for position 
         /// </summary>
         public int? SecurityClearanceId { get; set; }
-        public SecurityClearance SecurityClearance { get; set; }
+        public virtual SecurityClearance SecurityClearance { get; set; }
         /// <summary>
         /// Position employment type  e.g. direct hire, contractor, part time, etc 
         /// </summary>
-        
+
         public int? EmploymentTypeId { get; set; }
 
-        public EmploymentType EmploymentType { get; set; }
+        public virtual EmploymentType EmploymentType { get; set; }
         /// <summary>
         /// Flag indicating if company offer H2 Visas
         /// </summary>
-        public bool H2Visa { get; set; } 
+        public bool H2Visa { get; set; }
         /// <summary>
         /// Percentage of time working telecommute is allowd 
         /// </summary>
@@ -149,7 +147,16 @@ Educational Level
         /// </summary>
         public int? CompensationTypeId { get; set; }
 
-        CompensationType CompensationType { get; set; }
+        public virtual CompensationType CompensationType { get; set; }
+
+        public int? ExperienceLevelId { get; set; }
+       
+        public virtual ExperienceLevel ExperienceLevel { get; set; }
+
+        public int? EducationLevelId { get; set; }
+
+        public virtual EducationLevel EducationLevel { get; set; }
+
 
         /****************  application information  ****************************/
         /// <summary>

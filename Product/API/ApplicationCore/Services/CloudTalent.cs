@@ -65,6 +65,32 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
         #endregion
+
+
+
+        #region Job Indexing
+        /// <summary>
+        /// Delete a job from the google index via its google URI pth
+        /// </summary>
+        /// <param name="googleUri"></param>
+        /// <returns></returns>
+        public bool DeleteJobFromIndex(string googleUri)
+        {
+            try
+            {
+                _jobServiceClient.Projects.Jobs.Delete(googleUri).Execute();
+ 
+            }
+            catch (Exception e)
+            {   
+                throw e;
+            }
+
+
+            return true;
+        }
+
+
         /// <summary>
         /// Add a job posting to the google cloud talent solution
         /// </summary>
@@ -139,6 +165,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
+        #endregion
+
+
         #region job searching 
 
 
@@ -185,10 +214,22 @@ namespace UpDiddyApi.ApplicationCore.Services
                 SimpleHistogramFacets = new List<String>
                 {
                     "COMPANY_ID",
-                    "CITY",
-                    "DATE_PUBLISHED",
+                    "COUNTRY",
                     "EMPLOYMENT_TYPE",
-                    "CATEGORY"
+                    "COMPANY_SIZE",
+                    "DATE_PUBLISHED",
+                    "EDUCATION_LEVEL",
+                    "EXPERIENCE_LEVEL",
+                    "ADMIN_1", // Region such as State or Province
+                    "CITY",
+                    "EMPLOYMENT_TYPE",
+                    "CATEGORY",
+                    "LOCALE",
+                    "LANGUAGE",
+                    "CITY_COORDINATE",
+                    "ADMIN_1_COUNTRY",
+                    "COMPANY_DISPLAY_NAME",
+                    "BASE_COMPENSATION_UNIT"
 
                 },
                 CustomAttributeHistogramFacets = new List<CloudTalentSolution.CustomAttributeHistogramRequest>
@@ -197,7 +238,23 @@ namespace UpDiddyApi.ApplicationCore.Services
                    {
                       Key = "Skills",
                       StringValueHistogram = true
+                   },
+                   new CloudTalentSolution.CustomAttributeHistogramRequest()
+                   {
+                      Key = "ApplicationDeadlineUTC",
+                      StringValueHistogram = true
+                   },
+                    new CloudTalentSolution.CustomAttributeHistogramRequest()
+                   {
+                      Key = "ExperienceLevel",
+                      StringValueHistogram = true
+                   },
+                   new CloudTalentSolution.CustomAttributeHistogramRequest()
+                   {
+                      Key = "EducationLevel",
+                      StringValueHistogram = true
                    }
+                    
                }
             };
 
@@ -212,7 +269,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             CloudTalentSolution.SearchJobsResponse searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
 
       
-            JobSearchResultDto rval =  JobPostingFactory.MapSearchResults(_mapper, searchJobsResponse);
+            JobSearchResultDto rval =  JobPostingFactory.MapSearchResults(_syslog, _mapper, searchJobsResponse);
             return rval;
         }
 
