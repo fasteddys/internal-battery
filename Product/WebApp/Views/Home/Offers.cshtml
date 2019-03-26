@@ -1,0 +1,18 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model OffersViewModel
+
+<div id="OffersContainer" class="row">
+    <div class="col-12">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    @foreach(OfferDto offer in Model.Offers)
+                    {
+                        <div>@offer.Name</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

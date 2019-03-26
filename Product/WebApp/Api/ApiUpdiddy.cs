@@ -381,7 +381,22 @@ namespace UpDiddy.Api
             }
             return rval;
         }
-        
+
+        public async Task<IList<OfferDto>> GetOffersAsync()
+        {
+            string cacheKey = $"Offers";
+            IList<OfferDto> rval = GetCachedValue<IList<OfferDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetOffersAsync();
+                SetCachedValue<IList<OfferDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
 
         #endregion
 
@@ -592,6 +607,7 @@ namespace UpDiddy.Api
 
         public async Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumeDto)
         {
+
             return await PostAsync<BasicResponseDto>("resume/upload", resumeDto);
         }
 
@@ -690,6 +706,13 @@ namespace UpDiddy.Api
         {
             return await GetAsync<CourseDto>("course/campaign/" + CampaignGuid);
         }
+
+        public async Task<IList<OfferDto>> _GetOffersAsync()
+        {
+            return await GetAsync<IList<OfferDto>>("offers");
+        }
+
+
         #endregion
 
         #region Private Cache Functions

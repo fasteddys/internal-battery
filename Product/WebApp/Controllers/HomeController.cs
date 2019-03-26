@@ -110,6 +110,29 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        [LoadSubscriber(isHardRefresh: true, isSubscriberRequired: false)]
+        [HttpGet("Home/Offers")]
+        public async Task<IActionResult> OffersAsync()
+        {
+            IList<OfferDto> Offers = await _Api.GetOffersAsync();
+            
+            OffersViewModel OffersViewModel = new OffersViewModel
+            {
+                Offers = Offers,
+                UserIsAuthenticated = User.Identity.IsAuthenticated,
+                UserHasValidatedEmail = false,
+                UserHasUploadedResume = false
+            };
+
+            if (User.Identity.IsAuthenticated)
+            {
+                OffersViewModel.UserHasValidatedEmail = this.subscriber.HasVerificationEmail;
+                OffersViewModel.UserHasUploadedResume = this.subscriber.Files.Count > 0;
+            }
+                                   
+            return View("Offers", OffersViewModel);
+        }
+
         public IActionResult AboutUs()
         {
 

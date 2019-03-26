@@ -56,8 +56,10 @@
             <div class="collapse navbar-collapse" id="NavigationItems">
                 <ul class="navbar-nav ml-auto">
                     <!--<li class="nav-item"><a class="nav-link" asp-controller="Topic" asp-action="Index">@Localizer["Career Skilling"]</a></li>-->
+                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Offers">Offers</a></li>
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="FAQ">FAQ</a></li>
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
+
 
                     <!--<li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="News">@Localizer["News"]</a></li>
     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="ContactUs">@Localizer["Contact"]</a></li>-->
@@ -65,30 +67,31 @@
 
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <li class="nav-item nav-link-right">
-                            <a class="nav-link" id="MyCircleHeaderButton" asp-controller="Home" asp-action="Profile"><i class="fa fa-user-circle" aria-hidden="true"></i> My Circle</a>
+                    <li class="nav-item nav-link-right">
+                        <a class="nav-link" id="MyCircleHeaderButton" asp-controller="Home" asp-action="Profile"><i class="fa fa-user-circle" aria-hidden="true"></i> My Circle</a>
+                    </li>
+                    if ((await AuthorizationService.AuthorizeAsync(User, "IsRecruiterPolicy")).Succeeded)
+                    {
+                        <li>
+                            <a class="nav-link" id="TalentSubscribers" asp-controller="Talent" asp-action="Subscribers">Talent</a>
                         </li>
-                        if ((await AuthorizationService.AuthorizeAsync(User, "IsRecruiterPolicy")).Succeeded)
-                        {
-                            <li>
-                                <a class="nav-link" id="TalentSubscribers" asp-controller="Talent" asp-action="Subscribers">Talent</a>
-                            </li>
-                        }
-                        if ((await AuthorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin")).Succeeded)
-                        {
-                            <li>
-                                <a class="nav-link" id="AdminPortal" asp-controller="Admin" asp-action="Dashboard">Admin</a>
-                            </li>
-                      
-                        }
-                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a></li>
+                    }
+                    if ((await AuthorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin")).Succeeded)
+                    {
+                        <li>
+                            <a class="nav-link" id="AdminPortal" asp-controller="Admin" asp-action="Dashboard">Admin</a>
+                        </li>
+
+                    }
+                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a></li>
+
 
                         <!--<li class="nav-item nav-link"><a class="nav-link" asp-area="" asp-controller="User" asp-action="Dashboard" asp-route-username='@User.Identity.Name'>My Circle</a></li>-->
                     }
                     else
                     {
-                        <li class="nav-item brand-button-light"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignIn">Login/Sign Up</a></li>
-                    }
+                    <li class="nav-item brand-button-light"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignIn">Login/Sign Up</a></li>
+                }
                 </ul>
 
             </div>

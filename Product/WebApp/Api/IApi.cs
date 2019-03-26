@@ -44,6 +44,7 @@ namespace UpDiddy.Api
         Task<IList<EducationalDegreeTypeDto>> GetEducationalDegreeTypesAsync();
         Task<IList<SkillDto>> GetSkillsBySubscriberAsync(Guid subscriberGuid);
         Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumeDto);
+        Task<IList<string>> GetResumeBlobNamesAsync(Guid SubscriberGuid);
         Task<SubscriberWorkHistoryDto> AddWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         Task<SubscriberWorkHistoryDto> UpdateWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         Task<SubscriberEducationHistoryDto> UpdateEducationHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory);
@@ -61,6 +62,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> VerifyEmailAsync(Guid token);
         Task<IList<CampaignDto>> GetCampaignsAsync();
         Task<CampaignDto> GetCampaignAsync(Guid campaignGuid);
+        Task<IList<OfferDto>> GetOffersAsync();
 
         #region TalentPortal
         Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery);
