@@ -44,7 +44,6 @@ namespace UpDiddy.Api
         Task<IList<EducationalDegreeTypeDto>> GetEducationalDegreeTypesAsync();
         Task<IList<SkillDto>> GetSkillsBySubscriberAsync(Guid subscriberGuid);
         Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumeDto);
-        Task<IList<string>> GetResumeBlobNamesAsync(Guid SubscriberGuid);
         Task<SubscriberWorkHistoryDto> AddWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         Task<SubscriberWorkHistoryDto> UpdateWorkHistoryAsync(Guid subscriberGuid, SubscriberWorkHistoryDto workHistory);
         Task<SubscriberEducationHistoryDto> UpdateEducationHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto educationHistory);

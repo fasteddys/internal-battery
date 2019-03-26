@@ -121,13 +121,24 @@ namespace UpDiddy.Controllers
                 Offers = Offers,
                 UserIsAuthenticated = User.Identity.IsAuthenticated,
                 UserHasValidatedEmail = false,
-                UserHasUploadedResume = false
+                UserHasUploadedResume = false,
+                CtaText = "Please create and verify your CareerCircle account, and upload your resume to gain access to offers."
             };
 
             if (User.Identity.IsAuthenticated)
             {
                 OffersViewModel.UserHasValidatedEmail = this.subscriber.HasVerificationEmail;
                 OffersViewModel.UserHasUploadedResume = this.subscriber.Files.Count > 0;
+
+                if (OffersViewModel.UserHasValidatedEmail && !OffersViewModel.UserHasUploadedResume)
+                    OffersViewModel.CtaText = "Please upload your resume to your CareerCircle account to gain access to offers.";
+                else if (!OffersViewModel.UserHasValidatedEmail && OffersViewModel.UserHasUploadedResume)
+                    OffersViewModel.CtaText = "Please validate your email to gain access to offers.";
+                else if (!OffersViewModel.UserHasValidatedEmail && !OffersViewModel.UserHasUploadedResume)
+                    OffersViewModel.CtaText = "Please validate your email and upload your resume to your CareerCircle account to gain access to offers.";
+                else
+                    OffersViewModel.CtaText = "Congratulations, your account is eligible to take advantage of the offers listed below!";
+
             }
                                    
             return View("Offers", OffersViewModel);
