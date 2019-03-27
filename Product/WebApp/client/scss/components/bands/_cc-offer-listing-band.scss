@@ -1,0 +1,50 @@
+﻿@import '../../_variables';
+
+.offer-description {
+    text-align: left;
+    padding: 1rem 0 2rem 0;
+}
+
+.offer-disclaimer {
+    font-size: .5rem;
+    padding-top: 1rem;
+    border-top: 1px solid $color-tertiary-mid-gray;
+
+    @media (min-width: 768px) {
+        font-size: .75rem;
+    }
+}
+
+#CareerCircleOffersContainer {
+    .card {
+        border: 1px solid $color-secondary;
+        border-top: 0;
+
+        &:first-child {
+            border-top: 1px solid $color-secondary;
+        }
+
+
+
+        .card-header {
+            background-color: transparent;
+            cursor: pointer;
+
+            .btn-link {
+                color: $color-secondary;
+                text-decoration: none;
+
+                &:hover {
+                    color: $color-secondary;
+                    text-decoration: none;
+                }
+            }
+
+            &:hover {
+                border-left: 3px solid $color-secondary;
+            }
+        }
+    }
+}
+
+

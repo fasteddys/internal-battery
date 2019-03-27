@@ -1,0 +1,61 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model OfferListingViewModel
+
+
+<div class="modal fade" id="OfferListingModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                 You've claimed the following code: <span class="career-circle-code"></span>. This code has also been sent to your email.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="accordion" id="CareerCircleOffersContainer">
+    @foreach (OfferDto offer in Model.Offers)
+    {
+        string divId = "collapse" + offer.OfferGuid;
+        string firstColumn = Model.IsEligible ? "col-9" : "col-12";
+        <div class="card">
+            <div class="card-header" id="headingOne" data-toggle="collapse" data-target="#@divId" aria-expanded="true" aria-controls="@divId">
+                <h2 class="mb-0">
+                    <button class="btn btn-link" type="button" >
+                        @offer.Partner.Name
+                    </button>
+                </h2>
+            </div>
+
+            <div id="@divId" class="collapse" aria-labelledby="headingOne" data-parent="#CareerCircleOffersContainer">
+                <div class="card-body">
+                    <div class="offer-description">
+                        <div class="row">
+                            <div class="@firstColumn no-padding">
+                                @offer.Description
+                            </div>
+                            @if (Model.IsEligible)
+                            {
+                                <div class="col-3 no-padding text-right">
+                                    <button type="button" class="btn btn-primary claim-offer-button" data-toggle="modal" data-target="#OfferListingModal" data-offer="@offer.OfferGuid">
+                                        Claim
+                                    </button>
+                                </div>
+                            }
+
+                        </div>
+
+                    </div>
+                    <div class="offer-disclaimer">
+                        @offer.Disclaimer
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>
+

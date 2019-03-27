@@ -64,6 +64,7 @@ namespace UpDiddyApi.Controllers
         {
             List<Offer> offers = _db.Offer
                 .Where(s => s.IsDeleted == 0)
+                .Include(s => s.Partner)
                 .Select(s => new Offer
                 {
                      OfferId = s.OfferId,
@@ -75,7 +76,8 @@ namespace UpDiddyApi.Controllers
                      Code = null,
                      Url = s.Url,
                      StartDate = s.StartDate,
-                     EndDate = s.EndDate
+                     EndDate = s.EndDate,
+                     Partner = s.Partner
                 })
                 .ToList();
 

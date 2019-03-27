@@ -115,27 +115,31 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> OffersAsync()
         {
             IList<OfferDto> Offers = await _Api.GetOffersAsync();
-            
+
             OffersViewModel OffersViewModel = new OffersViewModel
             {
                 Offers = Offers,
                 UserIsAuthenticated = User.Identity.IsAuthenticated,
                 UserHasValidatedEmail = false,
                 UserHasUploadedResume = false,
-                CtaText = "Please create and verify your CareerCircle account, and upload your resume to gain access to offers."
+                UserIsEligibleForOffers = false,
+                CtaText = "Please <a href=\"/join#CommunityCampaignBottomContainer\">create a CareerCircle account</a>, verify the email associated with the account, and upload your resume to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions."
             };
 
             if (User.Identity.IsAuthenticated)
             {
                 OffersViewModel.UserHasValidatedEmail = this.subscriber.HasVerificationEmail;
                 OffersViewModel.UserHasUploadedResume = this.subscriber.Files.Count > 0;
+                OffersViewModel.UserIsEligibleForOffers = OffersViewModel.UserIsAuthenticated &&
+                    OffersViewModel.UserHasValidatedEmail &&
+                    OffersViewModel.UserHasUploadedResume;
 
                 if (OffersViewModel.UserHasValidatedEmail && !OffersViewModel.UserHasUploadedResume)
-                    OffersViewModel.CtaText = "Please upload your resume to your CareerCircle account to gain access to offers.";
+                    OffersViewModel.CtaText = "Please upload your resume (located at the top of your <a href=\"/Home/Profile\">profile</a>) to your CareerCircle account to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions.";
                 else if (!OffersViewModel.UserHasValidatedEmail && OffersViewModel.UserHasUploadedResume)
-                    OffersViewModel.CtaText = "Please validate your email to gain access to offers.";
+                    OffersViewModel.CtaText = "Please validate your email (located at the top of your <a href=\"/Home/Profile\">profile</a>) to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions.";
                 else if (!OffersViewModel.UserHasValidatedEmail && !OffersViewModel.UserHasUploadedResume)
-                    OffersViewModel.CtaText = "Please validate your email and upload your resume to your CareerCircle account to gain access to offers.";
+                    OffersViewModel.CtaText = "Please validate your email and upload your resume to your CareerCircle account (both located at the top of your <a href=\"/Home/Profile\">profile</a>) to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions.";
                 else
                     OffersViewModel.CtaText = "Congratulations, your account is eligible to take advantage of the offers listed below!";
 
