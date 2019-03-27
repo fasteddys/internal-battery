@@ -1,0 +1,44 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model ContentBandViewModel
+@*
+    ***Customization Options***
+
+    You can change the "skew-left-to-right" option to
+    "skew-right-to-left" to change the skew direction.
+*@
+
+<div class="cc-content-band row @Model.Class">
+    <div class="col-12">
+        <div class="container no-padding">
+            <div class="row">
+                <div class="col-12 no-padding">
+                    <div class="row">
+                        <div class="col-12 d-flex justify-content-center no-padding">
+                            <div class="cc-content-band-header font-bold">
+                                @Model.Header
+                            </div>
+                        </div>
+                        <div class="col-12 no-padding">
+                            <div class="cc-content-band-content">
+                                <div class="row">
+                                    @{
+                                        int ElementCount = Model.Elements.Count;
+                                        int colSize = Convert.ToInt32(Math.Floor(12.0 / Model.Elements.Count));
+                                        for (int i = 0; i < ElementCount; i++)
+                                        {
+                                            string html = Model.Elements.ElementAt(i);
+                                            <div class="col-12 col-sm-@colSize">
+                                                @Html.Raw(html)
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

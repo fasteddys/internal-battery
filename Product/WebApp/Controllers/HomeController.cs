@@ -98,12 +98,6 @@ namespace UpDiddy.Controllers
             return View(signupFlowViewModel);
         }
 
-        [HttpGet("/ClinicalResearchFastrack")]
-        public IActionResult JoinNow()
-        {
-            return View("ExpressSignUp", new SignUpViewModel());
-        }
-
         public IActionResult News()
         {
 

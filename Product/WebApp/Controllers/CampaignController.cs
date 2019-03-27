@@ -30,6 +30,7 @@ namespace UpDiddy.Controllers
 
         [HttpGet("/Wozu")]
         [HttpGet("/MomProject")]
+        [HttpGet("/ClinicalResearchFastrack")]
         public IActionResult PartnerLandingPages()
         {
             string viewName = Request.Path.Value.TrimStart('/');
@@ -91,7 +92,7 @@ namespace UpDiddy.Controllers
                 };
 
 
-                string viewName = CampaignViewName == null ? "Community" : CampaignViewName;
+                string viewName = CampaignViewName == null ? "Community" : string.Format("TargetedPages/{0}", CampaignViewName);
                 return View(viewName, cvm);
             }
 

@@ -8,10 +8,16 @@
 
 <div id="CampaignContainer">
     @* Some of the below hardcoded values will be replaced with variables from the Model. *@
-
+    @{
+        List<string> Descriptions = new List<string>
+{
+    "We prepare the workforce of today for the opportunities of tomorrow. Enroll in affordable courses and expand your skill set.",
+    "We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston."
+};
+    }
     @Html.Partial("Components/Bands/_CampaignSignUpBand", new CampaignSignUpBandViewModel {
-    CampaignCourse = "AngularJS",
-    ImageUrl = "/images/logo_angular.png",
+    CampaignCourse = "React",
+    ImageUrl = "/images/logo_react.png",
     CampaignGuid = Model.CampaignGuid,
     ContactGuid = Model.ContactGuid,
     RibbonText = "<strong>LIMITED TIME OFFER:</strong> Get hired by one of our partners, and your course is free.<sup>1</sup>",
@@ -20,50 +26,42 @@
     IsActive = Model.IsActive
 })
     @Html.Partial("Components/Bands/_TripleContainerBand", new TripleContainerBandViewModel {
-        Header = "Advance Your Career With Angular",
+        Header = "Advance Your Career With React",
         ChosenColorScheme = "cc-cscheme-white",
-        C1TopValue = "82",
-        C1BottomValue = "# of Angular developer jobs open right now in Baltimore, Chicago, Charlotte and Boston",
-        C2TopValue = "647",
-        C2BottomValue = "# of Angular developers we've found jobs for this year",
-        C3TopValue = "$123,427",
-        C3BottomValue = "Average salary for Angular web developers"
+        C1TopValue = "63",
+        C1BottomValue = "# of React developer jobs open right now in Baltimore, Chicago, Charlotte and Boston",
+        C2TopValue = "304",
+        C2BottomValue = "# of React developers we've found jobs for this year",
+        C3TopValue = "$127,358",
+        C3BottomValue = "Average salary for React web developers"
     })
     @{
-        List<ColumnSkewBandViewModel.ColumnSkewBandElement> Elements = new List<ColumnSkewBandViewModel.ColumnSkewBandElement>()
+        List<string> Elements = new List<string>()
     {
-        new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_1_angular.png", true),
-        new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_2_angular.png", true),
-        new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_3_angular.png", true),
-        new ColumnSkewBandViewModel.ColumnSkewBandElement("/images/list_4_angular.png", true)
+        "<img class='img-fluid' src='/images/list_1_react.png'/>",
+        "<img class='img-fluid' src='/images/list_2_react.png'/>",
+        "<img class='img-fluid' src='/images/list_3_react.png'/>",
+        "<img class='img-fluid' src='/images/list_4_react.png'/>"
     };
     }
-    @Html.Partial("Components/Bands/_ColumnSkewBand", new ColumnSkewBandViewModel
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
     {
-        SkewDirection = "skew-left-to-right",
-        Header = "Become an Angular Developer",
-        ChosenColorScheme = "cc-cscheme-secondary-dark",
+        Header = "Become a React Developer",
+        Class = "cc-cscheme-tertiary-light-gray skew skew-left-to-right",
         Elements = Elements
     })
     @{
-        List<ColumnSkewBandViewModel.ColumnSkewBandElement> TextElements = new List<ColumnSkewBandViewModel.ColumnSkewBandElement>()
-{
-new ColumnSkewBandViewModel.ColumnSkewBandElement(UpDiddyLib.Helpers.Utils.FormatWozDescriptionFields(Model.CampaignCourse.Description), false)
-};
+            List<string> TextElements = new List<string>()
+    {
+            UpDiddyLib.Helpers.Utils.FormatWozDescriptionFields(Model.CampaignCourse.Description)
+    };
     }
-    @Html.Partial("Components/Bands/_ColumnSkewBand", new ColumnSkewBandViewModel
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
     {
         Header = "What You Can Expect From This Course",
-        ChosenColorScheme = "cc-cscheme-tertiary-light-gray",
+        Class = "cc-cscheme-white",
         Elements = TextElements
     })
-    @{
-        List<string> Descriptions = new List<string>
-{
-"We prepare the workforce of today for the opportunities of tomorrow. Enroll in affordable courses and expand your skill set.",
-"We know where the top jobs are. Our partners include companies in Chicago, Baltimore, Charlotte, and Boston."
-};
-    }
     @Html.Partial("Components/Bands/_TextWithMediaBand", new TextWithMediaBandViewModel {
         Header = "Expand Your Skills",
         MediaUrl = "/videos/Career_Circle.mp4",
@@ -75,7 +73,6 @@ new ColumnSkewBandViewModel.ColumnSkewBandElement(UpDiddyLib.Helpers.Utils.Forma
 
     @if (Model.IsActive)
     {
-        
         List<DisclaimersViewModel.Disclaimer> Disclaimers = new List<DisclaimersViewModel.Disclaimer>()
         {
             new DisclaimersViewModel.Disclaimer("Complete the course and find a job with an Allegis Group company within 180 days of completing your course and you will receive a full refund of the purchase price - $249."),
@@ -87,13 +84,12 @@ new ColumnSkewBandViewModel.ColumnSkewBandElement(UpDiddyLib.Helpers.Utils.Forma
             "by an Allegis Group Company within 180 days of course enrollment.  Refunds to be issued within 30 days of all terms and " +
             "conditions having been met. The class available for the full refund is specified in the email you received.")
         };
-        
         @Html.Partial("Components/Utilities/_Disclaimers", new DisclaimersViewModel
         {
             Disclaimers = Disclaimers,
             ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
         })
     }
-
+    
 </div>
 <img src="@Model.TrackingImgSource" />
