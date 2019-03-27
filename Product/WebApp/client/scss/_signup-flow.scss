@@ -94,7 +94,9 @@
                         .control-wrapper {
                             position: absolute;
                             bottom: 0;
-                            left: 0;
+                            @media (max-width: 600px) {
+                                left: 0;
+                            }
                         }
 
                         .name-container,
