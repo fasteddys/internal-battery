@@ -3,7 +3,7 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
-@model CampaignViewModel;
+@model SignUpViewModel;
 
 <div id="CampaignContainer" class="mom-project-signup">
     <div class="cc-campaign-sign-up-band row" style="background-image: url('/images/handshake-hero.jpg'); background-position: top">
@@ -42,14 +42,7 @@
                                     Create an account to get started
                                 </div>
                                 <div class="col-12 no-padding">
-                                    @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel
-                                    {
-                                        ContactGuid = Model.ContactGuid,
-                                        CampaignGuid = Model.CampaignGuid,
-                                        CampaignPhase = Model.CampaignPhase,
-                                        IsExpressSignUp = Model.IsExpressCampaign
-
-                                    })
+                                    @Html.Partial("Components/Authentication/_SignUp", Model)
                                 </div>
                             </div>
                         </div>
