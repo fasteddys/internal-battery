@@ -1260,6 +1260,31 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("JobPosting");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.JobPostingSkill", b =>
+                {
+                    b.Property<int>("SkillId");
+
+                    b.Property<int>("JobPostingId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<Guid?>("JobPostingSkillGuid");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.HasKey("SkillId", "JobPostingId");
+
+                    b.HasIndex("JobPostingId");
+
+                    b.ToTable("JobPostingSkill");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.LinkedInToken", b =>
                 {
                     b.Property<int>("LinkedInTokenId")
@@ -2629,6 +2654,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.SecurityClearance", "SecurityClearance")
                         .WithMany()
                         .HasForeignKey("SecurityClearanceId");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobPostingSkill", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.JobPosting", "JobPosting")
+                        .WithMany("JobPostingSkills")
+                        .HasForeignKey("JobPostingId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Skill", "Skill")
+                        .WithMany()
+                        .HasForeignKey("SkillId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.LinkedInToken", b =>

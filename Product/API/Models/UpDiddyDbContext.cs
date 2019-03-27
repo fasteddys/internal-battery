@@ -130,7 +130,7 @@ namespace UpDiddyApi.Models
         public DbSet<SecurityClearance> SecurityClearance { get; set; }
         public DbSet<Industry> Industry { get; set; }
         public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
-
+        public DbSet<JobPostingSkill> JobPostingSkill { get; set; }
 
 
 
@@ -218,6 +218,10 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<PromoCode>()
                 .Property(pc => pc.MaxAllowedNumberOfRedemptions)
                 .HasDefaultValue(1);
+
+            modelBuilder.Entity<JobPostingSkill>()
+                .HasKey(ss => new { ss.SkillId, ss.JobPostingId });
+
         }
     }
 }

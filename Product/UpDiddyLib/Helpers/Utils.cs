@@ -16,6 +16,11 @@ namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+
+
+ 
+ 
+
         /// <summary>
         /// Convert a datetime object to a ISO8601 date string 
         /// </summary>
@@ -434,6 +439,17 @@ namespace UpDiddyLib.Helpers
             return regex.Replace(Str.Trim(), " ");
 
         }
+
+        public static DateTime FromUnixTimeInSeconds(long wozTime)
+        {
+            return epoch.AddSeconds(wozTime);
+        }
+
+        public static long ToUnixTimeInSeconds(DateTime dateTime)
+        {
+            return (long)(dateTime - epoch).TotalSeconds;
+        }
+
         public static DateTime FromUnixTimeInMilliseconds(long wozTime)
         {
             return epoch.AddMilliseconds(wozTime);

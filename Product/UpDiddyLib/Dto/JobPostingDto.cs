@@ -44,5 +44,8 @@ namespace UpDiddyLib.Dto
 
         public EducationLevelDto EducationLevel { get; set; }
 
+        public List<SkillDto> Skills { get; set; }
+
+
     }
 }

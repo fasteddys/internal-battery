@@ -22,6 +22,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using UpDiddyApi.ApplicationCore.Services;
+using UpDiddyApi.Helpers.Job;
 
 namespace UpDiddyApi.Workflow
 {
@@ -587,7 +588,7 @@ namespace UpDiddyApi.Workflow
         public bool CloudTalentAddJob(Guid jobPostingGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
-            JobPostingFactory.AddJobToCloudTalent(_db, ct, jobPostingGuid);
+            JobHelper.AddJobToCloudTalent(_db, ct, jobPostingGuid);
             return true;
         }
 

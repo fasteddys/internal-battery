@@ -20,6 +20,7 @@ using Google.Apis.Services;
 using Google.Apis.Auth.OAuth2;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyLib.Dto;
+using UpDiddyApi.Helpers.Job;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -100,7 +101,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {            
             try
             {
-                CloudTalentSolution.Job TalentCloudJob = JobPostingFactory.ToGoogleJob(jobPosting);
+                CloudTalentSolution.Job TalentCloudJob = JobHelper.CreateGoogleJob(_db, jobPosting);
                 CloudTalentSolution.CreateJobRequest CreateJobRequest = new CloudTalentSolution.CreateJobRequest();
                 CreateJobRequest.Job = TalentCloudJob;
                 // "Google.Apis.Requests.RequestError\r\nInvalid value at 'job.posting_expire_time' (type.googleapis.com/google.protobuf.Timestamp), Field 'postingExpireTime', Illegal timestamp format; timestamps must end with 'Z' or have a valid timezone offset. [400]\r\nErrors [\r\n\tMessage[Invalid value at 'job.posting_expire_time' (type.googleapis.com/google.protobuf.Timestamp), Field 'postingExpireTime', Illegal timestamp format; timestamps must end with 'Z' or have a valid timezone offset.] Location[ - ] Reason[badRequest] Domain[global]\r\n]\r\n"
@@ -192,7 +193,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // Add Custom Attribute Filter 
             string customAttributeFilter = "LOWER(Skills) = \"javascript\"";
-            //jobQuery.CustomAttributeFilter = customAttributeFilter;
+            jobQuery.CustomAttributeFilter = customAttributeFilter;
 
             // Add Location Filter             
             CloudTalentSolution.LocationFilter locationFilter = new CloudTalentSolution.LocationFilter()
@@ -269,7 +270,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             CloudTalentSolution.SearchJobsResponse searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
 
       
-            JobSearchResultDto rval =  JobPostingFactory.MapSearchResults(_syslog, _mapper, searchJobsResponse);
+            JobSearchResultDto rval =  JobHelper.MapSearchResults(_syslog, _mapper, searchJobsResponse);
             return rval;
         }
 

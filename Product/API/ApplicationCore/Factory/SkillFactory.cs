@@ -39,5 +39,15 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             return skill;
         }
+
+
+        static public Skill GetSkillByGuid(UpDiddyDbContext db, Guid skillGuid)
+        {
+             return db.Skill
+                .Where(s => s.IsDeleted == 0 && s.SkillGuid == skillGuid)
+                .FirstOrDefault();            
+        }
+
+
     }
 }

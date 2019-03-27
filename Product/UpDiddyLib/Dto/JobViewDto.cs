@@ -58,6 +58,17 @@ namespace UpDiddyLib.Dto
         /// Job posting text 
         /// </summary>
         public string Description { get; set; }
+
+        public string ExperienceLevel { get; set; }
+
+        public string EducationLevel { get; set; }
+
+        public long AnnualCompensation { get; set; }
+        public string EmploymentType { get; set; }
+        public string ThirdPartyApplyUrl { get; set; }
+        public DateTime ModifyDate { get; set; }
+        public long TelecommutePercentage { get; set; }
+        public bool ThirdPartyApply { get; set; }
   
     }
 }

@@ -28,6 +28,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using UpDiddyApi.ApplicationCore;
 using Hangfire;
 using UpDiddyApi.Workflow;
+using UpDiddyApi.Helpers.Job;
 
 namespace UpDiddyApi.Controllers
 {
@@ -64,86 +65,56 @@ namespace UpDiddyApi.Controllers
         // TODO Jab [Authorize(Policy = "IsRecruiterOrAdmin")]         
         [Route("api/[controller]")]
         public IActionResult CreateJobPosting([FromBody] JobPostingDto jobPostingDto)
-        {
-            _syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
-            JobPosting jobPosting = _mapper.Map<JobPosting>(jobPostingDto);
-            // use factory method to make sure all the base data values are set just 
-            // in case the caller didn't set them
-            BaseModelFactory.SetDefaultsForAddNew(jobPosting);
-            // important! Init all reference object ids to -1 since further logic will use < 0 to check for 
-            // their validity
-            JobPostingFactory.SetDefaultsForAddNew(jobPosting);
-            // map company id 
-            if (jobPostingDto.Company != null)
+        {                 
+            try
             {
-                Company company = CompanyFactory.GetCompanyByGuid(_db, jobPostingDto.Company.CompanyGuid);
-                if (company != null)
-                    jobPosting.CompanyId = company.CompanyId;
+                 if ( jobPostingDto == null )
+                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting is required"});
+
+                 _syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
+                 JobPosting jobPosting = _mapper.Map<JobPosting>(jobPostingDto);
+                 // use factory method to make sure all the base data values are set just 
+                 // in case the caller didn't set them
+                 BaseModelFactory.SetDefaultsForAddNew(jobPosting);
+                 // important! Init all reference object ids to -1 since further logic will use < 0 to check for 
+                 // their validity
+                 JobPostingFactory.SetDefaultsForAddNew(jobPosting);
+                 // Asscociate related objects that were passed by guid
+                 // todo find a more efficient way to do this
+                 JobPostingFactory.MapRelatedObjects(_db, jobPosting, jobPostingDto);
+                 
+                 string msg = string.Empty;
+                 if (JobHelper.ValidateJobPosting(jobPosting, ref msg) == false)
+                 {
+                     var response = new BasicResponseDto() { StatusCode = 400, Description = msg };
+                     _syslog.Log(LogLevel.Warning, "JobPostingController.CreateJobPosting:: Bad Request {Description} {JobPosting}", response.Description, jobPostingDto);
+                     return BadRequest(response);
+                 }
+
+                 jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.NotIndexed;
+                 jobPosting.JobPostingGuid = Guid.NewGuid();
+                 if (jobPosting.PostingDateUTC < DateTime.UtcNow)
+                     jobPosting.PostingDateUTC = DateTime.UtcNow;
+                 if (jobPosting.PostingExpirationDateUTC < DateTime.UtcNow)
+                 {
+                     jobPosting.PostingExpirationDateUTC = DateTime.UtcNow.AddDays(_postingTTL);
+                 }
+                 // save the job to sql server 
+                 // todo make saving the job posting and skills more efficient with a SP
+                 _db.JobPosting.Add(jobPosting);
+                 _db.SaveChanges();
+                 JobPostingFactory.SavePostingSkills(_db, jobPosting, jobPostingDto);
+                 //index job into google 
+                 BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
+
+                 _syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+                 return Ok(_mapper.Map<JobPostingDto>(jobPosting));
             }
-            // map industry id
-            if (jobPostingDto.Industry != null)
+            catch(Exception ex)
             {
-                Industry industry = IndustryFactory.GetIndustryByGuid(_db, jobPostingDto.Industry.IndustryGuid);
-                if (industry != null)
-                    jobPosting.IndustryId = industry.IndustryId;
+                _syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting exception : {ex.Message}");
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
             }
-            // map security clearance 
-            if (jobPostingDto.SecurityClearance != null)
-            {
-                SecurityClearance securityClearance = SecurityClearanceFactory.GetSecurityClearanceByGuid(_db, jobPostingDto.SecurityClearance.SecurityClearanceGuid);
-                if (securityClearance != null)
-                    jobPosting.SecurityClearanceId = securityClearance.SecurityClearanceId;
-            }
-            // map employment type
-            if (jobPostingDto.EmploymentType != null)
-            {
-                EmploymentType employmentType = EmploymentTypeFactory.GetEmploymentTypeByGuid(_db, jobPostingDto.EmploymentType.EmploymentTypeGuid);
-                if (employmentType != null)
-                    jobPosting.EmploymentTypeId = employmentType.EmploymentTypeId;
-            }            
-            // map educational level type
-            if (jobPostingDto.EducationLevel != null)
-            {
-                EducationLevel educationLevel = EducationLevelFactory.GetEducationLevelByGuid(_db, jobPostingDto.EducationLevel.EducationLevelGuid);
-                if (educationLevel != null)
-                    jobPosting.EducationLevelId = educationLevel.EducationLevelId;
-            }        
-            // map level experience type
-            if (jobPostingDto.ExperienceLevel != null)
-            {
-                ExperienceLevel experienceLevel = ExperienceLevelFactory.GetExperienceLevelByGuid(_db, jobPostingDto.ExperienceLevel.ExperienceLevelGuid);
-                if (experienceLevel != null)
-                    jobPosting.ExperienceLevelId = experienceLevel.ExperienceLevelId;
-            }
-
-
-
-            string msg = string.Empty;
-            if (JobPostingFactory.ValidateJobPosting(jobPosting, ref msg) == false)
-            {
-                var response = new BasicResponseDto() { StatusCode = 400, Description = msg };
-                _syslog.Log(LogLevel.Warning, "JobPostingController.CreateJobPosting:: Bad Request {Description} {JobPosting}", response.Description, jobPostingDto);
-                return BadRequest(response);
-            }
-
-            jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.NotIndexed;
-            jobPosting.JobPostingGuid = Guid.NewGuid();
-            if (jobPosting.PostingDateUTC < DateTime.UtcNow)
-                jobPosting.PostingDateUTC = DateTime.UtcNow;
-            if (jobPosting.PostingExpirationDateUTC < DateTime.UtcNow)
-            {
-                jobPosting.PostingExpirationDateUTC = DateTime.UtcNow.AddDays(_postingTTL);
-            }
-            // save the job to sql server 
-            _db.JobPosting.Add(jobPosting);
-            _db.SaveChanges();
-
-            //index job into google 
-
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
-
-            _syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
-            return Ok(_mapper.Map<JobPostingDto>(jobPosting));
         }
 
         #endregion

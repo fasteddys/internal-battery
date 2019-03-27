@@ -12,14 +12,7 @@ namespace UpDiddyApi.Models
     public enum JobPostingIndexStatus { NotIndexed = 0, Indexed, DeletedFromIndex, IndexError, IndexDeleteError, IndexUpdateError  };
 
 
-    /*
-         /Job/state/md/city/towson/zip/21204/skills/java-
-     * 
-     * 
-     */
-
-
-
+ 
 
     /*
      * 
@@ -31,32 +24,14 @@ Job location - This could be a number of elements to assist:
   enabling distance to job/commute search capabilities
   enabling filtering by city,state
  
- 
-Salary - hourly and annually values
- 
-Job Type: Full-time, internship, contract, contract to hire, temporary, commission, ??
- 
-  
- 
-date expires
- 
-
- 
-Last updated (date posting was updated or extended)
- 
+   
 Category / Industry
  
 Sub-Category
- 
-Application Deadline
- 
-Apply Type - Apply via CareerCircle or 3rd Party/Offsite
+  
  
 Skills ( 0 or more per posting)
  
-Educational Level
-
-  Telecommute 
  */
 
 
@@ -156,6 +131,8 @@ Educational Level
         public int? EducationLevelId { get; set; }
 
         public virtual EducationLevel EducationLevel { get; set; }
+
+        public List<JobPostingSkill> JobPostingSkills { get; } = new List<JobPostingSkill>();
 
 
         /****************  application information  ****************************/
