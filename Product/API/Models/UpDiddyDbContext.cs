@@ -143,10 +143,7 @@ namespace UpDiddyApi.Models
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<SubscriberAction>()
-                .HasKey(sa => new { sa.SubscriberId, sa.ActionId });
-
+        {                
             modelBuilder.Entity<EntityType>()
                 .HasIndex(et => et.Name)
                 .IsUnique();

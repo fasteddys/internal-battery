@@ -7,6 +7,7 @@ namespace UpDiddyApi.Models
 {
     public class SubscriberAction : BaseModel
     {
+        public int SubscriberActionId { get; set; }
         public Guid SubscriberActionGuid { get; set; }
         public virtual Subscriber Subscriber { get; set; }
         public int SubscriberId { get; set; }

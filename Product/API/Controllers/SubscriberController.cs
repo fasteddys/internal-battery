@@ -40,6 +40,7 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ILogger _syslog;
+        private readonly IDistributedCache _cache;
         private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
@@ -58,6 +59,7 @@ namespace UpDiddyApi.Controllers
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
+            _cache = distributedCache;
             _syslog = sysLog;
             _graphClient = client;
             _cloudStorage = cloudStorage;
@@ -78,8 +80,12 @@ namespace UpDiddyApi.Controllers
 
             if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
             {
-                // track the subscriber action
                 SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
+
+                // track the subscriber action if performed by someone other than the user who owns the file
+                if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
+                    new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
+
                 return Ok(subscriberDto);
             }
             else
@@ -636,7 +642,8 @@ namespace UpDiddyApi.Controllers
                 _sysEmail.SendTemplatedEmailAsync(
                     subscriber.Email,
                     "d-f1eab71626494594bebd20d0907d673d",
-                    new {
+                    new
+                    {
                         verificationLink = link
                     }, null
                 ));
@@ -950,7 +957,10 @@ namespace UpDiddyApi.Controllers
             if (file == null)
                 return NotFound(new BasicResponseDto { StatusCode = 404, Description = "File not found. " });
 
-            // track the subscriber action
+            // track the subscriber action if performed by someone other than the user who owns the file
+            if (loggedInUserGuid != subscriber.SubscriberGuid.Value)
+                new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "Download resume", "Subscriber", subscriber.SubscriberGuid);
+
             return File(await _cloudStorage.OpenReadAsync(file.BlobName), "application/octet-stream", Path.GetFileName(file.BlobName));
         }
 
