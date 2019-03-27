@@ -78,6 +78,7 @@ namespace UpDiddyApi.Controllers
 
             if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
             {
+                // track the subscriber action
                 SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
                 return Ok(subscriberDto);
             }
@@ -934,18 +935,22 @@ namespace UpDiddyApi.Controllers
         [HttpGet("/api/[controller]/{subscriberGuid}/file/{fileGuid}")]
         public async Task<IActionResult> DownloadFile(Guid subscriberGuid, Guid fileGuid)
         {
-            Guid userGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (userGuid != subscriberGuid)
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
+
+            if (loggedInUserGuid != subscriberGuid && !isAuth.Succeeded)
                 return Unauthorized();
 
             Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(subscriberGuid))
                 .Include(s => s.SubscriberFile)
                 .First();
+
             SubscriberFile file = subscriber.SubscriberFile.Where(f => f.SubscriberFileGuid.Equals(fileGuid)).First();
 
             if (file == null)
                 return NotFound(new BasicResponseDto { StatusCode = 404, Description = "File not found. " });
 
+            // track the subscriber action
             return File(await _cloudStorage.OpenReadAsync(file.BlobName), "application/octet-stream", Path.GetFileName(file.BlobName));
         }
 
