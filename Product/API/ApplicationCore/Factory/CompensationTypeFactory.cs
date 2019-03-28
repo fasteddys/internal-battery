@@ -30,6 +30,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;            
         }
 
+        public static CompensationType GetCompensationTypeByGuid(UpDiddyDbContext db, Guid CompensationTypeGuid)
+        {
+            return db.CompensationType
+                .Where(s => s.IsDeleted == 0 && s.CompensationTypeGuid == CompensationTypeGuid)
+                .FirstOrDefault();
+        }
 
         public static CompensationType  GetCompensationTypeByName(UpDiddyDbContext db, string CompensationTypeName)
         {

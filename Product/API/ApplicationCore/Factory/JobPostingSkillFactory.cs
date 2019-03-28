@@ -9,6 +9,28 @@ namespace UpDiddyApi.ApplicationCore.Factory
     public class JobPostingSkillFactory
     {
 
+        public static List<JobPostingSkill> GetSkillsForPosting(UpDiddyDbContext db, int jobPostingId )
+        {
+            return  db.JobPostingSkill
+                   .Where(s => s.JobPostingId == jobPostingId)
+                   .ToList();
+        }
+
+        public static void DeleteSkillsForPosting(UpDiddyDbContext db, int jobPostingId)
+        {
+            List<JobPostingSkill> theList =  db.JobPostingSkill
+                   .Where(s => s.JobPostingId == jobPostingId)
+                   .ToList();
+
+            foreach ( JobPostingSkill jps in theList)
+                 db.JobPostingSkill.Remove(jps);
+            db.SaveChanges();
+        }
+
+
+
+
+
         /// <summary>
         /// Create a job posting skill 
         /// </summary>

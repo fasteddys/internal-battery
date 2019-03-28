@@ -9,10 +9,10 @@ namespace UpDiddyApi.Models
 {
 
 
-    public enum JobPostingIndexStatus { NotIndexed = 0, Indexed, DeletedFromIndex, IndexError, IndexDeleteError, IndexUpdateError  };
+    public enum JobPostingIndexStatus { NotIndexed = 0, Indexed, DeletedFromIndex, IndexError, IndexDeleteError, IndexUpdateError, UpdateIndexPending  };
 
 
- 
+
 
     /*
      * 
@@ -85,9 +85,20 @@ Skills ( 0 or more per posting)
         public int? IndustryId { get; set; }
 
         public virtual Industry Industry { get; set; }
+
+        /// <summary>
+        /// Subcategorizaion of the job
+        /// </summary>
+        public int? JobCategoryId { get; set; }
+
+        public virtual JobCategory JobCategory  { get; set;}
+
+
         /// <summary>
         /// Job posting's title 
         /// </summary>
+        ///         
+
         public string Title { get; set; }
         /// <summary>
         /// Job posting text 
@@ -102,9 +113,18 @@ Skills ( 0 or more per posting)
         /// Position employment type  e.g. direct hire, contractor, part time, etc 
         /// </summary>
 
+
+        
         public int? EmploymentTypeId { get; set; }
 
         public virtual EmploymentType EmploymentType { get; set; }
+
+        /// <summary>
+        ///  Flag indicating if the job poster is a staffing agency
+        /// </summary>
+        public bool IsAgencyJobPosting { get; set; }
+
+
         /// <summary>
         /// Flag indicating if company offer H2 Visas
         /// </summary>

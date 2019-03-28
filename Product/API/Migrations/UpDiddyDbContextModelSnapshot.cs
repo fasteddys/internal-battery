@@ -1181,6 +1181,31 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("Industry");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.JobCategory", b =>
+                {
+                    b.Property<int>("JobCategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<Guid>("JobCategoryGuid");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("JobCategoryId");
+
+                    b.ToTable("JobCategory");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.JobPosting", b =>
                 {
                     b.Property<int>("JobPostingId")
@@ -1217,7 +1242,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int?>("IndustryId");
 
+                    b.Property<bool>("IsAgencyJobPosting");
+
                     b.Property<int>("IsDeleted");
+
+                    b.Property<int?>("JobCategoryId");
 
                     b.Property<Guid>("JobPostingGuid");
 
@@ -1254,6 +1283,8 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("ExperienceLevelId");
 
                     b.HasIndex("IndustryId");
+
+                    b.HasIndex("JobCategoryId");
 
                     b.HasIndex("SecurityClearanceId");
 
@@ -2650,6 +2681,10 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Industry", "Industry")
                         .WithMany()
                         .HasForeignKey("IndustryId");
+
+                    b.HasOne("UpDiddyApi.Models.JobCategory", "JobCategory")
+                        .WithMany()
+                        .HasForeignKey("JobCategoryId");
 
                     b.HasOne("UpDiddyApi.Models.SecurityClearance", "SecurityClearance")
                         .WithMany()

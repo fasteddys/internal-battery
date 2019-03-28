@@ -61,6 +61,68 @@ namespace UpDiddyApi.Controllers
 
         #region job crud 
 
+        [HttpPut]
+        // TODO Jab [Authorize(Policy = "IsRecruiterOrAdmin")]         
+        [Route("api/[controller]")]
+        public IActionResult UpdateJobPosting([FromBody] JobPostingDto jobPostingDto)
+        {
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
+                // Retreive the current state of the job posting 
+                JobPosting tempJobPosting = JobPostingFactory.GetJobPostingByGuid(_db,jobPostingDto.JobPostingGuid.Value);
+                if (tempJobPosting == null)
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = $"{jobPostingDto.JobPostingGuid} is not a valid jobposting guid" });
+                // map from jobPostingDto to jobPosting
+                JobPosting jobPosting = _mapper.Map<JobPosting>(jobPostingDto);
+                // Snag the key info for the job posting 
+                jobPosting.JobPostingId = tempJobPosting.JobPostingId;
+                // Unattach temp job posting from EF
+                _db.Entry(tempJobPosting).State = EntityState.Detached;
+                // attach the updated version of the  jobposting object to EF 
+                _db.JobPosting.Attach(jobPosting);
+                // mark the entity as dirty 
+                _db.Entry(jobPosting).State = EntityState.Modified;
+                // use factory method to make sure all the base data values are set just 
+                // in case the caller didn't set them
+
+                BaseModelFactory.SetDefaultsForAddNew(jobPosting);
+                // important! Init all reference object ids to null since further logic will use < 0 to check for 
+                // their validity
+                JobPostingFactory.SetDefaultsForAddNew(jobPosting);
+                // copy the keys of the related objects to the updated job posting 
+                JobPostingFactory.MapRelatedObjects(jobPosting, tempJobPosting);
+                // validate job posting
+                string msg = string.Empty;
+                if (JobHelper.ValidateJobPosting(jobPosting, ref msg) == false)
+                {
+                    var response = new BasicResponseDto() { StatusCode = 400, Description = msg };
+                    _syslog.Log(LogLevel.Warning, "JobPostingController.CreateJobPosting:: Bad Request {Description} {JobPosting}", response.Description, jobPostingDto);
+                    return BadRequest(response);
+                }
+
+                jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.UpdateIndexPending;               
+                // save the update jobposting to sql server 
+                var x = _db.SaveChanges();
+                JobPostingFactory.UpdatePostingSkills(_db, jobPosting, jobPostingDto);
+
+
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobPosting.JobPostingGuid));
+
+                return Ok(_mapper.Map<JobPostingDto>(jobPosting));
+                _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+            catch ( Exception ex )
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting exception : {ex.Message}");
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
+            }
+
+
+        }
+
+
+
         [HttpPost]
         // TODO Jab [Authorize(Policy = "IsRecruiterOrAdmin")]         
         [Route("api/[controller]")]
@@ -76,7 +138,7 @@ namespace UpDiddyApi.Controllers
                  // use factory method to make sure all the base data values are set just 
                  // in case the caller didn't set them
                  BaseModelFactory.SetDefaultsForAddNew(jobPosting);
-                 // important! Init all reference object ids to -1 since further logic will use < 0 to check for 
+                 // important! Init all reference object ids to null since further logic will use < 0 to check for 
                  // their validity
                  JobPostingFactory.SetDefaultsForAddNew(jobPosting);
                  // Asscociate related objects that were passed by guid
@@ -100,7 +162,7 @@ namespace UpDiddyApi.Controllers
                      jobPosting.PostingExpirationDateUTC = DateTime.UtcNow.AddDays(_postingTTL);
                  }
                  // save the job to sql server 
-                 // todo make saving the job posting and skills more efficient with a SP
+                 // todo make saving the job posting and skills more efficient with a stored procedure 
                  _db.JobPosting.Add(jobPosting);
                  _db.SaveChanges();
                  JobPostingFactory.SavePostingSkills(_db, jobPosting, jobPostingDto);

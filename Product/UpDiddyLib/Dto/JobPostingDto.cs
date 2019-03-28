@@ -22,6 +22,8 @@ namespace UpDiddyLib.Dto
      
 
         public IndustryDto Industry { get; set; }
+
+        public JobCategoryDto JobCategory { get; set; }
  
         public string Title { get; set; }
        
@@ -32,6 +34,9 @@ namespace UpDiddyLib.Dto
         public EmploymentTypeDto EmploymentType { get; set; } 
 
         public bool H2Visa { get; set; }
+
+        public bool IsAgencyJobPosting { get; set; }
+
         public int TelecommutePercentage { get; set; }
         public Decimal Compensation { get; set; }
         public int? CompensationTypeId { get; set; }

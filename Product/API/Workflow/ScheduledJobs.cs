@@ -592,6 +592,14 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
+        public bool CloudTalentUpdateJob(Guid jobPostingGuid)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            JobHelper.UpdateJobToCloudTalent(_db, ct, jobPostingGuid);
+            return true;
+        }
+
+
 
         #endregion
 

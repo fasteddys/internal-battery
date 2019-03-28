@@ -20,10 +20,6 @@ namespace UpDiddyApi.Helpers.Job
     /// </summary>
     public class JobHelper
     {
-
-
-
-
         /// <param name="jobPosting"></param>
         /// <returns></returns>
         static public CloudTalentSolution.Job CreateGoogleJob(UpDiddyDbContext db, JobPosting jobPosting)
@@ -31,11 +27,11 @@ namespace UpDiddyApi.Helpers.Job
             // Set default application instructions as required by Google
             CloudTalentSolution.ApplicationInfo applicationInfo = new CloudTalentSolution.ApplicationInfo()
             {
-                Instruction = "Apply Now!",
+                Instruction = "Apply Now!"
             };
 
             // Create custom job posting attributes 
-            IDictionary<string, CloudTalentSolution.CustomAttribute> customAttributes = CreateJobCustomAttributes(db,jobPosting);
+            IDictionary<string, CloudTalentSolution.CustomAttribute> customAttributes = CreateGoogleJobCustomAttributes(db,jobPosting);
 
             // Set the jobs expire timestamp
             string ExpireTimestamp = Utils.GetTimestampAsString(jobPosting.PostingExpirationDateUTC);
@@ -53,6 +49,11 @@ namespace UpDiddyApi.Helpers.Job
                     }
             };
 
+            // Add google name if it exists (needed for updates)
+            if (string.IsNullOrEmpty(jobPosting.CloudTalentUri) == false)
+                jobToBeCreated.Name = jobPosting.CloudTalentUri;
+
+
             // Add custom attributes if they've been defined 
             if (customAttributes.Count > 0)
                 jobToBeCreated.CustomAttributes = customAttributes;
@@ -68,43 +69,43 @@ namespace UpDiddyApi.Helpers.Job
             if (matchingJob.Job.CustomAttributes == null)
                 return;
             // map ApplicationDeadLine 
-            if (matchingJob.Job.CustomAttributes["ApplicationDeadlineUTC"] != null )
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("ApplicationDeadlineUTC") && matchingJob.Job.CustomAttributes["ApplicationDeadlineUTC"] != null )
             {         
                 jobViewDto.ApplicationDeadlineUTC = Utils.FromUnixTimeInSeconds(matchingJob.Job.CustomAttributes["ApplicationDeadlineUTC"].LongValues[0].Value);
             }
             // map modify date 
-            if (matchingJob.Job.CustomAttributes["ModifyDate"] != null)
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("ModifyDate") && matchingJob.Job.CustomAttributes["ModifyDate"] != null)
             {
                 jobViewDto.ModifyDate = Utils.FromUnixTimeInSeconds(matchingJob.Job.CustomAttributes["ModifyDate"].LongValues[0].Value);
             }
             // map posting expiration date 
-            if (matchingJob.Job.CustomAttributes["PostingExpirationDateUTC"] != null)
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("PostingExpirationDateUTC") && matchingJob.Job.CustomAttributes["PostingExpirationDateUTC"] != null)
             {
                 jobViewDto.PostingExpirationDateUTC = Utils.FromUnixTimeInSeconds(matchingJob.Job.CustomAttributes["PostingExpirationDateUTC"].LongValues[0].Value);
             }
             // map experience level
-            if (matchingJob.Job.CustomAttributes["ExperienceLevel"] != null)
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("ExperienceLevel") &&  matchingJob.Job.CustomAttributes["ExperienceLevel"] != null)
             {
                 jobViewDto.ExperienceLevel = matchingJob.Job.CustomAttributes["ExperienceLevel"].StringValues[0].ToString();
             }
             // map education level 
-            if (matchingJob.Job.CustomAttributes["EducationLevel"] != null)
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("EducationLevel") && matchingJob.Job.CustomAttributes["EducationLevel"] != null)
             {
                 jobViewDto.EducationLevel = matchingJob.Job.CustomAttributes["EducationLevel"].StringValues[0].ToString();
             }
             // map employment type 
-            if (matchingJob.Job.CustomAttributes["EmploymentType"] != null)
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("EmploymentType") && matchingJob.Job.CustomAttributes["EmploymentType"] != null)
             {
                 jobViewDto.EmploymentType = matchingJob.Job.CustomAttributes["EmploymentType"].StringValues[0].ToString();
             }
             // map third party apply url
-            if (matchingJob.Job.CustomAttributes["ThirdPartyApplyUrl"] != null)
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("InduThirdPartyApplyUrlstry") && matchingJob.Job.CustomAttributes["ThirdPartyApplyUrl"] != null)
             {
                 jobViewDto.ThirdPartyApplyUrl = matchingJob.Job.CustomAttributes["ThirdPartyApplyUrl"].StringValues[0].ToString();
             }
 
             // map annual compensation
-            if (matchingJob.Job.CustomAttributes["AnnualCompensation"] != null)
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("AnnualCompensation") && matchingJob.Job.CustomAttributes["AnnualCompensation"] != null)
             {
                 //TODO JAB remove try catch once you remove incorecctly indexed jobs
                 try
@@ -116,19 +117,33 @@ namespace UpDiddyApi.Helpers.Job
             }
 
             // map telecommute percentage 
-            if (matchingJob.Job.CustomAttributes["TelecommutePercentage"] != null)
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("TelecommutePercentage") && matchingJob.Job.CustomAttributes["TelecommutePercentage"] != null)
             {
                 jobViewDto.TelecommutePercentage = matchingJob.Job.CustomAttributes["TelecommutePercentage"].LongValues[0].Value;
             }
 
             // map third party apply flag 
-            if (matchingJob.Job.CustomAttributes["ThirdPartyApply"] != null)
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("ThirdPartyApply") && matchingJob.Job.CustomAttributes["ThirdPartyApply"] != null)
             {
                 if (matchingJob.Job.CustomAttributes["ThirdPartyApply"].LongValues[0].Value == 1)
                     jobViewDto.ThirdPartyApply = true;
                 else
                     jobViewDto.ThirdPartyApply = false;
             }
+
+            // map industry
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("Industry")  &&  matchingJob.Job.CustomAttributes["Industry"] != null)
+            {
+                jobViewDto.Industry = matchingJob.Job.CustomAttributes["Industry"].StringValues[0].ToString();
+            }
+
+            // map job category
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("JobCategory") && matchingJob.Job.CustomAttributes["JobCategory"] != null)
+            {
+                jobViewDto.JobCategory = matchingJob.Job.CustomAttributes["JobCategory"].StringValues[0].ToString();
+            }
+
+
 
         }
 
@@ -234,14 +249,38 @@ namespace UpDiddyApi.Helpers.Job
             }
         }
 
+        static public bool UpdateJobToCloudTalent(UpDiddyDbContext db, CloudTalent ct, Guid jobPostingGuid)
+        {
+            try
+            {
+                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
+                // validate we have good data 
+                if (jobPosting == null || jobPosting.Company == null)
+                    return false;
+                // validate the company is known to google, if not add it to the cloud talent 
+                if (string.IsNullOrEmpty(jobPosting.Company.CloudTalentUri))
+                    ct.IndexCompany(jobPosting.Company);
+
+                // index the job to google 
+                CloudTalentSolution.Job job = ct.ReIndexJob(jobPosting);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
+
         #region Helper functions 
- 
- /// <summary>
- ///  Create list of custom attributes for cloud talent job posting 
- /// </summary>
- /// <param name="jobPosting"></param>
- /// <returns></returns>
-        static private IDictionary<string, CloudTalentSolution.CustomAttribute> CreateJobCustomAttributes(UpDiddyDbContext db, JobPosting jobPosting)
+
+        /// <summary>
+        ///  Create list of custom attributes for cloud talent job posting 
+        /// </summary>
+        /// <param name="jobPosting"></param>
+        /// <returns></returns>
+        static private IDictionary<string, CloudTalentSolution.CustomAttribute> CreateGoogleJobCustomAttributes(UpDiddyDbContext db, JobPosting jobPosting)
         {
 
             IDictionary<string, CloudTalentSolution.CustomAttribute> rVal = new Dictionary<string, CloudTalentSolution.CustomAttribute>();
@@ -302,6 +341,30 @@ namespace UpDiddyApi.Helpers.Job
                     StringValues = new List<string>() { jobPosting.EmploymentType.Name }
                 };
                 rVal.Add("EmploymentType", EmploymentType);
+            }
+
+            // Add industry type
+            if (jobPosting.Industry != null)
+            {
+
+                CloudTalentSolution.CustomAttribute Industry = new CloudTalentSolution.CustomAttribute()
+                {
+                    Filterable = true,
+                    StringValues = new List<string>() { jobPosting.Industry.Name }
+                };
+                rVal.Add("Industry", Industry);
+            }
+
+            // Add job category 
+            if (jobPosting.JobCategory != null)
+            {
+
+                CloudTalentSolution.CustomAttribute JobCategory = new CloudTalentSolution.CustomAttribute()
+                {
+                    Filterable = true,
+                    StringValues = new List<string>() { jobPosting.JobCategory.Name }
+                };
+                rVal.Add("JobCategory", JobCategory);
             }
 
             // Add posting expiration date as a long so it can be queried with boolean <= logic  

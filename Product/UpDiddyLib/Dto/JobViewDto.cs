@@ -59,16 +59,49 @@ namespace UpDiddyLib.Dto
         /// </summary>
         public string Description { get; set; }
 
+        /// <summary>
+        /// Experience level required for job
+        /// </summary>
         public string ExperienceLevel { get; set; }
-
+        /// <summary>
+        /// Education level required for job
+        /// </summary>
         public string EducationLevel { get; set; }
-
+        /// <summary>
+        /// Annual compensation for job 
+        /// </summary>
         public long AnnualCompensation { get; set; }
+        /// <summary>
+        /// Job's employment type 
+        /// </summary>
         public string EmploymentType { get; set; }
+        /// <summary>
+        /// Url to third party site for offsite applications 
+        /// </summary>
         public string ThirdPartyApplyUrl { get; set; }
+        /// <summary>
+        /// The date the last time the job was uodated
+        /// </summary>
         public DateTime ModifyDate { get; set; }
+        /// <summary>
+        /// The perecentage of time the job allows telecommuting 
+        /// </summary>
         public long TelecommutePercentage { get; set; }
+        /// <summary>
+        /// Flag indicating if job application is on a third party site 
+        /// </summary>
         public bool ThirdPartyApply { get; set; }
-  
+
+        /// <summary>
+        /// The industry the job is associated with 
+        /// </summary>
+        public string Industry { get; set; }
+
+        /// <summary>
+        /// The industry the job is associated with 
+        /// </summary>
+        public string JobCategory { get; set; }
+
+
     }
 }

@@ -55,6 +55,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<JobPosting, JobPostingDto>().ReverseMap();
             CreateMap<ExperienceLevel, ExperienceLevelDto>().ReverseMap();
             CreateMap<EducationLevel, EducationLevelDto>().ReverseMap();
+            CreateMap<JobCategory, JobCategoryDto>().ReverseMap();
 
 
             // TODO JAB finish this mapping      

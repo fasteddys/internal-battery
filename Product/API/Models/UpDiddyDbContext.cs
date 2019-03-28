@@ -131,6 +131,7 @@ namespace UpDiddyApi.Models
         public DbSet<Industry> Industry { get; set; }
         public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
         public DbSet<JobPostingSkill> JobPostingSkill { get; set; }
+        public DbSet<JobCategory> JobCategory { get; set; }
 
 
 

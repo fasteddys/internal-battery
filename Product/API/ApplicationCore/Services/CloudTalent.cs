@@ -91,6 +91,39 @@ namespace UpDiddyApi.ApplicationCore.Services
             return true;
         }
 
+        /// <summary>
+        /// Update the job in the google clouse 
+        /// </summary>
+        /// <param name="jobPosting"></param>
+        /// <returns></returns>
+
+        public CloudTalentSolution.Job ReIndexJob(JobPosting jobPosting)
+        {
+            try
+            {
+                CloudTalentSolution.Job TalentCloudJob = JobHelper.CreateGoogleJob(_db, jobPosting);
+                CloudTalentSolution.UpdateJobRequest UpdateJobRequest = new CloudTalentSolution.UpdateJobRequest();
+                UpdateJobRequest.Job = TalentCloudJob;                        
+                CloudTalentSolution.Job jobCreated = _jobServiceClient.Projects.Jobs.Patch(UpdateJobRequest, TalentCloudJob.Name).Execute();
+                // Update job posting with index error
+                jobPosting.CloudTalentUri = jobCreated.Name;
+                jobPosting.CloudTalentIndexInfo = "Indexed on " + Utils.ISO8601DateString(DateTime.Now);
+                jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.Indexed;
+                _db.SaveChanges();
+
+                return jobCreated;
+            }
+            catch (Exception e)
+            {
+                // Update job posting with index error
+                jobPosting.CloudTalentIndexInfo = e.Message;
+                jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.IndexError;
+                _db.SaveChanges();
+                _syslog.LogError(e, "CloudTalent.IndexJob Error", e, jobPosting);
+                throw e;
+            }
+        }
+
 
         /// <summary>
         /// Add a job posting to the google cloud talent solution
@@ -185,7 +218,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             CloudTalentSolution.JobQuery jobQuery = new CloudTalentSolution.JobQuery();
             // TODO JAB  pass in query 
             string query = "javascript c#";
-            jobQuery.Query = query;
+          //  jobQuery.Query = query;
 
             // Add CompanyFilters - Not sure if this is company URI name or company display name 
             string companyName = "";
@@ -193,7 +226,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // Add Custom Attribute Filter 
             string customAttributeFilter = "LOWER(Skills) = \"javascript\"";
-            jobQuery.CustomAttributeFilter = customAttributeFilter;
+           // jobQuery.CustomAttributeFilter = customAttributeFilter;
 
             // Add Location Filter             
             CloudTalentSolution.LocationFilter locationFilter = new CloudTalentSolution.LocationFilter()

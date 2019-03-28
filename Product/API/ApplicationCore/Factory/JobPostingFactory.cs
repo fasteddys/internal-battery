@@ -37,6 +37,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(c => c.ExperienceLevel)
                 .Include(c => c.EducationLevel)
                 .Include(c => c.CompensationType)
+                .Include(c => c.JobCategory)
                 .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
                 .FirstOrDefault();
         }
@@ -59,6 +60,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             job.EmploymentTypeId = null;
             job.EducationLevelId = null;
             job.ExperienceLevelId = null;
+            job.JobCategoryId = null;
 
         }
 
@@ -70,14 +72,35 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .ToList();
         }
 
+
+        public static void UpdatePostingSkills(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
+        {
+            JobPostingSkillFactory.DeleteSkillsForPosting(db, jobPosting.JobPostingId);
+            foreach (SkillDto skillDto in jobPostingDto.Skills)
+            {
+                JobPostingSkillFactory.Add(db, jobPosting.JobPostingId, skillDto.SkillGuid.Value);
+            }
+            db.SaveChanges();
+        }
+
+
         public static void SavePostingSkills(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
             foreach ( SkillDto skillDto in jobPostingDto.Skills)
             {
                 JobPostingSkillFactory.Add(db, jobPosting.JobPostingId, skillDto.SkillGuid.Value);
             }
+            db.SaveChanges();
         }
-
+        /// <summary>
+        /// Wire up the integer ids of all the navigation objects.   
+        /// todo - find a better way to do this since it's highly unefficient.  Some options included a) exposing the dumb key via dtos 
+        /// to the front end so they can pass it back and eliminate this step b) research EF to see if we can use navigation properties on GUIDS 
+        /// rather than dumb int ids c) use a stored procedure to make this more efficient
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="jobPosting"></param>
+        /// <param name="jobPostingDto"></param>
         public static void MapRelatedObjects(UpDiddyDbContext  db, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
             // map company id 
@@ -122,9 +145,58 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 if (experienceLevel != null)
                     jobPosting.ExperienceLevelId = experienceLevel.ExperienceLevelId;
             }
+            // map job category
+            if (jobPostingDto.JobCategory != null)
+            {
+                JobCategory jobCategory = JobCategoryFactory.GetJobCategoryByGuid(db, jobPostingDto.JobCategory.JobCategoryGuid);
+                if (jobCategory != null)
+                    jobPosting.JobCategoryId = jobCategory.JobCategoryId;
+            }
+
+            // map compensation type 
+            if (jobPostingDto.CompensationType != null)
+            {
+                CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByGuid(db, jobPostingDto.CompensationType.CompensationTypeGuid);
+                if (compensationType != null)
+                    jobPosting.CompensationTypeId = compensationType.CompensationTypeId;
+            }
+      
 
 
         }
+
+
+
+        public static void MapRelatedObjects(JobPosting jobPosting, JobPosting sourceJobPosting)
+        {
+            // map company id 
+            if (sourceJobPosting.Company != null)
+                jobPosting.CompanyId = sourceJobPosting.Company.CompanyId;
+            // map industry id
+            if (sourceJobPosting.Industry != null)  
+                    jobPosting.IndustryId = sourceJobPosting.Industry.IndustryId;            
+            // map security clearance 
+            if (sourceJobPosting.SecurityClearance != null)
+                jobPosting.SecurityClearanceId = sourceJobPosting.SecurityClearance.SecurityClearanceId;
+    
+            // map employment type
+            if (sourceJobPosting.EmploymentType != null)
+                jobPosting.EmploymentTypeId = sourceJobPosting.EmploymentType.EmploymentTypeId;
+            // map educational level type
+            if (sourceJobPosting.EducationLevel != null)
+                jobPosting.EducationLevelId = sourceJobPosting.EducationLevel.EducationLevelId;
+            // map level experience type
+            if (sourceJobPosting.ExperienceLevel != null)
+                jobPosting.ExperienceLevelId = sourceJobPosting.ExperienceLevel.ExperienceLevelId;
+            // map job category
+            if (sourceJobPosting.JobCategory != null)
+                jobPosting.JobCategoryId = sourceJobPosting.JobCategory.JobCategoryId;
+            // map compensation type 
+            if (sourceJobPosting.CompensationType != null)
+                jobPosting.CompensationTypeId = sourceJobPosting.CompensationType.CompensationTypeId;
+
+        }
+
 
     }
 }
