@@ -632,22 +632,9 @@ namespace UpDiddyApi.Controllers
             string link;
             body.TryGetValue("verifyUrl", out link);
             link += subscriber.EmailVerification.Token;
-
-<<<<<<< HEAD
-            // send verification email in background
-            BackgroundJob.Enqueue(() =>
-                _sysEmail.SendTemplatedEmailAsync(
-                    subscriber.Email,
-                    "d-f1eab71626494594bebd20d0907d673d",
-                    new
-                    {
-                        verificationLink = link
-                    }, null
-                ));
-=======
+            
             // send email
             SendVerificationEmail(subscriber.Email, link);
->>>>>>> dev
 
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Email verification token successfully created. Email queued." });
         }
