@@ -350,6 +350,9 @@ namespace UpDiddy.Controllers
             catch(ApiException ex)
             {
                 ViewBag.Message = ex.ResponseDto?.Description;
+                if (ex.StatusCode.Equals(HttpStatusCode.Conflict))
+                    return View("EmailVerification/Conflict");
+
                 return View("EmailVerification/Error");
             }
 
