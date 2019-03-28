@@ -28,6 +28,8 @@ using System.Data;
 using System.Web;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
+using Hangfire;
+
 namespace UpDiddyApi.Controllers
 {
     [Route("api/[controller]")]
@@ -40,6 +42,7 @@ namespace UpDiddyApi.Controllers
         private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
+        private ISysEmail _sysEmail;
 
         public OffersController(UpDiddyDbContext db,
             IMapper mapper,
@@ -48,7 +51,8 @@ namespace UpDiddyApi.Controllers
             IDistributedCache distributedCache,
             IB2CGraph client,
             ICloudStorage cloudStorage,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            ISysEmail sysEmail)
         {
             _db = db;
             _mapper = mapper;
@@ -57,6 +61,7 @@ namespace UpDiddyApi.Controllers
             _graphClient = client;
             _cloudStorage = cloudStorage;
             _authorizationService = authorizationService;
+            _sysEmail = sysEmail;
         }
 
         [HttpGet]
@@ -89,10 +94,50 @@ namespace UpDiddyApi.Controllers
         [HttpGet("{OfferGuid}")]
         public async Task<IActionResult> GetOffer(Guid OfferGuid)
         {
+            if (User == null)
+                return Unauthorized();
+
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (!SubscriberFactory.IsEligibleForOffers(_db, loggedInUserGuid, _syslog, _mapper, User.Identity))
+                return Unauthorized();
+
             Offer offer = _db.Offer
                 .Where(s => s.IsDeleted == 0 && s.OfferGuid == OfferGuid)
                 .FirstOrDefault();
+            return Ok(offer); 
+        }
+
+        [Authorize]
+        [HttpPost("{OfferGuid}/claim")]
+        public async Task<IActionResult> ClaimOffer(Guid OfferGuid)
+        {
+            if (User == null)
+                return Unauthorized();
+
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, loggedInUserGuid);
+            if (subscriber == null)
+                return Unauthorized();
+
+            // Do tracking logic here...
+
+            if (!SubscriberFactory.IsEligibleForOffers(_db, loggedInUserGuid, _syslog, _mapper, User.Identity))
+                return Unauthorized();
+
+            Offer offer = _db.Offer
+                .Where(s => s.IsDeleted == 0 && s.OfferGuid == OfferGuid)
+                .Include(s => s.Partner)
+                .FirstOrDefault();
+
+            if (offer == null)
+                return NotFound();
+
+            BackgroundJob.Enqueue(() =>
+                _sysEmail.SendTemplatedEmailAsync(subscriber.Email, _configuration["SysEmail:TemplateIds:SubscriberOffer-Redemption"], offer, null));
+
             return Ok(offer);
         }
+
+        
     }
 }

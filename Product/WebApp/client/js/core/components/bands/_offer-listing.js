@@ -1,10 +1,9 @@
-﻿$(".claim-offer-button").on("click", function () {
-    
+﻿$(".claim-offer-button").on("click", function (e) {
 
-    CareerCircleAPI.getOffer($(this).data("offer"))
+    CareerCircleAPI.claimOffer($(this).data("offer"))
         .then(function (payload) {
             $(".career-circle-code").html(payload.data.code);
-            console.log(payload.data);
+            $('#OfferListingModal').modal();
         })
         .catch(function (err) {
             ToastService.error('Something unexpected happened, and we are looking into it.');
