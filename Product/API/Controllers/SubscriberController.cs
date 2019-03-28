@@ -600,7 +600,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost("/api/[controller]/request-verification")]
-        public async Task<IActionResult> RequestVerificationAsync()
+        public async Task<IActionResult> RequestVerificationAsync([FromBody] Dictionary<string, string> body)
         {
             // check token guid claim
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -617,28 +617,16 @@ namespace UpDiddyApi.Controllers
                 return BadRequest();
 
             int tokenTtlMinutes = int.Parse(_configuration["EmailVerification:TokenExpirationInMinutes"]);
-
-            // create or reset/refresh token
-            if (subscriber.EmailVerification == null)
-                subscriber.EmailVerification = new EmailVerification(tokenTtlMinutes);
-
-            subscriber.EmailVerification.RefreshToken(tokenTtlMinutes);
-
+            EmailVerification.SetSubscriberEmailVerification(subscriber, tokenTtlMinutes);
             await _db.SaveChangesAsync(); // save changes
 
-            string link = string.Format("{0}/email/confirm-verification/{1}",
-                _configuration["Environment:BaseUrl"],
-                subscriber.EmailVerification.Token);
+            // create link
+            string link;
+            body.TryGetValue("verifyUrl", out link);
+            link += subscriber.EmailVerification.Token;
 
-            // send verification email in background
-            BackgroundJob.Enqueue(() =>
-                _sysEmail.SendTemplatedEmailAsync(
-                    subscriber.Email,
-                    "d-f1eab71626494594bebd20d0907d673d",
-                    new {
-                        verificationLink = link
-                    }, null
-                ));
+            // send email
+            SendVerificationEmail(subscriber.Email, link);
 
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Email verification token successfully created. Email queued." });
         }
@@ -840,8 +828,7 @@ namespace UpDiddyApi.Controllers
             {
                 try
                 {
-                    // Save subscriber to database 
-                    _db.Subscriber.Add(subscriber);
+                    _db.Add(subscriber);
                     await _db.SaveChangesAsync();
                     SubscriberProfileStagingStore store = new SubscriberProfileStagingStore()
                     {
@@ -855,7 +842,11 @@ namespace UpDiddyApi.Controllers
                         ProfileFormat = Constants.DataFormat.Json,
                         ProfileData = JsonConvert.SerializeObject(new { source = "express-sign-up", referer = referer })
                     };
-                    _db.SubscriberProfileStagingStore.Add(store);
+                    subscriber.ProfileStagingStore.Add(store);
+
+                    int tokenTtlMinutes = int.Parse(_configuration["EmailVerification:TokenExpirationInMinutes"]);
+                    EmailVerification.SetSubscriberEmailVerification(subscriber, tokenTtlMinutes);
+
                     await _db.SaveChangesAsync();
                     transaction.Commit();
                 }
@@ -867,6 +858,7 @@ namespace UpDiddyApi.Controllers
                 }
             }
 
+            SendVerificationEmail(subscriber.Email, signUpDto.verifyUrl + subscriber.EmailVerification.Token);
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
         }
 
@@ -972,6 +964,20 @@ namespace UpDiddyApi.Controllers
             await _db.SaveChangesAsync();
 
             return Ok();
+        }
+
+        private void SendVerificationEmail(string email, string link)
+        {
+            // send verification email in background
+            BackgroundJob.Enqueue(() =>
+                _sysEmail.SendTemplatedEmailAsync(
+                    email,
+                    _configuration["SysEmail:TemplateIds:EmailVerification-LinkEmail"],
+                    new
+                    {
+                        verificationLink = link
+                    }, null
+                ));
         }
     }
 }
