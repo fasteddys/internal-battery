@@ -228,7 +228,8 @@ namespace UpDiddy.Controllers
                 email = signUpViewModel.Email,
                 password = signUpViewModel.Password,
                 campaignGuid = signUpViewModel.CampaignGuid,
-                referer = Request.Headers["Referer"].ToString()
+                referer = Request.Headers["Referer"].ToString(),
+                verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
             };
 
             // Guard UX from any unforeseen server error.
