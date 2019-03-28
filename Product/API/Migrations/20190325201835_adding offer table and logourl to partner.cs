@@ -49,14 +49,6 @@ namespace UpDiddyApi.Migrations
                 name: "IX_Offer_PartnerId",
                 table: "Offer",
                 column: "PartnerId");
-
-            migrationBuilder.InsertData(
-                table: "Offer",
-                columns: new[] { "OfferId", "OfferGuid", "PartnerId", "Name", "Description", "Disclaimer", "Code", "Url", "StartDate", "EndDate", "CreateDate", "CreateGuid", "IsDeleted", "ModifyDate", "ModifyGuid" },
-                values: new object[,]
-                {
-                    { 1, new Guid("411f6ed9-0f10-4e28-81bd-a7c8d888e84c"), 53, "ItProTv Test Offer", "ITProTv Test offer description", "Test disclaimer...", "TESTCode", "https://www.itpro.tv/", new DateTime(2019, 3, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2020, 3, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 3, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, null, null }
-                });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
