@@ -9,6 +9,7 @@ namespace UpDiddyLib.Dto.Marketing
         public Guid? campaignGuid { get; set; }
         public string campaignPhase { get; set; }
         public string referer { get; set; }
+        public string verifyUrl { get; set; }
     }
 }
  

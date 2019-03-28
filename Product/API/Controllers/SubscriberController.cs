@@ -29,6 +29,7 @@ using System.Web;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 using Hangfire;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddyApi.Controllers
 {
@@ -607,7 +608,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost("/api/[controller]/request-verification")]
-        public async Task<IActionResult> RequestVerificationAsync()
+        public async Task<IActionResult> RequestVerificationAsync([FromBody] Dictionary<string, string> body)
         {
             // check token guid claim
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -624,19 +625,15 @@ namespace UpDiddyApi.Controllers
                 return BadRequest();
 
             int tokenTtlMinutes = int.Parse(_configuration["EmailVerification:TokenExpirationInMinutes"]);
-
-            // create or reset/refresh token
-            if (subscriber.EmailVerification == null)
-                subscriber.EmailVerification = new EmailVerification(tokenTtlMinutes);
-
-            subscriber.EmailVerification.RefreshToken(tokenTtlMinutes);
-
+            EmailVerification.SetSubscriberEmailVerification(subscriber, tokenTtlMinutes);
             await _db.SaveChangesAsync(); // save changes
 
-            string link = string.Format("{0}/email/confirm-verification/{1}",
-                _configuration["Environment:BaseUrl"],
-                subscriber.EmailVerification.Token);
+            // create link
+            string link;
+            body.TryGetValue("verifyUrl", out link);
+            link += subscriber.EmailVerification.Token;
 
+<<<<<<< HEAD
             // send verification email in background
             BackgroundJob.Enqueue(() =>
                 _sysEmail.SendTemplatedEmailAsync(
@@ -647,6 +644,10 @@ namespace UpDiddyApi.Controllers
                         verificationLink = link
                     }, null
                 ));
+=======
+            // send email
+            SendVerificationEmail(subscriber.Email, link);
+>>>>>>> dev
 
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Email verification token successfully created. Email queued." });
         }
@@ -659,7 +660,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest();
 
             Subscriber subscriber = _db
-                .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid && !t.IsVerified)
+                .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid)
                 .Include(t => t.EmailVerification)
                 .FirstOrDefault();
 
@@ -667,7 +668,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid subscriber." });
 
             if (subscriber.IsVerified)
-                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Subscriber already verified." });
+                return StatusCode(StatusCodes.Status409Conflict, new BasicResponseDto() { StatusCode = 409, Description = "Subscriber/User email already verified. No additional action required to verify this account." });
 
             if (!subscriber.EmailVerification.Token.Equals(Token) || subscriber.EmailVerification.ExpirationDateTime < DateTime.UtcNow)
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid verification token." });
@@ -848,8 +849,7 @@ namespace UpDiddyApi.Controllers
             {
                 try
                 {
-                    // Save subscriber to database 
-                    _db.Subscriber.Add(subscriber);
+                    _db.Add(subscriber);
                     await _db.SaveChangesAsync();
                     SubscriberProfileStagingStore store = new SubscriberProfileStagingStore()
                     {
@@ -863,7 +863,11 @@ namespace UpDiddyApi.Controllers
                         ProfileFormat = Constants.DataFormat.Json,
                         ProfileData = JsonConvert.SerializeObject(new { source = "express-sign-up", referer = referer })
                     };
-                    _db.SubscriberProfileStagingStore.Add(store);
+                    subscriber.ProfileStagingStore.Add(store);
+
+                    int tokenTtlMinutes = int.Parse(_configuration["EmailVerification:TokenExpirationInMinutes"]);
+                    EmailVerification.SetSubscriberEmailVerification(subscriber, tokenTtlMinutes);
+
                     await _db.SaveChangesAsync();
                     transaction.Commit();
                 }
@@ -875,6 +879,7 @@ namespace UpDiddyApi.Controllers
                 }
             }
 
+            SendVerificationEmail(subscriber.Email, signUpDto.verifyUrl + subscriber.EmailVerification.Token);
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
         }
 
@@ -987,6 +992,20 @@ namespace UpDiddyApi.Controllers
             await _db.SaveChangesAsync();
 
             return Ok();
+        }
+
+        private void SendVerificationEmail(string email, string link)
+        {
+            // send verification email in background
+            BackgroundJob.Enqueue(() =>
+                _sysEmail.SendTemplatedEmailAsync(
+                    email,
+                    _configuration["SysEmail:TemplateIds:EmailVerification-LinkEmail"],
+                    new
+                    {
+                        verificationLink = link
+                    }, null
+                ));
         }
     }
 }
