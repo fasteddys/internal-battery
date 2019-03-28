@@ -66,6 +66,7 @@ namespace UpDiddy.Api
         Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery);
         Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync();
         #endregion
+
         #region AdminPortal
         Task<BasicResponseDto> UpdateEntitySkillsAsync(EntitySkillDto entitySkillDto);
         Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
@@ -86,7 +87,10 @@ namespace UpDiddy.Api
         #region Reporting
         Task<SubscriberReportDto> GetSubscriberReportAsync(List<DateTime> dates = null);
         Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync();
+        Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync();
+        Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync();
         #endregion
+
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
     }
 }
