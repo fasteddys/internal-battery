@@ -8,6 +8,7 @@ namespace UpDiddy.ViewModels
 {
     public class SubscriberViewModel
     {
+        public Guid SubscriberGuid { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
@@ -33,5 +34,7 @@ namespace UpDiddy.ViewModels
                 return WorkHistory.Where(wh => wh.IsCurrent == 1).OrderByDescending(wh => wh.StartDate).FirstOrDefault()?.Title;
             }
         }
+        public Guid? ResumeFileGuid { get; set; }
+        public string ResumeFileName { get; set; }
     }
 }

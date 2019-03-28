@@ -29,7 +29,7 @@
                 <div class="form-group">
                     <a asp-controller="Talent" asp-action="Subscribers">Subscribers</a>
                     &nbsp;/&nbsp;
-                    @Model.LastName, @Model.FirstName
+                    @Utils.FormatName(Model.FirstName, Model.LastName)
                 </div>
             </div>
         </div>
@@ -38,12 +38,12 @@
         <div class="col-3 subscriber-sidebar">
             <div class="row">
                 <div class="col-12 name">
-                    @Model.FirstName @Model.LastName
+                    @Utils.FormatName(Model.FirstName, Model.LastName)
                 </div>
             </div>
             <div class="row">
                 <div class="col-12 title">
-                    @Model.CurrentTitle
+                    @Utils.FormatGenericField(Model.CurrentTitle, "job title")
                 </div>
             </div>
             <div class="row">
@@ -61,7 +61,33 @@
                     <ul class="p-0">
                         <li><a href="mailto:@Model.Email">@Model.Email</a></li>
                         <li><a href="tel:@Model.PhoneNumber">@Utils.FormatPhoneNumber(Model.PhoneNumber)</a></li>
-                        <li>@Model.Address, @Model.City @Model.State @Model.PostalCode</li>
+                        <li>@Utils.FormatGenericField(Model.Address, "street address")</li>
+                        <li>@Utils.FormatCityStateAndPostalCode(Model.City, Model.State, Model.PostalCode)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 contact-header p-0">
+                    Files
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 contact-details p-0">
+                    <ul class="p-0">
+                        @{
+                            if (Model.ResumeFileGuid.HasValue)
+                            {
+                                <text>
+                                    <li>
+                                        <a class="download" href="/Talent/Subscriber/@Model.SubscriberGuid/File/@Model.ResumeFileGuid" target="_blank"><i class="fas fa-download" title="Download"></i> @Model.ResumeFileName</a>
+                                    </li>
+                                </text>
+                            }
+                            else
+                            {
+                                <text>No resume provided</text>
+                            }
+                        }
                     </ul>
                 </div>
             </div>
@@ -84,203 +110,172 @@
 
             <div class="tab-content subscriber-content">
                 <div class="tab-pane fade show active" id="work" role="tabpanel" aria-labelledby="work-tab">
-                    @foreach (var workHistory in Model.WorkHistory.OrderByDescending(wh => wh.StartDate))
-                    {
-                        <div class="row">
-                            <div class="col-12 px-0 py-2 instance">
+                    @{
+                        if (Model.WorkHistory.Count() == 0)
+                        {
+                            <text>No work history provided</text>
+                        }
+                        else
+                        {
+                            foreach (var workHistory in Model.WorkHistory.OrderByDescending(wh => wh.StartDate))
+                            {
                                 <div class="row">
-                                    <div class="col-12 px-0 title">
-                                        @workHistory.Title
+                                    <div class="col-12 px-0 py-2 instance">
+                                        <div class="row">
+                                            <div class="col-12 px-0 title">
+                                                @Utils.FormatGenericField(workHistory.Title, "work title")
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12 px-0 company">
+                                                @Utils.FormatGenericField(workHistory.Company, "company name")<i class="fas fa-paperclip"></i>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12 px-0 period">
+                                                @Utils.FormatDateRange(workHistory.StartDate, workHistory.EndDate, "work history")
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12 description px-2 py-2">
+                                                @Utils.FormatGenericField(workHistory.JobDecription, "job description")
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-12 px-0 company">
-                                        @workHistory.Company<i class="fas fa-paperclip"></i>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 px-0 period">
-                                        @{
-                                            string periodDisplay = string.Empty;
-                                            if (!workHistory.StartDate.HasValue)
-                                            {
-                                                periodDisplay = "No date range specified";
-                                            }
-                                            else
-                                            {
-                                                DateTime effectiveEndDate;
-                                                periodDisplay = workHistory.StartDate.Value.ToString("MMMM yyyy") + " - ";
-                                                if (!workHistory.EndDate.HasValue || workHistory.EndDate.Value == DateTime.MinValue)
-                                                {
-                                                    effectiveEndDate = DateTime.UtcNow;
-                                                    periodDisplay += "Present";
-                                                }
-                                                else
-                                                {
-                                                    effectiveEndDate = workHistory.EndDate.Value;
-                                                    periodDisplay += workHistory.EndDate.Value.ToString("MMMM yyyy");
-                                                }
-
-                                                if(workHistory.EndDate > workHistory.StartDate)
-                                                {
-                                                    var period = new DateTime(effectiveEndDate.Subtract(workHistory.StartDate.Value).Ticks);
-                                                    periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
-                                                }
-                                            }
-                                        }
-                                        @Html.Raw(periodDisplay)
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 description px-2 py-2">
-                                        @workHistory.JobDecription
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            }
+                        }
                     }
                 </div>
                 <div class="tab-pane fade" id="education" role="tabpanel" aria-labelledby="education-tab">
-                    @foreach (var educationHistory in Model.EducationHistory.OrderByDescending(eh => eh.StartDate))
-                    {
-                        <div class="row">
-                            <div class="col-12 px-0 py-2 instance">
+                    @{
+                        if (Model.EducationHistory.Count() == 0)
+                        {
+                            <text>No education history provided</text>
+                        }
+                        else
+                        {
+                            foreach (var educationHistory in Model.EducationHistory.OrderByDescending(eh => eh.StartDate))
+                            {
                                 <div class="row">
-                                    <div class="col-12 px-0 institution">
-                                        @educationHistory.EducationalInstitution<i class="fas fa-paperclip"></i>
+                                    <div class="col-12 px-0 py-2 instance">
+                                        <div class="row">
+                                            <div class="col-12 px-0 institution">
+                                                @Utils.FormatGenericField(educationHistory.EducationalInstitution, "educational institution")<i class="fas fa-paperclip"></i>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12 px-0 degree">
+                                                @Utils.FormatEducationalDegreeAndType(educationHistory.EducationalDegree, educationHistory.EducationalDegreeType)
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12 px-0 period">
+                                                @Utils.FormatDateRange(educationHistory.StartDate, educationHistory.EndDate, "education history")
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-12 px-0 degree">
-                                        @{
-                                            string degreeDisplay = educationHistory.EducationalDegree;
-                                            if (!string.IsNullOrWhiteSpace(educationHistory.EducationalDegreeType))
-                                            {
-                                                degreeDisplay += $" ({educationHistory.EducationalDegreeType})";
-                                            }
-                                            if (string.IsNullOrWhiteSpace(degreeDisplay))
-                                            {
-                                                degreeDisplay = "No degree specified";
-                                            }
-                                        }
-                                        @degreeDisplay
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 px-0 period">
-                                        @{
-                                            string periodDisplay = string.Empty;
-                                            if (!educationHistory.StartDate.HasValue)
-                                            {
-                                                periodDisplay = "No date range specified";
-                                            }
-                                            else
-                                            {
-                                                DateTime effectiveEndDate;
-                                                periodDisplay = educationHistory.StartDate.Value.ToString("MMMM yyyy") + " - ";
-                                                if (!educationHistory.EndDate.HasValue || educationHistory.EndDate.Value == DateTime.MinValue)
-                                                {
-                                                    effectiveEndDate = DateTime.UtcNow;
-                                                    periodDisplay += "Present";
-                                                }
-                                                else
-                                                {
-                                                    effectiveEndDate = educationHistory.EndDate.Value;
-                                                    periodDisplay += educationHistory.EndDate.Value.ToString("MMMM yyyy");
-                                                }
-                                                var period = new DateTime(effectiveEndDate.Subtract(educationHistory.StartDate.Value).Ticks);
-
-                                                periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
-                                            }
-                                        }
-                                        @Html.Raw(periodDisplay)
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            }
+                        }
                     }
                 </div>
                 <div class="tab-pane fade" id="skill" role="tabpanel" aria-labelledby="skill-tab">
                     <div class="row">
-                        <div class="col-12 px-0 py-3">
-                            @{
-                                foreach (var skill in Model.Skills)
-                                {
+                        @{
+                            if (Model.Skills.Count() == 0)
+                            {
+                                <text>No skills provided</text>
+                            }
+                            else
+                            {
+                                <div class="col-12 px-0 py-3">
+                                    @foreach (var skill in Model.Skills)
+                                    {
                                     <div class="skill-pill">
-
                                         @Html.DisplayFor(item => skill.SkillName)
                                     </div>
-                                }
+                                    }
+                                </div>
                             }
-                        </div>
+                        }
                     </div>
                 </div>
                 <div class="tab-pane fade" id="upskill" role="tabpanel" aria-labelledby="upskill-tab">
-                    <ul class="courses-in-progress-list-desktop">
-                        @foreach (EnrollmentDto enrollment in Model.Enrollments)
+                    @{
+                        if (Model.Enrollments.Count() == 0)
                         {
-                            <li class="course-in-progress-li">
-                                <div class="course-in-progress-anchor-container">
-                                    <div class="course-in-progress-info">
-                                        <div class="row no-padding">
-                                            <div class="col-12 col-sm-8">
-                                                @enrollment.Course.Name
-                                            </div>
-                                            <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
-                                                <i>
-                                                    Status:
-                                                    @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Pending)
-                                                    {
-                                                        <text>Enrollment in progress</text>
-                                                    }
-                                                    else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
-                                                    {
-                                                        <text>Successfully enrolled</text>
-                                                    }
-                                                    else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Error)
-                                                    {
-                                                        <text>Enrollment error</text>
-                                                    }
-                                                    else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Unknown)
-                                                    {
-                                                        <text>Unknown</text>
-                                                    }
-                                                </i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    @{
-                                        @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
-                                        {
-                                            double percentComplete = enrollment.PercentComplete;
-                                            string classFormatter = "";
-                                            if (percentComplete < 50)
-                                            {
-                                                classFormatter = "less-than-50";
-                                            }
-                                            else
-                                            {
-                                                classFormatter = "more-than-50";
-                                            }
-                                            <div class="course-in-progress">
-
-                                                <div class="progress @(classFormatter)">
-
-                                                    <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
-                                                        <div class="course-completion-percentage">
-                                                            @(percentComplete)%
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-
-                                            </div>
-                                        }
-                                    }
-                                </div>
-                            </li>
+                            <text>No course enrollments exist</text>
                         }
-                    </ul>
+                        else
+                        {
+                            <ul class="courses-in-progress-list-desktop">
+                                @foreach (EnrollmentDto enrollment in Model.Enrollments)
+                                {
+                                    <li class="course-in-progress-li">
+                                        <div class="course-in-progress-anchor-container">
+                                            <div class="course-in-progress-info">
+                                                <div class="row no-padding">
+                                                    <div class="col-12 col-sm-8">
+                                                        @enrollment.Course.Name
+                                                    </div>
+                                                    <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
+                                                        <i>
+                                                            Status:
+                                                            @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Pending)
+                                                            {
+                                                                <text>Enrollment in progress</text>
+                                                            }
+                                                            else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                                            {
+                                                                <text>Successfully enrolled</text>
+                                                            }
+                                                            else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Error)
+                                                            {
+                                                                <text>Enrollment error</text>
+                                                            }
+                                                            else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Unknown)
+                                                            {
+                                                                <text>Unknown</text>
+                                                            }
+                                                        </i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @{
+                                                @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                                {
+                                                    double percentComplete = enrollment.PercentComplete;
+                                                    string classFormatter = "";
+                                                    if (percentComplete < 50)
+                                                    {
+                                                        classFormatter = "less-than-50";
+                                                    }
+                                                    else
+                                                    {
+                                                        classFormatter = "more-than-50";
+                                                    }
+                                                    <div class="course-in-progress">
+
+                                                        <div class="progress @(classFormatter)">
+
+                                                            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
+                                                                <div class="course-completion-percentage">
+                                                                    @(percentComplete)%
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    }
                 </div>
             </div>
         </div>

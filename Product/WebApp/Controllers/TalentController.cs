@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -84,10 +87,24 @@ namespace UpDiddy.Controllers
                 WorkHistory = subscriber.WorkHistory,
                 EducationHistory = subscriber.EducationHistory,
                 Skills = subscriber.Skills,
-                Enrollments = subscriber.Enrollments
+                Enrollments = subscriber.Enrollments,
+                ResumeFileGuid = subscriber.Files?.FirstOrDefault()?.SubscriberFileGuid,
+                ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
+                SubscriberGuid = subscriber.SubscriberGuid.Value
             };
-
+            
             return View("Subscriber", subscriberViewModel);
+        }
+        
+        [HttpGet]
+        [Authorize]
+        [Route("/Talent/Subscriber/{subscriberGuid}/File/{fileGuid}")]
+        public async Task<IActionResult> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid)
+        {
+            HttpResponseMessage response = await _api.DownloadFileAsync(subscriberGuid, fileGuid);
+            Stream stream = await response.Content.ReadAsStreamAsync();
+            return File(stream, "application/octet-stream",
+                response.Content.Headers.ContentDisposition.FileName.Replace("\"", ""));
         }
 
         [Authorize(Policy = "IsCareerCircleAdmin")]

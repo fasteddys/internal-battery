@@ -41,6 +41,7 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ILogger _syslog;
+        private readonly IDistributedCache _cache;
         private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
@@ -59,6 +60,7 @@ namespace UpDiddyApi.Controllers
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
+            _cache = distributedCache;
             _syslog = sysLog;
             _graphClient = client;
             _cloudStorage = cloudStorage;
@@ -80,6 +82,11 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
             {
                 SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
+
+                // track the subscriber action if performed by someone other than the user who owns the file
+                if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
+                    new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
+
                 return Ok(subscriberDto);
             }
             else
@@ -626,8 +633,21 @@ namespace UpDiddyApi.Controllers
             body.TryGetValue("verifyUrl", out link);
             link += subscriber.EmailVerification.Token;
 
+<<<<<<< HEAD
+            // send verification email in background
+            BackgroundJob.Enqueue(() =>
+                _sysEmail.SendTemplatedEmailAsync(
+                    subscriber.Email,
+                    "d-f1eab71626494594bebd20d0907d673d",
+                    new
+                    {
+                        verificationLink = link
+                    }, null
+                ));
+=======
             // send email
             SendVerificationEmail(subscriber.Email, link);
+>>>>>>> dev
 
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Email verification token successfully created. Email queued." });
         }
@@ -927,17 +947,24 @@ namespace UpDiddyApi.Controllers
         [HttpGet("/api/[controller]/{subscriberGuid}/file/{fileGuid}")]
         public async Task<IActionResult> DownloadFile(Guid subscriberGuid, Guid fileGuid)
         {
-            Guid userGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (userGuid != subscriberGuid)
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
+
+            if (loggedInUserGuid != subscriberGuid && !isAuth.Succeeded)
                 return Unauthorized();
 
             Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(subscriberGuid))
                 .Include(s => s.SubscriberFile)
                 .First();
+
             SubscriberFile file = subscriber.SubscriberFile.Where(f => f.SubscriberFileGuid.Equals(fileGuid)).First();
 
             if (file == null)
                 return NotFound(new BasicResponseDto { StatusCode = 404, Description = "File not found. " });
+
+            // track the subscriber action if performed by someone other than the user who owns the file
+            if (loggedInUserGuid != subscriber.SubscriberGuid.Value)
+                new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "Download resume", "Subscriber", subscriber.SubscriberGuid);
 
             return File(await _cloudStorage.OpenReadAsync(file.BlobName), "application/octet-stream", Path.GetFileName(file.BlobName));
         }

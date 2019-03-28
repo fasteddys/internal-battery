@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.Configuration;
 using Hangfire;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
@@ -13,6 +15,7 @@ using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
+using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers
@@ -44,7 +47,7 @@ namespace UpDiddyApi.Controllers
 
             // invoke the tracking asynchronously
             Task.Run(() => ProcessTrackingInformation(parameters, headers));
-            
+
             // return the tracking pixel
             return _pixelResponse;
         }
@@ -61,8 +64,8 @@ namespace UpDiddyApi.Controllers
             // add the phase if one has been specified, otherwise leave it null since ther is logic 
             // that depends it being null if un-specified
             string phase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
-            if ( ! string.IsNullOrEmpty( phase ))
-                parameters.Add(Constants.TRACKING_KEY_CAMPAIGN_PHASE, phase );
+            if (!string.IsNullOrEmpty(phase))
+                parameters.Add(Constants.TRACKING_KEY_CAMPAIGN_PHASE, phase);
             // serialize all headers into json
             var headers = JsonConvert.SerializeObject(Request.Headers, Formatting.Indented, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
 
@@ -75,7 +78,7 @@ namespace UpDiddyApi.Controllers
 
         private void ProcessTrackingInformation(Dictionary<string, StringValues> parameters, string headers)
         {
-            
+
             // look for expected parameters (contact, action, campaign, campaignPhase)
             var campaign = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_CAMPAIGN)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
             var contact = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_CONTACT)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
@@ -90,7 +93,7 @@ namespace UpDiddyApi.Controllers
                 if (Guid.TryParse(campaign, out campaignGuid) && Guid.TryParse(contact, out contactGuid) && Guid.TryParse(action, out actionGuid))
                 {
                     // invoke the Hangfire job to store the tracking information
-                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreTrackingInformation(campaignGuid, contactGuid, actionGuid,campaignPhase, headers));
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreTrackingInformation(campaignGuid, contactGuid, actionGuid, campaignPhase, headers));
                 }
             }
         }

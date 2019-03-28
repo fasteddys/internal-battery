@@ -55,9 +55,143 @@ namespace UpDiddyLib.Helpers
             return s;
         }
 
+        /// <summary>
+        /// Generic formatting method to provide a placeholder when no value exists
+        /// </summary>
+        /// <param name="fieldValue"></param>
+        /// <param name="fieldName"></param>
+        /// <returns></returns>
+        public static string FormatGenericField(string fieldValue, string fieldName)
+        {
+            if (string.IsNullOrWhiteSpace(fieldValue))
+            {
+                return $"No {fieldName} provided";
+            }
+            else
+            {
+                return fieldValue;
+            }
+        }
+
+        /// <summary>
+        /// Formats a date range depending upon the values provided for start and end date
+        /// </summary>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <param name="fieldName"></param>
+        /// <returns></returns>
+        public static string FormatDateRange(DateTime? startDate, DateTime? endDate, string fieldName)
+        {
+            string periodDisplay = string.Empty;
+            if (!startDate.HasValue)
+            {
+                periodDisplay = $"No {fieldName} date range specified";
+            }
+            else
+            {
+                DateTime effectiveEndDate;
+                periodDisplay = startDate.Value.ToString("MMMM yyyy") + " - ";
+                if (!endDate.HasValue || endDate.Value == DateTime.MinValue)
+                {
+                    effectiveEndDate = DateTime.UtcNow;
+                    periodDisplay += "Present";
+                }
+                else
+                {
+                    effectiveEndDate = endDate.Value;
+                    periodDisplay += endDate.Value.ToString("MMMM yyyy");
+                }
+
+                if (endDate > startDate)
+                {
+                    var period = new DateTime(effectiveEndDate.Subtract(startDate.Value).Ticks);
+                    periodDisplay += " (" + period.Year + " years " + period.Month + " months)";
+                }
+            }
+            return periodDisplay;
+        }
+
+        /// <summary>
+        /// Formats an educational degree and type depending upon which fields have values
+        /// </summary>
+        /// <param name="degree"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static string FormatEducationalDegreeAndType(string degree, string type)
+        {
+            string degreeDisplay = degree;
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                degreeDisplay += $" ({type})";
+            }
+            if (string.IsNullOrWhiteSpace(degreeDisplay))
+            {
+                degreeDisplay = "No degree specified";
+            }
+            return degreeDisplay;
+        }
+
+        /// <summary>
+        /// Formats a city, state, and postal code with commas where appropriate depending upon which fields have values
+        /// </summary>
+        /// <param name="city"></param>
+        /// <param name="state"></param>
+        /// <param name="postalCode"></param>
+        /// <returns></returns>
+        public static string FormatCityStateAndPostalCode(string city, string state, string postalCode)
+        {
+            if (string.IsNullOrWhiteSpace(city) && string.IsNullOrWhiteSpace(state) && string.IsNullOrWhiteSpace(postalCode))
+            {
+                return "No city, state, or postal code provided";
+            }
+            else if (!string.IsNullOrWhiteSpace(city))
+            {
+                if (!string.IsNullOrWhiteSpace(state) || !string.IsNullOrWhiteSpace(postalCode))
+                {
+                    return $"{city}, {state} {postalCode}".Trim();
+                }
+                else
+                {
+                    return city;
+                }
+            }
+            else
+            {
+                return $"{state} {postalCode}".Trim();
+            }
+        }
+
+        /// <summary>
+        /// Formats a name differently depending upon which name fields have values
+        /// </summary>
+        /// <param name="firstName"></param>
+        /// <param name="lastName"></param>
+        /// <returns></returns>
+        public static string FormatName(string firstName, string lastName)
+        {
+            if (string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName))
+            {
+                return "No name provided";
+            }
+            else if (string.IsNullOrWhiteSpace(firstName))
+            {
+                return lastName;
+            }
+            else if (string.IsNullOrWhiteSpace(lastName))
+            {
+                return firstName;
+            }
+            else
+            {
+                return $"{lastName}, {firstName}";
+            }
+        }
+
         public static string FormatPhoneNumber(string phoneNumber)
         {
-            if (string.IsNullOrWhiteSpace(phoneNumber) || phoneNumber.Length < 10 || phoneNumber.Length > 15)
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return "No phone number provided";
+            if (phoneNumber.Length < 10 || phoneNumber.Length > 15 || !Regex.Match(phoneNumber, @"^[0-9]+$").Success)
                 return phoneNumber;
             int max = 15, min = 10;
             string areaCode = phoneNumber.Substring(0, 3);
