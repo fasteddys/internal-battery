@@ -1797,7 +1797,9 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberAction", b =>
                 {
-                    b.Property<int>("SubscriberId");
+                    b.Property<int>("SubscriberActionId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("ActionId");
 
@@ -1821,11 +1823,15 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("SubscriberActionGuid");
 
-                    b.HasKey("SubscriberId", "ActionId");
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("SubscriberActionId");
 
                     b.HasIndex("ActionId");
 
                     b.HasIndex("EntityTypeId");
+
+                    b.HasIndex("SubscriberId");
 
                     b.ToTable("SubscriberAction");
                 });

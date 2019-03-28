@@ -20,6 +20,44 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
+        [Route("/api/[controller]/recruiter-action-summary")]
+        public async Task<IActionResult> RecruiterActionSummary()
+        {
+            return Ok(
+                _db.RecruiterSubscriberActions
+                .GroupBy(rca => new { rca.RecruiterEmail, rca.RecruiterFirstName, rca.RecruiterLastName, rca.Action })
+                .Select(g => new RecruiterActionSummaryDto()
+                {
+                    Action = g.Key.Action,
+                    ActionCount = g.Count(),
+                    RecruiterEmail = g.Key.RecruiterEmail,
+                    RecruiterFirstName = g.Key.RecruiterFirstName,
+                    RecruiterLastName = g.Key.RecruiterLastName,
+                })
+                .OrderByDescending(r => r.ActionCount)
+                .ToList());
+        }
+
+        [HttpGet]
+        [Route("/api/[controller]/subscriber-action-summary")]
+        public async Task<IActionResult> SubscriberActionSummary()
+        {
+            return Ok(
+                _db.RecruiterSubscriberActions
+                .GroupBy(rca => new { rca.SubscriberEmail, rca.SubscriberFirstName, rca.SubscriberLastName, rca.Action })
+                .Select(g => new SubscriberActionSummaryDto()
+                {
+                    Action = g.Key.Action,
+                    ActionCount = g.Count(),
+                    SubscriberEmail = g.Key.SubscriberEmail,
+                    SubscriberFirstName = g.Key.SubscriberFirstName,
+                    SubscriberLastName = g.Key.SubscriberLastName,
+                })
+                .OrderByDescending(r => r.ActionCount)
+                .ToList());
+        }
+
+        [HttpGet]
         [Route("/api/[controller]/subscribers")]
         public async Task<IActionResult> SubscribersReport([FromQuery] List<DateTime> dates)
         {
@@ -64,13 +102,14 @@ namespace UpDiddyApi.Controllers
                 prevDate = startDate;
             }
 
-            return Ok(new SubscriberReportDto() {
+            return Ok(new SubscriberReportDto()
+            {
                 Totals = totals,
                 Report = totalsByDate
             });
         }
-        
-        
+
+
         [HttpGet]
         [Route("/api/[controller]/partners")]
         public async Task<IActionResult> SubscriberReportByPartner([FromQuery] List<DateTime> dates)
@@ -81,13 +120,15 @@ namespace UpDiddyApi.Controllers
                         from partner in pGroup.DefaultIfEmpty()
                         join e in _db.Enrollment on s.SubscriberId equals e.SubscriberId into eGroup
                         from enrollment in eGroup.DefaultIfEmpty()
-                        group new {
+                        group new
+                        {
                             PartnerName = partner == null ? "N/A" : partner.Name,
                             HasEnrollment = enrollment != null,
                             SubscriberId = s.SubscriberId
                         }
                         by (partner.PartnerId == null) ? -1 : partner.PartnerId into report
-                        select new {
+                        select new
+                        {
                             subscriberCount = report.Select(x => x.SubscriberId).Distinct().Count(),
                             enrollmentCount = report.Count(x => x.HasEnrollment),
                             partnerName = report.First().PartnerName

@@ -140,13 +140,15 @@ namespace UpDiddyApi.Models
         public DbQuery<v_SubscriberSources> SubscriberSources {get; set; }
         public DbQuery<v_SubscriberSignUpPartnerReference> SubscriberSignUpPartnerReferences { get; set; }
         public DbQuery<SubscriberSearch> SubscriberSearch { get; set; }
+        public DbQuery<v_RecruiterSubscriberActions> RecruiterSubscriberActions { get; set; }
 
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<SubscriberAction>()
-                .HasKey(sa => new { sa.SubscriberId, sa.ActionId });
+            modelBuilder
+                .Query<v_RecruiterSubscriberActions>()
+                .ToView("v_RecruiterSubscriberActions");
 
             modelBuilder.Entity<EntityType>()
                 .HasIndex(et => et.Name)

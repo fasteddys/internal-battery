@@ -126,8 +126,8 @@ var CareerCircleAPI = (function (apiUrl) {
         return await _http.get('/partners');
     }
 
-    var requestVerification = function () {
-        return _http.post('/subscriber/request-verification');
+    var requestVerification = function (verifyUrl) {
+        return _http.post('/subscriber/request-verification', JSON.stringify({ verifyUrl: verifyUrl }));
     }
 
     return {

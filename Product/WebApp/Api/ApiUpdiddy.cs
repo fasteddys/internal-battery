@@ -830,6 +830,15 @@ namespace UpDiddy.Api
             return await GetAsync<SubscriberReportDto>($"report/partners");
         }
 
+        public async Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync()
+        {
+            return await GetAsync<List<RecruiterActionSummaryDto>>($"report/recruiter-action-summary");
+        }
+        public async Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync()
+        {
+            return await GetAsync<List<SubscriberActionSummaryDto>>($"report/subscriber-action-summary");
+        }
+
         public async Task<IList<PartnerDto>> GetPartnersAsync()
         {
             string cacheKey = $"Partners";

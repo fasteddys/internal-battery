@@ -405,7 +405,7 @@ var findMaxCarouselItemHeight = function () {
 var setCarouselHeight = function () {
     var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
     var offset = (width >= 768) ? 150 : 100;
-    var height = (window.innerHeight > 1000) ? 650 : window.innerHeight;
+    var height = (window.innerHeight > 1000) ? 750 : window.innerHeight;
     $('.carousel-item').css("height", 'initial');
     $('.carousel-item').css("min-height", height - offset);
 };
