@@ -3,7 +3,7 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
-@model CampaignViewModel;
+@model SignUpViewModel;
 
 <div id="CampaignContainer" class="mom-project-signup">
     <div class="cc-campaign-sign-up-band row" style="background-image: url('/images/handshake-hero.jpg'); background-position: top">
@@ -42,14 +42,7 @@
                                     Create an account to get started
                                 </div>
                                 <div class="col-12 no-padding">
-                                    @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel
-                                    {
-                                        ContactGuid = Model.ContactGuid,
-                                        CampaignGuid = Model.CampaignGuid,
-                                        CampaignPhase = Model.CampaignPhase,
-                                        IsExpressSignUp = Model.IsExpressCampaign
-
-                                    })
+                                    @Html.Partial("Components/Authentication/_SignUp", Model)
                                 </div>
                             </div>
                         </div>
@@ -58,28 +51,16 @@
             </div>
         </div>
     </div>
-    <div class="cc-skew-band cc-cscheme-tertiary-light-gray row">
-        <div class="col-12">
-            <div class="container no-padding">
-                <div class="row">
-                    <div class="col-12 no-padding">
-                        <div class="row">
-                            <div class="col-12 d-flex justify-content-center no-padding mt-4">
-                                <div class="cc-skew-band-header font-bold">
-                                    At CareerCircle, Our Focus Is You
-                                </div>
-                            </div>
-                            <div class="col-lg-8 offset-lg-2 mb-4 no-padding">
-                                <div class="cc-skew-band-content">
-                                    <div class="row">
-                                        The Mom Project is partnering with CareerCircle to support Information Technology hiring needs in the greater Chicago area.  Together we want to provide you access to the education you need to prepare you for the career you want. Our family of companies will be partnering to introduce you to world-class employers once your training is complete. Be part of a community that you will be able to trust over the years with your careerskilling needs as your career progresses. We invite you to set up an account and fill out your talent profile to get the partnership started!
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
+    {
+        Header = "At CareerCircle, Our Focus Is You",
+        Elements = new List<string>()
+        {
+            @"<div class='row'>
+                <div class='col-lg-8 offset-lg-2'>
+                    The Mom Project is partnering with CareerCircle to support Information Technology hiring needs in the greater Chicago area.  Together we want to provide you access to the education you need to prepare you for the career you want. Our family of companies will be partnering to introduce you to world-class employers once your training is complete. Be part of a community that you will be able to trust over the years with your careerskilling needs as your career progresses. We invite you to set up an account and fill out your talent profile to get the partnership started!
                 </div>
-            </div>
-        </div>
-    </div>
+            </div>"
+        }
+    });
 </div>
