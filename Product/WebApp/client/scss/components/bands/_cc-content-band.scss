@@ -1,0 +1,53 @@
+﻿@import '../../_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .cc-content-band {
+        position: relative;
+        padding: 2rem;
+
+        .cc-content-band-header {
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        .cc-content-band-content {
+            padding-top: 2rem;
+
+            > .row {
+                > div {
+                    margin-bottom: 2rem;
+                }
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+    
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+    
+}
+
+// Large Styles
+@media (min-width: 992px) {
+    .cc-content-band {
+
+        .cc-content-band-header {
+            font-size: 2.5rem;
+            
+        }
+    }
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+}

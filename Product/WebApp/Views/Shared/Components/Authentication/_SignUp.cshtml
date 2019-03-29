@@ -5,11 +5,11 @@
 
 @{ 
     string _form = Model.IsExpressSignUp ? "ExpressSignUpForm" : "SignUpForm";
-    string _aspAction = Model.IsExpressSignUp ? "ExpressSignUp" : "CampaignSignUp";
+    string _aspAction = Model.IsExpressSignUp ? "express-sign-up" : "sign-up";
 }
 
 <div id="SignUpComponent">
-    <form id="@_form" asp-controller="Home" asp-action="@_aspAction" data-action="@_aspAction">
+    <form id="@_form" asp-controller="Campaign" asp-action="@_aspAction" data-action="@_aspAction">
         @{
             if (!Model.IsExpressSignUp)
             {
