@@ -39,6 +39,7 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ILogger _syslog;
+        private readonly IDistributedCache _cache;
         private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
@@ -52,6 +53,7 @@ namespace UpDiddyApi.Controllers
             IB2CGraph client,
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService,
+            IDistributedCache cache,
             ISysEmail sysEmail)
         {
             _db = db;
@@ -62,6 +64,7 @@ namespace UpDiddyApi.Controllers
             _cloudStorage = cloudStorage;
             _authorizationService = authorizationService;
             _sysEmail = sysEmail;
+            _cache = cache;
         }
 
         [HttpGet]
@@ -118,9 +121,7 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, loggedInUserGuid);
             if (subscriber == null)
                 return Unauthorized();
-
-            // Do tracking logic here...
-
+            
             if (!SubscriberFactory.IsEligibleForOffers(_db, loggedInUserGuid, _syslog, _mapper, User.Identity))
                 return Unauthorized();
 
@@ -131,10 +132,12 @@ namespace UpDiddyApi.Controllers
 
             if (offer == null)
                 return NotFound();
+            else
+                new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "Partner offer", "Offer", offer.OfferGuid);
 
             BackgroundJob.Enqueue(() =>
                 _sysEmail.SendTemplatedEmailAsync(subscriber.Email, _configuration["SysEmail:TemplateIds:SubscriberOffer-Redemption"], offer, null));
-
+            
             return Ok(offer);
         }
 

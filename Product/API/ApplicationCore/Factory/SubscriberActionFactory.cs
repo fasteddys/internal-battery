@@ -74,7 +74,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
                             entityId = subscriberEntity.SubscriberId;
                             break;
                         case "Offer":
-                            throw new NotSupportedException("todo: implement once Ian's code has been merged");
+                            var offerEntity = _db.Offer.Where(o => o.OfferGuid == entityGuid && o.IsDeleted == 0).FirstOrDefault();
+                            if (offerEntity == null)
+                                throw new InvalidOperationException("Related offer entity not found");
+                            entityId = offerEntity.OfferId;
                             break;
                         default:
                             throw new NotSupportedException("Unrecognized entity type");

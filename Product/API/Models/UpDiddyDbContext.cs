@@ -141,11 +141,16 @@ namespace UpDiddyApi.Models
         public DbQuery<v_SubscriberSignUpPartnerReference> SubscriberSignUpPartnerReferences { get; set; }
         public DbQuery<SubscriberSearch> SubscriberSearch { get; set; }
         public DbQuery<v_RecruiterSubscriberActions> RecruiterSubscriberActions { get; set; }
+        public DbQuery<v_SubscriberOfferActions> SubscriberOfferActions { get; set; }
 
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder
+                .Query<v_SubscriberOfferActions>()
+                .ToView("v_SubscriberOfferActions");
+
             modelBuilder
                 .Query<v_RecruiterSubscriberActions>()
                 .ToView("v_RecruiterSubscriberActions");

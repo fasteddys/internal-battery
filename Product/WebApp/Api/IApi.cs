@@ -90,6 +90,7 @@ namespace UpDiddy.Api
         Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync();
         Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync();
         Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync();
+        Task<List<OfferActionSummaryDto>> GetOfferActionSummaryAsync();
         #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
