@@ -84,6 +84,14 @@ var CareerCircleAPI = (function (apiUrl) {
         });
     }
 
+    var getOffer = function (offerGuid) { 
+        return _http.get('/offers/' + offerGuid);
+    }
+
+    var claimOffer = function (offerGuid) {
+        return _http.post('/offers/' + offerGuid + "/claim");
+    };
+
     var getContacts = async function(page, pageSize, sorted, filtered, startDate, endDate, partner) {
         var pageIndex = page <= 0 ? 1 : page;
         var params = "";
@@ -129,6 +137,8 @@ var CareerCircleAPI = (function (apiUrl) {
         signOut: signOut,
         getContacts: getContacts,
         getPartners: getPartners,
-        requestVerification: requestVerification
+        requestVerification: requestVerification,
+        getOffer: getOffer,
+        claimOffer: claimOffer
     };
 })(API_URL);

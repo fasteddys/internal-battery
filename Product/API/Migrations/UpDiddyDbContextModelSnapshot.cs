@@ -2674,7 +2674,7 @@ namespace UpDiddyApi.Migrations
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberProfileStagingStore", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
+                        .WithMany("ProfileStagingStore")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
