@@ -22,7 +22,7 @@ namespace UpDiddyApi.Models
         public virtual Subscriber Subscriber { get; set; }
         public virtual List<PartnerContact> PartnerContacts { get; set; }
 
-        [Obsolete("This supporting values for this property is being moved to PartnerContact and will be removed from the model very soon.", false)]
+        [Obsolete("The supporting values for this property are being moved to PartnerContact and will be removed from the model very soon.", false)]
         [NotMapped]
         public string FullName
         {

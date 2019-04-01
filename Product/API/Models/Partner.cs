@@ -15,5 +15,8 @@ namespace UpDiddyApi.Models
         public string Description { get; set; }
         public string LogoUrl { get; set; }
         public List<PartnerReferrer> Referrers { get; set; }
+        public int? PartnerTypeId { get; set; }
+        public PartnerType PartnerType { get; set; }
+        public string ApiToken { get; set; }
     }
 }

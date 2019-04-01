@@ -132,12 +132,14 @@ namespace UpDiddyApi.Models
         public DbSet<PartnerReferrer> PartnerReferrer { get; set; }
         public DbSet<SubscriberAction> SubscriberAction { get; set; }
         public DbSet<EntityType> EntityType { get; set; }
-
+        public DbSet<PartnerType> PartnerType { get; set; }
+        public DbSet<LeadStatus> LeadStatus { get; set; }
+        public DbSet<PartnerContactLeadStatus> PartnerContactLeadStatus { get; set; }
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
         public DbQuery<CampaignDetail> CampaignDetail { get; set; }
-        public DbQuery<v_SubscriberSources> SubscriberSources {get; set; }
+        public DbQuery<v_SubscriberSources> SubscriberSources { get; set; }
         public DbQuery<v_SubscriberSignUpPartnerReference> SubscriberSignUpPartnerReferences { get; set; }
         public DbQuery<SubscriberSearch> SubscriberSearch { get; set; }
         public DbQuery<v_RecruiterSubscriberActions> RecruiterSubscriberActions { get; set; }
@@ -146,6 +148,19 @@ namespace UpDiddyApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<PartnerContactLeadStatus>()
+                .HasKey(pcls => new { pcls.PartnerContactId, pcls.LeadStatusId });
+
+            modelBuilder.Entity<LeadStatus>()
+                .Property(ls => ls.Severity)
+                .HasConversion(
+                ls => ls.ToString(),
+                ls => (Severity)Enum.Parse(typeof(Severity), ls));
+
+            modelBuilder.Entity<PartnerType>()
+                .HasIndex(pt => pt.Name)
+                .IsUnique();
+
             modelBuilder
                 .Query<v_RecruiterSubscriberActions>()
                 .ToView("v_RecruiterSubscriberActions");

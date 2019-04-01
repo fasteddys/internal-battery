@@ -30,5 +30,6 @@ namespace UpDiddyApi.Models
                 _metadata = value.ToString();
             }
         }
+        public bool? IsBillable { get; set; }
     }
 }
