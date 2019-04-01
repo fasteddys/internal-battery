@@ -3,11 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using AutoMapper;
-using AutoMapper.Configuration;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
@@ -23,29 +19,17 @@ namespace UpDiddyApi.Controllers
     [Route("api/[controller]")]
     public class LeadController : Controller
     {
-        private readonly UpDiddyDbContext _db = null;
-        private readonly IMapper _mapper;
-        private readonly IConfiguration _configuration;
+        private readonly UpDiddyDbContext _db;
         private readonly ILogger _syslog;
-        private IB2CGraph _graphClient;
-        private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
 
         public LeadController(UpDiddyDbContext db,
-            IMapper mapper,
-            IConfiguration configuration,
             ILogger<LeadController> sysLog,
-            IB2CGraph client,
-            ICloudStorage cloudStorage,
-            IAuthorizationService authorizationService)
+            ICloudStorage cloudStorage)
         {
-            _db = db;
-            _mapper = mapper;
-            _configuration = configuration;
-            _syslog = sysLog;
-            _graphClient = client;
-            _cloudStorage = cloudStorage;
-            _authorizationService = authorizationService;
+            this._db = db;
+            this._syslog = sysLog;            
+            this._cloudStorage = cloudStorage;            
         }
 
         /*
@@ -143,7 +127,7 @@ namespace UpDiddyApi.Controllers
             // isbillable - where does this belong? can add to partnercontact for now?
             try
             {
-                _db.PartnerContact.Add(new PartnerContact()
+                var partnerContact = new PartnerContact()
                 {
                     Contact = new Contact()
                     {
@@ -161,9 +145,13 @@ namespace UpDiddyApi.Controllers
                     PartnerContactGuid = Guid.NewGuid(),
                     PartnerId = partner.PartnerId,
                     SourceSystemIdentifier = leadRequest.ExternalLeadIdentifier
-                });
+                };
 
-                _db.SaveChanges();
+                _db.PartnerContact.Add(partnerContact);
+
+                var result = _db.SaveChanges();
+
+
             }
             catch (Exception e)
             {
