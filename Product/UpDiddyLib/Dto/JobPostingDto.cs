@@ -18,6 +18,8 @@ namespace UpDiddyLib.Dto
         
         public int CloudTalentIndexStatus { get; set; }  
      
+        public SubscriberDto Subscriber { get; set; } 
+
         public CompanyDto  Company { get; set; }
      
 
@@ -50,6 +52,8 @@ namespace UpDiddyLib.Dto
         public EducationLevelDto EducationLevel { get; set; }
 
         public List<SkillDto> Skills { get; set; }
+
+        public int JobStatus { get; set; }
 
 
     }

@@ -1220,7 +1220,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("CloudTalentUri");
 
-                    b.Property<int>("CompanyId");
+                    b.Property<int?>("CompanyId");
 
                     b.Property<decimal>("Compensation");
 
@@ -1250,6 +1250,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("JobPostingGuid");
 
+                    b.Property<int>("JobStatus");
+
                     b.Property<string>("Location");
 
                     b.Property<DateTime?>("ModifyDate");
@@ -1261,6 +1263,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<DateTime>("PostingExpirationDateUTC");
 
                     b.Property<int?>("SecurityClearanceId");
+
+                    b.Property<int?>("SubscriberId");
 
                     b.Property<int>("TelecommutePercentage");
 
@@ -1287,6 +1291,8 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("JobCategoryId");
 
                     b.HasIndex("SecurityClearanceId");
+
+                    b.HasIndex("SubscriberId");
 
                     b.ToTable("JobPosting");
                 });
@@ -2659,8 +2665,7 @@ namespace UpDiddyApi.Migrations
                 {
                     b.HasOne("UpDiddyApi.Models.Company", "Company")
                         .WithMany()
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("CompanyId");
 
                     b.HasOne("UpDiddyApi.Models.CompensationType", "CompensationType")
                         .WithMany()
@@ -2689,6 +2694,10 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.SecurityClearance", "SecurityClearance")
                         .WithMany()
                         .HasForeignKey("SecurityClearanceId");
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.JobPostingSkill", b =>

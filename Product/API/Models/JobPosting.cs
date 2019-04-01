@@ -10,31 +10,8 @@ namespace UpDiddyApi.Models
 
 
     public enum JobPostingIndexStatus { NotIndexed = 0, Indexed, DeletedFromIndex, IndexError, IndexDeleteError, IndexUpdateError, UpdateIndexPending  };
-
-
-
-
-    /*
-     * 
-     * 
-     * Job postings in CareerCircle need to allow the following elements to asssit with navigating or filtering jobs as follows:
+    public enum JobPostingStatus { Draft = 0, Active, Expired};
  
-Job location - This could be a number of elements to assist:
-  Country, ZIP, State, City, address, lat/long
-  enabling distance to job/commute search capabilities
-  enabling filtering by city,state
- 
-   
-Category / Industry
- 
-Sub-Category
-  
- 
-Skills ( 0 or more per posting)
- 
- */
-
-
     public class JobPosting : BaseModel
     {
         public int JobPostingId { get; set; }
@@ -72,13 +49,25 @@ Skills ( 0 or more per posting)
         public string CloudTalentIndexInfo { get; set; }
 
         /**************** job posting data   ****************************/
+        
+        /// <summary>
+        /// Status of the job e.g. Draft, Live, Expired etc.   
+        /// </summary>
+        public int JobStatus { get; set; }
+
+        /// <summary>
+        /// The subscriber who posted the job 
+        /// </summary>
+        public int? SubscriberId { get; set; }
+
+        public virtual Subscriber Subscriber { get; set; }
+
         /// <summary>
         /// Guid of the company that owns the posting
         /// </summary>
+        public int? CompanyId { get; set; }
 
-        public int CompanyId { get; set; }
-
-        public Company Company { get; set; }
+        public virtual Company Company { get; set; }
         /// <summary>
         /// Guid of industry associated with the job 
         /// </summary>
@@ -112,8 +101,6 @@ Skills ( 0 or more per posting)
         /// <summary>
         /// Position employment type  e.g. direct hire, contractor, part time, etc 
         /// </summary>
-
-
         
         public int? EmploymentTypeId { get; set; }
 

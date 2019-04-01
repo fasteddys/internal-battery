@@ -38,6 +38,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(c => c.EducationLevel)
                 .Include(c => c.CompensationType)
                 .Include(c => c.JobCategory)
+                .Include(c => c.Subscriber)
                 .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
                 .FirstOrDefault();
         }
@@ -81,6 +82,72 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 JobPostingSkillFactory.Add(db, jobPosting.JobPostingId, skillDto.SkillGuid.Value);
             }
             db.SaveChanges();
+        }
+
+
+        /// <summary>
+        /// Implement business rules to check the validity of an updated job posting 
+        /// </summary>
+        /// <param name="job"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public static bool ValidateUpdatedJobPosting(JobPosting job, ref string message)
+        {
+            if ( string.IsNullOrEmpty(job.CloudTalentUri) )
+            {
+                message = "Job has not been indexed";
+                return false;
+            }
+
+            return ValidateJobPosting(job, ref message);
+        }
+
+        /// <summary>
+        /// Implements business rules to check the validity of a job posting 
+        /// </summary>
+        /// <param name="job"></param>
+        /// <param name=""></param>
+        /// <returns></returns>
+        public static bool ValidateJobPosting(JobPosting job, ref string message)
+        {
+            // TODO JAB move magic strings to constants
+            if (job.CompanyId < 0 || job.Company == null)
+            {
+                message = "Company required";
+                return false;
+            }
+
+            if (job.SecurityClearance != null && job.SecurityClearanceId == null)
+            {
+                message = "Invalid security clearance";
+                return false;
+            }
+
+            if (job.Industry != null && job.IndustryId == null)
+            {
+                message = "Invalid industry";
+                return false;
+            }
+
+            if (job.EmploymentType != null && job.EmploymentTypeId == null)
+            {
+                message = "Invalid employment type";
+                return false;
+            }
+
+            if (job.EducationLevel != null && job.EducationLevelId == null)
+            {
+                message = "Invalid education level";
+                return false;
+            }
+
+            if (job.ExperienceLevel != null && job.ExperienceLevelId == null)
+            {
+                message = "Invalid experience level";
+                return false;
+            }
+
+            return true;
         }
 
 

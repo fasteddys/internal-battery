@@ -102,6 +102,8 @@ namespace UpDiddyLib.Dto
         /// </summary>
         public string JobCategory { get; set; }
 
+        public List<string> Skills = new List<string>();
+
 
     }
 }

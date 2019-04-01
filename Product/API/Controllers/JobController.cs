@@ -29,6 +29,7 @@ using UpDiddyApi.ApplicationCore;
 using Hangfire;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.Helpers.Job;
+using System.Security.Claims;
 
 namespace UpDiddyApi.Controllers
 {
@@ -61,6 +62,40 @@ namespace UpDiddyApi.Controllers
 
         #region job crud 
 
+
+   
+        [HttpDelete]
+        // TODO Jab [Authorize(Policy = "IsRecruiterOrAdmin")]         
+        [Route("api/[controller]/{jobPostingGuid}")]
+        public IActionResult DeleteJobPosting(Guid jobPostingGuid)
+        {
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting started at: {DateTime.UtcNow.ToLongDateString()} for posting {jobPostingGuid}");
+                if (jobPostingGuid == null)
+                    return BadRequest(new { code = 400, message = "No job posting identifier was provided" });
+
+                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid);
+                if (jobPosting == null)
+                    return NotFound(new { code = 404, message = $"Job posting {jobPostingGuid} does not exist" });
+
+                // TODO JAB ensure owner is trying to delete posting              
+                // Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+ 
+                // queue a job to delete the posting from the job index and mark it as deleted in sql server
+                 BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteJob(jobPosting.JobPostingGuid));
+                _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+            catch ( Exception ex )
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting exception : {ex.Message} while deleting posting {jobPostingGuid}");
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
+            }            
+            return Ok();
+        }
+      
+
+
         [HttpPut]
         // TODO Jab [Authorize(Policy = "IsRecruiterOrAdmin")]         
         [Route("api/[controller]")]
@@ -85,7 +120,6 @@ namespace UpDiddyApi.Controllers
                 _db.Entry(jobPosting).State = EntityState.Modified;
                 // use factory method to make sure all the base data values are set just 
                 // in case the caller didn't set them
-
                 BaseModelFactory.SetDefaultsForAddNew(jobPosting);
                 // important! Init all reference object ids to null since further logic will use < 0 to check for 
                 // their validity
@@ -94,20 +128,19 @@ namespace UpDiddyApi.Controllers
                 JobPostingFactory.MapRelatedObjects(jobPosting, tempJobPosting);
                 // validate job posting
                 string msg = string.Empty;
-                if (JobHelper.ValidateJobPosting(jobPosting, ref msg) == false)
+                if (JobPostingFactory.ValidateUpdatedJobPosting(jobPosting, ref msg) == false)
                 {
                     var response = new BasicResponseDto() { StatusCode = 400, Description = msg };
                     _syslog.Log(LogLevel.Warning, "JobPostingController.CreateJobPosting:: Bad Request {Description} {JobPosting}", response.Description, jobPostingDto);
                     return BadRequest(response);
                 }
-
                 jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.UpdateIndexPending;               
                 // save the update jobposting to sql server 
-                var x = _db.SaveChanges();
+                _db.SaveChanges();
                 JobPostingFactory.UpdatePostingSkills(_db, jobPosting, jobPostingDto);
-
-
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobPosting.JobPostingGuid));
+                // index active jobs in cloud talent 
+                if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobPosting.JobPostingGuid));
 
                 return Ok(_mapper.Map<JobPostingDto>(jobPosting));
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
@@ -117,8 +150,6 @@ namespace UpDiddyApi.Controllers
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting exception : {ex.Message}");
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
             }
-
-
         }
 
 
@@ -146,7 +177,7 @@ namespace UpDiddyApi.Controllers
                  JobPostingFactory.MapRelatedObjects(_db, jobPosting, jobPostingDto);
                  
                  string msg = string.Empty;
-                 if (JobHelper.ValidateJobPosting(jobPosting, ref msg) == false)
+                 if (JobPostingFactory.ValidateJobPosting(jobPosting, ref msg) == false)
                  {
                      var response = new BasicResponseDto() { StatusCode = 400, Description = msg };
                      _syslog.Log(LogLevel.Warning, "JobPostingController.CreateJobPosting:: Bad Request {Description} {JobPosting}", response.Description, jobPostingDto);
@@ -166,8 +197,9 @@ namespace UpDiddyApi.Controllers
                  _db.JobPosting.Add(jobPosting);
                  _db.SaveChanges();
                  JobPostingFactory.SavePostingSkills(_db, jobPosting, jobPostingDto);
-                 //index job into google 
-                 BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
+                //index active jobs into google 
+                if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
 
                  _syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
                  return Ok(_mapper.Map<JobPostingDto>(jobPosting));
@@ -187,13 +219,13 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]")]
         public IActionResult JobSearch()
         {
-
-            JobSearchResultDto rVal = _cloudTalent.Search();
+            // TODO JAB set properties and use jobQuery
+            JobQueryDto jobQuery = new JobQueryDto();
+           // jobQuery.Skill = "javascript";
+           // jobQuery.DatePublished = "past_24_hours";
+            JobSearchResultDto rVal = _cloudTalent.Search(jobQuery);
 
             return Ok(rVal);
-
-
-
         }
 
         #endregion

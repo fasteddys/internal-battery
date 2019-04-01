@@ -12,6 +12,7 @@ using UpDiddyApi.ApplicationCore.Factory;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
 using UpDiddyApi.ApplicationCore.Services;
+using System.Net;
 
 namespace UpDiddyApi.Helpers.Job
 {
@@ -20,6 +21,349 @@ namespace UpDiddyApi.Helpers.Job
     /// </summary>
     public class JobHelper
     {
+
+        #region Job Urls
+        
+        public static string MapFacetToUrl(JobQueryDto query, string facetName, string facetValue)
+        {
+            string rVal = "Unknown Facet!";
+            switch ( facetName.ToLower() )
+            {
+                case "jobcategory":
+                    rVal = MapJobCategoryFacetToUrl(facetValue);
+                    break;
+                case "industry":
+                    rVal = MapIndustryFacetToUrl(facetValue);
+                    break;
+                case "skills":
+                    rVal = MapSkillsFacetToUrl(facetValue);
+                    break;
+                case "city":
+                    rVal = MapCityFacetToUrl(facetValue);
+                    break;
+                case "date_published":
+                    rVal = MapDatePublishedFacetToUrl(facetValue);
+                    break;
+                case "employmenttype":
+                    rVal = MapEmploymentTypeFacetToUrl(facetValue);
+                    break;
+                case "experiencelevel":
+                    rVal = MapEmploymentTypeFacetToUrl(facetValue);
+                    break;
+
+                case "educationlevel":
+                    rVal = MapEducationLevelFacetToUrl(facetValue);
+                    break;
+                case "admin_1":
+                    rVal = MapStateFacetToUrl(facetValue);
+                    break;
+                case "company_display_name":
+                    rVal = MapCompanyFacetToUrl(facetValue);
+                    break;
+                default:
+                    break;
+
+            }
+
+            return rVal;
+        }
+
+
+        public static string MapEducationLevelFacetToUrl(string facetInfo)
+        {
+            string rVal = string.Empty;
+            string[] info = facetInfo.Split(',');
+
+            // only supporting US for now
+            rVal = $"/browse-jobs?education-level={facetQueryParam(facetInfo)}";
+
+            return rVal;
+        }
+
+
+        public static string MapExperienceLevelFacetToUrl(string facetInfo)
+        {
+            string rVal = string.Empty;
+            string[] info = facetInfo.Split(',');
+
+            // only supporting US for now
+            rVal = $"/browse-jobs?experience-level={facetQueryParam(facetInfo)}";
+
+            return rVal;
+        }
+
+
+        public static string MapEmploymentTypeFacetToUrl(string facetInfo)
+        {
+            string rVal = string.Empty;
+            string[] info = facetInfo.Split(',');
+
+            // only supporting US for now
+            rVal = $"/browse-jobs?employment-type={facetQueryParam(facetInfo)}";
+
+            return rVal;
+        }
+
+
+        public static string MapJobCategoryFacetToUrl(string facetInfo)
+        {
+            string rVal = string.Empty;
+
+
+            // only supporting US for now
+            rVal = $"/browse-jobs-industry/all/{facetQueryParam(facetInfo)}";
+
+            return rVal;
+        }
+
+
+
+        public static string MapIndustryFacetToUrl(string facetInfo)
+        {
+            string rVal = string.Empty;
+ 
+
+            // only supporting US for now
+            rVal = $"/browse-jobs-industry/{facetQueryParam(facetInfo)}";
+
+            return rVal;
+        }
+
+
+        public static string MapDatePublishedFacetToUrl(string facetInfo)
+        {
+            string rVal = string.Empty;
+            // only supporting US for now
+            rVal = $"/browse-jobs?date-published={facetQueryParam(facetInfo)}";
+
+            return rVal;
+        }
+
+
+
+        public static string MapSkillsFacetToUrl(string facetInfo)
+        {
+            string rVal = string.Empty;            
+           
+            rVal = $"/browse-jobs-skills/{facetQueryParam(facetInfo)}";
+            return rVal;
+        }
+
+
+
+        public static string MapCityFacetToUrl(string facetInfo)
+        {
+            string rVal = string.Empty;
+            string[] info = facetInfo.Split(',');
+
+            // only supporting US for now
+            rVal = $"/browse-jobs-location/US/{facetQueryParam(info[1])}/{facetQueryParam(info[0])}";
+
+            return rVal;
+        }
+
+
+        public static string MapStateFacetToUrl(string facetInfo)
+        {
+            string rVal = string.Empty;
+            // only supporting US for now
+            rVal = $"/browse-jobs-location/US/{facetQueryParam(facetInfo)}";
+
+            return rVal;
+        }
+
+        public static string MapCompanyFacetToUrl(string facetInfo)
+        {
+            string rVal = string.Empty;
+            // only supporting US for now
+            rVal = $"/browse-jobs?company{facetQueryParam(facetInfo)}";
+
+            return rVal;
+        }
+
+
+        #endregion
+
+        #region Cloud talent job -> CC job helpers
+
+        public static JobViewDto CreateJobView( CloudTalentSolution.MatchingJob matchingJob)
+        {
+            JobViewDto  rVal = new JobViewDto();
+            rVal.JobSummary = matchingJob.JobSummary;
+            rVal.JobTitleSnippet = matchingJob.SearchTextSnippet;
+            rVal.SearchTextSnippet = matchingJob.SearchTextSnippet;
+            Guid postingGuid = Guid.Empty;
+            Guid.TryParse(matchingJob.Job.RequisitionId, out postingGuid);
+            rVal.JobPostingGuid = postingGuid;
+            rVal.PostingExpirationDateUTC = DateTime.Parse(matchingJob.Job.PostingExpireTime.ToString());
+            rVal.CloudTalentUri = matchingJob.Job.Name;
+            rVal.CompanyName = matchingJob.Job.CompanyName;
+            rVal.Title = matchingJob.Job.Title;
+            rVal.Description = matchingJob.Job.Description;
+            rVal.PostingDateUTC =  DateTime.Parse(matchingJob.Job.PostingPublishTime.ToString() );
+
+            return rVal;
+
+        }
+
+
+
+        /// <summary>
+        /// Map cloud talent job results to cc jobsearch results 
+        /// </summary>
+        /// <param name="searchJobsResponse"></param>
+        /// <returns></returns>
+        /// TODO JAB finish mapping 
+        public static JobSearchResultDto MapSearchResults(ILogger syslog, IMapper mapper, CloudTalentSolution.SearchJobsResponse searchJobsResponse, JobQueryDto jobQuery)
+        {
+
+            JobSearchResultDto rVal = new JobSearchResultDto();
+            // handle case of no jobs found 
+            if ( searchJobsResponse.MatchingJobs == null )
+            {
+                rVal.JobCount = 0;
+                return rVal;
+            }
+
+            rVal.JobCount = searchJobsResponse.MatchingJobs.Count;
+            foreach (CloudTalentSolution.MatchingJob j in searchJobsResponse.MatchingJobs)
+            {
+                try
+                {
+                    JobViewDto jv = null;                                  
+                    // Automapper is too slow so do the mapping the old fashion way
+                    jv = CreateJobView(j);                                      
+                    // Map custom attributes 
+                    JobHelper.MapCustomJobPostingAttributes(j, jv);
+                    rVal.Jobs.Add(jv);
+                }
+                catch (Exception e)
+                {
+                    syslog.LogError(e, "JobPostingFactory.MapSearchResults Error mapping job", e, j);
+                }
+            }
+            rVal.Facets = JobHelper.MapFacets(jobQuery, searchJobsResponse);
+            return rVal;
+        }
+
+        static public List<JobQueryFacetDto> MapFacets(JobQueryDto jobQuery, CloudTalentSolution.SearchJobsResponse searchJobsResponse)
+        {
+            List<JobQueryFacetDto> rVal = new List<JobQueryFacetDto>();
+
+            // Map simple histogram results 
+            foreach (CloudTalentSolution.HistogramResult hr in searchJobsResponse.HistogramResults.SimpleHistogramResults)
+            {
+                JobQueryFacetDto facet = new JobQueryFacetDto()
+                {
+                    Name = hr.SearchType
+
+                };
+                foreach (var hrValue in hr.Values)
+                {
+                    JobQueryFacetItemDto facetItem = new JobQueryFacetItemDto()
+                    {          
+                        Url = MapFacetToUrl(jobQuery,facet.Name, hrValue.Key),
+                        Count = hrValue.Value.Value,
+                        Label = hrValue.Key
+
+                    };
+                    facet.Facets.Add(facetItem);
+                }
+                rVal.Add(facet);
+
+            }
+            // map custom facets  
+            // Note: currently not using nor supporting custom long facet values
+            foreach (CloudTalentSolution.CustomAttributeHistogramResult hr in searchJobsResponse.HistogramResults.CustomAttributeHistogramResults)
+            {
+                JobQueryFacetDto facet = new JobQueryFacetDto()
+                {
+                    Name = hr.Key
+
+                };
+                int index = 0;
+                if (hr.StringValueHistogramResult != null)
+                {
+                    foreach (KeyValuePair<string, int?> facetInfo in hr.StringValueHistogramResult)
+                    {
+
+                        JobQueryFacetItemDto facetItem = new JobQueryFacetItemDto()
+                        {
+                            Url = MapFacetToUrl(jobQuery,facet.Name, facetInfo.Key),
+                            Count = facetInfo.Value.Value,
+                            Label = facetInfo.Key
+
+                        };
+                        facet.Facets.Add(facetItem);
+                    }
+                }
+                rVal.Add(facet);
+            }
+
+            return rVal;
+        }
+
+
+
+        public static void MapCustomJobPostingAttributes(CloudTalentSolution.MatchingJob matchingJob, JobViewDto jobViewDto)
+        {
+            DateTime dateVal = DateTime.MinValue;
+            // Short circuit if the job has no custom attributes 
+            if (matchingJob.Job.CustomAttributes == null)
+                return;
+            // map application deadline 
+            jobViewDto.ApplicationDeadlineUTC = Utils.FromUnixTimeInSeconds(MapCustomLongAttribute(matchingJob.Job.CustomAttributes, "ApplicationDeadlineUTC"));
+
+            // map modify date 
+            jobViewDto.ModifyDate = Utils.FromUnixTimeInSeconds(MapCustomLongAttribute(matchingJob.Job.CustomAttributes, "ModifyDate"));
+
+            // map posting expiration date             
+            jobViewDto.PostingExpirationDateUTC = Utils.FromUnixTimeInSeconds(MapCustomLongAttribute(matchingJob.Job.CustomAttributes, "PostingExpirationDateUTC"));
+
+            // map experience level
+            jobViewDto.ExperienceLevel = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "ExperienceLevel");
+
+            // map education level 
+            jobViewDto.EducationLevel = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "EducationLevel");
+
+            // map employment type 
+            jobViewDto.EmploymentType = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "EmploymentType");
+
+            // map third party apply url
+            jobViewDto.ThirdPartyApplyUrl = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "ThirdPartyApplyUrl");
+ 
+            // map annual compensation
+            jobViewDto.AnnualCompensation = MapCustomLongAttribute(matchingJob.Job.CustomAttributes, "AnnualCompensation");
+
+            // map telecommute percentage 
+            jobViewDto.TelecommutePercentage = MapCustomLongAttribute(matchingJob.Job.CustomAttributes, "TelecommutePercentage");
+
+            // map third party apply flag  
+            if (MapCustomLongAttribute(matchingJob.Job.CustomAttributes, "TelecommutePercentage") == 1)
+                jobViewDto.ThirdPartyApply = true;
+            else
+                jobViewDto.ThirdPartyApply = false;
+          
+            // map industry
+            jobViewDto.Industry = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "Industry");
+
+            // map job category
+            jobViewDto.JobCategory = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "JobCategory");
+
+            // map skills
+            if (matchingJob.Job.CustomAttributes.Keys.Contains("Skills") && matchingJob.Job.CustomAttributes["Skills"] != null)
+            {
+                foreach (string skill in matchingJob.Job.CustomAttributes["Skills"].StringValues)
+                    jobViewDto.Skills.Add(skill);
+            }
+        }
+
+
+
+        #endregion
+
+        #region CC job -> cloud talent job mapping helpers
+
         /// <param name="jobPosting"></param>
         /// <returns></returns>
         static public CloudTalentSolution.Job CreateGoogleJob(UpDiddyDbContext db, JobPosting jobPosting)
@@ -61,171 +405,9 @@ namespace UpDiddyApi.Helpers.Job
             return jobToBeCreated;
         }
 
+        #endregion
 
-        public static void MapCustomJobPostingAttributes(CloudTalentSolution.MatchingJob matchingJob, JobViewDto jobViewDto)
-        {
-            DateTime dateVal = DateTime.MinValue;
-            // Short circuit if the job has no custom attributes 
-            if (matchingJob.Job.CustomAttributes == null)
-                return;
-            // map ApplicationDeadLine 
-            if (matchingJob.Job.CustomAttributes.Keys.Contains("ApplicationDeadlineUTC") && matchingJob.Job.CustomAttributes["ApplicationDeadlineUTC"] != null )
-            {         
-                jobViewDto.ApplicationDeadlineUTC = Utils.FromUnixTimeInSeconds(matchingJob.Job.CustomAttributes["ApplicationDeadlineUTC"].LongValues[0].Value);
-            }
-            // map modify date 
-            if (matchingJob.Job.CustomAttributes.Keys.Contains("ModifyDate") && matchingJob.Job.CustomAttributes["ModifyDate"] != null)
-            {
-                jobViewDto.ModifyDate = Utils.FromUnixTimeInSeconds(matchingJob.Job.CustomAttributes["ModifyDate"].LongValues[0].Value);
-            }
-            // map posting expiration date 
-            if (matchingJob.Job.CustomAttributes.Keys.Contains("PostingExpirationDateUTC") && matchingJob.Job.CustomAttributes["PostingExpirationDateUTC"] != null)
-            {
-                jobViewDto.PostingExpirationDateUTC = Utils.FromUnixTimeInSeconds(matchingJob.Job.CustomAttributes["PostingExpirationDateUTC"].LongValues[0].Value);
-            }
-            // map experience level
-            if (matchingJob.Job.CustomAttributes.Keys.Contains("ExperienceLevel") &&  matchingJob.Job.CustomAttributes["ExperienceLevel"] != null)
-            {
-                jobViewDto.ExperienceLevel = matchingJob.Job.CustomAttributes["ExperienceLevel"].StringValues[0].ToString();
-            }
-            // map education level 
-            if (matchingJob.Job.CustomAttributes.Keys.Contains("EducationLevel") && matchingJob.Job.CustomAttributes["EducationLevel"] != null)
-            {
-                jobViewDto.EducationLevel = matchingJob.Job.CustomAttributes["EducationLevel"].StringValues[0].ToString();
-            }
-            // map employment type 
-            if (matchingJob.Job.CustomAttributes.Keys.Contains("EmploymentType") && matchingJob.Job.CustomAttributes["EmploymentType"] != null)
-            {
-                jobViewDto.EmploymentType = matchingJob.Job.CustomAttributes["EmploymentType"].StringValues[0].ToString();
-            }
-            // map third party apply url
-            if (matchingJob.Job.CustomAttributes.Keys.Contains("InduThirdPartyApplyUrlstry") && matchingJob.Job.CustomAttributes["ThirdPartyApplyUrl"] != null)
-            {
-                jobViewDto.ThirdPartyApplyUrl = matchingJob.Job.CustomAttributes["ThirdPartyApplyUrl"].StringValues[0].ToString();
-            }
-
-            // map annual compensation
-            if (matchingJob.Job.CustomAttributes.Keys.Contains("AnnualCompensation") && matchingJob.Job.CustomAttributes["AnnualCompensation"] != null)
-            {
-                //TODO JAB remove try catch once you remove incorecctly indexed jobs
-                try
-                {
-                    jobViewDto.AnnualCompensation = matchingJob.Job.CustomAttributes["AnnualCompensation"].LongValues[0].Value;
-                }
-                catch { }
-                
-            }
-
-            // map telecommute percentage 
-            if (matchingJob.Job.CustomAttributes.Keys.Contains("TelecommutePercentage") && matchingJob.Job.CustomAttributes["TelecommutePercentage"] != null)
-            {
-                jobViewDto.TelecommutePercentage = matchingJob.Job.CustomAttributes["TelecommutePercentage"].LongValues[0].Value;
-            }
-
-            // map third party apply flag 
-            if (matchingJob.Job.CustomAttributes.Keys.Contains("ThirdPartyApply") && matchingJob.Job.CustomAttributes["ThirdPartyApply"] != null)
-            {
-                if (matchingJob.Job.CustomAttributes["ThirdPartyApply"].LongValues[0].Value == 1)
-                    jobViewDto.ThirdPartyApply = true;
-                else
-                    jobViewDto.ThirdPartyApply = false;
-            }
-
-            // map industry
-            if (matchingJob.Job.CustomAttributes.Keys.Contains("Industry")  &&  matchingJob.Job.CustomAttributes["Industry"] != null)
-            {
-                jobViewDto.Industry = matchingJob.Job.CustomAttributes["Industry"].StringValues[0].ToString();
-            }
-
-            // map job category
-            if (matchingJob.Job.CustomAttributes.Keys.Contains("JobCategory") && matchingJob.Job.CustomAttributes["JobCategory"] != null)
-            {
-                jobViewDto.JobCategory = matchingJob.Job.CustomAttributes["JobCategory"].StringValues[0].ToString();
-            }
-
-
-
-        }
-
-
-
-        /// <summary>
-        /// Map cloud talent job results to cc jobsearch results 
-        /// </summary>
-        /// <param name="searchJobsResponse"></param>
-        /// <returns></returns>
-        /// TODO JAB finish mapping 
-        public static JobSearchResultDto MapSearchResults(ILogger syslog, IMapper mapper, CloudTalentSolution.SearchJobsResponse searchJobsResponse)
-        {
-
-            JobSearchResultDto rVal = new JobSearchResultDto();            
-            rVal.JobCount = searchJobsResponse.MatchingJobs.Count;
-            foreach (CloudTalentSolution.MatchingJob j in searchJobsResponse.MatchingJobs)
-            {
-                try
-                {
-                    JobViewDto jv = mapper.Map<JobViewDto>(j);
-                    // automapper can't deal with custom job attributes 
-                    JobHelper.MapCustomJobPostingAttributes(j, jv);
-                    rVal.Jobs.Add(jv);
-                }
-                catch (Exception e)
-                {
-                    syslog.LogError(e, "JobPostingFactory.MapSearchResults Error mapping job", e, j);
-                }
-            }
-
-            return rVal;
-        }
-
-
-        /// <summary>
-        /// Implements business rules to check the validity of a job posting 
-        /// </summary>
-        /// <param name="job"></param>
-        /// <param name=""></param>
-        /// <returns></returns>
-        public static bool ValidateJobPosting(JobPosting job, ref string message)
-        {
-            // TODO JAB move magic strings to constants
-            if (job.CompanyId < 0 || job.Company == null)
-            {
-                message = "Company required";
-                return false;
-            }
-
-            if (job.SecurityClearance != null && job.SecurityClearanceId == null)
-            {
-                message = "Invalid security clearance";
-                return false;
-            }
-
-            if (job.Industry != null && job.IndustryId == null)
-            {
-                message = "Invalid industry";
-                return false;
-            }
-
-            if (job.EmploymentType != null && job.EmploymentTypeId == null)
-            {
-                message = "Invalid employment type";
-                return false;
-            }
-
-            if (job.EducationLevel != null && job.EducationLevelId == null)
-            {
-                message = "Invalid education level";
-                return false;
-            }
-
-            if (job.ExperienceLevel != null && job.ExperienceLevelId == null)
-            {
-                message = "Invalid experience level";
-                return false;
-            }
-
-            return true;
-        }
+        #region Job indexing 
 
         static public bool AddJobToCloudTalent(UpDiddyDbContext db, CloudTalent ct, Guid jobPostingGuid)
         {
@@ -273,7 +455,67 @@ namespace UpDiddyApi.Helpers.Job
 
 
 
+        static public bool DeleteJobFromCloudTalent(UpDiddyDbContext db, CloudTalent ct, Guid jobPostingGuid)
+        {
+            try
+            {
+                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
+                // validate we have good data 
+                if (jobPosting == null)
+                    return false;
+          
+                // index the job to google 
+                return ct.RemoveJobFromIndex(jobPosting);     
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
+        #endregion
+
         #region Helper functions 
+
+        static private long MapCustomLongAttribute(IDictionary<string, CloudTalentSolution.CustomAttribute> attributes, string attributeName)
+        {
+            long rVal = 0;
+
+            if (attributes.Keys.Contains(attributeName) &&
+                 attributes[attributeName] != null &&
+                 attributes[attributeName].LongValues != null
+               )
+                rVal = attributes[attributeName].LongValues[0].Value;
+
+            return rVal;
+        }
+
+
+        static private string MapCustomStringAttribute( IDictionary<string, CloudTalentSolution.CustomAttribute> attributes,  string attributeName )
+        {
+            string rVal = string.Empty;
+
+            if ( attributes.Keys.Contains(attributeName) &&
+                 attributes[attributeName] != null &&
+                 attributes[attributeName].StringValues != null
+               )
+                rVal = attributes[attributeName].StringValues[0].ToString();
+
+                return rVal;
+        }
+
+
+        /// <summary>
+        ///  UrlEncode facet values 
+        /// </summary>
+        /// <param name="facetInfo"></param>
+        /// <returns></returns>
+        static private string facetQueryParam(string facetInfo)
+        {
+            return WebUtility.UrlEncode(facetInfo.Trim().ToLower());
+
+        }
 
         /// <summary>
         ///  Create list of custom attributes for cloud talent job posting 

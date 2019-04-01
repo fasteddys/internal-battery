@@ -67,8 +67,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
         #endregion
 
-
-
         #region Job Indexing
         /// <summary>
         /// Delete a job from the google index via its google URI pth
@@ -90,9 +88,40 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return true;
         }
+        /// <summary>
+        /// Remove job from cloud talent solution
+        /// </summary>
+        /// <param name="jobPosting"></param>
+        /// <returns></returns>
+        public bool RemoveJobFromIndex(JobPosting jobPosting)
+        {
+            try
+            {
+     
+                _jobServiceClient.Projects.Jobs.Delete(jobPosting.CloudTalentUri).Execute();
+                // Update job posting with index error
+                jobPosting.IsDeleted = 1;
+                jobPosting.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now);
+                jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.DeletedFromIndex;
+                _db.SaveChanges();
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                // Update job posting with index error
+                jobPosting.CloudTalentIndexInfo = e.Message;
+                jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.IndexError;
+                _db.SaveChanges();
+                _syslog.LogError(e, "CloudTalent.IndexJob Error", e, jobPosting);
+                throw e;
+            }
+        }
+
+
 
         /// <summary>
-        /// Update the job in the google clouse 
+        /// Update the job in the google cloud talent solution
         /// </summary>
         /// <param name="jobPosting"></param>
         /// <returns></returns>
@@ -107,7 +136,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 CloudTalentSolution.Job jobCreated = _jobServiceClient.Projects.Jobs.Patch(UpdateJobRequest, TalentCloudJob.Name).Execute();
                 // Update job posting with index error
                 jobPosting.CloudTalentUri = jobCreated.Name;
-                jobPosting.CloudTalentIndexInfo = "Indexed on " + Utils.ISO8601DateString(DateTime.Now);
+                jobPosting.CloudTalentIndexInfo = "ReIndexed on " + Utils.ISO8601DateString(DateTime.Now);
                 jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.Indexed;
                 _db.SaveChanges();
 
@@ -201,70 +230,109 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #endregion
 
-
         #region job searching 
 
-
-        public JobSearchResultDto Search()
+        public CloudTalentSolution.SearchJobsRequest CreateJobSearchRequest(JobQueryDto jobQuery)
         {
+            // todo add better meta data 
             CloudTalentSolution.RequestMetadata requestMetadata = new CloudTalentSolution.RequestMetadata()
             {
                 UserId = "CareerCircle.com",
                 SessionId = "n/a",
                 Domain = "www.careercircle.com"
+
             };
 
-            // Create job query 
-            CloudTalentSolution.JobQuery jobQuery = new CloudTalentSolution.JobQuery();
-            // TODO JAB  pass in query 
-            string query = "javascript c#";
-          //  jobQuery.Query = query;
+            CloudTalentSolution.JobQuery cloudTalentJobQuery = new CloudTalentSolution.JobQuery();
+            // add keywords 
+            if ( string.IsNullOrEmpty(jobQuery.Keywords) == false )
+            {
+                
+                cloudTalentJobQuery.Query = jobQuery.Keywords;
+            }
 
-            // Add CompanyFilters - Not sure if this is company URI name or company display name 
-            string companyName = "";
-            //jobQuery.CompanyNames = companyName;
+            // add locations filters.  give preference to the free format location field if it's 
+            // defined, if not use city state parameters if they have been defined 
+            string addressInfo = string.Empty;
+            if (string.IsNullOrEmpty(jobQuery.Location) == false)
+                addressInfo = jobQuery.Location;           
+            else
+            {
+                addressInfo = jobQuery.StreetAddress + " " + jobQuery.City + " " + jobQuery.State;
+                addressInfo = addressInfo.Trim();
+
+            }
+            // add location filter if any address information has been provided 
+            if ( string.IsNullOrEmpty(addressInfo) == false )
+            {
+                CloudTalentSolution.LocationFilter locationFilter = new CloudTalentSolution.LocationFilter()
+                {                    
+                    Address = addressInfo,
+                    DistanceInMiles = jobQuery.DistanceInMiles
+
+                };
+
+                cloudTalentJobQuery.LocationFilters = new List<CloudTalentSolution.LocationFilter>()
+                {
+                    locationFilter
+                };
+
+            }
+            // publish time range 
+            if ( string.IsNullOrEmpty(jobQuery.DatePublished) == false)
+            {
+                cloudTalentJobQuery.PublishTimeRange = GetPublishTimeRange(jobQuery.DatePublished);
+            }
+
+            // company name 
+            if (string.IsNullOrEmpty(jobQuery.CompanyName) == false)
+            {
+                string[] companyNames = { jobQuery.CompanyName };
+                cloudTalentJobQuery.CompanyDisplayNames = companyNames;                
+            }
+
+            // custom attribute filters 
+            // todo add more custom filter capabilities as necessary 
+
+            // add skills 
+            string attributeFilters = string.Empty;
+            if ( string.IsNullOrEmpty (jobQuery.Skill) == false )
+                attributeFilters = "LOWER(Skills) = \"" + jobQuery.Skill.Trim().ToLower()  + "\"";
+
+            // add industry 
+            if (string.IsNullOrEmpty(jobQuery.Industry) == false)
+            {
+                if (attributeFilters.Length > 0)
+                    attributeFilters += " AND ";
+
+                attributeFilters = "LOWER(Industry) = \"" + jobQuery.Industry.Trim().ToLower() + "\"";
+            }
+
+            // add job category 
+            if (string.IsNullOrEmpty(jobQuery.Industry) == false)
+            {
+                if (attributeFilters.Length > 0)
+                    attributeFilters += " AND ";
+
+                attributeFilters = "LOWER(JobCategory) = \"" + jobQuery.JobCategory.Trim().ToLower() + "\"";
+            }
+
 
             // Add Custom Attribute Filter 
-            string customAttributeFilter = "LOWER(Skills) = \"javascript\"";
-           // jobQuery.CustomAttributeFilter = customAttributeFilter;
-
-            // Add Location Filter             
-            CloudTalentSolution.LocationFilter locationFilter = new CloudTalentSolution.LocationFilter()
-            {
-                // Address = ,
-                Address = "Towson MD",
-                DistanceInMiles = 300
-
-            };
-
-            jobQuery.LocationFilters = new List<CloudTalentSolution.LocationFilter>()
-            {
-                locationFilter
-            };
-
+            if ( attributeFilters.Length > 0 )
+                cloudTalentJobQuery.CustomAttributeFilter = attributeFilters;
+ 
             // Add histograms 
             CloudTalentSolution.HistogramFacets histogramFacets = new CloudTalentSolution.HistogramFacets()
             {
                 SimpleHistogramFacets = new List<String>
                 {
-                    "COMPANY_ID",
-                    "COUNTRY",
-                    "EMPLOYMENT_TYPE",
-                    "COMPANY_SIZE",
+
                     "DATE_PUBLISHED",
-                    "EDUCATION_LEVEL",
-                    "EXPERIENCE_LEVEL",
                     "ADMIN_1", // Region such as State or Province
                     "CITY",
-                    "EMPLOYMENT_TYPE",
-                    "CATEGORY",
-                    "LOCALE",
-                    "LANGUAGE",
-                    "CITY_COORDINATE",
-                    "ADMIN_1_COUNTRY",
                     "COMPANY_DISPLAY_NAME",
                     "BASE_COMPENSATION_UNIT"
-
                 },
                 CustomAttributeHistogramFacets = new List<CloudTalentSolution.CustomAttributeHistogramRequest>
                {
@@ -275,11 +343,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                    },
                    new CloudTalentSolution.CustomAttributeHistogramRequest()
                    {
-                      Key = "ApplicationDeadlineUTC",
-                      StringValueHistogram = true
-                   },
-                    new CloudTalentSolution.CustomAttributeHistogramRequest()
-                   {
                       Key = "ExperienceLevel",
                       StringValueHistogram = true
                    },
@@ -287,8 +350,23 @@ namespace UpDiddyApi.ApplicationCore.Services
                    {
                       Key = "EducationLevel",
                       StringValueHistogram = true
+                   },
+                   new CloudTalentSolution.CustomAttributeHistogramRequest()
+                   {
+                      Key = "EmploymentType",
+                      StringValueHistogram = true
+                   },
+                   new CloudTalentSolution.CustomAttributeHistogramRequest()
+                   {
+                      Key = "Industry",
+                      StringValueHistogram = true
+                   },
+                   new CloudTalentSolution.CustomAttributeHistogramRequest()
+                   {
+                      Key = "JobCategory",
+                      StringValueHistogram = true
                    }
-                    
+
                }
             };
 
@@ -296,14 +374,29 @@ namespace UpDiddyApi.ApplicationCore.Services
             CloudTalentSolution.SearchJobsRequest searchJobRequest = new CloudTalentSolution.SearchJobsRequest()
             {
                 RequestMetadata = requestMetadata,
-                JobQuery = jobQuery,
+                JobQuery = cloudTalentJobQuery,
                 SearchMode = "JOB_SEARCH",
-                HistogramFacets = histogramFacets
+                HistogramFacets = histogramFacets,
+                PageSize = 100
             };
-            CloudTalentSolution.SearchJobsResponse searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
 
-      
-            JobSearchResultDto rval =  JobHelper.MapSearchResults(_syslog, _mapper, searchJobsResponse);
+            return searchJobRequest;
+        }
+
+
+
+
+        public JobSearchResultDto Search(JobQueryDto jobQuery)
+        {
+
+            // Build search request 
+            CloudTalentSolution.SearchJobsRequest searchJobRequest = CreateJobSearchRequest(jobQuery);
+            CloudTalentSolution.SearchJobsResponse searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
+            // TODO JAB remove timing metrics 
+            DateTime start = DateTime.Now;
+            JobSearchResultDto rval =  JobHelper.MapSearchResults(_syslog, _mapper, searchJobsResponse, jobQuery);
+            DateTime stop = DateTime.Now;
+            TimeSpan interval = stop - start;      
             return rval;
         }
 
@@ -313,9 +406,36 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #endregion
 
+        #region Helper function
 
+        static private CloudTalentSolution.TimestampRange GetPublishTimeRange( string timeRange )
+        {
+            CloudTalentSolution.TimestampRange rVal = new CloudTalentSolution.TimestampRange();
+            rVal.EndTime = Utils.GetTimestampAsString(DateTime.Now);
 
+            switch ( timeRange.ToLower() )
+            {
+                case "past_24_hours":
+                    rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddHours(-24));
+                    break;
+                case "past_3_days":
+                    rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddHours(-72));
+                    break;
+                case "past_week":
+                    rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddDays(-7));
+                    break;
+                case "past_month":
+                    rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddDays(-30));
+                    break;
+                default:
+                    rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddDays(-365));
+                    break;
+                    
+            }
+            return rVal;
+        }
 
+        #endregion
 
     }
 }
