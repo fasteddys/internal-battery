@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using ButterCMS;
+using ButterCMS.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -11,6 +13,7 @@ using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Helpers;
+using UpDiddy.ViewModels.ButterCMS;
 
 namespace UpDiddy.Controllers
 {
@@ -266,6 +269,39 @@ namespace UpDiddy.Controllers
             }
 
 
+        }
+
+        [Route("/campaign/{LandingPageSlug}")]
+        public async Task<IActionResult> ShowCampaignLandingPage(string LandingPageSlug)
+        {
+            Dictionary<string, string> QueryParams = new Dictionary<string, string>();
+            string preview = HttpContext.Request.Query["preview"].ToString();
+            if (preview != null && !string.IsNullOrEmpty(preview))
+                QueryParams.Add("preview", preview);
+
+            var butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
+            PageResponse<CampaignLandingPage> LandingPage = butterClient.RetrievePage<CampaignLandingPage>("*", LandingPageSlug, QueryParams);
+
+            if (LandingPage == null)
+                return NotFound();
+
+            var CampaignLandingPageViewModel = new CampaignLandingPageViewModel{
+                HeroTitle = LandingPage.Data.Fields.hero_title,
+                HeroSubheader1 = LandingPage.Data.Fields.hero_subheader_1,
+                HeroSubheader2 = LandingPage.Data.Fields.hero_subheader_2,
+                HeroSubheader3 = LandingPage.Data.Fields.hero_subheader_3,
+                IsExpressSignUp = true
+            };
+
+            return View("CampaignLandingPage", CampaignLandingPageViewModel);
+        }
+
+        public class CampaignLandingPage
+        {
+            public string hero_title { get; set; }
+            public string hero_subheader_1 { get; set; }
+            public string hero_subheader_2 { get; set; }
+            public string hero_subheader_3 { get; set; }
         }
     }
 }
