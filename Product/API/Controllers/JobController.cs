@@ -221,8 +221,17 @@ namespace UpDiddyApi.Controllers
         {
             // TODO JAB set properties and use jobQuery
             JobQueryDto jobQuery = new JobQueryDto();
-           // jobQuery.Skill = "javascript";
-           // jobQuery.DatePublished = "past_24_hours";
+            // jobQuery.Skill = "javascript";
+            // jobQuery.DatePublished = "past_24_hours";
+          //  jobQuery.City = "Hanover";
+            jobQuery.Province = "MD";
+            //jobQuery.Industry = "Jim's test industry";
+            //jobQuery.SearchRadius = 30;
+
+            // jobQuery.PostalCode = "21286";
+            jobQuery.PageNum = 1;
+            jobQuery.PageSize = 100;
+
             JobSearchResultDto rVal = _cloudTalent.Search(jobQuery);
 
             return Ok(rVal);

@@ -153,10 +153,32 @@ namespace UpDiddyApi.Models
         public string ThirdPartyApplicationUrl { get; set; }
 
         /****************  job posting geographical information  ****************************/
+
         /// <summary>
-        /// free format location text e.g 7312 Parkway Drive Towson MD 21204
+        /// Country of job posting 
         /// </summary>
-        public string Location { get; set; } 
+        public string Country { get; set; }
+  
+        /// <summary>
+        /// name of the city of job posting 
+        /// </summary>
+        public string City { get; set; }
+        /// <summary>
+        /// state or provience of job posting 
+        /// </summary>
+
+        public string Province  { get; set; }
+
+        /// <summary>
+        /// postal code of job posting 
+        /// </summary>
+        public string PostalCode { get; set; }
+
+        /// <summary>
+        /// street address of posting 
+        /// </summary>
+        public string StreetAddress { get; set; }
+
 
     }
 }

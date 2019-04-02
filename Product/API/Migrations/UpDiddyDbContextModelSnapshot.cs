@@ -1214,6 +1214,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<DateTime>("ApplicationDeadlineUTC");
 
+                    b.Property<string>("City");
+
                     b.Property<string>("CloudTalentIndexInfo");
 
                     b.Property<int>("CloudTalentIndexStatus");
@@ -1225,6 +1227,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<decimal>("Compensation");
 
                     b.Property<int?>("CompensationTypeId");
+
+                    b.Property<string>("Country");
 
                     b.Property<DateTime>("CreateDate");
 
@@ -1252,17 +1256,21 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("JobStatus");
 
-                    b.Property<string>("Location");
-
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("PostalCode");
 
                     b.Property<DateTime>("PostingDateUTC");
 
                     b.Property<DateTime>("PostingExpirationDateUTC");
 
+                    b.Property<string>("Province");
+
                     b.Property<int?>("SecurityClearanceId");
+
+                    b.Property<string>("StreetAddress");
 
                     b.Property<int?>("SubscriberId");
 

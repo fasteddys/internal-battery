@@ -65,6 +65,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         }
 
+        public static string  GetJobPostingLocation(JobPosting jobPosting)
+        {
+            return jobPosting.StreetAddress + " " + jobPosting.City + " " + jobPosting.Province + " " + jobPosting.PostalCode;
+        }
         public static List<JobPostingSkill> GetPostingSkills(UpDiddyDbContext db, JobPosting jobPosting)
         {
             return db.JobPostingSkill

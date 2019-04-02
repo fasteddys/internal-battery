@@ -46,7 +46,15 @@ namespace UpDiddyLib.Dto
         public CompensationTypeDto CompensationType { get; set; }
         public Boolean ThirdPartyApply { get; set; }
         public string ThirdPartyApplicationUrl { get; set; }
-        public string Location { get; set; }
+        public string Country { get; set; }
+ 
+        public string City { get; set; }
+       
+        public string Province { get; set; }
+ 
+        public string PostalCode { get; set; }
+ 
+        public string StreetAddress { get; set; }
         public ExperienceLevelDto ExperienceLevel { get; set; }
 
         public EducationLevelDto EducationLevel { get; set; }

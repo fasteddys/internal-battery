@@ -7,10 +7,51 @@ namespace UpDiddyLib.Dto
     public class JobQueryDto
     {
 
+        #region Pagination 
+
+        /// <summary>
+        /// number of jobs to return
+        /// </summary>
+        public int PageSize { get; set; }
+        /// <summary>
+        /// page number of jobs 
+        /// </summary>
+        /// /// 
+        public int PageNum { get; set; }
+        
+        /// <summary>
+        /// number of pages 
+        /// </summary>
+        public int NumPages { get; set; }
+
+        #endregion
+
+        #region Search Data
         /// <summary>
         /// Free format location string e.g 7312 parkway drive hanover md  OR 21204 , etc.  
         /// </summary>
         public string Location { get; set; }
+
+        /// <summary>
+        /// name of the city of job posting 
+        /// </summary>
+        public string City { get; set; }
+        /// <summary>
+        /// state or provience of job posting 
+        /// </summary>
+
+        public string Province { get; set; }
+
+        /// <summary>
+        /// postal code of job posting 
+        /// </summary>
+        public string PostalCode { get; set; }
+
+        /// <summary>
+        /// street address of posting 
+        /// </summary>
+        public string StreetAddress { get; set; }
+
         /// <summary>
         /// List of keywords in posting e.g. skills, job description, commpany name etc.c 
         /// </summary>
@@ -23,18 +64,7 @@ namespace UpDiddyLib.Dto
         /// specific country 
         /// </summary>
         public string Country { get; set; }
-        /// <summary>
-        ///  specific state 
-        /// </summary>
-        public string State { get; set; }
-        /// <summary>
-        /// specific city 
-        /// </summary>
-        public string City { get; set; }
-        /// <summary>
-        /// specific street address 
-        /// </summary>
-        public string StreetAddress { get; set; }
+  
         /// <summary>
         /// specific industry name 
         /// </summary>
@@ -52,7 +82,23 @@ namespace UpDiddyLib.Dto
         /// <summary>
         ///  radius in miles from location
         /// </summary>
-        public int DistanceInMiles { get; set; }
- 
+        public int SearchRadius { get; set; }
+        /// <summary>
+        /// employment type 
+        /// </summary>
+        public string EmploymentType { get; set; }
+        /// <summary>
+        /// experience level 
+        /// </summary>
+        public string ExperienceLevel { get; set; }
+        /// <summary>
+        /// /education level 
+        /// </summary>
+        public string EducationLevel{ get; set; }
+
+
+
+
+        #endregion
     }
 }

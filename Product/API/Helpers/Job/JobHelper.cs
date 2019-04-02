@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using AutoMapper;
 using UpDiddyApi.ApplicationCore.Services;
 using System.Net;
+using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace UpDiddyApi.Helpers.Job
 {
@@ -22,167 +24,6 @@ namespace UpDiddyApi.Helpers.Job
     public class JobHelper
     {
 
-        #region Job Urls
-        
-        public static string MapFacetToUrl(JobQueryDto query, string facetName, string facetValue)
-        {
-            string rVal = "Unknown Facet!";
-            switch ( facetName.ToLower() )
-            {
-                case "jobcategory":
-                    rVal = MapJobCategoryFacetToUrl(facetValue);
-                    break;
-                case "industry":
-                    rVal = MapIndustryFacetToUrl(facetValue);
-                    break;
-                case "skills":
-                    rVal = MapSkillsFacetToUrl(facetValue);
-                    break;
-                case "city":
-                    rVal = MapCityFacetToUrl(facetValue);
-                    break;
-                case "date_published":
-                    rVal = MapDatePublishedFacetToUrl(facetValue);
-                    break;
-                case "employmenttype":
-                    rVal = MapEmploymentTypeFacetToUrl(facetValue);
-                    break;
-                case "experiencelevel":
-                    rVal = MapEmploymentTypeFacetToUrl(facetValue);
-                    break;
-
-                case "educationlevel":
-                    rVal = MapEducationLevelFacetToUrl(facetValue);
-                    break;
-                case "admin_1":
-                    rVal = MapStateFacetToUrl(facetValue);
-                    break;
-                case "company_display_name":
-                    rVal = MapCompanyFacetToUrl(facetValue);
-                    break;
-                default:
-                    break;
-
-            }
-
-            return rVal;
-        }
-
-
-        public static string MapEducationLevelFacetToUrl(string facetInfo)
-        {
-            string rVal = string.Empty;
-            string[] info = facetInfo.Split(',');
-
-            // only supporting US for now
-            rVal = $"/browse-jobs?education-level={facetQueryParam(facetInfo)}";
-
-            return rVal;
-        }
-
-
-        public static string MapExperienceLevelFacetToUrl(string facetInfo)
-        {
-            string rVal = string.Empty;
-            string[] info = facetInfo.Split(',');
-
-            // only supporting US for now
-            rVal = $"/browse-jobs?experience-level={facetQueryParam(facetInfo)}";
-
-            return rVal;
-        }
-
-
-        public static string MapEmploymentTypeFacetToUrl(string facetInfo)
-        {
-            string rVal = string.Empty;
-            string[] info = facetInfo.Split(',');
-
-            // only supporting US for now
-            rVal = $"/browse-jobs?employment-type={facetQueryParam(facetInfo)}";
-
-            return rVal;
-        }
-
-
-        public static string MapJobCategoryFacetToUrl(string facetInfo)
-        {
-            string rVal = string.Empty;
-
-
-            // only supporting US for now
-            rVal = $"/browse-jobs-industry/all/{facetQueryParam(facetInfo)}";
-
-            return rVal;
-        }
-
-
-
-        public static string MapIndustryFacetToUrl(string facetInfo)
-        {
-            string rVal = string.Empty;
- 
-
-            // only supporting US for now
-            rVal = $"/browse-jobs-industry/{facetQueryParam(facetInfo)}";
-
-            return rVal;
-        }
-
-
-        public static string MapDatePublishedFacetToUrl(string facetInfo)
-        {
-            string rVal = string.Empty;
-            // only supporting US for now
-            rVal = $"/browse-jobs?date-published={facetQueryParam(facetInfo)}";
-
-            return rVal;
-        }
-
-
-
-        public static string MapSkillsFacetToUrl(string facetInfo)
-        {
-            string rVal = string.Empty;            
-           
-            rVal = $"/browse-jobs-skills/{facetQueryParam(facetInfo)}";
-            return rVal;
-        }
-
-
-
-        public static string MapCityFacetToUrl(string facetInfo)
-        {
-            string rVal = string.Empty;
-            string[] info = facetInfo.Split(',');
-
-            // only supporting US for now
-            rVal = $"/browse-jobs-location/US/{facetQueryParam(info[1])}/{facetQueryParam(info[0])}";
-
-            return rVal;
-        }
-
-
-        public static string MapStateFacetToUrl(string facetInfo)
-        {
-            string rVal = string.Empty;
-            // only supporting US for now
-            rVal = $"/browse-jobs-location/US/{facetQueryParam(facetInfo)}";
-
-            return rVal;
-        }
-
-        public static string MapCompanyFacetToUrl(string facetInfo)
-        {
-            string rVal = string.Empty;
-            // only supporting US for now
-            rVal = $"/browse-jobs?company{facetQueryParam(facetInfo)}";
-
-            return rVal;
-        }
-
-
-        #endregion
 
         #region Cloud talent job -> CC job helpers
 
@@ -201,9 +42,11 @@ namespace UpDiddyApi.Helpers.Job
             rVal.Title = matchingJob.Job.Title;
             rVal.Description = matchingJob.Job.Description;
             rVal.PostingDateUTC =  DateTime.Parse(matchingJob.Job.PostingPublishTime.ToString() );
-
+            // map location that was indexed into google -- do not use a foreach loop since it's sloooooow (might be string concat0
+            if (matchingJob.Job.Addresses != null && matchingJob.Job.Addresses.Count > 0 )
+                rVal.Location = matchingJob.Job.Addresses[0];
+                  
             return rVal;
-
         }
 
 
@@ -214,7 +57,7 @@ namespace UpDiddyApi.Helpers.Job
         /// <param name="searchJobsResponse"></param>
         /// <returns></returns>
         /// TODO JAB finish mapping 
-        public static JobSearchResultDto MapSearchResults(ILogger syslog, IMapper mapper, CloudTalentSolution.SearchJobsResponse searchJobsResponse, JobQueryDto jobQuery)
+        public static JobSearchResultDto MapSearchResults(ILogger syslog, IMapper mapper, IConfiguration configuration, CloudTalentSolution.SearchJobsResponse searchJobsResponse, JobQueryDto jobQuery)
         {
 
             JobSearchResultDto rVal = new JobSearchResultDto();
@@ -226,14 +69,15 @@ namespace UpDiddyApi.Helpers.Job
             }
 
             rVal.JobCount = searchJobsResponse.MatchingJobs.Count;
+            rVal.TotalHits = searchJobsResponse.TotalSize.Value;
+
             foreach (CloudTalentSolution.MatchingJob j in searchJobsResponse.MatchingJobs)
             {
                 try
                 {
-                    JobViewDto jv = null;                                  
-                    // Automapper is too slow so do the mapping the old fashion way
-                    jv = CreateJobView(j);                                      
-                    // Map custom attributes 
+                    // Automapper is too slow so do the mapping the old fashion way                    
+                    JobViewDto jv = CreateJobView(j);                                      
+                    // Map custom attributes to job view
                     JobHelper.MapCustomJobPostingAttributes(j, jv);
                     rVal.Jobs.Add(jv);
                 }
@@ -242,13 +86,18 @@ namespace UpDiddyApi.Helpers.Job
                     syslog.LogError(e, "JobPostingFactory.MapSearchResults Error mapping job", e, j);
                 }
             }
-            rVal.Facets = JobHelper.MapFacets(jobQuery, searchJobsResponse);
+            // add facets to the search results 
+            rVal.Facets = JobHelper.MapFacets(configuration,jobQuery, searchJobsResponse);
             return rVal;
         }
 
-        static public List<JobQueryFacetDto> MapFacets(JobQueryDto jobQuery, CloudTalentSolution.SearchJobsResponse searchJobsResponse)
+        static public List<JobQueryFacetDto> MapFacets(IConfiguration config, JobQueryDto jobQuery, CloudTalentSolution.SearchJobsResponse searchJobsResponse)
         {
             List<JobQueryFacetDto> rVal = new List<JobQueryFacetDto>();
+
+            string TopLevelDomain = config["CloudTalent:TopLevelDomain"].ToString();
+            string IndustryUrl = JobUrlHelper.GetDefaultIndustryUrl(jobQuery);
+            string LocationtUrl = JobUrlHelper.GetDefaultLocationUrl(jobQuery);
 
             // Map simple histogram results 
             foreach (CloudTalentSolution.HistogramResult hr in searchJobsResponse.HistogramResults.SimpleHistogramResults)
@@ -262,7 +111,7 @@ namespace UpDiddyApi.Helpers.Job
                 {
                     JobQueryFacetItemDto facetItem = new JobQueryFacetItemDto()
                     {          
-                        Url = MapFacetToUrl(jobQuery,facet.Name, hrValue.Key),
+                        Url = JobUrlHelper.MapFacetToUrl(jobQuery,facet.Name, hrValue.Key,IndustryUrl,LocationtUrl, TopLevelDomain),
                         Count = hrValue.Value.Value,
                         Label = hrValue.Key
 
@@ -272,8 +121,9 @@ namespace UpDiddyApi.Helpers.Job
                 rVal.Add(facet);
 
             }
+
             // map custom facets  
-            // Note: currently not using nor supporting custom long facet values
+            // Note: currently not using nor supporting cloud talent custom long facet values
             foreach (CloudTalentSolution.CustomAttributeHistogramResult hr in searchJobsResponse.HistogramResults.CustomAttributeHistogramResults)
             {
                 JobQueryFacetDto facet = new JobQueryFacetDto()
@@ -289,7 +139,7 @@ namespace UpDiddyApi.Helpers.Job
 
                         JobQueryFacetItemDto facetItem = new JobQueryFacetItemDto()
                         {
-                            Url = MapFacetToUrl(jobQuery,facet.Name, facetInfo.Key),
+                            Url = JobUrlHelper.MapFacetToUrl(jobQuery,facet.Name, facetInfo.Key,IndustryUrl,LocationtUrl,TopLevelDomain),
                             Count = facetInfo.Value.Value,
                             Label = facetInfo.Key
 
@@ -356,6 +206,16 @@ namespace UpDiddyApi.Helpers.Job
                 foreach (string skill in matchingJob.Job.CustomAttributes["Skills"].StringValues)
                     jobViewDto.Skills.Add(skill);
             }
+            // map country
+            jobViewDto.Country = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "Country");
+            // map province 
+            jobViewDto.Province = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "Province");
+            // map city
+            jobViewDto.City = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "City");
+            // map postal code 
+            jobViewDto.PostalCode = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "PostalCode");
+            // map street address 
+            jobViewDto.StreetAddress = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "StreetAddress");
         }
 
 
@@ -389,7 +249,9 @@ namespace UpDiddyApi.Helpers.Job
                 PostingExpireTime = ExpireTimestamp,
                 Addresses = new List<string>()
                     {
-                       jobPosting.Location
+
+                       JobPostingFactory.GetJobPostingLocation(jobPosting)
+
                     }
             };
 
@@ -478,6 +340,9 @@ namespace UpDiddyApi.Helpers.Job
 
         #region Helper functions 
 
+
+
+
         static private long MapCustomLongAttribute(IDictionary<string, CloudTalentSolution.CustomAttribute> attributes, string attributeName)
         {
             long rVal = 0;
@@ -506,16 +371,6 @@ namespace UpDiddyApi.Helpers.Job
         }
 
 
-        /// <summary>
-        ///  UrlEncode facet values 
-        /// </summary>
-        /// <param name="facetInfo"></param>
-        /// <returns></returns>
-        static private string facetQueryParam(string facetInfo)
-        {
-            return WebUtility.UrlEncode(facetInfo.Trim().ToLower());
-
-        }
 
         /// <summary>
         ///  Create list of custom attributes for cloud talent job posting 
@@ -668,7 +523,41 @@ namespace UpDiddyApi.Helpers.Job
                 };
                 rVal.Add("Skills", Skills);
             }
-
+            // Index Country 
+            CloudTalentSolution.CustomAttribute Country = new CloudTalentSolution.CustomAttribute()
+            {
+                Filterable = true,
+                StringValues = new List<string>() { jobPosting.Country }
+            };
+            rVal.Add("Country", Country);
+            // Index Province 
+            CloudTalentSolution.CustomAttribute Province = new CloudTalentSolution.CustomAttribute()
+            {
+                Filterable = true,
+                StringValues = new List<string>() { jobPosting.Province }
+            };
+            rVal.Add("Province", Province);
+            // Index Postal code  
+            CloudTalentSolution.CustomAttribute PostalCode = new CloudTalentSolution.CustomAttribute()
+            {
+                Filterable = true,
+                StringValues = new List<string>() { jobPosting.PostalCode }
+            };
+            rVal.Add("PostalCode", PostalCode);
+            // Index City
+            CloudTalentSolution.CustomAttribute City = new CloudTalentSolution.CustomAttribute()
+            {
+                Filterable = true,
+                StringValues = new List<string>() { jobPosting.City }
+            };
+            rVal.Add("City", City);
+            // Index street address 
+            CloudTalentSolution.CustomAttribute StreetAddress = new CloudTalentSolution.CustomAttribute()
+            {
+                Filterable = true,
+                StringValues = new List<string>() { jobPosting.StreetAddress }
+            };
+            rVal.Add("StreetAddress", StreetAddress);
             return rVal; 
         }
 

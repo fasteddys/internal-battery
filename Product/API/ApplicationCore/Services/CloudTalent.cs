@@ -258,7 +258,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 addressInfo = jobQuery.Location;           
             else
             {
-                addressInfo = jobQuery.StreetAddress + " " + jobQuery.City + " " + jobQuery.State;
+                addressInfo = jobQuery.StreetAddress + " " + jobQuery.City + " " + jobQuery.Province + " " + jobQuery.Country;
                 addressInfo = addressInfo.Trim();
 
             }
@@ -268,7 +268,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 CloudTalentSolution.LocationFilter locationFilter = new CloudTalentSolution.LocationFilter()
                 {                    
                     Address = addressInfo,
-                    DistanceInMiles = jobQuery.DistanceInMiles
+                    DistanceInMiles = jobQuery.SearchRadius
 
                 };
 
@@ -309,13 +309,44 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             // add job category 
-            if (string.IsNullOrEmpty(jobQuery.Industry) == false)
+            if (string.IsNullOrEmpty(jobQuery.JobCategory) == false)
             {
                 if (attributeFilters.Length > 0)
                     attributeFilters += " AND ";
 
                 attributeFilters = "LOWER(JobCategory) = \"" + jobQuery.JobCategory.Trim().ToLower() + "\"";
             }
+
+            // add education level 
+            if (string.IsNullOrEmpty(jobQuery.EducationLevel) == false)
+            {
+                if (attributeFilters.Length > 0)
+                    attributeFilters += " AND ";
+
+                attributeFilters = "LOWER(EducationLevel) = \"" + jobQuery.EducationLevel.Trim().ToLower() + "\"";
+            }
+
+            // add employment type 
+            if (string.IsNullOrEmpty(jobQuery.EmploymentType) == false)
+            {
+                if (attributeFilters.Length > 0)
+                    attributeFilters += " AND ";
+
+                attributeFilters = "LOWER(EmploymentType) = \"" + jobQuery.EmploymentType.Trim().ToLower() + "\"";
+
+            }
+
+            // add employment type 
+            if (string.IsNullOrEmpty(jobQuery.ExperienceLevel) == false)
+            {
+                if (attributeFilters.Length > 0)
+                    attributeFilters += " AND ";
+
+                attributeFilters = "LOWER(ExperienceLevel) = \"" + jobQuery.ExperienceLevel.Trim().ToLower() + "\"";
+            }
+ 
+
+
 
 
             // Add Custom Attribute Filter 
@@ -376,8 +407,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 RequestMetadata = requestMetadata,
                 JobQuery = cloudTalentJobQuery,
                 SearchMode = "JOB_SEARCH",
-                HistogramFacets = histogramFacets,
-                PageSize = 100
+                HistogramFacets = histogramFacets, 
+                PageSize = jobQuery.PageSize,
+                Offset = jobQuery.PageSize * (jobQuery.PageNum - 1)
             };
 
             return searchJobRequest;
@@ -385,28 +417,41 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-
+        /// <summary>
+        /// Search the cloud talent solution for jobs 
+        /// </summary>
+        /// <param name="jobQuery"></param>
+        /// <returns></returns>
         public JobSearchResultDto Search(JobQueryDto jobQuery)
-        {
-
-            // Build search request 
+        {            
+            // map jobquery to cloud talent search request 
+            DateTime startSearch = DateTime.Now;
             CloudTalentSolution.SearchJobsRequest searchJobRequest = CreateJobSearchRequest(jobQuery);
+            
+            // search the cloud talent 
             CloudTalentSolution.SearchJobsResponse searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
-            // TODO JAB remove timing metrics 
-            DateTime start = DateTime.Now;
-            JobSearchResultDto rval =  JobHelper.MapSearchResults(_syslog, _mapper, searchJobsResponse, jobQuery);
-            DateTime stop = DateTime.Now;
-            TimeSpan interval = stop - start;      
+
+            // map cloud talent results to cc search results 
+            DateTime startMap= DateTime.Now;
+            JobSearchResultDto rval =  JobHelper.MapSearchResults(_syslog, _mapper,_configuration, searchJobsResponse, jobQuery);
+            DateTime stopMap = DateTime.Now;
+
+            // calculate search timing metrics 
+            TimeSpan intervalTotalSearch = stopMap - startSearch;
+            TimeSpan intervalSearchTime = startMap - startSearch;
+            TimeSpan intervalMapTime = stopMap - startMap;
+
+            // assign search metrics to search results 
+            rval.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
+            rval.SearchQueryInTicks = intervalSearchTime.Ticks;
+            rval.SearchMappingTimeInTicks = intervalMapTime.Ticks;
             return rval;
         }
 
 
-
-
-
         #endregion
 
-        #region Helper function
+        #region Helper functions
 
         static private CloudTalentSolution.TimestampRange GetPublishTimeRange( string timeRange )
         {
@@ -429,8 +474,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     break;
                 default:
                     rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddDays(-365));
-                    break;
-                    
+                    break;                    
             }
             return rVal;
         }
