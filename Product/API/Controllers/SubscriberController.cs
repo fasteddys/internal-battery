@@ -83,6 +83,11 @@ namespace UpDiddyApi.Controllers
             {
                 SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
 
+                // This is to cover the weird state where a user exists in B2C but doesn't, or is logically deleted in our database.
+                // Eventually, we should handle the logic for creating a subscriber if they don't exist in the API, not the webapp.
+                if (subscriberDto == null)
+                    return Ok(subscriberDto);
+
                 // track the subscriber action if performed by someone other than the user who owns the file
                 if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
                     new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
