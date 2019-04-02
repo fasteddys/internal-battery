@@ -466,6 +466,7 @@ button {
 @media (min-width: 0px) {
     #api[data-name=Unified] .create > p {
         font-size: 1.2rem;
+        line-height: 2.5rem;
     }
 }
 @media (min-width: 992px) {
@@ -707,7 +708,8 @@ label[for=extension_AgreeToCareerCircleMarketing_True] {
 }
 
 .create #createAccount {
-    padding: 8px;
+    white-space: nowrap;
+    padding: .5rem 1.5rem;
     background-color: #03264A;
     border-radius: 8px;
     color: white;
