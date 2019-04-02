@@ -708,6 +708,8 @@ label[for=extension_AgreeToCareerCircleMarketing_True] {
 }
 
 .create #createAccount {
+    display: inline-block;
+    line-height: 1.5rem;
     white-space: nowrap;
     padding: .5rem 1.5rem;
     background-color: #03264A;
@@ -718,6 +720,16 @@ label[for=extension_AgreeToCareerCircleMarketing_True] {
     transition: all .2s ease-in-out;
     -o-transition: all .2s ease-in-out;
     -webkit-transition: all .2s ease-in-out;
+    
+}
+
+@media (min-width: 992px){
+    .create #createAccount {
+        line-height: 2rem;
+    }
+    #api[data-name=Unified] #createAccount {
+        margin-left: 1rem;
+    }
 }
 
 .create #createAccount:hover {
@@ -725,9 +737,7 @@ label[for=extension_AgreeToCareerCircleMarketing_True] {
     -webkit-box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
 }
 
-#api[data-name=Unified] #createAccount {
-    margin-left: 1rem;
-}
+
 
 #api[data-name=Unified] .create{
     padding-bottom: 1rem;
