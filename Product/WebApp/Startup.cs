@@ -94,7 +94,7 @@ namespace UpDiddy
 
             services.AddCors(o => o.AddPolicy("UnifiedCors", builder =>
             {
-                builder.AllowAnyOrigin()
+                builder.WithOrigins("*")
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
