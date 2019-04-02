@@ -711,12 +711,22 @@ label[for=extension_AgreeToCareerCircleMarketing_True] {
     background-color: #03264A;
     border-radius: 8px;
     color: white;
-    margin-left: 16px;
     box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
     -webkit-box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
+    transition: all .2s ease-in-out;
+    -o-transition: all .2s ease-in-out;
+    -webkit-transition: all .2s ease-in-out;
 }
 
 .create #createAccount:hover {
     box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
     -webkit-box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+}
+
+#api[data-name=Unified] #createAccount {
+    margin-left: 1rem;
+}
+
+#api[data-name=Unified] .create{
+    padding-bottom: 1rem;
 }
