@@ -20,7 +20,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureAPIManagement
         private IConfiguration _config;
         private IDistributedCache _cache;
 
-        private const string TOKEN_CACHE_KEY = "ManagementAPI_TOKEN";
+        private const string TOKEN_CACHE_KEY = "AzureAPIManagementToken";
 
         private string _baseUrl;
         private string _version;
@@ -56,7 +56,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureAPIManagement
         {
             HttpRequestMessage request = new HttpRequestMessage()
             {
-                RequestUri = new Uri(string.Format("{0}/{1}", _baseUrl, apiMethod)),
+                RequestUri = new Uri(string.Format("{0}{1}", _baseUrl, apiMethod)),
                 Method = HttpMethod.Get,
                 Headers =
                 {
@@ -86,7 +86,7 @@ namespace UpDiddyApi.ApplicationCore.Services.AzureAPIManagement
                 var signature = Convert.ToBase64String(hash);
                 var encodedToken = string.Format("SharedAccessSignature uid={0}&ex={1:o}&sn={2}", _identifier, expiry, signature);
                 byte[] encodedTokenBytes = Encoding.UTF8.GetBytes(encodedToken);
-                await _cache.SetAsync(TOKEN_CACHE_KEY, encodedTokenBytes, new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromDays(1)));
+                await _cache.SetAsync(TOKEN_CACHE_KEY, encodedTokenBytes, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromHours(8)));
                 return encodedToken;
             }
         }
