@@ -54,15 +54,21 @@ namespace UpDiddyApi.Helpers
             .ForMember(c => c.contact_guid, opt => opt.MapFrom(src => src.ContactGuid))
             .ReverseMap();
 
-        // mappings that ignore properties in the Dto that don't exist in the model object
-        CreateMap<PromoCode, PromoCodeDto>()
-                .ForMember(x => x.IsValid, opt => opt.Ignore())
-                .ForMember(x => x.ValidationMessage, opt => opt.Ignore())
-                .ForMember(x => x.Discount, opt => opt.Ignore())
-                .ForMember(x => x.FinalCost, opt => opt.Ignore())
-                .ForMember(x => x.PromoCodeRedemptionGuid, opt => opt.Ignore())
-                .ReverseMap();
+            CreateMap<LeadStatus, LeadStatusDto>()
+                .ForMember(ls => ls.Message, opt => opt.MapFrom(src => src.Description))
+                .ForMember(ls => ls.Severity, opt => opt.MapFrom(src => src.Severity.ToString()))
+                .ForMember(ls => ls.LeadStatusId, opt => opt.MapFrom(src => src.LeadStatusId))
+                .ForMember(ls => ls.Name, opt => opt.MapFrom(src => src.Name));
 
+            // mappings that ignore properties in the Dto that don't exist in the model object
+            CreateMap<PromoCode, PromoCodeDto>()
+                    .ForMember(x => x.IsValid, opt => opt.Ignore())
+                    .ForMember(x => x.ValidationMessage, opt => opt.Ignore())
+                    .ForMember(x => x.Discount, opt => opt.Ignore())
+                    .ForMember(x => x.FinalCost, opt => opt.Ignore())
+                    .ForMember(x => x.PromoCodeRedemptionGuid, opt => opt.Ignore())
+                    .ReverseMap();
+            
             // mappings with related entities
             CreateMap<Course, CourseDto>()
                 .ForMember(c => c.CourseVariants, opt => opt.MapFrom(src => src.CourseVariants))

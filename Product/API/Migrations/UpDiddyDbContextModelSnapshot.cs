@@ -1329,7 +1329,9 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.PartnerContact", b =>
                 {
-                    b.Property<int>("PartnerId");
+                    b.Property<int>("PartnerContactId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("ContactId");
 
@@ -1349,13 +1351,81 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("PartnerContactGuid");
 
+                    b.Property<int>("PartnerId");
+
                     b.Property<string>("SourceSystemIdentifier");
 
-                    b.HasKey("PartnerId", "ContactId");
+                    b.HasKey("PartnerContactId");
 
                     b.HasIndex("ContactId");
 
+                    b.HasIndex("PartnerId");
+
                     b.ToTable("PartnerContact");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerContactFile", b =>
+                {
+                    b.Property<int>("PartnerContactFileId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Base64EncodedData")
+                        .IsRequired()
+                        .IsUnicode(false);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<bool>("IsBillable");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired();
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<Guid>("PartnerContactFileGuid");
+
+                    b.Property<int>("PartnerContactId");
+
+                    b.HasKey("PartnerContactFileId");
+
+                    b.HasIndex("PartnerContactId");
+
+                    b.ToTable("PartnerContactFile");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerContactFileLeadStatus", b =>
+                {
+                    b.Property<int>("PartnerContactFileId");
+
+                    b.Property<int>("LeadStatusId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<Guid?>("PartnerContactFileLeadStatusGuid");
+
+                    b.HasKey("PartnerContactFileId", "LeadStatusId");
+
+                    b.HasIndex("LeadStatusId");
+
+                    b.ToTable("PartnerContactFileLeadStatus");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.PartnerContactLeadStatus", b =>
@@ -1374,17 +1444,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
-                    b.Property<int?>("PartnerContactContactId");
-
                     b.Property<Guid?>("PartnerContactLeadStatusGuid");
-
-                    b.Property<int?>("PartnerContactPartnerId");
 
                     b.HasKey("PartnerContactId", "LeadStatusId");
 
                     b.HasIndex("LeadStatusId");
-
-                    b.HasIndex("PartnerContactPartnerId", "PartnerContactContactId");
 
                     b.ToTable("PartnerContactLeadStatus");
                 });
@@ -2678,6 +2742,27 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerContactFile", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.PartnerContact", "PartnerContact")
+                        .WithMany()
+                        .HasForeignKey("PartnerContactId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerContactFileLeadStatus", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.LeadStatus", "LeadStatus")
+                        .WithMany()
+                        .HasForeignKey("LeadStatusId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.PartnerContactFile", "PartnerContactFile")
+                        .WithMany("PartnerContactFileLeadStatuses")
+                        .HasForeignKey("PartnerContactFileId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.PartnerContactLeadStatus", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.LeadStatus", "LeadStatus")
@@ -2686,8 +2771,9 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("UpDiddyApi.Models.PartnerContact", "PartnerContact")
-                        .WithMany()
-                        .HasForeignKey("PartnerContactPartnerId", "PartnerContactContactId");
+                        .WithMany("PartnerContactLeadStatuses")
+                        .HasForeignKey("PartnerContactId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.PartnerReferrer", b =>

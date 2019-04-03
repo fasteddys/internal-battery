@@ -131,7 +131,7 @@ namespace UpDiddyApi.Migrations
                 values: new object[,]
                 {
                     { 1, new Guid("8CE6ECDE-E998-462E-8E46-81FFCE91374F"), "System Error", "An internal error has occurred; please contact CareerCircle support", "Unknown", 0, new DateTime(2019, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000") },
-                    { 2, new Guid("766D6AC0-AC4F-4387-8B7D-2F9B95AAB0BB"), "Accepted", "Lead has been processed and accepted", "Accepted", 0, new DateTime(2019, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000") },
+                    { 2, new Guid("766D6AC0-AC4F-4387-8B7D-2F9B95AAB0BB"), "Inserted", "Lead has been processed successfully and inserted", "Information", 0, new DateTime(2019, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000") },
                     { 3, new Guid("F5FBF3AA-8EF3-4A9A-9C86-91C41CCB0F78"), "Duplicate", "Lead has been identified as a duplicate", "Rejected", 0, new DateTime(2019, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000") },
                     { 4, new Guid("155DDA40-76B4-4B56-98C1-75C7E4D682C3"), "Test", "Lead has been identified as a test lead", "Warning", 0, new DateTime(2019, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000") },
                     { 5, new Guid("52E809BB-3F07-4801-8D62-72C43F628B07"), "Required Fields", "Lead is missing required fields", "Rejected", 0, new DateTime(2019, 4, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000") },

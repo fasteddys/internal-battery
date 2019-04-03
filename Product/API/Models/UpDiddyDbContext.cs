@@ -135,6 +135,9 @@ namespace UpDiddyApi.Models
         public DbSet<PartnerType> PartnerType { get; set; }
         public DbSet<LeadStatus> LeadStatus { get; set; }
         public DbSet<PartnerContactLeadStatus> PartnerContactLeadStatus { get; set; }
+        public DbSet<PartnerContactFile> PartnerContactFile { get; set; }
+        public DbSet<PartnerContactFileLeadStatus> PartnerContactFileLeadStatus { get; set; }
+
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
@@ -148,6 +151,13 @@ namespace UpDiddyApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<PartnerContactFileLeadStatus>()
+                .HasKey(pcfls => new { pcfls.PartnerContactFileId, pcfls.LeadStatusId });
+
+            modelBuilder.Entity<PartnerContactFile>()
+                .Property<string>(pcf => pcf.Base64EncodedData)
+                .IsUnicode(false);
+
             modelBuilder.Entity<PartnerContactLeadStatus>()
                 .HasKey(pcls => new { pcls.PartnerContactId, pcls.LeadStatusId });
 
@@ -184,10 +194,7 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Campaign>()
                 .HasIndex(pc => pc.Name)
                 .IsUnique();
-
-            modelBuilder.Entity<PartnerContact>()
-                .HasKey(pc => new { pc.PartnerId, pc.ContactId });
-
+            
             modelBuilder.Entity<Contact>()
                 .HasMany<PartnerContact>(c => c.PartnerContacts);
 

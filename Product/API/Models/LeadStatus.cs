@@ -17,7 +17,7 @@ namespace UpDiddyApi.Models
     public enum Severity
     {
         Unknown = 0,
-        Accepted = 1,
+        Information = 1,
         Warning = 2,
         Rejected = 3
     }
