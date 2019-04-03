@@ -83,6 +83,9 @@ namespace UpDiddyApi.Controllers
             {
                 SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
 
+                if (subscriberDto == null)
+                    return Ok(subscriberDto);
+
                 // track the subscriber action if performed by someone other than the user who owns the file
                 if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
                     new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);

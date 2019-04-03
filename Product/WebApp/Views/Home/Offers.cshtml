@@ -50,11 +50,18 @@
 
                         </div>
                     }
-                    @Html.Partial("Components/Bands/_OfferListingBand", new OfferListingViewModel
+                    @if (Model.Offers != null && Model.Offers.Count > 0)
                     {
-                        Offers = Model.Offers,
-                        IsEligible = Model.UserIsEligibleForOffers
-                    })
+                        @Html.Partial("Components/Bands/_OfferListingBand", new OfferListingViewModel
+                        {
+                            Offers = Model.Offers,
+                            IsEligible = Model.UserIsEligibleForOffers
+                        })
+                    }
+                    else
+                    {
+                        <h2>No offers are available at this time.</h2>
+                    }
 
 
                 </div>
