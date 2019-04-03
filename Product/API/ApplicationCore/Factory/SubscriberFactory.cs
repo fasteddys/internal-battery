@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -164,7 +165,13 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
         }
 
-
+        public static bool IsEligibleForOffers(UpDiddyDbContext _db, Guid SubscriberGuid, ILogger _syslog, IMapper _mapper, IIdentity Identity)
+        {
+            SubscriberDto subscriber = GetSubscriber(_db, SubscriberGuid, _syslog, _mapper);
+            if (subscriber == null)
+                return false;
+            return Identity.IsAuthenticated && subscriber.IsVerified && subscriber.Files.Count > 0;
+        }
 
 
 

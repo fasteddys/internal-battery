@@ -20,6 +20,24 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
+        [Route("/api/[controller]/offer-action-summary")]
+        public async Task<IActionResult> OfferActionSummary()
+        {
+            return Ok(
+                _db.SubscriberOfferActions
+                .GroupBy(rca => new { rca.Action, rca.OfferName, rca.OfferCode })
+                .Select(g => new OfferActionSummaryDto()
+                {
+                    Action = g.Key.Action,
+                    ActionCount = g.Count(),
+                    OfferName = g.Key.OfferName,
+                    OfferCode = g.Key.OfferCode
+                })
+                .OrderByDescending(r => r.ActionCount)
+                .ToList());
+        }
+
+        [HttpGet]
         [Route("/api/[controller]/recruiter-action-summary")]
         public async Task<IActionResult> RecruiterActionSummary()
         {

@@ -61,6 +61,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> VerifyEmailAsync(Guid token);
         Task<IList<CampaignDto>> GetCampaignsAsync();
         Task<CampaignDto> GetCampaignAsync(Guid campaignGuid);
+        Task<IList<OfferDto>> GetOffersAsync();
 
         #region TalentPortal
         Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery);
@@ -89,6 +90,7 @@ namespace UpDiddy.Api
         Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync();
         Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync();
         Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync();
+        Task<List<OfferActionSummaryDto>> GetOfferActionSummaryAsync();
         #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);

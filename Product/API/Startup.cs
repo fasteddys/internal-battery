@@ -33,6 +33,7 @@ using Microsoft.Extensions.Logging;
 using Serilog.Events;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Services;
+using UpDiddyApi.ApplicationCore.Services.AzureAPIManagement;
 using System.Collections.Generic;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using System.Security.Claims;
@@ -40,6 +41,7 @@ using UpDiddyApi.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using UpDiddyApi.Helpers.SignalR;
+using UpDiddyApi.Authorization.APIGateway;
 
 namespace UpDiddyApi
 {
@@ -110,7 +112,8 @@ namespace UpDiddyApi
                 {
                     OnAuthenticationFailed = AuthenticationFailed
                 };
-            });
+            })
+            .AddAPIGatewayAuth(options => { });
 
             services.AddAuthorization(options =>
             {
@@ -209,8 +212,12 @@ namespace UpDiddyApi
             services.AddHttpClient<ISovrenAPI, Sovren>();
             services.AddTransient<ICloudStorage, AzureBlobStorage>();
 
+            services.AddTransient<IAPIGateway, ManagementAPI>();
+            services.AddHttpClient<IAPIGateway, ManagementAPI>();
+
             services.AddTransient<IB2CGraph, B2CGraphClient>();
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
+
 
             // Configure SnapshotCollector from application settings
             // TODO Uncomment test 

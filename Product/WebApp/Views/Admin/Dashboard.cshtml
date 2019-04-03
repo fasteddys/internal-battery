@@ -81,11 +81,11 @@
                             <tbody>
                                 @foreach (var r in ViewBag.recruiterActionSummary)
                                 {
-                                <tr>
-                                    <td>@r.RecruiterEmail</td>
-                                    <td>@r.Action</td>
-                                    <td class="text-right">@r.ActionCount</td>
-                                </tr>
+                                    <tr>
+                                        <td>@r.RecruiterEmail</td>
+                                        <td>@r.Action</td>
+                                        <td class="text-right">@r.ActionCount</td>
+                                    </tr>
                                 }
                             </tbody>
                         </table>
@@ -107,11 +107,40 @@
                             <tbody>
                                 @foreach (var r in ViewBag.subscriberActionSummary)
                                 {
+                                    <tr>
+                                        <td>@r.SubscriberEmail</td>
+                                        <td>@r.Action</td>
+                                        <td class="text-right">@r.ActionCount</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @* offer action tracking *@
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                <div class="card shadow mb-3">
+                    <div class="card-header">Offer Action Summary</div>
+                    <div class="card-body p-0">
+                        <table class="table table-striped mb-0">
+                            <thead>
                                 <tr>
-                                    <td>@r.SubscriberEmail</td>
-                                    <td>@r.Action</td>
-                                    <td class="text-right">@r.ActionCount</td>
+                                    <th scope="col">Offer</th>
+                                    <th scope="col">Code</th>
+                                    <th class="text-right" scope="col">Total</th>
                                 </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in ViewBag.offerActionSummary)
+                                {
+                                    <tr>
+                                        <td>@r.OfferName</td>
+                                        <td>@r.OfferCode</td>
+                                        <td class="text-right">@r.ActionCount</td>
+                                    </tr>
                                 }
                             </tbody>
                         </table>

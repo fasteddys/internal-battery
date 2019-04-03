@@ -1,0 +1,65 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels.ButterCMS
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model CampaignLandingPageViewModel;
+<div id="CampaignContainer" class="wozu-signup">
+    <div class="cc-campaign-sign-up-band row" style="background-image: url('@Model.hero_image');">
+        <div class="col-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-7 col-lg-8 cc-campaign-sign-up-band-left-container  d-flex align-items-center">
+                        <div class="row">
+                            <div class="col no-padding">
+                                <div class="row">
+                                    <div class="col-12 no-padding">
+                                        <div class="row">
+                                            
+                                            <div class="col-12 hero-header font-bold">
+                                                <h1>@Model.hero_title</h1>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="d-flex flex-column bd-highlight mb-3 mt-3">
+                                                    @Html.Raw(Model.hero_content)
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-5 col-lg-4 cc-campaign-sign-up-band-right-container no-padding">
+                        <div class="cc-campaign-sign-up-container">
+                            <div class="row">
+                                <div class="col-12 no-padding sub-header font-bold">
+                                    Sign Up Today!
+                                </div>
+                                <div class="col-12 no-padding mini-header">
+                                    Create an account to get started
+                                </div>
+                                <div class="col-12 no-padding">
+                                    @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel {IsExpressSignUp = Model.IsExpressSignUp })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
+    {
+        Header = Model.content_band_header,
+        Elements = new List<string>()
+        {
+            @"<div class='row'>
+                <div class='col-lg-8 offset-lg-2'>" +
+                    Model.content_band_text +
+                @"</div>
+            </div>"
+        }
+    });
+</div>
