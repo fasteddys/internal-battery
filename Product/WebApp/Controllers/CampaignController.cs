@@ -272,36 +272,37 @@ namespace UpDiddy.Controllers
         }
 
         [Route("/campaign/{LandingPageSlug}")]
-        public async Task<IActionResult> ShowCampaignLandingPage(string LandingPageSlug)
+        public IActionResult ShowCampaignLandingPage(string LandingPageSlug)
         {
+            // Grab all query params from the request and put them into dictionary that's passed
+            // to ButterCMS call.
             Dictionary<string, string> QueryParams = new Dictionary<string, string>();
-            string preview = HttpContext.Request.Query["preview"].ToString();
-            if (preview != null && !string.IsNullOrEmpty(preview))
-                QueryParams.Add("preview", preview);
+            foreach(string s in HttpContext.Request.Query.Keys)
+            {
+                QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
+            }
 
+            // Create ButterCMS client and call their API to get JSON response of page data values.
             var butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
-            PageResponse<CampaignLandingPage> LandingPage = butterClient.RetrievePage<CampaignLandingPage>("*", LandingPageSlug, QueryParams);
+            PageResponse<CampaignLandingPageViewModel> LandingPage = butterClient.RetrievePage<CampaignLandingPageViewModel>("*", LandingPageSlug, QueryParams);
 
+            // Return 404 if no page data is returned from Butter.
             if (LandingPage == null)
                 return NotFound();
 
-            var CampaignLandingPageViewModel = new CampaignLandingPageViewModel{
-                HeroTitle = LandingPage.Data.Fields.hero_title,
-                HeroSubheader1 = LandingPage.Data.Fields.hero_subheader_1,
-                HeroSubheader2 = LandingPage.Data.Fields.hero_subheader_2,
-                HeroSubheader3 = LandingPage.Data.Fields.hero_subheader_3,
+            // Assemble ViewModel from results returned in Butter GET call.
+            var CampaignLandingPageViewModel = new CampaignLandingPageViewModel
+            {
+                hero_title = LandingPage.Data.Fields.hero_title,
+                hero_subheader_1 = LandingPage.Data.Fields.hero_subheader_1,
+                hero_subheader_2 = LandingPage.Data.Fields.hero_subheader_2,
+                hero_subheader_3 = LandingPage.Data.Fields.hero_subheader_3,
+                content_band_header = LandingPage.Data.Fields.content_band_header,
+                content_band_text = LandingPage.Data.Fields.content_band_text,
                 IsExpressSignUp = true
             };
 
             return View("CampaignLandingPage", CampaignLandingPageViewModel);
-        }
-
-        public class CampaignLandingPage
-        {
-            public string hero_title { get; set; }
-            public string hero_subheader_1 { get; set; }
-            public string hero_subheader_2 { get; set; }
-            public string hero_subheader_3 { get; set; }
         }
     }
 }

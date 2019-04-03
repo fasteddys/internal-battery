@@ -10,9 +10,11 @@ namespace UpDiddy.ViewModels.ButterCMS
 {
     public class CampaignLandingPageViewModel : SignUpViewModel
     {
-        public string HeroTitle { get; set; }
-        public string HeroSubheader1 { get; set; }
-        public string HeroSubheader2 { get; set; }
-        public string HeroSubheader3 { get; set; }
+        public string hero_title { get; set; }
+        public string hero_subheader_1 { get; set; }
+        public string hero_subheader_2 { get; set; }
+        public string hero_subheader_3 { get; set; }
+        public string content_band_header { get; set; }
+        public string content_band_text { get; set; }
     }
 }
