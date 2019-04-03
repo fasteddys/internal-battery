@@ -18,6 +18,9 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.ApplicationCore.Factory;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+using UpDiddyApi.Authorization.APIGateway;
+using System.Security.Claims;
 
 namespace UpDiddyApi.Controllers
 {
@@ -69,16 +72,22 @@ namespace UpDiddyApi.Controllers
         /// <param name="leadRequest"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize(AuthenticationSchemes = APIGatewayDefaults.AuthenticationScheme)]
         public async Task<IActionResult> InsertLeadAsync([FromBody] LeadRequestDto leadRequest)
         {
-            // abort if the lead file dto is ull
+            // abort if the lead file dto is null
             if (leadRequest == null)
                 return StatusCode((int)HttpStatusCode.BadRequest, "Missing or invalid parameters");
+
+            // verify that an apiToken was passed from Azure API
+            string apiToken = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            if (string.IsNullOrWhiteSpace(apiToken))
+                return StatusCode((int)HttpStatusCode.Unauthorized, "No ApiToken provided");
 
             // lookup Partner by the ApiToken provided
             var partner = _db.Partner
                 .Include(p => p.PartnerType)
-                .Where(p => p.ApiToken == leadRequest.ApiToken && p.PartnerType.Name == "Pay Per Lead")
+                .Where(p => p.ApiToken == apiToken && p.PartnerType.Name == "Pay Per Lead")
                 .FirstOrDefault();
 
             // abort immediately if we do not recognize the Partner
@@ -117,6 +126,7 @@ namespace UpDiddyApi.Controllers
         /// <returns></returns>
         [HttpPut]
         [DisableRequestSizeLimit]
+        [Authorize(AuthenticationSchemes = APIGatewayDefaults.AuthenticationScheme)]
         [Route("{leadIdentifier}/file")]
         public async Task<object> AddOrReplaceFileAsync(Guid leadIdentifier, [FromBody] LeadFileDto leadFile)
         {
@@ -124,10 +134,15 @@ namespace UpDiddyApi.Controllers
             if (leadFile == null)
                 return StatusCode((int)HttpStatusCode.BadRequest, "Missing or invalid parameters");
 
+            // verify that an apiToken was passed from Azure API
+            string apiToken = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            if (string.IsNullOrWhiteSpace(apiToken))
+                return StatusCode((int)HttpStatusCode.Unauthorized, "No ApiToken provided");
+
             // lookup Partner by the ApiToken provided
             var partner = _db.Partner
                 .Include(p => p.PartnerType)
-                .Where(p => p.ApiToken == leadFile.ApiToken && p.PartnerType.Name == "Pay Per Lead")
+                .Where(p => p.ApiToken == apiToken && p.PartnerType.Name == "Pay Per Lead")
                 .FirstOrDefault();
 
             // abort if we do not recognize the Partner by their token

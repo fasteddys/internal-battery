@@ -10,8 +10,6 @@ namespace UpDiddyLib.Dto.Marketing
         // todo: revisit data annotations in user story 369
         public bool? IsTest { get; set; }
         public string ExternalLeadIdentifier { get; set; }
-        [Required(ErrorMessage = "ApiToken is required")]
-        public string ApiToken { get; set; }
         [Required(ErrorMessage = "First name is required")]
         [MaxLength(30, ErrorMessage = "First name must not exceed 30 characters")]
         public string FirstName { get; set; }
