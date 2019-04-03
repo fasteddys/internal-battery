@@ -11,6 +11,7 @@ namespace UpDiddy.ViewModels.ButterCMS
     public class CampaignLandingPageViewModel : SignUpViewModel
     {
         public string hero_title { get; set; }
+        public string hero_image { get; set; }
         public string hero_subheader_1 { get; set; }
         public string hero_subheader_2 { get; set; }
         public string hero_subheader_3 { get; set; }

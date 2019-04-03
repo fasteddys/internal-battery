@@ -294,6 +294,7 @@ namespace UpDiddy.Controllers
             var CampaignLandingPageViewModel = new CampaignLandingPageViewModel
             {
                 hero_title = LandingPage.Data.Fields.hero_title,
+                hero_image = LandingPage.Data.Fields.hero_image,
                 hero_subheader_1 = LandingPage.Data.Fields.hero_subheader_1,
                 hero_subheader_2 = LandingPage.Data.Fields.hero_subheader_2,
                 hero_subheader_3 = LandingPage.Data.Fields.hero_subheader_3,
