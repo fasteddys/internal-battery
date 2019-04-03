@@ -34,7 +34,6 @@ namespace UpDiddy.Controllers
         [HttpGet("/Wozu")]
         [HttpGet("/MomProject")]
         [HttpGet("/ClinicalResearchFastrack")]
-        [HttpGet("/itprotv")]
         [HttpGet("/barnett")]
         public IActionResult PartnerLandingPages()
         {
