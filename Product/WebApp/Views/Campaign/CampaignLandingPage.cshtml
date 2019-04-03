@@ -16,14 +16,13 @@
                                 <div class="row">
                                     <div class="col-12 no-padding">
                                         <div class="row">
+                                            
                                             <div class="col-12 hero-header font-bold">
-                                                @Model.hero_title
+                                                <h1>@Model.hero_title</h1>
                                             </div>
                                             <div class="col-12 campaign-bullet-list">
                                                 <div class="d-flex flex-column bd-highlight mb-3 mt-3">
-                                                    <div class="bd-highlight font-bold">@Model.hero_subheader_1</div>
-                                                    <div class="bd-highlight font-bold">@Model.hero_subheader_2</div>
-                                                    <div class="bd-highlight font-bold">@Model.hero_subheader_3</div>
+                                                    @Html.Raw(Model.hero_content)
                                                 </div>
                                             </div>
                                         </div>

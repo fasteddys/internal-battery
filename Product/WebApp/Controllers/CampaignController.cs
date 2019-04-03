@@ -295,9 +295,7 @@ namespace UpDiddy.Controllers
             {
                 hero_title = LandingPage.Data.Fields.hero_title,
                 hero_image = LandingPage.Data.Fields.hero_image,
-                hero_subheader_1 = LandingPage.Data.Fields.hero_subheader_1,
-                hero_subheader_2 = LandingPage.Data.Fields.hero_subheader_2,
-                hero_subheader_3 = LandingPage.Data.Fields.hero_subheader_3,
+                hero_content = LandingPage.Data.Fields.hero_content,
                 content_band_header = LandingPage.Data.Fields.content_band_header,
                 content_band_text = LandingPage.Data.Fields.content_band_text,
                 IsExpressSignUp = true

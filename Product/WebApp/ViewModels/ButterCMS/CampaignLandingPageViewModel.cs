@@ -12,9 +12,7 @@ namespace UpDiddy.ViewModels.ButterCMS
     {
         public string hero_title { get; set; }
         public string hero_image { get; set; }
-        public string hero_subheader_1 { get; set; }
-        public string hero_subheader_2 { get; set; }
-        public string hero_subheader_3 { get; set; }
+        public string hero_content { get; set; }
         public string content_band_header { get; set; }
         public string content_band_text { get; set; }
     }
