@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -70,22 +71,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
                         cc => cc.CampaignId,
                         ca => ca.CampaignId,
                         (cc, ca) => ca)
+                    .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.CourseVariant)
+                    .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.RebateType)
                     .Where(ca => ca.StartDate <= DateTime.UtcNow && (!ca.EndDate.HasValue || ca.EndDate.Value >= DateTime.UtcNow))
                     .ToList();
-                
-                /*
-                var eligibleCampaignsBadSql = _db.Campaign
-                    .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.RebateType)
-                    .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.CourseVariant)
-                    .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.Campaign)
-                    .Include(c => c.CampaignContact).ThenInclude(cc => cc.Contact).ThenInclude(co => co.Subscriber)
-                    .Where(c => c.IsDeleted == 0
-                        // the subscriber is associated with a campaign (contact must be linked to subscriber!)
-                        && c.CampaignContact.Where(cc => cc.Contact.Subscriber.SubscriberId == subscriber.SubscriberId).Any()
-                        // the campaign is active (enrollment dates)
-                        && c.StartDate <= DateTime.UtcNow && (!c.EndDate.HasValue || c.EndDate.Value >= DateTime.UtcNow))
-                    .ToList();
-                */
 
                 subscriberDto.EligibleCampaigns = _mapper.Map<List<CampaignDto>>(eligibleCampaigns);
 
@@ -176,7 +165,13 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
         }
 
-
+        public static bool IsEligibleForOffers(UpDiddyDbContext _db, Guid SubscriberGuid, ILogger _syslog, IMapper _mapper, IIdentity Identity)
+        {
+            SubscriberDto subscriber = GetSubscriber(_db, SubscriberGuid, _syslog, _mapper);
+            if (subscriber == null)
+                return false;
+            return Identity.IsAuthenticated && subscriber.IsVerified && subscriber.Files.Count > 0;
+        }
 
 
 

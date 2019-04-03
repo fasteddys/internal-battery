@@ -18,6 +18,7 @@ namespace UpDiddy.ViewModels
         public Guid ContactGuid { get; set; }
         public Guid? CampaignGuid { get; set; }
         public string CampaignPhase { get; set; }
+        public bool IsExpressSignUp { get; set; }
     }
 }
 

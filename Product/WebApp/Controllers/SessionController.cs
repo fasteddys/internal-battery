@@ -29,7 +29,7 @@ namespace UpDiddy.Controllers
         public IActionResult SignInAndEnroll()
         {
             SetAzureAdB2CCulture();
-            var redirectUrl = Url.Action(nameof(HomeController.Profile), "Home");
+            var redirectUrl = Url.Action(nameof(HomeController.LoggingIn), "Home");
             return Challenge(
                 new AuthenticationProperties { RedirectUri = redirectUrl },
                 OpenIdConnectDefaults.AuthenticationScheme);

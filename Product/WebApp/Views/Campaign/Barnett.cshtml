@@ -1,0 +1,66 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model SignUpViewModel;
+
+<div id="CampaignContainer" class="wozu-signup">
+    <div class="cc-campaign-sign-up-band row" style="background-image: url('/images/networking-hero.jpg');">
+        <div class="col-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-7 col-lg-8 cc-campaign-sign-up-band-left-container  d-flex align-items-center">
+                        <div class="row">
+                            <div class="col no-padding">
+                                <div class="row">
+                                    <div class="col-12 no-padding">
+                                        <div class="row">
+                                            <div class="col-12 hero-header font-bold">
+                                                CareerCircle &amp; Barnett International
+                                            </div>
+                                            <div class="col-12 campaign-bullet-list">
+                                                <div class="d-flex flex-column bd-highlight mb-3 mt-3">
+                                                    <div class="bd-highlight font-bold">Sign up.</div>
+                                                    <div class="bd-highlight font-bold">Create your profile.</div>
+                                                    <div class="bd-highlight font-bold">Advance your career.</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-5 col-lg-4 cc-campaign-sign-up-band-right-container no-padding">
+                        <div class="cc-campaign-sign-up-container">
+                            <div class="row">
+                                <div class="col-12 no-padding sub-header font-bold">
+                                    Sign Up Today!
+                                </div>
+                                <div class="col-12 no-padding mini-header">
+                                    Create an account to get started
+                                </div>
+                                <div class="col-12 no-padding">
+                                    @Html.Partial("Components/Authentication/_SignUp", Model)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
+    {
+        Header = "At CareerCircle, Our Focus Is You",
+        Elements = new List<string>()
+        {
+            @"<div class='row'>
+                <div class='col-lg-8 offset-lg-2'>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam pharetra dui libero, non dictum leo blandit at. Maecenas enim libero, rutrum id dolor sed, tincidunt placerat mauris. Mauris vel nisi gravida, eleifend ex non, ultrices justo. Suspendisse vitae consectetur nisl. Vestibulum fermentum gravida fermentum. Mauris lacinia mauris id diam ullamcorper, vitae malesuada purus accumsan. Duis et tincidunt eros, molestie pretium risus.
+                </div>
+            </div>"
+        }
+    });
+</div>

@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Mvc;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 using System.Threading;
+using UpDiddyLib.Dto.Reporting;
 
 namespace UpDiddy.Api
 {
@@ -381,6 +382,22 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public async Task<IList<OfferDto>> GetOffersAsync()
+        {
+            string cacheKey = $"Offers";
+            IList<OfferDto> rval = GetCachedValue<IList<OfferDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetOffersAsync();
+                SetCachedValue<IList<OfferDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+
         #endregion
 
         #region Public UnCached Methods
@@ -529,6 +546,39 @@ namespace UpDiddy.Api
         {
             return await GetAsync<IList<CampaignStatisticDto>>("marketing/campaign-statistic");
         }
+
+        public async Task<IList<CampaignDto>> GetCampaignsAsync()
+        {
+            string cacheKey = $"Campaigns";
+            IList<CampaignDto> rval = GetCachedValue<IList<CampaignDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _CampaignsAsync();
+                SetCachedValue<IList<CampaignDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public async Task<CampaignDto> GetCampaignAsync(Guid CampaignGuid)
+        {
+            IList<CampaignDto> _campaigns = await GetCampaignsAsync();
+            foreach (CampaignDto campaign in _campaigns)
+            {
+                if (campaign.CampaignGuid == CampaignGuid)
+                {
+                    return campaign;
+                }
+            }
+            return null;
+        }
+
+        private async Task<IList<CampaignDto>> _CampaignsAsync()
+        {
+            return await GetAsync<IList<CampaignDto>>("campaigns");
+        }
         #endregion
 
         #region LinkedIn
@@ -557,6 +607,7 @@ namespace UpDiddy.Api
 
         public async Task<BasicResponseDto> UploadResumeAsync(ResumeDto resumeDto)
         {
+
             return await PostAsync<BasicResponseDto>("resume/upload", resumeDto);
         }
 
@@ -655,6 +706,13 @@ namespace UpDiddy.Api
         {
             return await GetAsync<CourseDto>("course/campaign/" + CampaignGuid);
         }
+
+        public async Task<IList<OfferDto>> _GetOffersAsync()
+        {
+            return await GetAsync<IList<OfferDto>>("offers");
+        }
+
+
         #endregion
 
         #region Private Cache Functions
@@ -731,7 +789,11 @@ namespace UpDiddy.Api
 
         public async Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery)
         {
-            return await GetAsync<IList<SubscriberDto>>($"subscriber/search/{searchFilter}/{searchQuery}");
+            string endpoint = $"subscriber/search?searchFilter={searchFilter}";
+            if (searchQuery != string.Empty)
+                endpoint += $"&searchQuery={searchQuery}";
+
+            return await GetAsync<IList<SubscriberDto>>(endpoint);
         }
 
         public async Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync()
@@ -752,6 +814,34 @@ namespace UpDiddy.Api
         #endregion
 
         #region AdminPortal
+        public async Task<SubscriberReportDto> GetSubscriberReportAsync(List<DateTime> dates = null)
+        {
+            string query = string.Empty;
+            if(dates.Any())
+            {
+                query += "?dates=" + string.Join("&dates=", dates);
+            }
+
+            return await GetAsync<SubscriberReportDto>($"report/subscribers{query}");
+        }
+
+        public async Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync()
+        {
+            return await GetAsync<SubscriberReportDto>($"report/partners");
+        }
+
+        public async Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync()
+        {
+            return await GetAsync<List<RecruiterActionSummaryDto>>($"report/recruiter-action-summary");
+        }
+        public async Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync()
+        {
+            return await GetAsync<List<SubscriberActionSummaryDto>>($"report/subscriber-action-summary");
+        }
+        public async Task<List<OfferActionSummaryDto>> GetOfferActionSummaryAsync()
+        {
+            return await GetAsync<List<OfferActionSummaryDto>>($"report/offer-action-summary");
+        }
 
         public async Task<IList<PartnerDto>> GetPartnersAsync()
         {
@@ -826,8 +916,6 @@ namespace UpDiddy.Api
             // Return the newly created partner
             return deletedPartnerResponse;
         }
-
-
         #endregion
     }
 }

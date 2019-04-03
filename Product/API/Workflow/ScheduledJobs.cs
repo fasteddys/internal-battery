@@ -110,7 +110,7 @@ namespace UpDiddyApi.Workflow
                     .ToList();
 
                 bool updatesMade = false;
-                foreach ( Enrollment e in enrollments)
+                foreach (Enrollment e in enrollments)
                 {
                     if (e.Subscriber != null)
                         UpdateWozEnrollment(e.Subscriber.SubscriberGuid.ToString(), e, ref updatesMade);
@@ -162,7 +162,7 @@ namespace UpDiddyApi.Workflow
                     if (e.ModifyDate == null || ((DateTime)e.ModifyDate).AddHours(ProgressUpdateAgeThresholdInHours) <= DateTime.UtcNow)
                     {
                         _syslog.Log(LogLevel.Information, $"***** UpdateStudentProgress calling woz for enrollment {e.EnrollmentGuid}");
-                        UpdateWozEnrollment(SubscriberGuid, e, ref updatesMade);                       
+                        UpdateWozEnrollment(SubscriberGuid, e, ref updatesMade);
                     }
                     else
                     {
@@ -280,7 +280,7 @@ namespace UpDiddyApi.Workflow
 
 
         // check to see if student has completed the course and set completion date
-        private void UpdateWozCourseCompletion(string SubscriberGuid, Enrollment e )
+        private void UpdateWozCourseCompletion(string SubscriberGuid, Enrollment e)
         {
             // Set the enrollments course completion date if the course has been completed and 
             // a completion date has not been noted
@@ -294,20 +294,20 @@ namespace UpDiddyApi.Workflow
         }
 
         // update the subscribers woz course progress 
-        private void UpdateWozEnrollment(string SubscriberGuid, Enrollment e, ref bool updatesMade )
+        private void UpdateWozEnrollment(string SubscriberGuid, Enrollment e, ref bool updatesMade)
         {
-            WozCourseProgressDto wcp = null;            
+            WozCourseProgressDto wcp = null;
             wcp = GetWozCourseProgress(e);
             if (wcp != null && wcp.ActivitiesCompleted > 0 && wcp.ActivitiesTotal > 0)
             {
                 _syslog.Log(LogLevel.Information, $"***** UpdateWozEnrollment updating enrollment {e.EnrollmentGuid}");
                 int PercentComplete = Convert.ToInt32(((double)wcp.ActivitiesCompleted / (double)wcp.ActivitiesTotal) * 100);
                 // update the percent completion if it's changed 
-                if (e.PercentComplete != PercentComplete )
-                {                    
+                if (e.PercentComplete != PercentComplete)
+                {
                     e.PercentComplete = PercentComplete;
                     updatesMade = true;
-                    UpdateWozCourseCompletion(SubscriberGuid, e);                         
+                    UpdateWozCourseCompletion(SubscriberGuid, e);
                     _syslog.Log(LogLevel.Information, $"***** UpdateWozEnrollment updating enrollment {e.EnrollmentGuid} set PercentComplete={e.PercentComplete}");
                     e.ModifyDate = DateTime.UtcNow;
                 }
@@ -442,8 +442,6 @@ namespace UpDiddyApi.Workflow
 
         public Boolean DoPromoCodeRedemptionCleanup(int? lookbackPeriodInMinutes = 30)
         {
-
-
             bool result = false;
             using (_syslog.BeginScope("DoPromoCodeRedemptionCleanup"))
             {
@@ -491,9 +489,9 @@ namespace UpDiddyApi.Workflow
             if (campaignEntity != null && contactEntity != null && actionEntity != null && campaignPhase != null)
             {
                 // locate the campaign phase 
-     
+
                 // look for an existing contact action               
-                var existingContactAction = ContactActionFactory.GetContactAction(_db,campaignEntity, contactEntity, actionEntity, campaignPhase);
+                var existingContactAction = ContactActionFactory.GetContactAction(_db, campaignEntity, contactEntity, actionEntity, campaignPhase);
 
                 if (existingContactAction != null)
                 {

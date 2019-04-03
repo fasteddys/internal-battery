@@ -10,6 +10,7 @@ namespace UpDiddy.ViewModels
     {
         public enum Action { SUBMIT, CTA};
         public Action ButtonAction { get; set; }
+        public string ButtonClass { get; set; }
         public string Text { get; set; }
         public string SkewDirection { get; set; }
         public string Form { get; set; }

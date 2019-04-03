@@ -29,6 +29,7 @@ using System.Web;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 using Hangfire;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddyApi.Controllers
 {
@@ -40,6 +41,7 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ILogger _syslog;
+        private readonly IDistributedCache _cache;
         private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
@@ -58,6 +60,7 @@ namespace UpDiddyApi.Controllers
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
+            _cache = distributedCache;
             _syslog = sysLog;
             _graphClient = client;
             _cloudStorage = cloudStorage;
@@ -79,6 +82,14 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
             {
                 SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
+
+                if (subscriberDto == null)
+                    return Ok(subscriberDto);
+
+                // track the subscriber action if performed by someone other than the user who owns the file
+                if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
+                    new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
+
                 return Ok(subscriberDto);
             }
             else
@@ -602,7 +613,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost("/api/[controller]/request-verification")]
-        public async Task<IActionResult> RequestVerificationAsync()
+        public async Task<IActionResult> RequestVerificationAsync([FromBody] Dictionary<string, string> body)
         {
             // check token guid claim
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -619,28 +630,16 @@ namespace UpDiddyApi.Controllers
                 return BadRequest();
 
             int tokenTtlMinutes = int.Parse(_configuration["EmailVerification:TokenExpirationInMinutes"]);
-
-            // create or reset/refresh token
-            if (subscriber.EmailVerification == null)
-                subscriber.EmailVerification = new EmailVerification(tokenTtlMinutes);
-
-            subscriber.EmailVerification.RefreshToken(tokenTtlMinutes);
-
+            EmailVerification.SetSubscriberEmailVerification(subscriber, tokenTtlMinutes);
             await _db.SaveChangesAsync(); // save changes
 
-            string link = string.Format("{0}/email/confirm-verification/{1}",
-                _configuration["Environment:BaseUrl"],
-                subscriber.EmailVerification.Token);
-
-            // send verification email in background
-            BackgroundJob.Enqueue(() =>
-                _sysEmail.SendTemplatedEmailAsync(
-                    subscriber.Email,
-                    "d-f1eab71626494594bebd20d0907d673d",
-                    new {
-                        verificationLink = link
-                    }, null
-                ));
+            // create link
+            string link;
+            body.TryGetValue("verifyUrl", out link);
+            link += subscriber.EmailVerification.Token;
+            
+            // send email
+            SendVerificationEmail(subscriber.Email, link);
 
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Email verification token successfully created. Email queued." });
         }
@@ -653,7 +652,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest();
 
             Subscriber subscriber = _db
-                .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid && !t.IsVerified)
+                .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid)
                 .Include(t => t.EmailVerification)
                 .FirstOrDefault();
 
@@ -661,7 +660,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid subscriber." });
 
             if (subscriber.IsVerified)
-                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Subscriber already verified." });
+                return StatusCode(StatusCodes.Status409Conflict, new BasicResponseDto() { StatusCode = 409, Description = "Subscriber/User email already verified. No additional action required to verify this account." });
 
             if (!subscriber.EmailVerification.Token.Equals(Token) || subscriber.EmailVerification.ExpirationDateTime < DateTime.UtcNow)
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Invalid verification token." });
@@ -789,7 +788,7 @@ namespace UpDiddyApi.Controllers
                 {
                     transaction.Rollback();
                     _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Error occured while attempting save Subscriber and contact DB updates for {@ContactGuid} (email: {@Email}). Exception: {@Exception}", contactGuid, signUpDto.email, ex);
-                    return StatusCode(500);
+                    return StatusCode(500, new BasicResponseDto() { StatusCode = 500, Description = "An error occured while attempting to create an account for you." });
                 }
             }
 
@@ -820,7 +819,7 @@ namespace UpDiddyApi.Controllers
                 catch (Exception ex)
                 {
                     _syslog.Log(LogLevel.Error, "SubscriberController.ExpressSignUp:: Error occured while attempting to create a user in Azure Active Directory. Exception: {@Exception}", ex);
-                    return StatusCode(500);
+                    return StatusCode(500, new BasicResponseDto() { StatusCode = 500, Description = "An error occured while attempting to create an account for you." });
                 }
             }
 
@@ -842,8 +841,7 @@ namespace UpDiddyApi.Controllers
             {
                 try
                 {
-                    // Save subscriber to database 
-                    _db.Subscriber.Add(subscriber);
+                    _db.Add(subscriber);
                     await _db.SaveChangesAsync();
                     SubscriberProfileStagingStore store = new SubscriberProfileStagingStore()
                     {
@@ -857,7 +855,11 @@ namespace UpDiddyApi.Controllers
                         ProfileFormat = Constants.DataFormat.Json,
                         ProfileData = JsonConvert.SerializeObject(new { source = "express-sign-up", referer = referer })
                     };
-                    _db.SubscriberProfileStagingStore.Add(store);
+                    subscriber.ProfileStagingStore.Add(store);
+
+                    int tokenTtlMinutes = int.Parse(_configuration["EmailVerification:TokenExpirationInMinutes"]);
+                    EmailVerification.SetSubscriberEmailVerification(subscriber, tokenTtlMinutes);
+
                     await _db.SaveChangesAsync();
                     transaction.Commit();
                 }
@@ -869,6 +871,7 @@ namespace UpDiddyApi.Controllers
                 }
             }
 
+            SendVerificationEmail(subscriber.Email, signUpDto.verifyUrl + subscriber.EmailVerification.Token);
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
         }
 
@@ -891,11 +894,11 @@ namespace UpDiddyApi.Controllers
             return Json(new { groups = response });
         }
 
-        [HttpGet("/api/[controller]/search/{searchFilter}/{searchQuery?}")]
+        [HttpGet("/api/[controller]/search")]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
-        public IActionResult Search(string searchFilter, string searchQuery = null)
+        public IActionResult Search(string searchFilter = "any", string searchQuery = null)
         {
-            searchQuery = HttpUtility.UrlDecode(searchQuery);
+            searchQuery = Utils.ToSqlServerFullTextQuery(searchQuery);
             searchFilter = HttpUtility.UrlDecode(searchFilter);
 
             var filter = new SqlParameter("@Filter", searchFilter.ToLower() == "any" ? string.Empty : searchFilter);
@@ -936,17 +939,24 @@ namespace UpDiddyApi.Controllers
         [HttpGet("/api/[controller]/{subscriberGuid}/file/{fileGuid}")]
         public async Task<IActionResult> DownloadFile(Guid subscriberGuid, Guid fileGuid)
         {
-            Guid userGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (userGuid != subscriberGuid)
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
+
+            if (loggedInUserGuid != subscriberGuid && !isAuth.Succeeded)
                 return Unauthorized();
 
             Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(subscriberGuid))
                 .Include(s => s.SubscriberFile)
                 .First();
+
             SubscriberFile file = subscriber.SubscriberFile.Where(f => f.SubscriberFileGuid.Equals(fileGuid)).First();
 
             if (file == null)
                 return NotFound(new BasicResponseDto { StatusCode = 404, Description = "File not found. " });
+
+            // track the subscriber action if performed by someone other than the user who owns the file
+            if (loggedInUserGuid != subscriber.SubscriberGuid.Value)
+                new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "Download resume", "Subscriber", subscriber.SubscriberGuid);
 
             return File(await _cloudStorage.OpenReadAsync(file.BlobName), "application/octet-stream", Path.GetFileName(file.BlobName));
         }
@@ -974,6 +984,20 @@ namespace UpDiddyApi.Controllers
             await _db.SaveChangesAsync();
 
             return Ok();
+        }
+
+        private void SendVerificationEmail(string email, string link)
+        {
+            // send verification email in background
+            BackgroundJob.Enqueue(() =>
+                _sysEmail.SendTemplatedEmailAsync(
+                    email,
+                    _configuration["SysEmail:TemplateIds:EmailVerification-LinkEmail"],
+                    new
+                    {
+                        verificationLink = link
+                    }, null
+                ));
         }
     }
 }

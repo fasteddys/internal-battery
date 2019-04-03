@@ -94,3 +94,24 @@
         color: #878787;
     }
 }
+
+@media(max-width: 400px) {
+    #toast-container {
+        width: 100%;
+        margin: 0;
+        left: 0px;
+
+        .toast-close-button {
+            right: 10px;
+            top: 5px;
+            font-size: 1.75em;
+        }
+
+        & > div {
+            width: 96%;
+            margin: auto;
+            margin-top: .5em;
+            max-width: initial;
+        }
+    }
+}

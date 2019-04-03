@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using UpDiddyLib.Shared;
+using UpDiddyApi.Models.Views;
 
 namespace UpDiddyApi.Models
 {
@@ -134,22 +135,50 @@ namespace UpDiddyApi.Models
         public DbSet<JobCategory> JobCategory { get; set; }
 
 
+        public DbSet<Offer> Offer { get; set; }
+        public DbSet<Partner> Partner { get; set; }
+        public DbSet<PartnerContact> PartnerContact { get; set; }
+        public DbSet<PartnerReferrer> PartnerReferrer { get; set; }
+        public DbSet<SubscriberAction> SubscriberAction { get; set; }
+        public DbSet<EntityType> EntityType { get; set; }
 
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
         public DbQuery<CampaignDetail> CampaignDetail { get; set; }
-        public DbSet<Partner> Partner { get; set; }
-        public DbSet<PartnerContact> PartnerContact { get; set; }
         public DbQuery<v_SubscriberSources> SubscriberSources {get; set; }
+        public DbQuery<v_SubscriberSignUpPartnerReference> SubscriberSignUpPartnerReferences { get; set; }
         public DbQuery<SubscriberSearch> SubscriberSearch { get; set; }
+        public DbQuery<v_RecruiterSubscriberActions> RecruiterSubscriberActions { get; set; }
+        public DbQuery<v_SubscriberOfferActions> SubscriberOfferActions { get; set; }
 
         #endregion
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
+                .Query<v_SubscriberOfferActions>()
+                .ToView("v_SubscriberOfferActions");
+
+            modelBuilder
+                .Query<v_RecruiterSubscriberActions>()
+                .ToView("v_RecruiterSubscriberActions");
+
+            modelBuilder.Entity<EntityType>()
+                .HasIndex(et => et.Name)
+                .IsUnique();
+
+            modelBuilder.Entity<SubscriberAction>()
+                .Property(sa => sa.OccurredDate)
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            modelBuilder
                 .Query<v_SubscriberSources>()
                 .ToView("v_SubscriberSources");
+
+            modelBuilder
+                .Query<v_SubscriberSignUpPartnerReference>()
+                .ToView("v_SubscriberSignUpPartnerReferences");
 
             modelBuilder.Entity<Campaign>()
                 .HasIndex(pc => pc.Name)
@@ -160,10 +189,13 @@ namespace UpDiddyApi.Models
 
             modelBuilder.Entity<Contact>()
                 .HasMany<PartnerContact>(c => c.PartnerContacts);
-            
+
             modelBuilder.Entity<PartnerContact>()
                 .Property<string>("MetaDataJSON")
                 .HasField("_metadata");
+
+            modelBuilder.Entity<Partner>()
+                .HasMany<PartnerReferrer>(e => e.Referrers);
 
             modelBuilder.Entity<Enrollment>()
                 .HasOne<CampaignCourseVariant>(e => e.CampaignCourseVariant)

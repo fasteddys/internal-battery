@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Net.Http;
 using UpDiddyLib.Dto.Marketing;
+using UpDiddyLib.Dto.Reporting;
 
 namespace UpDiddy.Api
 {
@@ -58,11 +59,15 @@ namespace UpDiddy.Api
         Task<LinkedInProfileDto> GetLinkedInProfileAsync();
         Task<SubscriberADGroupsDto> MyGroupsAsync();
         Task<BasicResponseDto> VerifyEmailAsync(Guid token);
+        Task<IList<CampaignDto>> GetCampaignsAsync();
+        Task<CampaignDto> GetCampaignAsync(Guid campaignGuid);
+        Task<IList<OfferDto>> GetOffersAsync();
 
         #region TalentPortal
         Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery);
         Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync();
         #endregion
+
         #region AdminPortal
         Task<BasicResponseDto> UpdateEntitySkillsAsync(EntitySkillDto entitySkillDto);
         Task<IList<SkillDto>> GetEntitySkillsAsync(string entityType, Guid entityGuid);
@@ -78,6 +83,14 @@ namespace UpDiddy.Api
         #region Marketing
         Task<IList<CampaignStatisticDto>> CampaignStatisticsSearchAsync();
         Task<IList<CampaignDetailDto>> CampaignDetailsSearchAsync(Guid campaignGuid);
+        #endregion
+
+        #region Reporting
+        Task<SubscriberReportDto> GetSubscriberReportAsync(List<DateTime> dates = null);
+        Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync();
+        Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync();
+        Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync();
+        Task<List<OfferActionSummaryDto>> GetOfferActionSummaryAsync();
         #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);

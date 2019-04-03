@@ -98,16 +98,48 @@ namespace UpDiddy.Controllers
             return View(signupFlowViewModel);
         }
 
-        [HttpGet("/ClinicalResearchFastrack")]
-        public IActionResult JoinNow()
-        {
-            return View("ExpressSignUp", new SignUpViewModel());
-        }
-
         public IActionResult News()
         {
 
             return View();
+        }
+
+        [LoadSubscriber(isHardRefresh: true, isSubscriberRequired: false)]
+        [HttpGet("Home/Offers")]
+        public async Task<IActionResult> OffersAsync()
+        {
+            IList<OfferDto> Offers = await _Api.GetOffersAsync();
+
+            OffersViewModel OffersViewModel = new OffersViewModel
+            {
+                Offers = Offers,
+                UserIsAuthenticated = User.Identity.IsAuthenticated,
+                UserHasValidatedEmail = false,
+                UserHasUploadedResume = false,
+                UserIsEligibleForOffers = false,
+                CtaText = "Please <a href=\"/join#CommunityCampaignBottomContainer\">create a CareerCircle account</a>, verify the email associated with the account, and upload your resume to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions."
+            };
+
+            if (User.Identity.IsAuthenticated)
+            {
+                OffersViewModel.UserHasValidatedEmail = this.subscriber.HasVerificationEmail;
+                OffersViewModel.UserHasUploadedResume = this.subscriber.Files.Count > 0;
+                OffersViewModel.UserIsEligibleForOffers = OffersViewModel.UserIsAuthenticated &&
+                    OffersViewModel.UserHasValidatedEmail &&
+                    OffersViewModel.UserHasUploadedResume;
+
+                if (OffersViewModel.UserHasValidatedEmail && !OffersViewModel.UserHasUploadedResume)
+                    OffersViewModel.CtaText = "Please upload your resume (located at the top of your <a href=\"/Home/Profile\">profile</a>) to your CareerCircle account to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions.";
+                else if (!OffersViewModel.UserHasValidatedEmail && OffersViewModel.UserHasUploadedResume)
+                    OffersViewModel.CtaText = "Please validate your email (located at the top of your <a href=\"/Home/Profile\">profile</a>) to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions.";
+                else if (!OffersViewModel.UserHasValidatedEmail && !OffersViewModel.UserHasUploadedResume)
+                    OffersViewModel.CtaText = "Please validate your email and upload your resume to your CareerCircle account (both located at the top of your <a href=\"/Home/Profile\">profile</a>) to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions.";
+                else
+                    OffersViewModel.CtaText = "Congratulations, your account is eligible to take advantage of the offers listed below!";
+
+            }
+                                   
+            return View("Offers", OffersViewModel);
         }
 
         public IActionResult AboutUs()
@@ -350,6 +382,9 @@ namespace UpDiddy.Controllers
             catch(ApiException ex)
             {
                 ViewBag.Message = ex.ResponseDto?.Description;
+                if (ex.StatusCode.Equals(HttpStatusCode.Conflict))
+                    return View("EmailVerification/Conflict");
+
                 return View("EmailVerification/Error");
             }
 
@@ -618,212 +653,6 @@ namespace UpDiddy.Controllers
                 Response.StatusCode = (int)ex.StatusCode;
                 return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
             }
-        }
-
-        [HttpGet]
-        [Route("/Home/Campaign/{CampaignViewName}/{CampaignGuid}/{ContactGuid}")]
-        public async Task<IActionResult> CampaignAsync(string CampaignViewName, Guid CampaignGuid, Guid ContactGuid)
-        {
-            // capture any campaign phase information that has been passed.  
-            string CampaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
-
-            // cookie campaign tracking information for future tracking enhacments, such as
-            // task 304
-            Response.Cookies.Append(Constants.TRACKING_KEY_CAMPAIGN_PHASE, CampaignPhase);
-            Response.Cookies.Append(Constants.TRACKING_KEY_CAMPAIGN, CampaignGuid.ToString());
-            Response.Cookies.Append(Constants.TRACKING_KEY_CONTACT, ContactGuid.ToString());
-            // build trackign string url
-            string _TrackingImgSource = _configuration["Api:ApiUrl"] +
-                "tracking?contact=" +
-                ContactGuid +
-                "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
-                CampaignGuid + "&campaignphase=" + WebUtility.UrlEncode(CampaignPhase);
-
-            try
-            {
-                // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
-                ContactDto Contact = await _Api.ContactAsync(ContactGuid);
-                CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
-
-                CampaignViewModel cvm = new CampaignViewModel()
-                {
-
-                    CampaignGuid = CampaignGuid,
-                    ContactGuid = ContactGuid,
-                    TrackingImgSource = _TrackingImgSource,
-                    CampaignCourse = Course,
-                    CampaignPhase = CampaignPhase
-                };
-                return View("Campaign/" + CampaignViewName, cvm);
-            }
-
-            catch (ApiException ex)
-            {
-                return StatusCode((int)ex.StatusCode);
-            }
-        }
-
-        [HttpPost]
-        [Route("/Home/CampaignSignUp")]
-        public async Task<BasicResponseDto> CampaignSignUpAsync(SignUpViewModel signUpViewModel)
-        {
-            bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.Email) &&
-                !string.IsNullOrEmpty(signUpViewModel.Password) &&
-                !string.IsNullOrEmpty(signUpViewModel.ReenterPassword);
-
-            // Make sure user has filled out all fields.
-            if (!modelHasAllFields)
-            {
-                Response.StatusCode = 400;
-                return new BasicResponseDto
-                {
-                    StatusCode = 400,
-                    Description = "Please enter all sign-up fields and try again."
-                };
-            }
-
-            // This is basically the same check as above, but to be safe...
-            if (!ModelState.IsValid)
-            {
-                Response.StatusCode = 400;
-                return new BasicResponseDto
-                {
-                    StatusCode = 400,
-                    Description = "Unfortunately, an error has occured with your submission. Please try again."
-                };
-            }
-
-            // Make sure user's password and re-enter password values match.
-            if (!signUpViewModel.Password.Equals(signUpViewModel.ReenterPassword))
-            {
-                Response.StatusCode = 400;
-                return new BasicResponseDto
-                {
-                    StatusCode = 400,
-                    Description = "User's passwords do not match."
-                };
-            }
-
-            // If all checks pass, assemble SignUpDto from information user entered. Included in the SignUpDto is the 
-            // campaign phase name that was provided via querystring parameter to the landing page            
-            SignUpDto sudto = new SignUpDto
-            {
-                email = signUpViewModel.Email,
-                password = signUpViewModel.Password,
-                campaignGuid = signUpViewModel.CampaignGuid,
-                campaignPhase = WebUtility.UrlDecode(signUpViewModel.CampaignPhase)
-            };
-
-            // Guard UX from any unforeseen server error.
-            try
-            {
-                // Convert contact to subscriber and create ADB2C account for them.
-                BasicResponseDto subscriberResponse = await _Api.UpdateSubscriberContactAsync(signUpViewModel.ContactGuid, sudto);
-
-                CourseDto Course = await _Api.GetCourseByCampaignGuidAsync((Guid)signUpViewModel.CampaignGuid);
-                if(Course == null)
-                {
-                    return new BasicResponseDto
-                    {
-                        StatusCode = subscriberResponse.StatusCode,
-                        Description = "/Home/Signup"
-                    };
-                }
-
-                return new BasicResponseDto
-                {
-                    StatusCode = subscriberResponse.StatusCode,
-                    Description = "/Course/Checkout/" + Course.Slug
-                };
-            }
-            catch(ApiException ex)
-            {
-                Response.StatusCode = (int) ex.StatusCode;
-                return ex.ResponseDto;
-            }
-        }
-
-        [HttpPost]
-        [Route("/Home/ExpressSignUp")]
-        public async Task<BasicResponseDto> ExpressSignUpAsync(SignUpViewModel signUpViewModel)
-        {
-            bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.Email) &&
-                !string.IsNullOrEmpty(signUpViewModel.Password) &&
-                !string.IsNullOrEmpty(signUpViewModel.ReenterPassword);
-
-            // Make sure user has filled out all fields.
-            if (!modelHasAllFields)
-            {
-                return new BasicResponseDto
-                {
-                    StatusCode = 400,
-                    Description = "Please enter all sign-up fields and try again."
-                };
-            }
-
-            // This is basically the same check as above, but to be safe...
-            if (!ModelState.IsValid)
-            {
-                return new BasicResponseDto
-                {
-                    StatusCode = 400,
-                    Description = "Unfortunately, an error has occured with your submission. Please try again."
-                };
-            }
-
-            // Make sure user's password and re-enter password values match.
-            if (!signUpViewModel.Password.Equals(signUpViewModel.ReenterPassword))
-            {
-                return new BasicResponseDto
-                {
-                    StatusCode = 403,
-                    Description = "User's passwords do not match."
-                };
-            }
-
-            // If all checks pass, assemble SignUpDto from information user entered.
-            SignUpDto sudto = new SignUpDto
-            {
-                email = signUpViewModel.Email,
-                password = signUpViewModel.Password,
-                campaignGuid = signUpViewModel.CampaignGuid,
-                referer = Request.Headers["Referer"].ToString()
-            };
-
-            // Guard UX from any unforeseen server error.
-            try
-            {
-                // Convert contact to subscriber and create ADB2C account for them.
-                BasicResponseDto subscriberResponse = await _Api.ExpressUpdateSubscriberContactAsync(sudto);
-
-                switch (subscriberResponse.StatusCode)
-                {
-
-                    case 200:
-                        // Return url to course checkout page to front-end. This will prompt user to log in
-                        // now that their ADB2C account is created.
-                        return new BasicResponseDto
-                        {
-                            StatusCode = subscriberResponse.StatusCode,
-                            Description = "/Home/Signup"
-                        };
-                    default:
-                        // If there's an error from contact-to-subscriber converstion API call,
-                        // return that error description to a toast to the user.
-                        return subscriberResponse;
-                }
-            }
-            catch (Exception e)
-            {
-                // Generic server error to display gracefully to the user.
-                return new BasicResponseDto
-                {
-                    StatusCode = 500,
-                    Description = "Unfortunately, an error has occured with your submission. Please try again later."
-                };
-            }
-
-
         }
     }
 }

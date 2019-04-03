@@ -1,0 +1,66 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model SignUpViewModel;
+
+<div id="CampaignContainer" class="wozu-signup">
+    <div class="cc-campaign-sign-up-band row" style="background-image: url('/images/networking-hero.jpg');">
+        <div class="col-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-7 col-lg-8 cc-campaign-sign-up-band-left-container  d-flex align-items-center">
+                        <div class="row">
+                            <div class="col no-padding">
+                                <div class="row">
+                                    <div class="col-12 no-padding">
+                                        <div class="row">
+                                            <div class="col-12 hero-header font-bold">
+                                                CareerCircle Welcomes <br /> Woz U Students &amp; Graduates
+                                            </div>
+                                            <div class="col-12 campaign-bullet-list">
+                                                <div class="d-flex flex-column bd-highlight mb-3 mt-3">
+                                                    <div class="bd-highlight font-bold">Sign up.</div>
+                                                    <div class="bd-highlight font-bold">Create your profile.</div>
+                                                    <div class="bd-highlight font-bold">Advance your career.</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-5 col-lg-4 cc-campaign-sign-up-band-right-container no-padding">
+                        <div class="cc-campaign-sign-up-container">
+                            <div class="row">
+                                <div class="col-12 no-padding sub-header font-bold">
+                                    Sign Up Today!
+                                </div>
+                                <div class="col-12 no-padding mini-header">
+                                    Create an account to get started
+                                </div>
+                                <div class="col-12 no-padding">
+                                    @Html.Partial("Components/Authentication/_SignUp", Model)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
+    {
+        Header = "At CareerCircle, Our Focus Is You",
+        Elements = new List<string>()
+        {
+            @"<div class='row'>
+                <div class='col-lg-8 offset-lg-2'>
+                    Woz U has partnered with CareerCircle to provide placement support through their network of staffing companies.  Students and Graduates are encouraged to sign up for a free account and create their profile.  You will have access to talent agents and recruiters that will work with you to better understand your ideal role and represent you in the market!
+                </div>
+            </div>"
+        }
+    });
+</div>

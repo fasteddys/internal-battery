@@ -1,0 +1,18 @@
+﻿<div class="container">
+    <div class="row">
+        <div class="col-10 offset-1">
+            <div class="mt-3 pt-3">
+                <h2>Email Already Verified</h2>
+                @if (ViewBag.Message != null)
+                {
+                    <p>@ViewBag.Message</p>
+                }
+                else
+                {
+                    <p>The server reported a conflict with your request. If your email still shows unverified after reloading the page please contact support.</p>
+                }
+                <a href="/Home/Profile" class="btn btn-primary">Continue</a>
+            </div>
+        </div>
+    </div>
+</div>
