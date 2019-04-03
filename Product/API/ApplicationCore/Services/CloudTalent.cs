@@ -130,7 +130,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             try
             {
-                CloudTalentSolution.Job TalentCloudJob = JobHelper.CreateGoogleJob(_db, jobPosting);
+                CloudTalentSolution.Job TalentCloudJob = JobMappingHelper.CreateGoogleJob(_db, jobPosting);
                 CloudTalentSolution.UpdateJobRequest UpdateJobRequest = new CloudTalentSolution.UpdateJobRequest();
                 UpdateJobRequest.Job = TalentCloudJob;                        
                 CloudTalentSolution.Job jobCreated = _jobServiceClient.Projects.Jobs.Patch(UpdateJobRequest, TalentCloudJob.Name).Execute();
@@ -163,7 +163,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {            
             try
             {
-                CloudTalentSolution.Job TalentCloudJob = JobHelper.CreateGoogleJob(_db, jobPosting);
+                CloudTalentSolution.Job TalentCloudJob = JobMappingHelper.CreateGoogleJob(_db, jobPosting);
                 CloudTalentSolution.CreateJobRequest CreateJobRequest = new CloudTalentSolution.CreateJobRequest();
                 CreateJobRequest.Job = TalentCloudJob;
                 // "Google.Apis.Requests.RequestError\r\nInvalid value at 'job.posting_expire_time' (type.googleapis.com/google.protobuf.Timestamp), Field 'postingExpireTime', Illegal timestamp format; timestamps must end with 'Z' or have a valid timezone offset. [400]\r\nErrors [\r\n\tMessage[Invalid value at 'job.posting_expire_time' (type.googleapis.com/google.protobuf.Timestamp), Field 'postingExpireTime', Illegal timestamp format; timestamps must end with 'Z' or have a valid timezone offset.] Location[ - ] Reason[badRequest] Domain[global]\r\n]\r\n"
@@ -227,6 +227,73 @@ namespace UpDiddyApi.ApplicationCore.Services
                 throw e;
             }
         }
+
+
+        public bool AddJobToCloudTalent(UpDiddyDbContext db, Guid jobPostingGuid)
+        {
+            try
+            {
+                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
+                // validate we have good data 
+                if (jobPosting == null || jobPosting.Company == null)
+                    return false;
+                // validate the company is known to google, if not add it to the cloud talent 
+                if (string.IsNullOrEmpty(jobPosting.Company.CloudTalentUri))
+                    IndexCompany(jobPosting.Company);
+
+                // index the job to google 
+                CloudTalentSolution.Job job = IndexJob(jobPosting);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
+        public bool UpdateJobToCloudTalent(UpDiddyDbContext db, Guid jobPostingGuid)
+        {
+            try
+            {
+                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
+                // validate we have good data 
+                if (jobPosting == null || jobPosting.Company == null)
+                    return false;
+                // validate the company is known to google, if not add it to the cloud talent 
+                if (string.IsNullOrEmpty(jobPosting.Company.CloudTalentUri))
+                    IndexCompany(jobPosting.Company);
+
+                // index the job to google 
+                CloudTalentSolution.Job job = ReIndexJob(jobPosting);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
+
+        public bool DeleteJobFromCloudTalent(UpDiddyDbContext db, Guid jobPostingGuid)
+        {
+            try
+            {
+                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
+                // validate we have good data 
+                if (jobPosting == null)
+                    return false;
+
+                // index the job to google 
+                return RemoveJobFromIndex(jobPosting);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
 
         #endregion
 
@@ -305,7 +372,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (attributeFilters.Length > 0)
                     attributeFilters += " AND ";
 
-                attributeFilters = "LOWER(Industry) = \"" + jobQuery.Industry.Trim().ToLower() + "\"";
+                attributeFilters += "LOWER(Industry) = \"" + jobQuery.Industry.Trim().ToLower() + "\"";
             }
 
             // add job category 
@@ -314,7 +381,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (attributeFilters.Length > 0)
                     attributeFilters += " AND ";
 
-                attributeFilters = "LOWER(JobCategory) = \"" + jobQuery.JobCategory.Trim().ToLower() + "\"";
+                attributeFilters += "LOWER(JobCategory) = \"" + jobQuery.JobCategory.Trim().ToLower() + "\"";
             }
 
             // add education level 
@@ -323,7 +390,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (attributeFilters.Length > 0)
                     attributeFilters += " AND ";
 
-                attributeFilters = "LOWER(EducationLevel) = \"" + jobQuery.EducationLevel.Trim().ToLower() + "\"";
+                attributeFilters += "LOWER(EducationLevel) = \"" + jobQuery.EducationLevel.Trim().ToLower() + "\"";
             }
 
             // add employment type 
@@ -332,7 +399,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (attributeFilters.Length > 0)
                     attributeFilters += " AND ";
 
-                attributeFilters = "LOWER(EmploymentType) = \"" + jobQuery.EmploymentType.Trim().ToLower() + "\"";
+                attributeFilters += "LOWER(EmploymentType) = \"" + jobQuery.EmploymentType.Trim().ToLower() + "\"";
 
             }
 
@@ -342,7 +409,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (attributeFilters.Length > 0)
                     attributeFilters += " AND ";
 
-                attributeFilters = "LOWER(ExperienceLevel) = \"" + jobQuery.ExperienceLevel.Trim().ToLower() + "\"";
+                attributeFilters += "LOWER(ExperienceLevel) = \"" + jobQuery.ExperienceLevel.Trim().ToLower() + "\"";
             }
  
 
@@ -433,7 +500,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // map cloud talent results to cc search results 
             DateTime startMap= DateTime.Now;
-            JobSearchResultDto rval =  JobHelper.MapSearchResults(_syslog, _mapper,_configuration, searchJobsResponse, jobQuery);
+            JobSearchResultDto rval = JobMappingHelper.MapSearchResults(_syslog, _mapper,_configuration, searchJobsResponse, jobQuery);
             DateTime stopMap = DateTime.Now;
 
             // calculate search timing metrics 
@@ -443,7 +510,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // assign search metrics to search results 
             rval.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
-            rval.SearchQueryInTicks = intervalSearchTime.Ticks;
+            rval.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
             rval.SearchMappingTimeInTicks = intervalMapTime.Ticks;
             return rval;
         }
@@ -480,6 +547,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
         #endregion
-
+        
     }
 }

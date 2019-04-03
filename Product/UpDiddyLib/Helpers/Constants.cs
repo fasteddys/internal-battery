@@ -65,5 +65,25 @@ namespace UpDiddyLib.Helpers
             }
 
         }
+
+        public static class JobPosting
+        {
+            public static readonly string ValidationError_CompanyRequiredMsg = "Company required";
+            public static readonly string ValidationError_InvalidSecurityClearanceMsg = "Invalid security clearance";
+            public static readonly string ValidationError_InvalidIndustryMsg = "Invalid industry";
+            public static readonly string ValidationError_InvalidEducationLevelMsg = "Invalid education level";
+            public static readonly string ValidationError_InvalidExperienceLevelMsg = "Invalid experience level";
+            public static readonly string ValidationError_InvalidEmploymentTypeMsg = "Invalid employment type";
+            public static readonly string ValidationError_SubscriberRequiredMsg = "Subscriber is required";
+
+       
+
+
+
+
+
+        }
+
+
     }
 }

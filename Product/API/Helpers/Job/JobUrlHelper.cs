@@ -37,10 +37,10 @@ namespace UpDiddyApi.Helpers.Job
                     rVal = UrlComponentReplace(IndustryUrl, 2, facetValue);
                     break;
                 case "skills":
-                    rVal =  UrlComponentReplace(LocationUrl, 6, facetValue);
+                    rVal =  UrlComponentReplace(LocationUrl, 7, facetValue);
                     break;
                 case "city":
-                    rVal = UrlComponentReplace(LocationUrl, 3, facetValue);
+                    rVal = MapCityFacet(LocationUrl, facetValue);
                     break;
                 case "date_published":
                     rVal = MapQueryStringFacet(LocationUrl, "date-published", facetValue);
@@ -58,7 +58,7 @@ namespace UpDiddyApi.Helpers.Job
                     rVal =  UrlComponentReplace(LocationUrl, 2, facetValue);
                     break;
                 case "company_display_name":
-                    rVal = MapQueryStringFacet(LocationUrl, "company", facetValue);
+                    rVal = MapQueryStringFacet(LocationUrl, "company-name", facetValue);
                     break;
                 default:
                     break;
@@ -66,6 +66,22 @@ namespace UpDiddyApi.Helpers.Job
             }
 
             return TopLevelDomain + rVal;
+        }
+        /// <summary>
+        /// edge case of city being returned from talent cloude as city,state
+        /// </summary>
+        /// <param name="defUrl"></param>
+        /// <param name="facetValue"></param>
+        /// <returns></returns>
+        public static string MapCityFacet( string defUrl, string facetValue)
+        {
+            string rVal = string.Empty;
+            string [] info = facetValue.Split(",");
+            rVal = UrlComponentReplace(defUrl, 4, FacetQueryParam(info[0]) );
+            rVal = UrlComponentReplace(rVal, 3, FacetQueryParam(info[1]));
+
+            return rVal;
+
         }
 
         public static string MapQueryStringFacet(string defUrl, string queryStringName, string facetValue )

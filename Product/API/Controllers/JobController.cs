@@ -56,22 +56,20 @@ namespace UpDiddyApi.Controllers
             _httpClientFactory = httpClientFactory;
             _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
-
         }
         #endregion
 
         #region job crud 
-
-
-   
+        
         [HttpDelete]
-        // TODO Jab [Authorize(Policy = "IsRecruiterOrAdmin")]         
+        [Authorize(Policy = "IsRecruiterOrAdmin")]         
         [Route("api/[controller]/{jobPostingGuid}")]
         public IActionResult DeleteJobPosting(Guid jobPostingGuid)
         {
             try
             {
                 _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting started at: {DateTime.UtcNow.ToLongDateString()} for posting {jobPostingGuid}");
+
                 if (jobPostingGuid == null)
                     return BadRequest(new { code = 400, message = "No job posting identifier was provided" });
 
@@ -79,11 +77,12 @@ namespace UpDiddyApi.Controllers
                 if (jobPosting == null)
                     return NotFound(new { code = 404, message = $"Job posting {jobPostingGuid} does not exist" });
 
-                // TODO JAB ensure owner is trying to delete posting              
-                // Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
- 
+                Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                if (jobPosting.Subscriber.SubscriberGuid != subsriberGuidClaim)
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting owner is not specified or does not match user posting job" });
+
                 // queue a job to delete the posting from the job index and mark it as deleted in sql server
-                 BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteJob(jobPosting.JobPostingGuid));
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteJob(jobPosting.JobPostingGuid));
                 _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
             catch ( Exception ex )
@@ -94,15 +93,18 @@ namespace UpDiddyApi.Controllers
             return Ok();
         }
       
-
-
         [HttpPut]
-        // TODO Jab [Authorize(Policy = "IsRecruiterOrAdmin")]         
+        [Authorize(Policy = "IsRecruiterOrAdmin")]         
         [Route("api/[controller]")]
         public IActionResult UpdateJobPosting([FromBody] JobPostingDto jobPostingDto)
         {
             try
             {
+                // Validate request 
+                Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                if (jobPostingDto.Subscriber == null || jobPostingDto.Subscriber.SubscriberGuid == null || jobPostingDto.Subscriber.SubscriberGuid != subsriberGuidClaim)
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting owner is not specified or does not match user posting job" });
+
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
                 // Retreive the current state of the job posting 
                 JobPosting tempJobPosting = JobPostingFactory.GetJobPostingByGuid(_db,jobPostingDto.JobPostingGuid.Value);
@@ -153,15 +155,19 @@ namespace UpDiddyApi.Controllers
         }
 
 
-
         [HttpPost]
-        // TODO Jab [Authorize(Policy = "IsRecruiterOrAdmin")]         
+        [Authorize(Policy = "IsRecruiterOrAdmin")]         
         [Route("api/[controller]")]
         public IActionResult CreateJobPosting([FromBody] JobPostingDto jobPostingDto)
         {                 
             try
             {
-                 if ( jobPostingDto == null )
+                // Validate request 
+                Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                if ( jobPostingDto.Subscriber == null || jobPostingDto.Subscriber.SubscriberGuid == null || jobPostingDto.Subscriber.SubscriberGuid != subsriberGuidClaim)
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting owner is not specified or does not match user posting job" });
+
+                if ( jobPostingDto == null )
                      return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting is required"});
 
                  _syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
@@ -216,27 +222,27 @@ namespace UpDiddyApi.Controllers
         #region job search 
 
         [HttpGet]
-        [Route("api/[controller]")]
-        public IActionResult JobSearch()
+        [Route("api/[controller]/browse-jobs-location/{Country?}/{Province?}/{City?}/{Industry?}/{JobCategory?}/{Skill?}/{PageNum?}")]
+        public IActionResult JobSearchByLocation(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum)
         {
-            // TODO JAB set properties and use jobQuery
-            JobQueryDto jobQuery = new JobQueryDto();
-            // jobQuery.Skill = "javascript";
-            // jobQuery.DatePublished = "past_24_hours";
-          //  jobQuery.City = "Hanover";
-            jobQuery.Province = "MD";
-            //jobQuery.Industry = "Jim's test industry";
-            //jobQuery.SearchRadius = 30;
 
-            // jobQuery.PostalCode = "21286";
-            jobQuery.PageNum = 1;
-            jobQuery.PageSize = 100;
-
+            int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
+            JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize,  Request.Query);            
             JobSearchResultDto rVal = _cloudTalent.Search(jobQuery);
-
             return Ok(rVal);
         }
 
+        [HttpGet]
+        [Route("api/[controller]/browse-jobs-industry/{Industry?}/{JobCategory?}/{Country?}/{Province?}/{City?}/{Skill?}/{PageNum?}")]
+        public IActionResult JobSearchIndustry(string Industry, string JobCategory, string Country, string Province, string City,  string Skill, int PageNum)
+        {
+
+            int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
+            JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize, Request.Query);
+            JobSearchResultDto rVal = _cloudTalent.Search(jobQuery);
+            return Ok(rVal);
+        }
+ 
         #endregion
     }
 }

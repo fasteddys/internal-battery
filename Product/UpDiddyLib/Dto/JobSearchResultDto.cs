@@ -18,7 +18,7 @@ namespace UpDiddyLib.Dto
         /// <summary>
         /// Time for cloud talent to return search results
         /// </summary>
-        public long SearchQueryInTicks { get; set; }
+        public long SearchQueryTimeInTicks { get; set; }
         /// <summary>
         /// Time to map cloud talent search results to cc jobview 
         /// </summary>

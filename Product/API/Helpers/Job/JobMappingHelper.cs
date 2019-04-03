@@ -21,7 +21,7 @@ namespace UpDiddyApi.Helpers.Job
     /// <summary>
     /// Helper class for dealing with mapping cc jobpostings to google talent cloud data types
     /// </summary>
-    public class JobHelper
+    public class JobMappingHelper
     {
 
 
@@ -38,7 +38,7 @@ namespace UpDiddyApi.Helpers.Job
             rVal.JobPostingGuid = postingGuid;
             rVal.PostingExpirationDateUTC = DateTime.Parse(matchingJob.Job.PostingExpireTime.ToString());
             rVal.CloudTalentUri = matchingJob.Job.Name;
-            rVal.CompanyName = matchingJob.Job.CompanyName;
+            rVal.CompanyName = matchingJob.Job.CompanyDisplayName;
             rVal.Title = matchingJob.Job.Title;
             rVal.Description = matchingJob.Job.Description;
             rVal.PostingDateUTC =  DateTime.Parse(matchingJob.Job.PostingPublishTime.ToString() );
@@ -56,7 +56,6 @@ namespace UpDiddyApi.Helpers.Job
         /// </summary>
         /// <param name="searchJobsResponse"></param>
         /// <returns></returns>
-        /// TODO JAB finish mapping 
         public static JobSearchResultDto MapSearchResults(ILogger syslog, IMapper mapper, IConfiguration configuration, CloudTalentSolution.SearchJobsResponse searchJobsResponse, JobQueryDto jobQuery)
         {
 
@@ -76,9 +75,10 @@ namespace UpDiddyApi.Helpers.Job
                 try
                 {
                     // Automapper is too slow so do the mapping the old fashion way                    
-                    JobViewDto jv = CreateJobView(j);                                      
+                    JobViewDto jv = CreateJobView(j);
                     // Map custom attributes to job view
-                    JobHelper.MapCustomJobPostingAttributes(j, jv);
+                    if ( jobQuery.ExcludeCustomProperties == 0)
+                      JobMappingHelper.MapCustomJobPostingAttributes(j, jv);
                     rVal.Jobs.Add(jv);
                 }
                 catch (Exception e)
@@ -86,8 +86,8 @@ namespace UpDiddyApi.Helpers.Job
                     syslog.LogError(e, "JobPostingFactory.MapSearchResults Error mapping job", e, j);
                 }
             }
-            // add facets to the search results 
-            rVal.Facets = JobHelper.MapFacets(configuration,jobQuery, searchJobsResponse);
+            if ( jobQuery.ExcludeFacets == 0) 
+                rVal.Facets = JobMappingHelper.MapFacets(configuration,jobQuery, searchJobsResponse);
             return rVal;
         }
 
@@ -95,7 +95,7 @@ namespace UpDiddyApi.Helpers.Job
         {
             List<JobQueryFacetDto> rVal = new List<JobQueryFacetDto>();
 
-            string TopLevelDomain = config["CloudTalent:TopLevelDomain"].ToString();
+            string TopLevelDomain = config["CloudTalent:JobControllerUrl"].ToString();
             string IndustryUrl = JobUrlHelper.GetDefaultIndustryUrl(jobQuery);
             string LocationtUrl = JobUrlHelper.GetDefaultLocationUrl(jobQuery);
 
@@ -268,80 +268,8 @@ namespace UpDiddyApi.Helpers.Job
         }
 
         #endregion
-
-        #region Job indexing 
-
-        static public bool AddJobToCloudTalent(UpDiddyDbContext db, CloudTalent ct, Guid jobPostingGuid)
-        {
-            try
-            {
-                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
-                // validate we have good data 
-                if (jobPosting == null || jobPosting.Company == null)
-                    return false;
-                // validate the company is known to google, if not add it to the cloud talent 
-                if (string.IsNullOrEmpty(jobPosting.Company.CloudTalentUri))
-                    ct.IndexCompany(jobPosting.Company);
-
-                // index the job to google 
-                CloudTalentSolution.Job job = ct.IndexJob(jobPosting);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        static public bool UpdateJobToCloudTalent(UpDiddyDbContext db, CloudTalent ct, Guid jobPostingGuid)
-        {
-            try
-            {
-                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
-                // validate we have good data 
-                if (jobPosting == null || jobPosting.Company == null)
-                    return false;
-                // validate the company is known to google, if not add it to the cloud talent 
-                if (string.IsNullOrEmpty(jobPosting.Company.CloudTalentUri))
-                    ct.IndexCompany(jobPosting.Company);
-
-                // index the job to google 
-                CloudTalentSolution.Job job = ct.ReIndexJob(jobPosting);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-
-
-        static public bool DeleteJobFromCloudTalent(UpDiddyDbContext db, CloudTalent ct, Guid jobPostingGuid)
-        {
-            try
-            {
-                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
-                // validate we have good data 
-                if (jobPosting == null)
-                    return false;
-          
-                // index the job to google 
-                return ct.RemoveJobFromIndex(jobPosting);     
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-
-        #endregion
-
+ 
         #region Helper functions 
-
-
-
 
         static private long MapCustomLongAttribute(IDictionary<string, CloudTalentSolution.CustomAttribute> attributes, string attributeName)
         {

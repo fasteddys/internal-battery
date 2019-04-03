@@ -26,6 +26,24 @@ namespace UpDiddyLib.Dto
 
         #endregion
 
+        #region Search Options
+
+        /// <summary>
+        /// 
+        /// Include facets in search results 
+        /// </summary>
+        public int ExcludeFacets { get; set; }
+
+        /// <summary>
+        /// Include custom job properties in search results 
+        /// </summary>
+        public int ExcludeCustomProperties { get; set; }
+
+
+        #endregion
+
+
+
         #region Search Data
         /// <summary>
         /// Free format location string e.g 7312 parkway drive hanover md  OR 21204 , etc.  

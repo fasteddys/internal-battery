@@ -25,8 +25,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <summary>
         /// Get a job posting by guid
         /// </summary>       
-        /// <returns></returns>
-        /// //TODO JAB make sure all items that need to be indexed into google are included here 
+        /// <returns></returns>        
         public static JobPosting GetJobPostingByGuid(UpDiddyDbContext db, Guid guid)
         {
             return db.JobPosting
@@ -114,40 +113,47 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <returns></returns>
         public static bool ValidateJobPosting(JobPosting job, ref string message)
         {
-            // TODO JAB move magic strings to constants
+
+            if (job.Subscriber == null && job.SubscriberId == null)
+            {
+                message = Constants.JobPosting.ValidationError_SubscriberRequiredMsg;
+                return false;
+            }
+
             if (job.CompanyId < 0 || job.Company == null)
             {
-                message = "Company required";
+
+                message = Constants.JobPosting.ValidationError_CompanyRequiredMsg;
                 return false;
             }
 
             if (job.SecurityClearance != null && job.SecurityClearanceId == null)
             {
-                message = "Invalid security clearance";
+                message = Constants.JobPosting.ValidationError_InvalidSecurityClearanceMsg;
                 return false;
             }
 
             if (job.Industry != null && job.IndustryId == null)
             {
-                message = "Invalid industry";
+                message = Constants.JobPosting.ValidationError_InvalidIndustryMsg;
                 return false;
             }
 
             if (job.EmploymentType != null && job.EmploymentTypeId == null)
             {
-                message = "Invalid employment type";
+                message = Constants.JobPosting.ValidationError_InvalidEmploymentTypeMsg;
                 return false;
             }
 
             if (job.EducationLevel != null && job.EducationLevelId == null)
             {
-                message = "Invalid education level";
+                message = Constants.JobPosting.ValidationError_InvalidEducationLevelMsg;
                 return false;
             }
 
             if (job.ExperienceLevel != null && job.ExperienceLevelId == null)
             {
-                message = "Invalid experience level";
+                message = Constants.JobPosting.ValidationError_InvalidExperienceLevelMsg;
                 return false;
             }
 
@@ -174,6 +180,15 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <param name="jobPostingDto"></param>
         public static void MapRelatedObjects(UpDiddyDbContext  db, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
+
+            // map subscriber 
+            if (jobPostingDto.Subscriber != null)
+            {
+                Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, jobPostingDto.Subscriber.SubscriberGuid.Value);
+                if (subscriber != null)
+                    jobPosting.SubscriberId = subscriber.SubscriberId;
+            }
+
             // map company id 
             if (jobPostingDto.Company != null)
             {

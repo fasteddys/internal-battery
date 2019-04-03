@@ -57,9 +57,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<EducationLevel, EducationLevelDto>().ReverseMap();
             CreateMap<JobCategory, JobCategoryDto>().ReverseMap();
 
-
-            // TODO JAB finish this mapping      
-
+ 
             CreateMap<JobViewDto, CloudTalentSolution.MatchingJob>()
               .ForMember(c => c.JobSummary, opt => opt.MapFrom(src => src.JobSummary))
               .ForMember(c => c.JobTitleSnippet, opt => opt.MapFrom(src => src.JobTitleSnippet))
@@ -73,25 +71,7 @@ namespace UpDiddyApi.Helpers
               .ForPath(c => c.Job.Description, opt => opt.MapFrom(src => src.Description))
               .ForPath(c => c.Job.PostingPublishTime, opt => opt.MapFrom(src => src.PostingDateUTC))
               .ReverseMap();
-            /*
-             * 
-             *
- TODO JAB Index the following PostingDateUTC,ApplicationDeadlineUTC
- 
-
- 
-        
- 
-        
-        public string Description { get; set; }
-             * 
-             * 
-             * 
-             */
-
-
-
-
+   
 
             CreateMap<Contact, EmailContactDto>()
             .ForMember(c => c.email, opt => opt.MapFrom(src => src.Email))
