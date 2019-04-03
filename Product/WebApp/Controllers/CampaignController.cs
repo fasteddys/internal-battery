@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using ButterCMS;
+using ButterCMS.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -11,6 +13,7 @@ using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Helpers;
+using UpDiddy.ViewModels.ButterCMS;
 
 namespace UpDiddy.Controllers
 {
@@ -266,6 +269,39 @@ namespace UpDiddy.Controllers
             }
 
 
+        }
+
+        [Route("/campaign/{LandingPageSlug}")]
+        public IActionResult ShowCampaignLandingPage(string LandingPageSlug)
+        {
+            // Grab all query params from the request and put them into dictionary that's passed
+            // to ButterCMS call.
+            Dictionary<string, string> QueryParams = new Dictionary<string, string>();
+            foreach(string s in HttpContext.Request.Query.Keys)
+            {
+                QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
+            }
+
+            // Create ButterCMS client and call their API to get JSON response of page data values.
+            var butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
+            PageResponse<CampaignLandingPageViewModel> LandingPage = butterClient.RetrievePage<CampaignLandingPageViewModel>("*", LandingPageSlug, QueryParams);
+
+            // Return 404 if no page data is returned from Butter.
+            if (LandingPage == null)
+                return NotFound();
+
+            // Assemble ViewModel from results returned in Butter GET call.
+            var CampaignLandingPageViewModel = new CampaignLandingPageViewModel
+            {
+                hero_title = LandingPage.Data.Fields.hero_title,
+                hero_image = LandingPage.Data.Fields.hero_image,
+                hero_content = LandingPage.Data.Fields.hero_content,
+                content_band_header = LandingPage.Data.Fields.content_band_header,
+                content_band_text = LandingPage.Data.Fields.content_band_text,
+                IsExpressSignUp = true
+            };
+
+            return View("CampaignLandingPage", CampaignLandingPageViewModel);
         }
     }
 }
