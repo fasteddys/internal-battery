@@ -5,8 +5,8 @@
             <div class="mt-3 pt-3">
                 <h2>Email Verification Successful!</h2>
                 <p>
-                    Thank you for verifying your email. You will now be redirected to your profile.
-                    If for some reason you are not redirected, don't worry, just click <a href="/Home/Profile">here</a>.
+                    Thank you for verifying your email. You will now be redirected.
+                    If for some reason you are not redirected, don't worry, just click <a href="@ViewBag.returnUrl">here</a>.
                 </p>
                 <div class="circle-wrapper">
                     <div class="outerCircle"></div>
@@ -22,10 +22,12 @@
     <script type="text/javascript">
         $(document).ready(function () {
             var count = 7;
+            var params = new URLSearchParams(window.location.search);
+            var returnUrl = params.has('returnUrl') ? params.get('returnUrl') : '/Home/Profile';
             $('#count').text(count);
             var timer = setInterval(function () {
                 if (count <= 0) {
-                    window.location = "/Home/Profile";
+                    window.location = returnUrl;
                     clearInterval(timer);
                     $('.circle-wrapper').html('Redirecting...');
                     return;

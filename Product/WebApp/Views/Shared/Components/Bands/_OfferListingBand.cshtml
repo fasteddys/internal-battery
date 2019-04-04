@@ -34,12 +34,12 @@
                 <div class="card-body">
                     <div class="offer-description">
                         <div class="row">
-                            <div class="@firstColumn no-padding">
+                            <div class="@firstColumn">
                                 @offer.Description
                             </div>
                             @if (Model.IsEligible)
                             {
-                                <div class="col-3 no-padding text-right">
+                                <div class="col-3 text-right">
                                     <button type="button" class="btn btn-primary claim-offer-button" data-offer="@offer.OfferGuid">
                                         Claim
                                     </button>
