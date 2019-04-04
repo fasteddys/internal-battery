@@ -269,7 +269,7 @@ namespace UpDiddyApi.Controllers
             try
             {
                 // check to see if there is an existing file for this partner contact with the same name
-                var partnerContactFile = _db.PartnerContactFile.Where(pcf => pcf.IsDeleted == 0 && pcf.Name == leadFile.Name).FirstOrDefault();
+                var partnerContactFile = _db.PartnerContactFile.Where(pcf => pcf.IsDeleted == 0 && pcf.Name == leadFile.FileName).FirstOrDefault();
 
                 if (partnerContactFile == null)
                 {
@@ -298,7 +298,7 @@ namespace UpDiddyApi.Controllers
                         IsBillable = _isBillable,
                         IsDeleted = 0,
                         MimeType = leadFile.MimeType,
-                        Name = leadFile.Name,
+                        Name = leadFile.FileName,
                         PartnerContactId = partnerContact.PartnerContactId,
                         PartnerContactFileGuid = Guid.NewGuid(),
                         PartnerContactFileLeadStatuses = partnerContactFileLeadStatuses
