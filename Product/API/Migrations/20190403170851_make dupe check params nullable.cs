@@ -24,7 +24,7 @@ EXEC [dbo].[System_Get_LeadDupeCheck]
 SELECT @IsDupeOutput [IsDupe]
 </example>
 */
-ALTER PROCEDURE [dbo].[System_Get_LeadDupeCheck] (
+CREATE PROCEDURE [dbo].[System_Get_LeadDupeCheck] (
 	@Email NVARCHAR(100) = NULL,
 	@Phone NVARCHAR(10) = NULL,
 	@IsDupe BIT OUTPUT
