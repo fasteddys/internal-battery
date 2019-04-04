@@ -150,7 +150,7 @@ namespace UpDiddyApi.Controllers
                 return StatusCode((int)HttpStatusCode.Unauthorized, "Invalid ApiToken provided");
 
             // lookup lead
-            var partnerContact = _db.PartnerContact.Where(pc => pc.IsDeleted == 0 && pc.PartnerContactGuid == leadFile.LeadIdentifier).FirstOrDefault();
+            var partnerContact = _db.PartnerContact.Where(pc => pc.IsDeleted == 0 && pc.PartnerContactGuid == leadIdentifier).FirstOrDefault();
             if (partnerContact == null)
                 return StatusCode((int)HttpStatusCode.NotFound, "Lead not found");
             else
