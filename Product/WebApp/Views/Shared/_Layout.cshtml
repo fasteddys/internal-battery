@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Localization
 @using Microsoft.AspNetCore.Mvc.Localization
 @using System.Web
+@using React.AspNet;
 
 @using Microsoft.AspNetCore.Http;
 @using Microsoft.AspNetCore.Mvc
@@ -96,7 +97,6 @@
     @RenderBody()
 
     @await Html.PartialAsync("_Footer")
-
     <script type="text/javascript">
         var API_URL = "@Configuration["Api:ApiUrl"]";
         var SIGNALR_URL = "@Configuration["SignalR:HubUrl"]";
@@ -107,8 +107,11 @@
     <environment names="Staging,Production">
         <script type="text/javascript" src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
-    <script type="text/javascript" src="~/js/bundle.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/runtime.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/vendor.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/components.js" asp-append-version="true"></script>
 
     @RenderSection("Scripts", false)
+    @Html.ReactInitJavaScript()
 </body>
 </html>

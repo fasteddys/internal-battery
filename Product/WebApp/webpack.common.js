@@ -1,20 +1,33 @@
 module.exports = {
-    entry: './client/react/index.js',
-    module: {
-        rules: [
-            {
-                test: /\.(js|jsx)$/,
-                exclude: /node_modules/,
-                use: ['babel-loader']
-            }
-        ]
-    },
-    resolve: {
-        extensions: ['*', '.js', '.jsx']
-    },
-    output: {
-        path: __dirname + '/wwwroot/js',
-        publicPath: '/',
-        filename: 'bundle.js'
-    }
-}
+	entry: {
+		components: './client/react/components/expose-components.js',
+	},
+	output: {
+		filename: '[name].js',
+		globalObject: 'this',
+		path: __dirname + '/wwwroot/js',
+	},
+	optimization: {
+		runtimeChunk: {
+			name: 'runtime', // necessary when using multiple entrypoints on the same page
+		},
+		splitChunks: {
+			cacheGroups: {
+				commons: {
+					test: /[\\/]node_modules[\\/]/,
+					name: 'vendor',
+					chunks: 'all',
+				},
+			},
+		},
+	},
+	module: {
+		rules: [
+			{
+				test: /\.jsx?$/,
+				exclude: /node_modules/,
+				loader: 'babel-loader',
+			},
+		],
+	},
+};

@@ -3,6 +3,7 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
+@using React.AspNet;
 @model ProfileViewModel
 @section Scripts
     {
@@ -200,6 +201,7 @@
                     <div class="col-md">
 
                         @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.SubscriberGuid })
+                        @Html.React("ResumeUpload", new { fileGuid = Model.Resume.SubscriberFileGuid, fileName = Model.Resume.SimpleName })
                         <div class="resume-file-component @((Model.Resume != null) ? "has-resume" : "")">
                             @if (Model.Resume != null)
                             {

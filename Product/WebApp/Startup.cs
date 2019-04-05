@@ -27,6 +27,9 @@ using UpDiddy.Api;
 using UpDiddy.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using JavaScriptEngineSwitcher.ChakraCore;
+using JavaScriptEngineSwitcher.Extensions.MsDependencyInjection;
+using React.AspNet; 
 
 namespace UpDiddy
 {
@@ -64,6 +67,11 @@ namespace UpDiddy
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+			services.AddJsEngineSwitcher(options => options.DefaultEngineName = ChakraCoreJsEngine.EngineName)
+				.AddChakraCore();
+
+			services.AddReact();
 
             services.AddAuthentication(sharedOptions =>
             {
@@ -205,6 +213,18 @@ namespace UpDiddy
                 app.UseExceptionHandler("/Home/Error");
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }
+
+            // Initialise ReactJS.NET. Must be before static files.
+            app.UseReact(config =>
+            {
+				config
+					.SetReuseJavaScriptEngines(true)
+					.SetLoadBabel(false)
+					.SetLoadReact(false)
+					.AddScriptWithoutTransform("~/js/runtime.js")
+					.AddScriptWithoutTransform("~/js/vendor.js")
+					.AddScriptWithoutTransform("~/js/components.js");
+            });
 
             app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
 
