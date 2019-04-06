@@ -1,0 +1,16 @@
+.video-section {
+    position: relative;
+    .video-wrapper {
+        height: 85vh;
+        background-position: center;
+    }
+    .hero-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: rgba($color-secondary, .3);
+        height: 100%;
+        width: 100%;
+        z-index: 1; 
+    }
+}
