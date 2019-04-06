@@ -55,8 +55,9 @@
             </button>
             <div class="collapse navbar-collapse" id="NavigationItems">
                 <ul class="navbar-nav ml-auto">
-                    <!--<li class="nav-item"><a class="nav-link" asp-controller="Topic" asp-action="Index">@Localizer["Career Skilling"]</a></li>-->
-                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Offers">Offers</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Offers"><span class="badge badge-success">new</span> Offers</a>
+                    </li>
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
                     @if (User.Identity.IsAuthenticated)
                     {
