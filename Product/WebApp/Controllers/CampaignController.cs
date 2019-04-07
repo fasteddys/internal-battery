@@ -35,23 +35,9 @@ namespace UpDiddy.Controllers
         [HttpGet("/MomProject")]
         [HttpGet("/ClinicalResearchFastrack")]
         [HttpGet("/barnett")]
-        [HttpGet("/BarnettInternational/{campaignGuid?}/{contactGuid?}")]
-        public IActionResult PartnerLandingPages(Guid? campaignGuid, Guid? contactGuid)
+        public IActionResult PartnerLandingPages()
         {
-            if (campaignGuid.HasValue && contactGuid.HasValue)
-            {
-                string CampaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
-                string _TrackingImgSource = _configuration["Api:ApiUrl"] +
-                    "tracking?contact=" + contactGuid +
-                    "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
-                    campaignGuid + "&campaignphase=" + WebUtility.UrlEncode(CampaignPhase);
-                ViewBag.TrackingImgSource = _TrackingImgSource;
-            }
-            string viewName;
-            if (Request.Path.Value.TrimStart('/').IndexOf('/') > 0)
-                viewName = Request.Path.Value.TrimStart('/').Substring(0, Request.Path.Value.TrimStart('/').IndexOf('/'));
-            else
-                viewName = Request.Path.Value.TrimStart('/');
+            string viewName = Request.Path.Value.TrimStart('/');
 
             return View(viewName, new SignUpViewModel()
             {
