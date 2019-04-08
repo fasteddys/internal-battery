@@ -11,22 +11,23 @@
 
 
 <div class="home-container">
-    <div class="row home-hero-top">
-        <div class="col-md-12">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-6 offset-md-6 hero-container">
-                        <h1><span class="f-color-black">Stay</span> <span class="f-color-primary f-bold">relevant</span>.</h1>
-                        <h1><span class="f-color-black">Become</span> <span class="f-color-tertiary f-bold">empowered</span>.</h1>
-                        <h1><span class="f-color-black">Control your</span> <span class="f-color-secondary f-bold">career</span>.</h1>
-                        <br />
-                        <h2><i><span class="f-color-black">It's time to</span> <span class="f-color-primary"><strong>Careerskill<sup>TM</sup></strong></span></i></h2>
-                        <a asp-controller="Session" asp-action="SignIn"><div class="btn brand-button-tertiary">Sign Up for CareerCircle Today!</div></a>
-                    </div>
+    <section class="section video-section">
+        <div class="video-wrapper jquery-background-video-wrapper" style="background-image: url('../images/hero/1_second.jpg')">
+            <video data-bgvideo="true" autoplay loop muted plays-inline poster="../images/hero/1_second.jpg">
+                <source src="../videos/hero_video_v2.mp4" type="video/mp4">
+            </video>    
+        </div>
+        <div class="hero-content">
+            <div class="d-flex justify-content-center h-100">
+                <div class="align-self-center text-white">
+                    <h1 class="display-4">Stay Relevant.</h1>
+                    <h3>Become Empowered.</h3>
+                    <h3>Control Your Career.</h3>
+                    <a asp-controller="Home" asp-action="About" class="btn btn-primary btn-lg   border-0">About Us</a>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
     <div class="row home-hero-bottom">
         <div class="col-md-12">
             <div class="container">

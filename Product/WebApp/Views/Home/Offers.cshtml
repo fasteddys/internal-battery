@@ -1,71 +1,112 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
 @model OffersViewModel
+@section Scripts
+{
+    <script type="text/javascript">
+        var emailVerification = {
+            init: function () {
+                $('.email-verification-btn').click(function (e) {
+                    var $this = $(this);
+                    $this.prop('disabled', true);
+                    var verifyLink = new URL("/email/confirm-verification/", window.location.origin);
+                    var returnUrl = new URL("/Home/Offers", window.location.origin);
+                    verifyLink.searchParams.append('returnUrl', returnUrl.href);
 
+                    CareerCircleAPI.requestVerification(verifyLink.href).then(function (res) {
+                        ToastService.success('Verification email sent.')
+                    })
+                    .catch(function (e) {
+                        ToastService.error('An unexpected error occurred. Please try again later.');
+                    })
+                    .finally(function () {
+                        $this.prop('disabled', false);
+                    });
+                });
+            }
+        }
 
-
-<div class="offers-page-header row">
-    <div class="col-12">
-        <div class="container">
-            <div class="row">
-                <div class="col-12 no-padding">
-                    <div class="header-language-container">
-                        <div class="promo-header-text">
-                            <strong>Current CareerCircle Offers</strong>
+        $(document).ready(function () {
+            emailVerification.init();
+        });
+    </script>
+}
+    <div class="offers-page-header row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="header-language-container">
+                            <div class="promo-header-text">
+                                <strong>Current CareerCircle Offers</strong>
+                            </div>
+                            <div class="promo-header-description">
+                                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium,
+                                totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae
+                                dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit,
+                                sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.<br /><br /> Neque porro quisquam
+                                est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam
+                                eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima
+                                veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea
+                                commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil
+                                molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
+                            </div>
+                            @*
+        @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+            Text = "Join Our Community",
+            Hyperlink = "/join#CommunityCampaignBottomContainer",
+            FitToText = true,
+            ChosenColorScheme = "cc-cscheme-secondary",
+            ButtonAction = ActionButtonViewModel.Action.CTA,
+            ButtonClass = "signup-cta"
+        })
+                            *@
                         </div>
-                        <div class="promo-header-description">
-                            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, 
-                            totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae 
-                            dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, 
-                            sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.<br/><br /> Neque porro quisquam 
-                            est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam 
-                            eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima 
-                            veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea 
-                            commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil 
-                            molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
-                        </div>
-                        @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                            Text = "Join Our Community",
-                            Hyperlink = "/join#CommunityCampaignBottomContainer",
-                            FitToText = true,
-                            ChosenColorScheme = "cc-cscheme-secondary",
-                            ButtonAction = ActionButtonViewModel.Action.CTA,
-                            ButtonClass = "signup-cta"
-                        })
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<div id="OffersContainer" class="row">
-    <div class="col-12">
-        <div class="container">
-            <div class="row">
-                <div class="col-12 no-padding">
-                    @if (!Model.UserIsEligibleForOffers)
-                    {
-                        <div class="alert alert-warning" role="alert">
-                            @Html.Raw(Model.CtaText)
-
-                        </div>
-                    }
-                    @if (Model.Offers != null && Model.Offers.Count > 0)
-                    {
-                        @Html.Partial("Components/Bands/_OfferListingBand", new OfferListingViewModel
+    <div id="OffersContainer" class="row">
+        <div class="col-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        @if (!Model.UserIsEligibleForOffers)
                         {
-                            Offers = Model.Offers,
-                            IsEligible = Model.UserIsEligibleForOffers
-                        })
-                    }
-                    else
-                    {
-                        <h2>No offers are available at this time.</h2>
-                    }
+                            <div class="alert alert-warning" role="alert">
+                                @if (Model.StepsRequired.Any())
+                                {
+                                    <p>Please complete the following to gain access to offers:</p>
+                                    <ul>
+                                        @foreach (string requiredStep in Model.StepsRequired)
+                                        {
+                                            <li>@Html.Raw(requiredStep)</li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    @Html.Raw(Model.CtaText);
+                                }
+                            </div>
+                        }
+                        @if (Model.Offers != null && Model.Offers.Count > 0)
+                        {
+                            @Html.Partial("Components/Bands/_OfferListingBand", new OfferListingViewModel
+                            {
+                                Offers = Model.Offers,
+                                IsEligible = Model.UserIsEligibleForOffers
+                            })
+                        }
+                        else
+                        {
+                            <h2>No offers are available at this time.</h2>
+                        }
 
 
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
