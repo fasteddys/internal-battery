@@ -210,7 +210,8 @@
     
 
     // video section
-    $('.video-section video').each(function(index, ele) {
+    $('.video-section video').each(function (index, ele) {
+        $(ele).show();
         if(ele.readyState > 3) {
             $(ele).addClass('can-play');
             return;

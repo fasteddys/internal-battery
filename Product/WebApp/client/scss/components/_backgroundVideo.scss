@@ -3,6 +3,15 @@
     .video-wrapper {
         height: 85vh;
         background-position: center;
+        &.is-desktop {
+            background: black !important;
+        }
+
+        &.is-mobile {
+            video {
+                display: none;
+            }
+        }
     }
     .hero-content {
         position: absolute;

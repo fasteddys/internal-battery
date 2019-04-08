@@ -17,6 +17,7 @@
     <PackageReference Include="Braintree" Version="4.7.0" />
     <PackageReference Include="ButterCMS" Version="1.3.4" />
     <PackageReference Include="CsvHelper" Version="12.1.2" />
+    <PackageReference Include="DeviceDetector.NET.NetCore" Version="3.9.2.2" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.5.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.1.6" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.1.2" />
@@ -42,7 +43,7 @@
     <PackageReference Include="BuildBundlerMinifier" Version="2.8.391" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0-preview1-35029" />
     <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.2.0-preview1-35029" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.9" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.7" />
     <PackageReference Include="NonFactors.Grid.Mvc6" Version="4.0.2" />
     <PackageReference Include="Polly" Version="6.1.1" />
     <PackageReference Include="Polly.Extensions.Http-Signed" Version="1.0.4" />
