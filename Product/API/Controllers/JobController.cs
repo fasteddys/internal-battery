@@ -267,7 +267,6 @@ namespace UpDiddyApi.Controllers
             // copy skill to new posting 
            JobPostingFactory.CopyPostingSkills(_db, SourcePostingId, jobPosting.JobPostingId);
 
-
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPosting.JobPostingGuid}" });
         }
 
