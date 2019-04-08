@@ -1,17 +1,70 @@
 ﻿@import '_variables';
 
-.contact-us-container {
-    > div {
-        padding: 3rem 0;
-    }
+// Base Styles
+@media (min-width: 0px) {
+    .contact-us-container {
+        > div {
+            padding: 3rem 0;
+        }
 
-    .contact-us-hero {
-        background-color: $color-secondary;
-        color: $color-white;
-    }
+        .contact-us-hero {
+            background-color: $color-secondary;
+            color: $color-white;
+        }
 
-    .contact-us-secondary-band {
-        background-color: $color-primary;
-        color: $color-white;
+        .contact-us-secondary-band {
+            background-color: $color-primary;
+            color: $color-white;
+        }
+
+        .contact-us-tertiary-band {
+            background: url('../images/light_blue_background.jpg');
+            background-size: cover;
+            color: $color-white;
+
+            .contact-us-header {
+                font-size: 1.5rem;
+                padding-bottom: 1rem;
+            }
+        }
+
+        #ContactUsForm {
+            .contact-us-button-container {
+                text-align: center;
+
+                button {
+                    padding: 0.4rem 3rem;
+                    box-shadow: 0 2px 5px 0 rgba(0,0,0,.16), 0 2px 10px 0 rgba(0,0,0,.12);
+                    border: 0;
+
+                    &:hover {
+                        background-color: $color-secondary;
+                        box-shadow: 0 5px 11px 0 rgba(0,0,0,.18), 0 4px 15px 0 rgba(0,0,0,.15);
+                    }
+                }
+            }
+        }
     }
 }
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+}
+
+

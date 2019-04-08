@@ -22,10 +22,17 @@
         string divId = "collapse" + offer.OfferGuid;
         string firstColumn = Model.IsEligible ? "col-9" : "col-12";
         <div class="card">
-            <div class="card-header" id="headingOne" data-toggle="collapse" data-target="#@divId" aria-expanded="true" aria-controls="@divId">
+            <div class="card-header collapsed" id="headingOne" data-toggle="collapse" data-target="#@divId" aria-expanded="true" aria-controls="@divId">
                 <h2 class="mb-0">
                     <button class="btn btn-link" type="button" >
-                        @offer.Partner.Name
+                        @if (!string.IsNullOrEmpty(offer.Partner.LogoUrl))
+                        {
+                            <img src="@offer.Partner.LogoUrl" />
+                        }
+                        else
+                        {
+                            @offer.Partner.Name
+                        }
                     </button>
                 </h2>
             </div>
@@ -35,7 +42,6 @@
                     <div class="offer-description">
                         <div class="row">
                             <div class="@firstColumn">
-                                <img class="pull-left" src="@offer.Partner.LogoUrl" />
                                 @offer.Description
                             </div>
                             @if (Model.IsEligible)

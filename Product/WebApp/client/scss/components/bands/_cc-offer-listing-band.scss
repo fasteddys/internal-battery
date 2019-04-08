@@ -19,6 +19,7 @@
     .card {
         border: 1px solid $color-secondary;
         border-top: 0;
+        border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0;
 
         &:first-child {
             border-top: 1px solid $color-secondary;
@@ -29,6 +30,27 @@
         .card-header {
             background-color: transparent;
             cursor: pointer;
+            position: relative;
+
+            &:after {
+                position: absolute;
+                right: 1rem;
+                top: 1rem;
+                font-family: 'Font Awesome 5 Free';
+                font-weight: 900;
+                content: "\f0d8";
+                font-size: 2rem;
+            }
+
+            &.collapsed:after {
+                position: absolute;
+                right: 1rem;
+                top: 1rem;
+                font-family: 'Font Awesome 5 Free';
+                font-weight: 900;
+                content: "\f0d7";
+                font-size: 2rem;
+            }
 
             .btn-link {
                 color: $color-secondary;
@@ -38,6 +60,14 @@
                     color: $color-secondary;
                     text-decoration: none;
                 }
+
+                img {
+                    height: 2.5rem;
+                }
+            }
+
+            i {
+                line-height: 3rem;
             }
 
             &:hover {
