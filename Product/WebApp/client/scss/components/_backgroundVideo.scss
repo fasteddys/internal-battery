@@ -13,4 +13,13 @@
         width: 100%;
         z-index: 1; 
     }
+
+    video {
+        opacity: 0 !important;
+        transition: opacity .5s;
+    
+        &.can-play {
+            opacity: 1 !important;
+        }
+    }
 }
