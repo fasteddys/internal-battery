@@ -249,9 +249,6 @@ namespace UpDiddy
             // custom middleware for device detection
             app.Use((context, next) =>
             {
-                if (context.Session.GetString("Device-Type") != null)
-                    return next();
-
                 var dd = new DeviceDetector(context.Request.Headers["User-Agent"].ToString());
                 dd.Parse();
                 string deviceType = dd.IsMobile() ? "is-mobile" : "is-desktop";
