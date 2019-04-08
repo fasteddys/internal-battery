@@ -253,7 +253,7 @@ namespace UpDiddy
                     return next();
 
                 var dd = new DeviceDetector(context.Request.Headers["User-Agent"].ToString());
-                string deviceType = dd.IsMobile() ? "is-mobile" : "is-desktop";
+                string deviceType = !dd.IsDesktop() ? "is-mobile" : "is-desktop";
                 context.Session.SetString("Device-Type", deviceType);
                 return next();
             });
