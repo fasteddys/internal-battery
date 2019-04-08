@@ -313,38 +313,64 @@ namespace UpDiddyApi.ApplicationCore.Services
             CloudTalentSolution.JobQuery cloudTalentJobQuery = new CloudTalentSolution.JobQuery();
             // add keywords 
             if ( string.IsNullOrEmpty(jobQuery.Keywords) == false )
-            {
-                
+            {                
                 cloudTalentJobQuery.Query = jobQuery.Keywords;
             }
 
-            // add locations filters.  give preference to the free format location field if it's 
-            // defined, if not use city state parameters if they have been defined 
-            string addressInfo = string.Empty;
-            if (string.IsNullOrEmpty(jobQuery.Location) == false)
-                addressInfo = jobQuery.Location;           
-            else
-            {
-                addressInfo = jobQuery.StreetAddress + " " + jobQuery.City + " " + jobQuery.Province + " " + jobQuery.Country;
-                addressInfo = addressInfo.Trim();
+     
 
-            }
-            // add location filter if any address information has been provided 
-            if ( string.IsNullOrEmpty(addressInfo) == false )
+            if ( jobQuery.Lat != 0  && jobQuery.Lng != 0)
             {
-                CloudTalentSolution.LocationFilter locationFilter = new CloudTalentSolution.LocationFilter()
-                {                    
-                    Address = addressInfo,
-                    DistanceInMiles = jobQuery.SearchRadius
-
+                cloudTalentJobQuery.CommuteFilter = new CloudTalentSolution.CommuteFilter()
+                {
+                    AllowImpreciseAddresses = !jobQuery.PreciseAddress,
+                    CommuteMethod = jobQuery.PublicTransit ? "TRANSIT" : "DRIVING",
+                    StartCoordinates = new CloudTalentSolution.LatLng()
+                    {
+                        Latitude = jobQuery.Lat,
+                        Longitude = jobQuery.Lng,
+                    },
+                    // Google's Duraton.ToString is including  escaped double quotes.  For now just 
+                    // format in the required format 
+                    TravelDuration = (jobQuery.CommuteTime * 60).ToString() + "s",
+                    RoadTraffic = jobQuery.RushHour ? "BUSY_HOUR" : "TRAFFIC_FREE"
+                
                 };
+            }
+            else // not commute search 
+            {
+                // add locations filters.  give preference to the free format location field if it's 
+                // defined, if not use city state parameters if they have been defined 
+                string addressInfo = string.Empty;
+                if (string.IsNullOrEmpty(jobQuery.Location) == false)
+                    addressInfo = jobQuery.Location;
+                else
+                {
+                    addressInfo = jobQuery.StreetAddress + " " + jobQuery.City + " " + jobQuery.Province + " " + jobQuery.Country;
+                    addressInfo = addressInfo.Trim();
 
-                cloudTalentJobQuery.LocationFilters = new List<CloudTalentSolution.LocationFilter>()
+                }
+                // add location filter if any address information has been provided 
+                if (string.IsNullOrEmpty(addressInfo) == false)
+                {
+                    CloudTalentSolution.LocationFilter locationFilter = new CloudTalentSolution.LocationFilter()
+                    {
+                        Address = addressInfo,
+                        DistanceInMiles = jobQuery.SearchRadius
+
+                    };
+
+                    cloudTalentJobQuery.LocationFilters = new List<CloudTalentSolution.LocationFilter>()
                 {
                     locationFilter
                 };
 
+                }
             }
+
+
+       
+     
             // publish time range 
             if ( string.IsNullOrEmpty(jobQuery.DatePublished) == false)
             {
@@ -411,10 +437,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 attributeFilters += "LOWER(ExperienceLevel) = \"" + jobQuery.ExperienceLevel.Trim().ToLower() + "\"";
             }
- 
-
-
-
 
             // Add Custom Attribute Filter 
             if ( attributeFilters.Length > 0 )
@@ -476,8 +498,12 @@ namespace UpDiddyApi.ApplicationCore.Services
                 SearchMode = "JOB_SEARCH",
                 HistogramFacets = histogramFacets, 
                 PageSize = jobQuery.PageSize,
-                Offset = jobQuery.PageSize * (jobQuery.PageNum - 1)
+                Offset = jobQuery.PageSize * (jobQuery.PageNum - 1),
+                OrderBy = jobQuery.OrderBy
+
             };
+
+            
 
             return searchJobRequest;
         }

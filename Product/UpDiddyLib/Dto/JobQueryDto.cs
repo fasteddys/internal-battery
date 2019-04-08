@@ -39,12 +39,76 @@ namespace UpDiddyLib.Dto
         /// </summary>
         public int ExcludeCustomProperties { get; set; }
 
+        /// <summary>
+        /// Order of search results. Valid values are:
+        /// 
+        /// "relevance desc":                       By relevance descending, as determined by the API algorithms. Relevance thresholding of query results is only available with this ordering.
+        ////"posting_publish_time desc":            By Job.posting_publish_time descending.
+        ////"posting_update_time desc":             By Job.posting_update_time descending.
+        ////"title":                                By Job.title ascending.
+        ////"title desc":                           By Job.title descending.
+        ////"annualized_base_compensation":         By job's CompensationInfo.annualized_base_compensation_range ascending. Jobs whose annualized base compensation is unspecified are put at the end of search results.
+        ////"annualized_base_compensation desc":    By job's CompensationInfo.annualized_base_compensation_range descending. Jobs whose annualized base compensation is unspecified are put at the end of search results.
+        ////"annualized_total_compensation":        By job's CompensationInfo.annualized_total_compensation_range ascending. Jobs whose annualized base compensation is unspecified are put at the end of search results.
+        ////"annualized_total_compensation desc":   By job's CompensationInfo.annualized_total_compensation_range descending. Jobs whose annualized base compensation is unspecified are put at the end of search results.
+                /// </summary>
+        public string OrderBy { get; set; }
+
 
         #endregion
 
 
 
+        #region Commute Search
+        /// <summary>
+        /// lattude of commute search - if both lat and long are non zero
+        /// a commute search will be assumed
+        /// </summary>
+        public double Lat { get; set; }
+
+        /// <summary>
+        /// longitude of commute search - if both lat and long are non zero
+        /// a commute search will be assumed
+        /// </summary>
+        public double Lng { get; set; }
+
+        /// <summary>
+        /// Only return jobs at are at most MaxCommuteTimeInMinutes from lat/lng 
+        /// </summary>
+        public int CommuteTime { get; set; }
+
+        /// <summary>
+        /// Set to true to only return jobs with fully qualified addresses 
+        /// that include city, province and street addresses 
+        /// </summary>
+        public bool PreciseAddress { get; set; }
+
+        /// <summary>
+        /// Set to true if the commute method is public, otherwise private auto
+        /// is assumed
+        /// </summary>
+        public bool PublicTransit { get; set; }
+
+
+        /// <summary>
+        /// Set to true if the commute time is during rush-hour, otherwhise a off hour 
+        /// commmute will be assumed 
+        /// is assumed
+        /// </summary>
+        public bool RushHour { get; set; }
+
+
+
+
+        #endregion
+
         #region Search Data
+
+
+
+
+
+
         /// <summary>
         /// Free format location string e.g 7312 parkway drive hanover md  OR 21204 , etc.  
         /// </summary>

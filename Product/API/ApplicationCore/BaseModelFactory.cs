@@ -12,11 +12,11 @@ namespace UpDiddyApi.ApplicationCore
         {
 
             baseModel.IsDeleted = 0;
-            if (baseModel.CreateDate == DateTime.MaxValue || baseModel.CreateDate == DateTime.MinValue)
-                baseModel.CreateDate = DateTime.UtcNow;
-            if (baseModel.CreateDate == null ||  baseModel.ModifyDate == DateTime.MaxValue || baseModel.ModifyDate == DateTime.MinValue)
-                baseModel.ModifyDate = DateTime.UtcNow;
+
+            baseModel.CreateDate = DateTime.UtcNow;            
+            baseModel.ModifyDate = DateTime.UtcNow;
             Guid GuidOutput = Guid.Empty;
+
             bool isValid = Guid.TryParse(baseModel.CreateGuid.ToString(), out GuidOutput);
             if (isValid == false)
                 baseModel.CreateGuid = Guid.NewGuid();

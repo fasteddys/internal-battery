@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static List<JobPostingSkill> GetSkillsForPosting(UpDiddyDbContext db, int jobPostingId )
         {
             return  db.JobPostingSkill
+                   .Include( s => s.Skill )
                    .Where(s => s.JobPostingId == jobPostingId)
                    .ToList();
         }
@@ -52,7 +54,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 CreateGuid = Guid.Empty,
                 ModifyGuid = Guid.Empty,
                 SkillId = skill.SkillId,
-                JobPostingId = jobPostingId                
+                JobPostingId = jobPostingId ,
+                JobPostingSkillGuid = skill.SkillGuid
             };
 
         }

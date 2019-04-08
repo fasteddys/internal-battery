@@ -39,7 +39,16 @@ namespace UpDiddyApi.Helpers.Job
             // Search options
             jobQuery.ExcludeCustomProperties = GetIntQueryParam(query, "exclude-custom-properties");
             jobQuery.ExcludeFacets = GetIntQueryParam(query, "exclude-facets");
+            jobQuery.OrderBy = GetQueryParam(query, "order-by");
 
+            // Commute search
+            jobQuery.Lat = GetDoubleQueryParam(query, "lat");
+            jobQuery.Lng = GetDoubleQueryParam(query, "lng");
+            jobQuery.CommuteTime = GetIntQueryParam(query, "commute-time");
+           
+            jobQuery.PreciseAddress = GetBoolQueryParam(query, "precise-address");
+            jobQuery.PublicTransit = GetBoolQueryParam(query, "public-transit");
+            jobQuery.RushHour = GetBoolQueryParam(query, "rush-hour"); 
 
             // Set up pagination
             jobQuery.PageNum = GetIntQueryParam(query, "page-num",PageNum);            
@@ -84,9 +93,52 @@ namespace UpDiddyApi.Helpers.Job
             catch
             {
                 return 0;
-            }
-      
+            }      
         }
+
+
+        static private double GetDoubleQueryParam(IQueryCollection queryInfo, string ParamName, double urlComponentValue = 0)
+        {
+            try
+            {
+                // first check to see if the param was specified in the query string.  Highest priority 
+                if (queryInfo.Keys.Contains(ParamName) && string.IsNullOrEmpty(queryInfo[ParamName]) == false && queryInfo[ParamName] != "all")
+                    return double.Parse(queryInfo[ParamName]);
+
+                // check to see if the param was specified through an url component 
+                if (urlComponentValue != null)
+                    return urlComponentValue;
+
+                // zero -> value not entered 
+                return 0;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        static private bool GetBoolQueryParam(IQueryCollection queryInfo, string ParamName, bool urlComponentValue = false)
+        {
+            try
+            {
+                // first check to see if the param was specified in the query string.  Highest priority 
+                if (queryInfo.Keys.Contains(ParamName) && string.IsNullOrEmpty(queryInfo[ParamName]) == false && queryInfo[ParamName] != "all")
+                    return queryInfo[ParamName].ToString().ToLower() == "true" ? true : false;
+
+                // check to see if the param was specified through an url component 
+                if (urlComponentValue != null)
+                    return urlComponentValue;
+
+                //  assume false 
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
 
 
 

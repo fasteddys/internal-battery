@@ -122,6 +122,8 @@ namespace UpDiddyLib.Dto
     
         public string StreetAddress { get; set; }
 
+        public int CommuteTime { get; set; }
+
 
     }
 }

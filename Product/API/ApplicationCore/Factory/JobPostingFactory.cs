@@ -14,6 +14,7 @@ using UpDiddyApi.ApplicationCore.Services;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
@@ -41,6 +42,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
                 .FirstOrDefault();
         }
+
+
+ 
 
 
         /// <summary>
@@ -94,15 +98,15 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <param name="job"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        public static bool ValidateUpdatedJobPosting(JobPosting job, ref string message)
+        public static bool ValidateUpdatedJobPosting(JobPosting job, IConfiguration config, ref string message)
         {
             if ( string.IsNullOrEmpty(job.CloudTalentUri) )
             {
-                message = "Job has not been indexed";
+                message = Constants.JobPosting.ValidationError_JobNotIndexed;
                 return false;
             }
 
-            return ValidateJobPosting(job, ref message);
+            return ValidateJobPosting(job, config, ref message);
         }
 
         /// <summary>
@@ -111,8 +115,17 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <param name="job"></param>
         /// <param name=""></param>
         /// <returns></returns>
-        public static bool ValidateJobPosting(JobPosting job, ref string message)
+        public static bool ValidateJobPosting(JobPosting job, IConfiguration config, ref string message)
         {
+
+            int MinDescriptionLen = int.Parse(config["CloudTalent:JobDescriptionMinLength"]);
+            
+            if ( job.Description.Trim().Length < MinDescriptionLen)
+            {
+                message = string.Format(Constants.JobPosting.ValidationError_InvalidDescriptionLength, MinDescriptionLen);
+                return false;
+            }
+
 
             if (job.Subscriber == null && job.SubscriberId == null)
             {
@@ -139,6 +152,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 return false;
             }
 
+            if (job.JobCategory != null && job.JobCategoryId == null)
+            {
+                message = Constants.JobPosting.ValidationError_InvalidJobCategoryMsg;
+                return false;
+            }
+
             if (job.EmploymentType != null && job.EmploymentTypeId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidEmploymentTypeMsg;
@@ -160,7 +179,25 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return true;
         }
 
+        public static void CopyPostingSkills(UpDiddyDbContext db, int sourcePostingId, int destinationPostingId)
+        {
+            List<JobPostingSkill> skills = JobPostingSkillFactory.GetSkillsForPosting(db, sourcePostingId);
+            foreach ( JobPostingSkill s in skills)
+            {
+                JobPostingSkillFactory.Add(db, destinationPostingId, s.Skill.SkillGuid.Value);
+            }
+            db.SaveChanges();
+        }
 
+
+
+
+        /// <summary>
+        /// Save posting skills - todo use stored procedure to make this more efficient 
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="jobPosting"></param>
+        /// <param name="jobPostingDto"></param>
         public static void SavePostingSkills(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
             foreach ( SkillDto skillDto in jobPostingDto.Skills)

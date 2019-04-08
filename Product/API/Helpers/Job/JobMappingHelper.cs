@@ -23,8 +23,6 @@ namespace UpDiddyApi.Helpers.Job
     /// </summary>
     public class JobMappingHelper
     {
-
-
         #region Cloud talent job -> CC job helpers
 
         public static JobViewDto CreateJobView( CloudTalentSolution.MatchingJob matchingJob)
@@ -76,6 +74,8 @@ namespace UpDiddyApi.Helpers.Job
                 {
                     // Automapper is too slow so do the mapping the old fashion way                    
                     JobViewDto jv = CreateJobView(j);
+                    // Map commute properties 
+                    JobMappingHelper.MapCommuteTime(j, jv);
                     // Map custom attributes to job view
                     if ( jobQuery.ExcludeCustomProperties == 0)
                       JobMappingHelper.MapCustomJobPostingAttributes(j, jv);
@@ -153,6 +153,23 @@ namespace UpDiddyApi.Helpers.Job
             return rVal;
         }
 
+
+
+        public static void MapCommuteTime (CloudTalentSolution.MatchingJob matchingJob, JobViewDto jobViewDto)
+        {
+            if (matchingJob.CommuteInfo != null && matchingJob.CommuteInfo.TravelDuration != null)
+            {
+                // todo find a better way to convert time in the format of 3600s to 1 hour
+                // Not sure why google returns the value as a string that ends in a "s"
+                int NumSeconds = int.Parse(matchingJob.CommuteInfo.TravelDuration.ToString().Replace('s', ' '));
+                jobViewDto.CommuteTime = NumSeconds / 60;
+
+            }
+            else
+                jobViewDto.CommuteTime = 0;
+
+
+        }
 
 
         public static void MapCustomJobPostingAttributes(CloudTalentSolution.MatchingJob matchingJob, JobViewDto jobViewDto)
@@ -255,10 +272,39 @@ namespace UpDiddyApi.Helpers.Job
                     }
             };
 
+            // Add compensation info if its specified 
+            if ( jobPosting.Compensation > 0 )
+            {
+                long AnnualSalaryDollarAmount = CompensationTypeFactory.AnnualCompensation(jobPosting.Compensation, jobPosting.CompensationType);
+
+                CloudTalentSolution.Money AnnualSalary = new CloudTalentSolution.Money()
+                {
+                    CurrencyCode = "USD",
+                    Units = AnnualSalaryDollarAmount,
+                    Nanos = 0
+                };
+                List<CloudTalentSolution.CompensationEntry> compensationEntries = new List<CloudTalentSolution.CompensationEntry>()
+                {
+                    new CloudTalentSolution.CompensationEntry()
+                    {
+                         Amount = AnnualSalary,
+                         // todo - figure out if google has an enum or constants for these value.  Their documentation calls them enums but I can't
+                         // find a way to reference it from a dll.  
+                         Unit  =  "YEARLY",
+                         Type = "BASE"
+
+                    }
+                };
+                jobToBeCreated.CompensationInfo = new CloudTalentSolution.CompensationInfo()
+                {
+                   Entries = compensationEntries
+                };
+
+            }
+           
             // Add google name if it exists (needed for updates)
             if (string.IsNullOrEmpty(jobPosting.CloudTalentUri) == false)
                 jobToBeCreated.Name = jobPosting.CloudTalentUri;
-
 
             // Add custom attributes if they've been defined 
             if (customAttributes.Count > 0)
