@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Localization
 @using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
+@using Microsoft.AspNetCore.Http;
 @model HomeViewModel
 
 @inject IViewLocalizer L
@@ -12,8 +13,8 @@
 
 <div class="home-container">
     <section class="section video-section">
-        <div class="video-wrapper jquery-background-video-wrapper" style="background-image: url('../images/hero/1_second.jpg')">
-            <video data-bgvideo="true" autoplay loop muted plays-inline poster="../images/hero/1_second.jpg">
+        <div class="video-wrapper jquery-background-video-wrapper @Context.Session.GetString("Device-Type")" style="background-image: url('../images/hero/1_second.jpg')">
+            <video data-bgvideo="true" autoplay loop muted playsinline style="display: none">
                 <source src="../videos/hero_video_v2.mp4" type="video/mp4">
             </video>    
         </div>
