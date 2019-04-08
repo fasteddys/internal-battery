@@ -1,7 +1,16 @@
 .video-section {
     position: relative;
     .video-wrapper {
-        height: 85vh;
+        height: 75vh;
+
+        @media(max-width: 1200px) {
+            height: 50vh;
+        }
+
+        @media(max-width: 800px) {
+            height: 30vh;
+        }
+
         background-position: center;
         &.is-desktop {
             background: black !important;
@@ -9,7 +18,7 @@
 
         &.is-mobile {
             video {
-                display: none;
+                display: none !important;
             }
         }
     }
@@ -21,6 +30,15 @@
         height: 100%;
         width: 100%;
         z-index: 1; 
+
+        @media(max-width: 800px) {
+            h1 {
+                font-size: 2em;
+            }
+            h3 {
+                font-size: 1.25em;
+            }
+        }
     }
 
     video {
