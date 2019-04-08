@@ -420,7 +420,7 @@ namespace UpDiddy.Controllers
             var htmlContent = emailBody;
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = client.SendEmailAsync(msg);
-            return RedirectToAction("About", new AboutViewModel());
+            return RedirectToAction("Contact", new AboutViewModel());
         }
 
         private string FormatContactEmail(string ContactUsFirstName,
