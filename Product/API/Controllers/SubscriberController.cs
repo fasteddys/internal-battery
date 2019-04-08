@@ -102,12 +102,11 @@ namespace UpDiddyApi.Controllers
         {
             try
             {
-                // todo convert to response objects 
+              
                 if (subscriberGuid == null)
                     return BadRequest(new { code = 400, message = "No subscriber identifier was provided" });
 
-                var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();
-                // todo convert to response objects 
+                var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();          
                 if (subscriber == null)
                     return BadRequest(new { code = 404, message = "No subscriber could be found with that identifier" });
 
@@ -137,7 +136,6 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefault();
 
             // Subscriber exists do NOT create a duplicate
-            // todo convert to response objects 
             if (subscriber != null)
                 return BadRequest(new { code = 400, message = "Subscriber is already in the system" });
 
