@@ -12,10 +12,14 @@
         }
 
         .about-us-hero {
-            background-image: url('../images/about-us-hero.png');
+            background-image: url('../images/about-us-page.jpg');
             color: $color-white;
             background-size: cover;
             background-position: center;
+
+            .container-fluid {
+                background: rgba(255, 255, 255, 0.55);
+            }
 
             .hero-logo {
                 max-height: 500px;

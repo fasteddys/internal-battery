@@ -1,69 +1,65 @@
-﻿ <footer><!-- TODO Implement functionality of blue footer band
+﻿@using UpDiddy.ViewModels
+<footer>
     <div class="row footer-top">
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-8 mb-4">
                         <div class="footer-header">
-                            Customer Service
+                            Information
                         </div>
                         <div class="footer-content">
                             <ul>
-                                <li>Contact</li>
-                                <li>Enrollment &amp; Payment</li>
-                                <li>Support</li>
+                                <li><a asp-controller="Home" asp-action="Contact">Contact Us</a></li>
+                                <li><a asp-controller="Home" asp-action="Privacy">Privacy Policy</a></li>
+                                <li><a asp-controller="Home" asp-action="FAQ">FAQ</a></li>
+                                <li><a asp-controller="Home" asp-action="TermsOfService">Terms Of Service</a></li>
                             </ul>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-4 mb-4 container-align-right">
                         <div class="footer-header">
-                            More Information
+                            Find us on social media
                         </div>
                         <div class="footer-content">
-                            <ul>
-                                <li>Work With Us</li>
-                                <li>Careers</li>
-                                <li>Sitemap</li>
+                            <ul class="social-links">
+                                <li><a href="https://www.facebook.com/MyCareerCircle" target="_blank"><i class="fab fa-facebook"></i></a></li>
+                                <li><a href="https://twitter.com/MyCareerCircle" target="_blank"><i class="fab fa-twitter"></i></a></li>
+                                <li><a href="https://www.instagram.com/mycareercircle/" target="_blank"><i class="fab fa-instagram"></i></a></li>
+                                <li><a href="https://www.linkedin.com/company/careercircle/"><i class="fab fa-linkedin"></i></a></li>
+                                <!--<li><i class="fab fa-google-plus"></i></li>
+                                    <li><i class="fab fa-youtube"></i></li>-->
                             </ul>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="footer-header">
-                            Stay up to date with Career Circle
-                        </div>
-                        <div class="footer-content">
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" placeholder="Email Address">
-                                <div class="input-group-append">
-                                    <span class="input-group-text bg-color-primary f-color-white">Subscribe</span>
+                    @*
+                        <div class="col-md-4">
+                            <div class="footer-header">
+                                Stay up to date with Career Circle
+                            </div>
+                            <div class="footer-content">
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" placeholder="Email Address">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text bg-color-primary f-color-white">Subscribe</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    *@
                 </div>
             </div>
         </div>
-    </div>-->
+    </div>
     <div class="row footer-bottom">
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-9">
+                    <div class="col-md-5">
                         <i class="far fa-copyright"></i> @DateTime.Now.Year CareerCircle, LLC. All rights reserved.
-                        <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a> |
-                        <a asp-controller="Home" asp-action="FAQ">FAQ</a> |
-                        <a asp-controller="Home" asp-action="TermsOfService">Terms Of Service</a> |<!--| Terms and Conditions | Cookie Policy-->
-                        <a href="/Home/About#ContactUsForm">Contact Us</a>
                     </div>
-                    <div class="col-md-3 container-align-right">
-                        <ul class="social-links">
-                            <li><a href="https://www.facebook.com/MyCareerCircle" target="_blank"><i class="fab fa-facebook"></i></a></li>
-                            <li><a href="https://twitter.com/MyCareerCircle" target="_blank"><i class="fab fa-twitter"></i></a></li>
-                            <li><a href="https://www.instagram.com/mycareercircle/" target="_blank"><i class="fab fa-instagram"></i></a></li>
-                            <li><a href="https://www.linkedin.com/company/careercircle/"><i class="fab fa-linkedin"></i></a></li>
-                            <!--<li><i class="fab fa-google-plus"></i></li>
-                            <li><i class="fab fa-youtube"></i></li>-->
-                        </ul>
+                    <div class="col-md-7 container-align-right">
+                        Preparing the workforce of today for the opportunities of tomorrow.
                     </div>
                 </div>
             </div>

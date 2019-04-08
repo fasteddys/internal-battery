@@ -391,6 +391,12 @@ namespace UpDiddy.Controllers
             return View("EmailVerification/Success");
         }
 
+        [HttpGet]
+        public IActionResult Contact()
+        {
+            return View("ContactUs");
+        }
+
         [HttpPost]
         public IActionResult ContactUs(string ContactUsFirstName,
             string ContactUsLastName,
