@@ -15,7 +15,7 @@
                             <div class="col no-padding">
                                 <div class="row">
                                     <div class="col-12 no-padding">
-                                        <div class="row">
+                                        <div class="row container-align-right">
                                             <div class="col-12 hero-header font-bold">
                                                 Move at the same pace as Tech
                                             </div>
@@ -57,17 +57,17 @@
     </div>
     @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
     {
-        Header = "Friends of Allegis Special Discount Offer",
+        Header = "Friends of Allegis Group Special Discount Offer",
         Elements = new List<string>()
         {
             @"<div class='row'>
                 <div class='col-lg-8 offset-lg-2'>
-                    The IT industry is moving fast and its only getting faster. At CareerCircle, we want to make sure your career is moving at the speed of Tech. We’ve partnered with IT training companies to put together unique course offerings aimed to help you get to the next level.
+                    The IT industry is moving fast and it's only getting faster. At CareerCircle, we want to make sure your career is moving at the speed of Tech. We’ve partnered with IT training companies to put together unique course offerings aimed to help you get to the next level.
                 </div>
             </div>
             <div class='row'>
                 <div class='col-lg-8 offset-lg-2 mt-2 mb-0 d-flex justify-content-center'>
-                    <span style=""font-size:20px; font-weight:bold;"">$</span><span style=""font-size:20px; text-decoration:underline; font-weight:bold;"">99 Limited Time Offer</span>
+                    <span style=""font-size:20px; font-weight:bold;"">$</span><span style=""font-size:24px; font-weight:bold;"">99 Limited Time Offer<sup>1</sup></span>
                 </div>
       
                 <div class='col-lg-8 offset-lg-2 mt-0 mb-2 d-flex justify-content-center'>
@@ -76,12 +76,24 @@
             </div>
             <div class='row'>
                 <div class='col-lg-8 offset-lg-2'>
-                    We have a special offer for friends of the Allegis Group family of companies. By joining the CareerCircle network, you will gain access to our specialized IT training courses for only $99. That’s a $150 discount. Taking advantage of this limited time offer will present you with the opportunity to gain highly sought-after IT skills that will propel your career forward.
+                    We have a special offer for friends of the Allegis Group family of companies. By joining CareerCircle, you will gain access to self-paced, specialized IT training courses for only $99<sup>1</sup>. That’s a $150 discount! Taking advantage of this limited time offer will present you with the opportunity to gain highly sought-after IT skills that will propel your career forward.
                 </div>
             </div>
             "
         }
     })
+        @{ List<DisclaimersViewModel.Disclaimer> Disclaimers = new List<DisclaimersViewModel.Disclaimer>()
+            {
+                new DisclaimersViewModel.Disclaimer("This offer is only valid for IT self-paced courses offered by Woz U priced at $249. This does not apply to instructor-led courses. Courses must be purchased using the promo code above on or before May 30, 2019.")
+            };
+        }
+    
+        
+        @Html.Partial("Components/Utilities/_Disclaimers", new DisclaimersViewModel
+        {
+            Disclaimers = Disclaimers,
+            ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
+        })
 </div>
 
 <img src="@Model.TrackingImgSource" />
