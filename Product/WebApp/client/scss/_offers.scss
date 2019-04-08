@@ -3,21 +3,19 @@
     padding-bottom: 2rem;
 
     .offers-page-header {
+        background-image: url(../images/medium_blue_background.jpg);
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;
         color: $color-white;
-
-        > div {
-            background: rgba(255, 255, 255, 0.85);
-        }
+        margin-bottom: 2rem;
 
 
 
 
         .header-language-container {
             z-index: 999;
-            color: $color-secondary;
+            color: $color-white;
             padding: 3rem 0;
             border-radius: 1rem;
             text-align: center;

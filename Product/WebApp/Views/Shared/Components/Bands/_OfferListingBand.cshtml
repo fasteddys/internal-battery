@@ -20,7 +20,7 @@
     @foreach (OfferDto offer in Model.Offers)
     {
         string divId = "collapse" + offer.OfferGuid;
-        string firstColumn = Model.IsEligible ? "col-9" : "col-12";
+        string firstColumn = Model.IsEligible ? "col-md-9" : "";
         <div class="card">
             <div class="card-header collapsed" id="headingOne" data-toggle="collapse" data-target="#@divId" aria-expanded="true" aria-controls="@divId">
                 <h2 class="mb-0">
@@ -41,12 +41,12 @@
                 <div class="card-body">
                     <div class="offer-description">
                         <div class="row">
-                            <div class="@firstColumn">
+                            <div class="col-12 @firstColumn">
                                 @offer.Description
                             </div>
                             @if (Model.IsEligible)
                             {
-                                <div class="col-3 text-right">
+                                <div class="col-12 col-md-3 text-right no-padding">
                                     <button type="button" class="btn btn-primary claim-offer-button" data-offer="@offer.OfferGuid">
                                         Claim
                                     </button>

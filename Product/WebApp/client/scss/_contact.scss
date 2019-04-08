@@ -28,6 +28,12 @@
             }
         }
 
+        .header-container{
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            border-bottom: 2px solid $color-white;
+        }
+
         #ContactUsForm {
             .contact-us-button-container {
                 text-align: center;
