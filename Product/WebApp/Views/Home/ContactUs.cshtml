@@ -1,28 +1,55 @@
-﻿<div class="contact-us-container">
-    <div class="row contact-us-hero">
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@model ContactUsViewModel
+
+<div class="contact-us-container">
+    <div class="row contact-us-tertiary-band">
         <div class="col-md-12">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-6">
-                        <h3>Contact Us</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row contact-us-primary-band">
-        <div class="col-md-12">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-6">
-                        Reach us at:
-                        <ul>
-                            <li>Email: Test@CareerCircle.io</li>
-                            <li>Phone: 301-555-5555</li>
-                        </ul>
+                    <div class="col-md-12 pt-4 pb-4">
+                        <div class="contact-us-band">
+                            <div class="header-container">
+                                <h1>Contact Us</h1>
+                                <i class="fas fa-map-marker-alt"></i> 7301 Parkway Drive Hanover, MD 21076
+                            </div>
+                            
+                            <form id="ContactUsForm" asp-controller="Home" asp-action="ContactUs">
+                                <div class="form-group">
+                                    <label for="ContactUsFirstName">First Name</label>
+                                    <input required type="text" class="form-control" asp-for="ContactUsFirstName" pattern="^([A-Za-z]+[,.]?[ ]?|[A-Za-z]+['-]?)+$">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ContactUsLastName">Last Name</label>
+                                    <input required type="text" class="form-control" asp-for="ContactUsLastName" pattern="^([A-Za-z]+[,.]?[ ]?|[A-Za-z]+['-]?)+$">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ContactUsEmail">Email</label>
+                                    <input required type="email" class="form-control" id="ContactUsEmail" asp-for="ContactUsEmail" pattern="[a-z0-9._%+-]+@@[a-z0-9.-]+\.[a-z]{2,4}$">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ContactUsType">Contact Type</label>
+                                    <select class="form-control" id="ContactUsType" asp-for="ContactUsType">
+                                        <option selected>General</option>
+                                        <option>Partner</option>
+                                        <option>Career paths</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ContactUsComment">General</label>
+                                    <textarea required class="form-control" id="ContactUsComment" rows="3" asp-for="ContactUsComment"></textarea>
+                                </div>
+                                <div class="contact-us-button-container">
+                                    <button type="submit" class="btn btn-primary brand-button font-small">Submit</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+    document.getElementById("ContactUsForm").trigger('reset');
+</script>
