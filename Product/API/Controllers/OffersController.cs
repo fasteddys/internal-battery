@@ -70,7 +70,7 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            List<Offer> offers = _db.Offer
+            List<OfferDto> offers = _db.Offer
                 .Where(s => s.IsDeleted == 0)
                 .Include(s => s.Partner)
                 .Select(s => new Offer
@@ -87,6 +87,7 @@ namespace UpDiddyApi.Controllers
                      EndDate = s.EndDate,
                      Partner = s.Partner
                 })
+                .ProjectTo<OfferDto>(_mapper.ConfigurationProvider)
                 .ToList();
 
 
@@ -104,8 +105,9 @@ namespace UpDiddyApi.Controllers
             if (!SubscriberFactory.IsEligibleForOffers(_db, loggedInUserGuid, _syslog, _mapper, User.Identity))
                 return Unauthorized();
 
-            Offer offer = _db.Offer
+            OfferDto offer = _db.Offer
                 .Where(s => s.IsDeleted == 0 && s.OfferGuid == OfferGuid)
+                .ProjectTo<OfferDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefault();
             return Ok(offer); 
         }
@@ -125,9 +127,10 @@ namespace UpDiddyApi.Controllers
             if (!SubscriberFactory.IsEligibleForOffers(_db, loggedInUserGuid, _syslog, _mapper, User.Identity))
                 return Unauthorized();
 
-            Offer offer = _db.Offer
+            OfferDto offer = _db.Offer
                 .Where(s => s.IsDeleted == 0 && s.OfferGuid == OfferGuid)
                 .Include(s => s.Partner)
+                .ProjectTo<OfferDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefault();
 
             if (offer == null)
