@@ -38,6 +38,7 @@ namespace UpDiddy.Controllers
         public IActionResult PartnerLandingPages()
         {
             string viewName = Request.Path.Value.TrimStart('/');
+
             return View(viewName, new SignUpViewModel()
             {
                 IsExpressSignUp = true
@@ -276,7 +277,7 @@ namespace UpDiddy.Controllers
             // Grab all query params from the request and put them into dictionary that's passed
             // to ButterCMS call.
             Dictionary<string, string> QueryParams = new Dictionary<string, string>();
-            foreach(string s in HttpContext.Request.Query.Keys)
+            foreach (string s in HttpContext.Request.Query.Keys)
             {
                 QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
             }

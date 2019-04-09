@@ -19,7 +19,6 @@ namespace UpDiddyLib.Dto.Marketing
         [Required(ErrorMessage = "EmailAddress is required")]
         [MaxLength(100, ErrorMessage = "EmailAddress must not exceed 100 characters")]
         public string EmailAddress { get; set; }
-        [Required(ErrorMessage = "MobilePhone is required")]
         [RegularExpression("^([0-9]{0,3})?[2-9]{1}[0-9]{9}$", ErrorMessage = "Phone must be 10 digits and may not start with a 0 or 1")]
         public string MobilePhone { get; set; }
         [MaxLength(100, ErrorMessage = "Address1 must not exceed 100 characters")]

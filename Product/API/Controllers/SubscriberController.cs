@@ -634,7 +634,12 @@ namespace UpDiddyApi.Controllers
             // create link
             string link;
             body.TryGetValue("verifyUrl", out link);
-            link += subscriber.EmailVerification.Token;
+            Uri uri = new Uri(link);
+            link = String.Concat( 
+                uri.Scheme, Uri.SchemeDelimiter, 
+                uri.Authority, uri.AbsolutePath, 
+                subscriber.EmailVerification.Token, uri.Query
+            );
             
             // send email
             SendVerificationEmail(subscriber.Email, link);

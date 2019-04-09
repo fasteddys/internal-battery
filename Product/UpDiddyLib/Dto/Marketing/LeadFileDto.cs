@@ -8,9 +8,8 @@ namespace UpDiddyLib.Dto.Marketing
 {
     public class LeadFileDto
     {
-        public Guid LeadIdentifier { get; set; }
-        [Required(ErrorMessage = "Name is required")]
-        public string Name { get; set; }
+        [Required(ErrorMessage = "FileName is required")]
+        public string FileName { get; set; }
         [Required(ErrorMessage = "MimeType is required")]
         public string MimeType { get; set; }
         [Required(ErrorMessage = "Base64EncodedData is required")]

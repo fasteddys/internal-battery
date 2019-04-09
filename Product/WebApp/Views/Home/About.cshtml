@@ -1,13 +1,14 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
+@using UpDiddy.Helpers
 @model AboutViewModel
 
 <div class="about-us-container">
-    <div class="about-us-hero mb-4">
+    <div class="about-us-hero">
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-12">
-                    <img class="img-fluid hero-logo mt-4" src="/images/career-circle-header.png"/>
+                    <img class="img-fluid hero-logo mt-4" src="/images/career-circle-header.png" />
                     <div class="tagline-wrapper">
                         <img class="img-fluid arrow" src="/images/arrow.png" />
                         <div class="row">
@@ -22,84 +23,57 @@
             </div>
         </div>
     </div>
-    <div class="container">
-        <div class="row">
-            <div class="col-sm-4">
-                <img class="img-fluid" src="~/images/RelevantCircle.png" />
-            </div>
-            <div class="col-sm-4">
-                <img class="img-fluid" src="~/images/SkillingCircle.png" />
-            </div>
-            <div class="col-sm-4">
-                <img class="img-fluid" src="~/images/DefineCircle.png" />
-            </div>
-        </div>
-    </div>
-    <div class="container">
-        <div class="row d-flex align-items-center">
-            <div class="col-md-6">
-                <div class="career-circle-video-container">
-                    <video class="embed-responsive embed-responsive-16by9 mb-3" src="~/videos/Career_Circle.mp4" controls frameborder="0" allowfullscreen asp-append-version="true" ></video>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <a href="#ContactUsForm">
-                    <div class="banner-button blue">
-                        Contact Us
-                    </div>
-                </a>
-                <a href="https://woz-u.com/" target="_blank">
-                    <div class="banner-button green">
-                        Partner: 
-                        <img class="d-inline-block img-fluid w-40" src="~/images/woz_logo_trans.png" />
-                    </div>
-                </a>
-            </div>
-    </div>
-    </div>
-
-    <div class="row about-us-tertiary-band mt-4">
-        <div class="col-md-12">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12 pt-4 pb-4">
-                        <div class="contact-us-band">
-                            <div class="contact-us-header">Contact Us</div>
-                            <form id="ContactUsForm" asp-controller="Home" asp-action="ContactUs">
-                                <div class="form-group">
-                                    <label for="ContactUsFirstName">First Name</label>
-                                    <input required type="text" class="form-control" asp-for="ContactUsFirstName" pattern="^([A-Za-z]+[,.]?[ ]?|[A-Za-z]+['-]?)+$">
-                                </div>
-                                <div class="form-group">
-                                    <label for="ContactUsLastName">Last Name</label>
-                                    <input required type="text" class="form-control" asp-for="ContactUsLastName" pattern="^([A-Za-z]+[,.]?[ ]?|[A-Za-z]+['-]?)+$">
-                                </div>
-                                <div class="form-group">
-                                    <label for="ContactUsEmail">Email</label>
-                                    <input required type="email" class="form-control" id="ContactUsEmail" asp-for="ContactUsEmail" pattern="[a-z0-9._%+-]+@@[a-z0-9.-]+\.[a-z]{2,4}$">
-                                </div>
-                                <div class="form-group">
-                                    <label for="ContactUsType">Contact Type</label>
-                                    <select class="form-control" id="ContactUsType" asp-for="ContactUsType">
-                                        <option selected>General</option>
-                                        <option>Partner</option>
-                                        <option>Career paths</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="ContactUsComment">General</label>
-                                    <textarea required class="form-control" id="ContactUsComment" rows="3" asp-for="ContactUsComment"></textarea>
-                                </div>
-                                <div class="contact-us-button-container">
-                                    <button type="submit" class="btn btn-primary brand-button font-small">Submit</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @{
+        List<string> Elements = new List<string>()
+    {
+        "The statistic has gone viral that there will be a talent shortage of 85.2M people by 2030. CareerCircle was founded in the spirit of finding solutions to address the pending skills gap versus falling victim to it. With so many capable people wanting to find employment and employers needing partners to achieve their goals, CareerCircle is here to provide a bridge.",
+        Html.PartialToHtmlMarkup("Components/Media/_Video", new VideoViewModel
+        {
+            Url = "/videos/Career_Circle.mp4",
+            Thumbnail = "/images/about-us-hero.png"
+        })
+        //"<div id=\"VideoComponentContainer\"><video id=\"VideoComponent\"><source src=\"~/videos/Career_Circle.mp4\" type=\"video/mp4\">Your browser does not support the video tag.</video><div class=\"video-thumbnail\"><img src =\"/images/about-us-hero.png\" /></ div ><div class=\"play-button-container\"><div class=\"video-play-button\"><i class=\"fas fa-play-circle fa-7x\"></i></div></div></div>"
+    };
+    }
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+    {
+        Header = "What is CareerCircle?",
+        Class = "skew skew-left-to-right cc-cscheme-secondary-dark f-1_25rem",
+        Elements = Elements
+    })
+    @{
+        List<string> Elements2 = new List<string>()
+    {
+        
+        "<p>At CareerCircle, we recognize that CareerskillingTM is the fastest path to improved performance and securing your ideal role. To advance your skills, you need access to the highest caliber of online education technology that is delivered in a meaningful way.</p><p>Here is where we come in.</p><p>We partner with experts in education technology to deliver unique learning experiences that can be instructor-led or self- paced, supplemented with the necessary support for optimal results. By completing the coursework provided by these groups, candidates gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance, versus limited work history or listed resume experience.</p><p>In the end, your journey of advanced education leads to higher pay, flexibility, and a better life.</p>"
+    };
+    }
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+    {
+        Header = "Upskill Now to Secure Your Future",
+        Class = "cc-cscheme-white f-1_25rem",
+        Elements = Elements2
+    })
+    @{
+                List<string> Elements3 = new List<string>()
+    {
+        "<img src=\"/images/career_circle_graphic.png\" />",
+        "<p>Our team of highly specialized recruiting experts has extensive experience in the staffing industry. This unique background means we know what positions are in demand and what skills are required to obtain them.</p><p>We know how to get you there.</p><p>We are passionate about connecting you to the necessary skills you need for the career you deserve. That is why we have assembled one platform for all your Careerskilling needs. Our mission is to provide a vehicle that will allow us to market your capabilities in a powerful way.</p><p>Take the first step by enrolling today.</p>" + @Html.PartialToHtmlMarkup("Components/Buttons/_Action", new ActionButtonViewModel {
+                                            Text = "Join Our Community",
+                                            Hyperlink = "/join#CommunityCampaignBottomContainer",
+                                            FitToText = true,
+                                            ChosenColorScheme = "cc-cscheme-white",
+                                            ButtonAction = ActionButtonViewModel.Action.CTA,
+                                            ButtonClass = "signup-cta"
+                                        })
+    };
+    }
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+    {
+        Header = "Tap into Our Expertise",
+        Class = "skew skew-right-to-left cc-cscheme-primary f-1_25rem",
+        Elements = Elements3
+        })
 </div>
 <script>
     document.getElementById("ContactUsForm").trigger('reset');

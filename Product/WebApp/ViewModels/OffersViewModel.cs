@@ -13,6 +13,7 @@ namespace UpDiddy.ViewModels
         public bool UserHasValidatedEmail { get; set; }
         public bool UserHasUploadedResume { get; set; }
         public string CtaText { get; set; }
+        public List<string> StepsRequired { get; set; } = new List<string>();
         public bool UserIsEligibleForOffers { get; set; }
     }
 }

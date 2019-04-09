@@ -117,26 +117,25 @@ namespace UpDiddy.Controllers
                 UserHasValidatedEmail = false,
                 UserHasUploadedResume = false,
                 UserIsEligibleForOffers = false,
-                CtaText = "Please <a href=\"/join#CommunityCampaignBottomContainer\">create a CareerCircle account</a>, verify the email associated with the account, and upload your resume to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions."
+                CtaText = "Please <a href=\"/join#CommunityCampaignBottomContainer\">create a CareerCircle account</a>, verify the email associated with the account, and upload your resume to gain access to offers. Feel free to <a href=\"/Home/Contact\">contact us</a> at any time if you're experiencing issues, or have any questions."
             };
 
             if (User.Identity.IsAuthenticated)
             {
-                OffersViewModel.UserHasValidatedEmail = this.subscriber.HasVerificationEmail;
+                OffersViewModel.UserHasValidatedEmail = this.subscriber.IsVerified;
                 OffersViewModel.UserHasUploadedResume = this.subscriber.Files.Count > 0;
                 OffersViewModel.UserIsEligibleForOffers = OffersViewModel.UserIsAuthenticated &&
                     OffersViewModel.UserHasValidatedEmail &&
                     OffersViewModel.UserHasUploadedResume;
 
-                if (OffersViewModel.UserHasValidatedEmail && !OffersViewModel.UserHasUploadedResume)
-                    OffersViewModel.CtaText = "Please upload your resume (located at the top of your <a href=\"/Home/Profile\">profile</a>) to your CareerCircle account to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions.";
-                else if (!OffersViewModel.UserHasValidatedEmail && OffersViewModel.UserHasUploadedResume)
-                    OffersViewModel.CtaText = "Please validate your email (located at the top of your <a href=\"/Home/Profile\">profile</a>) to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions.";
-                else if (!OffersViewModel.UserHasValidatedEmail && !OffersViewModel.UserHasUploadedResume)
-                    OffersViewModel.CtaText = "Please validate your email and upload your resume to your CareerCircle account (both located at the top of your <a href=\"/Home/Profile\">profile</a>) to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions.";
-                else
-                    OffersViewModel.CtaText = "Congratulations, your account is eligible to take advantage of the offers listed below!";
+                if (!OffersViewModel.UserHasValidatedEmail)
+                    OffersViewModel.StepsRequired.Add("Validate your email. <button class='btn btn-link email-verification-btn p-0 align-baseline'>Resend Verification Email</button>");
 
+                if (!OffersViewModel.UserHasUploadedResume)
+                    OffersViewModel.StepsRequired.Add("Upload your resume (located at the top of your <a href=\"/Home/Profile\">profile</a>) to your CareerCircle account.");
+
+                if(OffersViewModel.UserIsEligibleForOffers)
+                    OffersViewModel.CtaText = "Congratulations, your account is eligible to take advantage of the offers listed below!";
             }
                                    
             return View("Offers", OffersViewModel);
@@ -373,11 +372,12 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet("/email/confirm-verification/{token}")]
-        public async Task<IActionResult> VerifyEmailAsync(Guid token)
+        public async Task<IActionResult> VerifyEmailAsync([FromQuery(Name = "returnUrl")] string returnUrl, Guid token)
         {
             try
             {
                 await _Api.VerifyEmailAsync(token);
+                ViewBag.returnUrl = string.IsNullOrEmpty(returnUrl) ? "/Home/Profile" : returnUrl;
             }
             catch(ApiException ex)
             {
@@ -389,6 +389,12 @@ namespace UpDiddy.Controllers
             }
 
             return View("EmailVerification/Success");
+        }
+
+        [HttpGet]
+        public IActionResult Contact()
+        {
+            return View("ContactUs");
         }
 
         [HttpPost]
@@ -414,7 +420,7 @@ namespace UpDiddy.Controllers
             var htmlContent = emailBody;
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = client.SendEmailAsync(msg);
-            return RedirectToAction("About", new AboutViewModel());
+            return RedirectToAction("Contact", new AboutViewModel());
         }
 
         private string FormatContactEmail(string ContactUsFirstName,
