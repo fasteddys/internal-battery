@@ -98,6 +98,26 @@
     font-weight: bolder;
 }
 
+.border-0 {
+    border: 0;
+}
+
+.f-1rem {
+
+    @media (min-width: 0px) {
+        font-size: 1rem;
+        line-height: 2rem;
+    }
+}
+
+.f-1_25rem {
+
+    @media (min-width: 0px) {
+        font-size: 1.25rem;
+        line-height: 2.5rem;
+    }
+}
+
 .f-1_5rem {
 
     @media (min-width: 0px) {
@@ -208,6 +228,10 @@ a{
     &:not(:disabled):not(.disabled):active:focus {
         box-shadow: none;
     }
+}
+
+.btn-light {
+    color: $color-secondary;
 }
 
 .brand-button-tertiary {

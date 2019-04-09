@@ -1,0 +1,96 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model CampaignViewModel;
+
+<div id="CampaignContainer" class="mom-project-signup">
+    <div class="cc-campaign-sign-up-band row" style="background-image: url('/images/hero/barnett-offer.jpeg'); background-position: top">
+        <div class="col-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-7 col-lg-8 cc-campaign-sign-up-band-left-container  d-flex align-items-center">
+                        <div class="row">
+                            <div class="col no-padding">
+                                <div class="row">
+                                    <div class="col-12 no-padding">
+                                        <div class="row">
+                                            <div class="col-12 hero-header font-bold">
+                                                Advance Your Career Today:</span>
+                                            </div>
+                                            <div class="col-12 campaign-bullet-list">
+                                                <div class="d-flex flex-column bd-highlight mb-3 mt-3">
+                                                    <div class="bd-highlight font-bold">Clinical Research Coordinators are in high demand.</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-5 col-lg-4 cc-campaign-sign-up-band-right-container no-padding">
+                        <div class="cc-campaign-sign-up-container">
+                            <div class="row">
+                                <div class="col-12 no-padding sub-header font-bold">
+                                    Sign Up Today!
+                                </div>
+                                <div class="col-12 no-padding mini-header">
+                                    Create an account to get started
+                                </div>
+                                <div class="col-12 no-padding">
+                                    @Html.Partial("Components/Authentication/_SignUp",
+                                        new SignUpViewModel() {
+                                           CampaignGuid = Model.CampaignGuid,
+                                           CampaignPhase = Model.CampaignPhase,
+                                           ContactGuid = Model.ContactGuid,
+                                           IsExpressSignUp = false
+                                       })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
+    {
+        Header = "The courses you need. The jobs you want.",
+        Elements = new List<string>()
+        {
+            @"<div class='row'>
+                <div class='col-lg-8 offset-lg-2'>
+                    People with clinical trial skills are in high demand and short supply. There is a current 22% gap.<span style=""vertical-align:super; font-size: 50%;"">1</span> Through CareerCircle, you can be ahead of the curve. We have specialized training available to propel you into the clinical research career you deserve.
+                    Upon completion, gain access to a network of dedicated recruiters to support you in your career journey. Start today:
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-lg-8 offset-lg-2 mt-2 mb-2 d-flex justify-content-center'>
+                    <span style=""font-size:20px; text-decoration:underline; font-weight:bold;"">Limited Time Offer</span>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-lg-8 offset-lg-2'>
+                    By joining the CareerCircle network, you will gain access to this specialized training at a discounted rate. This limited time offer will give you the chance to take advantage of our valuable resources at a lower price than the competition. But don’t wait – this offer will only be available for a very limited time.
+                    At CarreerCircle, we’re in the business of helping you succeed. Sign up today and find out how.
+                </div>
+            </div>
+            "
+        }
+    })
+</div>
+
+
+<div class="col-12">
+    <div class="container">
+        <div class="row">
+            <div class="col-12" style="font-size:12px;">
+                <span style="vertical-align:super; font-size: 50%;">1</span>Terry McDonough, “Closing the Healthcare Industry’s Skills Gaps”, <a href="https://www.hcinnovationgroup.com/leadership-professional-development/article/13028512/closing-the-healthcare-industrys-skills-gaps">https://www.hcinnovationgroup.com/</a>, (May 15, 2017).
+            </div>
+        </div>
+    </div>
+</div>
+
+<img class="position-absolute" src="@Model.TrackingImgSource" />

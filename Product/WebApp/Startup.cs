@@ -27,6 +27,7 @@ using UpDiddy.Api;
 using UpDiddy.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using DeviceDetectorNET;
 
 namespace UpDiddy
 {
@@ -244,6 +245,16 @@ namespace UpDiddy
             app.UseSession();
             app.UseAuthentication();
             app.UseCors("UnifiedCors");
+
+            // custom middleware for device detection
+            app.Use((context, next) =>
+            {
+                var dd = new DeviceDetector(context.Request.Headers["User-Agent"].ToString());
+                dd.Parse();
+                string deviceType = dd.IsMobile() ? "is-mobile" : "is-desktop";
+                context.Session.SetString("Device-Type", deviceType);
+                return next();
+            });
 
             // TODO - Change template action below to index upon site launch.
             app.UseMvc(routes =>
