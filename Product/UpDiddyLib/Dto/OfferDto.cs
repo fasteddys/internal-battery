@@ -6,9 +6,7 @@ namespace UpDiddyLib.Dto
 {
     public class OfferDto : BaseDto
     {
-        public int OfferId { get; set; }
         public Guid OfferGuid { get; set; }
-        public int PartnerId { get; set; }
         public PartnerDto Partner { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
