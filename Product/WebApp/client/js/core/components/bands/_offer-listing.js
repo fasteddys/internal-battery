@@ -13,3 +13,4 @@
             $('.resume-control button').removeClass('disabled');
         });
 });
+

@@ -37,6 +37,10 @@
     <environment names="Staging,Production">
         <link rel="stylesheet" type="text/css" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
+    <meta property="og:title" content="CareerCircle">
+    <meta property="og:description" content="Preparing the workforce of today with the opportunities of tomorrow.">
+    <meta property="og:image" content="/images/cc_logo.png">
+    <meta property="og:url" content="https://@Context.Request.Host@Context.Request.Path" />
 </head>
 <body>
     <noscript>
@@ -55,9 +59,15 @@
             </button>
             <div class="collapse navbar-collapse" id="NavigationItems">
                 <ul class="navbar-nav ml-auto">
-                    <!-- <li class="nav-item">
+
+                    <li class="nav-item">
                         <a class="nav-link" asp-controller="Home" asp-action="Offers"><span class="badge badge-success">new</span> Offers</a>
-                    </li> -->
+                    </li>
+                    @*
+            <li class="nav-item">
+            <a class="nav-link" href="#career-training-categories"><span class="badge badge-success">new</span> Courses</a>
+        </li>
+                    *@
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
                     @if (User.Identity.IsAuthenticated)
                     {

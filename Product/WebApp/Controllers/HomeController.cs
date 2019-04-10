@@ -117,7 +117,7 @@ namespace UpDiddy.Controllers
                 UserHasValidatedEmail = false,
                 UserHasUploadedResume = false,
                 UserIsEligibleForOffers = false,
-                CtaText = "Please <a href=\"/join#CommunityCampaignBottomContainer\">create a CareerCircle account</a>, verify the email associated with the account, and upload your resume to gain access to offers. Feel free to <a href=\"/Home/About#ContactUsForm\">contact us</a> at any time if you're experiencing issues, or have any questions."
+                CtaText = "Please <a href=\"/join#CommunityCampaignBottomContainer\">create a CareerCircle account</a>, verify the email associated with the account, and upload your resume to gain access to offers. Feel free to <a href=\"/Home/Contact\">contact us</a> at any time if you're experiencing issues, or have any questions."
             };
 
             if (User.Identity.IsAuthenticated)
@@ -391,6 +391,12 @@ namespace UpDiddy.Controllers
             return View("EmailVerification/Success");
         }
 
+        [HttpGet]
+        public IActionResult Contact()
+        {
+            return View("ContactUs");
+        }
+
         [HttpPost]
         public IActionResult ContactUs(string ContactUsFirstName,
             string ContactUsLastName,
@@ -414,7 +420,7 @@ namespace UpDiddy.Controllers
             var htmlContent = emailBody;
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
             var response = client.SendEmailAsync(msg);
-            return RedirectToAction("About", new AboutViewModel());
+            return RedirectToAction("Contact", new AboutViewModel());
         }
 
         private string FormatContactEmail(string ContactUsFirstName,
