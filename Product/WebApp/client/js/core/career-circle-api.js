@@ -29,7 +29,7 @@ var CareerCircleAPI = (function (apiUrl) {
 
     // checks token to see if it is expired, if expired then get another one
     var getToken = function () {
-        var jwt = SessionStorage.get(_session_key);
+        var jwt = SessionStorage.getJSON(_session_key);
 
         if (jwt == null || new Date() >= new Date(jwt.ExpiresOn)) {
             return new Promise(function(resolve) {
@@ -41,7 +41,7 @@ var CareerCircleAPI = (function (apiUrl) {
         };
 
         return new Promise(function(resolve) {
-            resolve(JSON.parse(jwt));
+            resolve(jwt);
         });
     };
 
