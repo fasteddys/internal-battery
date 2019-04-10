@@ -50,6 +50,7 @@ namespace UpDiddy.Controllers
         [Route("/Join/{CampaignGuid?}/{ContactGuid?}")]
         [Route("/JoinNow/{CampaignGuid?}/{ContactGuid?}")]
         [Route("/Home/Campaign/{CampaignViewName}/{CampaignGuid}/{ContactGuid}")]
+
         public async Task<IActionResult> CampaignLandingPagesAsync(Guid CampaignGuid, Guid ContactGuid, string CampaignViewName)
         {
             if (CampaignGuid == Guid.Empty || ContactGuid == Guid.Empty)
@@ -84,6 +85,7 @@ namespace UpDiddy.Controllers
                 ContactDto Contact = await _Api.ContactAsync(ContactGuid);
                 CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
 
+                string obfuscatedEmail = Utils.ObfuscateEmail(Contact.Email);
                 CampaignViewModel cvm = new CampaignViewModel()
                 {
 
@@ -93,7 +95,8 @@ namespace UpDiddy.Controllers
                     CampaignCourse = Course,
                     CampaignPhase = CampaignPhase,
                     IsExpressCampaign = false,
-                    IsActive = (campaign.EndDate == null || campaign.EndDate > DateTime.UtcNow)
+                    IsActive = (campaign.EndDate == null || campaign.EndDate > DateTime.UtcNow),
+                    ObfuscatedEmail = obfuscatedEmail
                 };
 
 

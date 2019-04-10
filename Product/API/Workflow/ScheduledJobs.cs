@@ -482,12 +482,13 @@ namespace UpDiddyApi.Workflow
             var campaignEntity = _db.Campaign.Where(c => c.CampaignGuid == campaignGuid && c.IsDeleted == 0).FirstOrDefault();
             var contactEntity = _db.Contact.Where(c => c.ContactGuid == contactGuid && c.IsDeleted == 0).FirstOrDefault();
             var actionEntity = _db.Action.Where(a => a.ActionGuid == actionGuid && a.IsDeleted == 0).FirstOrDefault();
-            CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaignEntity.CampaignId, campaignPhaseName);
-            // validate that the referenced entities exist
-            if (campaignEntity != null && contactEntity != null && actionEntity != null && campaignPhase != null)
-            {
-                // locate the campaign phase 
 
+            // validate that the referenced entities exist
+            if (campaignEntity != null && contactEntity != null && actionEntity != null)
+            {
+                // locate the campaign phase (if one exists - not required)
+                CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaignEntity.CampaignId, campaignPhaseName);
+                
                 // look for an existing contact action               
                 var existingContactAction = ContactActionFactory.GetContactAction(_db, campaignEntity, contactEntity, actionEntity, campaignPhase);
 
