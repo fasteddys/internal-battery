@@ -28,6 +28,8 @@ using UpDiddy.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DeviceDetectorNET;
+using UpDiddy.Services;
+using UpDiddy.Services.ButterCMS;
 
 namespace UpDiddy
 {
@@ -181,8 +183,10 @@ namespace UpDiddy
             // Enable session DI
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             // Add Api
-            services.AddScoped<IApi, ApiUpdiddy>();        
-            
+            services.AddScoped<IApi, ApiUpdiddy>();
+            services.AddScoped<ICacheService, CacheService>();
+            services.AddScoped<IButterCMSService, ButterCMSService>();
+
             services.AddMvc().AddJsonOptions(options =>
             {
                 options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());

@@ -47,7 +47,6 @@
         <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P78FCL3"
                 height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
-    @await Component.InvokeAsync("Layout")
     <nav class="navbar cc-navbar fixed-top navbar-expand-lg navbar-light bg-white">
 
         <div class="container">
@@ -59,16 +58,16 @@
             </button>
             <div class="collapse navbar-collapse" id="NavigationItems">
                 <ul class="navbar-nav ml-auto">
-
-                    <li class="nav-item">
+                    @await Component.InvokeAsync("PublicSiteNavigation")
+                    @*<li class="nav-item">
                         <a class="nav-link" asp-controller="Home" asp-action="Offers"><span class="badge badge-success">new</span> Offers</a>
                     </li>
-                    @*
-                            <li class="nav-item">
-                            <a class="nav-link" href="#career-training-categories"><span class="badge badge-success">new</span> Courses</a>
-                        </li>
-                    *@
-                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
+
+            <li class="nav-item">
+            <a class="nav-link" href="#career-training-categories"><span class="badge badge-success">new</span> Courses</a>
+        </li>
+
+                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>*@
                     @if (User.Identity.IsAuthenticated)
                     {
                         <li class="nav-item dropdown">

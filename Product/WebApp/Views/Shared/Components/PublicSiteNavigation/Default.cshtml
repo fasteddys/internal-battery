@@ -1,0 +1,9 @@
+﻿@using UpDiddy.ViewModels.Components.Layout
+@model MenuItemViewModel
+
+@foreach (MenuItemViewModel item in Model.ChildPages)
+{
+    <li class="nav-item">
+        <a class="nav-link" href="@item.Url">@item.Label</a>
+    </li>
+}
