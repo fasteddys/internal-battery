@@ -134,7 +134,6 @@ namespace UpDiddyApi.Models
         public DbSet<JobPostingSkill> JobPostingSkill { get; set; }
         public DbSet<JobCategory> JobCategory { get; set; }
 
-
         public DbSet<Offer> Offer { get; set; }
         public DbSet<Partner> Partner { get; set; }
         public DbSet<PartnerContact> PartnerContact { get; set; }
@@ -146,6 +145,7 @@ namespace UpDiddyApi.Models
         public DbSet<PartnerContactLeadStatus> PartnerContactLeadStatus { get; set; }
         public DbSet<PartnerContactFile> PartnerContactFile { get; set; }
         public DbSet<PartnerContactFileLeadStatus> PartnerContactFileLeadStatus { get; set; }
+        public DbSet<JobApplication> jobApplication { get; set; }
 
         #region DBQueries
 

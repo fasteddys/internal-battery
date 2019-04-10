@@ -103,6 +103,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobPosting.IsDeleted = 1;
                 jobPosting.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now);
                 jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.DeletedFromIndex;
+                jobPosting.ModifyDate = DateTime.UtcNow;
                 _db.SaveChanges();
 
                 return true;

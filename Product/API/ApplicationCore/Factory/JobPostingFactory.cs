@@ -22,6 +22,24 @@ namespace UpDiddyApi.ApplicationCore.Factory
     {
 
 
+        public static JobPosting GetJobPostingById(UpDiddyDbContext db, int jobPostingId)
+        {
+            return db.JobPosting
+                .Include(c => c.Company)
+                .Include(c => c.Industry)
+                .Include(c => c.SecurityClearance)
+                .Include(c => c.EmploymentType)
+                .Include(c => c.ExperienceLevel)
+                .Include(c => c.EducationLevel)
+                .Include(c => c.CompensationType)
+                .Include(c => c.JobCategory)
+                .Include(c => c.Subscriber)
+                .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingId)
+                .FirstOrDefault();
+        }
+
+
+
 
         /// <summary>
         /// Get a job posting by guid

@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace UpDiddyLib.Dto
+{
+    public class JobApplicationDto : BaseDto
+    { 
+        public Guid JobApplicationGuid { get; set; }
+ 
+        public JobPostingDto JobPosting { get; set; }
+        
+        public SubscriberDto Subscriber { get; set; }
+    
+        public string CoverLetter { get; set; }
+
+    }
+}

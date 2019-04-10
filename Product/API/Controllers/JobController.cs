@@ -119,10 +119,7 @@ namespace UpDiddyApi.Controllers
                 // attach the updated version of the  jobposting object to EF 
                 _db.JobPosting.Attach(jobPosting);
                 // mark the entity as dirty 
-                _db.Entry(jobPosting).State = EntityState.Modified;
-                // use factory method to make sure all the base data values are set just 
-                // in case the caller didn't set them
-                BaseModelFactory.SetDefaultsForAddNew(jobPosting);
+                _db.Entry(jobPosting).State = EntityState.Modified;   
                 // important! Init all reference object ids to null since further logic will use < 0 to check for 
                 // their validity
                 JobPostingFactory.SetDefaultsForAddNew(jobPosting);
@@ -137,6 +134,8 @@ namespace UpDiddyApi.Controllers
                     return BadRequest(response);
                 }
                 jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.UpdateIndexPending;
+                // use factory method to update the modify date       
+                jobPosting.ModifyDate = DateTime.UtcNow;
                 // save the update jobposting to sql server 
                 _db.SaveChanges();
                 JobPostingFactory.UpdatePostingSkills(_db, jobPosting, jobPostingDto);

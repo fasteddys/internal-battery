@@ -7,7 +7,7 @@ namespace UpDiddyLib.Dto
     public class JobPostingDto : BaseDto
     {       
         public Guid? JobPostingGuid { get; set; }
-        
+ 
         public DateTime PostingDateUTC { get; set; }
         
         public DateTime PostingExpirationDateUTC { get; set; }
