@@ -87,7 +87,7 @@ namespace UpDiddyApi.Controllers
             var campaignPhase = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_CAMPAIGN_PHASE)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
 
             // must have all three tracking parameters in order to continue
-            if (campaign != null && partnerContact != null && action != null && campaignPhase != null)
+            if (campaign != null && partnerContact != null && action != null)
             {
                 // validate that all parameters are guids
                 Guid campaignGuid, partnerContactGuid, actionGuid;

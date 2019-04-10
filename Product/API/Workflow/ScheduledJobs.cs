@@ -483,21 +483,14 @@ namespace UpDiddyApi.Workflow
         {
             var campaignEntity = _db.Campaign.Where(c => c.CampaignGuid == campaignGuid && c.IsDeleted == 0).FirstOrDefault();
             var partnerContactEntity = _db.PartnerContact.Where(pc => pc.PartnerContactGuid == partnerContactGuid && pc.IsDeleted == 0).FirstOrDefault();
-            //todo: remove this logic once we no longer need to support legacy contact lookup
-            //if(partnerContactEntity == null)
-            //{
-            //    partnerContactEntity = _db.PartnerContact
-            //        .Where(pc => pc.Contact.ContactGuid == partnerContactGuid && pc.IsDeleted == 0 && pc.Contact.IsDeleted == 0)
-            //        .OrderByDescending(pc => pc.CreateDate)
-            //        .FirstOrDefault();
-            //}
             var actionEntity = _db.Action.Where(a => a.ActionGuid == actionGuid && a.IsDeleted == 0).FirstOrDefault();
-            CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaignEntity.CampaignId, campaignPhaseName);
-            // validate that the referenced entities exist
-            if (campaignEntity != null && partnerContactEntity != null && actionEntity != null && campaignPhase != null)
-            {
-                // locate the campaign phase 
 
+            // validate that the referenced entities exist
+            if (campaignEntity != null && partnerContactEntity != null && actionEntity != null)
+            {
+                // locate the campaign phase (if one exists - not required)
+                CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaignEntity.CampaignId, campaignPhaseName);
+                
                 // look for an existing contact action               
                 var existingPartnerContactAction = PartnerContactActionFactory.GetPartnerContactAction(_db, campaignEntity, partnerContactEntity, actionEntity, campaignPhase);
 
@@ -527,8 +520,6 @@ namespace UpDiddyApi.Workflow
                         Headers = !string.IsNullOrWhiteSpace(headers) ? headers : null,
                         CampaignPhaseId = campaignPhase.CampaignPhaseId
                     });
-
-
                 }
                 _db.SaveChanges();
             }

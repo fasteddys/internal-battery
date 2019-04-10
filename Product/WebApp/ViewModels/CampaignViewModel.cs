@@ -14,6 +14,6 @@ namespace UpDiddy.ViewModels
         public string CampaignPhase { get; set; }
         public bool IsExpressCampaign { get; set; }
         public bool IsActive { get; set; }
-
+        public string ObfuscatedEmail { get; set; }
     }
 }

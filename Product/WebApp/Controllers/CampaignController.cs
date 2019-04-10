@@ -82,7 +82,8 @@ namespace UpDiddy.Controllers
                     Contact.PartnerContactGuid.Value.ToString() +
                     "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
                     CampaignGuid + "&campaignphase=" + WebUtility.UrlEncode(CampaignPhase);
-
+                
+                string obfuscatedEmail = Utils.ObfuscateEmail(Contact.Email);
                 CampaignViewModel cvm = new CampaignViewModel()
                 {
 
@@ -92,7 +93,8 @@ namespace UpDiddy.Controllers
                     CampaignCourse = Course,
                     CampaignPhase = CampaignPhase,
                     IsExpressCampaign = false,
-                    IsActive = (campaign.EndDate == null || campaign.EndDate > DateTime.UtcNow)
+                    IsActive = (campaign.EndDate == null || campaign.EndDate > DateTime.UtcNow),
+                    ObfuscatedEmail = obfuscatedEmail
                 };
 
 
