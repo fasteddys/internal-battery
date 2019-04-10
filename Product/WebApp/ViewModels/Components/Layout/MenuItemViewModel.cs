@@ -14,5 +14,9 @@ namespace UpDiddy.ViewModels.Components.Layout
         public string Label { get; set; }
         [JsonProperty("child_pages")]
         public IList<MenuItemViewModel> ChildPages { get; set; }
+        [JsonProperty("needs_admin_permissions")]
+        public bool NeedsAdminPermissions { get; set; }
+        [JsonProperty("needs_talent_permissions")]
+        public bool NeedsTalentPermissions { get; set; }
     }
 }

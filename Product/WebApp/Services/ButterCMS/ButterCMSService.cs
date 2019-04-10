@@ -18,15 +18,24 @@ namespace UpDiddy.Services.ButterCMS
             _configuration = configuration;
         }
 
-        public T GetResponse<T>(string ApiSlug, string CacheKey) where T : class
+        public T GetResponse<T>(string ApiSlug, int Levels) where T : class
         {
             
-            var CachedButterResponse = _cacheService.GetCachedValue<T>(CacheKey);
-            if (CachedButterResponse == null)
+            var CachedButterResponse = _cacheService.GetCachedValue<T>(ApiSlug);
+            try
             {
-                var butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
-                CachedButterResponse = butterClient.RetrieveContentFields<T>(new string[1] { ApiSlug });
-                _cacheService.SetCachedValue(CacheKey, CachedButterResponse);
+                if (CachedButterResponse == null)
+                {
+                    var butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
+                    CachedButterResponse = butterClient.RetrieveContentFields<T>(new string[1] { ApiSlug }, new Dictionary<string, string> { { "levels", Levels.ToString() } });
+                    _cacheService.SetCachedValue(ApiSlug, CachedButterResponse);
+                }
+            }
+            catch(ContentFieldObjectMismatchException Exception)
+            {
+                if (CachedButterResponse == null)
+                    return null;
+
             }
             
             return CachedButterResponse;

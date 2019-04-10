@@ -47,54 +47,9 @@
         <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P78FCL3"
                 height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
-    
-    <nav class="navbar cc-navbar fixed-top navbar-expand-lg navbar-light bg-white">
-        <div class="container">
-            <a class="navbar-brand" href="~/Home/Index">
-                <img src="~/images/cc_logo.png" asp-append-version="true" />
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#NavigationItems" aria-controls="NavigationItems" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="NavigationItems">
-                <ul class="navbar-nav ml-auto">
-                    @await Component.InvokeAsync("PublicSiteNavigation")
-                    @*<li class="nav-item">
-                        <a class="nav-link" asp-controller="Home" asp-action="Offers"><span class="badge badge-success">new</span> Offers</a>
-                    </li>
 
-            <li class="nav-item">
-            <a class="nav-link" href="#career-training-categories"><span class="badge badge-success">new</span> Courses</a>
-        </li>
+    @await Component.InvokeAsync("PublicSiteNavigation")
 
-                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>*@
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" id="MyCircleHeaderButton" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user-circle" aria-hidden="true"></i> My Circle</a>
-                            <div class="dropdown-menu" aria-labelledby="MyCircleHeaderButton">
-                                <a class="dropdown-item" asp-controller="Home" asp-action="Profile">My Account</a>
-                                @if ((await AuthorizationService.AuthorizeAsync(User, "IsRecruiterPolicy")).Succeeded)
-                                {
-                                    <a class="dropdown-item" id="TalentSubscribers" asp-controller="Talent" asp-action="Subscribers">Talent</a>
-                                }
-                                @if ((await AuthorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin")).Succeeded)
-                                {
-                                    <a class="dropdown-item" id="AdminPortal" asp-controller="Admin" asp-action="Dashboard">Admin</a>
-                                }
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a>
-                            </div>
-                        </li>
-                    }
-                    else
-                    {
-                        <li class="nav-item brand-button-light"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignIn">Login/Sign Up</a></li>
-                    }
-                </ul>
-            </div>
-        </div>
-    </nav>
     @{
         string CampaignOffers = HttpContextAccessor.HttpContext.Session.GetString("CampaignOffers");
         if (string.IsNullOrEmpty(CampaignOffers) == false)

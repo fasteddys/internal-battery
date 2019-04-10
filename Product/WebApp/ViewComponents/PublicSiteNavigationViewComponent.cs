@@ -43,8 +43,16 @@ namespace UpDiddy.ViewComponents
 
         public IViewComponentResult Invoke()
         {
-            var ButterResponse =_butterService.GetResponse<CareerCirclePublicSiteNavigationViewModel<MenuItemViewModel>>("careercircle_public_site_navigation", "CareerCirclePublicSiteNavigation");
-            MenuItemViewModel PublicSiteNavigation = FindDesiredNavigation(ButterResponse, "CareerCircleSiteNavigation");
+            var ButterResponse =_butterService.GetResponse<CareerCirclePublicSiteNavigationViewModel<MenuItemViewModel>>("careercircle_public_site_navigation", 3);
+            if (ButterResponse == null)
+            {
+                // direct user to oops page.
+            }
+            MenuItemViewModel PublicSiteNavigation = FindDesiredNavigation(ButterResponse, "CareerCirclePublicSiteNavigation");
+
+            if (User.Identity.IsAuthenticated)
+                return View("Authenticated", PublicSiteNavigation);
+
             return View(PublicSiteNavigation);
         }
 
@@ -55,12 +63,8 @@ namespace UpDiddy.ViewComponents
                 if (MenuItem.Label.Equals(NavigationLabel))
                     return MenuItem;
             }
-
             return null;
         }
 
-
     }
-
-
 }
