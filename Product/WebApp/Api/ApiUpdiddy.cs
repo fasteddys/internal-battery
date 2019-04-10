@@ -367,16 +367,16 @@ namespace UpDiddy.Api
 
         }
 
-        public async Task<ContactDto> ContactAsync(Guid contactGuid)
+        public async Task<ContactDto> ContactAsync(Guid partnerContactGuid)
         {
-            string cacheKey = $"Contact{contactGuid}";
+            string cacheKey = $"Contact{partnerContactGuid}";
             ContactDto rval = GetCachedValue<ContactDto>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
-                rval = await _Contact(contactGuid);
+                rval = await _Contact(partnerContactGuid);
                 SetCachedValue<ContactDto>(cacheKey, rval);
             }
             return rval;
@@ -452,12 +452,12 @@ namespace UpDiddy.Api
         #endregion
 
         #region Subscriber
-        public async Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid contactGuid, SignUpDto signUpDto)
+        public async Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid partnerContactGuid, SignUpDto signUpDto)
         {
             // encrypt password before sending to API
             signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
 
-            return await PutAsync<BasicResponseDto>(string.Format("subscriber/contact/{0}", contactGuid.ToString()), signUpDto);
+            return await PutAsync<BasicResponseDto>(string.Format("subscriber/contact/{0}", partnerContactGuid.ToString()), signUpDto);
         }
 
         public async Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto)

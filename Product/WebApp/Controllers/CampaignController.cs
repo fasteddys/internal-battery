@@ -46,13 +46,13 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        [Route("/Community/{CampaignGuid?}/{ContactGuid?}")]
-        [Route("/Join/{CampaignGuid?}/{ContactGuid?}")]
-        [Route("/JoinNow/{CampaignGuid?}/{ContactGuid?}")]
-        [Route("/Home/Campaign/{CampaignViewName}/{CampaignGuid}/{ContactGuid}")]
-        public async Task<IActionResult> CampaignLandingPagesAsync(Guid CampaignGuid, Guid ContactGuid, string CampaignViewName)
+        [Route("/Community/{CampaignGuid?}/{PartnerContactGuid?}")]
+        [Route("/Join/{CampaignGuid?}/{PartnerContactGuid?}")]
+        [Route("/JoinNow/{CampaignGuid?}/{PartnerContactGuid?}")]
+        [Route("/Home/Campaign/{CampaignViewName}/{CampaignGuid}/{PartnerContactGuid}")]
+        public async Task<IActionResult> CampaignLandingPagesAsync(Guid CampaignGuid, Guid PartnerContactGuid, string CampaignViewName)
         {
-            if (CampaignGuid == Guid.Empty || ContactGuid == Guid.Empty)
+            if (CampaignGuid == Guid.Empty || PartnerContactGuid == Guid.Empty)
             {
                 return View("Community", new CampaignViewModel()
                 {
@@ -60,35 +60,34 @@ namespace UpDiddy.Controllers
                     IsActive = true
                 });
             }
-
-            CampaignDto campaign = await _Api.GetCampaignAsync(CampaignGuid);
-
-            // capture any campaign phase information that has been passed.  
-            string CampaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
-
-            // cookie campaign tracking information for future tracking enhacments, such as
-            // task 304
-            Response.Cookies.Append(Constants.TRACKING_KEY_CAMPAIGN_PHASE, CampaignPhase);
-            Response.Cookies.Append(Constants.TRACKING_KEY_CAMPAIGN, CampaignGuid.ToString());
-            Response.Cookies.Append(Constants.TRACKING_KEY_CONTACT, ContactGuid.ToString());
-            // build trackign string url
-            string _TrackingImgSource = _configuration["Api:ApiUrl"] +
-                "tracking?contact=" +
-                ContactGuid +
-                "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
-                CampaignGuid + "&campaignphase=" + WebUtility.UrlEncode(CampaignPhase);
-
+            
             try
             {
                 // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
-                ContactDto Contact = await _Api.ContactAsync(ContactGuid);
+                CampaignDto campaign = await _Api.GetCampaignAsync(CampaignGuid);
+                ContactDto Contact = await _Api.ContactAsync(PartnerContactGuid);
                 CourseDto Course = await _Api.GetCourseByCampaignGuidAsync(CampaignGuid);
+
+                // capture any campaign phase information that has been passed.  
+                string CampaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
+
+                // cookie campaign tracking information for future tracking enhacments, such as
+                // task 304
+                Response.Cookies.Append(Constants.TRACKING_KEY_CAMPAIGN_PHASE, CampaignPhase);
+                Response.Cookies.Append(Constants.TRACKING_KEY_CAMPAIGN, CampaignGuid.ToString());
+                Response.Cookies.Append(Constants.TRACKING_KEY_PARTNER_CONTACT, PartnerContactGuid.ToString());
+                // build trackign string url
+                string _TrackingImgSource = _configuration["Api:ApiUrl"] +
+                    "tracking?contact=" +
+                    Contact.PartnerContactGuid.Value.ToString() +
+                    "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
+                    CampaignGuid + "&campaignphase=" + WebUtility.UrlEncode(CampaignPhase);
 
                 CampaignViewModel cvm = new CampaignViewModel()
                 {
 
                     CampaignGuid = CampaignGuid,
-                    ContactGuid = ContactGuid,
+                    PartnerContactGuid = Contact.PartnerContactGuid.Value,
                     TrackingImgSource = _TrackingImgSource,
                     CampaignCourse = Course,
                     CampaignPhase = CampaignPhase,
@@ -162,7 +161,7 @@ namespace UpDiddy.Controllers
             try
             {
                 // Convert contact to subscriber and create ADB2C account for them.
-                BasicResponseDto subscriberResponse = await _Api.UpdateSubscriberContactAsync(signUpViewModel.ContactGuid, sudto);
+                BasicResponseDto subscriberResponse = await _Api.UpdateSubscriberContactAsync(signUpViewModel.PartnerContactGuid, sudto);
 
                 CourseDto Course = await _Api.GetCourseByCampaignGuidAsync((Guid)signUpViewModel.CampaignGuid);
                 if (Course == null)

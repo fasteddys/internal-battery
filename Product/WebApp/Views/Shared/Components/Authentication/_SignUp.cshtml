@@ -13,7 +13,7 @@
         @{
             if (!Model.IsExpressSignUp)
             {
-                <input type="hidden" asp-for="ContactGuid" name="ContactGuid" value="@Model.ContactGuid" form="SignUpForm" />
+                <input type="hidden" asp-for="PartnerContactGuid" name="PartnerContactGuid" value="@Model.PartnerContactGuid" form="SignUpForm" />
                 <input type="hidden" asp-for="CampaignGuid" name="CampaignGuid" value="@Model.CampaignGuid" form="SignUpForm" />
                 <input type="hidden" asp-for="CampaignPhase" name="CampaignPhase" value="@WebUtility.UrlEncode(Model.CampaignPhase)" form="SignUpForm" />
             }

@@ -78,7 +78,7 @@ namespace UpDiddyApi.Controllers
             if (email != null)
                 contactQuery = contactQuery.Where(c => c.Email.Contains(email));
 
-            if(partnerId.HasValue)
+            if (partnerId.HasValue)
                 contactQuery = contactQuery.Where(c => c.PartnerContacts.Any(pc => pc.PartnerId == partnerId));
 
             if (startDate.HasValue)
@@ -94,7 +94,7 @@ namespace UpDiddyApi.Controllers
                 contactQuery = contactQuery.Where(c => c.CreateDate >= dateTime);
             }
 
-            if(endDate.HasValue)
+            if (endDate.HasValue)
             {
                 double timestamp = endDate.Value;
                 // Format our new DateTime object to start at the UNIX Epoch
@@ -141,23 +141,40 @@ namespace UpDiddyApi.Controllers
             });
         }
 
-        [HttpGet("api/[controller]/{contactGuid}")]
-        public IActionResult Get(Guid ContactGuid)
+        [HttpGet("api/[controller]/{partnerContactGuid}")]
+        public IActionResult Get(Guid partnerContactGuid)
         {
             ContactDto rval = null;
-            rval = _db.Contact
-                .Where(t => t.IsDeleted == 0 && t.ContactGuid == ContactGuid)
-                .ProjectTo<ContactDto>(_mapper.ConfigurationProvider)
+
+            rval = _db.PartnerContact
+                .Where(pc => pc.IsDeleted == 0 && pc.PartnerContactGuid == partnerContactGuid && pc.Contact.IsDeleted == 0)
+                .Select(pc => new ContactDto()
+                {
+                    PartnerContactGuid = pc.PartnerContactGuid,
+                    Email = pc.Contact.Email,
+                    SourceSystemIdentifier = pc.SourceSystemIdentifier,
+                    Metadata = pc.Metadata.ToObject<Dictionary<string, string>>()
+                })
                 .FirstOrDefault();
+
             if (rval == null)
             {
-                return NotFound();
+                rval = GetLegacyContact(partnerContactGuid);
+                if (rval == null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    return Ok(rval);
+                }
             }
             else
             {
                 return Ok(rval);
             }
         }
+
         /// <summary>
         /// Handles the list of contacts to be imported into the system. This method retrieves the list of contacts from the cache and processes 
         /// them individually. This is intentionally so that one error does not prevent the rest of the contacts from being processed. 
@@ -211,6 +228,32 @@ namespace UpDiddyApi.Controllers
         }
 
         /// <summary>
+        /// Retrieves a contact by contact guid (rather than partner contact guid). This introduces ambiguity; which partner contact should be returned if more than one exists?
+        /// This should be removed once we no longer need to support inbound requests to landing pages with legacy contact identifiers (a good way to judge this would be to look
+        /// at dbo.ContactAction - once the 'open email' and 'visit landing page' events have tapered off for old campaigns, this can be removed).
+        /// </summary>
+        /// <param name="contactGuid"></param>
+        /// <returns></returns>
+        [Obsolete("Ambiguous method for referencing a contact; remove once old campaigns are no longer being used.", false)]
+        private ContactDto GetLegacyContact(Guid contactGuid)
+        {
+            ContactDto rval = null;
+
+            rval = _db.PartnerContact
+                .Where(pc => pc.IsDeleted == 0 && pc.Contact.ContactGuid == contactGuid && pc.Contact.IsDeleted == 0)
+                .Select(pc => new ContactDto()
+                {
+                    PartnerContactGuid = pc.PartnerContactGuid,
+                    Email = pc.Contact.Email,
+                    SourceSystemIdentifier = pc.SourceSystemIdentifier,
+                    Metadata = pc.Metadata.ToObject<Dictionary<string, string>>()
+                })
+                .FirstOrDefault();
+
+            return rval;
+        }
+
+        /// <summary>
         /// Handles the import of a contact into the system. This method evaluates whether the contact already exists and handles the create and update operation
         /// accordingly. Information is returned to the caller indicating what action was taken (Nothing, Insert, Update, Error) and a corresponding reason (for errors).
         /// </summary>
@@ -249,7 +292,7 @@ namespace UpDiddyApi.Controllers
                 // transform sql output parameters into an ImportActionDto response
                 importAction.ImportBehavior = (ImportBehavior)Enum.Parse(typeof(ImportBehavior), sqlImportAction.Value.ToString());
                 importAction.Reason = sqlReason.Value == DBNull.Value ? null : sqlReason.Value.ToString();
-                
+
             }
             catch (Exception e)
             {
