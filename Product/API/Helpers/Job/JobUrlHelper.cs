@@ -99,10 +99,10 @@ namespace UpDiddyApi.Helpers.Job
 
         #region Default Urls 
 
-        static public string GetDefaultLocationUrl(JobQueryDto jobQueryDto)
+        static public string GetDefaultLocationUrl(string urlPrefix, JobQueryDto jobQueryDto)
         {
             StringBuilder rVal = new StringBuilder();
-            rVal.Append("/browse-jobs-location/");
+            rVal.Append(urlPrefix);
 
             if (string.IsNullOrEmpty(jobQueryDto.Country) == false)
                 rVal.Append(FacetQueryParam(jobQueryDto.Country));
@@ -145,11 +145,11 @@ namespace UpDiddyApi.Helpers.Job
         }
 
 
-        static public string GetDefaultIndustryUrl( JobQueryDto jobQueryDto)
+        static public string GetDefaultIndustryUrl(string urlPrefix, JobQueryDto jobQueryDto)
         {
             StringBuilder rVal = new StringBuilder();
 
-            rVal.Append("/browse-jobs-industry/");
+            rVal.Append(urlPrefix);
 
             if (string.IsNullOrEmpty(jobQueryDto.Industry) == false)
                 rVal.Append(FacetQueryParam(jobQueryDto.Industry));
