@@ -21,6 +21,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
     public class JobPostingFactory
     {
 
+        public static string JobPostingUrl(IConfiguration config, Guid subscriberGuid)
+        {
+            return config["CareerCircle:ViewJobPostingUrl"] + subscriberGuid;
+        }
 
         public static JobPosting GetJobPostingById(UpDiddyDbContext db, int jobPostingId)
         {

@@ -30,7 +30,8 @@ using Hangfire;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.Helpers.Job;
 using System.Security.Claims;
-
+using UpDiddyLib.Helpers;
+using System.Dynamic;
 
 namespace UpDiddyApi.Controllers
 {
@@ -45,9 +46,10 @@ namespace UpDiddyApi.Controllers
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly int _postingTTL = 30;
         private readonly CloudTalent _cloudTalent = null;
+        private ISysEmail _sysEmail;
 
         #region constructor 
-        public JobApplicationController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory)
+        public JobApplicationController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory, ISysEmail sysEmail)
 
         {
             _db = db;
@@ -57,6 +59,7 @@ namespace UpDiddyApi.Controllers
             _httpClientFactory = httpClientFactory;
             _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            _sysEmail = sysEmail;
         }
         #endregion
 
@@ -79,7 +82,6 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid != subsriberGuidClaim)
                 return BadRequest(new { code = 401, message = $"Job applications can only be viewed by applicant" });
 
-            // TODO JAB INCLUDE URL TO POSTING 
 
             List<JobApplication> applications = JobApplicationFactory.GetJobApplicationsForSubscriber(_db, subscriber.SubscriberId);
             _syslog.Log(LogLevel.Information, $"***** JobApplicationController:GetJobApplicationForSubscriber completed at: {DateTime.UtcNow.ToLongDateString()}");
@@ -88,7 +90,7 @@ namespace UpDiddyApi.Controllers
 
             string jobPostingUrl = _configuration["CareerCircle:ViewJobPostingUrl"];
             foreach (JobApplicationApplicantViewDto av in rVal)
-                av.JobPostingUrl = jobPostingUrl + av.JobPosting.JobPostingGuid;
+                av.JobPostingUrl =     JobPostingFactory.JobPostingUrl(_configuration, av.JobPosting.JobPostingGuid.Value);
 
             return Ok(rVal);
         }
@@ -114,15 +116,14 @@ namespace UpDiddyApi.Controllers
             Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if (jobPosting.Subscriber.SubscriberGuid != subsriberGuidClaim )
                 return BadRequest(new { code = 401, message = $"Job applications can only be viewed by posting owner" });
-
-            //TODO JAB INCLUDE URL TO SUBSCRIBER
+ 
             List<JobApplication> applications = JobApplicationFactory.GetJobApplicationsForPosting(_db, jobPosting.JobPostingId);
             _syslog.Log(LogLevel.Information, $"***** JobApplicationController:GetJobApplicationForPosting completed at: {DateTime.UtcNow.ToLongDateString()}");            
             List<JobApplicationRecruiterViewDto> rVal = _mapper.Map<List<JobApplicationRecruiterViewDto>>(applications);
+
             // Fill in the view job seeker url
-            string jobSeekerUrl = _configuration["CareerCircle:ViewTalentUrl"];
-            foreach ( JobApplicationRecruiterViewDto rv in rVal)            
-                rv.JobSeekerUrl = jobSeekerUrl + rv.Subscriber.SubscriberGuid;
+            foreach (JobApplicationRecruiterViewDto rv in rVal)
+                rv.JobSeekerUrl = SubscriberFactory.JobseekerUrl(_configuration, rv.Subscriber.SubscriberGuid.Value);
             
             return Ok(rVal);
         }
@@ -231,8 +232,21 @@ namespace UpDiddyApi.Controllers
                 jobApplication.CoverLetter = jobApplicationDto.CoverLetter == null ? string.Empty : jobApplicationDto.CoverLetter;
                 _db.jobApplication.Add(jobApplication);
                 _db.SaveChanges();
-                // TODO JAB queue background jobs for sending emails 
-
+    
+                // Send recruiter email alerting them to application
+                BackgroundJob.Enqueue(() =>_sysEmail.SendTemplatedEmailAsync
+                    (jobPosting.Subscriber.Email, 
+                     _configuration["SysEmail:TemplateIds:JobApplication-Recruiter"],
+                     new
+                     {
+                        ApplicantName = subscriber.FirstName + " " + subscriber.LastName,
+                        JobTitle = jobPosting.Title,
+                        ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration,subscriber.SubscriberGuid.Value),
+                        JobUrl = JobPostingFactory.JobPostingUrl(_configuration,jobPosting.JobPostingGuid)
+                      }, 
+                      null)
+                );
+             
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPosting.JobPostingGuid}" });
             }
