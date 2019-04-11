@@ -68,32 +68,11 @@ namespace UpDiddy.ViewComponents
                 return View(PublicSiteNavigation);
             }
 
-            SendEmailNotification(Request);
-
             if (User.Identity.IsAuthenticated)
                     return View("ErrorAuthenticated");
 
             return View("Error");
             
-        }
-
-        private void SendEmailNotification(HttpRequest Request)
-        {
-            Guid loggedInUserGuid = Guid.Empty;
-            if (User.Identity.IsAuthenticated)
-                loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-
-            string Headers = String.Empty;
-            foreach (var key in Request.Headers.Keys)
-                Headers += "<strong>" + key + "</strong>=" + Request.Headers[key] + "<br />";
-
-            StringBuilder HtmlMessage = new StringBuilder();
-            HtmlMessage.Append((loggedInUserGuid == Guid.Empty ? "<h2>Public user" : "<h2>User " + loggedInUserGuid)
-                + " was unable to retrieve the CareerCircle public site navigation. Returning error navigation.</h2><h3>Request Headers:</h3>"
-                + Headers);
-            _sysEmail.SendEmail(_configuration["ButterCMS:CareerCirclePublicSiteNavigation:FailedFetchNotifyEmail"], 
-                "ALERT! Navigation failed to load.", 
-                HtmlMessage.ToString());
         }
 
         private PublicSiteNavigationMenuItemViewModel FindDesiredNavigation(
