@@ -107,7 +107,8 @@ namespace UpDiddy.Api
             string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).GetMsalCacheInstance();
             ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureOptions.ClientId, AzureOptions.Authority, AzureOptions.RedirectUri, new ClientCredential(AzureOptions.ClientSecret), userTokenCache, null);
-            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureOptions.Authority, false);
+            IAccount account = (await cca.GetAccountsAsync()).FirstOrDefault();
+            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, account, AzureOptions.Authority, false);
             return result;
         }
 
