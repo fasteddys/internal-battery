@@ -34,6 +34,7 @@ namespace UpDiddy.Api
         public AzureAdB2COptions AzureOptions { get; set; }
         private IHttpContextAccessor _contextAccessor { get; set; }
         public IDistributedCache _cache { get; set; }
+        public HttpContext _currentContext { get; set; }
 
         #region Constructor
         public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache)
@@ -46,7 +47,7 @@ namespace UpDiddy.Api
             _ApiBaseUri = _configuration["Api:ApiUrl"];
             _HttpClientFactory = httpClientFactory;
             _cache = cache;
-
+            _currentContext = contextAccessor.HttpContext;
         }
         #endregion
 
@@ -104,8 +105,8 @@ namespace UpDiddy.Api
         {
             // Retrieve the token with the specified scopes
             var scope = AzureOptions.ApiScopes.Split(' ');
-            string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).GetMsalCacheInstance();
+            string signedInUserID = _currentContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _currentContext).GetMsalCacheInstance();
             ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureOptions.ClientId, AzureOptions.Authority, AzureOptions.RedirectUri, new ClientCredential(AzureOptions.ClientSecret), userTokenCache, null);
             IAccount account = (await cca.GetAccountsAsync()).FirstOrDefault();
             AuthenticationResult result = null;
@@ -122,7 +123,7 @@ namespace UpDiddy.Api
 
         private async Task<HttpClient> AddBearerTokenAsync(HttpClient client)
         {
-            if (_contextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            if (_currentContext.User.Identity.IsAuthenticated)
             {
                 AuthenticationResult authResult = await GetBearerTokenAsync();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
