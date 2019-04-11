@@ -108,7 +108,15 @@ namespace UpDiddy.Api
             TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).GetMsalCacheInstance();
             ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureOptions.ClientId, AzureOptions.Authority, AzureOptions.RedirectUri, new ClientCredential(AzureOptions.ClientSecret), userTokenCache, null);
             IAccount account = (await cca.GetAccountsAsync()).FirstOrDefault();
-            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, account, AzureOptions.Authority, false);
+            AuthenticationResult result = null;
+            try
+            {
+                result = await cca.AcquireTokenSilentAsync(scope, account, AzureOptions.Authority, false);
+            }
+            catch (MsalUiRequiredException)
+            {
+                result = await cca.AcquireTokenForClientAsync(scope);
+            }
             return result;
         }
 

@@ -12,6 +12,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using System;
 
 namespace UpDiddy.Controllers
 {
@@ -111,7 +112,15 @@ namespace UpDiddy.Controllers
             TokenCache userTokenCache = new MSALSessionCache(signedInUserID, HttpContext).GetMsalCacheInstance();
             ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureAdB2COptions.ClientId, AzureAdB2COptions.Authority, AzureAdB2COptions.RedirectUri, new ClientCredential(AzureAdB2COptions.ClientSecret), userTokenCache, null);
             IAccount account = (await cca.GetAccountsAsync()).FirstOrDefault();
-            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, account, AzureAdB2COptions.Authority, false);
+            AuthenticationResult result = null;
+            try
+            {
+                result = await cca.AcquireTokenSilentAsync(scope, account, AzureAdB2COptions.Authority, false);
+            }
+            catch (MsalUiRequiredException)
+            {
+                result = await cca.AcquireTokenForClientAsync(scope);
+            }
             return Ok(new { AccessToken = result.AccessToken, ExpiresOn = result.ExpiresOn, UniqueId = result.UniqueId });
         }
     }
