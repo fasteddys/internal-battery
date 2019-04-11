@@ -1,0 +1,48 @@
+﻿@using UpDiddy.ViewModels.Components.Layout
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration;
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+
+<nav class="navbar cc-navbar fixed-top navbar-expand-lg navbar-light bg-white">
+    <div class="container">
+        <a class="navbar-brand" href="~/Home/Index">
+            <img src="~/images/cc_logo.png" asp-append-version="true" />
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#NavigationItems" aria-controls="NavigationItems" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="NavigationItems">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Home" asp-action="Contact">Contact Us</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="NavDropDown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user-circle" aria-hidden="true"></i> My Circle</a>
+                    <div class="dropdown-menu" aria-labelledby="NavDropDown">
+                        <a class="dropdown-item" asp-controller="Home" asp-action="Profile">My Account</a>
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "IsRecruiterPolicy")).Succeeded)
+                        {
+                            <a class="dropdown-item" id="TalentSubscribers" asp-controller="Talent" asp-action="Subscribers">Talent</a>
+                        }
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin")).Succeeded)
+                        {
+                            <a class="dropdown-item" id="AdminPortal" asp-controller="Admin" asp-action="Dashboard">Admin</a>
+                        }
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a>
+                    </div>
+                </li>
+
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+

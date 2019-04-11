@@ -6,20 +6,22 @@ using System.Threading.Tasks;
 
 namespace UpDiddy.ViewModels.Components.Layout
 {
-    public class MenuItemViewModel
+    public class PublicSiteNavigationMenuItemViewModel
     {
         [JsonProperty("url")]
         public string Url { get; set; }
         [JsonProperty("label")]
         public string Label { get; set; }
         [JsonProperty("child_pages")]
-        public IList<MenuItemViewModel> ChildPages { get; set; }
-        [JsonProperty("needs_admin_permissions")]
-        public bool NeedsAdminPermissions { get; set; }
-        [JsonProperty("needs_talent_permissions")]
-        public bool NeedsTalentPermissions { get; set; }
+        public IList<PublicSiteNavigationMenuItemViewModel> ChildPages { get; set; }
+        [JsonProperty("role")]
+        public RoleViewModel Role { get; set; }
         [JsonProperty("needs_authentication")]
         public bool NeedsAuthentication { get; set; }
+        [JsonProperty("font_awesome_icon")]
+        public string FontAwesomeIcon { get; set; }
+        [JsonProperty("badge_text")]
+        public string BadgeText { get; set; }
 
     }
 }

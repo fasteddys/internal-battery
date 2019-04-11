@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddy.ViewModels.Components.Layout
 {
-    public class CareerCirclePublicSiteNavigationViewModel<T>
+    public class PublicSiteNavigationViewModel<T>
     {
         [JsonProperty("careercircle_public_site_navigation")]
         public IList<T> CareerCirclePublicSiteNavigationRoot { get; set; }

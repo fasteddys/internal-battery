@@ -1,5 +1,5 @@
 ﻿@using UpDiddy.ViewModels.Components.Layout
-@model MenuItemViewModel
+@model PublicSiteNavigationMenuItemViewModel
 @using Microsoft.AspNetCore.Localization
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IViewLocalizer Localizer
@@ -19,13 +19,42 @@
         </button>
         <div class="collapse navbar-collapse" id="NavigationItems">
             <ul class="navbar-nav ml-auto">
-                @foreach (MenuItemViewModel item in Model.ChildPages)
+                @foreach (PublicSiteNavigationMenuItemViewModel item in Model.ChildPages)
                 {
                     if (!item.NeedsAuthentication)
                     {
-                        <li class="nav-item">
-                            <a class="nav-link" href="@item.Url">@item.Label</a>
-                        </li>
+                        if (item.Role.RolePolicy != null && (await AuthorizationService.AuthorizeAsync(User, item.Role.RolePolicy)).Succeeded)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@item.Url">
+                                    @if (!string.IsNullOrEmpty(item.BadgeText))
+                                    {
+                                        <span class="badge badge-success">@item.BadgeText</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.FontAwesomeIcon))
+                                    {
+                                        <i class="@item.FontAwesomeIcon" aria-hidden="true"></i>
+                                    }
+                                    @item.Label
+                                </a>
+                            </li>
+                        }
+                        else if (item.Role.RolePolicy == null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@item.Url">
+                                    @if (!string.IsNullOrEmpty(item.BadgeText))
+                                    {
+                                        <span class="badge badge-success">@item.BadgeText</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.FontAwesomeIcon))
+                                    {
+                                        <i class="@item.FontAwesomeIcon" aria-hidden="true"></i>
+                                    }
+                                    @item.Label
+                                </a>
+                            </li>
+                        }
                     }
 
                 }

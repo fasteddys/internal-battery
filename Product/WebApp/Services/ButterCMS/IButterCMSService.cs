@@ -8,6 +8,6 @@ namespace UpDiddy.Services.ButterCMS
 {
     public interface IButterCMSService
     {
-        T GetResponse<T>(string ApiSlug, int Levels) where T : class;
+        T RetrieveContentFields<T>(string CacheKey, string[] Keys, Dictionary<string, string> QueryParameters) where T : class;
     }
 }

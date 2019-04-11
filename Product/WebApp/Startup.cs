@@ -186,6 +186,7 @@ namespace UpDiddy
             services.AddScoped<IApi, ApiUpdiddy>();
             services.AddScoped<ICacheService, CacheService>();
             services.AddScoped<IButterCMSService, ButterCMSService>();
+            services.AddScoped<ISysEmail, SysEmail>();
 
             services.AddMvc().AddJsonOptions(options =>
             {

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using ButterCMS;
 using ButterCMS.Models;
@@ -13,6 +15,7 @@ using Newtonsoft.Json;
 using UpDiddy.Api;
 using UpDiddy.Services.ButterCMS;
 using UpDiddy.ViewModels.Components.Layout;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddy.ViewComponents
 {
@@ -26,39 +29,78 @@ namespace UpDiddy.ViewComponents
         private IConfiguration _configuration = null;
         private IDistributedCache _cache = null;
         private IButterCMSService _butterService = null;
+        private ISysEmail _sysEmail = null;
 
         public PublicSiteNavigationViewComponent(
             IApi api, 
             IConfiguration configuration, 
             IHttpContextAccessor httpContextAccessor, 
             IDistributedCache cache,
-            IButterCMSService butterService)
+            IButterCMSService butterService,
+            ISysEmail sysEmail)
         {
             _Api = api;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _cache = cache;
             _butterService = butterService;
+            _sysEmail = sysEmail;
         }
 
         public IViewComponentResult Invoke()
         {
-            var ButterResponse =_butterService.GetResponse<CareerCirclePublicSiteNavigationViewModel<MenuItemViewModel>>("careercircle_public_site_navigation", 3);
-            if (ButterResponse == null)
+            var ButterResponse =_butterService.RetrieveContentFields<PublicSiteNavigationViewModel<PublicSiteNavigationMenuItemViewModel>>(
+                "CareerCirclePublicSiteNavigation",
+                new string[1] { _configuration["ButterCMS:CareerCirclePublicSiteNavigation:Slug"] }, 
+                new Dictionary<string, string> {
+                    {
+                        "levels", _configuration["ButterCMS:CareerCirclePublicSiteNavigation:Levels"]
+                    }
+                });
+
+            if(ButterResponse != null)
             {
-                // direct user to oops page.
+                PublicSiteNavigationMenuItemViewModel PublicSiteNavigation = FindDesiredNavigation(ButterResponse, "CareerCirclePublicSiteNavigation");
+
+                if(User.Identity.IsAuthenticated)
+                    return View("Authenticated", PublicSiteNavigation);
+
+                return View(PublicSiteNavigation);
             }
-            MenuItemViewModel PublicSiteNavigation = FindDesiredNavigation(ButterResponse, "CareerCirclePublicSiteNavigation");
+
+            SendEmailNotification(Request);
 
             if (User.Identity.IsAuthenticated)
-                return View("Authenticated", PublicSiteNavigation);
+                    return View("ErrorAuthenticated");
 
-            return View(PublicSiteNavigation);
+            return View("Error");
+            
         }
 
-        private MenuItemViewModel FindDesiredNavigation(CareerCirclePublicSiteNavigationViewModel<MenuItemViewModel> CCNavigation, string NavigationLabel)
+        private void SendEmailNotification(HttpRequest Request)
         {
-            foreach(MenuItemViewModel MenuItem in CCNavigation.CareerCirclePublicSiteNavigationRoot)
+            Guid loggedInUserGuid = Guid.Empty;
+            if (User.Identity.IsAuthenticated)
+                loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            string Headers = String.Empty;
+            foreach (var key in Request.Headers.Keys)
+                Headers += "<strong>" + key + "</strong>=" + Request.Headers[key] + "<br />";
+
+            StringBuilder HtmlMessage = new StringBuilder();
+            HtmlMessage.Append((loggedInUserGuid == Guid.Empty ? "<h2>Public user" : "<h2>User " + loggedInUserGuid)
+                + " was unable to retrieve the CareerCircle public site navigation. Returning error navigation.</h2><h3>Request Headers:</h3>"
+                + Headers);
+            _sysEmail.SendEmail(_configuration["ButterCMS:CareerCirclePublicSiteNavigation:FailedFetchNotifyEmail"], 
+                "ALERT! Navigation failed to load.", 
+                HtmlMessage.ToString());
+        }
+
+        private PublicSiteNavigationMenuItemViewModel FindDesiredNavigation(
+            PublicSiteNavigationViewModel<PublicSiteNavigationMenuItemViewModel> CCNavigation, 
+            string NavigationLabel)
+        {
+            foreach(PublicSiteNavigationMenuItemViewModel MenuItem in CCNavigation.CareerCirclePublicSiteNavigationRoot)
             {
                 if (MenuItem.Label.Equals(NavigationLabel))
                     return MenuItem;
