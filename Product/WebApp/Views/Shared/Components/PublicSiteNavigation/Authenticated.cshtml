@@ -75,6 +75,10 @@
                             <div class="dropdown-menu" aria-labelledby="id_@ItemHash">
                                 @foreach (PublicSiteNavigationMenuItemViewModel Child in item.ChildPages)
                                 {
+                                    if (Child.IsNewSection)
+                                    {
+                                        <div class="dropdown-divider"></div>
+                                    }
                                     if (Child.Role.RolePolicy != null && (await AuthorizationService.AuthorizeAsync(User, Child.Role.RolePolicy)).Succeeded)
                                     {
                                         <a class="dropdown-item" href="@Child.Url">
@@ -105,8 +109,6 @@
                                     }
 
                                 }
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a>
                             </div>
                         </li>
                     }

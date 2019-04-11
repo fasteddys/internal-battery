@@ -22,6 +22,8 @@ namespace UpDiddy.ViewModels.Components.Layout
         public string FontAwesomeIcon { get; set; }
         [JsonProperty("badge_text")]
         public string BadgeText { get; set; }
+        [JsonProperty("new_section")]
+        public bool IsNewSection { get; set; }
 
     }
 }
