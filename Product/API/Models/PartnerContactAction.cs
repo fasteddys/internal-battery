@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    [Obsolete("This is being replaced by PartnerContactAction", false)]
-    public class ContactAction : BaseModel
+    public class PartnerContactAction : BaseModel
     {
-        public Guid? ContactActionGuid { get; set; }
-        public int ContactId { get; set; }
-        public virtual Contact Contact { get; set; }
+        public Guid? PartnerContactActionGuid { get; set; }
+
+        public int PartnerContactId { get; set; }
+        public virtual PartnerContact PartnerContact { get; set; }
         public int ActionId { get; set; }
         public virtual Action Action { get; set; }
         public int CampaignId { get; set; }

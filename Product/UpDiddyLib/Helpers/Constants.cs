@@ -8,7 +8,7 @@ namespace UpDiddyLib.Helpers
     // todo: consider moving these constants to their respective domains of usage
     public static class Constants
     {
-        public const string TRACKING_KEY_CONTACT = "Contact";
+        public const string TRACKING_KEY_PARTNER_CONTACT = "Contact";
         public const string TRACKING_KEY_ACTION = "Action";
         public const string TRACKING_KEY_CAMPAIGN = "Campaign";
         public const string TRACKING_KEY_CAMPAIGN_PHASE = "CampaignPhase";

@@ -114,7 +114,7 @@
                                     @* Extend the SignUpViewModel with campaign phase information from CampaignSignUpBandViewModel *@
                                     @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel
                                     {
-                                        ContactGuid = Model.ContactGuid,
+                                        PartnerContactGuid = Model.PartnerContactGuid,
                                         CampaignGuid = Model.CampaignGuid,
                                         CampaignPhase = Model.CampaignPhase
 
