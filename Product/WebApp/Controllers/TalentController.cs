@@ -6,23 +6,117 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using UpDiddy.Api;
+using UpDiddy.Authentication;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
 {
     [Authorize(Policy = "IsRecruiterPolicy")]
-    public class TalentController : Controller
+    public class TalentController : BaseController
     {
         private IApi _api;
-        public TalentController(IApi api)
+        private readonly IConfiguration _configuration;
+        private readonly IHostingEnvironment _env;
+
+        public TalentController(IApi api,
+        IConfiguration configuration,
+        IHostingEnvironment env)
+         : base(api)
         {
             _api = api;
+            _env = env;
+            _configuration = configuration;
         }
+
+        #region Job Postings 
+
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [Authorize]
+        [HttpGet]
+        //public ViewResult JobPosting()
+        public async Task<IActionResult> JobPosting()
+        {
+            Guid USCountryGuid = Guid.Parse(_configuration["CareerCircle:USCountryGuid"]);
+ 
+            var states = await _Api.GetStatesByCountryAsync(USCountryGuid);
+            var industries = await _Api.GetIndustryAsync();
+            var jobCategories = await _Api.GetJobCategoryAsync();
+            var educationLevels = await _api.GetEducationLevelAsync();
+            var experienceLevels = await _api.GetExperienceLevelAsync();
+            var employmentTypes = await _api.GetEmploymentTypeAsync();
+            var compensationType = await _api.GetCompensationTypeAsync();
+            var SecurityClearances = await _api.GetSecurityClearanceAsync();
+
+            JobPostingViewModel model = new JobPostingViewModel()
+            {
+                States = states.Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.StateGuid.ToString(),
+                    Selected = s.StateGuid == this.subscriber?.State?.StateGuid
+                }),
+
+                Industries = industries.Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.IndustryGuid.ToString()                    
+                }),
+                JobCategories = jobCategories.Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.JobCategoryGuid.ToString()
+                }),
+                ExperienceLevels = experienceLevels.Select(s => new SelectListItem()
+                {
+                    Text = s.DisplayName,
+                    Value = s.ExperienceLevelGuid.ToString()
+                }),
+                EducationLevels = educationLevels.Select(s => new SelectListItem()
+                {
+                    Text = s.Level,
+                    Value = s.EducationLevelGuid.ToString()
+                }),                
+                EmploymentTypes = employmentTypes.Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.EmploymentTypeGuid.ToString()
+                }),                
+                CompensationTypes = compensationType.Select(s => new SelectListItem()
+                {
+                    Text = s.CompensationTypeName,
+                    Value = s.CompensationTypeGuid.ToString()
+                }),
+                SecurityClearances = SecurityClearances.Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.SecurityClearanceGuid.ToString()
+                }),
+            };
+ 
+          // var states = await _api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
+             return View(model);
+        }
+
+
+
+
+        [Authorize]
+        [HttpPost]
+        public IActionResult CreateJobPosting(JobPostingViewModel model )
+        {
+
+            return   RedirectToAction("JobPosting");
+            //return View("JobPosting",model);
+        }
+
+        #endregion
 
         [Authorize]
         [HttpGet]

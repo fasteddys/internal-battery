@@ -245,6 +245,127 @@ namespace UpDiddy.Api
             return rval;
         }
 
+
+
+        public async Task<IList<ExperienceLevelDto>> GetExperienceLevelAsync()
+        {
+            string cacheKey = "GetExperienceLevelAsync";
+            IList<ExperienceLevelDto> rval = GetCachedValue<IList<ExperienceLevelDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetExperienceLevelAsync();
+                SetCachedValue<IList<ExperienceLevelDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public async Task<IList<SecurityClearanceDto>> GetSecurityClearanceAsync()
+        {
+            string cacheKey = "GetSecurityClearanceAsync";
+            IList<SecurityClearanceDto> rval = GetCachedValue<IList<SecurityClearanceDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetSecurityClearanceAsync();
+                SetCachedValue<IList<SecurityClearanceDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+
+
+
+        public async Task<IList<EmploymentTypeDto>> GetEmploymentTypeAsync()
+        {
+            string cacheKey = "GetEmploymentTypeAsync";
+            IList<EmploymentTypeDto> rval = GetCachedValue<IList<EmploymentTypeDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetEmploymentTypeAsync();
+                SetCachedValue<IList<EmploymentTypeDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+
+
+        public async Task<IList<CompensationTypeDto>> GetCompensationTypeAsync()
+        {
+            string cacheKey = "GetCompensationTypeAsync";
+            IList<CompensationTypeDto> rval = GetCachedValue<IList<CompensationTypeDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetCompensationTypeAsync();
+                SetCachedValue<IList<CompensationTypeDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+
+
+
+        public async Task<IList<EducationLevelDto>> GetEducationLevelAsync()
+        {
+            string cacheKey = "GetEducationLevelAsync";
+            IList<EducationLevelDto> rval = GetCachedValue<IList<EducationLevelDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetEducationLevelAsync();
+                SetCachedValue<IList<EducationLevelDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+
+
+
+        public async Task<IList<JobCategoryDto>> GetJobCategoryAsync()
+        {
+            string cacheKey = "GetJobCategoryAsync";
+            IList<JobCategoryDto> rval = GetCachedValue<IList<JobCategoryDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetJobCategoryAsync();
+                SetCachedValue<IList<JobCategoryDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+
+
+        public async Task<IList<IndustryDto>> GetIndustryAsync()
+        {
+            string cacheKey = "GetIndustryAsync";
+            IList<IndustryDto> rval = GetCachedValue<IList<IndustryDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetIndustryAsync();
+                SetCachedValue<IList<IndustryDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        
         public async Task<CourseVariantDto> GetCourseVariantAsync(Guid courseVariantGuid)
         {
             string cacheKey = $"GetCourseVariant{courseVariantGuid}";
@@ -641,6 +762,52 @@ namespace UpDiddy.Api
                 return await GetStatesAsync();
 
             return await GetAsync<IList<StateDto>>("country/" + countryGuid?.ToString() + "/state");
+        }
+
+        public async Task<IList<ExperienceLevelDto>> _GetExperienceLevelAsync()
+        {
+
+            return await GetAsync<IList<ExperienceLevelDto>>("lookupdata/experience-level");
+        }
+
+
+        public async Task<IList<EducationLevelDto>> _GetEducationLevelAsync()
+        {
+
+            return await GetAsync<IList<EducationLevelDto>>("lookupdata/education-level");
+        }
+
+
+        public async Task<IList<SecurityClearanceDto>> _GetSecurityClearanceAsync()
+        {
+
+            return await GetAsync<IList<SecurityClearanceDto>>("lookupdata/security-clearance");
+        }
+
+
+        public async Task<IList<EmploymentTypeDto>> _GetEmploymentTypeAsync()
+        {
+
+            return await GetAsync<IList<EmploymentTypeDto>>("lookupdata/employment-type");
+        }
+
+        public async Task<IList<CompensationTypeDto>> _GetCompensationTypeAsync()
+        {
+
+            return await GetAsync<IList<CompensationTypeDto>>("lookupdata/compensation-type");
+        }
+
+
+        public async Task<IList<JobCategoryDto>> _GetJobCategoryAsync()
+        {
+
+            return await GetAsync<IList<JobCategoryDto>>("lookupdata/job-category");
+        }
+
+        public async Task<IList<IndustryDto>> _GetIndustryAsync()
+        {
+            
+            return await GetAsync<IList<IndustryDto>>("lookupdata/industry");
         }
 
         public async Task<IList<StateDto>> GetStatesAsync()
