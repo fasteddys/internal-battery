@@ -242,7 +242,36 @@ namespace UpDiddy
                 }
             });
 
-            app.UseSession();
+            app.Use(async (ctx, next) =>
+            {
+                if (ctx.Request.Path == "/signout-oidc" &&!ctx.Request.Query["skip"].Any())
+                {
+                    var location = ctx.Request.Path + ctx.Request.QueryString + "&skip=1";
+                    ctx.Response.StatusCode = 200;
+                    var html = $@"
+                        <html><head>
+                            <meta http-equiv='refresh' content='0;url={location}' />
+                        </head></html>";
+                    await ctx.Response.WriteAsync(html);
+                    return;
+                }
+
+                await next();
+
+                if (ctx.Request.Path == "/signin-oidc" && ctx.Response.StatusCode == 302)
+                {
+                    var location = ctx.Response.Headers["location"];
+                    ctx.Response.StatusCode = 200;
+                    var html = $@"
+                        <html><head>
+                            <meta http-equiv='refresh' content='0;url={location}' />
+                        </head></html>";
+                    await ctx.Response.WriteAsync(html);
+                }
+            });
+
+
+         app.UseSession();
             app.UseAuthentication();
             app.UseCors("UnifiedCors");
 
