@@ -123,7 +123,8 @@ namespace UpDiddy.Api
 
         private async Task<HttpClient> AddBearerTokenAsync(HttpClient client)
         {
-            if (_currentContext.User.Identity.IsAuthenticated)
+            // check both as IsAuthenticated is false sometimes
+            if (_currentContext.User.Identity.IsAuthenticated || _currentContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value != null)
             {
                 AuthenticationResult authResult = await GetBearerTokenAsync();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);

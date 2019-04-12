@@ -271,7 +271,7 @@ namespace UpDiddy
             });
 
 
-         app.UseSession();
+            app.UseSession();
             app.UseAuthentication();
             app.UseCors("UnifiedCors");
 
