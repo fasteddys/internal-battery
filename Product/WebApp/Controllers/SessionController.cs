@@ -116,7 +116,7 @@ namespace UpDiddy.Controllers
                 .WithRedirectUri(AzureAdB2COptions.RedirectUri)
                 .WithClientSecret(AzureAdB2COptions.ClientSecret)
                 .Build();
-            new MSALStaticCache(signedInUserID, HttpContext).EnablePersistence(app.UserTokenCache);
+            new MSALSessionCache(signedInUserID, HttpContext).EnablePersistence(app.UserTokenCache);
             var accounts = await app.GetAccountsAsync();
 
             AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();

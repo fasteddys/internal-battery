@@ -20,7 +20,6 @@ namespace UpDiddy.Models
             UserId = userId;
             CacheId = UserId + "_TokenCache";
             httpContext = httpcontext;
-            Load();
         }
 
         public ITokenCache EnablePersistence(ITokenCache cache)

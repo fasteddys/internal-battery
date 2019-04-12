@@ -120,7 +120,7 @@ namespace UpDiddy
                         .WithRedirectUri(AzureAdB2COptions.RedirectUri)
                         .WithClientSecret(AzureAdB2COptions.ClientSecret)
                         .Build();
-                new MSALStaticCache(signedInUserID, context.HttpContext).EnablePersistence(app.UserTokenCache);
+                new MSALSessionCache(signedInUserID, context.HttpContext).EnablePersistence(app.UserTokenCache);
                 try
                 {
                     AcquireTokenByAuthorizationCodeParameterBuilder authCodeBuilder = app.AcquireTokenByAuthorizationCode(AzureAdB2COptions.ApiScopes.Split(' '), code);

@@ -111,7 +111,7 @@ namespace UpDiddy.Api
                 .WithB2CAuthority(AzureOptions.Authority)
                 .WithClientSecret(AzureOptions.ClientSecret)
                 .Build();
-            new MSALStaticCache(signedInUserID, _contextAccessor.HttpContext).EnablePersistence(app.UserTokenCache);
+            new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).EnablePersistence(app.UserTokenCache);
             var accounts = await app.GetAccountsAsync();
 
             AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();
