@@ -64,7 +64,7 @@ namespace UpDiddy
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpContextAccessor();
 
             services.AddAuthentication(sharedOptions =>
             {
@@ -172,14 +172,11 @@ namespace UpDiddy
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
 
-            services.AddHttpContextAccessor();
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromHours(1);
                 options.Cookie.HttpOnly = true;
             });
-            // Enable session DI
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             // Add Api
             services.AddScoped<IApi, ApiUpdiddy>();        
             
