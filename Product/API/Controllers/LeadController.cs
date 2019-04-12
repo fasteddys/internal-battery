@@ -31,13 +31,13 @@ namespace UpDiddyApi.Controllers
         private bool _isBillable = true;
         private List<LeadStatusDto> _leadStatuses = null;
         private Guid? _leadIdentifier = null;
-        private List<LeadStatusDto> _allLeadStatuses = null;
         private PartnerContact _partnerContact = null;
         private readonly UpDiddyDbContext _db;
         private readonly ILogger _syslog;
         private ICloudStorage _cloudStorage;
         private readonly IConfiguration _configuration;
         private readonly IDistributedCache _distributedCache;
+        private LeadFactory leadFactory;
 
         public LeadController(UpDiddyDbContext db,
             ILogger<LeadController> sysLog,
@@ -50,17 +50,7 @@ namespace UpDiddyApi.Controllers
             this._cloudStorage = cloudStorage;
             this._configuration = configuration;
             _leadStatuses = new List<LeadStatusDto>();
-            _allLeadStatuses =
-                new LeadStatusFactory(_db, _configuration, _syslog, _distributedCache)
-                .GetAllLeadStatuses()
-                .Select(ls => new LeadStatusDto()
-                {
-                    LeadStatusId = ls.LeadStatusId,
-                    Message = ls.Description,
-                    Severity = ls.Severity.ToString(),
-                    Name = ls.Name
-                })
-                .ToList();
+            leadFactory = new LeadFactory(db, configuration, sysLog, distributedCache);
         }
 
         /// <summary>
