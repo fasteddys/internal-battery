@@ -12,7 +12,7 @@ namespace UpDiddy.Models
         string CacheId = string.Empty;
         HttpContext httpContext = null;
 
-        TokenCache cache = new TokenCache();
+        ITokenCache cache;
 
         public MSALSessionCache(string userId, HttpContext httpcontext)
         {
@@ -23,8 +23,9 @@ namespace UpDiddy.Models
             Load();
         }
 
-        public TokenCache GetMsalCacheInstance()
+        public ITokenCache EnablePersistence(ITokenCache cache)
         {
+            this.cache = cache;
             cache.SetBeforeAccess(BeforeAccessNotification);
             cache.SetAfterAccess(AfterAccessNotification);
             Load();
@@ -48,7 +49,11 @@ namespace UpDiddy.Models
         public void Load()
         {
             SessionLock.EnterReadLock();
-            cache.Deserialize(httpContext.Session.Get(CacheId));
+            byte[] blob = httpContext.Session.Get(CacheId);
+            if (blob != null)
+            {
+                cache.DeserializeMsalV3(blob);
+            }
             SessionLock.ExitReadLock();
         }
 
@@ -56,11 +61,8 @@ namespace UpDiddy.Models
         {
             SessionLock.EnterWriteLock();
 
-            // Optimistically set HasStateChanged to false. We need to do it early to avoid losing changes made by a concurrent thread.
-            cache.HasStateChanged = false;
-
             // Reflect changes in the persistent store
-            httpContext.Session.Set(CacheId, cache.Serialize());
+            httpContext.Session.Set(CacheId, cache.SerializeMsalV3());
             SessionLock.ExitWriteLock();
         }
 
@@ -75,7 +77,7 @@ namespace UpDiddy.Models
         void AfterAccessNotification(TokenCacheNotificationArgs args)
         {
             // if the access operation resulted in a cache update
-            if (cache.HasStateChanged)
+            if (args.HasStateChanged)
             {
                 Persist();
             }

@@ -110,7 +110,6 @@ namespace UpDiddy.Controllers
             // Retrieve the token with the specified scopes
             var scope = AzureAdB2COptions.ApiScopes.Split(' ');
             string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, HttpContext).GetMsalCacheInstance();
             IConfidentialClientApplication app = ConfidentialClientApplicationBuilder
                 .Create(AzureAdB2COptions.ClientId)
                 .WithB2CAuthority(AzureAdB2COptions.Authority)

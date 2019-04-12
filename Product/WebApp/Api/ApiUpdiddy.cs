@@ -106,7 +106,6 @@ namespace UpDiddy.Api
             // Retrieve the token with the specified scopes
             var scope = AzureOptions.ApiScopes.Split(' ');
             string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).GetMsalCacheInstance();
             IConfidentialClientApplication app = ConfidentialClientApplicationBuilder
                 .Create(AzureOptions.ClientId)
                 .WithB2CAuthority(AzureOptions.Authority)
