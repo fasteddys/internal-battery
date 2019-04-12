@@ -111,17 +111,8 @@ namespace UpDiddy.Controllers
             string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             TokenCache userTokenCache = new MSALSessionCache(signedInUserID, HttpContext).GetMsalCacheInstance();
             ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureAdB2COptions.ClientId, AzureAdB2COptions.Authority, AzureAdB2COptions.RedirectUri, new ClientCredential(AzureAdB2COptions.ClientSecret), userTokenCache, null);
-            IAccount account = (await cca.GetAccountsAsync()).FirstOrDefault();
-            AuthenticationResult result = null;
-            try
-            {
-                result = await cca.AcquireTokenSilentAsync(scope, account, AzureAdB2COptions.Authority, false);
-            }
-            catch (MsalUiRequiredException)
-            {
-                result = await cca.AcquireTokenForClientAsync(scope);
-            }
-            return Ok(new { AccessToken = result.AccessToken, ExpiresOn = result.ExpiresOn, UniqueId = result.UniqueId });
+            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureAdB2COptions.Authority, false);
+            return Ok(result);
         }
     }
 }

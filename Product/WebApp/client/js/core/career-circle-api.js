@@ -8,7 +8,7 @@ var CareerCircleAPI = (function (apiUrl) {
         baseURL: apiUrl,
 
         transformRequest: [function (data, headers) {
-            headers['Authorization'] = 'Bearer ' + SessionStorage.getJSON(_session_key).accessToken;
+            headers['Authorization'] = 'Bearer ' + SessionStorage.getJSON(_session_key).AccessToken;
             return data;
         }],
         headers: {
@@ -31,7 +31,7 @@ var CareerCircleAPI = (function (apiUrl) {
     var getToken = function () {
         var jwt = SessionStorage.getJSON(_session_key);
 
-        if (jwt == null || new Date() >= new Date(jwt.expiresOn)) {
+        if (jwt == null || new Date() >= new Date(jwt.ExpiresOn)) {
             return new Promise(function(resolve) {
                 retrieveToken().done(function (response) {
                     SessionStorage.set(_session_key, JSON.stringify(response.data));
@@ -62,7 +62,7 @@ var CareerCircleAPI = (function (apiUrl) {
     var deleteFile = function (fileId) {
         return new Promise(function(resolve) {
             getToken().then(function (jwt) {
-                var path = '/subscriber/' + jwt.uniqueId + '/file/' + fileId;
+                var path = '/subscriber/' + jwt.UniqueId + '/file/' + fileId;
                 resolve(_http.delete(path));
             });
         });
