@@ -80,14 +80,6 @@ namespace UpDiddy
                 options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
                 options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
             });
-
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement("Recruiter")));
-                options.AddPolicy("IsCareerCircleAdmin", policy => policy.AddRequirements(new GroupRequirement("Career Circle Administrator")));
-                options.AddPolicy("IsUserAdmin", policy => policy.AddRequirements(new GroupRequirement("Career Circle User Admin")));
-            });
-            services.AddSingleton<IAuthorizationHandler, ApiGroupAuthorizationHandler>();
        
 
             #region AddLocalization
@@ -103,6 +95,15 @@ namespace UpDiddy
             services.AddMvc()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
                 .AddDataAnnotationsLocalization();
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement("Recruiter")));
+                options.AddPolicy("IsCareerCircleAdmin", policy => policy.AddRequirements(new GroupRequirement("Career Circle Administrator")));
+                options.AddPolicy("IsUserAdmin", policy => policy.AddRequirements(new GroupRequirement("Career Circle User Admin")));
+            });
+
+            services.AddSingleton<IAuthorizationHandler, ApiGroupAuthorizationHandler>();
             #endregion
 
             // Add Dependency Injection for the configuration object
