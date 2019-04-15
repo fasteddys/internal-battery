@@ -125,7 +125,6 @@ namespace UpDiddyApi.ApplicationCore
             catch (Exception ex)
             {
                 return CreateResponse(string.Empty, ex.Message, string.Empty, TransactionState.FatalError);
-
             }
         }
 
@@ -181,16 +180,18 @@ namespace UpDiddyApi.ApplicationCore
                 // record a contact action for course enrollment if there is an associated campaign
                 if (Enrollment.CampaignId.HasValue)
                 {
-                    var contact = _db.Contact
-                        .Include(co => co.Subscriber)
-                        .Where(co => co.SubscriberId == Enrollment.Subscriber.SubscriberId && co.IsDeleted == 0)
+                    var partnerContact = _db.PartnerContact
+                        .Include(pc => pc.Contact.Subscriber)
+                        .Where(pc => pc.Contact.SubscriberId == Enrollment.Subscriber.SubscriberId && pc.IsDeleted == 0)
+                        .OrderByDescending(pc => pc.CreateDate)
                         .FirstOrDefault();
 
                     // if there was an associated campaign, there should also be an associated contact
-                    if (contact != null)
+                    if (partnerContact != null)
                     {
-                        var existingCourseEnrollmentAction = _db.ContactAction
-                            .Where(ca => ca.IsDeleted == 0 && ca.ContactId == contact.ContactId && ca.CampaignId == Enrollment.CampaignId.Value && ca.ActionId == 4)
+                        var existingCourseEnrollmentAction = _db.PartnerContactAction
+                            .Where(pca => pca.IsDeleted == 0 && pca.PartnerContact.PartnerContactId == partnerContact.PartnerContactId && pca.CampaignId == Enrollment.CampaignId.Value && pca.ActionId == 4)
+                            .OrderByDescending(pca => pca.PartnerContact.CreateDate)
                             .FirstOrDefault();
 
                         // if there is an associated contact record for this subscriber and a campaign association for the enrollment, record that they enrolled in the course
@@ -204,15 +205,15 @@ namespace UpDiddyApi.ApplicationCore
                         {
                             // if the action does not already exist create it, and associate it with the highest phase                   
                             // of the campaign that the user has interacted with and assume that is what led them to enroll
-                            CampaignPhase lastCampaignPhaseInteraction = CampaignPhaseFactory.GetContactsLastPhaseInteraction(_db, (int) Enrollment.CampaignId, contact.ContactId);
+                            CampaignPhase lastCampaignPhaseInteraction = CampaignPhaseFactory.GetContactsLastPhaseInteraction(_db, (int) Enrollment.CampaignId, partnerContact.PartnerContactId);
                             if ( lastCampaignPhaseInteraction != null )
                             {
-                                _db.ContactAction.Add(new ContactAction()
+                                _db.PartnerContactAction.Add(new PartnerContactAction()
                                 {
                                     ActionId = 4, // todo: this should not be a hard-coded reference to the PK
                                     CampaignId = Enrollment.CampaignId.Value,
-                                    ContactActionGuid = Guid.NewGuid(),
-                                    ContactId = contact.ContactId,
+                                    PartnerContactActionGuid = Guid.NewGuid(),
+                                    PartnerContactId = partnerContact.PartnerContactId,
                                     CreateDate = DateTime.UtcNow,
                                     CreateGuid = Guid.Empty,
                                     IsDeleted = 0,

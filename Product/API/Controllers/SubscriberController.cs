@@ -679,13 +679,14 @@ namespace UpDiddyApi.Controllers
         /// </summary>
         /// <returns></returns>
         [AllowAnonymous]
-        [HttpPut("/api/[controller]/contact/{contactGuid}")]
-        public async Task<IActionResult> UpdateSubscriberContactAsync(Guid contactGuid, [FromBody] SignUpDto signUpDto)
+        [HttpPut("/api/[controller]/contact/{partnerContactGuid}")]
+        public async Task<IActionResult> UpdateSubscriberContactAsync(Guid partnerContactGuid, [FromBody] SignUpDto signUpDto)
         {
-            _syslog.Log(LogLevel.Information, "SubscriberController.UpdateSubscriberContactAsync:: {@ContactGuid} attempting to sign up with email {@Email}", contactGuid, signUpDto.email);
-            Models.Contact contact = await _db.Contact
-                .Where(c => c.ContactGuid.Equals(contactGuid)
-                    && c.IsDeleted == 0)
+            _syslog.Log(LogLevel.Information, "SubscriberController.UpdateSubscriberContactAsync:: {@PartnerContactGuid} attempting to sign up with email {@Email}", partnerContactGuid, signUpDto.email);
+
+            var partnerContact = await _db.PartnerContact
+                .Include(pc => pc.Contact)
+                .Where(pc => pc.PartnerContactGuid == partnerContactGuid && pc.IsDeleted == 0 && pc.Contact.IsDeleted == 0)
                 .FirstOrDefaultAsync();
 
             Campaign campaign = await _db.Campaign
@@ -696,9 +697,9 @@ namespace UpDiddyApi.Controllers
                 .FirstOrDefaultAsync();
 
             #region Verify and Check Data
-            if (contact == null)
+            if (partnerContact == null)
             {
-                var response = new BasicResponseDto() { StatusCode = 400, Description = "Invalid Contact guid." };
+                var response = new BasicResponseDto() { StatusCode = 400, Description = "Invalid PartnerContact guid." };
                 _syslog.Log(LogLevel.Warning, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request {Description}", response.Description);
                 return BadRequest(response);
             }
@@ -711,7 +712,7 @@ namespace UpDiddyApi.Controllers
             }
 
             // check email
-            if (contact.Email != signUpDto.email)
+            if (partnerContact.Contact.Email != signUpDto.email)
             {
                 var response = new BasicResponseDto() { StatusCode = 400, Description = "This offer is only good for the recepient of this email campaign." };
                 _syslog.Log(LogLevel.Warning, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request {Description} {Email}", response.Description, signUpDto.email);
@@ -719,7 +720,7 @@ namespace UpDiddyApi.Controllers
             }
 
             // check if subscriber is in database
-            Subscriber subscriber = await _db.Subscriber.Where(s => s.Email == contact.Email).FirstOrDefaultAsync();
+            Subscriber subscriber = await _db.Subscriber.Where(s => s.Email == partnerContact.Contact.Email).FirstOrDefaultAsync();
             if (subscriber != null)
             {
                 var response = new BasicResponseDto() { StatusCode = 400, Description = "Subscriber already exists, please login to continue." };
@@ -729,12 +730,12 @@ namespace UpDiddyApi.Controllers
             #endregion
 
             // check if user exits in AD if the user does then we skip this step
-            Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(contact.Email);
+            Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(partnerContact.Contact.Email);
             if (user == null)
             {
                 try
                 {
-                    user = await _graphClient.CreateUser(contact.Email, contact.Email, Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password));
+                    user = await _graphClient.CreateUser(partnerContact.Contact.Email, partnerContact.Contact.Email, Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password));
                 }
                 catch (Exception ex)
                 {
@@ -746,9 +747,9 @@ namespace UpDiddyApi.Controllers
             // create subscriber for user
             subscriber = new Subscriber();
             subscriber.SubscriberGuid = Guid.Parse(user.AdditionalData["objectId"].ToString());
-            subscriber.FirstName = contact.FirstName;
-            subscriber.LastName = contact.LastName;
-            subscriber.Email = contact.Email;
+            subscriber.FirstName = partnerContact.Metadata["FirstName"]?.ToString();
+            subscriber.LastName = partnerContact.Metadata["LastName"]?.ToString();
+            subscriber.Email = partnerContact.Contact.Email;
             subscriber.CreateDate = DateTime.UtcNow;
             subscriber.ModifyDate = DateTime.UtcNow;
             subscriber.IsDeleted = 0;
@@ -766,12 +767,12 @@ namespace UpDiddyApi.Controllers
                     await _db.SaveChangesAsync();
                     CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaign.CampaignId, signUpDto.campaignPhase);
 
-                    _db.ContactAction.Add(new ContactAction()
+                    _db.PartnerContactAction.Add(new PartnerContactAction()
                     {
                         ActionId = 3, // todo: use constants or enum or something
                         CampaignId = campaign.CampaignId,
-                        ContactId = contact.ContactId,
-                        ContactActionGuid = Guid.NewGuid(),
+                        PartnerContactId = partnerContact.PartnerContactId,
+                        PartnerContactActionGuid = Guid.NewGuid(),
                         CreateDate = DateTime.UtcNow,
                         CreateGuid = Guid.Empty,
                         IsDeleted = 0,
@@ -782,7 +783,7 @@ namespace UpDiddyApi.Controllers
                     });
 
                     // update contact in database
-                    contact.SubscriberId = subscriber.SubscriberId;
+                    partnerContact.Contact.SubscriberId = subscriber.SubscriberId;
                     await _db.SaveChangesAsync();
 
                     transaction.Commit();
@@ -790,7 +791,7 @@ namespace UpDiddyApi.Controllers
                 catch (Exception ex)
                 {
                     transaction.Rollback();
-                    _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Error occured while attempting save Subscriber and contact DB updates for {@ContactGuid} (email: {@Email}). Exception: {@Exception}", contactGuid, signUpDto.email, ex);
+                    _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Error occured while attempting save Subscriber and contact DB updates for {@PartnerContactGuid} (email: {@Email}). Exception: {@Exception}", partnerContactGuid, signUpDto.email, ex);
                     return StatusCode(500, new BasicResponseDto() { StatusCode = 500, Description = "An error occured while attempting to create an account for you." });
                 }
             }
