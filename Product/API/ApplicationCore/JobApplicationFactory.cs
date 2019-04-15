@@ -15,7 +15,7 @@ namespace UpDiddyApi.ApplicationCore
 
         public static List<JobApplication> GetJobApplicationsForSubscriber(UpDiddyDbContext db, int subscriberId)
         {
-            return db.jobApplication
+            return db.JobApplication
                 .Include( s => s.JobPosting)
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .ToList();
@@ -24,7 +24,7 @@ namespace UpDiddyApi.ApplicationCore
 
         public static List<JobApplication> GetJobApplicationsForPosting(UpDiddyDbContext db, int jobPostingID)
         {
-            return db.jobApplication                
+            return db.JobApplication                
                 .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingID)       
                 .ToList();
         }
@@ -32,7 +32,7 @@ namespace UpDiddyApi.ApplicationCore
 
         public static JobApplication GetJobApplicationByGuid(UpDiddyDbContext db, Guid jobApplicationGuid)
         {
-            return db.jobApplication
+            return db.JobApplication
                 .Include(s => s.JobPosting)
                 .Include(s => s.Subscriber)
                 .Where(s => s.IsDeleted == 0  && s.JobApplicationGuid == jobApplicationGuid)                   
@@ -42,7 +42,7 @@ namespace UpDiddyApi.ApplicationCore
 
         public static JobApplication GetJobApplication(UpDiddyDbContext db, int subscriberId, int jobPostingID)
         {
-            return db.jobApplication
+            return db.JobApplication
                 .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingID && s.SubscriberId == subscriberId)
                 .FirstOrDefault();
         }

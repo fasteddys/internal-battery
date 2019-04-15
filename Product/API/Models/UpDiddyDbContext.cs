@@ -145,7 +145,9 @@ namespace UpDiddyApi.Models
         public DbSet<PartnerContactLeadStatus> PartnerContactLeadStatus { get; set; }
         public DbSet<PartnerContactFile> PartnerContactFile { get; set; }
         public DbSet<PartnerContactFileLeadStatus> PartnerContactFileLeadStatus { get; set; }
-        public DbSet<JobApplication> jobApplication { get; set; }
+        public DbSet<JobApplication> JobApplication { get; set; }
+
+        public DbSet<RecruiterCompany> RecruiterCompany { get; set; }
 
         #region DBQueries
 

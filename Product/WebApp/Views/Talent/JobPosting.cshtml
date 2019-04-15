@@ -4,17 +4,26 @@
 @using System.Collections.Generic;
 @using System;
 @model JobPostingViewModel
+
+ 
+
 @section Scripts
     {
+
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
     <script type="text/javascript">
+
+
+        var subscriberSkills = [];
 
         function SelectDate(ctl) {
             $('#' + ctl).datepicker('show');
         }
 
-        $('#txtApplicationDeadline').keypress(function (event) {             
-                event.preventDefault();
-            
+        $('#txtApplicationDeadline').keypress(function (event) {
+            event.preventDefault();
+
         });
 
         $(document).ready(function () {
@@ -24,144 +33,221 @@
                 clearBtn: true
             });
 
+            $('#txtSkills').selectize({
+                plugins: ['remove_button'],
+                valueField: 'skillGuid',
+                labelField: 'skillName',
+                searchField: 'skillName',
+                persist: false,
+                loadThrottle: 600,
+                create: false,
+                options: subscriberSkills,
+                // initialized on Profile.cshtml
+                allowEmptyOption: false,
+                delimiter: ',',
+                load: function load(query, callback) {
+                    if (!query.length) return callback();
+                    $('.overlay').show();
+                    $.ajax({
+                        url: '/Home/GetSkills',
+                        type: 'GET',
+                        dataType: 'json',
+                        data: {
+                            userQuery: encodeURIComponent(query)
+                        },
+                        error: function error() {
+                            callback();
+                            $('.overlay').hide();
+                        },
+                        success: function success(res) {
+                            callback(res);
+                            $('.overlay').hide();
+                        }
+                    });
+                },
+                onInitialize: function onInitialize() {
+                    var selectize = this;
+                    var selectedSkills = [];
+                    $.each(subscriberSkills, function (i, obj) {
+                        selectedSkills.push(obj.skillGuid);
+                    });
+                    selectize.setValue(selectedSkills);
+                }
+            });
+
+
+
+
         });
-   
+
     </script>
-    }
-    <div class="container-fluid bg-color-primary">
-        <div class="container">
-            <div class="row">
-                <div class="col-md">
-                    <ul class="nav nav-talent">
-                        <li class="nav-link">
-                            <a class="text-white" href="/Talent/Subscribers">Subscribers</a>
-                        </li>
-                        <li class="nav-link" href="#">
-                            <a class="text-white" href="#">Analytics</a>
-                        </li>
-                        <li class="nav-link active">
-                            <a class="text-white" href="/Talent/JobPosting">JobPosting</a>
-                        </li>
-                    </ul>
-                </div>
+}
+<div class="container-fluid bg-color-primary">
+    <div class="container">
+        <div class="row">
+            <div class="col-md">
+                <ul class="nav nav-talent">
+                    <li class="nav-link">
+                        <a class="text-white" href="/Talent/Subscribers">Subscribers</a>
+                    </li>
+                    <li class="nav-link" href="#">
+                        <a class="text-white" href="#">Analytics</a>
+                    </li>
+                    <li class="nav-link active">
+                        <a class="text-white" href="/Talent/JobPosting">JobPosting</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
-    <div class="container talent">
-        <div class="row">
-            <form asp-controller="Talent" asp-action="CreateJobPosting">
-                <div class="form-group">
-                    <label for="txtTitle">Job Title</label>
-                    <input type="text" class="form-control" id="txtTitle" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="Title">
+</div>
+<div class="container talent">
+    <div class="row">
+        <form asp-controller="Talent" asp-action="CreateJobPosting">
 
-                    <small id="emailHelp" class="form-text text-muted">The job title will appear in search results.</small>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label for="txtTitle">Job Title</label>
+                <input type="text" class="form-control" id="txtTitle" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="Title">
+
+                <small class="form-text text-muted">The job title will appear in search results.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="txtDescription">Job Description</label>
+                <textarea class="form-control" id="txtDescription" rows="3" asp-for="Description"></textarea>
+                <small class="form-text text-muted">Description of the job .</small>
+            </div>
+
+
+            <div class="form-group">
+                <div class="modal-edit-input-label">State/Province</div>
+                <div class="modal-edit-input">
+                    @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control country-select" })
                 </div>
+                <small class="form-text text-muted">The state/province where the job is located.</small>
+            </div>
 
-                <div class="form-group">
-                    <label for="txtDescription">Job Description</label>
-                    <textarea class="form-control" id="txtDescription" rows="3" asp-for="Description"></textarea>
-                    <small id="emailHelp" class="form-text text-muted">Description of the job .</small>
+            <div class="form-group">
+                <label for="txtCity">City</label>
+                <input type="text" class="form-control" id="txtCity" aria-describedby="emailHelp" placeholder="Enter City" asp-for="City">
+                <small class="form-text text-muted">The job's city.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="txtStreetAddress">Street Address</label>
+                <input type="text" class="form-control" id="txtStreetAddress" aria-describedby="emailHelp" placeholder="Enter Street Address" asp-for="StreetAddress">
+                <small class="form-text text-muted">Optional street address of the job.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="txtPostalCode">Postal/Zip code </label>
+                <input type="text" class="form-control" id="txtPostalCode" aria-describedby="emailHelp" placeholder="Enter Postal/Zip code" asp-for="PostalCode">
+                <small class="form-text text-muted">Optional postal/zip code</small>
+                <span asp-validation-for="PostalCode" class="text-danger"></span>
+            </div>
+
+
+            <div class="form-group">
+                <div class="modal-edit-input-label">Industry</div>
+                <div class="modal-edit-input">
+                    @Html.DropDownListFor(m => m.SelectedIndustry, Model.Industries, "Select Industry", new { @class = "form-control country-select" })
                 </div>
+                <small class="form-text text-muted">Optional industry associated with the job </small>
+            </div>
 
-
-                <div class="form-group">
-                    <div class="modal-edit-input-label">State/Province</div>
-                    <div class="modal-edit-input">
-                        @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control country-select" })
-                    </div>
-                    <small id="emailHelp" class="form-text text-muted">The state/province where the job is located.</small>
+            <div class="form-group">
+                <div class="modal-edit-input-label">Job Category</div>
+                <div class="modal-edit-input">
+                    @Html.DropDownListFor(m => m.SelectedJobCategory, Model.JobCategories, "Select Job Category", new { @class = "form-control country-select" })
                 </div>
+                <small class="form-text text-muted">Optional job category .</small>
+            </div>
 
-                <div class="form-group">
-                    <label for="txtCity">City</label>
-                    <input type="text" class="form-control" id="txtCity" aria-describedby="emailHelp" placeholder="Enter City" asp-for="City">
-                    <small id="emailHelp" class="form-text text-muted">The job's city.</small>
+            <div class="form-group">
+                <div class="modal-edit-input-label">Education Level</div>
+                <div class="modal-edit-input">
+                    @Html.DropDownListFor(m => m.SelectedEducationLevel, Model.EducationLevels, "Select Education Level", new { @class = "form-control country-select" })
                 </div>
+                <small class="form-text text-muted">Optional educational level required for job.</small>
+            </div>
 
-                <div class="form-group">
-                    <label for="txtStreetAddress">Street Address</label>
-                    <input type="text" class="form-control" id="txtStreetAddress" aria-describedby="emailHelp" placeholder="Enter Street Address" asp-for="StreetAddress">
-                    <small id="emailHelp" class="form-text text-muted">Optional street address of the job.</small>
+
+            <div class="form-group">
+                <div class="modal-edit-input-label">Experience Level</div>
+                <div class="modal-edit-input">
+                    @Html.DropDownListFor(m => m.SelectedExperienceLevel, Model.ExperienceLevels, "Select Experience Level", new { @class = "form-control country-select" })
                 </div>
+                <small class="form-text text-muted">Optional experience level required by job</small>
+            </div>
 
-                <div class="form-group">
-                    <label for="txtPostalCode">Postal/Zip code </label>
-                    <input type="text" class="form-control" id="txtPostalCode" aria-describedby="emailHelp" placeholder="Enter Postal/Zip code" asp-for="PostalCode">
-                    <small id="emailHelp" class="form-text text-muted">Optional postal/zip code</small>
+
+            <div class="form-group">
+                <div class="modal-edit-input-label">Compensation Type</div>
+                <div class="modal-edit-input">
+                    @Html.DropDownListFor(m => m.SelectedCompensationType, Model.CompensationTypes, "Select Compensation Type", new { @class = "form-control country-select" })
                 </div>
+                <small class="form-text text-muted">Optional compensation type for the job</small>
+            </div>
 
-
-                <div class="form-group">
-                    <div class="modal-edit-input-label">Industry</div>
-                    <div class="modal-edit-input">
-                        @Html.DropDownListFor(m => m.SelectedIndustry, Model.Industries, "Select Industry", new { @class = "form-control country-select" })
-                    </div>
-                    <small id="emailHelp" class="form-text text-muted">Optional industry associated with the job </small>
+            <div class="form-group">
+                <div class="modal-edit-input-label">Employment Type</div>
+                <div class="modal-edit-input">
+                    @Html.DropDownListFor(m => m.SelectedEmploymentType, Model.EmploymentTypes, "Select Employment Type", new { @class = "form-control country-select" })
                 </div>
+                <small class="form-text text-muted">Optional job employment type</small>
+            </div>
 
-                <div class="form-group">
-                    <div class="modal-edit-input-label">Job Category</div>
-                    <div class="modal-edit-input">
-                        @Html.DropDownListFor(m => m.SelectedJobCategory, Model.JobCategories, "Select Job Category", new { @class = "form-control country-select" })
-                    </div>
-                    <small id="emailHelp" class="form-text text-muted">Optional job category .</small>
+            <div class="form-group">
+                <div class="modal-edit-input-label">Security Clearance</div>
+                <div class="modal-edit-input">
+                    @Html.DropDownListFor(m => m.SelectedSecurityClearance, Model.SecurityClearances, "Select Security Clearance", new { @class = "form-control country-select" })
                 </div>
+                <small class="form-text text-muted">Optional security clearance requirements</small>
+            </div>
 
-                <div class="form-group">
-                    <div class="modal-edit-input-label">Education Level</div>
-                    <div class="modal-edit-input">
-                        @Html.DropDownListFor(m => m.SelectedEducationLevel, Model.EducationLevels, "Select Education Level", new { @class = "form-control country-select" })
-                    </div>
-                    <small id="emailHelp" class="form-text text-muted">Optional educational level required for job.</small>
-                </div>
-
-
-                <div class="form-group">
-                    <div class="modal-edit-input-label">Experience Level</div>
-                    <div class="modal-edit-input">
-                        @Html.DropDownListFor(m => m.SelectedExperienceLevel, Model.ExperienceLevels, "Select Experience Level", new { @class = "form-control country-select" })
-                    </div>
-                    <small id="emailHelp" class="form-text text-muted">Optional experience level required by job</small>
-                </div>
-
-
-                <div class="form-group">
-                    <div class="modal-edit-input-label">Compensation Type</div>
-                    <div class="modal-edit-input">
-                        @Html.DropDownListFor(m => m.SelectedCompensationType, Model.CompensationTypes, "Select Compensation Type", new { @class = "form-control country-select" })
-                    </div>
-                    <small id="emailHelp" class="form-text text-muted">Optional compensation type for the job</small>
-                </div>
-
-                <div class="form-group">
-                    <div class="modal-edit-input-label">Employment Type</div>
-                    <div class="modal-edit-input">
-                        @Html.DropDownListFor(m => m.SelectedEmploymentType, Model.EmploymentTypes, "Select Employment Type", new { @class = "form-control country-select" })
-                    </div>
-                    <small id="emailHelp" class="form-text text-muted">Optional job employment type</small>
-                </div>
-
-                <div class="form-group">
-                    <div class="modal-edit-input-label">Security Clearance</div>
-                    <div class="modal-edit-input">
-                        @Html.DropDownListFor(m => m.SelectedSecurityClearance, Model.SecurityClearances, "Select Security Clearance", new { @class = "form-control country-select" })
-                    </div>
-                    <small id="emailHelp" class="form-text text-muted">Optional security clearance requirements</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="txtTitle">Application Deadline</label><i class="fa fa-calendar-alt" aria-hidden="true" onclick="SelectDate('txtApplicationDeadline')"> </i>
-                    <input type="text" class="form-control" id="txtApplicationDeadline" aria-describedby="emailHelp" placeholder="Enter Application Deadline" asp-for="Title" autocomplete="off">
-                    <small id="emailHelp" class="form-text text-muted">The last day application will be accepted.</small>
-                </div>
+            <div class="form-group">
+                <label for="txtTitle">Application Deadline</label><i class="fa fa-calendar-alt" aria-hidden="true" onclick="SelectDate('txtApplicationDeadline')"> </i>
+                <input type="text" class="form-control" id="txtApplicationDeadline" aria-describedby="emailHelp" placeholder="Enter Application Deadline" asp-for="Title" autocomplete="off">
+                <small class="form-text text-muted">Optional last day application will be accepted.</small>
+            </div>
 
 
 
-                <div class="form-group">
-                    <input type="checkbox" class="form-check-input" id="chkIsAgency" asp-for="IsAgency">
-                    <label class="form-check-label" for="exampleCheck1">Is Agency Posting</label>
-                    <small id="emailHelp" class="form-text text-muted">Check if job is posted by a recruting agency.</small>
-                </div>
+            <div class="form-group">
+                <input type="checkbox" class="form-check-input" id="chkIsAgency" asp-for="IsAgency">
+                <label class="form-check-label" for="chkIsAgency">Is Agency Posting</label>
+                <small class="form-text text-muted">Check if job is posted by a recruting agency.</small>
+            </div>
+
+
+            <div class="form-group">
+                <label for="txtTitle">Skills</label>
+                <input type="text" class="form-control" id="txtSkills" aria-describedby="emailHelp" placeholder="Enter Skills" asp-for="SelectedSkills" autocomplete="off">
+                <small class="form-text text-muted">Optional skills required for job.</small>
+            </div>
+
+            <div class="form-group">
+                <input type="checkbox" class="form-check-input" id="chkIsDraft" asp-for="IsDraft">
+                <label class="form-check-label" for="chkIsDraft">Is Draft</label>
+                <small class="form-text text-muted">Check if posting is a draft that will not be made public.</small>
+            </div>
+
+
+            <div class="form-group">
+                <label for="txtTeleCommute">% TeleCommute Available</label>
+                <input type="text" class="form-control" id="txtStreetAddress" aria-describedby="emailHelp" placeholder="Enter TeleCommute Percentage" asp-for="Telecommute" />
+                <small class="form-text text-muted">Optional tele-commute percentage </small>
+                <span asp-validation-for="Telecommute" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="txtCompensation">Compensation</label>
+                <input type="text" class="form-control" id="txtCompensation" aria-describedby="emailHelp" placeholder="Enter compensation amount" asp-for="Compensation">
+                <small class="form-text text-muted">Optional tele-commute percentage </small>
+                <span asp-validation-for="Compensation" class="text-danger"></span>
+            </div>
 
 
 
@@ -169,29 +255,19 @@
 
 
 
-
-                <div class="form-group">
-                    <pre>
+            <div class="form-group">
+                <pre>
 
                     Company - Need a way to associate recruiter with compaies
-
-                    Is Agency Checkbox 
-
-                    Telecommute Int Percentage Input 
-
-                    Compensatopn Decimal Input 
-
-                    Skill Selector
-
-                    IsDraft checkbox 
+ 
 
                 </pre>
 
-                </div>
+            </div>
 
 
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
-        </div>
-
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
     </div>
+
+</div>

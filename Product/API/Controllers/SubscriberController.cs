@@ -69,6 +69,25 @@ namespace UpDiddyApi.Controllers
         }
 
         #region Basic Subscriber Endpoints
+
+        [HttpGet]
+        [Route("api/[controller]/{subscriberGuid}/company")]
+        public async Task<IActionResult> GetCompanies(Guid subscriberGuid)
+        {
+            // Validate guid for GetSubscriber call
+            if (Guid.Empty.Equals(subscriberGuid) || subscriberGuid == null)
+                return NotFound();
+
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db,subscriberGuid);
+            if ( subscriber == null )
+            {
+                return NotFound(new { code = 404, message = $"Subscriber {subscriberGuid} not found" });
+            }
+
+            List<RecruiterCompany> companies = RecruiterCompanyFactory.GetRecruiterCompanyById(_db, subscriber.SubscriberId);         
+            return Ok(_mapper.Map<List<RecruiterCompanyDto>>(companies));        
+        }
+
         [HttpGet("{subscriberGuid}")]
         public async Task<IActionResult> Get(Guid subscriberGuid)
         {

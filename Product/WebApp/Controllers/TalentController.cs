@@ -112,6 +112,9 @@ namespace UpDiddy.Controllers
         public IActionResult CreateJobPosting(JobPostingViewModel model )
         {
 
+            var x = ModelState.IsValid;
+
+
             return   RedirectToAction("JobPosting");
             //return View("JobPosting",model);
         }
