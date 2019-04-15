@@ -64,7 +64,7 @@ namespace UpDiddy
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpContextAccessor();
 
             services.AddAuthentication(sharedOptions =>
             {
@@ -80,14 +80,6 @@ namespace UpDiddy
                 options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
                 options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
             });
-
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement("Recruiter")));
-                options.AddPolicy("IsCareerCircleAdmin", policy => policy.AddRequirements(new GroupRequirement("Career Circle Administrator")));
-                options.AddPolicy("IsUserAdmin", policy => policy.AddRequirements(new GroupRequirement("Career Circle User Admin")));
-            });
-            services.AddSingleton<IAuthorizationHandler, ApiGroupAuthorizationHandler>();
        
 
             #region AddLocalization
@@ -103,6 +95,15 @@ namespace UpDiddy
             services.AddMvc()
                 .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
                 .AddDataAnnotationsLocalization();
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsRecruiterPolicy", policy => policy.AddRequirements(new GroupRequirement("Recruiter")));
+                options.AddPolicy("IsCareerCircleAdmin", policy => policy.AddRequirements(new GroupRequirement("Career Circle Administrator")));
+                options.AddPolicy("IsUserAdmin", policy => policy.AddRequirements(new GroupRequirement("Career Circle User Admin")));
+            });
+
+            services.AddSingleton<IAuthorizationHandler, ApiGroupAuthorizationHandler>();
             #endregion
 
             // Add Dependency Injection for the configuration object
@@ -172,14 +173,11 @@ namespace UpDiddy
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
 
-            services.AddHttpContextAccessor();
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromHours(1);
                 options.Cookie.HttpOnly = true;
             });
-            // Enable session DI
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             // Add Api
             services.AddScoped<IApi, ApiUpdiddy>();        
             
@@ -241,6 +239,35 @@ namespace UpDiddy
                         "public,max-age=" + durationInSeconds;
                 }
             });
+
+            app.Use(async (ctx, next) =>
+            {
+                if (ctx.Request.Path == "/signout-oidc" &&!ctx.Request.Query["skip"].Any())
+                {
+                    var location = ctx.Request.Path + ctx.Request.QueryString + "&skip=1";
+                    ctx.Response.StatusCode = 200;
+                    var html = $@"
+                        <html><head>
+                            <meta http-equiv='refresh' content='0;url={location}' />
+                        </head></html>";
+                    await ctx.Response.WriteAsync(html);
+                    return;
+                }
+
+                await next();
+
+                if (ctx.Request.Path == "/signin-oidc" && ctx.Response.StatusCode == 302)
+                {
+                    var location = ctx.Response.Headers["location"];
+                    ctx.Response.StatusCode = 200;
+                    var html = $@"
+                        <html><head>
+                            <meta http-equiv='refresh' content='0;url={location}' />
+                        </head></html>";
+                    await ctx.Response.WriteAsync(html);
+                }
+            });
+
 
             app.UseSession();
             app.UseAuthentication();

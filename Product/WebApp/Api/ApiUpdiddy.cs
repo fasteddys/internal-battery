@@ -105,30 +105,26 @@ namespace UpDiddy.Api
         {
             // Retrieve the token with the specified scopes
             var scope = AzureOptions.ApiScopes.Split(' ');
-            string signedInUserID = _currentContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _currentContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureOptions.ClientId, AzureOptions.Authority, AzureOptions.RedirectUri, new ClientCredential(AzureOptions.ClientSecret), userTokenCache, null);
-            IAccount account = (await cca.GetAccountsAsync()).FirstOrDefault();
-            AuthenticationResult result = null;
-            try
-            {
-                result = await cca.AcquireTokenSilentAsync(scope, account, AzureOptions.Authority, false);
-            }
-            catch (MsalUiRequiredException)
-            {
-                result = await cca.AcquireTokenForClientAsync(scope);
-            }
+            string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            IConfidentialClientApplication app = ConfidentialClientApplicationBuilder
+                .Create(AzureOptions.ClientId)
+                .WithB2CAuthority(AzureOptions.Authority)
+                .WithClientSecret(AzureOptions.ClientSecret)
+                .Build();
+            new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).EnablePersistence(app.UserTokenCache);
+            var accounts = await app.GetAccountsAsync();
+
+            AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();
             return result;
         }
 
         private async Task<HttpClient> AddBearerTokenAsync(HttpClient client)
         {
-            if (_currentContext.User.Identity.IsAuthenticated)
-            {
+            if (_contextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            { 
                 AuthenticationResult authResult = await GetBearerTokenAsync();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
             }
-
             return client;
         }
         #endregion
