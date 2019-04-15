@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UpDiddyApi.Models;
+using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto.Marketing;
 
 namespace UpDiddyApi.ApplicationCore.Factory
@@ -56,7 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public LeadResponseDto InsertLead(LeadRequestDto leadRequest, string apiToken)
         {
             // abort if the lead request dto is null
-            if(leadRequest == null)
+            if (leadRequest == null)
             {
                 _leadResponse.LeadStatuses.Add(new LeadStatusDto() { Message = "Missing or invalid parameters", Severity = Severity.Rejected.ToString() });
                 _leadResponse.HttpStatusCode = HttpStatusCode.BadRequest;
@@ -65,7 +67,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
 
             // verify that an apiToken was passed from Azure API
-            if(string.IsNullOrWhiteSpace(apiToken))
+            if (string.IsNullOrWhiteSpace(apiToken))
             {
                 _leadResponse.LeadStatuses.Add(new LeadStatusDto() { Message = "No ApiToken provided", Severity = Severity.Rejected.ToString() });
                 _leadResponse.HttpStatusCode = HttpStatusCode.Unauthorized;
@@ -155,7 +157,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 _leadResponse.IsBillable = false;
             }
             else
-            { 
+            {
                 _leadResponse.LeadIdentifier = partnerContact.PartnerContactGuid;
             }
 
@@ -309,6 +311,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
                 _db.PartnerContact.Add(_partnerContact);
                 _db.SaveChanges();
+
+                // entry point for welcome email... how will we handle save file trigger?
+                // TODO: identify any business rule failures that would prevent us from sending a welcome email (dupe, missing fields, etc?)
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.SendWelcomeEmail(_leadResponse.LeadIdentifier.Value, leadRequest.FirstName, leadRequest.LastName, leadRequest.EmailAddress));
             }
             catch (Exception e)
             {
