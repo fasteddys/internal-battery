@@ -6,8 +6,7 @@ using System.Text;
 namespace UpDiddyLib.Dto.Marketing
 {
     public class LeadRequestDto
-    {
-        // todo: revisit data annotations in user story 369
+    {     
         public bool? IsTest { get; set; }
         public string ExternalLeadIdentifier { get; set; }
         [Required(ErrorMessage = "First name is required")]
