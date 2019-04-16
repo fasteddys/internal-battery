@@ -63,7 +63,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     && (!camp.EndDate.HasValue || camp.EndDate.Value >= DateTime.UtcNow))
                 .FirstOrDefaultAsync();
 
-
             #region Verify and Check Data
             if (partnerContact == null)
                 throw new ArgumentException("Invalid PartnerContact guid.");
@@ -126,7 +125,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                         CampaignPhaseId = campaignPhase.CampaignPhaseId
                     });
 
-                    var file = _db.PartnerContactFile.Where(e => e.PartnerContactId == partnerContact.PartnerContactId).FirstOrDefault();
+                    var file = await _db.PartnerContactFile.Where(e => e.PartnerContactId == partnerContact.PartnerContactId)
+                        .OrderByDescending(e => e.CreateDate)
+                        .FirstOrDefaultAsync();
+
                     if (file != null)
                     {
                         var bytes = Convert.FromBase64String(file.Base64EncodedData);
