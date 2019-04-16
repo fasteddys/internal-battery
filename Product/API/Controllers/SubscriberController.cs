@@ -1000,7 +1000,8 @@ namespace UpDiddyApi.Controllers
                     new
                     {
                         verificationLink = link
-                    }, null
+                    }, 
+                    null
                 ));
         }
     }

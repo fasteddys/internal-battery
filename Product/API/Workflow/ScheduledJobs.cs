@@ -27,6 +27,7 @@ namespace UpDiddyApi.Workflow
     public class ScheduledJobs : BusinessVendorBase
     {
         ICloudStorage _cloudStorage;
+        ISysEmail _sysEmail;
 
         public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, IHubContext<ClientHub> hub, IDistributedCache distributedCache, ICloudStorage cloudStorage)
         {
@@ -41,8 +42,33 @@ namespace UpDiddyApi.Workflow
             _cloudStorage = cloudStorage;
             _hub = hub;
             _cache = distributedCache;
+            _sysEmail = sysEmail;
         }
 
+        #region Marketing
+
+        public async Task<bool> SendWelcomeEmail(Guid partnerContactGuid, string firstName, string lastName, string email)
+        {
+            // retrieve the ppl campaign
+            var pplCampaign = _db.Campaign.Where(c => c.Name == "PPL Lead Gen" && c.IsDeleted == 0).FirstOrDefault();
+
+            // dynamic data should include: view name for url, campaign guid, first/last name, partner contact guid
+            var templateData = new
+            {
+                viewName = "Welcome",
+                campaignGuid = pplCampaign.CampaignGuid.ToString(),
+                partnerContactGuid = partnerContactGuid,
+                firstName = firstName,
+                lastName = lastName
+            };
+
+            // send templated welcome email that links to custom landing page
+            _sysEmail.SendTemplatedEmailAsync(email, _configuration["SysEmail:TemplateIds:LeadIntake-WelcomeEmail"].ToString(), templateData, null);
+
+            return true;
+        }
+
+        #endregion
 
         #region Woz
 
