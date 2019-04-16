@@ -223,6 +223,10 @@ namespace UpDiddyApi.Models
                 .Property<string>("MetaDataJSON")
                 .HasField("_metadata");
 
+            modelBuilder.Entity<PartnerContactFile>()
+                .HasOne(e => e.PartnerContact)
+                .WithMany(e => e.PartnerContactFiles);
+
             modelBuilder.Entity<Partner>()
                 .HasMany<PartnerReferrer>(e => e.Referrers);
 
