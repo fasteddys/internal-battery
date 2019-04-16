@@ -120,7 +120,7 @@ namespace UpDiddy.Controllers
             var accounts = await app.GetAccountsAsync();
 
             AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();
-            return Ok(result);
+            return Ok(new { accessToken = result.AccessToken, expiresOn = result.ExpiresOn, uniqueId = result.UniqueId });
         }
     }
 }
