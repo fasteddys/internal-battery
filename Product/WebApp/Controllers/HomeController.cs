@@ -458,6 +458,11 @@ namespace UpDiddy.Controllers
             return View();
         }
 
+        public IActionResult Forbidden()
+        {
+            return View("Forbidden");
+        }
+
         public IActionResult ComingSoon()
         {
             return View();
