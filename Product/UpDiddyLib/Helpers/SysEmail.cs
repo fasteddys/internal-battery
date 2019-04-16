@@ -21,7 +21,7 @@ namespace UpDiddyLib.Helpers
             _apiKey = Configuration["SysEmail:ApiKey"];
         }
 
-        public async Task<bool> SendEmail(string email, string subject, string htmlContent)
+        public async Task<bool> SendEmailAsync(string email, string subject, string htmlContent)
         {
             var client = new SendGridClient(_apiKey);
             SendGrid.Helpers.Mail.EmailAddress from = new EmailAddress("support@careercircle.com", "CareerCircle Support");

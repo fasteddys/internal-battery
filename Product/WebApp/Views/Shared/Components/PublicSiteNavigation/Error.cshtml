@@ -21,7 +21,29 @@
                 <li class="nav-item">
                     <a class="nav-link" asp-controller="Home" asp-action="Contact">Contact Us</a>
                 </li>
-                <li class="nav-item brand-button-light"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignIn">Login/Sign Up</a></li>
+                @if (!User.Identity.IsAuthenticated)
+                {
+                    <li class="nav-item brand-button-light"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignIn">Login/Sign Up</a></li>
+                }
+                else
+                {
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" id="NavDropDown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user-circle" aria-hidden="true"></i> My Circle</a>
+                        <div class="dropdown-menu" aria-labelledby="NavDropDown">
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Profile">My Account</a>
+                            @if ((await AuthorizationService.AuthorizeAsync(User, "IsRecruiterPolicy")).Succeeded)
+                            {
+                                <a class="dropdown-item" id="TalentSubscribers" asp-controller="Talent" asp-action="Subscribers">Talent</a>
+                            }
+                            @if ((await AuthorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin")).Succeeded)
+                            {
+                                <a class="dropdown-item" id="AdminPortal" asp-controller="Admin" asp-action="Dashboard">Admin</a>
+                            }
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a>
+                        </div>
+                    </li>
+                }
             </ul>
         </div>
     </div>

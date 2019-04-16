@@ -68,7 +68,7 @@ namespace UpDiddy.Services.ButterCMS
 
             StringBuilder HtmlMessage = new StringBuilder();
             HtmlMessage.Append("Error retrieving " + CacheKey + " from ButterCMS.");
-            _sysEmail.SendEmail(_configuration["ButterCMS:CareerCirclePublicSiteNavigation:FailedFetchNotifyEmail"],
+            _sysEmail.SendEmailAsync(_configuration["ButterCMS:CareerCirclePublicSiteNavigation:FailedFetchNotifyEmail"],
                 "ALERT! Navigation failed to load.",
                 HtmlMessage.ToString());
         }

@@ -5,7 +5,7 @@ namespace UpDiddyLib.Helpers
 {
     public interface ISysEmail
     {
-        Task<bool> SendEmail(string email, string subject, string htmlContent);
+        Task<bool> SendEmailAsync(string email, string subject, string htmlContent);
 
         Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, string subject = null);
 

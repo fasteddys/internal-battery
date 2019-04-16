@@ -61,16 +61,8 @@ namespace UpDiddy.ViewComponents
             if(ButterResponse != null)
             {
                 PublicSiteNavigationMenuItemViewModel PublicSiteNavigation = FindDesiredNavigation(ButterResponse, "CareerCirclePublicSiteNavigation");
-
-                if(User.Identity.IsAuthenticated)
-                    return View("Authenticated", PublicSiteNavigation);
-
                 return View(PublicSiteNavigation);
             }
-
-            if (User.Identity.IsAuthenticated)
-                    return View("ErrorAuthenticated");
-
             return View("Error");
             
         }
