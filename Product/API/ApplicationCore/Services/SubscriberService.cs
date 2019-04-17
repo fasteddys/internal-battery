@@ -40,13 +40,26 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<SubscriberFile> AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream, bool parseResume = false)
         {
 
-            SubscriberFile resume = await _AddResumeAsync(subscriber, fileName, fileStream);
-            await _db.SaveChangesAsync();
+            using (var transaction = _db.Database.BeginTransaction())
+            {
+                try
+                {
+                    SubscriberFile resume = await _AddResumeAsync(subscriber, fileName, fileStream);
+                    await _db.SaveChangesAsync();
+                    transaction.Commit();
 
-            if (parseResume)
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(resume));
+                    if (parseResume)
+                        BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(resume));
 
-            return resume;
+                    return resume;
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    throw e;
+                }
+            }
+
         }
 
         public async Task<Subscriber> CreateSubscriberAsync(Guid partnerContactGuid, SignUpDto signUpDto)
@@ -199,7 +212,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 ModifyGuid = subscriber.SubscriberGuid.Value,
                 CreateGuid = subscriber.SubscriberGuid.Value,
                 CreateDate = DateTime.UtcNow,
-                ModifyDate = DateTime.UtcNow
+                ModifyDate = DateTime.UtcNow,
+                SubscriberId = subscriber.SubscriberId
             };
 
             // check to see if file is already in the system, if there is a file in the system in already then delete it
@@ -213,7 +227,23 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             subscriber.SubscriberFile.Add(subscriberFileResume);
+
             return subscriberFileResume;
+        }
+
+        public async Task<bool> QueueScanResumeJobAsync(Guid subscriberGuid)
+        {
+            Subscriber subscriber = await _db.Subscriber
+                .Where(e => e.IsDeleted == 0 && e.SubscriberGuid == subscriberGuid)
+                .Include(e => e.SubscriberFile)
+                .FirstOrDefaultAsync();
+
+            SubscriberFile resume = subscriber.SubscriberFile.OrderByDescending(e => e.CreateDate).FirstOrDefault();
+
+            if(resume != null)
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(resume));
+
+            return true;
         }
     }
 }

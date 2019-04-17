@@ -28,6 +28,7 @@ namespace UpDiddy.ViewModels
         public IEnumerable<SelectListItem> States { get; set; }
         public IEnumerable<SelectListItem> Countries { get; set; }
         public Guid SubscriberGuid { get; set; }
+        public SubscriberFileDto SubscriberResume { get; set; }
         private string _FormattedPhone;
         public string FormattedPhone
         {

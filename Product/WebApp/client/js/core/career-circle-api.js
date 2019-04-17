@@ -84,6 +84,10 @@ var CareerCircleAPI = (function (apiUrl) {
         });
     }
 
+    var scanResumeOnFile = function () {
+        return _http.post('/resume/scan');
+    };
+
     var getOffer = function (offerGuid) { 
         return _http.get('/offers/' + offerGuid);
     }
@@ -133,6 +137,7 @@ var CareerCircleAPI = (function (apiUrl) {
     return {
         getProfile: getProfile,
         uploadResume: uploadResume,
+        scanResumeOnFile: scanResumeOnFile,
         deleteFile: deleteFile,
         signOut: signOut,
         getContacts: getContacts,

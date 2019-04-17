@@ -221,7 +221,7 @@ namespace UpDiddyApi
             services.AddTransient<IB2CGraph, B2CGraphClient>();
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
 
-            services.AddSingleton<ISubscriberService, SubscriberService>();
+            services.AddScoped<ISubscriberService, SubscriberService>();
             #endregion
 
             // Configure SnapshotCollector from application settings
