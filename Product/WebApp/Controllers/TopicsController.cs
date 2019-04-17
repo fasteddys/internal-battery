@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UpDiddy.Services.ButterCMS;
 using UpDiddy.ViewModels.ButterCMS;
 using ButterCMS.Models;
+using Microsoft.AspNetCore.Http;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -35,12 +36,18 @@ namespace UpDiddy.Controllers
             {
                 QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
             }
-            PageResponse<TopicsLandingPageViewModel> TopicsPage = _butterService.RetrievePage<TopicsLandingPageViewModel>("TopicsPage", "topics_landing/topics", QueryParams);
+            PageResponse<TopicsLandingPageViewModel> TopicsPage = _butterService.RetrievePage<TopicsLandingPageViewModel>("TopicsPage", "topics", QueryParams);
+
+            if (TopicsPage == null)
+                return StatusCode(StatusCodes.Status500InternalServerError);
 
             // TODO: We don't have the Partners linked to the courses that they offer... 
-            TopicsViewModel TopicsViewModel = new TopicsViewModel(_configuration)
-            {
-                Topics = TopicsPage.Data.Fields.Topics
+            TopicsLandingPageViewModel TopicsViewModel = new TopicsLandingPageViewModel {
+                 HeroHeader = TopicsPage.Data.Fields.HeroHeader,
+                 HeroImage = TopicsPage.Data.Fields.HeroImage,
+                 TopicsVendorLogo = TopicsPage.Data.Fields.TopicsVendorLogo,
+                 Topics = TopicsPage.Data.Fields.Topics,
+                 HeroDescription = TopicsPage.Data.Fields.HeroDescription
             };
 
             return View("Index", TopicsViewModel);

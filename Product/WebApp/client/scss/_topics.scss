@@ -27,8 +27,8 @@
 }
 
 @media (min-width: 0px) {
+    
     .topics-container {
-
         .topics-courses {
             margin-top: 2rem;
 
@@ -41,6 +41,9 @@
 
                 .career-training-header-container {
                     text-align: center;
+                    p{
+                        font-size: 1rem;
+                    }
                 }
 
                 > div {
@@ -82,6 +85,7 @@
 @media (min-width: 768px) {
 
     .topics-container {
+
         .topics-courses {
             .course-categories {
                 .section-heading {
@@ -90,6 +94,7 @@
 
                 .career-training-header-container {
                     margin-bottom: 2rem;
+
                 }
 
                 .card-column {
@@ -137,6 +142,14 @@
 
 @media (min-width: 1200px) {
     .topics-container {
+
+
+        .topics-hero-container {
+            p {
+                font-size: 1.5rem;
+            }
+        }
+
         .topics-courses {
             .course-categories {
                 .card-column {

@@ -1,41 +1,40 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Localization
 @using UpDiddy.ViewModels
+@using UpDiddy.ViewModels.ButterCMS
 @using UpDiddyLib.Dto
 
-@model TopicsViewModel
+@model TopicsLandingPageViewModel
 
 
 
-@Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
-    {
-        BackgroundImage = "/images/about-us-hero.png",
-        Elements = new List<string>()
-        {
-            "<h1><strong>Topics</strong></h1>"
-        }
-    })
+
 
 <div class="topics-container">
+    <div class="topics-hero-container">
+        @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
+        {
+            BackgroundImage = Model.HeroImage,
+            Elements = new List<string>()
+            {
+                "",
+                "<h1><strong>" + Model.HeroHeader + "</strong></h1><br /><p>" + Html.Raw(Model.HeroDescription) + "</p>"
+            }
+        })
+    </div>
     <div class="row topics-courses" id="career-training-categories">
         <div class="container">
             <div class="row course-categories">
                 <div class="col-12 career-training-header-container">
                     <span class="section-heading f-color-primary">
-                        <img src="~/images/woz_logo_trans.png" style="width: 200px" />
+                        <img src="@Model.TopicsVendorLogo" style="width: 200px" />
                     </span>
                 </div>
-                @foreach (TopicViewModel topic in Model.Topics)
+                @foreach (TopicLandingViewModel topic in Model.Topics)
                 {
-                    string DescriptionBlurb = topic.Description;
-                    if (DescriptionBlurb.Length > 130)
-                    {
-                        DescriptionBlurb = DescriptionBlurb.Substring(0, 130) + "...";
-
-                    }
                     <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 card-column">
-                        <a class="card-hyperlink-container" href="/Topics/@(topic.Slug)">
+                        <a class="card-hyperlink-container" href="@(topic.Url)">
                             <div class="card">
-                                <img class="card-img-top" src="@(Model.ImageUrl + topic.DesktopImage)" alt="Card image cap">
+                                <img class="card-img-top" src="@topic.Image" alt="Card image cap">
                             </div>
                         </a>
                     </div>

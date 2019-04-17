@@ -69,11 +69,25 @@ namespace UpDiddy.Services.ButterCMS
 
         public PageResponse<T> RetrievePage<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters) where T : class
         {
-            PageResponse<T> Page = _butterClient.RetrievePage<T>("*", Slug, QueryParameters);
+            PageResponse<T> CachedButterResponse = _cacheService.GetCachedValue<PageResponse<T>>(CacheKey);
+            try
+            {
+                if (CachedButterResponse == null)
+                {
+                    CachedButterResponse = _butterClient.RetrievePage<T>("*", Slug, QueryParameters);
 
-            if (Page == null)
+                    if (CachedButterResponse == null)
+                    {
+                        return null;
+                    }
+                    _cacheService.SetCachedValue(CacheKey, CachedButterResponse);
+                }
+            }
+            catch (ContentFieldObjectMismatchException Exception)
+            {
                 return null;
-            return Page;
+            }
+            return CachedButterResponse;
             
         }
 

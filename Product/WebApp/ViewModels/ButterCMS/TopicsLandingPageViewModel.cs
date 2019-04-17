@@ -19,7 +19,19 @@ namespace UpDiddy.ViewModels.ButterCMS
         [JsonProperty("topics_vendor_logo")]
         public string TopicsVendorLogo { get; set; }
         [JsonProperty("topics_listing")]
-        public IList<TopicViewModel> Topics { get; set; }
+        public IList<TopicLandingViewModel> Topics { get; set; }
+        [JsonProperty("hero_description")]
+        public string HeroDescription { get; set; }
+    }
+
+    public class TopicLandingViewModel
+    {
+        [JsonProperty("topic_title")]
+        public string TopicTitle { get; set; }
+        [JsonProperty("url")]
+        public string Url { get; set; }
+        [JsonProperty("image")]
+        public string Image { get; set; }
     }
 
     
