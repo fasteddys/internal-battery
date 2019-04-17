@@ -106,11 +106,11 @@ namespace UpDiddyApi.Controllers
         {
             try
             {
+              
                 if (subscriberGuid == null)
                     return BadRequest(new { code = 400, message = "No subscriber identifier was provided" });
 
-                var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();
-
+                var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();          
                 if (subscriber == null)
                     return BadRequest(new { code = 404, message = "No subscriber could be found with that identifier" });
 

@@ -38,5 +38,16 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return company;
         }
 
+        static public Company GetCompanyByGuid(UpDiddyDbContext db, Guid CompanyGuid)
+        {
+ 
+            Company company = db.Company
+                .Where(c => c.IsDeleted == 0 && c.CompanyGuid == CompanyGuid)
+                .FirstOrDefault();    
+            return company;
+        }
+
+
+
     }
 }

@@ -8,6 +8,9 @@ using UpDiddyApi.Models;
 using UpDiddyApi.Models.Views;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
+using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
+using UpDiddyLib.Helpers;
+
 
 namespace UpDiddyApi.Helpers
 {
@@ -48,7 +51,29 @@ namespace UpDiddyApi.Helpers
             CreateMap<CampaignStatistic, CampaignStatisticDto>().ReverseMap();
             CreateMap<CampaignDetail, CampaignDetailDto>().ReverseMap();
             CreateMap<v_SubscriberSources, SubscriberSourceDto>().ReverseMap();
-            CreateMap<Offer, OfferDto>().ReverseMap();
+            CreateMap<SecurityClearance, SecurityClearanceDto>().ReverseMap();
+            CreateMap<EmploymentType, EmploymentTypeDto>().ReverseMap();
+            CreateMap<Industry, IndustryDto>().ReverseMap();
+            CreateMap<JobPosting, JobPostingDto>().ReverseMap();
+            CreateMap<ExperienceLevel, ExperienceLevelDto>().ReverseMap();
+            CreateMap<EducationLevel, EducationLevelDto>().ReverseMap();
+            CreateMap<JobCategory, JobCategoryDto>().ReverseMap();
+
+ 
+            CreateMap<JobViewDto, CloudTalentSolution.MatchingJob>()
+              .ForMember(c => c.JobSummary, opt => opt.MapFrom(src => src.JobSummary))
+              .ForMember(c => c.JobTitleSnippet, opt => opt.MapFrom(src => src.JobTitleSnippet))
+              .ForMember(c => c.SearchTextSnippet, opt => opt.MapFrom(src => src.SearchTextSnippet))          
+              .ForPath(c => c.Job.RequisitionId, opt => opt.MapFrom(src => src.JobPostingGuid))
+              .ForMember(c => c.SearchTextSnippet, opt => opt.MapFrom(src => src.SearchTextSnippet))
+              .ForPath(c => c.Job.PostingExpireTime, opt => opt.MapFrom(src => src.PostingExpirationDateUTC))
+              .ForPath(c => c.Job.Name, opt => opt.MapFrom(src => src.CloudTalentUri))
+              .ForPath(c => c.Job.CompanyName, opt => opt.MapFrom(src => src.CompanyName))
+              .ForPath(c => c.Job.Title, opt => opt.MapFrom(src => src.Title))
+              .ForPath(c => c.Job.Description, opt => opt.MapFrom(src => src.Description))
+              .ForPath(c => c.Job.PostingPublishTime, opt => opt.MapFrom(src => src.PostingDateUTC))
+              .ReverseMap();
+   
 
             // todo: had difficulty mapping JObject to Dictionary<string,string> via automapper for PartnerContact -> ContactDto, revisit later if time allows
             //CreateMap<Contact, ContactDto>().ReverseMap();

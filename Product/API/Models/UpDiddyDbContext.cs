@@ -128,6 +128,15 @@ namespace UpDiddyApi.Models
         [Obsolete("Remove this once all related data has been migrated to CampaignPartnerContact", false)]
         public DbSet<CampaignContact> CampaignContact { get; set; }
         public DbSet<CampaignPhase> CampaignPhase { get; set; }
+        public DbSet<JobPosting> JobPosting { get; set; }
+        public DbSet<EmploymentType> EmploymentType { get; set; }
+        public DbSet<SecurityClearance> SecurityClearance { get; set; }
+        public DbSet<Industry> Industry { get; set; }
+        public DbSet<ExperienceLevel> ExperienceLevel { get; set; }
+        public DbSet<JobPostingSkill> JobPostingSkill { get; set; }
+        public DbSet<JobCategory> JobCategory { get; set; }
+
+
         public DbSet<Offer> Offer { get; set; }
         public DbSet<Partner> Partner { get; set; }
         public DbSet<PartnerContact> PartnerContact { get; set; }
@@ -284,6 +293,10 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<PromoCode>()
                 .Property(pc => pc.MaxAllowedNumberOfRedemptions)
                 .HasDefaultValue(1);
+
+            modelBuilder.Entity<JobPostingSkill>()
+                .HasKey(ss => new { ss.SkillId, ss.JobPostingId });
+
         }
     }
 }
