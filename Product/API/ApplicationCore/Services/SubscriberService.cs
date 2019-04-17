@@ -136,6 +136,25 @@ namespace UpDiddyApi.ApplicationCore.Services
                         await _AddResumeAsync(newSubscriber, file.Name, contents);
                     }
 
+                    // associate the contact with the subscriber
+                    var contact = _db.Contact.Where(c => c.ContactId == partnerContact.ContactId).FirstOrDefault();
+                    contact.SubscriberId = partnerContact.Contact.SubscriberId;
+
+                    // assign subscriber source for campaigns
+                    SubscriberProfileStagingStore attribution = new SubscriberProfileStagingStore()
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        ModifyDate = DateTime.UtcNow,
+                        ModifyGuid = Guid.Empty,
+                        CreateGuid = Guid.Empty,
+                        SubscriberId = partnerContact.Contact.SubscriberId.Value,
+                        ProfileSource = UpDiddyLib.Helpers.Constants.DataSource.CareerCircle,
+                        IsDeleted = 0,
+                        ProfileFormat = UpDiddyLib.Helpers.Constants.DataFormat.Json,
+                        ProfileData = JsonConvert.SerializeObject(new { source = "campaign-sign-up", referer = campaign.Name })
+                    };
+                    _db.SubscriberProfileStagingStore.Add(attribution);
+
                     await _db.SaveChangesAsync();
                     transaction.Commit();
                 }
@@ -147,8 +166,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 return subscriber;
             }
-
-
         }
 
         /// <summary>
