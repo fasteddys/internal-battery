@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddy.Api;
 using UpDiddy.Services.ButterCMS;
@@ -10,6 +11,7 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
 {
+    [Authorize(Policy = "IsCareerCircleAdmin")]
     [Route("[controller]")]
     public class ButterCMSController : BaseController
     {
@@ -21,7 +23,7 @@ namespace UpDiddy.Controllers
         {
             _butterService = butterService;
         }
-
+        
         [HttpGet("ClearCachedNavigation")]
         public IActionResult ClearCachedNavigation()
         {
