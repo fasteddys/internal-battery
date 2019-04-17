@@ -47,6 +47,7 @@ namespace UpDiddy.Services.ButterCMS
                 {
                     ButterCMSClient butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
                     CachedButterResponse = butterClient.RetrieveContentFields<T>(Keys, QueryParameters);
+                    
                     if(CachedButterResponse == null)
                     {
                         SendEmailNotification(CacheKey);
@@ -65,12 +66,22 @@ namespace UpDiddy.Services.ButterCMS
 
         private void SendEmailNotification(string CacheKey)
         {
-
-            StringBuilder HtmlMessage = new StringBuilder();
-            HtmlMessage.Append("Error retrieving " + CacheKey + " from ButterCMS.");
-            _sysEmail.SendEmailAsync(_configuration["ButterCMS:CareerCirclePublicSiteNavigation:FailedFetchNotifyEmail"],
-                "ALERT! Navigation failed to load.",
-                HtmlMessage.ToString());
+            /**
+             * We're caching that we've sent this email to ensure that as traffic increases,
+             * we don't spam the CareerCircle errors inbox upon navigation fetch failure.
+             */
+            string CacheKeyForNavigationLoadFailure = "HasSentNavigationLoadFailureEmail";
+            string HasSentNotificationEmail = _cacheService.GetCachedValue<string>(CacheKeyForNavigationLoadFailure);
+            if (string.IsNullOrEmpty(HasSentNotificationEmail))
+            {
+                StringBuilder HtmlMessage = new StringBuilder();
+                HtmlMessage.Append("Error retrieving " + CacheKey + " from ButterCMS, or Redis. Falling back to error navigation.");
+                _sysEmail.SendEmailAsync(_configuration["ButterCMS:CareerCirclePublicSiteNavigation:FailedFetchNotifyEmail"],
+                    "ALERT! Navigation failed to load.",
+                    HtmlMessage.ToString());
+                _cacheService.SetCachedValue<string>(CacheKeyForNavigationLoadFailure, "true");
+            }
+            
         }
     }
 }
