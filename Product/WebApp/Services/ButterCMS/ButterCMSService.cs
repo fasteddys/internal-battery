@@ -1,4 +1,5 @@
 ﻿using ButterCMS;
+using ButterCMS.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using UpDiddy.ViewModels.ButterCMS;
 using UpDiddyLib.Helpers;
 
 namespace UpDiddy.Services.ButterCMS
@@ -16,12 +18,14 @@ namespace UpDiddy.Services.ButterCMS
         private ICacheService _cacheService = null;
         private IConfiguration _configuration = null;
         private ISysEmail _sysEmail = null;
+        private ButterCMSClient _butterClient;
 
         public ButterCMSService(ICacheService cacheService, IConfiguration configuration, ISysEmail sysEmail)
         {
             _cacheService = cacheService;
             _configuration = configuration;
             _sysEmail = sysEmail;
+            _butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
         }
 
         /// <summary>
@@ -45,8 +49,7 @@ namespace UpDiddy.Services.ButterCMS
             {
                 if (CachedButterResponse == null)
                 {
-                    ButterCMSClient butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
-                    CachedButterResponse = butterClient.RetrieveContentFields<T>(Keys, QueryParameters);
+                    CachedButterResponse = _butterClient.RetrieveContentFields<T>(Keys, QueryParameters);
                     
                     if(CachedButterResponse == null)
                     {
@@ -62,6 +65,35 @@ namespace UpDiddy.Services.ButterCMS
                 return null;
             }
             return CachedButterResponse;
+        }
+
+        public PageResponse<T> RetrievePage<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters) where T : class
+        {
+            PageResponse<T> CachedButterResponse = _cacheService.GetCachedValue<PageResponse<T>>(CacheKey);
+            try
+            {
+                if (CachedButterResponse == null)
+                {
+                    CachedButterResponse = _butterClient.RetrievePage<T>("*", Slug, QueryParameters);
+
+                    if (CachedButterResponse == null)
+                    {
+                        return null;
+                    }
+                    _cacheService.SetCachedValue(CacheKey, CachedButterResponse);
+                }
+            }
+            catch (ContentFieldObjectMismatchException Exception)
+            {
+                return null;
+            }
+            return CachedButterResponse;
+            
+        }
+
+        public bool ClearCachedValue<T>(string CacheKey)
+        {
+            return _cacheService.RemoveCachedValue<T>(CacheKey);
         }
 
         private void SendEmailNotification(string CacheKey)

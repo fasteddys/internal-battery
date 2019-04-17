@@ -52,5 +52,18 @@ namespace UpDiddy.Services
                 return false;
             }
         }
+
+        public bool RemoveCachedValue<T>(string CacheKey)
+        {
+            try
+            {
+                _cache.Remove(CacheKey);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
     }
 }
