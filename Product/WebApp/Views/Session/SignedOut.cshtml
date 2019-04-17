@@ -1,29 +1,26 @@
-﻿<div class="signout-container">
-    <div class="row signout-message-container">
-        <div class="col-md-12">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="signout-hero">
-                            <div class="signout-header">
-                                Signed out
-                            </div>
-                            <div class="error-sub-header">
-                                You have successfully signed out. You will be automatically redirected to the home page in 3 seconds.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+﻿@{
+    Layout = "_SimpleLayout";
+}
+
+<div class="simple-container">
+    <div class="row">
+        <div class="col-md-12 simple-title">
+            Signed out
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 simple-detail">
+            You have successfully signed out. You will be automatically redirected to the home page in 3 seconds...
         </div>
     </div>
 </div>
+
 @section Scripts
-{
-<script type="text/javascript">
-    $(document).ready(function () {
-        CareerCircleAPI.signOut();
-    });
-</script>
+    {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            CareerCircleAPI.signOut();
+        });
+    </script>
 }
 <meta http-equiv="refresh" content="3;url=@Url.Action("Index", "Home")" />
