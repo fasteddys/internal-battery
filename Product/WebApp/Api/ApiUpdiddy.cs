@@ -278,6 +278,26 @@ namespace UpDiddy.Api
         }
 
 
+        public async Task<IList<RecruiterCompanyDto>> GetRecruiterCompaniesAsync(Guid subscriberGuid)
+        {
+            string cacheKey = $"GetRecruiterCompaniesAsync{subscriberGuid}";
+            IList<RecruiterCompanyDto> rval = GetCachedValue<IList<RecruiterCompanyDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetRecruiterCompanyAsync(subscriberGuid);
+                SetCachedValue<IList<RecruiterCompanyDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+
+
+
+
+
 
 
         public async Task<IList<EmploymentTypeDto>> GetEmploymentTypeAsync()
@@ -603,6 +623,13 @@ namespace UpDiddy.Api
         {
             return await PostAsync<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), educationHistory);
         }
+ 
+        public async Task<BasicResponseDto> AddJobPostingAsync(JobPostingDto jobPosting)
+        {
+            return await PostAsync<BasicResponseDto>(string.Format("job"), jobPosting);
+        }
+
+
 
         public async Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid)
         {
@@ -782,6 +809,12 @@ namespace UpDiddy.Api
         {
 
             return await GetAsync<IList<SecurityClearanceDto>>("lookupdata/security-clearance");
+        }
+
+        public async Task<IList<RecruiterCompanyDto>> _GetRecruiterCompanyAsync(Guid subscriberGuid)
+        {
+
+            return await GetAsync<IList<RecruiterCompanyDto>>($"subscriber/{subscriberGuid}/company");
         }
 
 

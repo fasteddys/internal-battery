@@ -222,6 +222,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <param name="jobPostingDto"></param>
         public static void SavePostingSkills(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
+
+            if (jobPostingDto.Skills == null)
+                return;
+
             foreach ( SkillDto skillDto in jobPostingDto.Skills)
             {
                 JobPostingSkillFactory.Add(db, jobPosting.JobPostingId, skillDto.SkillGuid.Value);

@@ -70,8 +70,8 @@ namespace UpDiddyApi.Controllers
 
         #region Basic Subscriber Endpoints
 
-        [HttpGet]
-        [Route("api/[controller]/{subscriberGuid}/company")]
+        [HttpGet("{subscriberGuid}/company")]
+        [Authorize]       
         public async Task<IActionResult> GetCompanies(Guid subscriberGuid)
         {
             // Validate guid for GetSubscriber call
@@ -85,7 +85,7 @@ namespace UpDiddyApi.Controllers
             }
 
             List<RecruiterCompany> companies = RecruiterCompanyFactory.GetRecruiterCompanyById(_db, subscriber.SubscriberId);         
-            return Ok(_mapper.Map<List<RecruiterCompanyDto>>(companies));        
+            return Ok(_mapper.Map<List<RecruiterCompanyDto>>(companies));         
         }
 
         [HttpGet("{subscriberGuid}")]

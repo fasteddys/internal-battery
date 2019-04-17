@@ -1,0 +1,52 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model JobPostingsViewModel
+
+ 
+
+@section Scripts
+    {
+
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script type="text/javascript">
+
+ 
+
+        $(document).ready(function () {
+         
+        });
+
+    </script>
+}
+<div class="container-fluid bg-color-primary">
+    <div class="container">
+        <div class="row">
+            <div class="col-md">
+                <ul class="nav nav-talent">
+                    <li class="nav-link">
+                        <a class="text-white" href="/Talent/Subscribers">Subscribers</a>
+                    </li>
+                    <li class="nav-link" href="#">
+                        <a class="text-white" href="#">Analytics</a>
+                    </li>
+                    <li class="nav-link active">
+                        <a class="text-white" href="/Talent/JobPosting">JobPosting</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container talent">
+    <div class="row">
+    <h1> List Job Postings Here</h1>
+
+ 
+
+    </div>
+
+</div>

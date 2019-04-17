@@ -10,7 +10,7 @@ namespace UpDiddyApi.Models
 
 
     public enum JobPostingIndexStatus { NotIndexed = 0, Indexed, DeletedFromIndex, IndexError, IndexDeleteError, IndexUpdateError, UpdateIndexPending  };
-    public enum JobPostingStatus { Draft = 0, Active, Expired};
+
  
     public class JobPosting : BaseModel
     {

@@ -37,11 +37,24 @@ namespace UpDiddy.Controllers
 
         #region Job Postings 
 
+
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpGet]
         //public ViewResult JobPosting()
-        public async Task<IActionResult> JobPosting()
+        public async Task<IActionResult> JobPostings()
+        {
+            return View();
+
+        }
+
+
+
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [Authorize]
+        [HttpGet]
+        //public ViewResult JobPosting()
+        public async Task<IActionResult> CreateJobPosting()
         {
             Guid USCountryGuid = Guid.Parse(_configuration["CareerCircle:USCountryGuid"]);
  
@@ -53,20 +66,21 @@ namespace UpDiddy.Controllers
             var employmentTypes = await _api.GetEmploymentTypeAsync();
             var compensationType = await _api.GetCompensationTypeAsync();
             var SecurityClearances = await _api.GetSecurityClearanceAsync();
-
-            JobPostingViewModel model = new JobPostingViewModel()
+            var companies = await _api.GetRecruiterCompaniesAsync(this.subscriber.SubscriberGuid.Value);
+            int PostingExpirationInDays = int.Parse(_configuration["CareerCircle:PostingExpirationInDays"]);
+            CreateJobPostingViewModel model = new CreateJobPostingViewModel()
             {
                 States = states.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
-                    Value = s.StateGuid.ToString(),
+                    Value = s.Name,
                     Selected = s.StateGuid == this.subscriber?.State?.StateGuid
                 }),
 
                 Industries = industries.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
-                    Value = s.IndustryGuid.ToString()                    
+                    Value = s.IndustryGuid.ToString()
                 }),
                 JobCategories = jobCategories.Select(s => new SelectListItem()
                 {
@@ -82,12 +96,12 @@ namespace UpDiddy.Controllers
                 {
                     Text = s.Level,
                     Value = s.EducationLevelGuid.ToString()
-                }),                
+                }),
                 EmploymentTypes = employmentTypes.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
                     Value = s.EmploymentTypeGuid.ToString()
-                }),                
+                }),
                 CompensationTypes = compensationType.Select(s => new SelectListItem()
                 {
                     Text = s.CompensationTypeName,
@@ -98,6 +112,14 @@ namespace UpDiddy.Controllers
                     Text = s.Name,
                     Value = s.SecurityClearanceGuid.ToString()
                 }),
+                RecruiterCompanies = companies.Select(s => new SelectListItem()
+                {
+                    Text = s.Company.CompanyName,
+                    Value = s.Company.CompanyGuid.ToString()
+                }),
+                
+                PostingExpirationDate = DateTime.Now.AddDays(PostingExpirationInDays),
+                ApplicationDeadline = DateTime.Now.AddDays(PostingExpirationInDays)
             };
  
           // var states = await _api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
@@ -107,16 +129,81 @@ namespace UpDiddy.Controllers
 
 
 
-        [Authorize]
+        
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [HttpPost]
-        public IActionResult CreateJobPosting(JobPostingViewModel model )
+        [Authorize]
+        public async Task<ViewResult> CreateJobPosting(CreateJobPostingViewModel model )
         {
+            BasicResponseDto rVal = null;
+            if ( ModelState.IsValid )
+            {
+                // create job posting dto and initailize all required fields 
+                JobPostingDto job = new JobPostingDto()
+                {
+                    IsAgencyJobPosting = model.IsAgency,
+                    Company = new CompanyDto()
+                    {
+                        CompanyGuid = model.SelectedRecruiterCompany.Value
+                    },
+                    Title = model.Title,
+                    Description = model.Description,
+                    JobStatus = model.IsDraft == true ? (int) JobPostingStatus.Draft :  (int) JobPostingStatus.Active,
+                   //Province = 
+                    City = model.City,
+                    PostingExpirationDateUTC = model.PostingExpirationDate,
+                    Subscriber = new SubscriberDto()
+                    {
+                        SubscriberGuid = this.subscriber.SubscriberGuid
+                    },
+                    Province = model.SelectedState,
+                    ThirdPartyApply = false                    
+                };
 
-            var x = ModelState.IsValid;
+                job.ApplicationDeadlineUTC = model.ApplicationDeadline;
+                if (model.Telecommute != null)
+                    job.TelecommutePercentage = model.Telecommute.Value;
+                if (model.Compensation != null)
+                    job.Compensation = model.Compensation.Value;
+                if (string.IsNullOrEmpty(model.PostalCode) == false)
+                    job.PostalCode = model.PostalCode.Trim();
+                if (string.IsNullOrEmpty(model.StreetAddress) == false)
+                    job.StreetAddress = model.StreetAddress.Trim();
+                if (model.SelectedIndustry != null)
+                    job.Industry = new IndustryDto() { IndustryGuid = model.SelectedIndustry.Value };
+                if (model.SelectedJobCategory != null)
+                    job.JobCategory = new JobCategoryDto() { JobCategoryGuid = model.SelectedJobCategory.Value };
+                if (model.SelectedSecurityClearance != null)
+                    job.SecurityClearance = new SecurityClearanceDto() { SecurityClearanceGuid = model.SelectedSecurityClearance.Value };
+                if (model.SelectedEmploymentType != null)
+                    job.EmploymentType = new EmploymentTypeDto() { EmploymentTypeGuid = model.SelectedEmploymentType.Value };
+                if (model.SelectedCompensationType != null)
+                    job.CompensationType = new CompensationTypeDto() { CompensationTypeGuid = model.SelectedCompensationType.Value };
+                if (model.SelectedExperienceLevel != null)
+                    job.ExperienceLevel = new ExperienceLevelDto() { ExperienceLevelGuid = model.SelectedExperienceLevel.Value };
+                if (model.SelectedExperienceLevel != null)
+                    job.ExperienceLevel = new ExperienceLevelDto() { ExperienceLevelGuid = model.SelectedExperienceLevel.Value };
+                if (model.SelectedEducationLevel != null)
+                    job.EducationLevel = new EducationLevelDto() { EducationLevelGuid = model.SelectedEducationLevel.Value };
+                if ( string.IsNullOrEmpty(model.SelectedSkills) == false )
+                {
+                    string[] skillGuids = model.SelectedSkills.Trim().Split(',');
+                    job.Skills = new List<SkillDto>();
+                    foreach ( string guid in skillGuids )
+                    {
+                        SkillDto skill = new SkillDto() { SkillGuid = Guid.Parse(guid) };
+                        job.Skills.Add(skill);
+                    }
+                }
+                rVal =   await _api.AddJobPostingAsync(job);
+                  
+            }
+            // TODO JAB do something with bad model 
 
-
-            return   RedirectToAction("JobPosting");
-            //return View("JobPosting",model);
+        
+            RedirectToAction("JobPostings");
+    
+            return View("JobPosting",model);
         }
 
         #endregion
