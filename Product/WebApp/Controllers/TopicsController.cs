@@ -5,6 +5,9 @@ using UpDiddyLib.Dto;
 using UpDiddy.ViewModels;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UpDiddy.Services.ButterCMS;
+using UpDiddy.ViewModels.ButterCMS;
+using ButterCMS.Models;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,21 +17,30 @@ namespace UpDiddy.Controllers
     [Route("[controller]")]
     public class TopicsController : BaseController
     {
-        private readonly IConfiguration _configuration;       
+        private readonly IConfiguration _configuration;
+        private readonly IButterCMSService _butterService;
 
-        public TopicsController(IApi api, IConfiguration configuration)
+        public TopicsController(IApi api, IConfiguration configuration, IButterCMSService butterService)
              : base(api)
         {
             _configuration = configuration;
+            _butterService = butterService;
         }
 
         [HttpGet]
         public async Task<IActionResult> IndexAsync()
         {
+            Dictionary<string, string> QueryParams = new Dictionary<string, string>();
+            foreach (string s in HttpContext.Request.Query.Keys)
+            {
+                QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
+            }
+            PageResponse<TopicsLandingPageViewModel> TopicsPage = _butterService.RetrievePage<TopicsLandingPageViewModel>("TopicsPage", "topics_landing/topics", QueryParams);
+
             // TODO: We don't have the Partners linked to the courses that they offer... 
             TopicsViewModel TopicsViewModel = new TopicsViewModel(_configuration)
             {
-                Topics = await _Api.TopicsAsync()
+                Topics = TopicsPage.Data.Fields.Topics
             };
 
             return View("Index", TopicsViewModel);

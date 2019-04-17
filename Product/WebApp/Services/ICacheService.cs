@@ -9,5 +9,6 @@ namespace UpDiddy.Services
     {
         bool SetCachedValue<T>(string CacheKey, T Value);
         T GetCachedValue<T>(string CacheKey);
+        bool RemoveCachedValue<T>(string CacheKey);
     }
 }

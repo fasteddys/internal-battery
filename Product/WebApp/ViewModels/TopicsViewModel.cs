@@ -12,7 +12,7 @@ namespace UpDiddy.ViewModels
 {
     public class TopicsViewModel : BaseViewModel
     {
-        public IList<TopicDto> Topics { get; set; }
+        public IList<TopicViewModel> Topics { get; set; }
         public TopicsViewModel(IConfiguration _configuration)
         {
             this.ImageUrl = _configuration["BaseImageUrl"];

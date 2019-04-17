@@ -24,7 +24,7 @@
                         <img src="~/images/woz_logo_trans.png" style="width: 200px" />
                     </span>
                 </div>
-                @foreach (TopicDto topic in Model.Topics)
+                @foreach (TopicViewModel topic in Model.Topics)
                 {
                     string DescriptionBlurb = topic.Description;
                     if (DescriptionBlurb.Length > 130)
