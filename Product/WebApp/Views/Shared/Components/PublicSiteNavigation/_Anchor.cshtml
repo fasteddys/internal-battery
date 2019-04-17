@@ -1,0 +1,12 @@
+﻿@using UpDiddy.ViewModels.Components.Layout
+@model PublicSiteNavigationMenuItemViewModel
+
+@if (!string.IsNullOrEmpty(Model.BadgeText))
+{
+    <span class="badge badge-success">@Model.BadgeText</span>
+}
+@if (!string.IsNullOrEmpty(Model.FontAwesomeIcon))
+{
+    <i class="@Model.FontAwesomeIcon" aria-hidden="true"></i>
+}
+@Model.Label

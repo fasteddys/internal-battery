@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Newtonsoft.Json;
 using UpDiddyApi.Models;
 using UpDiddyApi.Models.Views;
 using UpDiddyLib.Dto;
@@ -47,7 +48,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<CampaignCourseVariant, CampaignCourseVariantDto>().ReverseMap();
             CreateMap<RebateType, RebateTypeDto>().ReverseMap();
             CreateMap<Refund, RefundDto>().ReverseMap();
-            CreateMap<Contact, ContactDto>().ReverseMap();
+
             CreateMap<CampaignStatistic, CampaignStatisticDto>().ReverseMap();
             CreateMap<CampaignDetail, CampaignDetailDto>().ReverseMap();
             CreateMap<v_SubscriberSources, SubscriberSourceDto>().ReverseMap();
@@ -91,12 +92,14 @@ namespace UpDiddyApi.Helpers
               .ReverseMap();
    
 
-            CreateMap<Contact, EmailContactDto>()
-            .ForMember(c => c.email, opt => opt.MapFrom(src => src.Email))
-            .ForMember(c => c.last_name, opt => opt.MapFrom(src => src.LastName))
-            .ForMember(c => c.first_name, opt => opt.MapFrom(src => src.FirstName))
-            .ForMember(c => c.contact_guid, opt => opt.MapFrom(src => src.ContactGuid))
-            .ReverseMap();
+            // todo: had difficulty mapping JObject to Dictionary<string,string> via automapper for PartnerContact -> ContactDto, revisit later if time allows
+            //CreateMap<Contact, ContactDto>().ReverseMap();
+            //CreateMap<Contact, EmailContactDto>()
+            //.ForMember(c => c.email, opt => opt.MapFrom(src => src.Email))
+            //.ForMember(c => c.last_name, opt => opt.MapFrom(src => src.LastName))
+            //.ForMember(c => c.first_name, opt => opt.MapFrom(src => src.FirstName))
+            //.ForMember(c => c.contact_guid, opt => opt.MapFrom(src => src.ContactGuid))
+            //.ReverseMap();
 
             CreateMap<LeadStatus, LeadStatusDto>()
                 .ForMember(ls => ls.Message, opt => opt.MapFrom(src => src.Description))
@@ -112,7 +115,7 @@ namespace UpDiddyApi.Helpers
                     .ForMember(x => x.FinalCost, opt => opt.Ignore())
                     .ForMember(x => x.PromoCodeRedemptionGuid, opt => opt.Ignore())
                     .ReverseMap();
-            
+
             // mappings with related entities
             CreateMap<Course, CourseDto>()
                 .ForMember(c => c.CourseVariants, opt => opt.MapFrom(src => src.CourseVariants))

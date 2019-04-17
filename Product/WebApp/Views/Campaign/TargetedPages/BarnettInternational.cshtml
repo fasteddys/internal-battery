@@ -42,11 +42,12 @@
                                 <div class="col-12 no-padding">
                                     @Html.Partial("Components/Authentication/_SignUp",
                                         new SignUpViewModel() {
-                                           CampaignGuid = Model.CampaignGuid,
-                                           CampaignPhase = Model.CampaignPhase,
-                                           ContactGuid = Model.ContactGuid,
-                                           IsExpressSignUp = false
-                                       })
+                                            CampaignGuid = Model.CampaignGuid,
+                                            CampaignPhase = Model.CampaignPhase,
+                                            PartnerContactGuid = Model.PartnerContactGuid,
+                                            IsExpressSignUp = false,
+                                            ObfuscatedEmail = Model.ObfuscatedEmail
+                                        })
                                 </div>
                             </div>
                         </div>

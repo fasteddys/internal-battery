@@ -289,6 +289,31 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("CampaignCourseVariant");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.CampaignPartnerContact", b =>
+                {
+                    b.Property<int>("CampaignId");
+
+                    b.Property<int>("PartnerContactId");
+
+                    b.Property<Guid?>("CampaignPartnerContactGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.HasKey("CampaignId", "PartnerContactId");
+
+                    b.HasIndex("PartnerContactId");
+
+                    b.ToTable("CampaignPartnerContact");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.CampaignPhase", b =>
                 {
                     b.Property<int>("CampaignPhaseId")
@@ -1633,6 +1658,45 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("PartnerContact");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerContactAction", b =>
+                {
+                    b.Property<int>("PartnerContactId");
+
+                    b.Property<int>("CampaignId");
+
+                    b.Property<int>("ActionId");
+
+                    b.Property<int>("CampaignPhaseId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Headers");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<DateTime>("OccurredDate")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid?>("PartnerContactActionGuid");
+
+                    b.HasKey("PartnerContactId", "CampaignId", "ActionId", "CampaignPhaseId");
+
+                    b.HasIndex("ActionId");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("CampaignPhaseId");
+
+                    b.ToTable("PartnerContactAction");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.PartnerContactFile", b =>
                 {
                     b.Property<int>("PartnerContactFileId")
@@ -2871,7 +2935,7 @@ namespace UpDiddyApi.Migrations
             modelBuilder.Entity("UpDiddyApi.Models.CampaignContact", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Campaign", "Campaign")
-                        .WithMany("CampaignContact")
+                        .WithMany()
                         .HasForeignKey("CampaignId")
                         .OnDelete(DeleteBehavior.Cascade);
 
@@ -2901,6 +2965,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Refund", "Refund")
                         .WithMany()
                         .HasForeignKey("RefundId");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CampaignPartnerContact", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Campaign", "Campaign")
+                        .WithMany("CampaignPartnerContact")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.PartnerContact", "PartnerContact")
+                        .WithMany()
+                        .HasForeignKey("PartnerContactId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CampaignPhase", b =>
@@ -3098,6 +3175,29 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Partner", "Partner")
                         .WithMany()
                         .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerContactAction", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Action", "Action")
+                        .WithMany()
+                        .HasForeignKey("ActionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Campaign", "Campaign")
+                        .WithMany()
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.CampaignPhase", "CampaignPhase")
+                        .WithMany()
+                        .HasForeignKey("CampaignPhaseId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.PartnerContact", "PartnerContact")
+                        .WithMany()
+                        .HasForeignKey("PartnerContactId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

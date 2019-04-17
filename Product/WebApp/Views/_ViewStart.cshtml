@@ -6,7 +6,11 @@
     string testPath = Context.Request.Path.ToString().ToLower();
     testPath = "/" + testPath.Split('/').Take(3).Aggregate((s1, s2) => s1 + "/" + s2).Substring(1);
     string alertViews = config["Campaign:ViewsWithOfferAlerts"];
-    if ( alertViews.IndexOf(testPath) >= 0  )
+    if (testPath.IndexOf("loggingin") >= 0)
+    {
+        Layout = "_SimpleLayout";
+    }
+    else if(alertViews.IndexOf(testPath) >= 0)
     {
         Layout = "_LayoutWithAlert";
     }
