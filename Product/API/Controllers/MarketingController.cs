@@ -49,7 +49,7 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/campaign")]
-        public IActionResult CreateCampaign([FromBody] CampaignCreateDto campaignCreateDto)    
+        public IActionResult CreateCampaign([FromBody] CampaignCreateDto campaignCreateDto)
         {
 
             CampaignCreateResponseDto rVal = new CampaignCreateResponseDto();
@@ -61,27 +61,27 @@ namespace UpDiddyApi.Controllers
                     // create campaign 
                     Campaign campaign = CampaignFactory.CreateCampaign(campaignCreateDto.Name, campaignCreateDto.Terms,
                         campaignCreateDto.Description, campaignCreateDto.StartDate, campaignCreateDto.EndDate);
-                    
+
                     _db.Campaign.Add(campaign);
                     // save changes to get the campaign id
                     _db.SaveChanges();
 
                     // Create campaign phase 
-                    CampaignPhase campaignPhase = CampaignPhaseFactory.CreateCampaignPhase(campaignCreateDto.PhaseName, campaignCreateDto.PhaseDescription, campaign.CampaignId);                    
+                    CampaignPhase campaignPhase = CampaignPhaseFactory.CreateCampaignPhase(campaignCreateDto.PhaseName, campaignCreateDto.PhaseDescription, campaign.CampaignId);
                     _db.CampaignPhase.Add(campaignPhase);
-                                                          
+
                     // Create campaign course invariants 
-                    foreach ( CampaignCourseVariantCreateDto ccvCreate in campaignCreateDto.CourseVariants )
+                    foreach (CampaignCourseVariantCreateDto ccvCreate in campaignCreateDto.CourseVariants)
                     {
                         CampaignCourseVariant ccv = CampaignCourseVariantFactory.CreateCampaignCourseVariant(campaign.CampaignId, ccvCreate.CourseVariantId, ccvCreate.MaxRebateEligibilityInDays,
-                            ccvCreate.IsEligibleForRebate, ccvCreate.RebateTypeId, ccvCreate.RefundId);                                           
+                            ccvCreate.IsEligibleForRebate, ccvCreate.RebateTypeId, ccvCreate.RefundId);
                         _db.CampaignCourseVariant.Add(ccv);
- 
+
                     }
                     // save changes                     
                     rVal.LandingPageUrl = $"https://careercircle.com/Home/Campaign/{campaign.CampaignGuid}/[%contact_guid%]?campaignphase={WebUtility.UrlEncode(campaignCreateDto.PhaseName)}";
-                    rVal.TrackingImageUrl= $"'https://api.careercircle.io/api/tracking/{campaign.CampaignGuid}/[%contact_guid%]/8653122B-74F1-4020-8812-04C355CE56E7?campaignphase={WebUtility.UrlEncode(campaignCreateDto.PhaseName)}";
- 
+                    rVal.TrackingImageUrl = $"'https://api.careercircle.io/api/tracking/{campaign.CampaignGuid}/[%contact_guid%]/8653122B-74F1-4020-8812-04C355CE56E7?campaignphase={WebUtility.UrlEncode(campaignCreateDto.PhaseName)}";
+
                     _db.SaveChanges();
                     transaction.Commit();
                     return Ok(rVal);
@@ -90,7 +90,7 @@ namespace UpDiddyApi.Controllers
                 {
                     transaction.Rollback();
                     string CreateJson = JsonConvert.SerializeObject(campaignCreateDto);
-                    _syslog.Log(LogLevel.Error, "MarketingController.CreateCampaign:  Exception: {@Exception} CampaignCreateDto: {CreateJson}", ex,CreateJson);
+                    _syslog.Log(LogLevel.Error, "MarketingController.CreateCampaign:  Exception: {@Exception} CampaignCreateDto: {CreateJson}", ex, CreateJson);
                     return StatusCode(500);
                 }
             }
@@ -139,19 +139,17 @@ namespace UpDiddyApi.Controllers
                 return BadRequest();
             ContactListName = WebUtility.UrlDecode(ContactListName);
 
-            IList<EmailContactDto> TheList = _db.CampaignContact
-                .Include(cc => cc.Contact)
-                .ThenInclude(c => c.Subscriber)
+            IList<EmailContactDto> TheList = _db.CampaignPartnerContact
+                .Include(cpc => cpc.PartnerContact).ThenInclude(pc => pc.Contact).ThenInclude(c => c.Subscriber)
                 .Where(c => c.IsDeleted == 0 && c.CampaignId == campaign.CampaignId)
-                .Select(c => new EmailContactDto
+                .Select(cpc => new EmailContactDto
                 {
-                    first_name = c.Contact.FirstName,
-                    last_name = c.Contact.LastName,
-                    contact_guid = c.Contact.ContactGuid.ToString(),
-                    email = c.Contact.Email,
-                    subscriber_guid = c.Contact.Subscriber != null ? c.Contact.Subscriber.SubscriberGuid.ToString() : string.Empty
-                }                                                
-                )                
+                    first_name = cpc.PartnerContact.Metadata["FirstName"].ToString(),
+                    last_name = cpc.PartnerContact.Metadata["LastName"].ToString(),
+                    contact_guid = cpc.PartnerContact.PartnerContactGuid.ToString(),
+                    email = cpc.PartnerContact.Contact.Email,
+                    subscriber_guid = cpc.PartnerContact.Contact.Subscriber != null ? cpc.PartnerContact.Contact.Subscriber.SubscriberGuid.ToString() : string.Empty
+                })
                 .ToList();
 
             string ResponseJson = string.Empty;
@@ -161,7 +159,7 @@ namespace UpDiddyApi.Controllers
 
             return Ok(Response);
         }
-    
+
         // add contacts to the specified campaign.  This routine will add new contacts to the specified campaign as well as undelete
         // any contacts that have been logically deleted from the speciried campaign.
         [HttpPut]
@@ -169,7 +167,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/campaign/{CampaignGuid}/contact")]
         public IActionResult AddContacts(Guid campaignGuid, [FromBody] IList<Guid> contacts)
         {
-            var campaign = CampaignFactory.GetCampaignByGuid(_db,campaignGuid);
+            var campaign = CampaignFactory.GetCampaignByGuid(_db, campaignGuid);
             if (campaign == null)
                 return BadRequest();
 
@@ -179,7 +177,7 @@ namespace UpDiddyApi.Controllers
             {
                 table.Rows.Add(ContactGuid);
             }
-            var contactGuids = new SqlParameter("@ContactGuids", table);            
+            var contactGuids = new SqlParameter("@ContactGuids", table);
             contactGuids.SqlDbType = SqlDbType.Structured;
             contactGuids.TypeName = "dbo.GuidList";
             var campaignId = new SqlParameter("@CampaignId", campaign.CampaignId);
@@ -190,7 +188,7 @@ namespace UpDiddyApi.Controllers
                 EXEC [dbo].[System_Insert_CampaignContacts] 
                     @CampaignId,
                     @ContactGuids"
-                    ,spParams);
+                    , spParams);
 
             return Ok(rowsAffected);
         }
@@ -240,13 +238,13 @@ namespace UpDiddyApi.Controllers
         public IActionResult AddContacts([FromBody] IList<EmailContactDto> contacts)
         {
             string ResponseJson = string.Empty;
-            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);    
+            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
             HttpResponseMessage Response = sendGridInterface.AddContacts(contacts, ref ResponseJson);
 
             if (Response.StatusCode == HttpStatusCode.Created)
                 return Ok(ResponseJson);
             else
-                return BadRequest(ResponseJson);            
+                return BadRequest(ResponseJson);
         }
         #endregion
 
@@ -331,10 +329,9 @@ namespace UpDiddyApi.Controllers
             if (Response.StatusCode == HttpStatusCode.Created)
                 return Ok(ResponseJson);
             else
-                return BadRequest(ResponseJson);   
+                return BadRequest(ResponseJson);
         }
         #endregion 
     }
 }
- 
- 
+

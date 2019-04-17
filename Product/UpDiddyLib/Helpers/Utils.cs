@@ -11,6 +11,7 @@ using System.Xml;
 using System.Globalization;
 using System.Reflection;
 using GoogleTypes = Google.Protobuf.WellKnownTypes;
+using System.Text;
 
 namespace UpDiddyLib.Helpers
 {
@@ -67,6 +68,44 @@ namespace UpDiddyLib.Helpers
         {
             DateTime tsDateTime = ts.ToDateTime();
             return tsDateTime.ToString("o");
+        }
+
+        /// <summary>
+        /// For a provided email address, returns an unrecognizable representation of that email address to anyone that
+        /// doesn't already know what it is (e.g. johnsmith@mail.com => j*******h@m**l.com). If an invalid email is provided,
+        /// an empty string is returned.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public static string ObfuscateEmail(string email)
+        {
+            StringBuilder obfuscatedEmail = new StringBuilder();
+
+            try
+            {
+                int lastIndexOfPeriod = email.LastIndexOf('.');
+                int indexOfAt = email.IndexOf('@');
+
+                string localPart = email.Substring(0, indexOfAt);
+                string topLevelDomain = email.Substring(lastIndexOfPeriod + 1, email.Length - (lastIndexOfPeriod + 1));
+                string secondLevelDomain = email.Substring(indexOfAt + 1, (lastIndexOfPeriod - indexOfAt) - 1);
+
+                obfuscatedEmail.Append(localPart.Substring(0, 1));
+                obfuscatedEmail.Append(new String('*', localPart.Length - 2));
+                obfuscatedEmail.Append(localPart.Substring(localPart.Length - 1, 1));
+                obfuscatedEmail.Append("@");
+                obfuscatedEmail.Append(secondLevelDomain.Substring(0, 1));
+                obfuscatedEmail.Append(new String('*', secondLevelDomain.Length - 2));
+                obfuscatedEmail.Append(secondLevelDomain.Substring(secondLevelDomain.Length - 1, 1));
+                obfuscatedEmail.Append(".");
+                obfuscatedEmail.Append(topLevelDomain);
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+
+            return obfuscatedEmail.ToString();
         }
 
         /// <remarks>

@@ -33,5 +33,7 @@ namespace UpDiddyApi.Models
         }
         public bool? IsBillable { get; set; }
         public List<PartnerContactLeadStatus> PartnerContactLeadStatuses { get; set; } = new List<PartnerContactLeadStatus>();
+        [NotMapped]
+        public List<PartnerContactFile> PartnerContactFiles { get; set; } = new List<PartnerContactFile>();
     }
 }

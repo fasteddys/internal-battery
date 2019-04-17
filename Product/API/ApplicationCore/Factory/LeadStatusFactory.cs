@@ -30,7 +30,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             var leadStatuses = GetCachedValue<List<LeadStatus>>(CACHE_KEY);
 
-            if(leadStatuses == null)
+            if (leadStatuses == null)
             {
                 leadStatuses = _db.LeadStatus.Where(ls => ls.IsDeleted == 0).ToList();
                 SetCachedValue<List<LeadStatus>>(CACHE_KEY, leadStatuses);

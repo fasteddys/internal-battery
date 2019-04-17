@@ -21,14 +21,14 @@ namespace UpDiddyLib.Helpers
             _apiKey = Configuration["SysEmail:ApiKey"];
         }
 
-        public bool SendEmail(string email, string subject, string htmlContent)
+        public async Task<bool> SendEmailAsync(string email, string subject, string htmlContent)
         {
             var client = new SendGridClient(_apiKey);
             SendGrid.Helpers.Mail.EmailAddress from = new EmailAddress("support@careercircle.com", "CareerCircle Support");
             SendGrid.Helpers.Mail.EmailAddress to = new EmailAddress(email);
             var plainTextContent = Regex.Replace(htmlContent, "<[^>]*>", "");
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-            var response = AsyncHelper.RunSync<Response>(() => client.SendEmailAsync(msg));
+            var response = await client.SendEmailAsync(msg);
             return true;
         }
 

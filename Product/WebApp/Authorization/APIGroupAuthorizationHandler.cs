@@ -32,7 +32,7 @@ namespace UpDiddy.Authorization
         {
             IList<string> groups = new List<string>();
             string cachedGroups = _accessor.HttpContext.Session.GetString(CACHE_KEY + userId);
-            if(cachedGroups != null)
+            if(false)
             {
                 groups = JsonConvert.DeserializeObject<List<string>>(cachedGroups);
             } else
