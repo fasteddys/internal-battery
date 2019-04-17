@@ -31,5 +31,12 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="signUpDto"></param>
         /// <returns>Subscriber</returns>
         Task<Subscriber> CreateSubscriberAsync(Guid partnerContactGuid, SignUpDto signUpDto);
+
+        /// <summary>
+        /// Creates a background job to scan resume of subscriber if they have a resume on file.
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns>bool</returns>
+        Task<bool> QueueScanResumeJobAsync(Guid subscriberGuid);
     }
 }
