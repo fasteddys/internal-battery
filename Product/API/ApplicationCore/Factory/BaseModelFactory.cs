@@ -24,5 +24,8 @@ namespace UpDiddyApi.ApplicationCore
                 baseModel.ModifyGuid = Guid.NewGuid();
 
         }
+ 
+
+
     }
 }

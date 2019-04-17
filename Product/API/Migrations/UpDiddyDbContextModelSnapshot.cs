@@ -1238,6 +1238,39 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("Industry");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.JobApplication", b =>
+                {
+                    b.Property<int>("JobApplicationId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("CoverLetter");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<Guid>("JobApplicationGuid");
+
+                    b.Property<int>("JobPostingId");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("JobApplicationId");
+
+                    b.HasIndex("JobPostingId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("jobApplication");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.JobCategory", b =>
                 {
                     b.Property<int>("JobCategoryId")
@@ -3042,6 +3075,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.CampaignCourseVariant", "CampaignCourseVariant")
                         .WithMany()
                         .HasForeignKey("CampaignId", "CourseVariantId");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobApplication", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.JobPosting", "JobPosting")
+                        .WithMany()
+                        .HasForeignKey("JobPostingId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.JobPosting", b =>

@@ -10,7 +10,8 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyLib.Helpers;
-
+using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace UpDiddyApi.Helpers
 {
@@ -19,7 +20,7 @@ namespace UpDiddyApi.Helpers
         public static void Configure()
         {
             Mapper.Initialize(cfg =>
-            {
+            {               
                 cfg.AddProfile<ApiProfile>();
             });
         }
@@ -58,8 +59,24 @@ namespace UpDiddyApi.Helpers
             CreateMap<ExperienceLevel, ExperienceLevelDto>().ReverseMap();
             CreateMap<EducationLevel, EducationLevelDto>().ReverseMap();
             CreateMap<JobCategory, JobCategoryDto>().ReverseMap();
+            CreateMap<JobApplication, JobApplicationDto>().ReverseMap();
 
- 
+
+            CreateMap<JobApplication, JobApplicationApplicantViewDto>()
+              .ForMember(c => c.JobApplicationGuid, opt => opt.MapFrom(src => src.JobApplicationGuid))
+              .ForMember(c => c.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
+              .ForMember(c => c.JobPosting, opt => opt.MapFrom(src => src.JobPosting))
+              .ForMember(c => c.JobPostingUrl, opt => opt.MapFrom(src => src.JobPosting.JobPostingGuid))
+              .ForMember(c => c.CoverLetter, opt => opt.MapFrom(src => src.CoverLetter))
+              .ForAllOtherMembers(opts => opts.Ignore());
+
+            CreateMap<JobApplication, JobApplicationRecruiterViewDto>()
+              .ForMember(c => c.JobApplicationGuid, opt => opt.MapFrom(src => src.JobApplicationGuid))
+              .ForMember(c => c.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
+              .ForMember(c => c.Subscriber, opt => opt.MapFrom(src => src.Subscriber))
+              .ForMember(c => c.CoverLetter, opt => opt.MapFrom(src => src.CoverLetter))
+              .ForAllOtherMembers(opts => opts.Ignore());
+
             CreateMap<JobViewDto, CloudTalentSolution.MatchingJob>()
               .ForMember(c => c.JobSummary, opt => opt.MapFrom(src => src.JobSummary))
               .ForMember(c => c.JobTitleSnippet, opt => opt.MapFrom(src => src.JobTitleSnippet))
