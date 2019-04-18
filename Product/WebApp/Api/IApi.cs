@@ -60,12 +60,15 @@ namespace UpDiddy.Api
         Task<SubscriberEducationHistoryDto> DeleteEducationHistoryAsync(Guid subscriberGuid, Guid educationHistory);
         Task<IList<SubscriberWorkHistoryDto>> GetWorkHistoryAsync(Guid subscriberGuid);
         Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid);
-        Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid contactGuid, SignUpDto signUpDto);
+        Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid partnerContactGuid, SignUpDto signUpDto);
         Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto);
         Task<CourseDto> GetCourseByCampaignGuidAsync(Guid CampaignGuid);
         Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
         Task<BasicResponseDto> AddJobPostingAsync(JobPostingDto jobPosting);
-        Task<ContactDto> ContactAsync(Guid contactGuid);
+        Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid);
+        Task<JobPostingDto> GetJobPostingByGuid(Guid jobPostingGuid);
+
+        Task<ContactDto> ContactAsync(Guid partnerContactGuid);
         Task<LinkedInProfileDto> GetLinkedInProfileAsync();
         Task<SubscriberADGroupsDto> MyGroupsAsync();
         Task<BasicResponseDto> VerifyEmailAsync(Guid token);

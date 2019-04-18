@@ -21,7 +21,7 @@ using UpDiddyLib.Helpers;
 
 namespace UpDiddy.Controllers
 {
-    [Authorize(Policy = "IsCareerCircleAdmin")]
+    [Authorize]
     public class AdminController : Controller
     {
         private IApi _api;

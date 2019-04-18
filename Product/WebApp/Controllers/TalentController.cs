@@ -38,13 +38,34 @@ namespace UpDiddy.Controllers
         #region Job Postings 
 
 
+
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [Authorize]
+        [HttpGet]
+        [Route("[controller]/jobPosting/{jobPostingGuid}/edit")]
+        //public ViewResult JobPosting()
+        public async Task<IActionResult> EditJobPosting(Guid jobPostingGuid)
+        {
+
+            CreateJobPostingViewModel model = await CreateViewModel(jobPostingGuid);
+            return View("CreateJobPosting",model);
+        }
+
+
+
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpGet]
         //public ViewResult JobPosting()
         public async Task<IActionResult> JobPostings()
         {
-            return View();
+
+            JobPostingsViewModel model = new JobPostingsViewModel()
+            {
+                jobPostings = await _api.GetJobPostingsForSubscriber(this.subscriber.SubscriberGuid.Value)
+            };
+          
+            return View(model.jobPostings);
 
         }
 
@@ -55,75 +76,9 @@ namespace UpDiddy.Controllers
         [HttpGet]
         //public ViewResult JobPosting()
         public async Task<IActionResult> CreateJobPosting()
-        {
-            Guid USCountryGuid = Guid.Parse(_configuration["CareerCircle:USCountryGuid"]);
- 
-            var states = await _Api.GetStatesByCountryAsync(USCountryGuid);
-            var industries = await _Api.GetIndustryAsync();
-            var jobCategories = await _Api.GetJobCategoryAsync();
-            var educationLevels = await _api.GetEducationLevelAsync();
-            var experienceLevels = await _api.GetExperienceLevelAsync();
-            var employmentTypes = await _api.GetEmploymentTypeAsync();
-            var compensationType = await _api.GetCompensationTypeAsync();
-            var SecurityClearances = await _api.GetSecurityClearanceAsync();
-            var companies = await _api.GetRecruiterCompaniesAsync(this.subscriber.SubscriberGuid.Value);
-            int PostingExpirationInDays = int.Parse(_configuration["CareerCircle:PostingExpirationInDays"]);
-            CreateJobPostingViewModel model = new CreateJobPostingViewModel()
-            {
-                States = states.Select(s => new SelectListItem()
-                {
-                    Text = s.Name,
-                    Value = s.Name,
-                    Selected = s.StateGuid == this.subscriber?.State?.StateGuid
-                }),
-
-                Industries = industries.Select(s => new SelectListItem()
-                {
-                    Text = s.Name,
-                    Value = s.IndustryGuid.ToString()
-                }),
-                JobCategories = jobCategories.Select(s => new SelectListItem()
-                {
-                    Text = s.Name,
-                    Value = s.JobCategoryGuid.ToString()
-                }),
-                ExperienceLevels = experienceLevels.Select(s => new SelectListItem()
-                {
-                    Text = s.DisplayName,
-                    Value = s.ExperienceLevelGuid.ToString()
-                }),
-                EducationLevels = educationLevels.Select(s => new SelectListItem()
-                {
-                    Text = s.Level,
-                    Value = s.EducationLevelGuid.ToString()
-                }),
-                EmploymentTypes = employmentTypes.Select(s => new SelectListItem()
-                {
-                    Text = s.Name,
-                    Value = s.EmploymentTypeGuid.ToString()
-                }),
-                CompensationTypes = compensationType.Select(s => new SelectListItem()
-                {
-                    Text = s.CompensationTypeName,
-                    Value = s.CompensationTypeGuid.ToString()
-                }),
-                SecurityClearances = SecurityClearances.Select(s => new SelectListItem()
-                {
-                    Text = s.Name,
-                    Value = s.SecurityClearanceGuid.ToString()
-                }),
-                RecruiterCompanies = companies.Select(s => new SelectListItem()
-                {
-                    Text = s.Company.CompanyName,
-                    Value = s.Company.CompanyGuid.ToString()
-                }),
-                
-                PostingExpirationDate = DateTime.Now.AddDays(PostingExpirationInDays),
-                ApplicationDeadline = DateTime.Now.AddDays(PostingExpirationInDays)
-            };
- 
-          // var states = await _api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
-             return View(model);
+        {           
+            CreateJobPostingViewModel model = await CreateViewModel();
+            return View(model);
         }
 
 
@@ -133,7 +88,7 @@ namespace UpDiddy.Controllers
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [HttpPost]
         [Authorize]
-        public async Task<ViewResult> CreateJobPosting(CreateJobPostingViewModel model )
+        public async Task<IActionResult> CreateJobPosting(CreateJobPostingViewModel model )
         {
             BasicResponseDto rVal = null;
             if ( ModelState.IsValid )
@@ -198,12 +153,9 @@ namespace UpDiddy.Controllers
                 rVal =   await _api.AddJobPostingAsync(job);
                   
             }
-            // TODO JAB do something with bad model 
+ 
+            return RedirectToAction("JobPostings");
 
-        
-            RedirectToAction("JobPostings");
-    
-            return View("JobPosting",model);
         }
 
         #endregion
@@ -299,5 +251,89 @@ namespace UpDiddy.Controllers
             var isSubscriberDeleted = await _api.DeleteSubscriberAsync(subscriberGuid);
             return new JsonResult(isSubscriberDeleted);
         }
+
+        #region private helper functions
+        private async Task<CreateJobPostingViewModel> CreateViewModel(Guid? jobPostingGuid = null )
+        {
+            JobPostingDto jobPostingDto = null;
+            if ( jobPostingGuid != null )
+            {
+                    jobPostingDto = await _api.GetJobPostingByGuid(jobPostingGuid.Value);
+            }
+
+            Guid USCountryGuid = Guid.Parse(_configuration["CareerCircle:USCountryGuid"]);
+
+            var states = await _Api.GetStatesByCountryAsync(USCountryGuid);
+            var industries = await _Api.GetIndustryAsync();
+            var jobCategories = await _Api.GetJobCategoryAsync();
+            var educationLevels = await _api.GetEducationLevelAsync();
+            var experienceLevels = await _api.GetExperienceLevelAsync();
+            var employmentTypes = await _api.GetEmploymentTypeAsync();
+            var compensationType = await _api.GetCompensationTypeAsync();
+            var SecurityClearances = await _api.GetSecurityClearanceAsync();
+            var companies = await _api.GetRecruiterCompaniesAsync(this.subscriber.SubscriberGuid.Value);
+            int PostingExpirationInDays = int.Parse(_configuration["CareerCircle:PostingExpirationInDays"]);
+            CreateJobPostingViewModel model = new CreateJobPostingViewModel()
+            {
+                States = states.Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.Name,
+                    Selected = s.StateGuid == this.subscriber?.State?.StateGuid
+                }),
+
+                Industries = industries.Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.IndustryGuid.ToString()
+                }),
+                JobCategories = jobCategories.Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.JobCategoryGuid.ToString()
+                }),
+                ExperienceLevels = experienceLevels.Select(s => new SelectListItem()
+                {
+                    Text = s.DisplayName,
+                    Value = s.ExperienceLevelGuid.ToString()
+                }),
+                EducationLevels = educationLevels.Select(s => new SelectListItem()
+                {
+                    Text = s.Level,
+                    Value = s.EducationLevelGuid.ToString()
+                }),
+                EmploymentTypes = employmentTypes.Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.EmploymentTypeGuid.ToString()
+                }),
+                CompensationTypes = compensationType.Select(s => new SelectListItem()
+                {
+                    Text = s.CompensationTypeName,
+                    Value = s.CompensationTypeGuid.ToString()
+                }),
+                SecurityClearances = SecurityClearances.Select(s => new SelectListItem()
+                {
+                    Text = s.Name,
+                    Value = s.SecurityClearanceGuid.ToString()
+                }),
+                RecruiterCompanies = companies.Select(s => new SelectListItem()
+                {
+                    Text = s.Company.CompanyName,
+                    Value = s.Company.CompanyGuid.ToString()
+                }),
+
+                PostingExpirationDate = DateTime.Now.AddDays(PostingExpirationInDays),
+                ApplicationDeadline = DateTime.Now.AddDays(PostingExpirationInDays)
+            };
+
+            return model;
+
+        }
+
+
+        #endregion
+
+
     }
 }

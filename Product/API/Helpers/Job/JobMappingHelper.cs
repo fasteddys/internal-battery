@@ -94,10 +94,12 @@ namespace UpDiddyApi.Helpers.Job
         static public List<JobQueryFacetDto> MapFacets(IConfiguration config, JobQueryDto jobQuery, CloudTalentSolution.SearchJobsResponse searchJobsResponse)
         {
             List<JobQueryFacetDto> rVal = new List<JobQueryFacetDto>();
-
+            
+            string JobIndustryUrlPrefix = config["CloudTalent:JobIndustryUrlPrefix"].ToString();
+            string JobLocationUrlPrefix = config["CloudTalent:JobLocationUrlPrefix"].ToString();
             string TopLevelDomain = config["CloudTalent:JobControllerUrl"].ToString();
-            string IndustryUrl = JobUrlHelper.GetDefaultIndustryUrl(jobQuery);
-            string LocationtUrl = JobUrlHelper.GetDefaultLocationUrl(jobQuery);
+            string IndustryUrl = JobUrlHelper.GetDefaultIndustryUrl(JobIndustryUrlPrefix,jobQuery);
+            string LocationtUrl = JobUrlHelper.GetDefaultLocationUrl(JobLocationUrlPrefix,jobQuery);
 
             // Map simple histogram results 
             foreach (CloudTalentSolution.HistogramResult hr in searchJobsResponse.HistogramResults.SimpleHistogramResults)

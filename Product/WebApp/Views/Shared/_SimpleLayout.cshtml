@@ -1,0 +1,116 @@
+﻿@using System.Globalization
+@using Microsoft.AspNetCore.Http.Features
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.AspNetCore.Mvc.Localization
+@using System.Web
+@using Microsoft.AspNetCore.Http;
+@using Microsoft.AspNetCore.Mvc
+@inject IViewLocalizer Localizer
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration;
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-P78FCL3');
+    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareerCircle</title>
+    <link rel="shortcut icon" href="~/images/Icon-20.png" />
+    <environment names="Development">
+        <link rel="stylesheet" type="text/css" href="~/css/site.dev.css" asp-append-version="true" />
+    </environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" type="text/css" href="~/css/site.min.css" asp-append-version="true" />
+    </environment>
+    <meta property="og:title" content="CareerCircle">
+    <meta property="og:description" content="Preparing the workforce of today with the opportunities of tomorrow.">
+    <meta property="og:image" content="/images/cc_logo.png">
+    <meta property="og:url" content="https://@Context.Request.Host@Context.Request.Path" />
+</head>
+<body>
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P78FCL3"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <nav class="navbar cc-navbar fixed-top navbar-expand-lg navbar-light bg-white">
+        <div class="container">
+            <a class="navbar-brand" href="~/Home/Index">
+                <img src="~/images/cc_logo.png" asp-append-version="true" />
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#NavigationItems" aria-controls="NavigationItems" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="NavigationItems">
+                <ul class="navbar-nav ml-auto">
+
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Offers"><span class="badge badge-success">new</span> Offers</a>
+                    </li>
+                    @*
+                            <li class="nav-item">
+                            <a class="nav-link" href="#career-training-categories"><span class="badge badge-success">new</span> Courses</a>
+                        </li>
+                    *@
+                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" id="MyCircleHeaderButton" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user-circle" aria-hidden="true"></i> My Circle</a>
+                            <div class="dropdown-menu" aria-labelledby="MyCircleHeaderButton">
+                                <a class="dropdown-item" asp-controller="Home" asp-action="Profile">My Account</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a>
+                            </div>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item brand-button-light"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignIn">Login/Sign Up</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+    @{
+        string CampaignOffers = HttpContextAccessor.HttpContext.Session.GetString("CampaignOffers");
+        if (string.IsNullOrEmpty(CampaignOffers) == false)
+        {
+            <div class="alert alert-primary mb-0 rebate-alert" role="alert">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md ">
+                            <div class="link-wrapper"> @Html.Raw(CampaignOffers) </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    @RenderBody()
+    @await Html.PartialAsync("_Footer")
+    <script type="text/javascript">
+        var API_URL = "@Configuration["Api:ApiUrl"]";
+        var SIGNALR_URL = "@Configuration["SignalR:HubUrl"]";
+    </script>
+    <environment names="Development">
+        <script type="text/javascript" src="~/js/site.dev.js" asp-append-version="true"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script type="text/javascript" src="~/js/site.min.js" asp-append-version="true"></script>
+    </environment>
+    <script type="text/javascript" src="~/js/bundle.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", false)
+</body>
+</html>

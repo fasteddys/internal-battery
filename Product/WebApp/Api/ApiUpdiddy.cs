@@ -34,6 +34,7 @@ namespace UpDiddy.Api
         public AzureAdB2COptions AzureOptions { get; set; }
         private IHttpContextAccessor _contextAccessor { get; set; }
         public IDistributedCache _cache { get; set; }
+        public HttpContext _currentContext { get; set; }
 
         #region Constructor
         public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache)
@@ -46,7 +47,7 @@ namespace UpDiddy.Api
             _ApiBaseUri = _configuration["Api:ApiUrl"];
             _HttpClientFactory = httpClientFactory;
             _cache = cache;
-
+            _currentContext = contextAccessor.HttpContext;
         }
         #endregion
 
@@ -105,20 +106,25 @@ namespace UpDiddy.Api
             // Retrieve the token with the specified scopes
             var scope = AzureOptions.ApiScopes.Split(' ');
             string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureOptions.ClientId, AzureOptions.Authority, AzureOptions.RedirectUri, new ClientCredential(AzureOptions.ClientSecret), userTokenCache, null);
-            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureOptions.Authority, false);
+            IConfidentialClientApplication app = ConfidentialClientApplicationBuilder
+                .Create(AzureOptions.ClientId)
+                .WithB2CAuthority(AzureOptions.Authority)
+                .WithClientSecret(AzureOptions.ClientSecret)
+                .Build();
+            new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).EnablePersistence(app.UserTokenCache);
+            var accounts = await app.GetAccountsAsync();
+
+            AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();
             return result;
         }
 
         private async Task<HttpClient> AddBearerTokenAsync(HttpClient client)
         {
             if (_contextAccessor.HttpContext.User.Identity.IsAuthenticated)
-            {
+            { 
                 AuthenticationResult authResult = await GetBearerTokenAsync();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
             }
-
             return client;
         }
         #endregion
@@ -508,16 +514,16 @@ namespace UpDiddy.Api
 
         }
 
-        public async Task<ContactDto> ContactAsync(Guid contactGuid)
+        public async Task<ContactDto> ContactAsync(Guid partnerContactGuid)
         {
-            string cacheKey = $"Contact{contactGuid}";
+            string cacheKey = $"Contact{partnerContactGuid}";
             ContactDto rval = GetCachedValue<ContactDto>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
-                rval = await _Contact(contactGuid);
+                rval = await _Contact(partnerContactGuid);
                 SetCachedValue<ContactDto>(cacheKey, rval);
             }
             return rval;
@@ -593,12 +599,12 @@ namespace UpDiddy.Api
         #endregion
 
         #region Subscriber
-        public async Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid contactGuid, SignUpDto signUpDto)
+        public async Task<BasicResponseDto> UpdateSubscriberContactAsync(Guid partnerContactGuid, SignUpDto signUpDto)
         {
             // encrypt password before sending to API
             signUpDto.password = Crypto.Encrypt(_configuration["Crypto:Key"], signUpDto.password);
 
-            return await PutAsync<BasicResponseDto>(string.Format("subscriber/contact/{0}", contactGuid.ToString()), signUpDto);
+            return await PutAsync<BasicResponseDto>(string.Format("subscriber/contact/{0}", partnerContactGuid.ToString()), signUpDto);
         }
 
         public async Task<BasicResponseDto> ExpressUpdateSubscriberContactAsync(SignUpDto signUpDto)
@@ -629,7 +635,29 @@ namespace UpDiddy.Api
             return await PostAsync<BasicResponseDto>(string.Format("job"), jobPosting);
         }
 
+        public async Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid) 
+        {
+                return await GetAsync<List<JobPostingDto>>(string.Format("job/subscriber/{0}", subscriberGuid.ToString()));
+        }
 
+
+        public async Task<JobPostingDto> GetJobPostingByGuid(Guid jobPostingGuid)
+        {
+            // Todo enhance api interface to eliminate catching exceptions - one approach would be to enhance the BasicResponseDto object 
+            // with a ResponseObject property which would allow the api to always return a BasicResponseDto object.  The caller code could the check
+            // the status of the returned BasicResponseDto and if its 200 then deserialize the ResponseObject into the desired type.  e.g.
+            //  return JsonConvert.DeserializeObject<JobPostingDto>(BasicResponseDto.ResponseObject.ToString());
+            try
+            {
+               return await GetAsync<JobPostingDto>(string.Format("job/{0}", jobPostingGuid.ToString()));                 
+            }
+            catch
+            {
+                return null;
+            };
+                            
+          
+        }
 
         public async Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid)
         {
