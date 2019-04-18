@@ -1,0 +1,45 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddy.ViewModels.ButterCMS
+@using UpDiddyLib.Dto
+
+@model TopicsLandingPageViewModel
+
+
+
+
+
+<div class="topics-container">
+    <div class="topics-hero-container">
+        @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
+        {
+            BackgroundImage = Model.HeroImage,
+            Elements = new List<string>()
+            {
+                "",
+                "<h1><strong>" + Model.HeroHeader + "</strong></h1><br /><p>" + Html.Raw(Model.HeroDescription) + "</p>"
+            }
+        })
+    </div>
+    <div class="row topics-courses" id="career-training-categories">
+        <div class="container">
+            <div class="row course-categories">
+                <div class="col-12 career-training-header-container">
+                    <span class="section-heading f-color-primary">
+                        <img src="@Model.TopicsVendorLogo" style="width: 200px" />
+                    </span>
+                </div>
+                @foreach (TopicLandingViewModel topic in Model.Topics)
+                {
+                    <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 card-column">
+                        <a class="card-hyperlink-container" href="@(topic.Url)">
+                            <div class="card">
+                                <img class="card-img-top" src="@topic.Image" alt="Card image cap">
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

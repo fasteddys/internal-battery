@@ -38,7 +38,7 @@
                             <div class="hero-title hero-bold">Join <span class="f-color-primary">CareerCircle<sup>TM</sup></span> Today!</div>
                             <div class="hero-description pb-4">
                                 <p>
-                                    CareerCircle helps you navigate the digital career experience, by aligning you career goals with upskilling, mentoring, and coaching opportunities.
+                                    CareerCircle helps you navigate the digital career experience, by aligning your career goals with upskilling, mentoring, and coaching opportunities.
                                 </p>
                                 <p>
                                     We’re in the business of helping YOU succeed. Whether you’re missing relevant skills, lack a deep work history, or just want to reskill for future opportunities, gaining newly developed and acquired skills is a powerful way to propel your career forward. And we will be there to help you all the way.
@@ -55,49 +55,6 @@
                         <img class="d-md-block d-none hero-my-circle" src="~/images/mentoring_careerops_upskilling.png" />
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    <div class="row home-courses" id="career-training-categories">
-        <div class="container">
-            <div class="row course-categories">
-                <div class="col-md-6 career-training-header-container">
-                    <span class="section-heading f-color-primary">
-                        Career Training Categories
-                    </span>
-                </div>
-                <div class="col-md-6">
-                    <!--
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Course Search">
-                        <div class="input-group-append">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                        </div>
-                    </div>-->
-                </div>
-                @foreach (TopicDto topic in Model.Topics)
-                {
-                    string DescriptionBlurb = topic.Description;
-                    if (DescriptionBlurb.Length > 130)
-                    {
-                        DescriptionBlurb = DescriptionBlurb.Substring(0, 130) + "...";
-
-                    }
-                    <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 card-column">
-                        <a class="card-hyperlink-container" href="/Topic/@(topic.Slug)">
-                            <div class="card">
-                                <img class="card-img-top" src="@(Model.ImageUrl + topic.DesktopImage)" alt="Card image cap">
-                                @*<div class="card-body">
-                                    <h5 class="card-title">@topic.Name</h5>
-                                    <p class="card-text fade-text">@DescriptionBlurb</p>
-                                    <!--<div class="card-footer-cc">
-                                        <a href="/Topic/@(topic.Slug)" class="view-courses-link">View Courses <i class="fas fa-angle-double-right"></i></a>
-                                    </div>-->
-                                </div>*@
-                            </div>
-                        </a>
-                    </div>
-                }
             </div>
         </div>
     </div>

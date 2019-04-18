@@ -5,6 +5,8 @@
     .cc-content-band {
         position: relative;
         padding: 2rem;
+        background-size:cover;
+        background-position: top;
 
         .cc-content-band-header {
             font-size: 2rem;
@@ -22,6 +24,8 @@
                 }
             }
         }
+
+
     }
 }
 

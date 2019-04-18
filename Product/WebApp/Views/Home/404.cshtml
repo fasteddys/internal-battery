@@ -1,20 +1,15 @@
-﻿<div class="error-container">
-    <div class="row error-message-container">
-        <div class="col-md-12">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="error-hero">
-                            <div class="error-header">
-                                Page not found.
-                            </div>
-                            <div class="error-sub-header">
-                                The requested URL <span>@ViewBag.OriginalPath</span> was not found.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+﻿@{
+    Layout = "_SimpleLayout";
+}
+<div class="error-container">
+    <div class="row">
+        <div class="col-md-12 error-title">
+            Page not found
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 error-detail">
+            The requested URL <span>@ViewBag.OriginalPath</span> was not found.
         </div>
     </div>
 </div>

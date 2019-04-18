@@ -58,5 +58,15 @@ namespace UpDiddyApi.Controllers
 
             return Ok(new BasicResponseDto { StatusCode = 200, Description = "Success!" });
         }
+
+        [Authorize]
+        [HttpPost]
+        [Route("scan")]
+        public async Task<IActionResult> Scan()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _subscriberService.QueueScanResumeJobAsync(subscriberGuid);
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Success!" });
+        }
     }
 }

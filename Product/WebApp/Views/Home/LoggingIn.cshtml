@@ -1,10 +1,14 @@
-﻿@*
+﻿@{
+    Layout = "_SimpleLayout";
+}
+
+@*
     This is a utility landing page introduced to handle the Session
     issue for iOS devices. We're sending this page to login.microsoft.com
     as the redirect URL, and then redirecting to our login page from here.
 
     iOS HTTPContext implementation appears to create a new Session object
-    per domain, so the HTTPContext used to call the Profile page has to 
+    per domain, so the HTTPContext used to call the Profile page has to
     originate from our app, not login.microsoft.
 *@
 <script>
@@ -13,18 +17,16 @@
         window.location.href = "/Home/ProfileLogin";
     });
 </script>
-<div class="logging-in-page-conatiner">
-    <div class="row page-hero">
-        <div class="col-12">
-            <div class="container">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="logging-in-hero hero-header">
-                            <span class="logging-in-text">Logging you in...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+<div class="simple-container">
+    <div class="row">
+        <div class="col-md-12 simple-title">
+            Logging you in
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 simple-detail">
+            You will be redirected to your profile page momentarily...
         </div>
     </div>
 </div>
