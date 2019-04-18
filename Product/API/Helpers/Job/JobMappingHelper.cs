@@ -466,13 +466,16 @@ namespace UpDiddyApi.Helpers.Job
             };
             rVal.Add("ThirdPartyApply", ThirdPartyApply);
 
-            // Add posting thirdparty url so it can be returned as part of the job        
-            CloudTalentSolution.CustomAttribute ThirdPartyApplyUrl = new CloudTalentSolution.CustomAttribute()
+            if ( jobPosting.ThirdPartyApplicationUrl != null )
             {
-                Filterable = true,
-                StringValues = new List<string>() { jobPosting.ThirdPartyApplicationUrl }
-            };
-            rVal.Add("ThirdPartyApplyUrl", ThirdPartyApplyUrl);
+                // Add posting thirdparty url so it can be returned as part of the job        
+                CloudTalentSolution.CustomAttribute ThirdPartyApplyUrl = new CloudTalentSolution.CustomAttribute()
+                {
+                    Filterable = true,
+                    StringValues = new List<string>() { jobPosting.ThirdPartyApplicationUrl }
+                };
+                rVal.Add("ThirdPartyApplyUrl", ThirdPartyApplyUrl);
+            }
 
             // Add telecommute percent as a long so it can be queried with boolean <= logic   
             CloudTalentSolution.CustomAttribute TelecommutePercentage = new CloudTalentSolution.CustomAttribute()
@@ -500,40 +503,60 @@ namespace UpDiddyApi.Helpers.Job
                 rVal.Add("Skills", Skills);
             }
             // Index Country 
-            CloudTalentSolution.CustomAttribute Country = new CloudTalentSolution.CustomAttribute()
+            if ( jobPosting.Country != null )
             {
-                Filterable = true,
-                StringValues = new List<string>() { jobPosting.Country }
-            };
-            rVal.Add("Country", Country);
+                CloudTalentSolution.CustomAttribute Country = new CloudTalentSolution.CustomAttribute()
+                {
+                    Filterable = true,
+                    StringValues = new List<string>() { jobPosting.Country }
+                };
+                rVal.Add("Country", Country);
+            }
+            
             // Index Province 
-            CloudTalentSolution.CustomAttribute Province = new CloudTalentSolution.CustomAttribute()
+            if ( jobPosting.Province != null )
             {
-                Filterable = true,
-                StringValues = new List<string>() { jobPosting.Province }
-            };
-            rVal.Add("Province", Province);
+                CloudTalentSolution.CustomAttribute Province = new CloudTalentSolution.CustomAttribute()
+                {
+                    Filterable = true,
+                    StringValues = new List<string>() { jobPosting.Province }
+                };
+                rVal.Add("Province", Province);
+            }
+            
             // Index Postal code  
-            CloudTalentSolution.CustomAttribute PostalCode = new CloudTalentSolution.CustomAttribute()
+            if ( jobPosting.PostalCode != null )
             {
-                Filterable = true,
-                StringValues = new List<string>() { jobPosting.PostalCode }
-            };
-            rVal.Add("PostalCode", PostalCode);
+                CloudTalentSolution.CustomAttribute PostalCode = new CloudTalentSolution.CustomAttribute()
+                {
+                    Filterable = true,
+                    StringValues = new List<string>() { jobPosting.PostalCode }
+                };
+                rVal.Add("PostalCode", PostalCode);
+            }
+            
             // Index City
-            CloudTalentSolution.CustomAttribute City = new CloudTalentSolution.CustomAttribute()
+            if ( jobPosting.City != null )
             {
-                Filterable = true,
-                StringValues = new List<string>() { jobPosting.City }
-            };
-            rVal.Add("City", City);
+                CloudTalentSolution.CustomAttribute City = new CloudTalentSolution.CustomAttribute()
+                {
+                    Filterable = true,
+                    StringValues = new List<string>() { jobPosting.City }
+                };
+                rVal.Add("City", City);
+            }
+            
             // Index street address 
-            CloudTalentSolution.CustomAttribute StreetAddress = new CloudTalentSolution.CustomAttribute()
+            if ( jobPosting.StreetAddress != null )
             {
-                Filterable = true,
-                StringValues = new List<string>() { jobPosting.StreetAddress }
-            };
-            rVal.Add("StreetAddress", StreetAddress);
+                CloudTalentSolution.CustomAttribute StreetAddress = new CloudTalentSolution.CustomAttribute()
+                {
+                    Filterable = true,
+                    StringValues = new List<string>() { jobPosting.StreetAddress }
+                };
+                rVal.Add("StreetAddress", StreetAddress);
+            }
+            
             return rVal; 
         }
 

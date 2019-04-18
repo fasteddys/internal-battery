@@ -230,7 +230,7 @@ namespace UpDiddyApi.Controllers
                 jobApplication.JobPostingId = jobPosting.JobPostingId;
                 jobApplication.SubscriberId = subscriber.SubscriberId;
                 jobApplication.CoverLetter = jobApplicationDto.CoverLetter == null ? string.Empty : jobApplicationDto.CoverLetter;
-                _db.jobApplication.Add(jobApplication);
+                _db.JobApplication.Add(jobApplication);
                 _db.SaveChanges();
     
                 // Send recruiter email alerting them to application

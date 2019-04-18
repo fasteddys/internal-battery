@@ -1,0 +1,60 @@
+﻿@media (min-width: 0px )
+{
+    .create-job-posting-container {
+
+        .selectize-input.focus, .selectize-input {
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            padding: 0px;
+        }
+
+        .selectize-dropdown {
+            border-color: transparent;
+            box-shadow: none;
+            left: 0px !important;
+            padding-left: 0px;
+    
+        }
+
+        
+            .selectize-dropdown-content {
+                background-color: white;
+                overflow-y: auto;
+                overflow-x: hidden;
+                max-height: 200px;
+                padding-left: 0px;
+                margin-left: 0px;
+                left: 0px;
+            }
+
+            .selectize-dropdown-content .option {
+                background-color: white;
+                overflow-y: auto;
+                overflow-x: hidden;
+                max-height: 200px;
+            }
+
+        
+
+        .selectize-dropdown-content .active {
+            background-color: #f5fafd;
+        }
+
+        .selectize-control.multi .selectize-input > div.item, .selectize-control.multi .selectize-input > div.item.active {
+            margin-bottom: 9px;
+        }
+
+        .selectize-control.multi .selectize-input.has-items {
+            padding-top: 0px;
+        }
+        
+
+        .fa, .fas {
+            font-size: 14px;
+            margin-left: 5px;
+        }
+    }
+
+
+}

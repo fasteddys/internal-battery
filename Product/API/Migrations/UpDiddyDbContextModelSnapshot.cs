@@ -1268,7 +1268,7 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("SubscriberId");
 
-                    b.ToTable("jobApplication");
+                    b.ToTable("JobApplication");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.JobCategory", b =>
@@ -2076,6 +2076,39 @@ namespace UpDiddyApi.Migrations
                         .IsUnique();
 
                     b.ToTable("RebateType");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.RecruiterCompany", b =>
+                {
+                    b.Property<int>("RecruiterCompanyId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CompanyId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<int>("IsStaff");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<Guid>("RecruiterCompanyGuid");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("RecruiterCompanyId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("RecruiterCompany");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.RedemptionStatus", b =>
@@ -3266,6 +3299,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.RedemptionStatus", "RedemptionStatus")
                         .WithMany()
                         .HasForeignKey("RedemptionStatusId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.RecruiterCompany", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")

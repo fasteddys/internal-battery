@@ -4,6 +4,9 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
+
+    public enum JobPostingStatus { Draft = 0, Active, Expired };
+
     public class JobPostingDto : BaseDto
     {       
         public Guid? JobPostingGuid { get; set; }
@@ -41,7 +44,7 @@ namespace UpDiddyLib.Dto
 
         public int TelecommutePercentage { get; set; }
         public Decimal Compensation { get; set; }
-        public int? CompensationTypeId { get; set; }
+ 
 
         public CompensationTypeDto CompensationType { get; set; }
         public Boolean ThirdPartyApply { get; set; }

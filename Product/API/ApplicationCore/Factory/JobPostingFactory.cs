@@ -49,6 +49,30 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// Get a job posting by guid
         /// </summary>       
         /// <returns></returns>        
+        public static List<JobPosting> GetJobPostingsForSubscriber(UpDiddyDbContext db, Guid guid)
+        {
+            return db.JobPosting
+                .Include(c => c.Company)
+                .Include(c => c.Industry)
+                .Include(c => c.SecurityClearance)
+                .Include(c => c.EmploymentType)
+                .Include(c => c.ExperienceLevel)
+                .Include(c => c.EducationLevel)
+                .Include(c => c.CompensationType)
+                .Include(c => c.JobCategory)
+                .Include(c => c.Subscriber)
+                .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid == guid)
+                .OrderByDescending( s => s.CreateDate)
+                .ToList();
+        }
+
+
+
+
+        /// <summary>
+        /// Get a job posting by guid
+        /// </summary>       
+        /// <returns></returns>        
         public static JobPosting GetJobPostingByGuid(UpDiddyDbContext db, Guid guid)
         {
             return db.JobPosting
@@ -222,6 +246,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <param name="jobPostingDto"></param>
         public static void SavePostingSkills(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
+
+            if (jobPostingDto.Skills == null)
+                return;
+
             foreach ( SkillDto skillDto in jobPostingDto.Skills)
             {
                 JobPostingSkillFactory.Add(db, jobPosting.JobPostingId, skillDto.SkillGuid.Value);

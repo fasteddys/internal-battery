@@ -60,6 +60,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<EducationLevel, EducationLevelDto>().ReverseMap();
             CreateMap<JobCategory, JobCategoryDto>().ReverseMap();
             CreateMap<JobApplication, JobApplicationDto>().ReverseMap();
+            CreateMap<RecruiterCompany, RecruiterCompanyDto>().ReverseMap();
 
 
             CreateMap<JobApplication, JobApplicationApplicantViewDto>()

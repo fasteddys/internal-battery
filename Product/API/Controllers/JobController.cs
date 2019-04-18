@@ -61,6 +61,32 @@ namespace UpDiddyApi.Controllers
 
         #region job crud 
 
+        /// <summary>
+        /// Get all job postings for a subscriber 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Authorize(Policy = "IsRecruiterOrAdmin")]
+        [Route("api/[controller]/subscriber/{subscriberGuid}")]
+        public IActionResult GetJobsForSubscriber(Guid subscriberGuid)
+        {
+
+            Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if ( subscriberGuid == null ||   subscriberGuid != subsriberGuidClaim)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting can only be viewed by their owner" });
+
+            List<JobPosting> jobPostings = JobPostingFactory.GetJobPostingsForSubscriber(_db, subscriberGuid);
+         
+            return Ok(_mapper.Map<List<JobPostingDto>>(jobPostings));
+        }
+
+
+        /// <summary>
+        /// Delete a job posting 
+        /// </summary>
+        /// <param name="jobPostingGuid"></param>
+        /// <returns></returns>
         [HttpDelete]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         [Route("api/[controller]/{jobPostingGuid}")]
@@ -93,6 +119,11 @@ namespace UpDiddyApi.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Update a job posting 
+        /// </summary>
+        /// <param name="jobPostingDto"></param>
+        /// <returns></returns>
         [HttpPut]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         [Route("api/[controller]")]
@@ -154,7 +185,11 @@ namespace UpDiddyApi.Controllers
         }
 
 
-
+        /// <summary>
+        /// Create a job posting 
+        /// </summary>
+        /// <param name="jobPostingDto"></param>
+        /// <returns></returns>
         [HttpPost]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         [Route("api/[controller]")]
@@ -219,7 +254,11 @@ namespace UpDiddyApi.Controllers
             }
         }
 
-        // This is not working because entitry framework is trying to save the related objects 
+       /// <summary>
+       /// Copy a job posting 
+       /// </summary>
+       /// <param name="jobPostingGuid"></param>
+       /// <returns></returns>
         [HttpPost]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         [Route("api/[controller]/{jobPostingGuid}")]
@@ -273,17 +312,20 @@ namespace UpDiddyApi.Controllers
 
         #region job search 
 
-
+        /// <summary>
+        /// Get a specific job posting 
+        /// </summary>
+        /// <param name="jobPostingGuid"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("api/[controller]/{jobPostingGuid}")]
         public IActionResult GetJob(Guid jobPostingGuid)
         {
-
             JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid);
-            if ( jobPosting == null )
+           if ( jobPosting == null )
                 return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "JobPosting not found" });
-
-            return Ok(_mapper.Map<JobPostingDto>(jobPosting) );
+       
+            return Ok(_mapper.Map<JobPostingDto>(jobPosting));
         }
 
         [HttpGet]
