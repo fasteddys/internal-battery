@@ -286,6 +286,12 @@
             }
         }
 
+        .fa {
+            &.fa-edit {
+                color: $color-primary;
+            }
+        }
+
         &.table-primary {
             thead {
                 tr {
