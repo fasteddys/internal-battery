@@ -1,0 +1,88 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model IEnumerable<JobPostingDto>
+
+
+ 
+
+
+        <div class="container-fluid bg-color-primary">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md">
+                        <ul class="nav nav-talent">
+                            <li class="nav-link">
+                                <a class="text-white" href="/Talent/Subscribers">Subscribers</a>
+                            </li>
+                            <li class="nav-link" href="#">
+                                <a class="text-white" href="#">Analytics</a>
+                            </li>
+                            <li class="nav-link active">
+                                <a class="text-white" href="#">My Job Postings</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container talent">
+            <div class="row">
+                <div class="col-sm mt-3 mb-3">
+                    <div class="form-inline">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <a href="/talent/createjobposting" class="btn btn-info my-2" role="button">Add Job Posting</a>
+            </div>
+                <div class="row">
+                    <div class="col-sm">
+                        @(Html
+                                                    .Grid(Model)
+                                                    .Css("admin-grid")
+                                                    .Build(columns =>
+                                                    {
+                                                        columns.Add(model => model.Title).Sortable(true).Titled("Posting Title");
+                                                        columns.Add(model => model.CreateDate).Sortable(true).Titled("Date Created");
+                                                        columns.Add(model => model.PostingExpirationDateUTC).Sortable(true).Titled("Expiration Date");
+
+                                                        columns.Add(model => $"<a href=\"jobposting/{model.JobPostingGuid}/edit\"><i class=\"far fa-edit\"></i></a>").Titled("Edit").Encoded(false).AppendCss("text-center");
+                                                    })
+                                                    .AppendCss("table table-primary table-striped")
+                                                    .Empty("No data found")
+                                                    .Pageable(pager =>
+                                                    {
+                                                        pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
+                                                        pager.ShowPageSizes = true;
+                                                        pager.RowsPerPage = 10;
+                                                        pager.CssClasses = "admin-pager";
+                                                    })
+                                                    .Filterable()
+                                                    .AppendCss("list-grid")
+
+                        )
+                    </div>
+                </div>
+                @section Scripts{
+                    <script type="text/javascript">
+
+
+                        $(document).ready(function () {
+
+                        });
+
+
+                        $(".admin-nav-campaign-stats").addClass("active");
+                        window.onload = function () {
+                            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                        }
+                    </script>
+                    <style>
+                        .list-grid {
+                            font-size: 10px;
+                        }
+                    </style>}
+            </div>

@@ -8,6 +8,35 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class CompensationTypeFactory
     {
+
+        public static long AnnualCompensation( decimal compensation, CompensationType compensationType)
+        {
+            long rVal = (long)compensation;
+
+            switch ( compensationType.CompensationTypeName.ToLower() )
+            {
+                case "hourly" :
+                    rVal *= 2080;
+                    break;
+                case "weekly":
+                    rVal *= 52;
+                    break;
+                case "monthly":
+                    rVal *= 12;
+                    break;
+                default:
+                    break;
+            }             
+            return rVal;            
+        }
+
+        public static CompensationType GetCompensationTypeByGuid(UpDiddyDbContext db, Guid CompensationTypeGuid)
+        {
+            return db.CompensationType
+                .Where(s => s.IsDeleted == 0 && s.CompensationTypeGuid == CompensationTypeGuid)
+                .FirstOrDefault();
+        }
+
         public static CompensationType  GetCompensationTypeByName(UpDiddyDbContext db, string CompensationTypeName)
         {
             return db.CompensationType

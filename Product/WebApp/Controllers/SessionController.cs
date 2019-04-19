@@ -12,6 +12,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using System;
 
 namespace UpDiddy.Controllers
 {
@@ -106,13 +107,20 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> TokenAsync()
         {
             // Retrieve the token with the specified scopes
+            // Retrieve the token with the specified scopes
             var scope = AzureAdB2COptions.ApiScopes.Split(' ');
             string signedInUserID = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            TokenCache userTokenCache = new MSALSessionCache(signedInUserID, HttpContext).GetMsalCacheInstance();
-            ConfidentialClientApplication cca = new ConfidentialClientApplication(AzureAdB2COptions.ClientId, AzureAdB2COptions.Authority, AzureAdB2COptions.RedirectUri, new ClientCredential(AzureAdB2COptions.ClientSecret), userTokenCache, null);
-            AuthenticationResult result = await cca.AcquireTokenSilentAsync(scope, cca.Users.FirstOrDefault(), AzureAdB2COptions.Authority, false);
+            IConfidentialClientApplication app = ConfidentialClientApplicationBuilder
+                .Create(AzureAdB2COptions.ClientId)
+                .WithB2CAuthority(AzureAdB2COptions.Authority)
+                .WithRedirectUri(AzureAdB2COptions.RedirectUri)
+                .WithClientSecret(AzureAdB2COptions.ClientSecret)
+                .Build();
+            new MSALSessionCache(signedInUserID, HttpContext).EnablePersistence(app.UserTokenCache);
+            var accounts = await app.GetAccountsAsync();
 
-            return Ok(JsonConvert.SerializeObject(result));
+            AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();
+            return Ok(new { accessToken = result.AccessToken, expiresOn = result.ExpiresOn, uniqueId = result.UniqueId });
         }
     }
 }

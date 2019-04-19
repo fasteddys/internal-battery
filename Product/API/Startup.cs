@@ -42,6 +42,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using UpDiddyApi.Helpers.SignalR;
 using UpDiddyApi.Authorization.APIGateway;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi
 {
@@ -208,6 +209,8 @@ namespace UpDiddyApi
             services.AddHttpClient(Constants.HttpDeleteClientName)
               .AddPolicyHandler(ApiDeletePolicy);
 
+
+            #region Add Custom Services
             services.AddTransient<ISovrenAPI, Sovren>();
             services.AddHttpClient<ISovrenAPI, Sovren>();
             services.AddTransient<ICloudStorage, AzureBlobStorage>();
@@ -218,6 +221,8 @@ namespace UpDiddyApi
             services.AddTransient<IB2CGraph, B2CGraphClient>();
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
 
+            services.AddScoped<ISubscriberService, SubscriberService>();
+            #endregion
 
             // Configure SnapshotCollector from application settings
             // TODO Uncomment test 

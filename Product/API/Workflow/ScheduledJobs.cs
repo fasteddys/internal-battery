@@ -21,12 +21,15 @@ using UpDiddyApi.Helpers.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using UpDiddyApi.ApplicationCore.Services;
+using UpDiddyApi.Helpers.Job;
 
 namespace UpDiddyApi.Workflow
 {
     public class ScheduledJobs : BusinessVendorBase
     {
         ICloudStorage _cloudStorage;
+        ISysEmail _sysEmail;
 
         public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, IHubContext<ClientHub> hub, IDistributedCache distributedCache, ICloudStorage cloudStorage)
         {
@@ -41,8 +44,33 @@ namespace UpDiddyApi.Workflow
             _cloudStorage = cloudStorage;
             _hub = hub;
             _cache = distributedCache;
+            _sysEmail = sysEmail;
         }
 
+        #region Marketing
+
+        public async Task<bool> SendWelcomeEmail(Guid partnerContactGuid, string firstName, string lastName, string email)
+        {
+            // retrieve the ppl campaign
+            var pplCampaign = _db.Campaign.Where(c => c.Name == "PPL Lead Gen" && c.IsDeleted == 0).FirstOrDefault();
+
+            // dynamic data should include: view name for url, campaign guid, first/last name, partner contact guid
+            var templateData = new
+            {
+                viewName = "Welcome",
+                campaignGuid = pplCampaign.CampaignGuid.ToString(),
+                partnerContactGuid = partnerContactGuid,
+                firstName = firstName,
+                lastName = lastName
+            };
+
+            // send templated welcome email that links to custom landing page
+            _sysEmail.SendTemplatedEmailAsync(email, _configuration["SysEmail:TemplateIds:LeadIntake-WelcomeEmail"].ToString(), templateData, null);
+
+            return true;
+        }
+
+        #endregion
 
         #region Woz
 
@@ -232,16 +260,18 @@ namespace UpDiddyApi.Workflow
         {
             Guid parsedSubscriberGuid;
             Guid.TryParse(SubscriberGuid, out parsedSubscriberGuid);
-            var contact = _db.Contact
-                .Include(co => co.Subscriber)
-                .Where(co => co.IsDeleted == 0 && co.Subscriber.SubscriberGuid.HasValue && co.Subscriber.SubscriberGuid.Value == parsedSubscriberGuid)
+            
+            var partnerContact = _db.PartnerContact
+                .Include(pc => pc.Contact).ThenInclude(c => c.Subscriber)
+                .Where(pc => pc.IsDeleted == 0 && pc.Contact.IsDeleted == 0 && pc.Contact.Subscriber.SubscriberGuid.HasValue && pc.Contact.Subscriber.SubscriberGuid.Value == parsedSubscriberGuid)
+                .OrderByDescending(pc => pc.CreateDate)
                 .FirstOrDefault();
 
             // if there is an associated contact record for this subscriber and a campaign association for the enrollment, record that they completed the course
-            if (contact != null && e.CampaignId.HasValue)
+            if (partnerContact != null && e.CampaignId.HasValue)
             {
-                var existingCourseCompletionAction = _db.ContactAction
-                    .Where(ca => ca.ContactId == contact.ContactId && ca.CampaignId == e.CampaignId && ca.ActionId == 5)
+                var existingCourseCompletionAction = _db.PartnerContactAction
+                    .Where(pca => pca.PartnerContactId == partnerContact.PartnerContactId && pca.CampaignId == e.CampaignId && pca.ActionId == 5)
                     .FirstOrDefault();
 
                 if (existingCourseCompletionAction != null)
@@ -254,15 +284,15 @@ namespace UpDiddyApi.Workflow
                 {
                     // create if the action does not already exist, and associate it with the highest phase                   
                     // of the campaign that the user has interacted with and assume that is what led them to buy
-                    CampaignPhase lastCampaignPhaseInteraction = CampaignPhaseFactory.GetContactsLastPhaseInteraction(_db, e.CampaignId.Value, contact.ContactId);
+                    CampaignPhase lastCampaignPhaseInteraction = CampaignPhaseFactory.GetContactsLastPhaseInteraction(_db, e.CampaignId.Value, partnerContact.ContactId);
                     if (lastCampaignPhaseInteraction != null)
                     {
-                        _db.ContactAction.Add(new ContactAction()
+                        _db.PartnerContactAction.Add(new PartnerContactAction()
                         {
                             ActionId = 5, // todo: this should not be a hard-coded reference to the PK
                             CampaignId = e.CampaignId.Value,
-                            ContactActionGuid = Guid.NewGuid(),
-                            ContactId = contact.ContactId,
+                            PartnerContactActionGuid = Guid.NewGuid(),
+                            PartnerContactId = partnerContact.PartnerContactId,
                             CreateDate = DateTime.UtcNow,
                             CreateGuid = Guid.Empty,
                             IsDeleted = 0,
@@ -477,37 +507,38 @@ namespace UpDiddyApi.Workflow
             return result;
         }
 
-        public void StoreTrackingInformation(Guid campaignGuid, Guid contactGuid, Guid actionGuid, string campaignPhaseName, string headers)
+        public void StoreTrackingInformation(Guid campaignGuid, Guid partnerContactGuid, Guid actionGuid, string campaignPhaseName, string headers)
         {
             var campaignEntity = _db.Campaign.Where(c => c.CampaignGuid == campaignGuid && c.IsDeleted == 0).FirstOrDefault();
-            var contactEntity = _db.Contact.Where(c => c.ContactGuid == contactGuid && c.IsDeleted == 0).FirstOrDefault();
+            var partnerContactEntity = _db.PartnerContact.Where(pc => pc.PartnerContactGuid == partnerContactGuid && pc.IsDeleted == 0).FirstOrDefault();
             var actionEntity = _db.Action.Where(a => a.ActionGuid == actionGuid && a.IsDeleted == 0).FirstOrDefault();
-            CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaignEntity.CampaignId, campaignPhaseName);
+
             // validate that the referenced entities exist
-            if (campaignEntity != null && contactEntity != null && actionEntity != null && campaignPhase != null)
+            if (campaignEntity != null && partnerContactEntity != null && actionEntity != null)
             {
-                // locate the campaign phase 
-
+                // locate the campaign phase (if one exists - not required)
+                CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaignEntity.CampaignId, campaignPhaseName);
+                
                 // look for an existing contact action               
-                var existingContactAction = ContactActionFactory.GetContactAction(_db, campaignEntity, contactEntity, actionEntity, campaignPhase);
+                var existingPartnerContactAction = PartnerContactActionFactory.GetPartnerContactAction(_db, campaignEntity, partnerContactEntity, actionEntity, campaignPhase);
 
-                if (existingContactAction != null)
+                if (existingPartnerContactAction != null)
                 {
                     // update the existing tracking event with a new occurred date
-                    existingContactAction.ModifyDate = DateTime.UtcNow;
-                    existingContactAction.OccurredDate = DateTime.UtcNow;
+                    existingPartnerContactAction.ModifyDate = DateTime.UtcNow;
+                    existingPartnerContactAction.OccurredDate = DateTime.UtcNow;
                     if (!string.IsNullOrWhiteSpace(headers))
-                        existingContactAction.Headers = headers;
+                        existingPartnerContactAction.Headers = headers;
                 }
                 else
                 {
                     // create a unique record for the tracking event
-                    _db.ContactAction.Add(new ContactAction()
+                    _db.PartnerContactAction.Add(new PartnerContactAction()
                     {
                         ActionId = actionEntity.ActionId,
                         CampaignId = campaignEntity.CampaignId,
-                        ContactId = contactEntity.ContactId,
-                        ContactActionGuid = Guid.NewGuid(),
+                        PartnerContactId = partnerContactEntity.PartnerContactId,
+                        PartnerContactActionGuid = Guid.NewGuid(),
                         CreateDate = DateTime.UtcNow,
                         CreateGuid = Guid.Empty,
                         IsDeleted = 0,
@@ -517,15 +548,12 @@ namespace UpDiddyApi.Workflow
                         Headers = !string.IsNullOrWhiteSpace(headers) ? headers : null,
                         CampaignPhaseId = campaignPhase.CampaignPhaseId
                     });
-
-
                 }
                 _db.SaveChanges();
             }
         }
 
         #endregion
-
 
         #region CareerCircle  Helper Functions
 
@@ -574,8 +602,38 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
+        #endregion
+
+
+
+        #region Cloud Talent
+       
+        public bool CloudTalentAddJob(Guid jobPostingGuid)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            ct.AddJobToCloudTalent(_db, jobPostingGuid);
+            return true;
+        }
+
+        public bool CloudTalentUpdateJob(Guid jobPostingGuid)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            ct.UpdateJobToCloudTalent(_db, jobPostingGuid);
+            return true;
+        }
+
+        public bool CloudTalentDeleteJob(Guid jobPostingGuid)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            ct.DeleteJobFromCloudTalent(_db,jobPostingGuid);
+            return true;
+        }
+
+
+
 
         #endregion
+
 
 
 

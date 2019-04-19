@@ -289,6 +289,31 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("CampaignCourseVariant");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.CampaignPartnerContact", b =>
+                {
+                    b.Property<int>("CampaignId");
+
+                    b.Property<int>("PartnerContactId");
+
+                    b.Property<Guid?>("CampaignPartnerContactGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.HasKey("CampaignId", "PartnerContactId");
+
+                    b.HasIndex("PartnerContactId");
+
+                    b.ToTable("CampaignPartnerContact");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.CampaignPhase", b =>
                 {
                     b.Property<int>("CampaignPhaseId")
@@ -418,6 +443,12 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("CloudTalentIndexInfo");
+
+                    b.Property<int>("CloudTalentIndexStatus");
+
+                    b.Property<string>("CloudTalentUri");
+
                     b.Property<Guid>("CompanyGuid");
 
                     b.Property<string>("CompanyName");
@@ -427,6 +458,10 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid>("CreateGuid");
 
                     b.Property<int>("IsDeleted");
+
+                    b.Property<int>("IsHiringAgency");
+
+                    b.Property<int>("IsJobPoster");
 
                     b.Property<DateTime?>("ModifyDate");
 
@@ -822,7 +857,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<Guid?>("EducationLevelGuid");
+                    b.Property<Guid>("EducationLevelGuid");
 
                     b.Property<int>("IsDeleted");
 
@@ -937,6 +972,31 @@ namespace UpDiddyApi.Migrations
                         .IsUnique();
 
                     b.ToTable("EmailVerification");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.EmploymentType", b =>
+                {
+                    b.Property<int>("EmploymentTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<Guid>("EmploymentTypeGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("EmploymentTypeId");
+
+                    b.ToTable("EmploymentType");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Enrollment", b =>
@@ -1100,6 +1160,33 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("EntityType");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.ExperienceLevel", b =>
+                {
+                    b.Property<int>("ExperienceLevelId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Code");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("DisplayName");
+
+                    b.Property<Guid>("ExperienceLevelGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.HasKey("ExperienceLevelId");
+
+                    b.ToTable("ExperienceLevel");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Gender", b =>
                 {
                     b.Property<int>("GenderId")
@@ -1124,6 +1211,213 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("GenderId");
 
                     b.ToTable("Gender");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.Industry", b =>
+                {
+                    b.Property<int>("IndustryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<Guid>("IndustryGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("IndustryId");
+
+                    b.ToTable("Industry");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobApplication", b =>
+                {
+                    b.Property<int>("JobApplicationId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("CoverLetter");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<Guid>("JobApplicationGuid");
+
+                    b.Property<int>("JobPostingId");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("JobApplicationId");
+
+                    b.HasIndex("JobPostingId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("JobApplication");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobCategory", b =>
+                {
+                    b.Property<int>("JobCategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<Guid>("JobCategoryGuid");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("JobCategoryId");
+
+                    b.ToTable("JobCategory");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobPosting", b =>
+                {
+                    b.Property<int>("JobPostingId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("ApplicationDeadlineUTC");
+
+                    b.Property<string>("City");
+
+                    b.Property<string>("CloudTalentIndexInfo");
+
+                    b.Property<int>("CloudTalentIndexStatus");
+
+                    b.Property<string>("CloudTalentUri");
+
+                    b.Property<int?>("CompanyId");
+
+                    b.Property<decimal>("Compensation");
+
+                    b.Property<int?>("CompensationTypeId");
+
+                    b.Property<string>("Country");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Description");
+
+                    b.Property<int?>("EducationLevelId");
+
+                    b.Property<int?>("EmploymentTypeId");
+
+                    b.Property<int?>("ExperienceLevelId");
+
+                    b.Property<bool>("H2Visa");
+
+                    b.Property<int?>("IndustryId");
+
+                    b.Property<bool>("IsAgencyJobPosting");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<int?>("JobCategoryId");
+
+                    b.Property<Guid>("JobPostingGuid");
+
+                    b.Property<int>("JobStatus");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("PostalCode");
+
+                    b.Property<DateTime>("PostingDateUTC");
+
+                    b.Property<DateTime>("PostingExpirationDateUTC");
+
+                    b.Property<string>("Province");
+
+                    b.Property<int?>("SecurityClearanceId");
+
+                    b.Property<string>("StreetAddress");
+
+                    b.Property<int?>("SubscriberId");
+
+                    b.Property<int>("TelecommutePercentage");
+
+                    b.Property<string>("ThirdPartyApplicationUrl");
+
+                    b.Property<bool>("ThirdPartyApply");
+
+                    b.Property<string>("Title");
+
+                    b.HasKey("JobPostingId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("CompensationTypeId");
+
+                    b.HasIndex("EducationLevelId");
+
+                    b.HasIndex("EmploymentTypeId");
+
+                    b.HasIndex("ExperienceLevelId");
+
+                    b.HasIndex("IndustryId");
+
+                    b.HasIndex("JobCategoryId");
+
+                    b.HasIndex("SecurityClearanceId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("JobPosting");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobPostingSkill", b =>
+                {
+                    b.Property<int>("SkillId");
+
+                    b.Property<int>("JobPostingId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<Guid?>("JobPostingSkillGuid");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.HasKey("SkillId", "JobPostingId");
+
+                    b.HasIndex("JobPostingId");
+
+                    b.ToTable("JobPostingSkill");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.LeadStatus", b =>
@@ -1362,6 +1656,45 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("PartnerId");
 
                     b.ToTable("PartnerContact");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerContactAction", b =>
+                {
+                    b.Property<int>("PartnerContactId");
+
+                    b.Property<int>("CampaignId");
+
+                    b.Property<int>("ActionId");
+
+                    b.Property<int>("CampaignPhaseId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Headers");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<DateTime>("OccurredDate")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid?>("PartnerContactActionGuid");
+
+                    b.HasKey("PartnerContactId", "CampaignId", "ActionId", "CampaignPhaseId");
+
+                    b.HasIndex("ActionId");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("CampaignPhaseId");
+
+                    b.ToTable("PartnerContactAction");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.PartnerContactFile", b =>
@@ -1745,6 +2078,39 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("RebateType");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.RecruiterCompany", b =>
+                {
+                    b.Property<int>("RecruiterCompanyId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CompanyId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<int>("IsStaff");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<Guid>("RecruiterCompanyGuid");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("RecruiterCompanyId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("RecruiterCompany");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.RedemptionStatus", b =>
                 {
                     b.Property<int>("RedemptionStatusId")
@@ -1829,6 +2195,31 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("ReportEnrollmentByVendorId");
 
                     b.ToTable("ReportEnrollmentByVendors");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SecurityClearance", b =>
+                {
+                    b.Property<int>("SecurityClearanceId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name");
+
+                    b.Property<Guid>("SecurityClearanceGuid");
+
+                    b.HasKey("SecurityClearanceId");
+
+                    b.ToTable("SecurityClearance");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Skill", b =>
@@ -2577,7 +2968,7 @@ namespace UpDiddyApi.Migrations
             modelBuilder.Entity("UpDiddyApi.Models.CampaignContact", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Campaign", "Campaign")
-                        .WithMany("CampaignContact")
+                        .WithMany()
                         .HasForeignKey("CampaignId")
                         .OnDelete(DeleteBehavior.Cascade);
 
@@ -2607,6 +2998,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Refund", "Refund")
                         .WithMany()
                         .HasForeignKey("RefundId");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CampaignPartnerContact", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Campaign", "Campaign")
+                        .WithMany("CampaignPartnerContact")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.PartnerContact", "PartnerContact")
+                        .WithMany()
+                        .HasForeignKey("PartnerContactId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CampaignPhase", b =>
@@ -2706,6 +3110,71 @@ namespace UpDiddyApi.Migrations
                         .HasForeignKey("CampaignId", "CourseVariantId");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.JobApplication", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.JobPosting", "JobPosting")
+                        .WithMany()
+                        .HasForeignKey("JobPostingId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobPosting", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId");
+
+                    b.HasOne("UpDiddyApi.Models.CompensationType", "CompensationType")
+                        .WithMany()
+                        .HasForeignKey("CompensationTypeId");
+
+                    b.HasOne("UpDiddyApi.Models.EducationLevel", "EducationLevel")
+                        .WithMany()
+                        .HasForeignKey("EducationLevelId");
+
+                    b.HasOne("UpDiddyApi.Models.EmploymentType", "EmploymentType")
+                        .WithMany()
+                        .HasForeignKey("EmploymentTypeId");
+
+                    b.HasOne("UpDiddyApi.Models.ExperienceLevel", "ExperienceLevel")
+                        .WithMany()
+                        .HasForeignKey("ExperienceLevelId");
+
+                    b.HasOne("UpDiddyApi.Models.Industry", "Industry")
+                        .WithMany()
+                        .HasForeignKey("IndustryId");
+
+                    b.HasOne("UpDiddyApi.Models.JobCategory", "JobCategory")
+                        .WithMany()
+                        .HasForeignKey("JobCategoryId");
+
+                    b.HasOne("UpDiddyApi.Models.SecurityClearance", "SecurityClearance")
+                        .WithMany()
+                        .HasForeignKey("SecurityClearanceId");
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobPostingSkill", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.JobPosting", "JobPosting")
+                        .WithMany("JobPostingSkills")
+                        .HasForeignKey("JobPostingId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Skill", "Skill")
+                        .WithMany()
+                        .HasForeignKey("SkillId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.LinkedInToken", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
@@ -2739,6 +3208,29 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Partner", "Partner")
                         .WithMany()
                         .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerContactAction", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Action", "Action")
+                        .WithMany()
+                        .HasForeignKey("ActionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Campaign", "Campaign")
+                        .WithMany()
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.CampaignPhase", "CampaignPhase")
+                        .WithMany()
+                        .HasForeignKey("CampaignPhaseId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.PartnerContact", "PartnerContact")
+                        .WithMany()
+                        .HasForeignKey("PartnerContactId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -2807,6 +3299,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.RedemptionStatus", "RedemptionStatus")
                         .WithMany()
                         .HasForeignKey("RedemptionStatusId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.RecruiterCompany", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")

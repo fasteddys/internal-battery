@@ -135,6 +135,22 @@ $(document).ready(function () {
         $('#ChangeResumeLabel').show();
     });
 
+    $('.scan-resume-btn').click(function () {
+        // Set flag to indicate resume upload is in progress 
+        resumeUploadInProgress = true;
+        // Setup a time out to clean things up in case SignalR never calls back 
+        ResumeUploadTimeout();
+        $(".overlay").show();
+        CareerCircleAPI.scanResumeOnFile()
+            .then(function () {
+                removeSkipFunctionalityOnResumeUpload();
+                ToastService.success('We are processing your resume; please wait...', 'Great!');
+            }).catch(function (err) {
+                EnableResumeNextButton();
+                ToastService.warning('We were unable to scan your resume on file at this time. You can try this again or skip this and continue.')
+            });
+    });
+
     $('#ResumeUploadForm').on('submit', function (e) {
         e.preventDefault();
         // Set flag to indicate resume upload is in progress 
@@ -146,7 +162,7 @@ $(document).ready(function () {
         CareerCircleAPI.uploadResume($('#UploadedResume')[0].files[0], true)
             .then(function (result) {
                 removeSkipFunctionalityOnResumeUpload();
-                ToastService.success('We have recieved your resume and are currently processing it; please wait...', 'Great!');
+                ToastService.success('We have received your resume and are currently processing it; please wait...', 'Great!');
             })
             .catch(function (err) {
                 EnableResumeNextButton();

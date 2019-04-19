@@ -8,7 +8,15 @@
     "skew-right-to-left" to change the skew direction.
 *@
 
-<div class="cc-content-band row @Model.Class">
+@{ 
+    var backgroundImageAttribute = "";
+    if(Model.BackgroundImage != null)
+    {
+        backgroundImageAttribute = "background-image: url(\"" + Model.BackgroundImage + "\")";
+    }
+}
+
+<div class="cc-content-band row @Model.Class" style="@backgroundImageAttribute">
     <div class="col-12">
         <div class="container no-padding">
             <div class="row">

@@ -7,6 +7,7 @@ namespace UpDiddyLib.Dto
 {
     public class ContactDto 
     {
+        public Guid? PartnerContactGuid { get; set; }
         public string Email { get; set; }
         public string SourceSystemIdentifier { get; set; }
         public Dictionary<string,string> Metadata { get; set; }

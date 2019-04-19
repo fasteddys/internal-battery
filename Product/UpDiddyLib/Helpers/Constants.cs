@@ -8,7 +8,7 @@ namespace UpDiddyLib.Helpers
     // todo: consider moving these constants to their respective domains of usage
     public static class Constants
     {
-        public const string TRACKING_KEY_CONTACT = "Contact";
+        public const string TRACKING_KEY_PARTNER_CONTACT = "Contact";
         public const string TRACKING_KEY_ACTION = "Action";
         public const string TRACKING_KEY_CAMPAIGN = "Campaign";
         public const string TRACKING_KEY_CAMPAIGN_PHASE = "CampaignPhase";
@@ -65,5 +65,21 @@ namespace UpDiddyLib.Helpers
             }
 
         }
+
+        public static class JobPosting
+        {
+            public static readonly string ValidationError_CompanyRequiredMsg = "Company required";
+            public static readonly string ValidationError_InvalidSecurityClearanceMsg = "Invalid security clearance";
+            public static readonly string ValidationError_InvalidIndustryMsg = "Invalid industry";
+            public static readonly string ValidationError_InvalidJobCategoryMsg = "Invalid job category";
+            public static readonly string ValidationError_InvalidEducationLevelMsg = "Invalid education level";
+            public static readonly string ValidationError_InvalidExperienceLevelMsg = "Invalid experience level";
+            public static readonly string ValidationError_InvalidEmploymentTypeMsg = "Invalid employment type";
+            public static readonly string ValidationError_SubscriberRequiredMsg = "Subscriber is required";
+            public static readonly string ValidationError_InvalidDescriptionLength= "Posting Description must contain at least {0} characters";
+            public static readonly string ValidationError_JobNotIndexed = "Job has not been indexed";      
+        }
+
+
     }
 }

@@ -93,7 +93,8 @@ namespace UpDiddy.Controllers
                     Value = s.StateGuid.ToString(),
                     Selected = s.StateGuid == this.subscriber?.State?.StateGuid
                 }),
-                Skills = new List<SkillDto>()// _Api.GetSkillsBySubscriber(this.subscriber.SubscriberGuid.Value)
+                Skills = new List<SkillDto>(),
+                SubscriberResume = subscriber.Files.FirstOrDefault()
             };
             return View(signupFlowViewModel);
         }
@@ -456,6 +457,11 @@ namespace UpDiddy.Controllers
 
 
             return View();
+        }
+
+        public IActionResult Forbidden()
+        {
+            return View("Forbidden");
         }
 
         public IActionResult ComingSoon()

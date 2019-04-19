@@ -3,6 +3,12 @@
 // Base Styles
 @media (min-width: 0px) {
     #SignUpComponent {
+
+        .notification {
+            font-size: 75%;
+            word-wrap: break-word;
+        }
+
         .form-check {
             .form-check-label {
                 line-height: 1.3em;
@@ -27,6 +33,7 @@
                     top: .2em;
                     margin-top: 0;
                 }
+
                 &:focus {
                     outline: none;
                 }

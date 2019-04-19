@@ -53,13 +53,13 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("api/[controller]/{campaignGuid?}/{contactGuid?}/{actionGuid?}")]
-        public IActionResult Get(string campaignGuid, string contactGuid, string actionGuid)
+        [Route("api/[controller]/{campaignGuid?}/{partnerContactGuid?}/{actionGuid?}")]
+        public IActionResult Get(string campaignGuid, string partnerContactGuid, string actionGuid)
         {
             // construct tracking parameters
             Dictionary<string, StringValues> parameters = new Dictionary<string, StringValues>();
             parameters.Add(Constants.TRACKING_KEY_CAMPAIGN, campaignGuid);
-            parameters.Add(Constants.TRACKING_KEY_CONTACT, contactGuid);
+            parameters.Add(Constants.TRACKING_KEY_PARTNER_CONTACT, partnerContactGuid);
             parameters.Add(Constants.TRACKING_KEY_ACTION, actionGuid);
             // add the phase if one has been specified, otherwise leave it null since ther is logic 
             // that depends it being null if un-specified
@@ -77,23 +77,24 @@ namespace UpDiddyApi.Controllers
         }
 
         private void ProcessTrackingInformation(Dictionary<string, StringValues> parameters, string headers)
+
         {
 
             // look for expected parameters (contact, action, campaign, campaignPhase)
             var campaign = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_CAMPAIGN)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
-            var contact = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_CONTACT)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
+            var partnerContact = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_PARTNER_CONTACT)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
             var action = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_ACTION)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
             var campaignPhase = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_CAMPAIGN_PHASE)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
 
             // must have all three tracking parameters in order to continue
-            if (campaign != null && contact != null && action != null && campaignPhase != null)
+            if (campaign != null && partnerContact != null && action != null)
             {
                 // validate that all parameters are guids
-                Guid campaignGuid, contactGuid, actionGuid;
-                if (Guid.TryParse(campaign, out campaignGuid) && Guid.TryParse(contact, out contactGuid) && Guid.TryParse(action, out actionGuid))
+                Guid campaignGuid, partnerContactGuid, actionGuid;
+                if (Guid.TryParse(campaign, out campaignGuid) && Guid.TryParse(partnerContact, out partnerContactGuid) && Guid.TryParse(action, out actionGuid))
                 {
                     // invoke the Hangfire job to store the tracking information
-                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreTrackingInformation(campaignGuid, contactGuid, actionGuid, campaignPhase, headers));
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreTrackingInformation(campaignGuid, partnerContactGuid, actionGuid, campaignPhase, headers));
                 }
             }
         }

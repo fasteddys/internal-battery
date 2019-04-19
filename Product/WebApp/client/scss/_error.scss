@@ -2,29 +2,28 @@
 
 // Base Styles
 @media (min-width: 0px) {
-    .error-container {
-        .error-message-container {
+    .error-container, .simple-container {
+        font-weight: bold;
+        text-align: center;
+
+        .error-title, .simple-title {
             background-image: url('../images/medium_blue_background.jpg');
             color: $color-white;
             background-size: cover;
-            padding: 2rem 0;
+            font-size: 30px;
+            padding: 1em 0 1em 0;
+        }
 
-            .error-hero {
-                padding-bottom: 2rem;
+        .error-detail, .simple-detail {
+            font-size: 20px;
+            padding: 3em 0 3em 0;
 
-                .error-header {
-                    font-size: 2rem;
-                }
+            a {
+                color: $color-primary;
+            }
 
-                .error-sub-header {
-                    a {
-                        color: $color-primary;
-                    }
-
-                    span {
-                        color: $color-tertiary-gray;
-                    }
-                }
+            span {
+                color: $color-tertiary-gray;
             }
         }
     }

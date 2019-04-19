@@ -37,12 +37,7 @@ namespace UpDiddy.Controllers
             _configuration = configuration;
             braintreeConfiguration = new BraintreeConfiguration(_configuration);
 
-        }
-
-        public IActionResult Index()
-        {
-            return View();
-        }
+        }        
 
         [ValidateAntiForgeryToken]
         [HttpPost]

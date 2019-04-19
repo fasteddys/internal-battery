@@ -12,5 +12,6 @@ namespace UpDiddy.ViewModels
         public string Class { get; set; }
         public string Header { get; set; }
         public List<string> Elements { get; set; }
+        public string BackgroundImage { get; set; }
     }
 }

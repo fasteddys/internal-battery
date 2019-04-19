@@ -61,11 +61,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
         // return the most recent campaign phase the given contact has interacted with for the given campaign
-        public static CampaignPhase GetContactsLastPhaseInteraction(UpDiddyDbContext db, int CampaignId, int ContactId)
+        public static CampaignPhase GetContactsLastPhaseInteraction(UpDiddyDbContext db, int CampaignId, int PartnerContactId)
         {
             // get a list of all of the contacts interactions with a campaign ordered by campaign phase id descending
-            ContactAction action = db.ContactAction
-                .Where(a => a.IsDeleted == 0 && a.ContactId == ContactId && a.CampaignId == CampaignId)
+            PartnerContactAction action = db.PartnerContactAction
+                .Where(pca => pca.IsDeleted == 0 && pca.PartnerContactId == PartnerContactId && pca.CampaignId == CampaignId)
                 .OrderByDescending( a => a.CampaignPhaseId)
                 .FirstOrDefault();
 

@@ -42,11 +42,12 @@
                                 <div class="col-12 no-padding">
                                     @Html.Partial("Components/Authentication/_SignUp",
                                         new SignUpViewModel() {
-                                           CampaignGuid = Model.CampaignGuid,
-                                           CampaignPhase = Model.CampaignPhase,
-                                           ContactGuid = Model.ContactGuid,
-                                           IsExpressSignUp = false
-                                       })
+                                            CampaignGuid = Model.CampaignGuid,
+                                            CampaignPhase = Model.CampaignPhase,
+                                            PartnerContactGuid = Model.PartnerContactGuid,
+                                            IsExpressSignUp = false,
+                                            ObfuscatedEmail = Model.ObfuscatedEmail
+                                        })
                                 </div>
                             </div>
                         </div>
@@ -82,14 +83,9 @@
     })
 </div>
 
-
-<div class="col-12">
-    <div class="container">
-        <div class="row">
-            <div class="col-12" style="font-size:12px;">
-                <span style="vertical-align:super; font-size: 50%;">1</span>Terry McDonough, “Closing the Healthcare Industry’s Skills Gaps”, <a href="https://www.hcinnovationgroup.com/leadership-professional-development/article/13028512/closing-the-healthcare-industrys-skills-gaps">https://www.hcinnovationgroup.com/</a>, (May 15, 2017).
-            </div>
-        </div>
+<div class="row">
+    <div class="col-lg-10 offset-lg-2 mb-4" style="font-size:12px;">
+        <span style="vertical-align:super; font-size: 50%;">1</span>Terry McDonough, “Closing the Healthcare Industry’s Skills Gaps”, <a href="https://www.hcinnovationgroup.com/leadership-professional-development/article/13028512/closing-the-healthcare-industrys-skills-gaps">https://www.hcinnovationgroup.com/</a>, (May 15, 2017).
     </div>
 </div>
 

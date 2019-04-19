@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
+    [Obsolete("This is being replaced by CampaignPartnerContact", false)]
     public class CampaignContact : BaseModel
     {
         public int CampaignId { get; set; }

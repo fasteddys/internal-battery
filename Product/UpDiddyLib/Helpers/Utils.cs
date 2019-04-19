@@ -10,11 +10,104 @@ using UpDiddyLib.Dto;
 using System.Xml;
 using System.Globalization;
 using System.Reflection;
+using GoogleTypes = Google.Protobuf.WellKnownTypes;
+using System.Text;
 
 namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+
+
+ 
+ 
+
+        /// <summary>
+        /// Convert a datetime object to a ISO8601 date string 
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static string ISO8601DateString(DateTime dt)
+        {
+            return dt.ToString("o");
+        }
+        /// <summary>
+        /// Return the specified datetime as a google timestamp string 
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static string GetTimestampAsString(DateTime dt)
+        {
+            var NumSeconds = new DateTimeOffset(dt).ToUnixTimeSeconds();
+            GoogleTypes.Timestamp ts = new GoogleTypes.Timestamp();
+            ts.Seconds = NumSeconds;
+            return TimeStampToISO8601String(ts);
+        }
+
+        /// <summary>
+        /// Convert datetime to google timestampe
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static GoogleTypes.Timestamp GetTimestamp(DateTime dt)
+        {
+            var NumSeconds = new DateTimeOffset(dt).ToUnixTimeSeconds();
+            GoogleTypes.Timestamp ts = new GoogleTypes.Timestamp();
+            ts.Seconds = NumSeconds;
+            return ts; 
+        }
+
+        /// <summary>
+        /// Convert google timestampe to a string.  For some reason the Timestamp.ToString() function
+        /// returns a string with enclosed in escaped double quotes such as "\"2020-10-02T15:01:23.045123456Z\""
+        /// not "2020-10-02T15:01:23.045123456Z" which this function returns
+        /// </summary>
+        /// <param name="ts"></param>
+        /// <returns></returns>
+        public static string TimeStampToISO8601String(GoogleTypes.Timestamp ts)
+        {
+            DateTime tsDateTime = ts.ToDateTime();
+            return tsDateTime.ToString("o");
+        }
+
+        /// <summary>
+        /// For a provided email address, returns an unrecognizable representation of that email address to anyone that
+        /// doesn't already know what it is (e.g. johnsmith@mail.com => j*******h@m**l.com). If an invalid email is provided,
+        /// an empty string is returned.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public static string ObfuscateEmail(string email)
+        {
+            StringBuilder obfuscatedEmail = new StringBuilder();
+
+            try
+            {
+                int lastIndexOfPeriod = email.LastIndexOf('.');
+                int indexOfAt = email.IndexOf('@');
+
+                string localPart = email.Substring(0, indexOfAt);
+                string topLevelDomain = email.Substring(lastIndexOfPeriod + 1, email.Length - (lastIndexOfPeriod + 1));
+                string secondLevelDomain = email.Substring(indexOfAt + 1, (lastIndexOfPeriod - indexOfAt) - 1);
+
+                obfuscatedEmail.Append(localPart.Substring(0, 1));
+                obfuscatedEmail.Append(new String('*', localPart.Length - 2));
+                obfuscatedEmail.Append(localPart.Substring(localPart.Length - 1, 1));
+                obfuscatedEmail.Append("@");
+                obfuscatedEmail.Append(secondLevelDomain.Substring(0, 1));
+                obfuscatedEmail.Append(new String('*', secondLevelDomain.Length - 2));
+                obfuscatedEmail.Append(secondLevelDomain.Substring(secondLevelDomain.Length - 1, 1));
+                obfuscatedEmail.Append(".");
+                obfuscatedEmail.Append(topLevelDomain);
+            }
+            catch (Exception)
+            {
+                return string.Empty;
+            }
+
+            return obfuscatedEmail.ToString();
+        }
+
         /// <remarks>
         /// Shamelessly stolen from https://stackoverflow.com/questions/457676/check-if-a-class-is-derived-from-a-generic-class
         /// </remarks>
@@ -536,6 +629,17 @@ namespace UpDiddyLib.Helpers
             return regex.Replace(Str.Trim(), " ");
 
         }
+
+        public static DateTime FromUnixTimeInSeconds(long wozTime)
+        {
+            return epoch.AddSeconds(wozTime);
+        }
+
+        public static long ToUnixTimeInSeconds(DateTime dateTime)
+        {
+            return (long)(dateTime - epoch).TotalSeconds;
+        }
+
         public static DateTime FromUnixTimeInMilliseconds(long wozTime)
         {
             return epoch.AddMilliseconds(wozTime);

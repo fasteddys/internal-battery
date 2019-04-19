@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
@@ -28,6 +29,13 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .FirstOrDefault();
         }
+
+        public static string JobseekerUrl(IConfiguration config, Guid subscriberGuid)
+        {
+
+            return config["CareerCircle:ViewTalentUrl"] + subscriberGuid;
+        }
+
 
         public static SubscriberDto GetSubscriber(UpDiddyDbContext _db, Guid subscriberGuid, ILogger _syslog, IMapper _mapper)
         {
@@ -59,18 +67,18 @@ namespace UpDiddyApi.ApplicationCore.Factory
             if (subscriber != null)
             {
                 var eligibleCampaigns =
-                    _db.Contact
-                    .Where(co => co.IsDeleted == 0 && co.Subscriber.SubscriberId == subscriber.SubscriberId)
+                    _db.PartnerContact
+                    .Where(pc => pc.IsDeleted == 0 && pc.Contact.Subscriber.SubscriberId == subscriber.SubscriberId)
                     .Join(
-                        _db.CampaignContact.Where(cc => cc.IsDeleted == 0),
-                        co => co.ContactId,
-                        cc => cc.ContactId,
-                        (co, cc) => cc)
+                        _db.CampaignPartnerContact.Where(cpc => cpc.IsDeleted == 0),
+                        pc => pc.PartnerContactId,
+                        cpc => cpc.PartnerContactId,
+                        (pc, cpc) => cpc)
                     .Join(
                         _db.Campaign.Where(ca => ca.IsDeleted == 0),
-                        cc => cc.CampaignId,
+                        cpc => cpc.CampaignId,
                         ca => ca.CampaignId,
-                        (cc, ca) => ca)
+                        (cpc, ca) => ca)
                     .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.CourseVariant)
                     .Include(c => c.CampaignCourseVariant).ThenInclude(ccv => ccv.RebateType)
                     .Where(ca => ca.StartDate <= DateTime.UtcNow && (!ca.EndDate.HasValue || ca.EndDate.Value >= DateTime.UtcNow))

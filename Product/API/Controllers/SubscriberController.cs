@@ -30,6 +30,7 @@ using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 using Hangfire;
 using Microsoft.AspNetCore.Http;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.Controllers
 {
@@ -44,6 +45,7 @@ namespace UpDiddyApi.Controllers
         private readonly IDistributedCache _cache;
         private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
+        private ISubscriberService _subscriberService;
         private ICloudStorage _cloudStorage;
         private ISysEmail _sysEmail;
 
@@ -55,7 +57,8 @@ namespace UpDiddyApi.Controllers
             IB2CGraph client,
             ICloudStorage cloudStorage,
             ISysEmail sysEmail,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            ISubscriberService subscriberService)
         {
             _db = db;
             _mapper = mapper;
@@ -66,9 +69,29 @@ namespace UpDiddyApi.Controllers
             _cloudStorage = cloudStorage;
             _sysEmail = sysEmail;
             _authorizationService = authorizationService;
+            _subscriberService = subscriberService;
         }
 
         #region Basic Subscriber Endpoints
+
+        [HttpGet("{subscriberGuid}/company")]
+        [Authorize]       
+        public async Task<IActionResult> GetCompanies(Guid subscriberGuid)
+        {
+            // Validate guid for GetSubscriber call
+            if (Guid.Empty.Equals(subscriberGuid) || subscriberGuid == null)
+                return NotFound();
+
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db,subscriberGuid);
+            if ( subscriber == null )
+            {
+                return NotFound(new { code = 404, message = $"Subscriber {subscriberGuid} not found" });
+            }
+
+            List<RecruiterCompany> companies = RecruiterCompanyFactory.GetRecruiterCompanyById(_db, subscriber.SubscriberId);         
+            return Ok(_mapper.Map<List<RecruiterCompanyDto>>(companies));         
+        }
+
         [HttpGet("{subscriberGuid}")]
         public async Task<IActionResult> Get(Guid subscriberGuid)
         {
@@ -102,11 +125,11 @@ namespace UpDiddyApi.Controllers
         {
             try
             {
+              
                 if (subscriberGuid == null)
                     return BadRequest(new { code = 400, message = "No subscriber identifier was provided" });
 
-                var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();
-
+                var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();          
                 if (subscriber == null)
                     return BadRequest(new { code = 404, message = "No subscriber could be found with that identifier" });
 
@@ -679,120 +702,25 @@ namespace UpDiddyApi.Controllers
         /// </summary>
         /// <returns></returns>
         [AllowAnonymous]
-        [HttpPut("/api/[controller]/contact/{contactGuid}")]
-        public async Task<IActionResult> UpdateSubscriberContactAsync(Guid contactGuid, [FromBody] SignUpDto signUpDto)
+        [HttpPut("/api/[controller]/contact/{partnerContactGuid}")]
+        public async Task<IActionResult> UpdateSubscriberContactAsync(Guid partnerContactGuid, [FromBody] SignUpDto signUpDto)
         {
-            _syslog.Log(LogLevel.Information, "SubscriberController.UpdateSubscriberContactAsync:: {@ContactGuid} attempting to sign up with email {@Email}", contactGuid, signUpDto.email);
-            Models.Contact contact = await _db.Contact
-                .Where(c => c.ContactGuid.Equals(contactGuid)
-                    && c.IsDeleted == 0)
-                .FirstOrDefaultAsync();
+            _syslog.Log(LogLevel.Information, "SubscriberController.UpdateSubscriberContactAsync:: {@PartnerContactGuid} attempting to sign up with email {@Email}", partnerContactGuid, signUpDto.email);
+            signUpDto.password = Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password);
 
-            Campaign campaign = await _db.Campaign
-                .Where(camp => camp.CampaignGuid.Equals(signUpDto.campaignGuid)
-                    && camp.IsDeleted == 0
-                    && camp.StartDate <= DateTime.UtcNow
-                    && (!camp.EndDate.HasValue || camp.EndDate.Value >= DateTime.UtcNow))
-                .FirstOrDefaultAsync();
-
-            #region Verify and Check Data
-            if (contact == null)
+            try
             {
-                var response = new BasicResponseDto() { StatusCode = 400, Description = "Invalid Contact guid." };
-                _syslog.Log(LogLevel.Warning, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request {Description}", response.Description);
-                return BadRequest(response);
+                await _subscriberService.CreateSubscriberAsync(partnerContactGuid, signUpDto);
             }
-
-            if (campaign == null)
+            catch (ArgumentException ex)
             {
-                var response = new BasicResponseDto() { StatusCode = 400, Description = "Signing up through this campaign is not available at this time." };
-                _syslog.Log(LogLevel.Warning, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request {Description}", response.Description);
-                return BadRequest(response);
+                _syslog.Log(LogLevel.Warning, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request reason: \"{message}\", Email used: {email}", ex.Message, signUpDto.email);
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
             }
-
-            // check email
-            if (contact.Email != signUpDto.email)
+            catch (Exception ex)
             {
-                var response = new BasicResponseDto() { StatusCode = 400, Description = "This offer is only good for the recepient of this email campaign." };
-                _syslog.Log(LogLevel.Warning, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request {Description} {Email}", response.Description, signUpDto.email);
-                return BadRequest(response);
-            }
-
-            // check if subscriber is in database
-            Subscriber subscriber = await _db.Subscriber.Where(s => s.Email == contact.Email).FirstOrDefaultAsync();
-            if (subscriber != null)
-            {
-                var response = new BasicResponseDto() { StatusCode = 400, Description = "Subscriber already exists, please login to continue." };
-                _syslog.Log(LogLevel.Warning, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request {Description}", response.Description);
-                return BadRequest(response);
-            }
-            #endregion
-
-            // check if user exits in AD if the user does then we skip this step
-            Microsoft.Graph.User user = await _graphClient.GetUserBySignInEmail(contact.Email);
-            if (user == null)
-            {
-                try
-                {
-                    user = await _graphClient.CreateUser(contact.Email, contact.Email, Crypto.Decrypt(_configuration["Crypto:Key"], signUpDto.password));
-                }
-                catch (Exception ex)
-                {
-                    _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Error occured while attempting to create a user in Azure Active Directory. Exception: {@Exception}", ex);
-                    return StatusCode(500, new BasicResponseDto() { StatusCode = 500, Description = "An error occured while attempting to create an account for you." });
-                }
-            }
-
-            // create subscriber for user
-            subscriber = new Subscriber();
-            subscriber.SubscriberGuid = Guid.Parse(user.AdditionalData["objectId"].ToString());
-            subscriber.FirstName = contact.FirstName;
-            subscriber.LastName = contact.LastName;
-            subscriber.Email = contact.Email;
-            subscriber.CreateDate = DateTime.UtcNow;
-            subscriber.ModifyDate = DateTime.UtcNow;
-            subscriber.IsDeleted = 0;
-            subscriber.ModifyGuid = Guid.Empty;
-            subscriber.CreateGuid = Guid.Empty;
-            subscriber.IsVerified = true;
-
-            // use transaction to verify that both changes 
-            using (var transaction = _db.Database.BeginTransaction())
-            {
-                try
-                {
-                    // Save subscriber to database 
-                    _db.Subscriber.Add(subscriber);
-                    await _db.SaveChangesAsync();
-                    CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaign.CampaignId, signUpDto.campaignPhase);
-
-                    _db.ContactAction.Add(new ContactAction()
-                    {
-                        ActionId = 3, // todo: use constants or enum or something
-                        CampaignId = campaign.CampaignId,
-                        ContactId = contact.ContactId,
-                        ContactActionGuid = Guid.NewGuid(),
-                        CreateDate = DateTime.UtcNow,
-                        CreateGuid = Guid.Empty,
-                        IsDeleted = 0,
-                        ModifyDate = DateTime.UtcNow,
-                        ModifyGuid = Guid.Empty,
-                        OccurredDate = DateTime.UtcNow,
-                        CampaignPhaseId = campaignPhase.CampaignPhaseId
-                    });
-
-                    // update contact in database
-                    contact.SubscriberId = subscriber.SubscriberId;
-                    await _db.SaveChangesAsync();
-
-                    transaction.Commit();
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Error occured while attempting save Subscriber and contact DB updates for {@ContactGuid} (email: {@Email}). Exception: {@Exception}", contactGuid, signUpDto.email, ex);
-                    return StatusCode(500, new BasicResponseDto() { StatusCode = 500, Description = "An error occured while attempting to create an account for you." });
-                }
+                _syslog.Log(LogLevel.Error, "SubscriberController.UpdateSubscriberContactAsync:: Bad Request reason: \"{message}\", Email used: {email}", ex.Message, signUpDto.email);
+                return StatusCode(500, new BasicResponseDto() { StatusCode = 500, Description = ex.Message });
             }
 
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
@@ -999,7 +927,8 @@ namespace UpDiddyApi.Controllers
                     new
                     {
                         verificationLink = link
-                    }, null
+                    }, 
+                    null
                 ));
         }
     }

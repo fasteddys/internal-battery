@@ -3,10 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Newtonsoft.Json;
 using UpDiddyApi.Models;
 using UpDiddyApi.Models.Views;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
+using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
+using UpDiddyLib.Helpers;
+using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace UpDiddyApi.Helpers
 {
@@ -15,7 +20,7 @@ namespace UpDiddyApi.Helpers
         public static void Configure()
         {
             Mapper.Initialize(cfg =>
-            {
+            {               
                 cfg.AddProfile<ApiProfile>();
             });
         }
@@ -43,18 +48,59 @@ namespace UpDiddyApi.Helpers
             CreateMap<CampaignCourseVariant, CampaignCourseVariantDto>().ReverseMap();
             CreateMap<RebateType, RebateTypeDto>().ReverseMap();
             CreateMap<Refund, RefundDto>().ReverseMap();
-            CreateMap<Contact, ContactDto>().ReverseMap();
+
             CreateMap<CampaignStatistic, CampaignStatisticDto>().ReverseMap();
             CreateMap<CampaignDetail, CampaignDetailDto>().ReverseMap();
             CreateMap<v_SubscriberSources, SubscriberSourceDto>().ReverseMap();
-            CreateMap<Offer, OfferDto>().ReverseMap();
+            CreateMap<SecurityClearance, SecurityClearanceDto>().ReverseMap();
+            CreateMap<EmploymentType, EmploymentTypeDto>().ReverseMap();
+            CreateMap<Industry, IndustryDto>().ReverseMap();
+            CreateMap<JobPosting, JobPostingDto>().ReverseMap();
+            CreateMap<ExperienceLevel, ExperienceLevelDto>().ReverseMap();
+            CreateMap<EducationLevel, EducationLevelDto>().ReverseMap();
+            CreateMap<JobCategory, JobCategoryDto>().ReverseMap();
+            CreateMap<JobApplication, JobApplicationDto>().ReverseMap();
+            CreateMap<RecruiterCompany, RecruiterCompanyDto>().ReverseMap();
 
-            CreateMap<Contact, EmailContactDto>()
-            .ForMember(c => c.email, opt => opt.MapFrom(src => src.Email))
-            .ForMember(c => c.last_name, opt => opt.MapFrom(src => src.LastName))
-            .ForMember(c => c.first_name, opt => opt.MapFrom(src => src.FirstName))
-            .ForMember(c => c.contact_guid, opt => opt.MapFrom(src => src.ContactGuid))
-            .ReverseMap();
+
+            CreateMap<JobApplication, JobApplicationApplicantViewDto>()
+              .ForMember(c => c.JobApplicationGuid, opt => opt.MapFrom(src => src.JobApplicationGuid))
+              .ForMember(c => c.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
+              .ForMember(c => c.JobPosting, opt => opt.MapFrom(src => src.JobPosting))
+              .ForMember(c => c.JobPostingUrl, opt => opt.MapFrom(src => src.JobPosting.JobPostingGuid))
+              .ForMember(c => c.CoverLetter, opt => opt.MapFrom(src => src.CoverLetter))
+              .ForAllOtherMembers(opts => opts.Ignore());
+
+            CreateMap<JobApplication, JobApplicationRecruiterViewDto>()
+              .ForMember(c => c.JobApplicationGuid, opt => opt.MapFrom(src => src.JobApplicationGuid))
+              .ForMember(c => c.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
+              .ForMember(c => c.Subscriber, opt => opt.MapFrom(src => src.Subscriber))
+              .ForMember(c => c.CoverLetter, opt => opt.MapFrom(src => src.CoverLetter))
+              .ForAllOtherMembers(opts => opts.Ignore());
+
+            CreateMap<JobViewDto, CloudTalentSolution.MatchingJob>()
+              .ForMember(c => c.JobSummary, opt => opt.MapFrom(src => src.JobSummary))
+              .ForMember(c => c.JobTitleSnippet, opt => opt.MapFrom(src => src.JobTitleSnippet))
+              .ForMember(c => c.SearchTextSnippet, opt => opt.MapFrom(src => src.SearchTextSnippet))          
+              .ForPath(c => c.Job.RequisitionId, opt => opt.MapFrom(src => src.JobPostingGuid))
+              .ForMember(c => c.SearchTextSnippet, opt => opt.MapFrom(src => src.SearchTextSnippet))
+              .ForPath(c => c.Job.PostingExpireTime, opt => opt.MapFrom(src => src.PostingExpirationDateUTC))
+              .ForPath(c => c.Job.Name, opt => opt.MapFrom(src => src.CloudTalentUri))
+              .ForPath(c => c.Job.CompanyName, opt => opt.MapFrom(src => src.CompanyName))
+              .ForPath(c => c.Job.Title, opt => opt.MapFrom(src => src.Title))
+              .ForPath(c => c.Job.Description, opt => opt.MapFrom(src => src.Description))
+              .ForPath(c => c.Job.PostingPublishTime, opt => opt.MapFrom(src => src.PostingDateUTC))
+              .ReverseMap();
+   
+
+            // todo: had difficulty mapping JObject to Dictionary<string,string> via automapper for PartnerContact -> ContactDto, revisit later if time allows
+            //CreateMap<Contact, ContactDto>().ReverseMap();
+            //CreateMap<Contact, EmailContactDto>()
+            //.ForMember(c => c.email, opt => opt.MapFrom(src => src.Email))
+            //.ForMember(c => c.last_name, opt => opt.MapFrom(src => src.LastName))
+            //.ForMember(c => c.first_name, opt => opt.MapFrom(src => src.FirstName))
+            //.ForMember(c => c.contact_guid, opt => opt.MapFrom(src => src.ContactGuid))
+            //.ReverseMap();
 
             CreateMap<LeadStatus, LeadStatusDto>()
                 .ForMember(ls => ls.Message, opt => opt.MapFrom(src => src.Description))
@@ -70,7 +116,7 @@ namespace UpDiddyApi.Helpers
                     .ForMember(x => x.FinalCost, opt => opt.Ignore())
                     .ForMember(x => x.PromoCodeRedemptionGuid, opt => opt.Ignore())
                     .ReverseMap();
-            
+
             // mappings with related entities
             CreateMap<Course, CourseDto>()
                 .ForMember(c => c.CourseVariants, opt => opt.MapFrom(src => src.CourseVariants))

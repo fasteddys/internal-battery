@@ -77,10 +77,9 @@
 </div>
 <form id="SignupForm" asp-controller="Home" asp-action="Onboard"></form>
 <input type="hidden" asp-for="Phone" />
-<div class="signup-flow-container">
+<div class="signup-flow-container mb-3">
     <div class="row signup-flow-row">
         <div id="Flow-ResumeColumn" class="col-12 signup-flow-column animated slideInUp">
-
             <div id="SignupFlowCarousel" class="carousel slide" data-ride="carousel" data-interval="false">
                 <div class="carousel-inner">
                     <div class="carousel-item active carousel-item-first">
@@ -88,12 +87,29 @@
                             <div class="row">
                                 <div class="col-12">
                                     <div class="resume-intro-container">
-                                        <div>
-                                            <h1 id="TypewriterHeader">Hi there...</h1>
-                                        </div>
-                                        <div>
-                                            <h2 id="ResumeUploadHeader">Let's get started by uploading your resume!</h2>
-                                        </div>
+                                        @if(Model.SubscriberResume != null)
+                                        {
+                                            <div>
+                                                <h1>Welcome!</h1>
+                                                <h3>Looks like we have a resume on file.</h3>
+                                                
+                                                <span>Resume on File: <a href="/Home/DownloadFile?fileGuid=@Model.SubscriberResume.SubscriberFileGuid" target="_blank">@Model.SubscriberResume.SimpleName</a></span>
+                                                <p>
+                                                    Click on the <i>Scan Resume</i> below to let us read that resume and autofill some questions for you!
+                                                </p>
+                                                <button class="btn btn-primary scan-resume-btn">Scan Resume</button>
+                                                <div class="mt-3">
+                                                    <h2 class="text-with-border">Or</h2>
+                                                </div>
+                                                <h3>Upload a new resume.</h3>
+                                            </div>
+                                        } else
+                                        {
+                                            <div>
+                                                <h1>Welcome!</h1>
+                                                <h2 id="ResumeUploadHeader">Let's get started by uploading your resume!</h2>
+                                            </div>
+                                        }
                                         <form asp-controller="Home" asp-action="UploadResume" enctype="multipart/form-data" id="ResumeUploadForm">
 
                                             <div class="form-group">
@@ -113,11 +129,11 @@
 
                                             </div>
                                         </form>
+                                        <div class="resume-on-file">
+                                        </div>
                                         <div id="ResumeUploadDisclaimer">
                                             <i class="fas fa-exclamation"></i>&nbsp;Note: clicking "upload" above allows us to create an entry for you in our system, using information extracted from your resume.
                                         </div>
-
-
                                     </div>
                                 </div>
                             </div>
