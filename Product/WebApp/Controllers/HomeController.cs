@@ -398,6 +398,12 @@ namespace UpDiddy.Controllers
             return View("ContactUs");
         }
 
+        [HttpGet]
+        public IActionResult Sitemap()
+        {
+            throw new NotImplementedException();
+        }
+
         [HttpPost]
         public IActionResult ContactUs(string ContactUsFirstName,
             string ContactUsLastName,
