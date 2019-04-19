@@ -85,6 +85,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(c => c.CompensationType)
                 .Include(c => c.JobCategory)
                 .Include(c => c.Subscriber)
+                .Include(c => c.JobPostingSkills).ThenInclude(ss => ss.Skill)
                 .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
                 .FirstOrDefault();
         }
@@ -130,7 +131,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static void UpdatePostingSkills(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
             JobPostingSkillFactory.DeleteSkillsForPosting(db, jobPosting.JobPostingId);
-            foreach (SkillDto skillDto in jobPostingDto.Skills)
+            foreach (SkillDto skillDto in jobPostingDto.JobPostingSkills)
             {
                 JobPostingSkillFactory.Add(db, jobPosting.JobPostingId, skillDto.SkillGuid.Value);
             }
@@ -247,10 +248,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static void SavePostingSkills(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
 
-            if (jobPostingDto.Skills == null)
+            if (jobPostingDto.JobPostingSkills == null)
                 return;
 
-            foreach ( SkillDto skillDto in jobPostingDto.Skills)
+            foreach ( SkillDto skillDto in jobPostingDto.JobPostingSkills)
             {
                 JobPostingSkillFactory.Add(db, jobPosting.JobPostingId, skillDto.SkillGuid.Value);
             }

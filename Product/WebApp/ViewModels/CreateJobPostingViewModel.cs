@@ -4,11 +4,16 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using UpDiddyLib.Dto;
 
 namespace UpDiddy.ViewModels
 {
     public class CreateJobPostingViewModel : BaseViewModel
     {
+        public bool IsEdit { get; set; }
+        public Guid EditGuid { get; set; }
+        public string RequestPath { get; set; }
+ 
 
         #region Basic job posting information 
         [Required(ErrorMessage = "Job title is required")]
@@ -63,9 +68,14 @@ namespace UpDiddy.ViewModels
 
         public string StreetAddress{ get; set; }
 
+
+        public IList<SkillDto> Skills { get; set; }
+
         #endregion
 
         #region Select lists 
+
+
 
         public IEnumerable<SelectListItem> States { get; set; }
 

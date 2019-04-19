@@ -635,6 +635,13 @@ namespace UpDiddy.Api
             return await PostAsync<BasicResponseDto>(string.Format("job"), jobPosting);
         }
 
+        public async Task<BasicResponseDto> UpdateJobPostingAsync(JobPostingDto jobPosting)
+        {
+            return await PutAsync<BasicResponseDto>(string.Format("job"), jobPosting);
+        }
+
+
+
         public async Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid) 
         {
                 return await GetAsync<List<JobPostingDto>>(string.Format("job/subscriber/{0}", subscriberGuid.ToString()));

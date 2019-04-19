@@ -292,6 +292,20 @@
             }
         }
 
+        .fa {
+            &.fa-pencil-alt {
+                color: $color-primary;
+            }
+        }
+
+        .fa {
+            &.fa-copy {
+                color: $color-primary;
+            }
+        }
+
+
+
         &.table-primary {
             thead {
                 tr {

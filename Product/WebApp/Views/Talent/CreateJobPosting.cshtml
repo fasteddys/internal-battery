@@ -19,7 +19,7 @@
     <script type="text/javascript">
 
 
-        var subscriberSkills = [];
+        var subscriberSkills = @Json.Serialize(Model.Skills);
 
         function SelectDate(ctl) {
             $('#' + ctl).datepicker('show');
@@ -92,6 +92,14 @@
             });
 
 
+            // THIS WORKS ToastService.error('Something unexpected happened, and we are looking into it.');
+
+            if ($("#ErrorMsg").val.trim() != "") {
+                alert($("#ErrorMsg").val.trim());
+            }
+
+
+
 
 
         });
@@ -121,6 +129,9 @@
     <div class="row">
         <form asp-controller="Talent" asp-action="CreateJobPosting" class="w-100 mt-2">
 
+            <input type="hidden" class="form-control" id="txtTitle" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="IsEdit">
+            <input type="hidden" class="form-control" id="txtTitle" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="EditGuid">
+            <input type="hidden" class="form-control" id="txtTitle" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="RequestPath">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <h3> Create/Edit Job Posting </h3>

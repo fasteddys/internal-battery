@@ -324,7 +324,7 @@ namespace UpDiddyApi.Controllers
             JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid);
            if ( jobPosting == null )
                 return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "JobPosting not found" });
-       
+
             return Ok(_mapper.Map<JobPostingDto>(jobPosting));
         }
 
