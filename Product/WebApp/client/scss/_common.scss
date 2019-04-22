@@ -14,6 +14,10 @@ a {
     &.text-primary:hover {
         color: darken($color-primary, 10%) !important;
     }
+
+    &.text-primary:active {
+        color: darken($color-primary, 15%) !important;
+    }
 }
 
 .bg-color-primary {
