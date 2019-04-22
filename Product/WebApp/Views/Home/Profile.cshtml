@@ -203,35 +203,13 @@
                 </div>
                 <div class="row">
                     <div class="col-md">
-
                         @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.SubscriberGuid })
-                        @Html.React("ResumeUpload", new { fileGuid = Model.Resume.SubscriberFileGuid, fileName = Model.Resume.SimpleName })
-                        <div class="resume-file-component @((Model.Resume != null) ? "has-resume" : "")">
-                            @if (Model.Resume != null)
-                            {
-                                <div class="resume-control">
-                                    <a class="download" href="/Home/DownloadFile?fileGuid=@Model.Resume.SubscriberFileGuid" target="_blank"><i class="fas fa-download" title="Download"></i> @Model.Resume.SimpleName</a>
-                                    <button class="edit"><i class="fas fa-edit text-light-blue" title="Edit"></i></button>
-                                    <button class="delete" data-guid="@Model.Resume.SubscriberFileGuid"><i class="fas fa-minus-circle text-light-blue" title="Delete"></i></button>
-                                </div>
-                            }
-                            <form class="resume-upload-form" method="post" action="/Home/UploadResume" enctype="multipart/form-data">
-                                <div>
-                                    <label for="resume-file-input" class="btn btn-sm btn-light-blue select-file mb-0">
-                                        <i class="fas fa-file-upload float-left pr-2 upload-resume-icon"></i>&nbsp;Upload Resume
-                                    </label>
-                                    <label for="resume-file-input" class="change-file mb-0">
-                                        <span class="file-name"></span>&nbsp;<i class="fas fa-exchange-alt"></i>
-                                    </label>
-                                    <button type="submit" class="submit btn btn-sm btn-light-blue">
-                                        Save
-                                        <span class="loading-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                        <span class="loading-spinner sr-only">Loading...</span>
-                                    </button>
-                                    <button class="btn btn-sm btn-secondary cancel">Cancel</button>
-                                    <input required id="resume-file-input" class="pseudo-hidden file-input" type="file" accept=".doc,.docx,.odt,.pdf,.rtf,.tex,.txt,.wks,.wps,.wpd" />
-                                </div>
-                            </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md">
+                        <div class="mt-3">
+                            @Html.React("ResumeUpload", new { fileGuid = Model.Resume?.SubscriberFileGuid, fileName = Model.Resume?.SimpleName })
                         </div>
                     </div>
                 </div>
