@@ -3,9 +3,11 @@ body {
     nav {
         text-transform: uppercase;
         border-bottom: 1px solid $color-secondary-light;
-        a{
+
+        a {
             cursor: pointer;
         }
+
         .navbar-brand {
             margin: 0;
         }
@@ -15,13 +17,14 @@ body {
 
                 .nav-link {
                     color: $color-secondary;
-                    font-size: $rem-12;
+                    font-size: $rem-13;
+                    font-weight: bold;
 
                     &.temp-profile-link {
                         cursor: default;
 
                         &:hover {
-                            color:#03264A; 
+                            color: #03264A;
                         }
                     }
                 }
