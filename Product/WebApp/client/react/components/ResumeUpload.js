@@ -1,6 +1,11 @@
 import React from 'react';
 
 class ResumeUpload extends React.Component {
+    modeType = {
+        upload: 0,
+        view: 1
+    };
+
     constructor(props) {
         super(props)
         this.fileInput = React.createRef();
@@ -8,7 +13,7 @@ class ResumeUpload extends React.Component {
             fileName: props.fileName,
             fileGuid: props.fileGuid,
             processing: false,
-            mode: props.fileGuid ? 1 : 0,
+            mode: props.fileGuid ?  this.modeType.view : this.modeType.upload,
             selectedFile: null
         };
     }
@@ -33,9 +38,12 @@ class ResumeUpload extends React.Component {
         this.setState({processing: true}, () => {
             CareerCircleAPI.uploadResume(this.state.selectedFile, false)
                 .then((response) => {
-                    this.setState({mode: 1, fileName: response.data.simpleName, fileGuid: response.data.subscriberFileGuid});
+                    ToastService.success('Resume saved successfully.');
+                    this.setState({mode: this.modeType.view, fileName: response.data.simpleName, fileGuid: response.data.subscriberFileGuid});
                 })
-                .catch((err) => console.log(err))
+                .catch((err) => {
+                    ToastService.error('Unable to save resume.');
+                })
                 .finally(() => {
                     this.setState({processing: false});
                 });
@@ -47,9 +55,12 @@ class ResumeUpload extends React.Component {
         this.setState({processing: true}, () => {
             CareerCircleAPI.deleteFile(this.state.fileGuid)
                 .then((response) => {
-                    this.setState({mode: 0, fileName: null, fileGuid: null, selectedFile: null});
+                    ToastService.success('Resume deleted successfully.');
+                    this.setState({mode: this.modeType.upload, fileName: null, fileGuid: null, selectedFile: null});
                 })
-                .catch((err) => console.log(err))
+                .catch((err) => {
+                    ToastService.error('Unable to delete resume.');
+                })
                 .finally(() => {
                     this.setState({processing: false});
                 });
@@ -70,7 +81,7 @@ class ResumeUpload extends React.Component {
         return (
             <div>
                 <a className="text-primary download-link pr-1" href={`/Home/DownloadFile?fileGuid=${this.state.fileGuid}`} target="_blank"><i className="fas fa-download" title="Download"></i> { this.state.fileName }</a>
-                <button type="button" className="btn btn-text text-primary edit px-2" onClick={() => this.changeMode(0)}><i className="fas fa-edit text-light-blue" title="Edit"></i></button>
+                <button type="button" className="btn btn-text text-primary edit px-2" onClick={() => this.changeMode(this.modeType.upload)}><i className="fas fa-edit text-light-blue" title="Edit"></i></button>
                 <button type="button" className="btn btn-text text-primary delete px-2" onClick={() => this.deleteResume()}><i className="fas fa-minus-circle text-light-blue" title="Delete"></i> { this.spinner() }</button>
             </div>
         );
@@ -80,7 +91,7 @@ class ResumeUpload extends React.Component {
         let cancelBtn;
         
         if(this.state.fileGuid != null)
-            cancelBtn = <button type="button" onClick={() => this.changeMode(1)} className="btn btn-sm btn-secondary cancel">Cancel</button>;
+            cancelBtn = <button type="button" onClick={() => this.changeMode(this.modeType.view)} className="btn btn-sm btn-secondary cancel">Cancel</button>;
         return (
             <form className="" method="post" action="/Home/UploadResume" encType="multipart/form-data">
                 <div>
@@ -110,7 +121,7 @@ class ResumeUpload extends React.Component {
 
     render() {
         return (<div className="resume-upload-component">
-            { this.state.mode == 0 ? this.uploadMode() : this.viewMode()}
+            { this.state.mode == this.modeType.upload ? this.uploadMode() : this.viewMode()}
         </div>);
     }
 }
