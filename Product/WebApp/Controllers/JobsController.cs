@@ -21,7 +21,7 @@ namespace UpDiddy.Controllers
         [HttpGet("{JobGuid}")]
         public IActionResult Job(Guid JobGuid)
         {
-            return View();
+            return View("JobDetails");
         }
     }
 }

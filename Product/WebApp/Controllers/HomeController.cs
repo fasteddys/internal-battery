@@ -666,11 +666,5 @@ namespace UpDiddy.Controllers
                 return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
             }
         }
-
-        [HttpGet]
-        public IActionResult AssembleJobDetails()
-        {
-            return View("JobDetails");
-        }
     }
 }
