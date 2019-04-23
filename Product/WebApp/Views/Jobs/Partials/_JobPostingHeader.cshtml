@@ -1,16 +1,17 @@
 ﻿@using UpDiddy.ViewModels
+@model JobDetailsViewModel
 
 <div class="job-details-hero">
     <div class="container">
         <div class="row">
             <div class="col-12">
                 <div class="hero-content-box">
-                    <h1 class="job-name">
-                        Software Engineer
+                    <h1 class="job-name pb-3">
+                        @Model.Name
                     </h1>
-                    <div class="job-details">
-                        <div class="job-company">Aerotek</div>
-                        <div class="job-posted-date">Posted: 04/22/2019</div>
+                    <div class="job-details mb-3">
+                        <div class="job-company"><i class="far fa-building"></i> @Model.Company</div>
+                        <div class="job-posted-date"><i class="fas fa-clock"></i> @Model.PostedDate</div>
                     </div>
                     <div class="apply-button container-align-right">
                         @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {

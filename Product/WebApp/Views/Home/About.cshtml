@@ -27,7 +27,7 @@
         List<string> Elements = new List<string>()
     {
         "The statistic has gone viral that there will be a talent shortage of 85.2M people by 2030. CareerCircle was founded in the spirit of finding solutions to address the pending skills gap versus falling victim to it. With so many capable people wanting to find employment and employers needing partners to achieve their goals, CareerCircle is here to provide a bridge.",
-        Html.PartialWithModelToHtmlMarkup("Components/Media/_Video", new VideoViewModel
+        Html.PartialToHtmlMarkup("Components/Media/_Video", new VideoViewModel
         {
             Url = "/videos/Career_Circle.mp4",
             Thumbnail = "/images/about-us-hero.png"
@@ -58,7 +58,7 @@
                 List<string> Elements3 = new List<string>()
     {
         "<img src=\"/images/career_circle_graphic.png\" />",
-        "<p>Our team of highly specialized recruiting experts has extensive experience in the staffing industry. This unique background means we know what positions are in demand and what skills are required to obtain them.</p><p>We know how to get you there.</p><p>We are passionate about connecting you to the necessary skills you need for the career you deserve. That is why we have assembled one platform for all your Careerskilling needs. Our mission is to provide a vehicle that will allow us to market your capabilities in a powerful way.</p><p>Take the first step by enrolling today.</p>" + @Html.PartialWithModelToHtmlMarkup("Components/Buttons/_Action", new ActionButtonViewModel {
+        "<p>Our team of highly specialized recruiting experts has extensive experience in the staffing industry. This unique background means we know what positions are in demand and what skills are required to obtain them.</p><p>We know how to get you there.</p><p>We are passionate about connecting you to the necessary skills you need for the career you deserve. That is why we have assembled one platform for all your Careerskilling needs. Our mission is to provide a vehicle that will allow us to market your capabilities in a powerful way.</p><p>Take the first step by enrolling today.</p>" + @Html.PartialToHtmlMarkup("Components/Buttons/_Action", new ActionButtonViewModel {
                                             Text = "Join Our Community",
                                             Hyperlink = User.Identity.IsAuthenticated ? "/home/profile" : "/join#CommunityCampaignBottomContainer",
                                             FitToText = true,

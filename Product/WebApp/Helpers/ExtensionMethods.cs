@@ -12,19 +12,9 @@ namespace UpDiddy.Helpers
     public static class ExtensionMethods
     {
 
-        public static string PartialWithModelToHtmlMarkup<TModel>(this IHtmlHelper helper, string PartialPath, TModel model)
+        public static string PartialToHtmlMarkup<TModel>(this IHtmlHelper helper, string PartialPath, TModel model)
         {
             var content = helper.Partial(PartialPath, model);
-            using (var writer = new System.IO.StringWriter())
-            {
-                content.WriteTo(writer, HtmlEncoder.Default);
-                return writer.ToString();
-            }
-        }
-
-        public static string PartialToHtmlMarkup(this IHtmlHelper helper, string PartialPath)
-        {
-            var content = helper.Partial(PartialPath);
             using (var writer = new System.IO.StringWriter())
             {
                 content.WriteTo(writer, HtmlEncoder.Default);
