@@ -666,6 +666,35 @@ namespace UpDiddy.Api
           
         }
 
+        public async Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid)
+        {             
+            try
+            {
+                return await PostAsync<JobPostingDto>(string.Format("job/{0}", jobPostingGuid.ToString()));
+            }
+            catch
+            {
+                return null;
+            };
+        }
+
+        public async Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid)
+        {
+            try
+            {
+                return await DeleteAsync<BasicResponseDto>(string.Format("job/{0}", jobPostingGuid.ToString()));
+            }
+            catch
+            {
+                return null;
+            };
+        }
+
+
+
+
+
+
         public async Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid)
         {
             return await GetAsync<IList<SubscriberEducationHistoryDto>>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()));

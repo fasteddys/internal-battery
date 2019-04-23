@@ -13,6 +13,7 @@ namespace UpDiddy.ViewModels
         public bool IsEdit { get; set; }
         public Guid EditGuid { get; set; }
         public string RequestPath { get; set; }
+        public string ErrorMsg { get; set; }
  
 
         #region Basic job posting information 

@@ -48,7 +48,7 @@ namespace UpDiddyApi.Controllers
         #region constructor 
         public JobController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory)
 
-        {
+        {    
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
@@ -71,7 +71,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/subscriber/{subscriberGuid}")]
         public IActionResult GetJobsForSubscriber(Guid subscriberGuid)
         {
-
+           
             Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if ( subscriberGuid == null ||   subscriberGuid != subsriberGuidClaim)
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting can only be viewed by their owner" });
@@ -92,6 +92,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/{jobPostingGuid}")]
         public IActionResult DeleteJobPosting(Guid jobPostingGuid)
         {
+            JobPosting jobPosting = null;
             try
             {
                 _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting started at: {DateTime.UtcNow.ToLongDateString()} for posting {jobPostingGuid}");
@@ -99,7 +100,7 @@ namespace UpDiddyApi.Controllers
                 if (jobPostingGuid == null)
                     return BadRequest(new { code = 400, message = "No job posting identifier was provided" });
 
-                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid);
+                jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(_db, jobPostingGuid);
                 if (jobPosting == null)
                     return NotFound(new { code = 404, message = $"Job posting {jobPostingGuid} does not exist" });
 
@@ -116,7 +117,7 @@ namespace UpDiddyApi.Controllers
                 _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting exception : {ex.Message} while deleting posting {jobPostingGuid}");
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
             }
-            return Ok();
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"JobPosting {jobPosting.JobPostingGuid}  has been deleted " });
         }
 
         /// <summary>
@@ -138,44 +139,26 @@ namespace UpDiddyApi.Controllers
 
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
                 // Retreive the current state of the job posting 
-                JobPosting tempJobPosting = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingDto.JobPostingGuid.Value);
-                if (tempJobPosting == null)
+                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(_db, jobPostingDto.JobPostingGuid.Value);
+                if (jobPosting == null)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = $"{jobPostingDto.JobPostingGuid} is not a valid jobposting guid" });
-                // map from jobPostingDto to jobPosting
-                JobPosting jobPosting = _mapper.Map<JobPosting>(jobPostingDto);
-                // Snag the key info for the job posting 
-                jobPosting.JobPostingId = tempJobPosting.JobPostingId;
-                // Unattach temp job posting from EF
-                _db.Entry(tempJobPosting).State = EntityState.Detached;
-                // attach the updated version of the  jobposting object to EF 
-                _db.JobPosting.Attach(jobPosting);
-                // mark the entity as dirty 
-                _db.Entry(jobPosting).State = EntityState.Modified;   
-                // important! Init all reference object ids to null since further logic will use < 0 to check for 
-                // their validity
-                JobPostingFactory.SetDefaultsForAddNew(jobPosting);
-                // copy the keys of the related objects to the updated job posting 
-                JobPostingFactory.MapRelatedObjects(jobPosting, tempJobPosting);
-                // validate job posting
-                string msg = string.Empty;
-                if (JobPostingFactory.ValidateUpdatedJobPosting(jobPosting, _configuration, ref msg) == false)
+
+                try
                 {
-                    var response = new BasicResponseDto() { StatusCode = 400, Description = msg };
-                    _syslog.Log(LogLevel.Warning, "JobPostingController.CreateJobPosting:: Bad Request {Description} {JobPosting}", response.Description, jobPostingDto);
-                    return BadRequest(response);
+                    JobPostingFactory.UpdateJobPosting(_db, jobPosting, jobPostingDto);
                 }
-                jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.UpdateIndexPending;
-                // use factory method to update the modify date       
-                jobPosting.ModifyDate = DateTime.UtcNow;
-                // save the update jobposting to sql server 
-                _db.SaveChanges();
-                JobPostingFactory.UpdatePostingSkills(_db, jobPosting, jobPostingDto);
-                // index active jobs in cloud talent 
-                if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
-                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobPosting.JobPostingGuid));
+                catch ( Exception ex)
+                {
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = $"{jobPostingDto.JobPostingGuid} could not be updated.  Error: {ex.Message}" });
+                }
+                
+                _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+                
 
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPosting.JobPostingGuid}" });
-                _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+
+ 
+           
             }
             catch (Exception ex)
             {
@@ -265,7 +248,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult CopyJob(Guid jobPostingGuid)
         {
             // Get the posting to be copied as an untracked entity
-            JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid);
+            JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(_db, jobPostingGuid);
             if (jobPosting == null)
                 return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "JobPosting not found" });
 
@@ -273,38 +256,8 @@ namespace UpDiddyApi.Controllers
             if (jobPosting.Subscriber.SubscriberGuid != subsriberGuidClaim)
                 return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Unauthorized to copy posting" });
 
-
-            _db.Entry(jobPosting).State = EntityState.Detached;
-            // use factory method to make sure all the base data values are set just 
-            // in case the caller didn't set them
-            BaseModelFactory.SetDefaultsForAddNew(jobPosting);
-            // important! Init all reference object ids to null since further logic will use < 0 to check for 
-            // their validity
-            JobPostingFactory.SetDefaultsForAddNew(jobPosting);
-            // assign new guid 
-            jobPosting.JobPostingGuid =  Guid.NewGuid();
-            // null out identity column
-            int SourcePostingId = jobPosting.JobPostingId;
-            jobPosting.JobPostingId = 0;
-            // set google index statuses 
-            jobPosting.CloudTalentIndexInfo = string.Empty;
-            jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.NotIndexed;
-            jobPosting.CloudTalentUri = string.Empty;
-            // set posting as draft 
-            jobPosting.JobStatus = (int) JobPostingStatus.Draft;
-            // set expiration date 
-            if (jobPosting.PostingDateUTC < DateTime.UtcNow)
-                jobPosting.PostingDateUTC = DateTime.UtcNow;
-            if (jobPosting.PostingExpirationDateUTC < DateTime.UtcNow)
-            {
-                jobPosting.PostingExpirationDateUTC = DateTime.UtcNow.AddDays(_postingTTL);
-            }
-
-            _db.JobPosting.Add(jobPosting);
-            _db.SaveChanges();
-            // copy skill to new posting 
-           JobPostingFactory.CopyPostingSkills(_db, SourcePostingId, jobPosting.JobPostingId);
-
+            jobPosting = JobPostingFactory.CopyJobPosting(_db, jobPosting, _postingTTL);
+  
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPosting.JobPostingGuid}" });
         }
 
@@ -321,7 +274,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/{jobPostingGuid}")]
         public IActionResult GetJob(Guid jobPostingGuid)
         {
-            JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid);
+            JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(_db, jobPostingGuid);
            if ( jobPosting == null )
                 return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "JobPosting not found" });
 

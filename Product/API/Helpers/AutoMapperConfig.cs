@@ -55,7 +55,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<SecurityClearance, SecurityClearanceDto>().ReverseMap();
             CreateMap<EmploymentType, EmploymentTypeDto>().ReverseMap();
             CreateMap<Industry, IndustryDto>().ReverseMap();
-            CreateMap<JobPosting, JobPostingDto>().ReverseMap();
+
             CreateMap<JobPostingSkill, JobPostingSkillDto>().ReverseMap();
             CreateMap<ExperienceLevel, ExperienceLevelDto>().ReverseMap();
             CreateMap<EducationLevel, EducationLevelDto>().ReverseMap();
@@ -68,6 +68,11 @@ namespace UpDiddyApi.Helpers
            .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
             .ForMember(c => c.SkillName, opt => opt.MapFrom(src => src.Skill.SkillName))
             .ForAllOtherMembers(opts => opts.Ignore());
+
+
+
+            CreateMap<JobPosting, JobPostingDto>()
+                .ReverseMap();
 
 
             CreateMap<JobApplication, JobApplicationApplicantViewDto>()

@@ -91,15 +91,10 @@
                 }
             });
 
-
-            // THIS WORKS ToastService.error('Something unexpected happened, and we are looking into it.');
-
-            if ($("#ErrorMsg").val.trim() != "") {
-                alert($("#ErrorMsg").val.trim());
-            }
-
-
-
+            // Display any error messages 
+            if ($("#hdnErrorMsg").val().trim() != "") {
+                bootbox.alert("Oops, something went wrong! Error message -> " + $("#hdnErrorMsg").val().trim());                
+           }
 
 
         });
@@ -129,9 +124,11 @@
     <div class="row">
         <form asp-controller="Talent" asp-action="CreateJobPosting" class="w-100 mt-2">
 
-            <input type="hidden" class="form-control" id="txtTitle" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="IsEdit">
-            <input type="hidden" class="form-control" id="txtTitle" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="EditGuid">
-            <input type="hidden" class="form-control" id="txtTitle" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="RequestPath">
+            <input type="hidden" class="form-control" id="hdnIsEdit" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="IsEdit">
+            <input type="hidden" class="form-control" id="hdnEditGuid" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="EditGuid">
+            <input type="hidden" class="form-control" id="hdnRequestPath" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="RequestPath">
+            <input type="hidden" class="form-control" id="hdnErrorMsg" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="ErrorMsg">
+
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <h3> Create/Edit Job Posting </h3>
@@ -323,6 +320,7 @@
 
 
             <button type="submit" class="btn btn-primary my-3">Save Job Posting</button>
+            <a class="btn btn-secondary my-3" href='/talent/jobpostings' >Cancel</a>
         </form>
 
  

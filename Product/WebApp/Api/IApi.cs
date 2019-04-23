@@ -70,6 +70,10 @@ namespace UpDiddy.Api
         Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid);
         Task<JobPostingDto> GetJobPostingByGuid(Guid jobPostingGuid);
 
+        Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid);
+
+        Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid);
+
         Task<ContactDto> ContactAsync(Guid partnerContactGuid);
         Task<LinkedInProfileDto> GetLinkedInProfileAsync();
         Task<SubscriberADGroupsDto> MyGroupsAsync();

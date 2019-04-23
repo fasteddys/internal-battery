@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -48,9 +49,36 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> EditJobPosting(Guid jobPostingGuid)
         {
 
-            CreateJobPostingViewModel model = await CreateViewModel(jobPostingGuid);
-            model.RequestPath = Request.Path;
+            CreateJobPostingViewModel model = await CreateViewModel(jobPostingGuid);            
             return View("CreateJobPosting",model);
+        }
+
+
+
+
+
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [Authorize]
+        [HttpGet]
+        [Route("[controller]/jobPosting/{jobPostingGuid}/delete")]
+        //public ViewResult JobPosting()
+        public async Task<IActionResult> DeleteJobPosting(Guid jobPostingGuid)
+        {        
+            await _api.DeleteJobPosting(jobPostingGuid);
+            return RedirectToAction("JobPostings");
+        }
+
+
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [Authorize]
+        [HttpGet]
+        [Route("[controller]/jobPosting/{jobPostingGuid}/copy")]
+        //public ViewResult JobPosting()
+        public async Task<IActionResult> CopyJobPosting(Guid jobPostingGuid)
+        {
+
+            await _api.CopyJobPosting(jobPostingGuid);
+            return RedirectToAction("JobPostings");
         }
 
 
@@ -80,7 +108,6 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> CreateJobPosting()
         {           
             CreateJobPostingViewModel model = await CreateViewModel();
-            model.RequestPath = Request.Path;
             return View(model);
         }
  
@@ -163,9 +190,8 @@ namespace UpDiddy.Controllers
                         rVal = await _api.UpdateJobPostingAsync(job);
                     }
                     catch ( ApiException ex )
-                    {
-                     start here not redirecting correctly
-                      return  Redirect(model.RequestPath + "&ErrorMsg=" + ex.ResponseDto.Description);
+                    { 
+                      return  Redirect(model.RequestPath + "?ErrorMsg=" + WebUtility.UrlEncode (ex.ResponseDto.Description)  );
                     }
                     
                 }                    
@@ -276,6 +302,10 @@ namespace UpDiddy.Controllers
         #region private helper functions
         private async Task<CreateJobPostingViewModel> CreateViewModel(Guid? jobPostingGuid = null )
         {
+        
+
+
+
             JobPostingDto jobPostingDto = null;
             if ( jobPostingGuid != null )
             {
@@ -296,6 +326,7 @@ namespace UpDiddy.Controllers
             int PostingExpirationInDays = int.Parse(_configuration["CareerCircle:PostingExpirationInDays"]);
             CreateJobPostingViewModel model = new CreateJobPostingViewModel()
             {
+                RequestPath = Request.Path,
                 States = states.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
@@ -381,6 +412,10 @@ namespace UpDiddy.Controllers
             }
             else
                 model.IsEdit = false;
+
+
+            // finally check to see if there is an error msg that needs to be displayed
+            model.ErrorMsg = Request.Query["ErrorMsg"];
 
             return model;
         }
