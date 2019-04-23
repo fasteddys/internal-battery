@@ -357,6 +357,21 @@ namespace UpDiddy.Api
         }
 
 
+        public async Task<IList<JobPostingDto>> GetAllJobsAsync()
+        {
+            string cacheKey = "GetAllJobsAsync";
+            IList<JobPostingDto> rval = GetCachedValue<IList<JobPostingDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetAllJobsAsync();
+                SetCachedValue<IList<JobPostingDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
 
 
         public async Task<IList<JobCategoryDto>> GetJobCategoryAsync()
@@ -858,6 +873,11 @@ namespace UpDiddy.Api
             return await GetAsync<IList<CompensationTypeDto>>("lookupdata/compensation-type");
         }
 
+
+        public async Task<IList<JobPostingDto>> _GetAllJobsAsync()
+        {
+            return await GetAsync<IList<JobPostingDto>>("job/browse-jobs-location/all/all/all/all/all/0?page-size=1000000&exclude-facets=1&exclude-custom-properties=1");
+        }
 
         public async Task<IList<JobCategoryDto>> _GetJobCategoryAsync()
         {

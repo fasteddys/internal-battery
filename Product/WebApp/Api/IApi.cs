@@ -22,13 +22,13 @@ namespace UpDiddy.Api
         Task<IList<StateDto>> GetStatesByCountryAsync(Guid? countryGuid);
         Task<IList<IndustryDto>> GetIndustryAsync();
         Task<IList<JobCategoryDto>> GetJobCategoryAsync();
+        Task<IList<JobPostingDto>> GetAllJobsAsync();
         Task<IList<ExperienceLevelDto>> GetExperienceLevelAsync();
         Task<IList<EducationLevelDto>> GetEducationLevelAsync();
         Task<IList<CompensationTypeDto>> GetCompensationTypeAsync();
         Task<IList<EmploymentTypeDto>> GetEmploymentTypeAsync();
         Task<IList<SecurityClearanceDto>> GetSecurityClearanceAsync();
         Task<IList<RecruiterCompanyDto>> GetRecruiterCompaniesAsync(Guid subscriberGuid);
-
         Task<CourseVariantDto> GetCourseVariantAsync(Guid courseVariantGuid);
         Task<SubscriberDto> SubscriberAsync(Guid subscriberGuid, bool hardRefresh);
         Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid);
@@ -67,7 +67,6 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> AddJobPostingAsync(JobPostingDto jobPosting);
         Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid);
         Task<JobPostingDto> GetJobPostingByGuid(Guid jobPostingGuid);
-
         Task<ContactDto> ContactAsync(Guid partnerContactGuid);
         Task<LinkedInProfileDto> GetLinkedInProfileAsync();
         Task<SubscriberADGroupsDto> MyGroupsAsync();
