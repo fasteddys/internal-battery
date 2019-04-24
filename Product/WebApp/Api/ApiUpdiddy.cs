@@ -667,27 +667,13 @@ namespace UpDiddy.Api
         }
 
         public async Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid)
-        {             
-            try
-            {
-                return await PostAsync<JobPostingDto>(string.Format("job/{0}", jobPostingGuid.ToString()));
-            }
-            catch
-            {
-                return null;
-            };
+        {                        
+                return await PostAsync<JobPostingDto>(string.Format("job/{0}", jobPostingGuid.ToString()));        
         }
 
         public async Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid)
-        {
-            try
-            {
-                return await DeleteAsync<BasicResponseDto>(string.Format("job/{0}", jobPostingGuid.ToString()));
-            }
-            catch
-            {
-                return null;
-            };
+        {             
+           return await DeleteAsync<BasicResponseDto>(string.Format("job/{0}", jobPostingGuid.ToString()));  
         }
 
 

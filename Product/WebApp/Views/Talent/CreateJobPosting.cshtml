@@ -124,11 +124,10 @@
     <div class="row">
         <form asp-controller="Talent" asp-action="CreateJobPosting" class="w-100 mt-2">
 
-            <input type="hidden" class="form-control" id="hdnIsEdit" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="IsEdit">
-            <input type="hidden" class="form-control" id="hdnEditGuid" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="EditGuid">
-            <input type="hidden" class="form-control" id="hdnRequestPath" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="RequestPath">
-            <input type="hidden" class="form-control" id="hdnErrorMsg" aria-describedby="emailHelp" placeholder="Enter Job Title" asp-for="ErrorMsg">
-
+            <input type="hidden" class="form-control" id="hdnIsEdit" asp-for="IsEdit">
+            <input type="hidden" class="form-control" id="hdnEditGuid"  asp-for="EditGuid">
+            <input type="hidden" class="form-control" id="hdnRequestPath"  asp-for="RequestPath">
+            <input type="hidden" class="form-control" id="hdnErrorMsg" asp-for="ErrorMsg">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <h3> Create/Edit Job Posting </h3>

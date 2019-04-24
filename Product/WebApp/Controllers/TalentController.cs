@@ -59,26 +59,26 @@ namespace UpDiddy.Controllers
 
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
-        [HttpGet]
+        [HttpDelete]
         [Route("[controller]/jobPosting/{jobPostingGuid}/delete")]
         //public ViewResult JobPosting()
         public async Task<IActionResult> DeleteJobPosting(Guid jobPostingGuid)
         {        
             await _api.DeleteJobPosting(jobPostingGuid);
-            return RedirectToAction("JobPostings");
+            return Ok();
         }
 
 
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
-        [HttpGet]
+        [HttpPost]
         [Route("[controller]/jobPosting/{jobPostingGuid}/copy")]
         //public ViewResult JobPosting()
         public async Task<IActionResult> CopyJobPosting(Guid jobPostingGuid)
         {
 
             await _api.CopyJobPosting(jobPostingGuid);
-            return RedirectToAction("JobPostings");
+            return Ok();
         }
 
 
