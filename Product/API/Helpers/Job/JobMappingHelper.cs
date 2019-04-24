@@ -67,6 +67,7 @@ namespace UpDiddyApi.Helpers.Job
 
             rVal.JobCount = searchJobsResponse.MatchingJobs.Count;
             rVal.TotalHits = searchJobsResponse.TotalSize.Value;
+            rVal.RequestId = searchJobsResponse.Metadata.RequestId;
 
             foreach (CloudTalentSolution.MatchingJob j in searchJobsResponse.MatchingJobs)
             {

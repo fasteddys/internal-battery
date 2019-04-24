@@ -21,6 +21,8 @@ using Google.Apis.Auth.OAuth2;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyLib.Dto;
 using UpDiddyApi.Helpers.Job;
+using static Google.Apis.CloudTalentSolution.v3.ProjectsResource.ClientEventsResource;
+using Google.Apis.CloudTalentSolution.v3.Data;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -543,6 +545,36 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
+        #endregion
+
+        #region ClientEvents
+        public async Task<string> CreateClientEvent(List<string> jobs, string type, string requestId)
+        {
+            string time = DateTime.UtcNow.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'");
+
+            JobEvent je = new JobEvent()
+            {
+                Jobs = jobs,
+                Type = type, // todo: create enum/constants
+            };
+            ClientEvent ce = new ClientEvent()
+            {
+                EventId = Guid.NewGuid().ToString(),
+                JobEvent = je,
+                RequestId = requestId,
+                CreateTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+                ParentEventId = null, //optional, which event lead to this event
+
+            };
+
+            CreateClientEventRequest ccer = new CreateClientEventRequest()
+            {
+                ClientEvent = ce
+            };
+            CreateRequest request = _jobServiceClient.Projects.ClientEvents.Create(ccer, _projectPath);
+            ce = await request.ExecuteAsync();
+            return "Success";
+        }
         #endregion
 
         #region Helper functions

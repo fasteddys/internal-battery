@@ -30,6 +30,7 @@ using Hangfire;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.Helpers.Job;
 using System.Security.Claims;
+using UpDiddyApi.ApplicationCore.Services.GoogleJobs;
 
 namespace UpDiddyApi.Controllers
 {
@@ -336,6 +337,7 @@ namespace UpDiddyApi.Controllers
             int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
             JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize,  Request.Query);            
             JobSearchResultDto rVal = _cloudTalent.Search(jobQuery);
+            _cloudTalent.CreateClientEvent(rVal.RequestId, ClientEventType.Impression, rVal.Jobs.Select(j => j.CloudTalentUri).ToList<string>());
             return Ok(rVal);
         }
 
