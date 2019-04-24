@@ -3,10 +3,33 @@
 @using UpDiddy.Helpers
 @model JobDetailsViewModel
 
+
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"></span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Modal body text goes here.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <div class="job-details-hero-band">
     <div class="p-5"></div>
 </div>
-<div class="container">
+<div class="container animated bounceInUp">
     <div class="job-details-container shadow-5">
         @{
             List<string> Elements = new List<string>()
@@ -66,12 +89,13 @@
                 </div>
                 <div class="pt-3">
                     @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                                    Text = "Apply <i class=\"fas fa-arrow-right\"></i>",
-                                    Hyperlink = "#",
-                                    FitToText = true,
-                                    ChosenColorScheme = "cc-cscheme-white",
-                                    ButtonAction = ActionButtonViewModel.Action.CTA
-                                })
+                        AdditionalAttributes = "data-toggle=\"modal\" data-target=\"#exampleModal\"",
+                        Text = "Apply <i class=\"fas fa-arrow-right\"></i>",
+                        Hyperlink = "#",
+                        FitToText = true,
+                        ChosenColorScheme = "cc-cscheme-white",
+                        ButtonAction = ActionButtonViewModel.Action.CTA
+                    })
                 </div>
                 
             </div>
