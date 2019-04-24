@@ -22,7 +22,7 @@ namespace UpDiddy.Api
         Task<IList<StateDto>> GetStatesByCountryAsync(Guid? countryGuid);
         Task<IList<IndustryDto>> GetIndustryAsync();
         Task<IList<JobCategoryDto>> GetJobCategoryAsync();
-        Task<IList<JobPostingDto>> GetAllJobsAsync();
+        Task<JobSearchResultDto> GetAllJobsAsync();
         Task<IList<ExperienceLevelDto>> GetExperienceLevelAsync();
         Task<IList<EducationLevelDto>> GetEducationLevelAsync();
         Task<IList<CompensationTypeDto>> GetCompensationTypeAsync();

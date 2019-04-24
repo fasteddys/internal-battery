@@ -8,11 +8,11 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddy.Helpers
 {
-    public class JobSitemapIndexConfiguration : SitemapIndexConfiguration<JobPostingDto>
+    public class JobSitemapIndexConfiguration : SitemapIndexConfiguration<JobViewDto>
     {
         private readonly IUrlHelper urlHelper;
 
-        public JobSitemapIndexConfiguration(IQueryable<JobPostingDto> dataSource, int? currentPage, IUrlHelper urlHelper)
+        public JobSitemapIndexConfiguration(IQueryable<JobViewDto> dataSource, int? currentPage, IUrlHelper urlHelper)
             :base(dataSource, currentPage)
         {
             this.urlHelper = urlHelper;
@@ -22,9 +22,9 @@ namespace UpDiddy.Helpers
         {
             return new SitemapIndexNode(urlHelper.Action("jobs-sitemap.xml", "sitemap", new { currentPage }));
         }
-        public override SitemapNode CreateNode(JobPostingDto source)
+        public override SitemapNode CreateNode(JobViewDto source)
         {
-            return new SitemapNode(urlHelper.Action(source.JobPostingGuid.ToString(), "job")) { LastModificationDate = source.ModifyDate.HasValue ? source.ModifyDate.Value : source.CreateDate, ChangeFrequency = ChangeFrequency.Daily };
+            return new SitemapNode(urlHelper.Action(source.JobPostingGuid.ToString(), "jobs")) { LastModificationDate = source.ModifyDate, ChangeFrequency = ChangeFrequency.Daily };
             
         }
     }

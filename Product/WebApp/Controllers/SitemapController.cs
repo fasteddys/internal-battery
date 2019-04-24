@@ -48,13 +48,13 @@ namespace UpDiddy.Controllers
         {
             List<SitemapNode> nodes = new List<SitemapNode>
             {
-                new SitemapNode(Url.Action("Index","Home")) { ChangeFrequency = ChangeFrequency.Monthly, LastModificationDate = new DateTime(2019, 4, 11) },
-                new SitemapNode(Url.Action("About","Home")) { ChangeFrequency = ChangeFrequency.Yearly, LastModificationDate = new DateTime(2019, 1, 1) },
-                new SitemapNode(Url.Action("Offers","Home")){ ChangeFrequency = ChangeFrequency.Weekly, LastModificationDate = new DateTime(2019, 4, 19) },
-                new SitemapNode(Url.Action("Contact","Home")){ ChangeFrequency = ChangeFrequency.Yearly, LastModificationDate = new DateTime(2019, 1, 1) },
-                new SitemapNode(Url.Action("Privacy","Home")){ ChangeFrequency = ChangeFrequency.Yearly, LastModificationDate = new DateTime(2019, 1, 1) },
-                new SitemapNode(Url.Action("FAQ","Home")){ ChangeFrequency = ChangeFrequency.Yearly, LastModificationDate = new DateTime(2019, 1, 1) },
-                new SitemapNode(Url.Action("TermsOfService","Home")){ ChangeFrequency = ChangeFrequency.Yearly, LastModificationDate = new DateTime(2019, 1, 1) },
+                new SitemapNode(Url.Action("Index","Home")) { ChangeFrequency = ChangeFrequency.Weekly, LastModificationDate = new DateTime(2019, 4, 11) },
+                new SitemapNode(Url.Action("About","Home")) { ChangeFrequency = ChangeFrequency.Monthly, LastModificationDate = new DateTime(2019, 1, 1) },
+                new SitemapNode(Url.Action("Offers","Home")){ ChangeFrequency = ChangeFrequency.Daily, LastModificationDate = new DateTime(2019, 4, 19) },
+                new SitemapNode(Url.Action("Contact","Home")){ ChangeFrequency = ChangeFrequency.Monthly, LastModificationDate = new DateTime(2019, 1, 1) },
+                new SitemapNode(Url.Action("Privacy","Home")){ ChangeFrequency = ChangeFrequency.Monthly, LastModificationDate = new DateTime(2019, 1, 1) },
+                new SitemapNode(Url.Action("FAQ","Home")){ ChangeFrequency = ChangeFrequency.Monthly, LastModificationDate = new DateTime(2019, 1, 1) },
+                new SitemapNode(Url.Action("TermsOfService","Home")){ ChangeFrequency = ChangeFrequency.Monthly, LastModificationDate = new DateTime(2019, 1, 1) },
             };
             return new SitemapProvider().CreateSitemap(new SitemapModel(nodes));
         }
@@ -62,15 +62,10 @@ namespace UpDiddy.Controllers
         [HttpGet]
         [Route("[controller]/jobs-sitemap.xml")]
         public async Task<IActionResult> Jobs(int? currentPage)
+
         {
-            // issue w/ google credentials
-             IList<JobPostingDto> jobs = await _Api.GetAllJobsAsync();
-            //IList<JobPostingDto> jobs = new List<JobPostingDto>();
-            //for (int i = 0; i < 50001; i++)
-           // {
-            //    jobs.Add(new JobPostingDto() { JobPostingGuid = Guid.NewGuid() });
-           // }
-            var jobSitemapIndexConfiguration = new JobSitemapIndexConfiguration(jobs.AsQueryable(), currentPage, Url);
+            JobSearchResultDto jobSearchResult = await _Api.GetAllJobsAsync();
+            var jobSitemapIndexConfiguration = new JobSitemapIndexConfiguration(jobSearchResult.Jobs.AsQueryable(), currentPage, Url);
             return new DynamicSitemapIndexProvider().CreateSitemapIndex(new SitemapProvider(), jobSitemapIndexConfiguration);
         }
 
@@ -83,8 +78,7 @@ namespace UpDiddy.Controllers
                 new SitemapIndexNode(Url.Action("static-sitemap.xml", "sitemap")),
                 new SitemapIndexNode(Url.Action("courses-sitemap.xml", "sitemap")),
                 new SitemapIndexNode(Url.Action("jobs-sitemap.xml", "sitemap"))
-                // create separate route for pages created using butter
-                // new SitemapIndexNode(Url.Action("blog", "sitemap")), 
+                // todo: create separate node for Butter CMS sitemap (once we have published content there other than site nav and LPs) https://buttercms.com/docs/api/?csharp#feeds
             };
 
             return new SitemapProvider().CreateSitemapIndex(new SitemapIndexModel(sitemapIndexNodes));
