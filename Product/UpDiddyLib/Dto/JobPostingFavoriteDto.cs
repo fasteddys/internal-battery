@@ -7,7 +7,7 @@ namespace UpDiddyLib.Dto
     public class JobPostingFavoriteDto
     {
 
-        public Guid JobPostingFavoritesGuid { get; set; } 
+        public Guid JobPostingFavoriteGuid { get; set; } 
         public virtual JobPostingDto JobPosting { get; set; } 
         public virtual SubscriberDto Subscriber { get; set; }
     }

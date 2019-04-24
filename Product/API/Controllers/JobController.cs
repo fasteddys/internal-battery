@@ -62,6 +62,61 @@ namespace UpDiddyApi.Controllers
 
         #region job posting favorites
 
+
+        [HttpGet]
+        [Authorize]
+        [Route("api/[controller]/favorite/subscriber/{subscriberGuid}")]
+        public IActionResult GetJobFavoritesForSubscriber(Guid subscriberGuid)
+        {
+
+            Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subscriberGuid == null || subscriberGuid != subsriberGuidClaim)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job Posting Favorites can only be viewed by their owner" });
+
+            List<JobPostingFavorite> jobPostingFavorites = JobPostingFavoriteFactory.GetJobPostingFavoritesForSubscriber(_db, subscriberGuid);
+            return Ok(_mapper.Map<List<JobPostingFavorite>>(jobPostingFavorites));
+        }
+
+
+
+        [HttpDelete]
+        [Authorize]
+        [Route("api/[controller]/favorite/{jobPostingFavoriteGuid}")]
+        public IActionResult DeleteJobPostingFavorite(Guid jobPostingFavoriteGuid)
+        {
+            JobPostingFavorite jobPostingFavorite = null;
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPostingFavorite started at: {DateTime.UtcNow.ToLongDateString()} for posting {jobPostingFavoriteGuid}");
+
+                if (jobPostingFavoriteGuid == null)
+                    return BadRequest(new { code = 400, message = "No job posting favorite identifier was provided" });
+
+                jobPostingFavorite = JobPostingFavoriteFactory.GetJobPostingFavoriteByGuidWithRelatedObjects(_db, jobPostingFavoriteGuid);
+                if (jobPostingFavorite == null)
+                    return NotFound(new { code = 404, message = $"Job posting favorite {jobPostingFavoriteGuid} does not exist" });
+
+                Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                if (jobPostingFavorite.Subscriber.SubscriberGuid != subsriberGuidClaim)
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Can only delete your own job posting favorites" });
+
+                jobPostingFavorite.IsDeleted = 1;
+                jobPostingFavorite.ModifyDate = DateTime.UtcNow;
+
+                _db.SaveChanges();
+ 
+                _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPostingFavorite completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPostingFavorite exception : {ex.Message} while deleting posting {jobPostingFavoriteGuid}");
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
+            }
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"JobPosting {jobPostingFavorite.JobPostingFavoriteGuid}  has been deleted " });
+        }
+
+
+
         [HttpPost]
         [Authorize]
         [Route("api/[controller]/favorite")]
@@ -79,35 +134,30 @@ namespace UpDiddyApi.Controllers
                 if (jobPostingFavoriteDto.Subscriber == null || jobPostingFavoriteDto.Subscriber.SubscriberGuid == null || jobPostingFavoriteDto.Subscriber.SubscriberGuid != subsriberGuidClaim)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Cannot create job favorites for other users" });
 
-                // Validate subscriber 
-                Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db,subsriberGuidClaim);
-                if ( subscriber == null )
-                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = $"Subscriber {subsriberGuidClaim} not found" });
                 JobPosting jobPosting = null;
-
-                // Validate job posting
-                if (jobPostingFavoriteDto.JobPosting != null && jobPostingFavoriteDto.JobPosting.JobPostingGuid != null)
-                    jobPosting = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingFavoriteDto.JobPosting.JobPostingGuid.Value);
-
-                if (jobPosting == null)
-                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job posting not found" });
-
-                JobPostingFavorite jobPostingFavorite = JobPostingFavoriteFactory.CreateJobPostingFavorite(subscriber, jobPosting);
-                _db.JobPostingFavorite.Add(jobPostingFavorite);
-                try
+                Subscriber subscriber = null;
+                string ErrorMsg = string.Empty;
+                if (JobPostingFavoriteFactory.ValidateJobPostingFavorite(_db, jobPostingFavoriteDto, subsriberGuidClaim, ref subscriber, ref jobPosting, ref ErrorMsg) == false )               
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ErrorMsg });                
+                else
                 {
-                    _db.SaveChanges();
-                }
-                catch (DbUpdateException ex )
-                {
-                    if ( ex.InnerException.HResult == -2146232060 )
-                        return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job is already a favorite" });
-                    else 
-                        return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
-                }
+                    JobPostingFavorite jobPostingFavorite = JobPostingFavoriteFactory.CreateJobPostingFavorite(subscriber, jobPosting);
+                    _db.JobPostingFavorite.Add(jobPostingFavorite);
+                    try
+                    {
+                        _db.SaveChanges();
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        if (ex.InnerException.HResult == -2146232060)
+                            return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job is already a favorite" });
+                        else
+                            return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
+                    }
 
-                _syslog.Log(LogLevel.Information, $"***** JobController:JobPostingFavoriteDto completed at: {DateTime.UtcNow.ToLongDateString()}");
-                return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPostingFavoriteDto.JobPostingFavoritesGuid}" });
+                    _syslog.Log(LogLevel.Information, $"***** JobController:JobPostingFavoriteDto completed at: {DateTime.UtcNow.ToLongDateString()}");
+                    return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPostingFavorite.JobPostingFavoriteGuid}" });
+                }
             }
             catch (Exception ex)
             {
