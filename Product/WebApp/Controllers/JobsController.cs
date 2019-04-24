@@ -50,12 +50,12 @@ namespace UpDiddy.Controllers
             {
                 switch (e.ResponseDto.StatusCode)
                 {
-                    case (404):
-                        return NotFound();
                     case (401):
                         return Unauthorized();
                     case (500):
                         return StatusCode(500);
+                    default:
+                        return NotFound();
                 }
             }
             
