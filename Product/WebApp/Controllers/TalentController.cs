@@ -60,8 +60,7 @@ namespace UpDiddy.Controllers
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpDelete]
-        [Route("[controller]/jobPosting/{jobPostingGuid}/delete")]
-        //public ViewResult JobPosting()
+        [Route("[controller]/jobPosting/{jobPostingGuid}/delete")]   
         public async Task<IActionResult> DeleteJobPosting(Guid jobPostingGuid)
         {        
             await _api.DeleteJobPosting(jobPostingGuid);
@@ -73,7 +72,6 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpPost]
         [Route("[controller]/jobPosting/{jobPostingGuid}/copy")]
-        //public ViewResult JobPosting()
         public async Task<IActionResult> CopyJobPosting(Guid jobPostingGuid)
         {
 
@@ -86,7 +84,6 @@ namespace UpDiddy.Controllers
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpGet]
-        //public ViewResult JobPosting()
         public async Task<IActionResult> JobPostings()
         {
 
@@ -104,7 +101,6 @@ namespace UpDiddy.Controllers
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpGet]
-        //public ViewResult JobPosting()
         public async Task<IActionResult> CreateJobPosting()
         {           
             CreateJobPostingViewModel model = await CreateViewModel();
