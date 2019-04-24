@@ -154,6 +154,9 @@ namespace UpDiddyApi.Models
 
         public DbSet<RecruiterCompany> RecruiterCompany { get; set; }
 
+        public DbSet<JobPostingFavorite> JobPostingFavorite { get; set; }
+        
+
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
@@ -299,6 +302,10 @@ namespace UpDiddyApi.Models
 
             modelBuilder.Entity<JobPostingSkill>()
                 .HasKey(ss => new { ss.SkillId, ss.JobPostingId });
+
+            modelBuilder.Entity<JobPostingFavorite>()
+                   .HasKey(ss => new { ss.JobPostingId, ss.SubscriberId });
+
 
         }
     }

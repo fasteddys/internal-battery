@@ -20,7 +20,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using System.Net;
 using Microsoft.SqlServer.Server;
-// Use alias to avoid collistions on classname such as "Company"
+// Use alias to avoid collisions on classname such as "Company"
 using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
 using AutoMapper.Configuration;
 using AutoMapper;
@@ -57,6 +57,65 @@ namespace UpDiddyApi.Controllers
             _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
         }
+        #endregion
+
+
+        #region job posting favorites
+
+        [HttpPost]
+        [Authorize]
+        [Route("api/[controller]/favorite")]
+        public IActionResult CreateJobPostingFavorite([FromBody] JobPostingFavoriteDto jobPostingFavoriteDto)
+        {
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobController:JobPostingFavoriteDto started at: {DateTime.UtcNow.ToLongDateString()}");
+                if (jobPostingFavoriteDto == null )
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job posting favorite required" });
+
+                // Validate request 
+                Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                // validate the user is trying to create a favorite for themselves 
+                if (jobPostingFavoriteDto.Subscriber == null || jobPostingFavoriteDto.Subscriber.SubscriberGuid == null || jobPostingFavoriteDto.Subscriber.SubscriberGuid != subsriberGuidClaim)
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Cannot create job favorites for other users" });
+
+                // Validate subscriber 
+                Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db,subsriberGuidClaim);
+                if ( subscriber == null )
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = $"Subscriber {subsriberGuidClaim} not found" });
+                JobPosting jobPosting = null;
+
+                // Validate job posting
+                if (jobPostingFavoriteDto.JobPosting != null && jobPostingFavoriteDto.JobPosting.JobPostingGuid != null)
+                    jobPosting = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingFavoriteDto.JobPosting.JobPostingGuid.Value);
+
+                if (jobPosting == null)
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job posting not found" });
+
+                JobPostingFavorite jobPostingFavorite = JobPostingFavoriteFactory.CreateJobPostingFavorite(subscriber, jobPosting);
+                _db.JobPostingFavorite.Add(jobPostingFavorite);
+                try
+                {
+                    _db.SaveChanges();
+                }
+                catch (DbUpdateException ex )
+                {
+                    if ( ex.InnerException.HResult == -2146232060 )
+                        return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job is already a favorite" });
+                    else 
+                        return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
+                }
+
+                _syslog.Log(LogLevel.Information, $"***** JobController:JobPostingFavoriteDto completed at: {DateTime.UtcNow.ToLongDateString()}");
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPostingFavoriteDto.JobPostingFavoritesGuid}" });
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobController:JobPostingFavoriteDto exception : {ex.Message}");
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
+            }
+        }
+
         #endregion
 
         #region job crud 
@@ -189,6 +248,7 @@ namespace UpDiddyApi.Controllers
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting is required" });
 
                 _syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
+                //todo move code below to factory method 
                 JobPosting jobPosting = _mapper.Map<JobPosting>(jobPostingDto);
                 // use factory method to make sure all the base data values are set just 
                 // in case the caller didn't set them
