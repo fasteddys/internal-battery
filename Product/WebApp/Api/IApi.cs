@@ -109,6 +109,7 @@ namespace UpDiddy.Api
         #region JobBoard
 
         Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid);
+        Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
 
         #endregion
 

@@ -213,7 +213,7 @@ a{
 
 .btn-primary {
     background-color: $color-secondary;
-    border: $rem-2 solid $color-white;
+    border: $rem-2 solid $color-secondary;
 
     &.font-small {
         font-size: 1rem;
@@ -225,18 +225,18 @@ a{
     }
 
     &:hover {
-        background-color: $color-secondary;
-        border-color: $color-secondary;
+        background-color: $color-primary;
+        border-color: $color-primary;
     }
 
     &:active {
-        background-color: $color-secondary;
-        border-color: $color-secondary;
+        background-color: $color-tertiary;
+        border-color: $color-tertiary;
     }
 
     &:focus {
-        background-color: $color-secondary;
-        border-color: $color-secondary;
+        background-color: $color-tertiary;
+        border-color: $color-tertiary;
         box-shadow: none;
     }
 

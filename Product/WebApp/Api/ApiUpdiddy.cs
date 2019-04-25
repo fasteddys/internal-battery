@@ -1168,6 +1168,11 @@ namespace UpDiddy.Api
             return await GetAsync<JobPostingDto>("job/" + JobPostingGuid);
         }
 
+        public async Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication)
+        {
+            return await PostAsync<BasicResponseDto>("jobApplication", JobApplication);
+        }
+
         #endregion
     }
 }

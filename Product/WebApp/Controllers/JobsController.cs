@@ -8,7 +8,8 @@ using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddyLib.Dto;
 using UpDiddy.ViewModels;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
+using UpDiddy.Authentication;
 
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -98,6 +99,100 @@ namespace UpDiddy.Controllers
             return View("JobDetails", jdvm);
         }
 
-        //public IActionResult GetJobsAsync()
+        [Authorize]
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [HttpGet("apply/{JobGuid}")]
+        public async Task<IActionResult> ApplyAsync(Guid JobGuid)
+        {
+            JobPostingDto job = null;
+            try
+            {
+                job = await _api.GetJobAsync(JobGuid);
+            }
+            catch (ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+
+            if (job == null)
+                return NotFound();
+            
+
+            
+            return View("Apply", new JobApplicationViewModel() {
+                FirstName = string.IsNullOrEmpty(this.subscriber.FirstName) ? string.Empty : this.subscriber.FirstName,
+                LastName = string.IsNullOrEmpty(this.subscriber.LastName) ? string.Empty : this.subscriber.LastName,
+                Job = job,
+                JobPostingGuid = JobGuid,
+                HasResumeOnFile = this.subscriber.Files.Count > 0
+            });
+        }
+
+        [Authorize]
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [HttpPost]
+        public async Task<IActionResult> SubmitApplicationAsync(JobApplicationViewModel JobApplicationViewModel)
+        {
+            if (this.subscriber.Files.Count == 0)
+                return BadRequest();
+
+            JobPostingDto job = null;
+            try
+            {
+                job = await _api.GetJobAsync(JobApplicationViewModel.JobPostingGuid);
+            }
+            catch (ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+
+            if (job == null)
+                return NotFound();
+
+            this.subscriber.FirstName = JobApplicationViewModel.FirstName;
+            this.subscriber.LastName = JobApplicationViewModel.LastName;
+
+            JobApplicationDto jadto = new JobApplicationDto()
+            {
+                JobPosting = job,
+                Subscriber = this.subscriber,
+                CoverLetter = JobApplicationViewModel.CoverLetter
+            };
+
+
+            BasicResponseDto Response = null;
+
+            CompletedJobApplicationViewModel cjavm = new CompletedJobApplicationViewModel();
+
+            try
+            {
+                Response = await _api.ApplyToJobAsync(jadto);
+                cjavm.JobApplicationStatus = CompletedJobApplicationViewModel.ApplicationStatus.Success;
+            }
+            catch(ApiException e)
+            {
+                cjavm.JobApplicationStatus = CompletedJobApplicationViewModel.ApplicationStatus.Failed;
+                cjavm.Description = e.ResponseDto.Description;
+            }
+
+
+            return View("Finish", cjavm);
+        }
     }
 }
