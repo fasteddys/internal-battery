@@ -73,8 +73,8 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid == null || subscriberGuid != subsriberGuidClaim)
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job Posting Favorites can only be viewed by their owner" });
 
-            List<JobPostingFavorite> jobPostingFavorites = JobPostingFavoriteFactory.GetJobPostingFavoritesForSubscriber(_db, subscriberGuid);
-            return Ok(_mapper.Map<List<JobPostingFavorite>>(jobPostingFavorites));
+            List<JobPosting> subscriberJobPostingFavorites = JobPostingFavoriteFactory.GetJobPostingFavoritesForSubscriber(_db, subscriberGuid);
+            return Ok(_mapper.Map<List<JobPostingDto>>(subscriberJobPostingFavorites));
         }
 
 

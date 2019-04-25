@@ -11,7 +11,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
     public class JobPostingFavoriteFactory
     {
 
-        public static bool ValidateJobPostingFavorite(UpDiddyDbContext db, JobPostingFavoriteDto  jobPostingFavoriteDto, Guid subsriberGuidClaim,  ref Subscriber subscriber, ref JobPosting jobPosting, ref string ErrorMsg)
+        public static bool ValidateJobPostingFavorite(UpDiddyDbContext db, JobPostingFavoriteDto jobPostingFavoriteDto, Guid subsriberGuidClaim, ref Subscriber subscriber, ref JobPosting jobPosting, ref string ErrorMsg)
         {
             // Validate subscriber 
             subscriber = SubscriberFactory.GetSubscriberByGuid(db, subsriberGuidClaim);
@@ -20,7 +20,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 ErrorMsg = $"Subscriber {subsriberGuidClaim} not found";
                 return false;
             }
-            
+
             jobPosting = null;
             // Validate job posting
             if (jobPostingFavoriteDto.JobPosting != null && jobPostingFavoriteDto.JobPosting.JobPostingGuid != null)
@@ -38,13 +38,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-            public static List<JobPostingFavorite> GetJobPostingFavoritesForSubscriber(UpDiddyDbContext db, Guid guid)
+        public static List<JobPosting> GetJobPostingFavoritesForSubscriber(UpDiddyDbContext db, Guid guid)
         {
             return db.JobPostingFavorite
                 .Include(c => c.Subscriber)
                 .Include(c => c.JobPosting)
                 .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid == guid)
                 .OrderByDescending(s => s.CreateDate)
+                .Select(jpf => jpf.JobPosting)
                 .ToList();
         }
 
@@ -53,22 +54,22 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static JobPostingFavorite GetJobPostingFavoriteByGuidWithRelatedObjects(UpDiddyDbContext db, Guid guid)
         {
             return db.JobPostingFavorite
-           .Include(c => c.Subscriber )
+           .Include(c => c.Subscriber)
            .Include(c => c.JobPosting)
            .Where(c => c.IsDeleted == 0 && c.JobPostingFavoriteGuid == guid)
            .FirstOrDefault();
 
         }
 
-        public static JobPostingFavorite GetJobPostingFavoriteByGuid(UpDiddyDbContext db,  Guid guid )
+        public static JobPostingFavorite GetJobPostingFavoriteByGuid(UpDiddyDbContext db, Guid guid)
         {
-              return  db.JobPostingFavorite
-             .Where(c => c.IsDeleted == 0 && c.JobPostingFavoriteGuid == guid )
-             .FirstOrDefault();
-   
+            return db.JobPostingFavorite
+           .Where(c => c.IsDeleted == 0 && c.JobPostingFavoriteGuid == guid)
+           .FirstOrDefault();
+
         }
-       public static JobPostingFavorite CreateJobPostingFavorite(Subscriber subscriber, JobPosting jobPosting)
-       {
+        public static JobPostingFavorite CreateJobPostingFavorite(Subscriber subscriber, JobPosting jobPosting)
+        {
             return new JobPostingFavorite()
             {
                 CreateDate = DateTime.UtcNow,
@@ -80,7 +81,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 SubscriberId = subscriber.SubscriberId,
                 JobPostingId = jobPosting.JobPostingId
             };
-       }
- 
+        }
+
     }
 }
