@@ -11,72 +11,13 @@
         @{
             List<string> Elements = new List<string>()
         {
-            Html.PartialToHtmlMarkup("Partials/_JobPostingHeader", Model).ToString()
+            Html.PartialToHtmlMarkup("Partials/_JobPosting", Model).ToString()
         };
         }
         @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
         {
-            Class = "skew skew-left-to-right cc-cscheme-secondary",
+            Class = "skew skew-left-to-right cc-cscheme-white",
             Elements = Elements
         })
-        <div class="job-description-container row">
-            <div class="col-12 pt-4">
-                <h2 class="job-board-heading">Job Snapshot</h2>
-            </div>
-            <div class="col-12 col-md-6 pt-4">
-                <div>
-                    <strong>Location:</strong> <span class="job-location">@Model.Location</span>
-                </div>
-                <div>
-                    <strong>Posting ID:</strong> <span class="job-location">@Model.PostingId</span>
-                </div>
-            </div>
-            <div class="col-12 col-md-6 pt-4">
-                <strong>Employee Type:</strong> <span class="employee-type">@Model.EmployeeType</span>
-            </div>
-            <div class="col-12 pt-3">
-                <h4 class="job-board-heading">Job Summary</h4>
-                <div class="job-summary">
-                    @Model.Summary
-                </div>
-                <div class="pt-4">
-                    <h4>About CareerCircle</h4>
-                    <p>The statistic has gone viral that there will be a talent shortage of 85.2M people by 2030. CareerCircle was founded in the spirit of finding solutions to address the pending skills gap versus falling victim to it. With so many capable people wanting to find employment and employers needing partners to achieve their goals, CareerCircle is here to provide a bridge.</p>
-                    <p>
-                        At CareerCircle, we recognize that CareerskillingTM is the fastest path to improved performance and securing your ideal role. To advance your skills, you need access to the highest caliber of online education technology that is delivered in a meaningful way.
-
-                        Here is where we come in.
-
-                        We partner with experts in education technology to deliver unique learning experiences that can be instructor-led or self- paced, supplemented with the necessary support for optimal results. By completing the coursework provided by these groups, candidates gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance, versus limited work history or listed resume experience.
-
-                        In the end, your journey of advanced education leads to higher pay, flexibility, and a better life.
-                    </p>
-                </div>
-            </div>
-            <div class="col-12 pt-3">
-                <h4 class="job-board-heading">Contact Information</h4>
-                <div>
-                    <strong>Name:</strong> <span class="job-contact-name">@Model.ContactName</span>
-                </div>
-                <div>
-                    <strong>Email:</strong> <span class="job-contact-email">@Model.ContactEmail</span>
-                </div>
-                <div>
-                    <strong>Phone:</strong> <span class="job-contact-phone">@Model.ContactPhone</span>
-                </div>
-                <div class="pt-3">
-                    @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                        AdditionalAttributes = "data-toggle=\"modal\" data-target=\"#exampleModal\"",
-                        Text = "Apply <i class=\"fas fa-arrow-right\"></i>",
-                        Hyperlink = "#",
-                        FitToText = true,
-                        ChosenColorScheme = "cc-cscheme-white",
-                        ButtonAction = ActionButtonViewModel.Action.CTA
-                    })
-                </div>
-                
-            </div>
-        </div>
     </div>
-    
 </div>

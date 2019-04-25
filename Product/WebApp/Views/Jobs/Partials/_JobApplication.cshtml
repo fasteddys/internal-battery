@@ -1,4 +1,38 @@
-﻿<form id="JobApplication" asp-controller="Jobs" asp-action="SubmitApplicationAsync">
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using UpDiddy.Helpers
+@model JobApplicationViewModel
 
-
-</form>
+<div class="job-application-container">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="pb-4">Apply to position: @Model.Job.Title</h2>
+            @if (Model.HasResumeOnFile)
+            {
+                <form id="JobApplication" asp-controller="Jobs" asp-action="SubmitApplicationAsync">
+                    <input type="hidden" asp-for="JobPostingGuid" value="@Model.JobPostingGuid" />
+                    <div class="form-group">
+                        <label for="FirstName">First Name</label>
+                        <input type="text" class="form-control" asp-for="FirstName" value="@Model.FirstName">
+                    </div>
+                    <div class="form-group">
+                        <label for="LastName">Last Name</label>
+                        <input type="text" class="form-control" asp-for="LastName" value="@Model.LastName">
+                    </div>
+                    <div class="form-group">
+                        <label for="CoverLetter">Cover Letter</label>
+                        <textarea class="form-control" aria-describedby="coverLetterHelp" rows="3" asp-for="CoverLetter"></textarea>
+                        <small id="coverLetterHelp" class="form-text text-muted">Copy and paste your cover letter text here.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-warning" role="alert">
+                    In order to apply for this position, you need to upload your resume to your CareerCircle account. You can do so at the top of your <a href="/Home/Profile">profile</a>.
+                </div>
+            }
+        </div>
+    </div>
+</div>
