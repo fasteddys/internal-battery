@@ -296,6 +296,19 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     };
                 }
 
+                int campaignId = _db.Campaign.Where(ca => ca.Name == "PPL Lead Gen" && ca.IsDeleted == 0).FirstOrDefault().CampaignId;
+                // associate the lead with the PPL campaign
+                _db.CampaignPartnerContact.Add(
+                    new CampaignPartnerContact()
+                    {
+                        CampaignId = campaignId,
+                        CampaignPartnerContactGuid = Guid.NewGuid(),
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.Empty,
+                        IsDeleted = 0,
+                        PartnerContact = _partnerContact
+                    });
+
                 // create new lead statuses to be saved on the partner contact 
                 _leadResponse.LeadStatuses.ForEach(ls =>
                 {

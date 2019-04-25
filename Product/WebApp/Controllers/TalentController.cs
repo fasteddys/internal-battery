@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Configuration;
@@ -47,8 +49,34 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> EditJobPosting(Guid jobPostingGuid)
         {
 
-            CreateJobPostingViewModel model = await CreateViewModel(jobPostingGuid);
+            CreateJobPostingViewModel model = await CreateViewModel(jobPostingGuid);            
             return View("CreateJobPosting",model);
+        }
+
+
+
+
+
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [Authorize]
+        [HttpDelete]
+        [Route("[controller]/jobPosting/{jobPostingGuid}/delete")]   
+        public async Task<IActionResult> DeleteJobPosting(Guid jobPostingGuid)
+        {        
+            await _api.DeleteJobPosting(jobPostingGuid);
+            return Ok();
+        }
+
+
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [Authorize]
+        [HttpPost]
+        [Route("[controller]/jobPosting/{jobPostingGuid}/copy")]
+        public async Task<IActionResult> CopyJobPosting(Guid jobPostingGuid)
+        {
+
+            await _api.CopyJobPosting(jobPostingGuid);
+            return Ok();
         }
 
 
@@ -56,7 +84,6 @@ namespace UpDiddy.Controllers
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpGet]
-        //public ViewResult JobPosting()
         public async Task<IActionResult> JobPostings()
         {
 
@@ -74,17 +101,17 @@ namespace UpDiddy.Controllers
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpGet]
-        //public ViewResult JobPosting()
         public async Task<IActionResult> CreateJobPosting()
         {           
             CreateJobPostingViewModel model = await CreateViewModel();
             return View(model);
         }
+ 
 
 
 
 
-        
+
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [HttpPost]
         [Authorize]
@@ -143,14 +170,29 @@ namespace UpDiddy.Controllers
                 if ( string.IsNullOrEmpty(model.SelectedSkills) == false )
                 {
                     string[] skillGuids = model.SelectedSkills.Trim().Split(',');
-                    job.Skills = new List<SkillDto>();
+                    job.JobPostingSkills = new List<SkillDto>();
                     foreach ( string guid in skillGuids )
                     {
                         SkillDto skill = new SkillDto() { SkillGuid = Guid.Parse(guid) };
-                        job.Skills.Add(skill);
+                        job.JobPostingSkills.Add(skill);
                     }
                 }
-                rVal =   await _api.AddJobPostingAsync(job);
+
+                if ( model.IsEdit )
+                {
+                    job.JobPostingGuid = model.EditGuid;
+                    try
+                    {
+                        rVal = await _api.UpdateJobPostingAsync(job);
+                    }
+                    catch ( ApiException ex )
+                    { 
+                      return  Redirect(model.RequestPath + "?ErrorMsg=" + WebUtility.UrlEncode (ex.ResponseDto.Description)  );
+                    }
+                    
+                }                    
+                else 
+                    rVal =   await _api.AddJobPostingAsync(job);
                   
             }
  
@@ -228,7 +270,8 @@ namespace UpDiddy.Controllers
                 ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
                 SubscriberGuid = subscriber.SubscriberGuid.Value
             };
-            
+
+        
             return View("Subscriber", subscriberViewModel);
         }
         
@@ -255,12 +298,16 @@ namespace UpDiddy.Controllers
         #region private helper functions
         private async Task<CreateJobPostingViewModel> CreateViewModel(Guid? jobPostingGuid = null )
         {
+        
+
+
+
             JobPostingDto jobPostingDto = null;
             if ( jobPostingGuid != null )
             {
                     jobPostingDto = await _api.GetJobPostingByGuid(jobPostingGuid.Value);
             }
-
+     
             Guid USCountryGuid = Guid.Parse(_configuration["CareerCircle:USCountryGuid"]);
 
             var states = await _Api.GetStatesByCountryAsync(USCountryGuid);
@@ -275,60 +322,98 @@ namespace UpDiddy.Controllers
             int PostingExpirationInDays = int.Parse(_configuration["CareerCircle:PostingExpirationInDays"]);
             CreateJobPostingViewModel model = new CreateJobPostingViewModel()
             {
+                RequestPath = Request.Path,
                 States = states.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
                     Value = s.Name,
-                    Selected = s.StateGuid == this.subscriber?.State?.StateGuid
+                    Selected = jobPostingDto?.Province?.Trim().ToLower() != null && jobPostingDto?.Province?.Trim().ToLower() == s.Name.Trim().ToLower()
                 }),
 
                 Industries = industries.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
-                    Value = s.IndustryGuid.ToString()
+                    Value = s.IndustryGuid.ToString(),
+                    Selected = jobPostingDto?.Industry?.IndustryGuid != null && jobPostingDto?.Industry?.IndustryGuid == s.IndustryGuid
                 }),
                 JobCategories = jobCategories.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
-                    Value = s.JobCategoryGuid.ToString()
+                    Value = s.JobCategoryGuid.ToString(),                   
+                    Selected = jobPostingDto?.JobCategory?.JobCategoryGuid != null && jobPostingDto?.JobCategory?.JobCategoryGuid == s.JobCategoryGuid
                 }),
                 ExperienceLevels = experienceLevels.Select(s => new SelectListItem()
                 {
                     Text = s.DisplayName,
-                    Value = s.ExperienceLevelGuid.ToString()
+                    Value = s.ExperienceLevelGuid.ToString(),
+                    Selected = jobPostingDto?.ExperienceLevel?.ExperienceLevelGuid != null && jobPostingDto?.ExperienceLevel?.ExperienceLevelGuid == s.ExperienceLevelGuid
                 }),
                 EducationLevels = educationLevels.Select(s => new SelectListItem()
                 {
                     Text = s.Level,
-                    Value = s.EducationLevelGuid.ToString()
+                    Value = s.EducationLevelGuid.ToString(),
+                    Selected = jobPostingDto?.EducationLevel?.EducationLevelGuid != null && jobPostingDto?.EducationLevel?.EducationLevelGuid == s.EducationLevelGuid
                 }),
                 EmploymentTypes = employmentTypes.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
-                    Value = s.EmploymentTypeGuid.ToString()
+                    Value = s.EmploymentTypeGuid.ToString(),
+                    Selected = jobPostingDto?.EmploymentType?.EmploymentTypeGuid != null && jobPostingDto?.EmploymentType?.EmploymentTypeGuid == s.EmploymentTypeGuid
                 }),
                 CompensationTypes = compensationType.Select(s => new SelectListItem()
                 {
                     Text = s.CompensationTypeName,
-                    Value = s.CompensationTypeGuid.ToString()
+                    Value = s.CompensationTypeGuid.ToString(),
+                    Selected = jobPostingDto?.CompensationType?.CompensationTypeGuid != null && jobPostingDto?.CompensationType?.CompensationTypeGuid == s.CompensationTypeGuid
                 }),
                 SecurityClearances = SecurityClearances.Select(s => new SelectListItem()
                 {
                     Text = s.Name,
-                    Value = s.SecurityClearanceGuid.ToString()
+                    Value = s.SecurityClearanceGuid.ToString(),
+                    Selected = jobPostingDto?.SecurityClearance?.SecurityClearanceGuid != null && jobPostingDto?.SecurityClearance?.SecurityClearanceGuid == s.SecurityClearanceGuid
                 }),
                 RecruiterCompanies = companies.Select(s => new SelectListItem()
                 {
                     Text = s.Company.CompanyName,
-                    Value = s.Company.CompanyGuid.ToString()
+                    Value = s.Company.CompanyGuid.ToString(),
+                    Selected = jobPostingDto?.Company?.CompanyGuid != null && jobPostingDto?.Company?.CompanyGuid == s.CompanyGuid
                 }),
 
-                PostingExpirationDate = DateTime.Now.AddDays(PostingExpirationInDays),
-                ApplicationDeadline = DateTime.Now.AddDays(PostingExpirationInDays)
+                PostingExpirationDate = jobPostingDto == null ? DateTime.Now.AddDays(PostingExpirationInDays) : jobPostingDto.PostingExpirationDateUTC,
+                ApplicationDeadline =  jobPostingDto == null  ? DateTime.Now.AddDays(PostingExpirationInDays) : jobPostingDto.ApplicationDeadlineUTC
             };
 
-            return model;
+            model.Title = jobPostingDto == null ? string.Empty : jobPostingDto.Title;
+            model.Description = jobPostingDto == null ? string.Empty : jobPostingDto.Description;
+            model.City =  jobPostingDto == null ? string.Empty : jobPostingDto.City;
+            model.StreetAddress = jobPostingDto == null ? string.Empty : jobPostingDto.StreetAddress;
+            model.PostalCode = jobPostingDto == null ? string.Empty : jobPostingDto.PostalCode; 
+            model.IsDraft = jobPostingDto == null ? true : jobPostingDto.JobStatus == (int) JobPostingStatus.Draft;
+            model.IsAgency = jobPostingDto == null ? true : jobPostingDto.IsAgencyJobPosting;
 
+            if (jobPostingDto != null && jobPostingDto.Compensation != 0)
+                model.Compensation = jobPostingDto.Compensation;
+            if (jobPostingDto != null && jobPostingDto.TelecommutePercentage != 0)
+                model.Telecommute = jobPostingDto.TelecommutePercentage;
+
+            // Initialize skills             
+            if ( jobPostingDto!= null && jobPostingDto.JobPostingSkills != null )           
+                model.Skills = jobPostingDto.JobPostingSkills;
+
+
+            if (jobPostingDto != null)
+            {
+                model.IsEdit = true;
+                model.EditGuid = jobPostingDto.JobPostingGuid.Value;
+            }
+            else
+                model.IsEdit = false;
+
+
+            // finally check to see if there is an error msg that needs to be displayed
+            model.ErrorMsg = Request.Query["ErrorMsg"];
+
+            return model;
         }
 
 

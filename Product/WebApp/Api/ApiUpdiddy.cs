@@ -356,8 +356,20 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public async Task<JobSearchResultDto> GetAllJobsAsync()
+        {
+            string cacheKey = "GetAllJobsAsync";
+            JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
 
-
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetAllJobsAsync();
+                SetCachedValue<JobSearchResultDto>(cacheKey, rval);
+            }
+            return rval;
+        }
 
         public async Task<IList<JobCategoryDto>> GetJobCategoryAsync()
         {
@@ -635,6 +647,13 @@ namespace UpDiddy.Api
             return await PostAsync<BasicResponseDto>(string.Format("job"), jobPosting);
         }
 
+        public async Task<BasicResponseDto> UpdateJobPostingAsync(JobPostingDto jobPosting)
+        {
+            return await PutAsync<BasicResponseDto>(string.Format("job"), jobPosting);
+        }
+
+
+
         public async Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid) 
         {
                 return await GetAsync<List<JobPostingDto>>(string.Format("job/subscriber/{0}", subscriberGuid.ToString()));
@@ -658,6 +677,21 @@ namespace UpDiddy.Api
                             
           
         }
+
+        public async Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid)
+        {                        
+                return await PostAsync<JobPostingDto>(string.Format("job/{0}", jobPostingGuid.ToString()));        
+        }
+
+        public async Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid)
+        {             
+           return await DeleteAsync<BasicResponseDto>(string.Format("job/{0}", jobPostingGuid.ToString()));  
+        }
+
+
+
+
+
 
         public async Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid)
         {
@@ -858,6 +892,11 @@ namespace UpDiddy.Api
             return await GetAsync<IList<CompensationTypeDto>>("lookupdata/compensation-type");
         }
 
+
+        public async Task<JobSearchResultDto> _GetAllJobsAsync()
+        {
+            return await GetAsync<JobSearchResultDto>("job/browse-jobs-location/all/all/all/all/all/all/0?page-size=1000000&exclude-facets=1&exclude-custom-properties=1");
+        }
 
         public async Task<IList<JobCategoryDto>> _GetJobCategoryAsync()
         {
