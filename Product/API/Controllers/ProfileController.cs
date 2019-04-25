@@ -40,45 +40,45 @@ namespace UpDiddyApi.Controllers
         }
 
         // should we have a "utility" or "shared" API controller for things like this?
-        [HttpGet]
-        [Route("api/country")]
-        public IActionResult GetCountries()
-        {
-            var countries = _db.Country
-                .Join(_db.State, c => c.CountryId, s => s.CountryId, (c, s) => c)
-                .Distinct()
-                .Where(c => c.IsDeleted == 0)
-                .OrderBy(c => c.Sequence)
-                .ProjectTo<CountryDto>(_mapper.ConfigurationProvider)
-                .ToList();
+        //[HttpGet]
+        //[Route("api/country")]
+        //public IActionResult GetCountries()
+        //{
+        //    var countries = _db.Country
+        //        .Join(_db.State, c => c.CountryId, s => s.CountryId, (c, s) => c)
+        //        .Distinct()
+        //        .Where(c => c.IsDeleted == 0)
+        //        .OrderBy(c => c.Sequence)
+        //        .ProjectTo<CountryDto>(_mapper.ConfigurationProvider)
+        //        .ToList();
 
-            return Ok(countries);
-        }
+        //    return Ok(countries);
+        //}
 
-        [HttpGet]
-        [Route("api/country/{countryGuid}/state")]
-        public IActionResult GetStatesByCountry(Guid countryGuid)
-        {
-            IQueryable<State> states;
+        //[HttpGet]
+        //[Route("api/country/{countryGuid}/state")]
+        //public IActionResult GetStatesByCountry(Guid countryGuid)
+        //{
+        //    IQueryable<State> states;
 
-            states = _db.State
-                .Include(s => s.Country)
-                .Where(s => s.IsDeleted == 0 && s.Country.CountryGuid == countryGuid);
+        //    states = _db.State
+        //        .Include(s => s.Country)
+        //        .Where(s => s.IsDeleted == 0 && s.Country.CountryGuid == countryGuid);
 
-            return Ok(states.OrderBy(s => s.Sequence).ProjectTo<StateDto>(_mapper.ConfigurationProvider));
-        }
+        //    return Ok(states.OrderBy(s => s.Sequence).ProjectTo<StateDto>(_mapper.ConfigurationProvider));
+        //}
 
-        [HttpGet]
-        [Route("api/state")]
-        public IActionResult GetStates()
-        {
-            IQueryable<State> states;
-            states = _db.State
-                .Include(s => s.Country)
-                .Where(s => s.IsDeleted == 0 && s.Country.Sequence == 1);
+        //[HttpGet]
+        //[Route("api/state")]
+        //public IActionResult GetStates()
+        //{
+        //    IQueryable<State> states;
+        //    states = _db.State
+        //        .Include(s => s.Country)
+        //        .Where(s => s.IsDeleted == 0 && s.Country.Sequence == 1);
 
-            return Ok(states.OrderBy(s => s.Sequence).ProjectTo<StateDto>(_mapper.ConfigurationProvider));
-        }
+        //    return Ok(states.OrderBy(s => s.Sequence).ProjectTo<StateDto>(_mapper.ConfigurationProvider));
+        //}
 
         // TODO find a better home for these lookup endpoints - maybe a new lookup or data endpoint?
         [HttpGet]

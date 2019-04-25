@@ -43,6 +43,8 @@ using Microsoft.AspNetCore.SignalR;
 using UpDiddyApi.Helpers.SignalR;
 using UpDiddyApi.Authorization.APIGateway;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Repository;
 
 namespace UpDiddyApi
 {
@@ -144,6 +146,8 @@ namespace UpDiddyApi
                        .AllowAnyHeader();
             }));
 
+            //configuring RepositoryWrapper class to implement repository pattern
+            services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
             // Add framework services.
             // the 'ignore' option for reference loop handling was implemented to prevent circular errors during serialization 
