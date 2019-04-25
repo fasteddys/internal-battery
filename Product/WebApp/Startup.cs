@@ -82,7 +82,7 @@ namespace UpDiddy
                 options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
                 options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
             });
-       
+
 
             #region AddLocalization
             services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -124,7 +124,7 @@ namespace UpDiddy
             var ApiGetTimeoutPolicy = Policy.TimeoutAsync(PollyTimeoutInSeconds);
             // Create retry policy          
             var ApiGetRetryPolicy = HttpPolicyExtensions
-                .HandleTransientHttpError()                                
+                .HandleTransientHttpError()
                 .WaitAndRetryAsync(PollyRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
             // Combine timeout and retry policies to create Get policy 
             var ApiGetPolicy = ApiGetTimeoutPolicy.WrapAsync(ApiGetRetryPolicy);
@@ -247,7 +247,7 @@ namespace UpDiddy
 
             app.Use(async (ctx, next) =>
             {
-                if (ctx.Request.Path == "/signout-oidc" &&!ctx.Request.Query["skip"].Any())
+                if (ctx.Request.Path == "/signout-oidc" && !ctx.Request.Query["skip"].Any())
                 {
                     var location = ctx.Request.Path + ctx.Request.QueryString + "&skip=1";
                     ctx.Response.StatusCode = 200;
@@ -292,13 +292,16 @@ namespace UpDiddy
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
+                    "sitemap",
+                    "sitemap.xml",
+                    new { controller = "Sitemap", action = "SiteMap" });
+                routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
                 routes.MapRoute(
                     "NotFound",
                     "{*url}",
-                    new { controller = "Home", action = "PageNotFound" }
-                );
+                    new { controller = "Home", action = "PageNotFound" });
             });
         }
     }
