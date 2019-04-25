@@ -8,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddyLib.Dto;
 using UpDiddy.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using UpDiddy.Authentication;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -75,6 +77,46 @@ namespace UpDiddy.Controllers
 
 
             return View("JobDetails", jdvm);
+        }
+
+        [Authorize]
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [HttpGet("apply/{JobGuid}")]
+        public async Task<IActionResult> ApplyAsync(Guid JobGuid)
+        {
+            JobPostingDto job = null;
+            try
+            {
+                job = await _api.GetJobAsync(JobGuid);
+            }
+            catch (ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+
+            if (job == null)
+                return NotFound();
+            JobApplicationDto jadto = new JobApplicationDto()
+            {
+                JobPosting = job,
+                Subscriber = this.subscriber
+            };
+            BasicResponseDto Response = await _api.ApplyToJobAsync(jadto);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> SubmitApplicationAsync([FromBody] JobApplicationViewModel JobApplicationViewModel)
+        {
+            return Ok();
         }
     }
 }
