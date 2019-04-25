@@ -13,6 +13,8 @@ namespace UpDiddyLib.Dto
         public SubscriberDto Subscriber { get; set; }
  
         public CompanyDto Company { get; set; }
+
+        public Guid CompanyGuid { get; set; }
  
         public int IsStaff { get; set; }
     }

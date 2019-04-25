@@ -15,7 +15,8 @@ namespace UpDiddyApi.Models
         public int SubscriberId { get; set; }
         public virtual Subscriber Subscriber { get; set; }
 
-        public int CompanyId { get; set; }
+
+        public Guid CompanyGuid { get; set; }
 
         public virtual Company Company {get; set;}
         /// <summary>

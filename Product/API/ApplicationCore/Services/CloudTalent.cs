@@ -97,11 +97,21 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             try
             {
-     
-                _jobServiceClient.Projects.Jobs.Delete(jobPosting.CloudTalentUri).Execute();
+
+                bool isIndexed = false;
+                if ( jobPosting.CloudTalentUri != null && string.IsNullOrEmpty(jobPosting.CloudTalentUri.Trim()) == false )
+                {
+                    isIndexed = true;
+                    _jobServiceClient.Projects.Jobs.Delete(jobPosting.CloudTalentUri).Execute();
+                }
+                    
                 // Update job posting with index error
                 jobPosting.IsDeleted = 1;
-                jobPosting.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now);
+                if (isIndexed)
+                    jobPosting.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now);
+                else 
+                    jobPosting.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now) + " (not google indexed)";
+
                 jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.DeletedFromIndex;
                 jobPosting.ModifyDate = DateTime.UtcNow;
                 _db.SaveChanges();

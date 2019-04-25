@@ -647,6 +647,13 @@ namespace UpDiddy.Api
             return await PostAsync<BasicResponseDto>(string.Format("job"), jobPosting);
         }
 
+        public async Task<BasicResponseDto> UpdateJobPostingAsync(JobPostingDto jobPosting)
+        {
+            return await PutAsync<BasicResponseDto>(string.Format("job"), jobPosting);
+        }
+
+
+
         public async Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid) 
         {
                 return await GetAsync<List<JobPostingDto>>(string.Format("job/subscriber/{0}", subscriberGuid.ToString()));
@@ -670,6 +677,21 @@ namespace UpDiddy.Api
                             
           
         }
+
+        public async Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid)
+        {                        
+                return await PostAsync<JobPostingDto>(string.Format("job/{0}", jobPostingGuid.ToString()));        
+        }
+
+        public async Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid)
+        {             
+           return await DeleteAsync<BasicResponseDto>(string.Format("job/{0}", jobPostingGuid.ToString()));  
+        }
+
+
+
+
+
 
         public async Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid)
         {
