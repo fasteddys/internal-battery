@@ -243,6 +243,27 @@
             border-color: #135f79;
         }
     }
+
+    @media (max-width: 992px) {
+        .mvc-grid, .form-group, .form-control, .btn {
+            font-size: .8rem;
+        }
+
+
+        h3 {
+            font-size: 1.4rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .mvc-grid, .form-group, .form-control, .btn {
+            font-size: .7rem;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+        }
+    }
 }
 
 .mvc-grid-pager {
@@ -266,6 +287,10 @@
     }
 }
 
+
+
+
+
 .mvc-grid {
     .table {
         background-color: white;
@@ -286,6 +311,26 @@
             }
         }
 
+        .fa {
+            &.fa-edit {
+                color: $color-primary;
+            }
+        }
+
+        .fa {
+            &.fa-pencil-alt {
+                color: $color-primary;
+            }
+        }
+
+        .fa {
+            &.fa-copy {
+                color: $color-primary;
+            }
+        }
+
+
+
         &.table-primary {
             thead {
                 tr {
@@ -305,3 +350,6 @@
         }
     }
 }
+ 
+
+ 
