@@ -45,7 +45,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.1.1" />
     <PackageReference Include="Microsoft.Identity.Client" Version="3.0.4-preview" />
     <PackageReference Include="BuildBundlerMinifier" Version="2.8.391" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0-preview1-35029" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.2.0-preview1-35029" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.9" />
     <PackageReference Include="NonFactors.Grid.Mvc6" Version="4.0.2" />
