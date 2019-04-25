@@ -544,6 +544,21 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public async Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid)
+        {
+            string cacheKey = $"job-{JobPostingGuid}";
+            JobPostingDto rval = GetCachedValue<JobPostingDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetJobAsync(JobPostingGuid);
+                SetCachedValue<JobPostingDto>(cacheKey, rval);
+            }
+            return rval;
+        }
+
 
         #endregion
 
@@ -1144,6 +1159,15 @@ namespace UpDiddy.Api
             // Return the newly created partner
             return deletedPartnerResponse;
         }
+        #endregion
+
+        #region JobBoard
+
+        public async Task<JobPostingDto> _GetJobAsync(Guid JobPostingGuid)
+        {
+            return await GetAsync<JobPostingDto>("job/" + JobPostingGuid);
+        }
+
         #endregion
     }
 }

@@ -106,6 +106,12 @@ namespace UpDiddy.Api
         Task<List<OfferActionSummaryDto>> GetOfferActionSummaryAsync();
         #endregion
 
+        #region JobBoard
+
+        Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid);
+
+        #endregion
+
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
     }
 }

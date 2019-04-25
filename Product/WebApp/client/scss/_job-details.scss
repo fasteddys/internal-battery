@@ -1,0 +1,91 @@
+﻿@import '_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .job-details-hero-band {
+        background-image: url("https://cdn.buttercms.com/VK2jHQXrQKPYqlMQNp1G");
+        background-size: cover;
+        padding: 10rem;
+        position: relative;
+        z-index: -1;
+
+        &:after {
+            content: "";
+            position: absolute;
+            background-image: linear-gradient(transparent, #fff);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    }
+    .job-details-container {
+        margin-bottom: 6rem;
+        margin-top: -8rem;
+        .fit-to-text{
+            display: block;
+            @media (min-width: 576px){
+                display: inline-block;
+            }
+        }
+        h1{
+            font-size: 1.75rem;
+            @media (min-width: 768px){
+                font-size: 2.5rem;
+            }
+        }
+
+        .cc-content-band {
+            padding: 0 1rem;
+
+            .col-12{
+                padding: 0;
+            }
+            .job-details{
+                i{
+                    margin-right: 1rem;
+                }
+            }
+
+            .cc-content-band-content{
+                > .row{
+                    > div{
+                        margin-bottom: 0;
+                    }
+                }
+            }
+        }
+
+        .job-description-container {
+            background-color: $color-secondary;
+            color: $color-white;
+            padding: 2rem;
+            > div{
+                padding: 0;
+            }
+            > div:first-child {
+                border-top: 2px solid $color-white;
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+}
