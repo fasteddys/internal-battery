@@ -102,56 +102,60 @@ namespace UpDiddyApi.Helpers.Job
             string LocationtUrl = JobUrlHelper.GetDefaultLocationUrl(JobLocationUrlPrefix,jobQuery);
 
             // Map simple histogram results 
-            foreach (CloudTalentSolution.HistogramResult hr in searchJobsResponse.HistogramResults.SimpleHistogramResults)
+            if (searchJobsResponse.HistogramResults.SimpleHistogramResults != null )
             {
-                JobQueryFacetDto facet = new JobQueryFacetDto()
+                foreach (CloudTalentSolution.HistogramResult hr in searchJobsResponse.HistogramResults.SimpleHistogramResults)
                 {
-                    Name = hr.SearchType
-
-                };
-                foreach (var hrValue in hr.Values)
-                {
-                    JobQueryFacetItemDto facetItem = new JobQueryFacetItemDto()
-                    {          
-                        Url = JobUrlHelper.MapFacetToUrl(jobQuery,facet.Name, hrValue.Key,IndustryUrl,LocationtUrl, TopLevelDomain),
-                        Count = hrValue.Value.Value,
-                        Label = hrValue.Key
+                    JobQueryFacetDto facet = new JobQueryFacetDto()
+                    {
+                        Name = hr.SearchType
 
                     };
-                    facet.Facets.Add(facetItem);
-                }
-                rVal.Add(facet);
-
-            }
-
-            // map custom facets  
-            // Note: currently not using nor supporting cloud talent custom long facet values
-            foreach (CloudTalentSolution.CustomAttributeHistogramResult hr in searchJobsResponse.HistogramResults.CustomAttributeHistogramResults)
-            {
-                JobQueryFacetDto facet = new JobQueryFacetDto()
-                {
-                    Name = hr.Key
-
-                };
-                int index = 0;
-                if (hr.StringValueHistogramResult != null)
-                {
-                    foreach (KeyValuePair<string, int?> facetInfo in hr.StringValueHistogramResult)
+                    foreach (var hrValue in hr.Values)
                     {
-
                         JobQueryFacetItemDto facetItem = new JobQueryFacetItemDto()
                         {
-                            Url = JobUrlHelper.MapFacetToUrl(jobQuery,facet.Name, facetInfo.Key,IndustryUrl,LocationtUrl,TopLevelDomain),
-                            Count = facetInfo.Value.Value,
-                            Label = facetInfo.Key
+                            Url = JobUrlHelper.MapFacetToUrl(jobQuery, facet.Name, hrValue.Key, IndustryUrl, LocationtUrl, TopLevelDomain),
+                            Count = hrValue.Value.Value,
+                            Label = hrValue.Key
 
                         };
                         facet.Facets.Add(facetItem);
                     }
+                    rVal.Add(facet);
                 }
-                rVal.Add(facet);
             }
 
+            // map custom facets  
+            // Note: currently not using nor supporting cloud talent custom long facet values
+            if ( searchJobsResponse.HistogramResults.CustomAttributeHistogramResults != null )
+            {
+                foreach (CloudTalentSolution.CustomAttributeHistogramResult hr in searchJobsResponse.HistogramResults.CustomAttributeHistogramResults)
+                {
+                    JobQueryFacetDto facet = new JobQueryFacetDto()
+                    {
+                        Name = hr.Key
+
+                    };
+                    int index = 0;
+                    if (hr.StringValueHistogramResult != null)
+                    {
+                        foreach (KeyValuePair<string, int?> facetInfo in hr.StringValueHistogramResult)
+                        {
+
+                            JobQueryFacetItemDto facetItem = new JobQueryFacetItemDto()
+                            {
+                                Url = JobUrlHelper.MapFacetToUrl(jobQuery, facet.Name, facetInfo.Key, IndustryUrl, LocationtUrl, TopLevelDomain),
+                                Count = facetInfo.Value.Value,
+                                Label = facetInfo.Key
+
+                            };
+                            facet.Facets.Add(facetItem);
+                        }
+                    }
+                    rVal.Add(facet);
+                }
+            }
             return rVal;
         }
 

@@ -130,7 +130,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
-
         /// <summary>
         /// Update the job in the google cloud talent solution
         /// </summary>
@@ -244,7 +243,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             try
             {
-                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
+                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
                 // validate we have good data 
                 if (jobPosting == null || jobPosting.Company == null)
                     return false;
@@ -267,8 +266,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             try
             {
-                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
-                // validate we have good data 
+                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
+                    // validate we have good data 
                 if (jobPosting == null || jobPosting.Company == null)
                     return false;
                 // validate the company is known to google, if not add it to the cloud talent 
@@ -350,6 +349,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
             else // not commute search 
             {
+                // us a country code to help google dis-ambiguate state abbreviatons, etc.   
+                string regionCode = string.IsNullOrEmpty(jobQuery.Country) ? "us" : jobQuery.Country;
                 // add locations filters.  give preference to the free format location field if it's 
                 // defined, if not use city state parameters if they have been defined 
                 string addressInfo = string.Empty;
@@ -357,31 +358,28 @@ namespace UpDiddyApi.ApplicationCore.Services
                     addressInfo = jobQuery.Location;
                 else
                 {
-                    addressInfo = jobQuery.StreetAddress + " " + jobQuery.City + " " + jobQuery.Province + " " + jobQuery.Country;
+                    // build address with comma placeholders to help google parse the location
+                    addressInfo = jobQuery.StreetAddress + ", " + jobQuery.City + ", " + jobQuery.Province + ", " + regionCode;
                     addressInfo = addressInfo.Trim();
-
                 }
-                // add location filter if any address information has been provided 
-                if (string.IsNullOrEmpty(addressInfo) == false)
+                // add location filter if any address information has been provided  
+                if (string.IsNullOrEmpty(addressInfo) == false ||  string.IsNullOrEmpty(jobQuery.Province) == false )
                 {
                     CloudTalentSolution.LocationFilter locationFilter = new CloudTalentSolution.LocationFilter()
-                    {
+                    {                
                         Address = addressInfo,
-                        DistanceInMiles = jobQuery.SearchRadius
-
+                        DistanceInMiles = jobQuery.SearchRadius,
+                        RegionCode = regionCode                                              
                     };
-
+ 
                     cloudTalentJobQuery.LocationFilters = new List<CloudTalentSolution.LocationFilter>()
-                {
-                    locationFilter
-                };
-
+                    {
+                        locationFilter                        
+                    };
+                    
                 }
             }
-
-
-       
-     
+          
             // publish time range 
             if ( string.IsNullOrEmpty(jobQuery.DatePublished) == false)
             {
@@ -511,6 +509,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 PageSize = jobQuery.PageSize,
                 Offset = jobQuery.PageSize * (jobQuery.PageNum - 1),
                 OrderBy = jobQuery.OrderBy
+               
 
             };
 
