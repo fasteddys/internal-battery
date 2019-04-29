@@ -62,15 +62,22 @@
     </div>
     <div class="col-12 pt-3">
         <h4 class="job-board-heading">Contact Information</h4>
-        <div>
-            <strong>Name:</strong> <span class="job-contact-name">@Model.ContactName</span>
-        </div>
+        @if (!string.IsNullOrEmpty(Model.ContactName))
+        {
+            <div>
+                <strong>Name:</strong> <span class="job-contact-name">@Model.ContactName</span>
+            </div>
+        }
         <div>
             <strong>Email:</strong> <span class="job-contact-email">@Model.ContactEmail</span>
         </div>
-        <div>
-            <strong>Phone:</strong> <span class="job-contact-phone">@Model.ContactPhone</span>
-        </div>
+        @if (!string.IsNullOrEmpty(Model.ContactPhone))
+        {
+            <div>
+                <strong>Phone:</strong> <span class="job-contact-phone">@Model.ContactPhone</span>
+            </div>
+        }
+
         <div class="pt-3">
             @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
                 AdditionalAttributes = "data-toggle=\"modal\" data-target=\"#exampleModal\"",

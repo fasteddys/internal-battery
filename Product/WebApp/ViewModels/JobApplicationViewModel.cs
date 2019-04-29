@@ -15,6 +15,7 @@ namespace UpDiddy.ViewModels
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string CoverLetter { get; set; }
+        public string Email { get; set; }
         public Guid JobPostingGuid { get; set; }
         public JobPostingDto Job { get; set; }
         public bool HasResumeOnFile { get; set; }

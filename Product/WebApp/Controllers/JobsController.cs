@@ -93,7 +93,10 @@ namespace UpDiddy.Controllers
                 Location = $"{job.City}, {job.Province}, {job.Country}",
                 PostingId = job.JobPostingGuid.ToString(),
                 EmployeeType = job.EmploymentType.Name,
-                Summary = job.Description
+                Summary = job.Description,
+                ContactEmail = job.Subscriber.Email,
+                ContactName = $"{job.Subscriber.LastName}, {job.Subscriber.FirstName}",
+                ContactPhone = job.Subscriber.PhoneNumber
             };
 
 
@@ -129,6 +132,7 @@ namespace UpDiddy.Controllers
 
             
             return View("Apply", new JobApplicationViewModel() {
+                Email = this.subscriber.Email,
                 FirstName = string.IsNullOrEmpty(this.subscriber.FirstName) ? string.Empty : this.subscriber.FirstName,
                 LastName = string.IsNullOrEmpty(this.subscriber.LastName) ? string.Empty : this.subscriber.LastName,
                 Job = job,
