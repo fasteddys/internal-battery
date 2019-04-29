@@ -412,7 +412,17 @@ namespace UpDiddyApi.Controllers
             JobSearchResultDto rVal = _cloudTalent.Search(jobQuery);
             return Ok(rVal);
         }
- 
+
+
+        [HttpGet]
+        [Route("api/[controller]")]
+        public IActionResult JobSearchIndustry( [FromBody] JobQueryDto jobQueryDto)
+        {
+            int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]); 
+            JobSearchResultDto rVal = _cloudTalent.Search(jobQueryDto);
+            return Ok(rVal);
+        }
+
         #endregion
     }
 }
