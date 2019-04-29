@@ -747,6 +747,11 @@ namespace UpDiddy.Api
         #endregion
 
         #region Campaign
+
+        public async Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId)
+        {
+            return await GetAsync<CampaignPartnerContactDto>($"campaigns/partner-contact/{tinyId}");
+        }
         public async Task<IList<CampaignDetailDto>> CampaignDetailsSearchAsync(Guid CampaginGuid)
         {
             return await GetAsync<IList<CampaignDetailDto>>("marketing/campaign-detail/" + CampaginGuid);

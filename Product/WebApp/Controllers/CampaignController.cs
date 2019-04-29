@@ -46,6 +46,21 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
+        [Route("/lp/{tinyId}")]
+        public async Task<IActionResult> TargetedCampaignLandingPageAsync(string tinyId)
+        {
+            if (string.IsNullOrWhiteSpace(tinyId))
+                return View("Community", new CampaignViewModel()
+                {
+                    IsExpressCampaign = true,
+                    IsActive = true
+                });
+            CampaignPartnerContactDto campaignPartnerContact = await _Api.GetCampaignPartnerContactAsync(tinyId);
+
+            throw new NotImplementedException();
+        }
+
+        [HttpGet]
         [Route("/Community/{CampaignGuid?}/{PartnerContactGuid?}")]
         [Route("/Join/{CampaignGuid?}/{PartnerContactGuid?}")]
         [Route("/JoinNow/{CampaignGuid?}/{PartnerContactGuid?}")]
