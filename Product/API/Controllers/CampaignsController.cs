@@ -78,5 +78,24 @@ namespace UpDiddyApi.Controllers
             return Ok(campaign);
         }
 
+        [HttpGet("partner-contact/{tinyId}")]
+        public async Task<IActionResult> GetCampaignPartnerContactAsync(string tinyId)
+        {
+            CampaignPartnerContactDto campaignPartnerContact = _db.CampaignPartnerContact.Where(cpc => cpc.TinyId == tinyId && cpc.IsDeleted == 0)
+                   .Include(cpc => cpc.Campaign)
+                   .Include(cpc => cpc.PartnerContact).ThenInclude(pc => pc.Contact)
+                   .Select(cpc => new CampaignPartnerContactDto()
+                   {
+                       CampaignGuid = cpc.Campaign.CampaignGuid,
+                       Email = cpc.PartnerContact.Contact.Email,
+                       FirstName = cpc.PartnerContact.Metadata["FirstName"].ToString(),
+                       LastName = cpc.PartnerContact.Metadata["LastName"].ToString(),
+                       IsCampaignActive = cpc.Campaign.StartDate <= DateTime.UtcNow && (cpc.Campaign.EndDate == null || cpc.Campaign.EndDate > DateTime.UtcNow),
+                       PartnerContactGuid = cpc.PartnerContact.PartnerContactGuid.Value,
+                       TargetedViewName = cpc.Campaign.TargetedViewName
+                   })
+                   .FirstOrDefault();
+            return Ok(campaignPartnerContact);
+        }
     }
 }

@@ -51,17 +51,15 @@ namespace UpDiddyApi.Workflow
 
         public async Task<bool> SendWelcomeEmail(Guid partnerContactGuid, string firstName, string lastName, string email)
         {
-            // retrieve the ppl campaign
-            var pplCampaign = _db.Campaign.Where(c => c.Name == "PPL Lead Gen" && c.IsDeleted == 0).FirstOrDefault();
-
-            // dynamic data should include: view name for url, campaign guid, first/last name, partner contact guid
+            // retrieve the unique identifier for the lead and campaign
+            var tinyId = _db.CampaignPartnerContact.Where(cpc => cpc.PartnerContact.PartnerContactGuid == partnerContactGuid && cpc.Campaign.Name == "PPL Lead Gen").FirstOrDefault()?.TinyId;
+            
+            // dynamic data should include: first/last name, tinyId (which can be used to infer campaign, partner contact, and view)
             var templateData = new
             {
-                viewName = "Welcome",
-                campaignGuid = pplCampaign.CampaignGuid.ToString(),
-                partnerContactGuid = partnerContactGuid,
                 firstName = firstName,
-                lastName = lastName
+                lastName = lastName,
+                tinyId = tinyId
             };
 
             // send templated welcome email that links to custom landing page
@@ -260,7 +258,7 @@ namespace UpDiddyApi.Workflow
         {
             Guid parsedSubscriberGuid;
             Guid.TryParse(SubscriberGuid, out parsedSubscriberGuid);
-            
+
             var partnerContact = _db.PartnerContact
                 .Include(pc => pc.Contact).ThenInclude(c => c.Subscriber)
                 .Where(pc => pc.IsDeleted == 0 && pc.Contact.IsDeleted == 0 && pc.Contact.Subscriber.SubscriberGuid.HasValue && pc.Contact.Subscriber.SubscriberGuid.Value == parsedSubscriberGuid)
@@ -518,7 +516,7 @@ namespace UpDiddyApi.Workflow
             {
                 // locate the campaign phase (if one exists - not required)
                 CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaignEntity.CampaignId, campaignPhaseName);
-                
+
                 // look for an existing contact action               
                 var existingPartnerContactAction = PartnerContactActionFactory.GetPartnerContactAction(_db, campaignEntity, partnerContactEntity, actionEntity, campaignPhase);
 
@@ -607,7 +605,7 @@ namespace UpDiddyApi.Workflow
 
 
         #region Cloud Talent
-       
+
         public bool CloudTalentAddJob(Guid jobPostingGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
@@ -625,7 +623,7 @@ namespace UpDiddyApi.Workflow
         public bool CloudTalentDeleteJob(Guid jobPostingGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
-            ct.DeleteJobFromCloudTalent(_db,jobPostingGuid);
+            ct.DeleteJobFromCloudTalent(_db, jobPostingGuid);
             return true;
         }
 
