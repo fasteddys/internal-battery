@@ -14,7 +14,6 @@
                 </div>
                 <div class="apply-button container-align-right">
                     @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                            AdditionalAttributes = "data-toggle=\"modal\" data-target=\"#exampleModal\"",
                             Text = "Apply <i class=\"fas fa-arrow-right\"></i>",
                             Hyperlink = $"/jobs/apply/{Model.PostingId}",
                             FitToText = true,
@@ -80,7 +79,6 @@
 
         <div class="pt-3">
             @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                AdditionalAttributes = "data-toggle=\"modal\" data-target=\"#exampleModal\"",
                 Text = "Apply <i class=\"fas fa-arrow-right\"></i>",
                 Hyperlink = $"/jobs/apply/{Model.PostingId}",
                 FitToText = true,
