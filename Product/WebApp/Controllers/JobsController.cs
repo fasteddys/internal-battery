@@ -88,15 +88,15 @@ namespace UpDiddy.Controllers
             JobDetailsViewModel jdvm = new JobDetailsViewModel
             {
                 Name = job.Title,
-                Company = job.Company.CompanyName,
-                PostedDate = job.PostingDateUTC.ToLocalTime().ToString(),
+                Company = job.Company?.CompanyName,
+                PostedDate = job.PostingDateUTC == null ? string.Empty : job.PostingDateUTC.ToLocalTime().ToString(),
                 Location = $"{job.City}, {job.Province}, {job.Country}",
-                PostingId = job.JobPostingGuid.ToString(),
-                EmployeeType = job.EmploymentType.Name,
+                PostingId = job.JobPostingGuid?.ToString(),
+                EmployeeType = job.EmploymentType?.Name,
                 Summary = job.Description,
-                ContactEmail = job.Subscriber.Email,
-                ContactName = $"{job.Subscriber.LastName}, {job.Subscriber.FirstName}",
-                ContactPhone = job.Subscriber.PhoneNumber
+                ContactEmail = job.Subscriber?.Email,
+                ContactName = $"{job.Subscriber?.LastName}, {job.Subscriber?.FirstName}",
+                ContactPhone = job.Subscriber?.PhoneNumber
             };
 
 
