@@ -62,9 +62,7 @@ namespace UpDiddyApi.Controllers
             // Check to see if its a woz enrollment 
             WozCourseEnrollment wozCourseEnrollment = WozCourseEnrollmentFactory.GetWozCourseEnrollmentByEnrollmentGuid(_db, enrollment.EnrollmentGuid.Value);
             if (wozCourseEnrollment != null)
-            {
-                // TODO jab  Mark WozCourse Enrollment as deleted 
-
+            {                
                 WozInterface wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
                 MessageTransactionResponse rVal = wozInterface.UnEnrollStudent(enrollment, wozCourseEnrollment.SectionId, wozCourseEnrollment.WozEnrollmentId);
                 if (rVal.State == TransactionState.InProgress)
@@ -72,12 +70,13 @@ namespace UpDiddyApi.Controllers
                     wozCourseEnrollment.IsDeleted = 1;
                     wozCourseEnrollment.ModifyDate = DateTime.UtcNow;
                     wozCourseEnrollment.ModifyGuid = subscriberGuid;
+                    wozCourseEnrollment.EnrollmentStatus = (int) WozEnrollmentStatus.Withdrawn;
                     ReturnInfo = rVal.InformationalMessage;
                 }
                 else
                 {
                     DeletedOk = false;
-                    ReturnInfo = "Unable to delete enrollment with Woz.  " + rVal.InformationalMessage;
+                    ReturnInfo = "Error deleting enrollment with Woz" + rVal.InformationalMessage;
                 }
             }
             else
