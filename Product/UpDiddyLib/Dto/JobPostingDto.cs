@@ -62,7 +62,7 @@ namespace UpDiddyLib.Dto
 
         public EducationLevelDto EducationLevel { get; set; }
 
-        public List<SkillDto> Skills { get; set; }
+        public List<SkillDto> JobPostingSkills { get; set; }
 
         public int JobStatus { get; set; }
 

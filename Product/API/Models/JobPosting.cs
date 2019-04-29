@@ -139,7 +139,7 @@ namespace UpDiddyApi.Models
 
         public virtual EducationLevel EducationLevel { get; set; }
 
-        public List<JobPostingSkill> JobPostingSkills { get; } = new List<JobPostingSkill>();
+        public List<JobPostingSkill> JobPostingSkills { get; set; } = new List<JobPostingSkill>();
 
 
         /****************  application information  ****************************/

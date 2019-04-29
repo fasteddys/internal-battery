@@ -2084,7 +2084,9 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CompanyId");
+                    b.Property<Guid>("CompanyGuid");
+
+                    b.Property<int?>("CompanyId");
 
                     b.Property<DateTime>("CreateDate");
 
@@ -3237,7 +3239,7 @@ namespace UpDiddyApi.Migrations
             modelBuilder.Entity("UpDiddyApi.Models.PartnerContactFile", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.PartnerContact", "PartnerContact")
-                        .WithMany()
+                        .WithMany("PartnerContactFiles")
                         .HasForeignKey("PartnerContactId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -3311,8 +3313,7 @@ namespace UpDiddyApi.Migrations
                 {
                     b.HasOne("UpDiddyApi.Models.Company", "Company")
                         .WithMany()
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("CompanyId");
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
