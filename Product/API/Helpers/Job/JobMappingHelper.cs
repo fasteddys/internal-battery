@@ -68,7 +68,9 @@ namespace UpDiddyApi.Helpers.Job
             rVal.JobCount = searchJobsResponse.MatchingJobs.Count;
             rVal.TotalHits = searchJobsResponse.TotalSize.Value;
             rVal.PageSize = jobQuery.PageSize;
-            rVal.NumPages =   rVal.PageSize != 0 ? rVal.TotalHits / rVal.PageSize : 0;
+            rVal.NumPages =   rVal.PageSize != 0 ? (int)Math.Ceiling((double) rVal.TotalHits / rVal.PageSize) : 0; 
+
+ 
 
             foreach (CloudTalentSolution.MatchingJob j in searchJobsResponse.MatchingJobs)
             {
