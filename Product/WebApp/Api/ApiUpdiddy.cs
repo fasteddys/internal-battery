@@ -559,6 +559,25 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public async Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location)
+        {
+            //job search criteria for api "/country/state/city/industry/job-category/skill/page-num" and query strings appended
+            var searchFilter = $"all/all/all/all/all/all/0?page-size=100&location={location}&keywords={keywords}&page-num=0";
+            string cacheKey = $"job-{keywords}/{location}";
+            JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                
+                rval = await _GetJobsByLocation(searchFilter);
+                SetCachedValue<JobSearchResultDto>(cacheKey, rval);
+            }
+
+            return rval;
+        }
+
 
         #endregion
 
@@ -1166,6 +1185,11 @@ namespace UpDiddy.Api
         public async Task<JobPostingDto> _GetJobAsync(Guid JobPostingGuid)
         {
             return await GetAsync<JobPostingDto>("job/" + JobPostingGuid);
+        }
+
+        public async Task<JobSearchResultDto> _GetJobsByLocation(string searchFilter)
+        {
+            return await GetAsync<JobSearchResultDto>("job/browse-jobs-location/" + searchFilter);
         }
 
         #endregion

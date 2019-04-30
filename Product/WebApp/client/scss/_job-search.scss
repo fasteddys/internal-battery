@@ -1,0 +1,104 @@
+﻿@import '_variables';
+
+//Base styles
+@media (min-width:0px) {
+    .job-search-container {
+        font-family: $opensans-regular;
+
+
+        .job-search-criteria {
+            background-color: $color-secondary;
+            color: $color-white;
+            position: relative;
+
+            .job-search-block {
+                padding-top: $rem-24;
+                padding-bottom: $rem-24;
+
+                .job-search-header {
+                    margin: $rem-16;
+                    text-align: center;
+                    display: block;
+                }
+
+                .job-search-content {
+                    margin: $rem-16;
+                    text-align: center;
+                    display: block;
+                }
+
+                .job-search-button {
+                    margin: $rem-16;
+                    text-align: center;
+                    display: block;
+
+                    #SearchJobs {
+                        background-color: $color-my-sin;
+                    }
+                }
+            }
+        }
+
+        .job-search-results {
+            background-color: $color-alabaster;
+            padding-top: $rem-24;
+            padding-bottom: $rem-24;
+
+            .job-container {
+                .job-tile {
+                    background-color: $color-white;
+                    margin: $rem-13;
+                    padding:$rem-13;
+
+                    .job-title {
+                        font-size: $rem-24;
+                        font-weight: $opensans-bold;
+                    }
+
+                    .job-location {
+                        font-size: $rem-16;
+                        color: $color-tertiary;
+                    }
+
+                    .job-post-date {
+                        font-size: $rem-16;
+                        color: $color-silver-chalice;
+                    }
+
+                    .job-description {
+                        font-size: $rem-20;
+                        color: $color-emperor;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                }
+
+                .no-job-text {
+                    font-size: $rem-16;
+                    margin: $rem-16;
+                }
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+}

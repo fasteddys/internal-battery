@@ -9,6 +9,7 @@ using UpDiddy.Api;
 using UpDiddyLib.Dto;
 using UpDiddy.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using X.PagedList;
 
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -34,29 +35,42 @@ namespace UpDiddy.Controllers
             _configuration = configuration;
         }
 
-        // GET: /<controller>/
-        public async Task<IActionResult> Index()
+        [HttpGet("browse")]
+        public async Task<IActionResult> Index(string keywords, string location, int? page)
         {
-            var countries = await _Api.GetCountriesAsync();
-            //get default states
-            var states = await _Api.GetStatesByCountryAsync(null);
+            //get pageCount from Configuration file
+            int pageCount=_configuration.GetValue<int>("Pagination:PageCount");
 
-            JobsSearchCriteriaViewModel jobsSearchCriteriaViewModel = new JobsSearchCriteriaViewModel()
+            JobSearchResultDto jobSearchResultDto = null;
+
+            try
             {
-                Countries = countries.Select(c => new SelectListItem()
+                 jobSearchResultDto = await _api.GetJobsByLocation(
+                                      keywords, location);
+            }
+            catch(ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
                 {
-                    Text = c.DisplayName,
-                    Value = c.CountryGuid.ToString()
-                }),
-                States=states.Select(s=>new SelectListItem()
-                {
-                    Text=s.Name,
-                    Value=s.StateGuid.ToString()
-                })
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
 
+            if (jobSearchResultDto == null)
+                return NotFound();
+            
+
+            JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
+            {
+                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page ?? 1, pageCount)
             };
 
-            return View(jobsSearchCriteriaViewModel);
+            return View("Index", jobSearchViewModel);
         }
 
         [HttpGet("{JobGuid}")]
@@ -90,14 +104,12 @@ namespace UpDiddy.Controllers
                 PostedDate = job.PostingDateUTC.ToLocalTime().ToString(),
                 Location = $"{job.City}, {job.Province}, {job.Country}",
                 PostingId = job.JobPostingGuid.ToString(),
-                EmployeeType = job.EmploymentType.Name,
+                EmployeeType = job.EmploymentType?.Name,
                 Summary = job.Description
             };
 
 
             return View("JobDetails", jdvm);
         }
-
-        //public IActionResult GetJobsAsync()
     }
 }

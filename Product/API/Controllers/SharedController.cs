@@ -18,8 +18,6 @@ namespace UpDiddyApi.Controllers
     public class SharedController : ControllerBase
     {
         private readonly IMapper _mapper;
-        //private readonly IConfiguration _configuration;
-        //private readonly ILogger<SharedController> _syslog;
 
         private readonly IRepositoryWrapper _repositoryWrapper;
 
