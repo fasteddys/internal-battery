@@ -16,11 +16,13 @@ using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using UpDiddyApi.ApplicationCore;
 using Microsoft.Extensions.Caching.Distributed;
+using UpDiddyApi.ApplicationCore.Factory;
+using UpDiddyLib.MessageQueue;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddyApi.Controllers
 {
-    //TODO [Authorize]
+ 
     [ApiController]
     public class EnrollmentController : ControllerBase
     {
@@ -29,6 +31,7 @@ namespace UpDiddyApi.Controllers
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         protected internal ILogger _syslog = null;
         private readonly IDistributedCache _distributedCache;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<EnrollmentController> sysLog, IHttpClientFactory httpClientFactory, IDistributedCache distributedCache)
         {
@@ -37,7 +40,62 @@ namespace UpDiddyApi.Controllers
             _configuration = configuration;
             _syslog = sysLog;
             _distributedCache = distributedCache;
+            _httpClientFactory = httpClientFactory;
         }
+
+       
+        [Authorize(Policy = "IsCareerCircleAdmin")]  
+        [HttpDelete]
+        [Route("api/[controller]/{EnrollmentGuid}")]
+        public IActionResult DeleteEnrollment( Guid EnrollmentGuid )
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                return BadRequest();
+
+            Enrollment enrollment = EnrollmentFactory.GetEnrollmentByGuid(_db, EnrollmentGuid);
+            if ( enrollment == null )
+                return BadRequest(new BasicResponseDto() { StatusCode = 404, Description = $"Enrollment {EnrollmentGuid} not found" });
+
+            bool DeletedOk = true;
+            string ReturnInfo = string.Empty;
+            // Check to see if its a woz enrollment 
+            WozCourseEnrollment wozCourseEnrollment = WozCourseEnrollmentFactory.GetWozCourseEnrollmentByEnrollmentGuid(_db, enrollment.EnrollmentGuid.Value);
+            if (wozCourseEnrollment != null)
+            {                
+                WozInterface wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+                MessageTransactionResponse rVal = wozInterface.UnEnrollStudent(enrollment, wozCourseEnrollment.SectionId, wozCourseEnrollment.WozEnrollmentId);
+                if (rVal.State == TransactionState.InProgress)
+                {
+                    wozCourseEnrollment.IsDeleted = 1;
+                    wozCourseEnrollment.ModifyDate = DateTime.UtcNow;
+                    wozCourseEnrollment.ModifyGuid = subscriberGuid;
+                    wozCourseEnrollment.EnrollmentStatus = (int) WozEnrollmentStatus.Withdrawn;
+                    ReturnInfo = rVal.InformationalMessage;
+                }
+                else
+                {
+                    DeletedOk = false;
+                    ReturnInfo = "Error deleting enrollment with Woz" + rVal.InformationalMessage;
+                }
+            }
+            else
+                ReturnInfo = "Not a Woz enrollment";
+            
+            if ( DeletedOk)
+            {
+                // Mark the enrollment as deleted 
+                enrollment.IsDeleted = 1;
+                enrollment.ModifyDate = DateTime.UtcNow;
+                enrollment.ModifyGuid = subscriberGuid;
+                _db.SaveChanges();
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = ReturnInfo });
+            }
+            else
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ReturnInfo });
+            
+        }
+        
 
         [Authorize]
         [HttpPost]
