@@ -1,7 +1,7 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
 @using UpDiddy.Helpers
-@model JobDetailsViewModel
+@model CompletedJobApplicationViewModel
 
 <div class="job-details-hero-band">
     <div class="p-5"></div>
@@ -11,12 +11,12 @@
         @{
             List<string> Elements = new List<string>()
         {
-            Html.PartialToHtmlMarkup("Partials/_JobPosting", Model).ToString()
+            Html.PartialToHtmlMarkup("Partials/_FinishedApplicationMessage", Model).ToString()
         };
         }
         @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
         {
-            Class = "skew skew-left-to-right cc-cscheme-white",
+            Class = "cc-cscheme-white",
             Elements = Elements
         })
     </div>

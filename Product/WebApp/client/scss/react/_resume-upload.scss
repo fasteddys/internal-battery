@@ -1,0 +1,16 @@
+.resume-upload-component {
+    min-height: 37.5px;
+    .btn {
+        &.delete,
+        &.edit {
+            vertical-align: baseline;
+        }
+    }
+
+    .btn.delete {
+        .spinner-border {
+            position: relative;
+            top: -3px;
+        }
+    }
+}

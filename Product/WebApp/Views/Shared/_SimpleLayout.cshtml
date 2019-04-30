@@ -54,31 +54,11 @@
             </button>
             <div class="collapse navbar-collapse" id="NavigationItems">
                 <ul class="navbar-nav ml-auto">
-
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Home" asp-action="Offers"><span class="badge badge-success">new</span> Offers</a>
                     </li>
-                    @*
-                            <li class="nav-item">
-                            <a class="nav-link" href="#career-training-categories"><span class="badge badge-success">new</span> Courses</a>
-                        </li>
-                    *@
                     <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">@Localizer["About"]</a></li>
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" id="MyCircleHeaderButton" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user-circle" aria-hidden="true"></i> My Circle</a>
-                            <div class="dropdown-menu" aria-labelledby="MyCircleHeaderButton">
-                                <a class="dropdown-item" asp-controller="Home" asp-action="Profile">My Account</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" asp-area="" asp-controller="Session" asp-action="SignOut">Sign out</a>
-                            </div>
-                        </li>
-                    }
-                    else
-                    {
-                        <li class="nav-item brand-button-light"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignIn">Login/Sign Up</a></li>
-                    }
+                    <li class="nav-item brand-button-light"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignIn">Login/Sign Up</a></li>
                 </ul>
             </div>
         </div>

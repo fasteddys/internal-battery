@@ -16,6 +16,5 @@ namespace UpDiddy.ViewModels
         public string Form { get; set; }
         public string Hyperlink { get; set; }
         public bool FitToText { get; set; }
-        public string AdditionalAttributes { get; set; }
     }
 }
