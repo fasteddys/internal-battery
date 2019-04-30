@@ -92,7 +92,7 @@ namespace UpDiddyApi.Controllers
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = ReturnInfo });
             }
             else
-                return Ok(new BasicResponseDto() { StatusCode = 400, Description = ReturnInfo });
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ReturnInfo });
             
         }
         
