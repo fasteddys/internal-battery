@@ -19,7 +19,7 @@ using X.PagedList;
 namespace UpDiddy.Controllers
 {
 
-    [Route("[controller]")]
+    
     public class JobsController : BaseController
     {
 
@@ -36,8 +36,8 @@ namespace UpDiddy.Controllers
             _env = env;
             _configuration = configuration;
         }
-
-        [HttpGet("browse")]
+        
+        [HttpGet("[controller]")]
         public async Task<IActionResult> Index(string keywords, string location, int? page)
         {
             //get pageCount from Configuration file
@@ -75,7 +75,7 @@ namespace UpDiddy.Controllers
             return View("Index", jobSearchViewModel);
         }
 
-        [HttpGet("{JobGuid}")]
+        [HttpGet("[controller]/{JobGuid}")]
         public async Task<IActionResult> JobAsync(Guid JobGuid)
         {
             JobPostingDto job = null;
@@ -119,7 +119,7 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
-        [HttpGet("apply/{JobGuid}")]
+        [HttpGet("[controller]/apply/{JobGuid}")]
         public async Task<IActionResult> ApplyAsync(Guid JobGuid)
         {
             JobPostingDto job = null;
@@ -157,9 +157,14 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
-        [HttpPost]
+        [HttpPost("[controller]")]
         public async Task<IActionResult> SubmitApplicationAsync(JobApplicationViewModel JobApplicationViewModel)
         {
+            if (!ModelState.IsValid)
+            {
+                return StatusCode(500);
+            }
+
             if (this.subscriber.Files.Count == 0)
                 return BadRequest();
 

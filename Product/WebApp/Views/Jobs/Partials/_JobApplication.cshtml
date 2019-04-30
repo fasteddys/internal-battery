@@ -17,15 +17,15 @@
                     </div>
                     <div class="form-group">
                         <label for="FirstName">First name</label>
-                        <input type="text" class="form-control" asp-for="FirstName" value="@Model.FirstName">
+                        <input required type="text" class="form-control" asp-for="FirstName" value="@Model.FirstName">
                     </div>
                     <div class="form-group">
                         <label for="LastName">Last name</label>
-                        <input type="text" class="form-control" asp-for="LastName" value="@Model.LastName">
+                        <input required type="text" class="form-control" asp-for="LastName" value="@Model.LastName">
                     </div>
                     <div class="form-group">
                         <label for="CoverLetter">Cover letter</label>
-                        <textarea class="form-control" aria-describedby="coverLetterHelp" rows="3" asp-for="CoverLetter"></textarea>
+                        <textarea required class="form-control" aria-describedby="coverLetterHelp" rows="3" asp-for="CoverLetter"></textarea>
                         <small id="coverLetterHelp" class="form-text text-muted">Copy and paste your cover letter text here.</small>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>

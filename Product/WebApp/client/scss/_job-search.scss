@@ -33,7 +33,7 @@
                     display: block;
 
                     #SearchJobs {
-                        background-color: $color-my-sin;
+                        background-color: $color-tertiary;
                     }
                 }
             }
@@ -48,7 +48,7 @@
                 .job-tile {
                     background-color: $color-white;
                     margin: $rem-13;
-                    padding:$rem-13;
+                    padding: $rem-13;
 
                     .job-title {
                         font-size: $rem-24;
@@ -77,6 +77,28 @@
                 .no-job-text {
                     font-size: $rem-16;
                     margin: $rem-16;
+                }
+            }
+
+            .job-pagination {
+                display: block;
+
+                .pagination-container {
+                    display: inline-block;
+
+                    .page-link {
+                        color: $color-secondary;
+                    }
+
+                    .page-item {
+                        &.active {
+                            .page-link {
+                                border-color: $color-secondary;
+                                background-color: $color-secondary;
+                                color: $color-white;
+                            }
+                        }
+                    }
                 }
             }
         }

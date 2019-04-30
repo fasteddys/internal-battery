@@ -52,7 +52,7 @@
             <div class="container">
                     @{ await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model.JobsSearchResult);}
                 
-                <div class="row job-pagination">
+                <div class="row job-pagination container-align-center">
                     @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("Index", new
                       { page,
                           keywords = ViewContext.HttpContext.Request.Query["keywords"],

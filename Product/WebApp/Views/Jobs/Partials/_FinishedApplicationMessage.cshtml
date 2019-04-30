@@ -16,8 +16,7 @@
                         <p>Click <a asp-controller="Home" asp-action="Profile">here</a> to access your profile, or <a asp-controller="Jobs" asp-action="Index">here</a> to view more job listings.</p>
                         break;
                     default:
-                        <h3 class="pb-3">Whoops! Unfortunately something has gone wrong with your application.</h3>
-                        <p>@Model.Description</p>
+                        <h3>@Model.Description</h3>
                         <p>Click <a asp-controller="Jobs" asp-action="Index">here</a> to view other job listings.</p>
                         break;
                 }
