@@ -20,7 +20,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using System.Net;
 using Microsoft.SqlServer.Server;
-// Use alias to avoid collistions on classname such as "Company"
+// Use alias to avoid collisions on classname such as "Company"
 using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
 using AutoMapper.Configuration;
 using AutoMapper;
@@ -57,6 +57,115 @@ namespace UpDiddyApi.Controllers
             _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
         }
+        #endregion
+
+
+        #region job posting favorites
+
+
+        [HttpGet]
+        [Authorize]
+        [Route("api/[controller]/favorite/subscriber/{subscriberGuid}")]
+        public IActionResult GetJobFavoritesForSubscriber(Guid subscriberGuid)
+        {
+
+            Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subscriberGuid == null || subscriberGuid != subsriberGuidClaim)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job Posting Favorites can only be viewed by their owner" });
+
+            List<JobPosting> subscriberJobPostingFavorites = JobPostingFavoriteFactory.GetJobPostingFavoritesForSubscriber(_db, subscriberGuid);
+            return Ok(_mapper.Map<List<JobPostingDto>>(subscriberJobPostingFavorites));
+        }
+
+
+
+        [HttpDelete]
+        [Authorize]
+        [Route("api/[controller]/favorite/{jobPostingFavoriteGuid}")]
+        public IActionResult DeleteJobPostingFavorite(Guid jobPostingFavoriteGuid)
+        {
+            JobPostingFavorite jobPostingFavorite = null;
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPostingFavorite started at: {DateTime.UtcNow.ToLongDateString()} for posting {jobPostingFavoriteGuid}");
+
+                if (jobPostingFavoriteGuid == null)
+                    return BadRequest(new { code = 400, message = "No job posting favorite identifier was provided" });
+
+                jobPostingFavorite = JobPostingFavoriteFactory.GetJobPostingFavoriteByGuidWithRelatedObjects(_db, jobPostingFavoriteGuid);
+                if (jobPostingFavorite == null)
+                    return NotFound(new { code = 404, message = $"Job posting favorite {jobPostingFavoriteGuid} does not exist" });
+
+                Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                if (jobPostingFavorite.Subscriber.SubscriberGuid != subsriberGuidClaim)
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Can only delete your own job posting favorites" });
+
+                jobPostingFavorite.IsDeleted = 1;
+                jobPostingFavorite.ModifyDate = DateTime.UtcNow;
+
+                _db.SaveChanges();
+ 
+                _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPostingFavorite completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPostingFavorite exception : {ex.Message} while deleting posting {jobPostingFavoriteGuid}");
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
+            }
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"JobPosting {jobPostingFavorite.JobPostingFavoriteGuid}  has been deleted " });
+        }
+
+
+
+        [HttpPost]
+        [Authorize]
+        [Route("api/[controller]/favorite")]
+        public IActionResult CreateJobPostingFavorite([FromBody] JobPostingFavoriteDto jobPostingFavoriteDto)
+        {
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobController:JobPostingFavoriteDto started at: {DateTime.UtcNow.ToLongDateString()}");
+                if (jobPostingFavoriteDto == null )
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job posting favorite required" });
+
+                // Validate request 
+                Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                // validate the user is trying to create a favorite for themselves 
+                if (jobPostingFavoriteDto.Subscriber == null || jobPostingFavoriteDto.Subscriber.SubscriberGuid == null || jobPostingFavoriteDto.Subscriber.SubscriberGuid != subsriberGuidClaim)
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Cannot create job favorites for other users" });
+
+                JobPosting jobPosting = null;
+                Subscriber subscriber = null;
+                string ErrorMsg = string.Empty;
+                if (JobPostingFavoriteFactory.ValidateJobPostingFavorite(_db, jobPostingFavoriteDto, subsriberGuidClaim, ref subscriber, ref jobPosting, ref ErrorMsg) == false )               
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ErrorMsg });                
+                else
+                {
+                    JobPostingFavorite jobPostingFavorite = JobPostingFavoriteFactory.CreateJobPostingFavorite(subscriber, jobPosting);
+                    _db.JobPostingFavorite.Add(jobPostingFavorite);
+                    try
+                    {
+                        _db.SaveChanges();
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        if (ex.InnerException.HResult == -2146232060)
+                            return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job is already a favorite" });
+                        else
+                            return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
+                    }
+
+                    _syslog.Log(LogLevel.Information, $"***** JobController:JobPostingFavoriteDto completed at: {DateTime.UtcNow.ToLongDateString()}");
+                    return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPostingFavorite.JobPostingFavoriteGuid}" });
+                }
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(LogLevel.Information, $"***** JobController:JobPostingFavoriteDto exception : {ex.Message}");
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
+            }
+        }
+
         #endregion
 
         #region job crud 
@@ -189,6 +298,7 @@ namespace UpDiddyApi.Controllers
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting is required" });
 
                 _syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
+                //todo move code below to factory method 
                 JobPosting jobPosting = _mapper.Map<JobPosting>(jobPostingDto);
                 // use factory method to make sure all the base data values are set just 
                 // in case the caller didn't set them

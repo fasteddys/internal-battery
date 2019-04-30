@@ -513,7 +513,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
             JobPostingFactory.UpdatePostingSkills(db, jobPosting, jobPostingDto);
             // index active jobs in cloud talent 
             if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobPosting.JobPostingGuid));
+            {
+                // Check to see if the job has been indexed into google 
+                if ( string.IsNullOrEmpty(jobPosting.CloudTalentUri)  == false )
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobPosting.JobPostingGuid));
+                else
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
+            }
+                
 
         }
         
