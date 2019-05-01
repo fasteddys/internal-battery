@@ -217,6 +217,9 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<DateTime>("StartDate");
 
+                    b.Property<string>("TargetedViewName")
+                        .HasColumnType("varchar(100)");
+
                     b.Property<string>("Terms");
 
                     b.HasKey("CampaignId");
@@ -307,9 +310,17 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
+                    b.Property<string>("TinyId")
+                        .HasColumnType("char(8)");
+
                     b.HasKey("CampaignId", "PartnerContactId");
 
                     b.HasIndex("PartnerContactId");
+
+                    b.HasIndex("TinyId")
+                        .IsUnique()
+                        .HasName("UIX_CampaignPartnerContact_TinyId")
+                        .HasFilter("[TinyId] IS NOT NULL");
 
                     b.ToTable("CampaignPartnerContact");
                 });

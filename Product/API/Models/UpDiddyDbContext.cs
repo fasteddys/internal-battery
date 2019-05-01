@@ -230,13 +230,22 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Campaign>()
                 .HasIndex(pc => pc.Name)
                 .IsUnique();
-            
+
+            modelBuilder.Entity<Campaign>()
+                .Property(e => e.TargetedViewName)
+                .HasColumnType("varchar(100)");
+
             modelBuilder.Entity<Contact>()
                 .HasMany<PartnerContact>(c => c.PartnerContacts);
 
             modelBuilder.Entity<PartnerContact>()
                 .Property<string>("MetaDataJSON")
                 .HasField("_metadata");
+
+            modelBuilder.Entity<PartnerContact>()
+                .HasIndex(pc => pc.PartnerContactGuid)
+                .HasName("UIX_PartnerContact_PartnerContactGuid")
+                .IsUnique(true);
 
             modelBuilder.Entity<PartnerContactFile>()
                 .HasOne(e => e.PartnerContact)
@@ -254,11 +263,20 @@ namespace UpDiddyApi.Models
                 .IsUnique();
 
             modelBuilder.Entity<CampaignPartnerContact>()
+                .HasIndex(e => e.TinyId)
+                .HasName("UIX_CampaignPartnerContact_TinyId")
+                .IsUnique(true);
+
+            modelBuilder.Entity<CampaignPartnerContact>()
+                .Property(e => e.TinyId)
+                .HasColumnType("char(8)");
+
+            modelBuilder.Entity<CampaignPartnerContact>()
                 .HasKey(cpc => new { cpc.CampaignId, cpc.PartnerContactId });
 
             modelBuilder.Entity<CampaignCourseVariant>()
                 .HasKey(ccv => new { ccv.CampaignId, ccv.CourseVariantId });
-
+            
             modelBuilder.Entity<PartnerContactAction>()
                 .HasKey(pca => new { pca.PartnerContactId, pca.CampaignId, pca.ActionId, pca.CampaignPhaseId });
 

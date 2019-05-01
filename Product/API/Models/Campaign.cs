@@ -19,5 +19,6 @@ namespace UpDiddyApi.Models
         public List<CampaignCourseVariant> CampaignCourseVariant { get; set; } = new List<CampaignCourseVariant>();
         public List<CampaignPartnerContact> CampaignPartnerContact { get; set; } = new List<CampaignPartnerContact>();
         public string Terms { get; set; }
+        public string TargetedViewName { get; set; }
     }
 }

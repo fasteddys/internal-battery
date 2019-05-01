@@ -178,6 +178,9 @@ namespace UpDiddyApi
             int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
 
+            // remove TinyIds from old CampaignPartnerContact records
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
+
             // Add Polly 
             // Create Policies  
             int PollyRetries = int.Parse(Configuration["Polly:Retries"]);

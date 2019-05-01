@@ -80,6 +80,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> VerifyEmailAsync(Guid token);
         Task<IList<CampaignDto>> GetCampaignsAsync();
         Task<CampaignDto> GetCampaignAsync(Guid campaignGuid);
+        Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId);
         Task<IList<OfferDto>> GetOffersAsync();
 
         #region TalentPortal
