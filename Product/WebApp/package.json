@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@aspnet/signalr": "^1.1.0",
+    "animate.css": "^3.7.0",
     "axios": "^0.18.0",
     "blueimp-file-upload": "^9.28.0",
     "bootbox": "^4.4.0",

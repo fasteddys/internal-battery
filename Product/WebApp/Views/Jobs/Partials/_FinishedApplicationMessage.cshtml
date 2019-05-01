@@ -1,0 +1,27 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using UpDiddy.Helpers
+@model CompletedJobApplicationViewModel
+
+
+
+<div class="finished-application-message-container">
+    <div class="row">
+        <div class="col-12">
+            @{
+                switch (Model.JobApplicationStatus)
+                {
+                    case (CompletedJobApplicationViewModel.ApplicationStatus.Success):
+                        <h3>Success! Your application has been submitted.</h3>
+                        <p>Click <a asp-controller="Home" asp-action="Profile">here</a> to access your profile, or <a asp-controller="Jobs" asp-action="Index">here</a> to view more job listings.</p>
+                        break;
+                    default:
+                        <h3>@Model.Description</h3>
+                        <p>Click <a asp-controller="Jobs" asp-action="Index">here</a> to view other job listings.</p>
+                        break;
+                }
+            }
+        </div>
+    </div>
+    
+</div>

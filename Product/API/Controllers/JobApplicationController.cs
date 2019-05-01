@@ -220,7 +220,7 @@ namespace UpDiddyApi.Controllers
                 int ErrorCode = 0;
                 if ( JobApplicationFactory.ValidateJobApplication(_db,jobApplicationDto, ref subscriber, ref jobPosting,ref ErrorCode, ref ErrorMsg) == false )
                 {
-                   return BadRequest(new { code = ErrorCode, message = ErrorMsg });
+                   return BadRequest(new BasicResponseDto() {StatusCode = ErrorCode, Description = ErrorMsg });
                 }
                 
                 // create job application 

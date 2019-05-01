@@ -1,0 +1,23 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using UpDiddy.Helpers
+@model JobApplicationViewModel
+
+<div class="job-application-hero-band">
+    <div class="p-5"></div>
+</div>
+<div class="container animated bounceInUp">
+    <div class="job-details-container shadow-5">
+        @{
+            List<string> Elements = new List<string>()
+        {
+            Html.PartialToHtmlMarkup("Partials/_JobApplication", Model).ToString()
+        };
+        }
+        @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+        {
+            Class = "skew skew-right-to-left cc-cscheme-white",
+            Elements = Elements
+        })
+    </div>
+</div>
