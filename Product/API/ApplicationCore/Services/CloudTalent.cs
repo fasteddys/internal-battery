@@ -21,6 +21,11 @@ using Google.Apis.Auth.OAuth2;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyLib.Dto;
 using UpDiddyApi.Helpers.Job;
+using static Google.Apis.CloudTalentSolution.v3.ProjectsResource.ClientEventsResource;
+using Google.Apis.CloudTalentSolution.v3.Data;
+using UpDiddyApi.ApplicationCore.Services.GoogleJobs;
+using Enum = System.Enum;
+using MiniGuids;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -552,6 +557,43 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
+        #endregion
+
+        #region ClientEvents
+        /// <summary>
+        /// Creates a client event in google to help improve job search via machine learning.
+        /// </summary>
+        /// <param name="requestId">string identifier returned by google for the request used</param>
+        /// <param name="type"></param>
+        /// <param name="jobNames"></param>
+        /// <param name="parentEventId"></param>
+        /// <returns>ClientEvent</returns>
+        public async Task<ClientEvent> CreateClientEventAsync(string requestId, ClientEventType type, List<string> jobNames, string parentEventId = null)
+        {
+            string time = DateTime.UtcNow.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'");
+            JobEvent je = new JobEvent()
+            {
+                Jobs = jobNames,
+                Type = Enum.GetName(typeof(ClientEventType), type).ToUpper(),
+            };
+            ClientEvent ce = new ClientEvent()
+            {
+                EventId = string.Format("{0}-{1}", DateTimeOffset.UtcNow.ToUnixTimeSeconds(), MiniGuid.NewGuid().ToString()),
+                JobEvent = je,
+                RequestId = requestId,
+                CreateTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+                ParentEventId = parentEventId,
+
+            };
+
+            CreateClientEventRequest ccer = new CreateClientEventRequest()
+            {
+                ClientEvent = ce
+            };
+            CreateRequest request = _jobServiceClient.Projects.ClientEvents.Create(ccer, _projectPath);
+            ce = await request.ExecuteAsync();
+            return ce;
+        }
         #endregion
 
         #region Helper functions

@@ -30,6 +30,8 @@ using Hangfire;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.Helpers.Job;
 using System.Security.Claims;
+using UpDiddyApi.ApplicationCore.Services.GoogleJobs;
+using Google.Apis.CloudTalentSolution.v3.Data;
 
 namespace UpDiddyApi.Controllers
 {
@@ -393,12 +395,24 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("api/[controller]/browse-jobs-location/{Country?}/{Province?}/{City?}/{Industry?}/{JobCategory?}/{Skill?}/{PageNum?}")]
-        public IActionResult JobSearchByLocation(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum)
+        public async Task<IActionResult> JobSearchByLocation(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum)
         {
 
             int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
-            JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize,  Request.Query);            
+            JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize,  Request.Query);
             JobSearchResultDto rVal = _cloudTalent.Search(jobQuery);
+
+            // don't let this stop job search from returning
+            try
+            {
+                ClientEvent ce = await _cloudTalent.CreateClientEventAsync(rVal.RequestId, ClientEventType.Impression, rVal.Jobs.Select(job => job.CloudTalentUri).ToList<string>());
+                rVal.ClientEventId = ce.EventId;
+            }
+            catch(Exception e)
+            {
+                _syslog.Log(LogLevel.Error, "JobController.JobSearchByLocation:: Unable to record client event");
+            }
+
             return Ok(rVal);
         }
 
