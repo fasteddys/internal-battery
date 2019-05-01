@@ -403,7 +403,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             jobPosting.Title = jobPostingDto.Title;
             jobPosting.Description = jobPostingDto.Description;
-            jobPosting.PostingDateUTC = jobPostingDto.PostingDateUTC;
             jobPosting.PostingExpirationDateUTC = jobPostingDto.PostingExpirationDateUTC;
             jobPosting.ApplicationDeadlineUTC = jobPostingDto.ApplicationDeadlineUTC;
             jobPosting.JobStatus = jobPostingDto.JobStatus;
@@ -417,6 +416,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
             jobPosting.Province = jobPostingDto.Province;
             jobPosting.PostalCode = jobPostingDto.PostalCode;
             jobPosting.StreetAddress = jobPostingDto.StreetAddress;
+            // Update the modify date to now
+            jobPosting.ModifyDate = DateTime.UtcNow;
 
             // Map select items 
             if (jobPostingDto.Company == null)
