@@ -17,13 +17,22 @@ namespace UpDiddyApi.Migrations
                 table: "Campaign",
                 type: "varchar(100)",
                 nullable: true);
-
+            
+            migrationBuilder.CreateIndex(
+                name: "UIX_PartnerContact_PartnerContactGuid",
+                table: "PartnerContact",
+                column: "PartnerContactGuid",
+                unique: true,
+                filter: "[PartnerContactGuid] IS NOT NULL");
+            
             migrationBuilder.CreateIndex(
                 name: "UIX_CampaignPartnerContact_TinyId",
                 table: "CampaignPartnerContact",
                 column: "TinyId",
                 unique: true,
                 filter: "[TinyId] IS NOT NULL");
+
+            migrationBuilder.Sql(@"UPDATE dbo.Campaign SET TargetedViewName = 'Welcome' WHERE Name = 'PPL Lead Gen'");
 
             migrationBuilder.Sql(@"EXEC('
 /*
@@ -46,6 +55,8 @@ AS
 /*
 <remarks>
 2019-04-29 - Bill Koenig - Created
+2019-05-01 - Bill Koenig - Removed alphanumeric symbols which share similar physical 
+	characteristics to avoid confusion
 </remarks>
 <description>
 Randomly generates an 8 character string using characters A through Z and 0 through 9.
@@ -68,10 +79,10 @@ BEGIN
 		FROM
 		  (
 		VALUES
-		  (''A''), (''B''), (''C''), (''D''), (''E''), (''F''), (''G''), (''H''), (''I''), (''J''),
-		  (''K''), (''L''), (''M''), (''N''), (''O''), (''P''), (''Q''), (''R''), (''S''), (''T''),
-		  (''U''), (''V''), (''W''), (''X''), (''Y''), (''Z''), (''0''), (''1''), (''2''), (''3''),
-		  (''4''), (''5''), (''6''), (''7''), (''8''), (''9'')	
+		  (''A''), (''C''), (''G''), (''H''), (''I''), (''J''),
+		  (''K''), (''L''), (''M''), (''N''), (''P''), (''Q''),
+          (''R''), (''U''), (''V''), (''W''), (''X''), (''Y''), 
+		  (''4''), (''6''), (''9'')	
 		  ) AS T1(c1)
 		ORDER BY ABS(CHECKSUM((SELECT TOP 1 [NEWID] FROM v_UniqueIdentifier)))
 		) AS T2
@@ -85,6 +96,7 @@ END
 /*
 <remarks>
 2019-04-29 - Bill Koenig - Created
+2019-05-01 - Bill Koenig - Removed transaction from while loop, SET XACT_ABORT OFF
 </remarks>
 <description>
 Handles the creation of a unique tiny id on insert only. Retries if any collisions are detected up to 3 times.
@@ -94,30 +106,26 @@ insert into CampaignPartnerContact (CampaignId, PartnerContactId, IsDeleted, Cre
 values (22, 100210, 0, GETUTCDATE(), ''00000000-0000-0000-0000-000000000000'', newid())
 </example>
 */
-CREATE TRIGGER trg_CampaignPartnerContact_INSERT
-ON dbo.CampaignPartnerContact AFTER INSERT 
+CREATE TRIGGER [dbo].[trg_CampaignPartnerContact_INSERT]
+ON [dbo].[CampaignPartnerContact] AFTER INSERT 
 AS BEGIN
 
+	SET XACT_ABORT OFF
 	DECLARE @RetryCount INT
 	DECLARE @Success    BIT
 	SELECT @RetryCount = 1, @Success = 0
-	WHILE @RetryCount < =  3 AND @Success = 0
+	WHILE @RetryCount <=  3 AND @Success = 0
 	BEGIN
 		BEGIN TRY
-			BEGIN TRANSACTION
-
 				UPDATE cpc
 				SET TinyId = (SELECT dbo.fn_GenerateTinyId())
+					, ModifyDate = GETUTCDATE()
+					, ModifyGuid = ''00000000-0000-0000-0000-000000000000''
 				FROM dbo.CampaignPartnerContact cpc
 				JOIN inserted i ON cpc.CampaignPartnerContactGuid = i.CampaignPartnerContactGuid
-
-			COMMIT TRANSACTION
 			SET @Success = 1
 		END TRY
- 
 		BEGIN CATCH
-			ROLLBACK TRANSACTION
-  
 			IF ERROR_NUMBER() = 2601 -- Violation in unique index
 			BEGIN
 				SET @RetryCount = @RetryCount + 1   
@@ -134,6 +142,10 @@ END
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropIndex(
+                name: "UIX_PartnerContact_PartnerContactGuid",
+                table: "PartnerContact");
+
             migrationBuilder.DropIndex(
                 name: "UIX_CampaignPartnerContact_TinyId",
                 table: "CampaignPartnerContact");

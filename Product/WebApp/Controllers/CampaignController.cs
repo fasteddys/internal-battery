@@ -55,9 +55,50 @@ namespace UpDiddy.Controllers
                     IsExpressCampaign = true,
                     IsActive = true
                 });
-            CampaignPartnerContactDto campaignPartnerContact = await _Api.GetCampaignPartnerContactAsync(tinyId);
+            try
+            {
+                CampaignPartnerContactDto campaignPartnerContact = await _Api.GetCampaignPartnerContactAsync(tinyId);
 
-            throw new NotImplementedException();
+                if (string.IsNullOrWhiteSpace(tinyId) || campaignPartnerContact == null)
+                    return View("Community", new CampaignViewModel()
+                    {
+                        IsExpressCampaign = true,
+                        IsActive = true
+                    });
+
+                // capture any campaign phase information that has been passed.  
+                string campaignPhase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
+
+                // build trackign string url
+                string _TrackingImgSource = _configuration["Api:ApiUrl"] +
+                    "tracking?contact=" +
+                    campaignPartnerContact.PartnerContactGuid.ToString() +
+                    "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
+                    campaignPartnerContact.CampaignGuid.ToString() + "&campaignphase=" + WebUtility.UrlEncode(campaignPhase);
+
+                // hide the details of the user's email
+                string obfuscatedEmail = Utils.ObfuscateEmail(campaignPartnerContact.Email);
+
+                CampaignViewModel cvm = new CampaignViewModel()
+                {
+
+                    CampaignGuid = campaignPartnerContact.CampaignGuid,
+                    PartnerContactGuid = campaignPartnerContact.PartnerContactGuid,
+                    TrackingImgSource = _TrackingImgSource,
+                    CampaignCourse = null, // no support for campaign course association and rebates
+                    CampaignPhase = campaignPhase,
+                    IsExpressCampaign = false,
+                    IsActive = campaignPartnerContact.IsCampaignActive,
+                    ObfuscatedEmail = obfuscatedEmail
+                };
+
+                string viewName = campaignPartnerContact.TargetedViewName == null ? "Community" : string.Format("TargetedPages/{0}", campaignPartnerContact.TargetedViewName);
+                return View(viewName, cvm);
+            }
+            catch (ApiException ex)
+            {
+                return StatusCode((int)ex.StatusCode);
+            }
         }
 
         [HttpGet]
@@ -75,7 +116,7 @@ namespace UpDiddy.Controllers
                     IsActive = true
                 });
             }
-            
+
             try
             {
                 // Todo - re-factor once courses and campaigns aren't a 1:1 mapping
@@ -97,7 +138,7 @@ namespace UpDiddy.Controllers
                     Contact.PartnerContactGuid.Value.ToString() +
                     "&action=47D62280-213F-44F3-8085-A83BB2A5BBE3&campaign=" +
                     CampaignGuid + "&campaignphase=" + WebUtility.UrlEncode(CampaignPhase);
-                
+
                 string obfuscatedEmail = Utils.ObfuscateEmail(Contact.Email);
                 CampaignViewModel cvm = new CampaignViewModel()
                 {
@@ -116,7 +157,6 @@ namespace UpDiddy.Controllers
                 string viewName = CampaignViewName == null ? "Community" : string.Format("TargetedPages/{0}", CampaignViewName);
                 return View(viewName, cvm);
             }
-
             catch (ApiException ex)
             {
                 return StatusCode((int)ex.StatusCode);

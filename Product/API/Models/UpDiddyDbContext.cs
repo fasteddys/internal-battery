@@ -239,6 +239,11 @@ namespace UpDiddyApi.Models
                 .Property<string>("MetaDataJSON")
                 .HasField("_metadata");
 
+            modelBuilder.Entity<PartnerContact>()
+                .HasIndex(pc => pc.PartnerContactGuid)
+                .HasName("UIX_PartnerContact_PartnerContactGuid")
+                .IsUnique(true);
+
             modelBuilder.Entity<PartnerContactFile>()
                 .HasOne(e => e.PartnerContact)
                 .WithMany(e => e.PartnerContactFiles);

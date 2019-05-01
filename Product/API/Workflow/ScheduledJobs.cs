@@ -505,6 +505,38 @@ namespace UpDiddyApi.Workflow
             return result;
         }
 
+        public Boolean DeactivateCampaignPartnerContacts()
+        {
+            bool result = false;
+            using (_syslog.BeginScope("DeactivateCampaignPartnerContacts"))
+            {
+                _syslog.LogInformation("Beginning deactivation of old campaign partner contacts");
+                try
+                {
+                    List<CampaignPartnerContact> campaignPartnerContacts = _db.CampaignPartnerContact
+                        .Where(cpc => cpc.IsDeleted == 0 && cpc.CreateDate.DateDiff(DateTime.UtcNow).TotalDays > 60)
+                        .ToList();
+
+                    foreach(CampaignPartnerContact campaignPartnerContact in campaignPartnerContacts)
+                    {
+                        campaignPartnerContact.ModifyDate = DateTime.UtcNow;
+                        campaignPartnerContact.ModifyGuid = Guid.Empty;
+                        campaignPartnerContact.TinyId = null;
+                        _db.Attach(campaignPartnerContact);
+                    }
+                    _db.SaveChanges();
+                    _syslog.LogInformation($"Deactivated {campaignPartnerContacts.Count} campaign partner contacts");
+
+                    result = true;
+                }
+                catch (Exception e)
+                {
+                    _syslog.Log(LogLevel.Error, "ScheduledJobs:DeactivateCampaignPartnerContacts threw an exception -> " + e.Message);
+                }
+            }
+            return result;
+        }
+
         public void StoreTrackingInformation(Guid campaignGuid, Guid partnerContactGuid, Guid actionGuid, string campaignPhaseName, string headers)
         {
             var campaignEntity = _db.Campaign.Where(c => c.CampaignGuid == campaignGuid && c.IsDeleted == 0).FirstOrDefault();
