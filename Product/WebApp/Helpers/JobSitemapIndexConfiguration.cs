@@ -24,7 +24,7 @@ namespace UpDiddy.Helpers
         }
         public override SitemapNode CreateNode(JobViewDto source)
         {
-            return new SitemapNode(urlHelper.Action(source.JobPostingGuid.ToString(), "jobs")) { LastModificationDate = source.ModifyDate, ChangeFrequency = ChangeFrequency.Daily };
+            return new SitemapNode(urlHelper.Action(source.JobPostingGuid.ToString(), "jobs")) { LastModificationDate = source.PostingDateUTC, ChangeFrequency = ChangeFrequency.Daily };
             
         }
     }
