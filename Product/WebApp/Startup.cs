@@ -27,6 +27,9 @@ using UpDiddy.Api;
 using UpDiddy.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using JavaScriptEngineSwitcher.ChakraCore;
+using JavaScriptEngineSwitcher.Extensions.MsDependencyInjection;
+using React.AspNet; 
 using DeviceDetectorNET;
 using UpDiddy.Services;
 using UpDiddy.Services.ButterCMS;
@@ -68,6 +71,11 @@ namespace UpDiddy
         {
             services.AddHttpContextAccessor();
 
+			services.AddJsEngineSwitcher(options => options.DefaultEngineName = ChakraCoreJsEngine.EngineName)
+				.AddChakraCore();
+
+			services.AddReact();
+
             services.AddAuthentication(sharedOptions =>
             {
                 sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -82,7 +90,7 @@ namespace UpDiddy
                 options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
                 options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
             });
-       
+
 
             #region AddLocalization
             services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -124,7 +132,7 @@ namespace UpDiddy
             var ApiGetTimeoutPolicy = Policy.TimeoutAsync(PollyTimeoutInSeconds);
             // Create retry policy          
             var ApiGetRetryPolicy = HttpPolicyExtensions
-                .HandleTransientHttpError()                                
+                .HandleTransientHttpError()
                 .WaitAndRetryAsync(PollyRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
             // Combine timeout and retry policies to create Get policy 
             var ApiGetPolicy = ApiGetTimeoutPolicy.WrapAsync(ApiGetRetryPolicy);
@@ -210,6 +218,18 @@ namespace UpDiddy
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }
 
+            // Initialise ReactJS.NET. Must be before static files.
+            app.UseReact(config =>
+            {
+				config
+					.SetReuseJavaScriptEngines(true)
+					.SetLoadBabel(false)
+					.SetLoadReact(false)
+					.AddScriptWithoutTransform("~/js/runtime.js")
+					.AddScriptWithoutTransform("~/js/vendor.js")
+					.AddScriptWithoutTransform("~/js/components.js");
+            });
+
             app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
 
             var supportedCultures = new[]
@@ -247,7 +267,7 @@ namespace UpDiddy
 
             app.Use(async (ctx, next) =>
             {
-                if (ctx.Request.Path == "/signout-oidc" &&!ctx.Request.Query["skip"].Any())
+                if (ctx.Request.Path == "/signout-oidc" && !ctx.Request.Query["skip"].Any())
                 {
                     var location = ctx.Request.Path + ctx.Request.QueryString + "&skip=1";
                     ctx.Response.StatusCode = 200;
@@ -292,13 +312,16 @@ namespace UpDiddy
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
+                    "sitemap",
+                    "sitemap.xml",
+                    new { controller = "Sitemap", action = "SiteMap" });
+                routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
                 routes.MapRoute(
                     "NotFound",
                     "{*url}",
-                    new { controller = "Home", action = "PageNotFound" }
-                );
+                    new { controller = "Home", action = "PageNotFound" });
             });
         }
     }

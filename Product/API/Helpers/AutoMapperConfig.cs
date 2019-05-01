@@ -38,7 +38,6 @@ namespace UpDiddyApi.Helpers
             CreateMap<EnrollmentLog, EnrollmentLogDto>().ReverseMap();
             CreateMap<CourseVariantType, CourseVariantTypeDto>().ReverseMap();
             CreateMap<Skill, SkillDto>().ReverseMap();
-            CreateMap<SubscriberFile, SubscriberFileDto>().ReverseMap();
             CreateMap<Company, CompanyDto>().ReverseMap();
             CreateMap<EducationalInstitution, EducationalInstitutionDto>().ReverseMap();
             CreateMap<EducationalDegree, EducationalDegreeDto>().ReverseMap();
@@ -55,12 +54,24 @@ namespace UpDiddyApi.Helpers
             CreateMap<SecurityClearance, SecurityClearanceDto>().ReverseMap();
             CreateMap<EmploymentType, EmploymentTypeDto>().ReverseMap();
             CreateMap<Industry, IndustryDto>().ReverseMap();
-            CreateMap<JobPosting, JobPostingDto>().ReverseMap();
+
+            CreateMap<JobPostingSkill, JobPostingSkillDto>().ReverseMap();
             CreateMap<ExperienceLevel, ExperienceLevelDto>().ReverseMap();
             CreateMap<EducationLevel, EducationLevelDto>().ReverseMap();
             CreateMap<JobCategory, JobCategoryDto>().ReverseMap();
             CreateMap<JobApplication, JobApplicationDto>().ReverseMap();
             CreateMap<RecruiterCompany, RecruiterCompanyDto>().ReverseMap();
+            CreateMap<JobPostingFavorite, JobPostingFavoriteDto>().ReverseMap();
+
+            CreateMap<JobPostingSkill, SkillDto>()
+           .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
+            .ForMember(c => c.SkillName, opt => opt.MapFrom(src => src.Skill.SkillName))
+            .ForAllOtherMembers(opts => opts.Ignore());
+
+
+
+            CreateMap<JobPosting, JobPostingDto>()
+                .ReverseMap();
 
 
             CreateMap<JobApplication, JobApplicationApplicantViewDto>()
@@ -132,6 +143,12 @@ namespace UpDiddyApi.Helpers
                 .ForMember(s => s.WorkHistory, opt => opt.MapFrom(src => src.SubscriberWorkHistory))
                 .ForMember(s => s.EducationHistory, opt => opt.MapFrom(src => src.SubscriberEducationHistory))
                 .ForMember(s => s.Files, opt => opt.MapFrom(src => src.SubscriberFile))
+                .ReverseMap();
+            CreateMap<SubscriberFile, SubscriberFileDto>()
+                .ForMember(s => s.SimpleName, opt => opt.MapFrom(src => src.SimpleName))
+                .ForMember(s => s.SubscriberFileGuid, opt => opt.MapFrom(src => src.SubscriberFileGuid))
+                .ForMember(s => s.CreateDate, opt => opt.MapFrom(src => src.CreateDate))
+                .ForMember(s => s.BlobName, opt => opt.MapFrom(src => src.BlobName))
                 .ReverseMap();
             CreateMap<State, StateDto>()
                 .ForMember(s => s.Country, opt => opt.MapFrom(src => src.Country))
