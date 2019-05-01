@@ -37,9 +37,12 @@
             <strong>Posting ID:</strong> <span class="job-location">@Model.PostingId</span>
         </div>
     </div>
-    <div class="col-12 col-md-6 pt-4">
-        <strong>Employee Type:</strong> <span class="employee-type">@Model.EmployeeType</span>
-    </div>
+    @if (!string.IsNullOrEmpty(Model.EmployeeType))
+    {
+        <div class="col-12 col-md-6 pt-4">
+            <strong>Employee Type:</strong> <span class="employee-type">@Model.EmployeeType</span>
+        </div>
+    }
     <div class="col-12 pt-3">
         <h4 class="job-board-heading">Job Summary</h4>
         <div class="job-summary">
