@@ -203,13 +203,15 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/{jobPostingGuid}")]
         public IActionResult DeleteJobPosting(Guid jobPostingGuid)
         {
+       
             JobPosting jobPosting = null;
             try
             {
                 _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting started at: {DateTime.UtcNow.ToLongDateString()} for posting {jobPostingGuid}");
 
                 if (jobPostingGuid == null)
-                    return BadRequest(new { code = 400, message = "No job posting identifier was provided" });
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "No job posting identifier was provided"});
+ 
 
                 jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(_db, jobPostingGuid);
                 if (jobPosting == null)

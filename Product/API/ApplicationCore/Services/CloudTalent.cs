@@ -126,6 +126,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             catch (Exception e)
             {
                 // Update job posting with index error
+                jobPosting.IsDeleted = 1;
+                jobPosting.ModifyDate = DateTime.UtcNow;
                 jobPosting.CloudTalentIndexInfo = e.Message;
                 jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.IndexError;
                 _db.SaveChanges();
