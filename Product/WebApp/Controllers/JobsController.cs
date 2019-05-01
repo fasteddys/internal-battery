@@ -1,0 +1,222 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using UpDiddy.Api;
+using UpDiddyLib.Dto;
+using UpDiddy.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using UpDiddy.Authentication;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using X.PagedList;
+
+
+// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+
+namespace UpDiddy.Controllers
+{
+
+    
+    public class JobsController : BaseController
+    {
+
+        private IApi _api;
+        private readonly IConfiguration _configuration;
+        private readonly IHostingEnvironment _env;
+
+        public JobsController(IApi api,
+        IConfiguration configuration,
+        IHostingEnvironment env)
+         : base(api)
+        {
+            _api = api;
+            _env = env;
+            _configuration = configuration;
+        }
+        
+        [HttpGet("[controller]")]
+        public async Task<IActionResult> Index(string keywords, string location, int? page)
+        {
+            //get pageCount from Configuration file
+            int pageCount=_configuration.GetValue<int>("Pagination:PageCount");
+
+            JobSearchResultDto jobSearchResultDto = null;
+
+            try
+            {
+                 jobSearchResultDto = await _api.GetJobsByLocation(
+                                      keywords, location);
+            }
+            catch(ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+
+            if (jobSearchResultDto == null)
+                return NotFound();
+            
+
+            JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
+            {
+                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page ?? 1, pageCount)
+            };
+
+            return View("Index", jobSearchViewModel);
+        }
+
+        [HttpGet("[controller]/{JobGuid}")]
+        public async Task<IActionResult> JobAsync(Guid JobGuid)
+        {
+            JobPostingDto job = null;
+            try
+            {
+                job = await _api.GetJobAsync(JobGuid);
+            }
+            catch(ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+            
+            if (job == null)
+                return NotFound();
+
+            JobDetailsViewModel jdvm = new JobDetailsViewModel
+            {
+                Name = job.Title,
+                Company = job.Company?.CompanyName,
+                PostedDate = job.PostingDateUTC == null ? string.Empty : job.PostingDateUTC.ToLocalTime().ToString(),
+                Location = $"{job.City}, {job.Province}, {job.Country}",
+                PostingId = job.JobPostingGuid?.ToString(),
+                EmployeeType = job.EmploymentType?.Name,
+                Summary = job.Description,
+                ContactEmail = job.Subscriber?.Email,
+                ContactName = $"{job.Subscriber?.LastName}, {job.Subscriber?.FirstName}",
+                ContactPhone = job.Subscriber?.PhoneNumber
+            };
+
+
+            return View("JobDetails", jdvm);
+        }
+
+        [Authorize]
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [HttpGet("[controller]/apply/{JobGuid}")]
+        public async Task<IActionResult> ApplyAsync(Guid JobGuid)
+        {
+            JobPostingDto job = null;
+            try
+            {
+                job = await _api.GetJobAsync(JobGuid);
+            }
+            catch (ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+
+            if (job == null)
+                return NotFound();
+            
+
+            
+            return View("Apply", new JobApplicationViewModel() {
+                Email = this.subscriber.Email,
+                FirstName = string.IsNullOrEmpty(this.subscriber.FirstName) ? string.Empty : this.subscriber.FirstName,
+                LastName = string.IsNullOrEmpty(this.subscriber.LastName) ? string.Empty : this.subscriber.LastName,
+                Job = job,
+                JobPostingGuid = JobGuid,
+                HasResumeOnFile = this.subscriber.Files.Count > 0
+            });
+        }
+
+        [Authorize]
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [HttpPost("[controller]")]
+        public async Task<IActionResult> SubmitApplicationAsync(JobApplicationViewModel JobApplicationViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return StatusCode(500);
+            }
+
+            if (this.subscriber.Files.Count == 0)
+                return BadRequest();
+
+            JobPostingDto job = null;
+            try
+            {
+                job = await _api.GetJobAsync(JobApplicationViewModel.JobPostingGuid);
+            }
+            catch (ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+
+            if (job == null)
+                return NotFound();
+
+            this.subscriber.FirstName = JobApplicationViewModel.FirstName;
+            this.subscriber.LastName = JobApplicationViewModel.LastName;
+
+            JobApplicationDto jadto = new JobApplicationDto()
+            {
+                JobPosting = job,
+                Subscriber = this.subscriber,
+                CoverLetter = JobApplicationViewModel.CoverLetter
+            };
+
+
+            BasicResponseDto Response = null;
+
+            CompletedJobApplicationViewModel cjavm = new CompletedJobApplicationViewModel();
+
+            try
+            {
+                Response = await _api.ApplyToJobAsync(jadto);
+                cjavm.JobApplicationStatus = CompletedJobApplicationViewModel.ApplicationStatus.Success;
+            }
+            catch(ApiException e)
+            {
+                cjavm.JobApplicationStatus = CompletedJobApplicationViewModel.ApplicationStatus.Failed;
+                cjavm.Description = e.ResponseDto.Description;
+            }
+
+
+            return View("Finish", cjavm);
+        }
+    }
+}

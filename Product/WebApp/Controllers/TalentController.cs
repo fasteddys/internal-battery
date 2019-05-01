@@ -62,9 +62,18 @@ namespace UpDiddy.Controllers
         [HttpDelete]
         [Route("[controller]/jobPosting/{jobPostingGuid}/delete")]   
         public async Task<IActionResult> DeleteJobPosting(Guid jobPostingGuid)
-        {        
-            await _api.DeleteJobPosting(jobPostingGuid);
-            return Ok();
+        {
+            try
+            {
+                await _api.DeleteJobPosting(jobPostingGuid);
+                return Ok();
+            }
+            catch ( ApiException ex )
+            {
+                return BadRequest(new JsonResult(ex.ResponseDto )) ;
+              
+            }
+
         }
 
 
@@ -78,7 +87,6 @@ namespace UpDiddy.Controllers
             await _api.CopyJobPosting(jobPostingGuid);
             return Ok();
         }
-
 
 
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]

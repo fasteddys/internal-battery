@@ -1,0 +1,26 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using UpDiddy.Helpers
+@model CompletedJobApplicationViewModel
+
+
+
+
+<div class="job-application-finish-hero-band @Model.JobApplicationStatus">
+    <div class="p-5"></div>
+</div>
+<div class="container animated bounceInUp">
+    <div class="job-details-container shadow-5">
+        @{
+            List<string> Elements = new List<string>()
+        {
+            Html.PartialToHtmlMarkup("Partials/_FinishedApplicationMessage", Model).ToString()
+        };
+        }
+        @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+        {
+            Class = "cc-cscheme-white",
+            Elements = Elements
+        })
+    </div>
+</div>

@@ -43,6 +43,57 @@ namespace UpDiddyApi.ApplicationCore
         #endregion
 
         #region Enroll Student
+
+        public MessageTransactionResponse UnEnrollStudent(Enrollment enrollment, int Section, int WozEnrollment)
+        {
+            _translog = new WozTransactionLog();
+            try
+            {
+                _translog.EndPoint = "Woz:UnEnrollStudent";
+                _translog.InputParameters = $"Enrollment={enrollment.EnrollmentGuid};Section={Section};WozEnrollment={WozEnrollment}"; 
+                _translog.EnrollmentGuid = enrollment.EnrollmentGuid;
+ 
+                long UnEnrollmentTimeStamp = ((DateTimeOffset)DateTime.UtcNow.Date).ToUnixTimeMilliseconds();
+ 
+                // Call Woz to un-register student
+                WozUpdateEnrollmentDto update = new WozUpdateEnrollmentDto()
+                {
+                     enrollmentStatus = (int) WozEnrollmentStatus.Withdrawn,
+                     enrollmentDateUTC = UnEnrollmentTimeStamp,
+                     removalDateUTC = UnEnrollmentTimeStamp                     
+                };
+            
+                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(update);
+                string ResponseJson = string.Empty;
+                HttpResponseMessage WozResponse = ExecuteWozPut($"sections/{Section}/enrollments/{WozEnrollment}", Json, ref ResponseJson);
+
+                _translog.WozResponseJson = ResponseJson;
+                if (WozResponse.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    var ResponseObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(ResponseJson);
+                    try
+                    {
+                        string TransactionId = ResponseObject.transactionId;
+                        string Message = "WozResponse = |" + ResponseObject.message + "| WozStudentDto = " + Json + "|";
+                        return CreateResponse(ResponseJson, Message, TransactionId, TransactionState.InProgress);
+                    }
+                    catch (Exception ex)
+                    {
+                        return CreateResponse(ResponseJson, ex.Message, string.Empty, TransactionState.FatalError);
+                    }
+                }
+                else
+                {
+                    return CreateResponse(ResponseJson, WozResponse.StatusCode.ToString() + " Error", string.Empty, TransactionState.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                return CreateResponse(string.Empty, ex.Message, string.Empty, TransactionState.FatalError);
+            }
+        }
+
+
         public MessageTransactionResponse EnrollStudent(string EnrollmentGuid, ref bool IsInstructorLed)
         {
             _translog = new WozTransactionLog();
@@ -1042,6 +1093,17 @@ namespace UpDiddyApi.ApplicationCore
 
 
 
+        private HttpResponseMessage ExecuteWozPut(string ApiAction, string Content, ref string ResponseJson)
+        {
+            HttpClient client = CreateWozPutClient();
+            HttpRequestMessage WozRequest = CreateWozPutRequest(ApiAction, Content);
+            HttpResponseMessage WozResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(WozRequest));
+            ResponseJson = AsyncHelper.RunSync<string>(() => WozResponse.Content.ReadAsStringAsync());
+            return WozResponse;
+
+        }
+
+
         private HttpResponseMessage ExecuteWozPost(string ApiAction, string Content, ref string ResponseJson)
         {
             HttpClient client = CreateWozPostClient();
@@ -1063,6 +1125,18 @@ namespace UpDiddyApi.ApplicationCore
         }
 
 
+
+
+        private HttpRequestMessage CreateWozPutRequest(string ApiAction, string Content)
+        {
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, _apiBaseUri + ApiAction)
+            {
+                Content = new StringContent(Content)
+            };
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            return request;
+        }
+
         private HttpRequestMessage CreateWozPostRequest(string ApiAction, string Content)
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, _apiBaseUri + ApiAction)
@@ -1077,6 +1151,17 @@ namespace UpDiddyApi.ApplicationCore
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, _apiBaseUri + ApiAction);
             return request;
+
+        }
+
+
+
+        private HttpClient CreateWozPutClient()
+        {
+            HttpClient client = _httpClientFactory.CreateClient(Constants.HttpPutClientName);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+
+            return client;
 
         }
 

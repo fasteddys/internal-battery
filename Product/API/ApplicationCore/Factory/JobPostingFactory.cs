@@ -403,7 +403,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             jobPosting.Title = jobPostingDto.Title;
             jobPosting.Description = jobPostingDto.Description;
-            jobPosting.PostingDateUTC = jobPostingDto.PostingDateUTC;
             jobPosting.PostingExpirationDateUTC = jobPostingDto.PostingExpirationDateUTC;
             jobPosting.ApplicationDeadlineUTC = jobPostingDto.ApplicationDeadlineUTC;
             jobPosting.JobStatus = jobPostingDto.JobStatus;
@@ -417,6 +416,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
             jobPosting.Province = jobPostingDto.Province;
             jobPosting.PostalCode = jobPostingDto.PostalCode;
             jobPosting.StreetAddress = jobPostingDto.StreetAddress;
+            // Update the modify date to now
+            jobPosting.ModifyDate = DateTime.UtcNow;
 
             // Map select items 
             if (jobPostingDto.Company == null)
@@ -513,7 +514,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
             JobPostingFactory.UpdatePostingSkills(db, jobPosting, jobPostingDto);
             // index active jobs in cloud talent 
             if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobPosting.JobPostingGuid));
+            {
+                // Check to see if the job has been indexed into google 
+                if ( string.IsNullOrEmpty(jobPosting.CloudTalentUri)  == false )
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobPosting.JobPostingGuid));
+                else
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
+            }
+                
 
         }
         

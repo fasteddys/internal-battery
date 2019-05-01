@@ -53,7 +53,7 @@ namespace UpDiddyApi.ApplicationCore
             if (jobApplicationDto == null )
             {
                 ErrorCode = 400;
-                ErrorMsg = "Job application is required";
+                ErrorMsg = "Job application is required.";
                 return false;
             }
 
@@ -63,7 +63,7 @@ namespace UpDiddyApi.ApplicationCore
             if (jobApplicationDto.Subscriber == null || jobApplicationDto.Subscriber.SubscriberGuid == null)
             {
                 ErrorCode = 400;
-                ErrorMsg = "No subscriber has been specified";
+                ErrorMsg = "No subscriber has been specified.";
                 return false;
             }
                         
@@ -71,7 +71,7 @@ namespace UpDiddyApi.ApplicationCore
             if (subscriber == null)
             {
                 ErrorCode = 404;
-                ErrorMsg = $"Subscriber {jobApplicationDto.Subscriber.SubscriberGuid.Value} does not exist";
+                ErrorMsg = $"Subscriber {jobApplicationDto.Subscriber.SubscriberGuid.Value} does not exist.";
                 return false;
             }
                     
@@ -79,7 +79,7 @@ namespace UpDiddyApi.ApplicationCore
             if (jobApplicationDto.JobPosting == null || jobApplicationDto.JobPosting.JobPostingGuid == null)
             {
                 ErrorCode = 400;
-                ErrorMsg = "No job posting has been specified";
+                ErrorMsg = "No job posting has been specified.";
                 return false;
             }
                   
@@ -88,7 +88,7 @@ namespace UpDiddyApi.ApplicationCore
            if (jobPosting == null)
            {
                 ErrorCode = 404;
-                ErrorMsg = $"Job posting {jobApplicationDto.JobPosting.JobPostingGuid.Value} does not exist";
+                ErrorMsg = $"Job posting {jobApplicationDto.JobPosting.JobPostingGuid.Value} does not exist.";
                 return false;
            }
              
@@ -96,7 +96,7 @@ namespace UpDiddyApi.ApplicationCore
             if (jobPosting.JobStatus != (int)JobPostingStatus.Active)
             {
                 ErrorCode = 400;
-                ErrorMsg = $"Job {jobPosting.JobPostingGuid} is not active";
+                ErrorMsg = $"Job {jobPosting.JobPostingGuid} is not active.";
                 return false;                
             }
 
@@ -105,7 +105,7 @@ namespace UpDiddyApi.ApplicationCore
             if ( jobApplication != null )
             {
                 ErrorCode = 400;
-                ErrorMsg = "User has already applied";
+                ErrorMsg = "User has already applied.";
                 return false;
             }
 
