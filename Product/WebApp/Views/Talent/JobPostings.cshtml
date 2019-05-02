@@ -89,7 +89,7 @@
                                             url: 'jobposting/' +  Guid + '/copy',
                                             method: "POST",
                                             success: function (data, textStatus, jqXHR) {
-                                                location.reload();
+                                                location.reload(true);
                                             },
                                             error: function (jqXHR, textStatus, errorThrown) {
                                                 ToastService.error(textStatus, errorThrown);
@@ -120,7 +120,7 @@
                                             url: 'jobposting/' + Guid + '/delete',
                                             method: "delete",
                                             success: function (data, textStatus, jqXHR) {
-                                                location.reload();
+                                                location.reload(true);
                                             },
                                             error: function (jqXHR, textStatus, errorThrown) {
                                                ToastService.error(textStatus, jqXHR.responseJSON.value.description);                                               
