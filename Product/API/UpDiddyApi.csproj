@@ -31,6 +31,10 @@
     <Compile Remove="Migrations\20190228135226_Adding Terms to Campaigns.Designer.cs" />
     <Compile Remove="Migrations\20190424110411_JobPostingFavorites.cs" />
     <Compile Remove="Migrations\20190424110411_JobPostingFavorites.Designer.cs" />
+    <Compile Remove="Migrations\20190503113719_Update subscriber search sp.cs" />
+    <Compile Remove="Migrations\20190503113719_Update subscriber search sp.Designer.cs" />
+    <Compile Remove="Migrations\20190503113839_Update subscriber search sp.cs" />
+    <Compile Remove="Migrations\20190503113839_Update subscriber search sp.Designer.cs" />
     <Compile Remove="Models\_Company.cs" />
     <Compile Remove="Models\_Country.cs" />
     <Compile Remove="Models\_EducationalDegree.cs" />

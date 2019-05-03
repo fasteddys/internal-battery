@@ -17,5 +17,6 @@ namespace UpDiddyApi.Models
         public string City { get; set; }
         public string State { get; set; }
         public DateTime? ModifyDate { get; set; }
+        public DateTime? CreateDate { get; set; }
     }
 }
