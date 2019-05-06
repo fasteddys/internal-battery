@@ -43,7 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// Returns a subscriber's resume as a Stream
         /// </summary>
         /// <param name="subscriber"></param>
-        /// <returns></returns>
+        /// <returns>Stream containing a subscriber's resume</returns>
         Task<Stream> GetResumeAsync(Subscriber subscriber);
     }
 }

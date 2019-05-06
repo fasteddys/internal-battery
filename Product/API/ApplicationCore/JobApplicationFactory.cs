@@ -67,7 +67,7 @@ namespace UpDiddyApi.ApplicationCore
                 return false;
             }
                         
-            subscriber = SubscriberFactory.GetSubscriberByGuid(db, jobApplicationDto.Subscriber.SubscriberGuid.Value);
+            subscriber = SubscriberFactory.GetSubscriberWithSubscriberFiles(db, jobApplicationDto.Subscriber.SubscriberGuid.Value);
             if (subscriber == null)
             {
                 ErrorCode = 404;

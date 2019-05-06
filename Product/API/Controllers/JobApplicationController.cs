@@ -243,9 +243,11 @@ namespace UpDiddyApi.Controllers
                 jobApplication.CoverLetter = jobApplicationDto.CoverLetter == null ? string.Empty : jobApplicationDto.CoverLetter;
                 _db.JobApplication.Add(jobApplication);
                 _db.SaveChanges();
+
+                Stream SubscriberResumeAsStream = await _subscriberService.GetResumeAsync(subscriber);
     
                 // Send recruiter email alerting them to application
-                BackgroundJob.Enqueue(() =>_sysEmail.SendTemplatedEmailAsync
+                BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
                     (jobPosting.Subscriber.Email, 
                      _configuration["SysEmail:TemplateIds:JobApplication-Recruiter"],
                      new
@@ -255,8 +257,9 @@ namespace UpDiddyApi.Controllers
                         ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration,subscriber.SubscriberGuid.Value),
                         JobUrl = JobPostingFactory.JobPostingUrl(_configuration,jobPosting.JobPostingGuid)
                       }, 
-                      null,
-                      Convert.ToBase64String(Utils.StreamToByteArray(await _subscriberService.GetResumeAsync(subscriber))))
+                      null, 
+                      SubscriberResumeAsStream == null ? null : Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream)),
+                      SubscriberResumeAsStream == null ? null : Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName))
                 );
              
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");

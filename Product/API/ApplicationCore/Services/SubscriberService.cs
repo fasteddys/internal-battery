@@ -234,6 +234,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<Stream> GetResumeAsync(Subscriber subscriber)
         {
+
             SubscriberFile file = subscriber.SubscriberFile.Where(
                 f => f.SubscriberFileGuid.Equals(
                     subscriber.SubscriberFile.FirstOrDefault()?.SubscriberFileGuid)).First();

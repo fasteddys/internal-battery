@@ -111,6 +111,14 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefault();
         }
 
+        public static Subscriber GetSubscriberWithSubscriberFiles(UpDiddyDbContext db, Guid subscriberGuid)
+        {
+            return db.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                .Include(s => s.SubscriberFile)
+                .FirstOrDefault();
+        }
+
 
         public static ProfileDataStatus ImportLinkedIn(UpDiddyDbContext db, ISovrenAPI sovrenApi, SubscriberProfileStagingStore info, ref string msg)
         {
