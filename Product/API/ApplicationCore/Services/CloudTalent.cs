@@ -23,7 +23,7 @@ using UpDiddyLib.Dto;
 using UpDiddyApi.Helpers.Job;
 using static Google.Apis.CloudTalentSolution.v3.ProjectsResource.ClientEventsResource;
 using Google.Apis.CloudTalentSolution.v3.Data;
-using UpDiddyApi.ApplicationCore.Services.GoogleJobs;
+using UpDiddyLib.Shared.GoogleJobs;
 using Enum = System.Enum;
 using MiniGuids;
 
@@ -594,6 +594,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
             CreateRequest request = _jobServiceClient.Projects.ClientEvents.Create(ccer, _projectPath);
             ce = await request.ExecuteAsync();
+            _syslog.Log(LogLevel.Information, "CloudTalent.CreateClientEventAsync:: RequestId: {RequestId}, ParentEventId: {ParentEventId}, EventId: {ClientEventId}, EventType: {EventType}", ce.RequestId, parentEventId, ce.EventId, ce.JobEvent.Type);
             return ce;
         }
         #endregion

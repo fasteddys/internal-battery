@@ -115,9 +115,11 @@ namespace UpDiddy.Api
 
         #region JobBoard
 
-        Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid);
+        Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null);
         Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
         Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location);
+
+        Task<GoogleCloudEventsTrackingDto> RecordClientEventAsync(Guid jobGuid, GoogleCloudEventsTrackingDto dto);
 
         #endregion
 

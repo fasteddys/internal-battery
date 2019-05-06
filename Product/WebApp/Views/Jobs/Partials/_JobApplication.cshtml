@@ -11,6 +11,8 @@
             {
                 <form id="JobApplication" asp-controller="Jobs" asp-action="SubmitApplicationAsync">
                     <input type="hidden" asp-for="JobPostingGuid" value="@Model.JobPostingGuid" />
+                    <input type="hidden" asp-for="RequestId" value="@Model.RequestId"/>
+                    <input type="hidden" asp-for="ClientEventId" value="@Model.ClientEventId"/>
                     <div class="form-group">
                         <label for="FirstName">Email on file</label>
                         <input type="email" class="form-control" disabled value="@Model.Email">

@@ -30,7 +30,7 @@ using Hangfire;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.Helpers.Job;
 using System.Security.Claims;
-using UpDiddyApi.ApplicationCore.Services.GoogleJobs;
+using UpDiddyLib.Shared.GoogleJobs;
 using Google.Apis.CloudTalentSolution.v3.Data;
 
 namespace UpDiddyApi.Controllers
@@ -439,6 +439,20 @@ namespace UpDiddyApi.Controllers
             return Ok(rVal);
         }
 
+        #endregion
+
+        #region Google Cloud Talent Client Event Tracking/Report
+        [HttpPost]
+        [Route("api/[controller]/{jobGuid}/track")]
+        public async Task<IActionResult> JobEvent(Guid jobGuid, [FromBody] GoogleCloudEventsTrackingDto dto)
+        {
+            JobPosting jp = await _db.JobPosting.Where(x => x.JobPostingGuid == jobGuid).FirstOrDefaultAsync();
+            ClientEvent ce = await _cloudTalent.CreateClientEventAsync(dto.RequestId, dto.Type, new List<string>() { jp.CloudTalentUri }, dto.ParentClientEventId);
+            return Ok(new GoogleCloudEventsTrackingDto {
+                RequestId = ce.RequestId,
+                ClientEventId = ce.EventId
+            });
+        }
         #endregion
     }
 }

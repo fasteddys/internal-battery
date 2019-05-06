@@ -8,7 +8,11 @@ namespace UpDiddyLib.Dto
     public enum JobPostingStatus { Draft = 0, Active, Expired };
 
     public class JobPostingDto : BaseDto
-    {       
+    {
+        public string RequestId { get; set; }
+
+        public string ClientEventId { get; set; }
+
         public Guid? JobPostingGuid { get; set; }
  
         public DateTime PostingDateUTC { get; set; }
