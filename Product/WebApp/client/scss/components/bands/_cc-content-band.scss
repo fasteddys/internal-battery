@@ -29,8 +29,10 @@
 
         &.itpro-hero {
             max-height: 100%;
-            background-size: contain;
+            background-size: cover;
             background-repeat: no-repeat;
+            padding: 10em;
+            background-position: center;
         }
     }
 }
