@@ -1307,6 +1307,81 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("JobCategory");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.JobPage", b =>
+                {
+                    b.Property<int>("JobPageId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<Guid>("JobPageGuid");
+
+                    b.Property<int>("JobPageStatusId");
+
+                    b.Property<int?>("JobPostingId");
+
+                    b.Property<int>("JobSiteId");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("RawData")
+                        .IsRequired();
+
+                    b.Property<string>("UniqueIdentifier")
+                        .IsRequired();
+
+                    b.Property<string>("Uri")
+                        .IsRequired();
+
+                    b.HasKey("JobPageId");
+
+                    b.HasIndex("JobPageStatusId");
+
+                    b.HasIndex("JobPostingId");
+
+                    b.HasIndex("JobSiteId");
+
+                    b.HasIndex("UniqueIdentifier", "JobSiteId")
+                        .IsUnique()
+                        .HasName("UIX_JobPage_JobSite_UniqueIdentifier");
+
+                    b.ToTable("JobPage");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobPageStatus", b =>
+                {
+                    b.Property<int>("JobPageStatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Description");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<Guid>("JobPageStatusGuid");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("JobPageStatusId");
+
+                    b.ToTable("JobPageStatus");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.JobPosting", b =>
                 {
                     b.Property<int>("JobPostingId")
@@ -1454,6 +1529,39 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("JobPostingId");
 
                     b.ToTable("JobPostingSkill");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobSite", b =>
+                {
+                    b.Property<int>("JobSiteId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<Guid>("JobSiteGuid");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<string>("Uri")
+                        .IsRequired();
+
+                    b.HasKey("JobSiteId");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasName("UIX_JobSite_Name");
+
+                    b.ToTable("JobSite");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.LeadStatus", b =>
@@ -3235,6 +3343,23 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
                         .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobPage", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.JobPageStatus", "JobPageStatus")
+                        .WithMany()
+                        .HasForeignKey("JobPageStatusId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.JobPosting", "JobPosting")
+                        .WithMany()
+                        .HasForeignKey("JobPostingId");
+
+                    b.HasOne("UpDiddyApi.Models.JobSite", "JobSite")
+                        .WithMany("JobListings")
+                        .HasForeignKey("JobSiteId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

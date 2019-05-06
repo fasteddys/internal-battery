@@ -181,6 +181,12 @@ namespace UpDiddyApi
             // remove TinyIds from old CampaignPartnerContact records
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
 
+            // initiate job scrape once per day at 07:00Z
+            // RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.InvokeJobDataMiningProcess(), Cron.Daily(7));
+
+            // debug only - remove this once development is complete
+            //BackgroundJob.Enqueue<ScheduledJobs>(j => j.JobDataMining());
+
             // Add Polly 
             // Create Policies  
             int PollyRetries = int.Parse(Configuration["Polly:Retries"]);

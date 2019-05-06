@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface IRepositoryWrapper
+    public interface IJobSiteRepository : IUpDiddyRepositoryBase<JobSite>
     {
-        ICountryRepository Country { get; }
-        IStateRepository State { get; }
-        IJobSiteRepository JobSite { get; }
+        Task<IEnumerable<JobSite>> GetAllJobSitesAsync();
     }
 }

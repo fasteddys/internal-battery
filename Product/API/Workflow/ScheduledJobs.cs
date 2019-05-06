@@ -23,6 +23,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Helpers.Job;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.Workflow
 {
@@ -30,8 +31,9 @@ namespace UpDiddyApi.Workflow
     {
         ICloudStorage _cloudStorage;
         ISysEmail _sysEmail;
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, IHubContext<ClientHub> hub, IDistributedCache distributedCache, ICloudStorage cloudStorage)
+        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, IHubContext<ClientHub> hub, IDistributedCache distributedCache, ICloudStorage cloudStorage, IRepositoryWrapper repositoryWrapper)
         {
             _db = context;
             _mapper = mapper;
@@ -45,6 +47,7 @@ namespace UpDiddyApi.Workflow
             _hub = hub;
             _cache = distributedCache;
             _sysEmail = sysEmail;
+            _repositoryWrapper = repositoryWrapper;
         }
 
         #region Marketing
@@ -53,7 +56,7 @@ namespace UpDiddyApi.Workflow
         {
             // retrieve the unique identifier for the lead and campaign
             var tinyId = _db.CampaignPartnerContact.Where(cpc => cpc.PartnerContact.PartnerContactGuid == partnerContactGuid && cpc.Campaign.Name == "PPL Lead Gen").FirstOrDefault()?.TinyId;
-            
+
             // dynamic data should include: first/last name, tinyId (which can be used to infer campaign, partner contact, and view)
             var templateData = new
             {
@@ -405,6 +408,43 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
+        #region Third Party Jobs
+
+        public async Task<bool> JobDataMining()
+        {
+            var result = true;
+            try
+            {
+
+                List<JobSite> jobSites = _repositoryWrapper.JobSite.GetAllJobSitesAsync().Result.ToList();
+
+                // todo: implement parallel processing
+                foreach (var jobSite in jobSites)
+                {
+
+                    IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite);
+                    List<JobPage> jobPages = jobDataMining.GetJobPages();
+                    // common method of inserting/updating job pages
+
+
+                    foreach (var jobPage in jobPages)
+                    {
+                        // common method of processing job pages
+                    }
+                }
+
+
+
+            }
+            catch (Exception e)
+            {
+                // todo: implement logging
+                result = false;
+            }
+            return result;
+        }
+
+        #endregion
 
         #region CareerCircle Jobs 
 
@@ -517,7 +557,7 @@ namespace UpDiddyApi.Workflow
                         .Where(cpc => cpc.IsDeleted == 0 && cpc.CreateDate.DateDiff(DateTime.UtcNow).TotalDays > 60)
                         .ToList();
 
-                    foreach(CampaignPartnerContact campaignPartnerContact in campaignPartnerContacts)
+                    foreach (CampaignPartnerContact campaignPartnerContact in campaignPartnerContacts)
                     {
                         campaignPartnerContact.ModifyDate = DateTime.UtcNow;
                         campaignPartnerContact.ModifyGuid = Guid.Empty;
