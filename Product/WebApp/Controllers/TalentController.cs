@@ -186,32 +186,22 @@ namespace UpDiddy.Controllers
                     }
                 }
 
-                if ( model.IsEdit )
+                try
                 {
-                    job.JobPostingGuid = model.EditGuid;
-                    try
+                    if ( model.IsEdit )
                     {
-                        rVal = await _api.UpdateJobPostingAsync(job);
-                    }
-                    catch ( ApiException ex )
-                    { 
-                      return  Redirect(model.RequestPath + "?ErrorMsg=" + WebUtility.UrlEncode (ex.ResponseDto.Description)  );
-                    }
-                    
-                }                    
-                else
-                {
-                    try
-                    {
-                        rVal = await _api.AddJobPostingAsync(job);
-                    }
-                    catch (ApiException ex)
-                    {
-                        return Redirect(model.RequestPath + "?ErrorMsg=" + WebUtility.UrlEncode(ex.ResponseDto.Description));
-                    }
+                        job.JobPostingGuid = model.EditGuid;         
+                        rVal = await _api.UpdateJobPostingAsync(job);                        
+                    }                    
+                    else                                           
+                      rVal = await _api.AddJobPostingAsync(job);
+                      
                 }
-                
-                  
+                catch (ApiException ex)
+                {
+                    return Redirect(model.RequestPath + "?ErrorMsg=" + WebUtility.UrlEncode(ex.ResponseDto.Description));
+                }
+  
             }
  
             return RedirectToAction("JobPostings");
