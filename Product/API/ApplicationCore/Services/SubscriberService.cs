@@ -232,22 +232,16 @@ namespace UpDiddyApi.ApplicationCore.Services
             return subscriberFileResume;
         }
 
-        private async Task<FileStreamResult> _GetResumeAsync(Guid SubscriberGuid)
+        public async Task<Stream> GetResumeAsync(Subscriber subscriber)
         {
-
-
-            Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(SubscriberGuid))
-                            .Include(s => s.SubscriberFile)
-                            .First();
-
             SubscriberFile file = subscriber.SubscriberFile.Where(
                 f => f.SubscriberFileGuid.Equals(
                     subscriber.SubscriberFile.FirstOrDefault()?.SubscriberFileGuid)).First();
 
             if (file == null)
                 return null;
-
-            return new FileStreamResult(await _cloudStorage.OpenReadAsync(file.BlobName), "application/octet-stream");
+            
+            return await _cloudStorage.OpenReadAsync(file.BlobName);
         }
 
         public async Task<bool> QueueScanResumeJobAsync(Guid subscriberGuid)

@@ -32,7 +32,13 @@ namespace UpDiddyLib.Helpers
             return true;
         }
 
-        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, string subject = null)
+        public async Task<bool> SendTemplatedEmailAsync(
+            string email, 
+            string templateId, 
+            dynamic templateData, 
+            string subject = null, 
+            string attachment = null,
+            string attachmentName = null)
         {
             var client = new SendGridClient(_apiKey);
             var message = new SendGridMessage();
@@ -40,6 +46,10 @@ namespace UpDiddyLib.Helpers
             message.AddTo(new EmailAddress(email));
             message.SetTemplateId(templateId);
             message.SetTemplateData(templateData);
+
+            if(attachment != null)
+                message.AddAttachment(string.IsNullOrEmpty(attachmentName) ? "attachment" : attachmentName, attachment);
+
             if (subject != null)
                 message.SetSubject(subject);
             var response = await client.SendEmailAsync(message);

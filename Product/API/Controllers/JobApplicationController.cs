@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-
+using System.IO;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +32,8 @@ using UpDiddyApi.Helpers.Job;
 using System.Security.Claims;
 using UpDiddyLib.Helpers;
 using System.Dynamic;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
+
 
 namespace UpDiddyApi.Controllers
 {
@@ -47,9 +49,17 @@ namespace UpDiddyApi.Controllers
         private readonly int _postingTTL = 30;
         private readonly CloudTalent _cloudTalent = null;
         private ISysEmail _sysEmail;
+        private ISubscriberService _subscriberService;
 
         #region constructor 
-        public JobApplicationController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory, ISysEmail sysEmail)
+        public JobApplicationController(
+            UpDiddyDbContext db, 
+            IMapper mapper, 
+            Microsoft.Extensions.Configuration.IConfiguration configuration, 
+            ILogger<ProfileController> sysLog, 
+            IHttpClientFactory httpClientFactory, 
+            ISysEmail sysEmail,
+            ISubscriberService subscriberService)
 
         {
             _db = db;
@@ -60,6 +70,7 @@ namespace UpDiddyApi.Controllers
             _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
             _sysEmail = sysEmail;
+            _subscriberService = subscriberService;
         }
         #endregion
 
@@ -209,7 +220,7 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Authorize]
         [Route("api/[controller]")]
-        public IActionResult CreateJobApplication([FromBody] JobApplicationDto jobApplicationDto)
+        public async Task<IActionResult> CreateJobApplication([FromBody] JobApplicationDto jobApplicationDto)
         {
             try
             {
@@ -244,7 +255,8 @@ namespace UpDiddyApi.Controllers
                         ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration,subscriber.SubscriberGuid.Value),
                         JobUrl = JobPostingFactory.JobPostingUrl(_configuration,jobPosting.JobPostingGuid)
                       }, 
-                      null)
+                      null,
+                      Convert.ToBase64String(Utils.StreamToByteArray(await _subscriberService.GetResumeAsync(subscriber))))
                 );
              
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");

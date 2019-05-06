@@ -38,5 +38,12 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="subscriberGuid"></param>
         /// <returns>bool</returns>
         Task<bool> QueueScanResumeJobAsync(Guid subscriberGuid);
+
+        /// <summary>
+        /// Returns a subscriber's resume as a Stream
+        /// </summary>
+        /// <param name="subscriber"></param>
+        /// <returns></returns>
+        Task<Stream> GetResumeAsync(Subscriber subscriber);
     }
 }
