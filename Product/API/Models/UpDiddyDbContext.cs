@@ -155,7 +155,8 @@ namespace UpDiddyApi.Models
         public DbSet<RecruiterCompany> RecruiterCompany { get; set; }
 
         public DbSet<JobPostingFavorite> JobPostingFavorite { get; set; }
-        
+        public DbSet<Recruiter> Recruiter { get; set; }
+        public DbSet<RecruiterAction> RecruiterAction { get; set; }
 
         #region DBQueries
 
@@ -182,6 +183,10 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<CampaignContact>()
                 .HasKey(cc => new { cc.CampaignId, cc.ContactId });
             #endregion
+
+            modelBuilder.Entity<RecruiterAction>()
+                .Property(ra => ra.OccurredDate)
+                .HasDefaultValueSql("GETUTCDATE()");
 
             modelBuilder.Entity<PartnerContactFileLeadStatus>()
                 .HasKey(pcfls => new { pcfls.PartnerContactFileId, pcfls.LeadStatusId });

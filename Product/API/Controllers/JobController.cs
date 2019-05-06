@@ -218,7 +218,7 @@ namespace UpDiddyApi.Controllers
                     return NotFound(new { code = 404, message = $"Job posting {jobPostingGuid} does not exist" });
 
                 Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                if (jobPosting.Subscriber.SubscriberGuid != subsriberGuidClaim)
+                if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting owner is not specified or does not match user posting job" });
 
                 // queue a job to delete the posting from the job index and mark it as deleted in sql server
@@ -367,7 +367,7 @@ namespace UpDiddyApi.Controllers
                 return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "JobPosting not found" });
 
             Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (jobPosting.Subscriber.SubscriberGuid != subsriberGuidClaim)
+            if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim)
                 return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Unauthorized to copy posting" });
 
             jobPosting = JobPostingFactory.CopyJobPosting(_db, jobPosting, _postingTTL);

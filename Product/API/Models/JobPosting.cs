@@ -56,11 +56,11 @@ namespace UpDiddyApi.Models
         public int JobStatus { get; set; }
 
         /// <summary>
-        /// The subscriber who posted the job 
+        /// The recruiter (which may or may not also be a subscriber) who posted the job 
         /// </summary>
-        public int? SubscriberId { get; set; }
+        public int? RecruiterId { get; set; }
 
-        public virtual Subscriber Subscriber { get; set; }
+        public virtual Recruiter Recruiter { get; set; }
 
         /// <summary>
         /// Guid of the company that owns the posting
