@@ -5,7 +5,7 @@
     .cc-content-band {
         position: relative;
         padding: 2rem;
-        background-size:cover;
+        background-size: cover;
         background-position: top;
 
         .cc-content-band-header {
@@ -15,9 +15,11 @@
 
         .cc-content-band-content {
             padding-top: 2rem;
-            img{
+
+            img {
                 width: 100%;
             }
+
             > .row {
                 > div {
                     margin-bottom: 2rem;
@@ -25,7 +27,11 @@
             }
         }
 
-
+        &.itpro-hero {
+            max-height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
     }
 }
 
@@ -49,7 +55,6 @@
         padding: 6rem 2rem;
         .cc-content-band-header {
             font-size: 2.5rem;
-            
         }
     }
 }

@@ -1,0 +1,65 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using UpDiddy.Helpers
+@model AboutViewModel
+
+<div class="clinical-research-container">
+    <div class="clinical-hero-container">
+        @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
+            {
+                BackgroundImage = "/images/ITProTV-header-landingPage.jpeg",
+                Elements = new List<string>()
+                {
+                    ""
+                },
+                Class="itpro-hero"
+            }
+        )
+    </div>
+    @{
+        List<string> Elements = new List<string>()
+    {
+        "Navigating the world of IT can be a challenge. In partnership with ITProTV, we are providing you with access to their FREE CompTIA IT Fundamentals course. This free IT Fundamentals certification is designed to cover several different areas of the IT space at a very high level."
+    };
+    }
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+    {
+        Header = "CompTIA IT Fundamentals",
+        Class = "skew skew-left-to-right cc-cscheme-secondary-dark",
+        Elements = Elements
+    })
+    @{
+        List<string> Elements2 = new List<string>()
+        {
+            "<h3>The CompTIA IT Fundamentals Certification is an entry level certification designed to introduce users to basic computer principles.</h3>",
+            "It covers basic IT literacy and ensures one understands the different terminology and the various concepts involved In the IT industry. It also serves as a great starting point if you are just getting started in computers, coming back to the workforce, or just want to increase your knowledge of basic computer principles. This course is the first step on your way to pursuing the CompTIA A+ certification or others similar. Topics covered include hardware basics, troubleshooting, software installation, security and also networking."
+        };
+    }
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+    {
+        Class = "cc-cscheme-secondary-white",
+        Elements = Elements2
+    })
+
+    @{
+        List<string> Elements3 = new List<string>()
+    {
+        "<div class=\"container-align-center\">As a CareerCircle member, you have access to this course through ITProTV completely free!</div><br /><br /><div class=\"container-align-center\">" + @Html.PartialToHtmlMarkup("Components/Buttons/_Action", new ActionButtonViewModel {
+                                        Text = "Click here access FREE Course",
+                                        Hyperlink = "https://app.itpro.tv/plans/free-signup/circle/",
+                                        FitToText = true,
+                                        ChosenColorScheme = "cc-cscheme-white",
+                                        ButtonAction = ActionButtonViewModel.Action.CTA,
+                                        ButtonClass = "signup-cta"
+                                    }) + "</div>"
+
+    };
+    }
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+    {
+        Class = "skew skew-right-to-left cc-cscheme-primary",
+        Elements = Elements3
+    })
+
+</div>
+

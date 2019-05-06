@@ -311,5 +311,12 @@ namespace UpDiddy.Controllers
         {
             return View("ClinicalResearchCoordinator");
         }
+
+        [Authorize]
+        [HttpGet("[controller]/ITProTVCourse")]
+        public async Task<IActionResult> ITProTVCourse()
+        {
+            return View("ITProTVCourse");
+        }
     }
 }
