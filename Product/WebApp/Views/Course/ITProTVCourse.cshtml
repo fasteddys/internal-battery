@@ -19,7 +19,7 @@
     @{
         List<string> Elements = new List<string>()
     {
-        "Navigating the world of IT can be a challenge. In partnership with ITProTV, we are providing you with access to their FREE CompTIA IT Fundamentals course. This free IT Fundamentals certification is designed to cover several different areas of the IT space at a very high level."
+        "Navigating the world of IT can be a challenge. In partnership with ITProTV, we are providing you with access to their FREE CompTIA IT Fundamentals course. This free IT Fundamentals course is designed to cover several different areas of the IT space at a very high level."
     };
     }
     @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
@@ -31,8 +31,8 @@
     @{
         List<string> Elements2 = new List<string>()
         {
-            "<h3>The CompTIA IT Fundamentals Certification is an entry level certification designed to introduce users to basic computer principles.</h3>",
-            "It covers basic IT literacy and ensures one understands the different terminology and the various concepts involved In the IT industry. It also serves as a great starting point if you are just getting started in computers, coming back to the workforce, or just want to increase your knowledge of basic computer principles. This course is the first step on your way to pursuing the CompTIA A+ certification or others similar. Topics covered include hardware basics, troubleshooting, software installation, security and also networking."
+            "<h3>The CompTIA IT Fundamentals Certification is an entry level certification designed to introduce users to basic computer principles.</h3><p>*Charges apply for CompTIA A+ certification exam.</p>",
+            "This course covers basic IT literacy and ensures one understands the different terminology and the various concepts involved In the IT industry. It also serves as a great starting point if you are just getting started in computers, coming back to the workforce, or just want to increase your knowledge of basic computer principles. After successful completion of the course you will be prepared for CompTIA A+ certification*. Topics covered include hardware basics, troubleshooting, software installation, security and also networking."
         };
     }
     @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
@@ -50,7 +50,8 @@
                                         FitToText = true,
                                         ChosenColorScheme = "cc-cscheme-white",
                                         ButtonAction = ActionButtonViewModel.Action.CTA,
-                                        ButtonClass = "signup-cta"
+                                        ButtonClass = "signup-cta",
+                                        OpenNewWindow = true
                                     }) + "</div>"
 
     };

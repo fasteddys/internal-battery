@@ -313,7 +313,7 @@ namespace UpDiddy.Controllers
         }
 
         [Authorize]
-        [HttpGet("[controller]/ITProTVCourse")]
+        [HttpGet("[controller]/itprotv-comptia-it-fundamentals")]
         public async Task<IActionResult> ITProTVCourse()
         {
             return View("ITProTVCourse");
