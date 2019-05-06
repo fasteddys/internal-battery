@@ -228,7 +228,7 @@ namespace UpDiddy.Controllers
 
 
 
-        [Authorize]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpGet]
         [Route("[controller]/subscriberData/{searchFilter}/{searchQuery?}")] 
         public async Task<IList<SubscriberDto>> SubscriberData(string searchFilter, string searchQuery = "" )

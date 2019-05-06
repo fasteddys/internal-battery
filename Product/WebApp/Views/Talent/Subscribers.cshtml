@@ -3,6 +3,8 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 @model TalentSubscriberViewModel
 <div class="container-fluid bg-color-primary">
     <div class="container">
@@ -37,7 +39,11 @@
                 </div>
                 <button class="btn btn-primary" onclick="doSearch(false);">Search</button>
                 <button class="btn btn-primary" onclick="doSearch(true);">Reset</button>
-                <button class="btn btn-primary" onclick="doDownload();">Download</button>
+                @if ((await AuthorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin")).Succeeded)
+                {
+                    <button class="btn btn-primary" onclick="doDownload();">Download</button>
+                }
+
             </div>
         </div>
     </div>
@@ -49,7 +55,7 @@
     @section Scripts{
         <script type="text/javascript">
             var url = '@Url.Action("Subscriber", "Talent")';
-           
+
             window.onload = function () {
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
             }
@@ -59,19 +65,18 @@
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
                 var search = document.getElementById('GridSearch').value;
                 var searchQuery = encodeURIComponent(search);
-                var searchFilter = encodeURIComponent(document.getElementById('SelectedSubscriberSource').value);         
+                var searchFilter = encodeURIComponent(document.getElementById('SelectedSubscriberSource').value);
                 var url = 'subscriberData/' + searchFilter + '/' + searchQuery;
                 $.ajax({
                     url: url,
                     method: "get",
                     success: function (data, textStatus, jqXHR) {
-                        downloadUserFile(data);                                               
+                        downloadUserFile(data);
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
                         ToastService.error(textStatus, jqXHR.responseJSON.value.description);
                     }
                 });
-
             }
 
             function downloadUserFile(data) {
@@ -79,6 +84,8 @@
                 campaign = campaign.substring(0, campaign.indexOf('('));
                 var fileData = createCsv(campaign, data);
                 var fileName = "users-" + campaign + "-" + moment().format("MMDDYYYYYHHMMSS") + ".csv";
+                var regex = new RegExp(" ", "g");
+                fileName = fileName.replace(regex, "");
                 downloadFile(fileName, fileData);
             }
 
@@ -109,8 +116,6 @@
                 }
             }
 
-
-
             function doSearch(isReset) {
                 if (isReset) {
                     document.getElementById('GridSearch').value = '';
@@ -132,5 +137,5 @@
                 font-size: 12px;
             }
         </style>
-        }
-    </div>
+    }
+</div>
