@@ -10,6 +10,7 @@
     string buttonDisplay = "";
     string outerClass = "";
     string innerClass = Model.ButtonClass;
+    string newWindow = "";
     if (Model.ButtonAction == ActionButtonViewModel.Action.CTA && !string.IsNullOrEmpty(Model.Hyperlink))
     {
         tag = "a";
@@ -17,6 +18,7 @@
         hyperLinkAttribute = "href=" + Model.Hyperlink;
         outerClass = Model.ButtonClass;
         innerClass = "";
+        newWindow = Model.OpenNewWindow ? "target='_blank'" : "";
     }
     else if (Model.ButtonAction == ActionButtonViewModel.Action.SUBMIT)
     {
@@ -30,7 +32,7 @@
 
 }
 
-<@tag @hyperLinkAttribute class="action-container @buttonDisplay @outerClass">
+<@tag @hyperLinkAttribute class="action-container @buttonDisplay @outerClass" @newWindow>
     <@innerTag id="ButtonComponent"
                class="button-container @Model.ChosenColorScheme @Model.SkewDirection font-bold @innerClass" @dataFormAttribute
                data-action-type="@Model.ButtonAction">
