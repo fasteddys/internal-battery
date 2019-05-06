@@ -19,9 +19,9 @@ namespace UpDiddyLib.Dto
 
         public string CloudTalentUri { get; set; }
         
-        public int CloudTalentIndexStatus { get; set; }  
-     
-        public SubscriberDto Subscriber { get; set; } 
+        public int CloudTalentIndexStatus { get; set; }
+
+        public RecruiterDto Recruiter { get; set; }
 
         public CompanyDto  Company { get; set; }
      

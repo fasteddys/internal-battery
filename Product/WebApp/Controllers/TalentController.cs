@@ -139,13 +139,16 @@ namespace UpDiddy.Controllers
                     Title = model.Title,
                     Description = model.Description,
                     JobStatus = model.IsDraft == true ? (int) JobPostingStatus.Draft :  (int) JobPostingStatus.Active,
-                   //Province = 
                     City = model.City,
                     PostingExpirationDateUTC = model.PostingExpirationDate,
-                    Subscriber = new SubscriberDto()
+                    Recruiter = new RecruiterDto()
                     {
-                        SubscriberGuid = this.subscriber.SubscriberGuid
-                    },
+                        Subscriber = new SubscriberDto()
+                        {
+                            SubscriberGuid = this.subscriber.SubscriberGuid
+                        },
+
+                    },                   
                     Province = model.SelectedState,
                     ThirdPartyApply = false                    
                 };
@@ -384,7 +387,7 @@ namespace UpDiddy.Controllers
                 {
                     Text = s.Company.CompanyName,
                     Value = s.Company.CompanyGuid.ToString(),
-                    Selected = jobPostingDto?.Company?.CompanyGuid != null && jobPostingDto?.Company?.CompanyGuid == s.CompanyGuid
+                    Selected = jobPostingDto?.Company?.CompanyGuid != null && jobPostingDto?.Company?.CompanyGuid == s.Company.CompanyGuid
                 }),
 
                 PostingExpirationDate = jobPostingDto == null ? DateTime.Now.AddDays(PostingExpirationInDays) : jobPostingDto.PostingExpirationDateUTC,
@@ -408,7 +411,6 @@ namespace UpDiddy.Controllers
             if ( jobPostingDto!= null && jobPostingDto.JobPostingSkills != null )           
                 model.Skills = jobPostingDto.JobPostingSkills;
 
-
             if (jobPostingDto != null)
             {
                 model.IsEdit = true;
@@ -416,7 +418,6 @@ namespace UpDiddy.Controllers
             }
             else
                 model.IsEdit = false;
-
 
             // finally check to see if there is an error msg that needs to be displayed
             model.ErrorMsg = Request.Query["ErrorMsg"];

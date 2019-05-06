@@ -108,10 +108,25 @@ namespace UpDiddy.Controllers
                 PostingId = job.JobPostingGuid?.ToString(),
                 EmployeeType = job.EmploymentType?.Name,
                 Summary = job.Description,
-                ContactEmail = job.Subscriber?.Email,
-                ContactName = $"{job.Subscriber?.LastName}, {job.Subscriber?.FirstName}",
-                ContactPhone = job.Subscriber?.PhoneNumber
+
             };
+
+            // Display subscriber info if it exists
+            if ( job.Recruiter.Subscriber != null )
+            {
+                jdvm.ContactEmail = job.Recruiter.Subscriber?.Email;
+                jdvm.ContactName = $"{job.Recruiter.Subscriber?.LastName}, {job.Recruiter.Subscriber?.FirstName}";
+                jdvm.ContactPhone = job.Recruiter.Subscriber?.PhoneNumber;
+
+            }
+            else // Use recruiter info in no subscriber exists
+            {
+                jdvm.ContactEmail = job.Recruiter?.Email;
+                jdvm.ContactName = $"{job.Recruiter?.LastName}, {job.Recruiter?.FirstName}";
+                jdvm.ContactPhone = job.Recruiter?.PhoneNumber;
+
+            }
+ 
 
 
             return View("JobDetails", jdvm);
