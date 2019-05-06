@@ -199,8 +199,18 @@ namespace UpDiddy.Controllers
                     }
                     
                 }                    
-                else 
-                    rVal =   await _api.AddJobPostingAsync(job);
+                else
+                {
+                    try
+                    {
+                        rVal = await _api.AddJobPostingAsync(job);
+                    }
+                    catch (ApiException ex)
+                    {
+                        return Redirect(model.RequestPath + "?ErrorMsg=" + WebUtility.UrlEncode(ex.ResponseDto.Description));
+                    }
+                }
+                
                   
             }
  
