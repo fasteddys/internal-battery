@@ -13,6 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ICountryRepository _countryRepository;
         private IStateRepository _stateRepository;
         private IJobSiteRepository _jobSiteRepository;
+        private IJobPageRepository _jobPageRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -51,6 +52,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _jobSiteRepository = new JobSiteRepository(_dbContext);
                 }
                 return _jobSiteRepository;
+            }
+        }
+
+        public IJobPageRepository JobPage
+        {
+            get
+            {
+                if(_jobPageRepository == null)
+                {
+                    _jobPageRepository = new JobPageRepository(_dbContext);
+                }
+                return _jobPageRepository;
             }
         }
     }

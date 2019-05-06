@@ -425,11 +425,38 @@ namespace UpDiddyApi.Workflow
                     IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite);
                     List<JobPage> jobPages = jobDataMining.GetJobPages();
                     // common method of inserting/updating job pages
-
+                    // common method of processing job pages
 
                     foreach (var jobPage in jobPages)
                     {
-                        // common method of processing job pages
+                        /* lookup each job page in the db: 
+                         * does it exist? 
+                         * if not, insert it. 
+                         * if it does, update it
+                         *      does the raw data differ from what we have? 
+                         *      update it either way to indicate that we crawled it again, but update the job status to indicate whether or not we need to reprocess the job
+                         */
+                        var existingJobPage = await _repositoryWrapper.JobPage.GetJobPageByJobSiteAndIdentifier(jobSite.JobSiteGuid, jobPage.UniqueIdentifier);
+                        if (existingJobPage != null)
+                        {
+                            // update existing. does the raw content differ from what we most recently parsed?
+                        }
+                        else
+                        {
+                            _repositoryWrapper.JobPage.Create(new JobPage()
+                            {
+                                CreateDate = DateTime.UtcNow,
+                                CreateGuid = Guid.Empty,
+                                IsDeleted = 0,
+                                JobPageGuid = Guid.NewGuid(),
+                                JobPageStatusId = 1, // todo: replace w/ lookup
+                                JobSiteId = jobSite.JobSiteId,
+                                RawData = jobPage.RawData,
+                                UniqueIdentifier = jobPage.UniqueIdentifier,
+                                Uri = jobPage.Uri
+                            });
+                            await _repositoryWrapper.JobPage.SaveAsync();
+                        }
                     }
                 }
 

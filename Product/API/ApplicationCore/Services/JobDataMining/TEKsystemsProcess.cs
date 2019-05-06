@@ -43,7 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
             // run this in parallel?
             int counter = 0;
-            Parallel.For(1, timesToRequestResultsPage, i =>
+            Parallel.For(counter, timesToRequestResultsPage, i =>
             {
                 string jobData;
                 using (var client = new HttpClient())
@@ -62,17 +62,19 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 dynamic jsonResults = JsonConvert.DeserializeObject<dynamic>(jobData);
                 foreach (var job in jsonResults.results)
                 {
+                    string jobDetailUri = _jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url;
+
                     jobPages.Add(new JobPage()
                     {
                         JobPageStatusId = 1,
-                        RawData = job.ToString()
-                        // todo: set unique identifier here
+                        RawData = job.ToString(),
+                        UniqueIdentifier = job.id,
+                        Uri = new Uri(jobDetailUri)
+
                     });
                 }
             });
-
-
-
+            
             return jobPages.ToList();
         }
 

@@ -185,7 +185,7 @@ namespace UpDiddyApi
             // RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.InvokeJobDataMiningProcess(), Cron.Daily(7));
 
             // debug only - remove this once development is complete
-            //BackgroundJob.Enqueue<ScheduledJobs>(j => j.JobDataMining());
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.JobDataMining());
 
             // Add Polly 
             // Create Policies  

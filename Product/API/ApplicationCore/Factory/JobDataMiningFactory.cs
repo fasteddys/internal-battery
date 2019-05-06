@@ -10,7 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public static class JobDataMiningFactory
     {
-        // takes param to identify specific job data mining service
         public static IJobDataMining GetJobDataMiningProcess(JobSite jobSite)
         {
             switch (jobSite.Name)
