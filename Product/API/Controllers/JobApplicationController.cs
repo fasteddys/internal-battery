@@ -33,7 +33,7 @@ using System.Security.Claims;
 using UpDiddyLib.Helpers;
 using System.Dynamic;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
-
+using SendGrid.Helpers.Mail;
 
 namespace UpDiddyApi.Controllers
 {
@@ -229,11 +229,11 @@ namespace UpDiddyApi.Controllers
                 Subscriber subscriber = null;
                 string ErrorMsg = string.Empty;
                 int ErrorCode = 0;
-                if ( JobApplicationFactory.ValidateJobApplication(_db,jobApplicationDto, ref subscriber, ref jobPosting,ref ErrorCode, ref ErrorMsg) == false )
+                if (JobApplicationFactory.ValidateJobApplication(_db, jobApplicationDto, ref subscriber, ref jobPosting, ref ErrorCode, ref ErrorMsg) == false)
                 {
-                   return BadRequest(new BasicResponseDto() {StatusCode = ErrorCode, Description = ErrorMsg });
+                    return BadRequest(new BasicResponseDto() { StatusCode = ErrorCode, Description = ErrorMsg });
                 }
-                
+
                 // create job application 
                 JobApplication jobApplication = new JobApplication();
                 BaseModelFactory.SetDefaultsForAddNew(jobApplication);
@@ -245,22 +245,38 @@ namespace UpDiddyApi.Controllers
                 _db.SaveChanges();
 
                 Stream SubscriberResumeAsStream = await _subscriberService.GetResumeAsync(subscriber);
-    
+
+                // ERASE ONCE OTHER LOGIC IS IMPLEMENTED
+                bool IsExternalRecruiter = true;
+                string RecruiterCompany = "TEKsystems";
+
                 // Send recruiter email alerting them to application
                 BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
-                    (jobPosting.Subscriber.Email, 
-                     _configuration["SysEmail:TemplateIds:JobApplication-Recruiter"],
-                     new
-                     {
+                    (jobPosting.Subscriber.Email,
+                    _configuration["SysEmail:TemplateIds:JobApplication-Recruiter" +
+                        (IsExternalRecruiter == true ? "-External" : string.Empty)],
+                    new
+                    {
                         ApplicantName = subscriber.FirstName + " " + subscriber.LastName,
                         JobTitle = jobPosting.Title,
-                        ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration,subscriber.SubscriberGuid.Value),
-                        JobUrl = JobPostingFactory.JobPostingUrl(_configuration,jobPosting.JobPostingGuid)
-                      }, 
-                      null, 
-                      SubscriberResumeAsStream == null ? null : Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream)),
-                      SubscriberResumeAsStream == null ? null : Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName))
-                );
+                        ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration, subscriber.SubscriberGuid.Value),
+                        JobUrl = JobPostingFactory.JobPostingUrl(_configuration, jobPosting.JobPostingGuid)
+                    },
+                    (IsExternalRecruiter == true ? $"{RecruiterCompany} job posting via CareerCircle" : "Applicant Alert"),
+                    new List<Attachment>
+                    {
+                        new Attachment
+                        {
+                            Content = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream)),
+                            Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName)
+                        },
+                        new Attachment
+                        {
+                            Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jobApplicationDto.CoverLetter)),
+                            Filename = "CoverLetter.docx"
+                        }
+                    }
+                ));
              
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPosting.JobPostingGuid}" });

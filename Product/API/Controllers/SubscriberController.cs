@@ -929,7 +929,6 @@ namespace UpDiddyApi.Controllers
                         verificationLink = link
                     }, 
                     null,
-                    null,
                     null
                 ));
         }

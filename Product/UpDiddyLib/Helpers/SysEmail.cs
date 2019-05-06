@@ -37,21 +37,20 @@ namespace UpDiddyLib.Helpers
             string templateId, 
             dynamic templateData, 
             string subject = null, 
-            string attachment = null,
-            string attachmentName = null)
+            List<Attachment> attachments = null)
         {
             var client = new SendGridClient(_apiKey);
             var message = new SendGridMessage();
+
             message.SetFrom(new EmailAddress("support@careercircle.com", "CareerCircle Support"));
             message.AddTo(new EmailAddress(email));
             message.SetTemplateId(templateId);
             message.SetTemplateData(templateData);
-
-            if(attachment != null)
-                message.AddAttachment(string.IsNullOrEmpty(attachmentName) ? "attachment" : attachmentName, attachment);
-
+            if(attachments != null)
+                message.AddAttachments(attachments);
             if (subject != null)
                 message.SetSubject(subject);
+
             var response = await client.SendEmailAsync(message);
             int statusCode = (int)response.StatusCode;
 

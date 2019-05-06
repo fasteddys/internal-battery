@@ -74,6 +74,14 @@ namespace UpDiddyApi.ApplicationCore
                 ErrorMsg = $"Subscriber {jobApplicationDto.Subscriber.SubscriberGuid.Value} does not exist.";
                 return false;
             }
+
+            //validate that resume and cover letter are present
+            if(subscriber.SubscriberFile.FirstOrDefault() == null || string.IsNullOrEmpty(jobApplicationDto.CoverLetter))
+            {
+                ErrorCode = 400;
+                ErrorMsg = "Subscriber has not suuplied both a cover letter and resume.";
+                return false;
+            }
                     
             //validate job posting 
             if (jobApplicationDto.JobPosting == null || jobApplicationDto.JobPosting.JobPostingGuid == null)

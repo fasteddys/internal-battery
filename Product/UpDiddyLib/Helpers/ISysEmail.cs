@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SendGrid.Helpers.Mail;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace UpDiddyLib.Helpers
@@ -7,7 +9,12 @@ namespace UpDiddyLib.Helpers
     {
         Task<bool> SendEmailAsync(string email, string subject, string htmlContent);
 
-        Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, string subject = null, string attachment = null, string attachmentName = null);
+        Task<bool> SendTemplatedEmailAsync(
+            string email, 
+            string templateId, 
+            dynamic templateData, 
+            string subject = null, 
+            List<Attachment> attachments = null);
 
         void SendPurchaseReceiptEmail(
             string sendgridTemplateId,
