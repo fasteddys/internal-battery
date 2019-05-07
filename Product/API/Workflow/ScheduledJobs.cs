@@ -412,34 +412,70 @@ namespace UpDiddyApi.Workflow
 
         public async Task<bool> JobDataMining()
         {
+            _syslog.Log(LogLevel.Information, $"***** JobDataMining started at: {DateTime.UtcNow.ToLongDateString()}");
+
             var result = true;
             try
             {
-
                 List<JobSite> jobSites = _repositoryWrapper.JobSite.GetAllJobSitesAsync().Result.ToList();
 
-                // todo: implement parallel processing
                 foreach (var jobSite in jobSites)
                 {
-
+                    // load the job data mining process for the job site
                     IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite);
-                    List<JobPage> jobPages = jobDataMining.GetJobPages();
-                    // common method of inserting/updating job pages
-                    // common method of processing job pages
 
-                    foreach (var jobPage in jobPages)
+                    // retrieve all current job pages that are visible on the job site
+                    List<JobPage> jobPages = jobDataMining.DiscoverJobPages();
+
+                    // update our internal reference for job pages 
+                    await UpdateJobPagesStoreAsync(jobSite, jobPages);
+
+                    // process the jobPages that are in a new state
+                    
+
+                        // what does the endpoint look like for creating a job posting? can i call this in a multi-threaded way? should the IJobDataMining method act on a list or one at a time?
+                }
+            }
+            catch (Exception e)
+            {
+                // todo: implement better logging
+                _syslog.Log(LogLevel.Error, $"***** JobDataMining encountered an exception: {e.Message}");
+                result = false;
+            }
+
+            _syslog.Log(LogLevel.Information, $"***** JobDataMining completed at: {DateTime.UtcNow.ToLongDateString()}");
+            return result;
+        }
+
+        /// <summary>
+        /// Provides a common mechanism for updating discovered job pages from any job site in our database
+        /// </summary>
+        /// <param name="jobSite"></param>
+        /// <param name="discoveredJobPages"></param>
+        /// <returns></returns>
+        private async Task UpdateJobPagesStoreAsync(JobSite jobSite, List<JobPage> discoveredJobPages)
+        {
+            if (discoveredJobPages != null)
+            {
+                // iterate over each job page discovered and insert or update them accordingly. don't update job pages that are identical (RawData and Uri).
+                // do not attempt to perform this operation in parallel - ef db connections are not thread-safe
+                foreach (var jobPage in discoveredJobPages)
+                {
+                    try
                     {
-                        /* lookup each job page in the db: 
-                         * does it exist? 
-                         * if not, insert it. 
-                         * if it does, update it
-                         *      does the raw data differ from what we have? 
-                         *      update it either way to indicate that we crawled it again, but update the job status to indicate whether or not we need to reprocess the job
-                         */
-                        var existingJobPage = await _repositoryWrapper.JobPage.GetJobPageByJobSiteAndIdentifier(jobSite.JobSiteGuid, jobPage.UniqueIdentifier);
+                        var existingJobPage = _repositoryWrapper.JobPage.GetJobPageByJobSiteAndIdentifier(jobSite.JobSiteGuid, jobPage.UniqueIdentifier).Result;
                         if (existingJobPage != null)
                         {
-                            // update existing. does the raw content differ from what we most recently parsed?
+                            if (existingJobPage.RawData != jobPage.RawData || existingJobPage.Uri != jobPage.Uri)
+                            {
+                                existingJobPage.RawData = jobPage.RawData;
+                                existingJobPage.ModifyDate = DateTime.UtcNow;
+                                existingJobPage.ModifyGuid = Guid.Empty;
+                                existingJobPage.JobPageStatusId = 1; // todo: replace w/ lookup
+                                existingJobPage.Uri = jobPage.Uri;
+                                _repositoryWrapper.JobPage.Update(existingJobPage);
+                                await _repositoryWrapper.JobPage.SaveAsync();
+                            }
                         }
                         else
                         {
@@ -458,17 +494,12 @@ namespace UpDiddyApi.Workflow
                             await _repositoryWrapper.JobPage.SaveAsync();
                         }
                     }
+                    catch (DbUpdateException e)
+                    {
+                        _syslog.Log(LogLevel.Error, $"****ScheduledJobs.UpdateJobPagesStoreAsync failed to update jobPage.UniqueIdentifier: {jobPage.UniqueIdentifier} for jobSite.JobSiteGuid: {jobSite.JobSiteGuid}");
+                    }
                 }
-
-
-
             }
-            catch (Exception e)
-            {
-                // todo: implement logging
-                result = false;
-            }
-            return result;
         }
 
         #endregion

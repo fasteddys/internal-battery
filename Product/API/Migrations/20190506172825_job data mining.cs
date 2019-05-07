@@ -133,6 +133,11 @@ namespace UpDiddyApi.Migrations
                 table: "JobPageStatus",
                 columns: new[] { "JobPageStatusGuid", "JobPageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
                 values: new object[] { new Guid("5849C93F-8407-4A8D-B4FB-CEDC11CB94CE"), 3, new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Error", "This status is applied to a JobPage when an error occurs during JobPage parsing which prevents an associated JobPosting record from being inserted or updated." });
+
+            migrationBuilder.InsertData(
+                table: "JobPageStatus",
+                columns: new[] { "JobPageStatusGuid", "JobPageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
+                values: new object[] { new Guid("5849C93F-8407-4A8D-B4FB-CEDC11CB94CE"), 4, new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Deleted", "This status is applied to a JobPage when it is discovered that a previously seen job is no longer visible on a JobSite." });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
 {
     public interface IJobDataMining
     {
-        List<JobPage> GetJobPages();
+        List<JobPage> DiscoverJobPages();
         JobPosting ProcessJobPage(JobPage jobPage);
     }
 }

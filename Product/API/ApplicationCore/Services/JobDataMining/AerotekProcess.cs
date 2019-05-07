@@ -11,7 +11,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
     {
         public AerotekProcess(JobSite jobSite) : base(jobSite) { }
 
-        public List<JobPage> GetJobPages()
+        public List<JobPage> DiscoverJobPages()
         {
             throw new NotImplementedException();
         }

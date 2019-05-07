@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using HtmlAgilityPack;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,9 +16,11 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
     {
         public TEKsystemsProcess(JobSite jobSite) : base(jobSite) { }
 
-        public List<JobPage> GetJobPages()
+        public List<JobPage> DiscoverJobPages()
         {
             ConcurrentBag<JobPage> jobPages = new ConcurrentBag<JobPage>();
+            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
 
             string response;
             using (var client = new HttpClient())
@@ -41,46 +44,91 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              */
             int timesToRequestResultsPage = Convert.ToInt32(Math.Ceiling((double)jobCount / 10));
 
-            // run this in parallel?
+            // run the paged requests in parallel - tested with a variety of MAXDOP settings and 10 was the sweet spot locally; 
+            // may need to adjust this once it is running in azure
             int counter = 0;
-            Parallel.For(counter, timesToRequestResultsPage, i =>
-            {
-                string jobData;
-                using (var client = new HttpClient())
-                {
-                    int progress = Interlocked.Increment(ref counter);
-                    UriBuilder builder = new UriBuilder(_jobSite.Uri);
-                    builder.Query = "?page=" + progress.ToString();
-                    var request = new HttpRequestMessage()
-                    {
-                        RequestUri = _jobSite.Uri,
-                        Method = HttpMethod.Get
-                    };
-                    var result = client.SendAsync(request).Result;
-                    jobData = result.Content.ReadAsStringAsync().Result;
-                }
-                dynamic jsonResults = JsonConvert.DeserializeObject<dynamic>(jobData);
-                foreach (var job in jsonResults.results)
-                {
-                    string jobDetailUri = _jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url;
+            Parallel.For(counter, timesToRequestResultsPage, new ParallelOptions { MaxDegreeOfParallelism = 50 }, i =>
+           {
+               string jobData;
+               using (var client = new HttpClient())
+               {
+                   int progress = Interlocked.Increment(ref counter);
+                   UriBuilder builder = new UriBuilder(_jobSite.Uri);
+                   builder.Query += "&page=" + progress.ToString();
+                   var request = new HttpRequestMessage()
+                   {
+                       RequestUri = builder.Uri,
+                       Method = HttpMethod.Get
+                   };
+                   var result = client.SendAsync(request).Result;
+                   jobData = result.Content.ReadAsStringAsync().Result;
+               }
+               dynamic jsonResults = JsonConvert.DeserializeObject<dynamic>(jobData);
 
-                    jobPages.Add(new JobPage()
-                    {
-                        JobPageStatusId = 1,
-                        RawData = job.ToString(),
-                        UniqueIdentifier = job.id,
-                        Uri = new Uri(jobDetailUri)
+               // keeping this loop serial rather than parallel intentionally (nesting parallel loops can quickly cause performance issues)
+               foreach (var job in jsonResults.results)
+               {
+                   string rawHtml;
+                   Uri jobDetailUri = new Uri(_jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url);
+                   using (var client = new HttpClient())
+                   {
+                       var request = new HttpRequestMessage()
+                       {
+                           RequestUri = jobDetailUri,
+                           Method = HttpMethod.Get
+                       };
+                       var result = client.SendAsync(request).Result;
+                       rawHtml = result.Content.ReadAsStringAsync().Result;
+                   }
+                   HtmlDocument jobHtml = new HtmlDocument();
+                   jobHtml.LoadHtml(rawHtml);
+                   var scripNodetWithJson = jobHtml.DocumentNode.SelectSingleNode("(//script[@type='application/ld+json'])[1]");
 
-                    });
-                }
-            });
-            
-            return jobPages.ToList();
+                   // todo: guard against missing or invalid data?
+                   var jobDataJson = JsonConvert.DeserializeObject<dynamic>(scripNodetWithJson.InnerHtml.ToString());
+                   job.responsibilities = jobDataJson.responsibilities.Value;
+
+                   jobPages.Add(new JobPage()
+                   {
+                       JobPageStatusId = 1,
+                       RawData = job.ToString(),
+                       UniqueIdentifier = job.id,
+                       Uri = jobDetailUri
+                   });
+               }
+           });
+
+            /* deal with duplicate job postings (or job postings that are similar enough to be considered duplicates). examples:
+             * - two job listings that have the same url and id but in the raw data the "applications" property is different (id: J3Q20V76L8YK2XBR6S8)
+             * - two job listings that have the same id but different urls. when looking at the website, each lists a different canonical url. 
+             *      we don't want to make the same mistake as this will hurt us from an SEO perspective.
+             * 
+             * the goal of the code below is to eliminate these duplicates in a repeatable manner. the method used is secondary to the goal of it being 
+             * repeatable (in terms of importance). what we want to avoid is the following: two jobs are essentially identical; job A and job B. if 
+             * yesterday the job data mining process chose job A and ignored job B, and tomorrow it chooses job B instead of job A, the end result could 
+             * be inconsistent data in our scraped job and job applications. in addition, the audit trail of what we did could be quite confusing.
+             */
+            var uniqueJobs = (from jp in jobPages
+                              group jp by jp.UniqueIdentifier into g
+                              select g.OrderBy(a => a, new CompareByUri()).First()).ToList();
+
+            stopwatch.Stop();
+            var elapsed = stopwatch.ElapsedMilliseconds;
+
+            return uniqueJobs;
         }
 
         public JobPosting ProcessJobPage(JobPage jobPage)
         {
             throw new NotImplementedException();
+        }
+
+        public class CompareByUri : IComparer<JobPage>
+        {
+            public int Compare(JobPage x, JobPage y)
+            {
+                return string.Compare(x.Uri.ToString(), y.Uri.ToString());
+            }
         }
     }
 }
