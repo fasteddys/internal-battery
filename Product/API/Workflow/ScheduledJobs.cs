@@ -583,6 +583,20 @@ namespace UpDiddyApi.Workflow
             }
         }
 
+        public void StoreRecruiterTrackingInformation(Guid ActorGuid, Guid ActionGuid, Guid JobApplicationGuid)
+        {
+            var Recruiter = _db.Recruiter.Where(r => r.RecruiterGuid == ActorGuid && r.IsDeleted == 0).FirstOrDefault();
+            var JobApplication = _db.JobApplication.Where(j => j.JobApplicationGuid == JobApplicationGuid && j.IsDeleted == 0).FirstOrDefault();
+            var Action = _db.Action.Where(a => a.ActionGuid == ActionGuid && a.IsDeleted == 0).FirstOrDefault();
+
+            // validate that the referenced entities exist
+            if (Recruiter != null && JobApplication != null && Action != null)
+            {
+
+                
+            }
+        }
+
         #endregion
 
         #region CareerCircle  Helper Functions
