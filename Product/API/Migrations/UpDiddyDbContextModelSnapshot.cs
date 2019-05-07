@@ -1689,6 +1689,11 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("ContactId");
 
+                    b.HasIndex("PartnerContactGuid")
+                        .IsUnique()
+                        .HasName("UIX_PartnerContact_PartnerContactGuid")
+                        .HasFilter("[PartnerContactGuid] IS NOT NULL");
+
                     b.HasIndex("PartnerId");
 
                     b.ToTable("PartnerContact");
