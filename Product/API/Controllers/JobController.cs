@@ -304,6 +304,9 @@ namespace UpDiddyApi.Controllers
                 _syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
                 //todo move code below to factory method 
                 JobPosting jobPosting = _mapper.Map<JobPosting>(jobPostingDto);
+                // todo find a better way to deal with the job posting having a collection of JobPostingSkill and the job posting DTO having a collection of SkillDto
+                // ignore posting skills that were mapped via automapper, they will be associated with the posting below 
+                jobPosting.JobPostingSkills = null;
                 // use factory method to make sure all the base data values are set just 
                 // in case the caller didn't set them
                 BaseModelFactory.SetDefaultsForAddNew(jobPosting);
@@ -336,6 +339,7 @@ namespace UpDiddyApi.Controllers
                 // todo make saving the job posting and skills more efficient with a stored procedure 
                 _db.JobPosting.Add(jobPosting);
                 _db.SaveChanges();
+                // save associated job posting skills 
                 JobPostingFactory.SavePostingSkills(_db, jobPosting, jobPostingDto);
                 //index active jobs into google 
                 if (jobPosting.JobStatus == (int)JobPostingStatus.Active)

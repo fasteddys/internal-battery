@@ -66,10 +66,14 @@ namespace UpDiddyApi.Helpers
 
 
             CreateMap<JobPostingSkill, SkillDto>()
-           .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
+            .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
             .ForMember(c => c.SkillName, opt => opt.MapFrom(src => src.Skill.SkillName))
             .ForAllOtherMembers(opts => opts.Ignore());
-
+ 
+            CreateMap<SkillDto, JobPostingSkill>()
+               .ForPath(c => c.Skill.SkillGuid, opt => opt.MapFrom(src => src.SkillGuid))
+               .ForPath(c => c.Skill.SkillName, opt => opt.MapFrom(src => src.SkillName))
+               .ForAllOtherMembers(opts => opts.Ignore());
 
 
             CreateMap<JobPosting, JobPostingDto>()
