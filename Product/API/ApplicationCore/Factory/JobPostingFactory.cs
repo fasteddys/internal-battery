@@ -39,7 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(c => c.EducationLevel)
                 .Include(c => c.CompensationType)
                 .Include(c => c.JobCategory)
-                .Include(c => c.Subscriber)
+                .Include(c => c.Recruiter.Subscriber)
                 .Where(s => s.IsDeleted == 0 && s.JobPostingId == jobPostingId)
                 .FirstOrDefault();
         }
@@ -62,8 +62,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(c => c.EducationLevel)
                 .Include(c => c.CompensationType)
                 .Include(c => c.JobCategory)
-                .Include(c => c.Subscriber)
-                .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid == guid)
+                .Include(c => c.Recruiter.Subscriber)
+                .Where(s => s.IsDeleted == 0 && s.Recruiter.Subscriber.SubscriberGuid == guid)
                 .OrderByDescending( s => s.CreateDate)
                 .ToList();
         }
@@ -86,7 +86,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(c => c.EducationLevel)
                 .Include(c => c.CompensationType)
                 .Include(c => c.JobCategory)
-                .Include(c => c.Subscriber)
+                .Include(c => c.Recruiter.Subscriber)
                 .Include(c => c.JobPostingSkills).ThenInclude(ss => ss.Skill)
                 .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
                 .FirstOrDefault();
@@ -103,6 +103,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             return db.JobPosting
                 .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
+                .Include(s => s.Recruiter).ThenInclude(r => r.Subscriber)
+                .Include(s => s.Company)
                 .FirstOrDefault();
         }
 
@@ -186,7 +188,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
 
 
-            if (job.Subscriber == null && job.SubscriberId == null)
+            if (job.Recruiter.Subscriber == null && job.Recruiter.SubscriberId == null)
             {
                 message = Constants.JobPosting.ValidationError_SubscriberRequiredMsg;
                 return false;
@@ -282,11 +284,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
 
             // map subscriber 
-            if (jobPostingDto.Subscriber != null)
+            if (jobPostingDto.Recruiter.Subscriber != null)
             {
-                Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, jobPostingDto.Subscriber.SubscriberGuid.Value);
+                Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, jobPostingDto.Recruiter.Subscriber.SubscriberGuid.Value);
                 if (subscriber != null)        
-                    jobPosting.SubscriberId = subscriber.SubscriberId;   
+                    jobPosting.Recruiter.SubscriberId = subscriber.SubscriberId;   
             }
 
             // map company id 

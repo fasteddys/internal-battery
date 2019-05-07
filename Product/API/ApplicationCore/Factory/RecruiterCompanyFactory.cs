@@ -13,8 +13,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             return db.RecruiterCompany
                .Include( s => s.Company)
-               .Include( s => s.Subscriber)
-               .Where(rc => rc.IsDeleted == 0 && rc.SubscriberId == subscriberId)               
+               .Include( s => s.Recruiter.Subscriber)
+               .Where(rc => rc.IsDeleted == 0 && rc.Recruiter.SubscriberId == subscriberId)               
                .ToList();
         }
     }
