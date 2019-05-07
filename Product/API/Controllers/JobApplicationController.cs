@@ -241,13 +241,14 @@ namespace UpDiddyApi.Controllers
                 jobApplication.JobPostingId = jobPosting.JobPostingId;
                 jobApplication.SubscriberId = subscriber.SubscriberId;
                 jobApplication.CoverLetter = jobApplicationDto.CoverLetter == null ? string.Empty : jobApplicationDto.CoverLetter;
+                jobApplication.JobApplicationStatusId = 1;
                 _db.JobApplication.Add(jobApplication);
                 _db.SaveChanges();
 
                 Stream SubscriberResumeAsStream = await _subscriberService.GetResumeAsync(subscriber);
 
                 // ERASE ONCE OTHER LOGIC IS IMPLEMENTED
-                bool IsExternalRecruiter = true;
+                bool IsExternalRecruiter = false;
                 string RecruiterCompany = "TEKsystems";
 
                 // Send recruiter email alerting them to application
@@ -258,11 +259,15 @@ namespace UpDiddyApi.Controllers
                     new
                     {
                         ApplicantName = subscriber.FirstName + " " + subscriber.LastName,
+                        ApplicantFirstName = subscriber.FirstName,
+                        ApplicantLastName = subscriber.LastName,
+                        ApplicantEmail = subscriber.Email,
                         JobTitle = jobPosting.Title,
                         ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration, subscriber.SubscriberGuid.Value),
-                        JobUrl = JobPostingFactory.JobPostingUrl(_configuration, jobPosting.JobPostingGuid)
+                        JobUrl = JobPostingFactory.JobPostingUrl(_configuration, jobPosting.JobPostingGuid),
+                        Subject = (IsExternalRecruiter == true ? $"{RecruiterCompany} job posting via CareerCircle" : "Applicant Alert")
                     },
-                    (IsExternalRecruiter == true ? $"{RecruiterCompany} job posting via CareerCircle" : "Applicant Alert"),
+                    null,
                     new List<Attachment>
                     {
                         new Attachment
@@ -273,7 +278,7 @@ namespace UpDiddyApi.Controllers
                         new Attachment
                         {
                             Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jobApplicationDto.CoverLetter)),
-                            Filename = "CoverLetter.docx"
+                            Filename = "CoverLetter.txt"
                         }
                     }
                 ));
