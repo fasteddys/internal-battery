@@ -1265,8 +1265,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("JobApplicationGuid");
 
-                    b.Property<int>("JobApplicationStatusId");
-
                     b.Property<int>("JobPostingId");
 
                     b.Property<DateTime?>("ModifyDate");
@@ -1277,38 +1275,11 @@ namespace UpDiddyApi.Migrations
 
                     b.HasKey("JobApplicationId");
 
-                    b.HasIndex("JobApplicationStatusId");
-
                     b.HasIndex("JobPostingId");
 
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("JobApplication");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.JobApplicationStatus", b =>
-                {
-                    b.Property<int>("JobApplicationStatusId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<Guid>("JobApplicationStatusGuid");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("Status");
-
-                    b.HasKey("JobApplicationStatusId");
-
-                    b.ToTable("JobApplicationStatus");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.JobCategory", b =>
@@ -1433,31 +1404,6 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("JobPosting");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.JobPostingFavorite", b =>
-                {
-                    b.Property<int>("JobPostingId");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<Guid>("JobPostingFavoriteGuid");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.HasKey("JobPostingId", "SubscriberId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.ToTable("JobPostingFavorite");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.JobPostingSkill", b =>
@@ -1717,11 +1663,6 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("PartnerContactId");
 
                     b.HasIndex("ContactId");
-
-                    b.HasIndex("PartnerContactGuid")
-                        .IsUnique()
-                        .HasName("UIX_PartnerContact_PartnerContactGuid")
-                        .HasFilter("[PartnerContactGuid] IS NOT NULL");
 
                     b.HasIndex("PartnerId");
 
@@ -3184,11 +3125,6 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.JobApplication", b =>
                 {
-                    b.HasOne("UpDiddyApi.Models.JobApplicationStatus", "JobApplicationStatus")
-                        .WithMany()
-                        .HasForeignKey("JobApplicationStatusId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("UpDiddyApi.Models.JobPosting", "JobPosting")
                         .WithMany()
                         .HasForeignKey("JobPostingId")
@@ -3237,19 +3173,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
                         .HasForeignKey("SubscriberId");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.JobPostingFavorite", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.JobPosting", "JobPosting")
-                        .WithMany()
-                        .HasForeignKey("JobPostingId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.JobPostingSkill", b =>
