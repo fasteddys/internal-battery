@@ -25,7 +25,7 @@ namespace UpDiddyApi.Migrations
             
 
            
-            migrationBuilder.Sql("SET IDENTITY_INSERT[dbo].[EmploymentTypeId] ON");
+            migrationBuilder.Sql("SET IDENTITY_INSERT[dbo].[EmploymentType] ON");
 
             migrationBuilder.Sql("INSERT [dbo].[EmploymentType] ([EmploymentTypeId], [IsDeleted], [CreateDate], [ModifyDate], [CreateGuid], [ModifyGuid], [EmploymentTypeGuid], [Name]) VALUES (19, 0, CAST(N'2019-05-07T13:49:59.5233333' AS DateTime2), CAST(N'2019-05-07T13:49:59.5233333' AS DateTime2), N'bfa61813-f27d-40b6-925e-f31a0b8c16fe', N'e535e1b0-d3be-47fe-99e5-3afb3e6e9bb5', N'eb3f2db6-aaa9-4660-a92d-a11e4d83f23a', N'Full-Time')");
 
@@ -37,11 +37,11 @@ namespace UpDiddyApi.Migrations
 
             migrationBuilder.Sql("INSERT [dbo].[EmploymentType] ([EmploymentTypeId], [IsDeleted], [CreateDate], [ModifyDate], [CreateGuid], [ModifyGuid], [EmploymentTypeGuid], [Name]) VALUES (23, 0, CAST(N'2019-05-07T13:49:59.5266667' AS DateTime2), CAST(N'2019-05-07T13:49:59.5266667' AS DateTime2), N'de0aecdf-986b-4081-9e37-e6c651bb2baa', N'45834c0a-9b46-4de3-b2d8-050a1a44ecd8', N'c912f22a-1376-482e-8a33-9c2868a4366d', N'Other')");
 
-            migrationBuilder.Sql("SET IDENTITY_INSERT[dbo].[EmploymentTypeId] OFF");
+            migrationBuilder.Sql("SET IDENTITY_INSERT[dbo].[EmploymentType] OFF");
             
             
  
-            migrationBuilder.Sql("SET IDENTITY_INSERT[dbo].[ExperienceLevelId] ON");
+            migrationBuilder.Sql("SET IDENTITY_INSERT[dbo].[ExperienceLevel] ON");
 
             migrationBuilder.Sql("INSERT [dbo].[ExperienceLevel] ([ExperienceLevelId], [IsDeleted], [CreateDate], [ModifyDate], [CreateGuid], [ModifyGuid], [ExperienceLevelGuid], [DisplayName], [Code]) VALUES (23, 0, CAST(N'2019-05-07T13:17:12.3733333' AS DateTime2), CAST(N'2019-05-07T13:17:12.3733333' AS DateTime2), N'5564d546-26fb-499e-9da9-b87e985246a2', N'1606b74c-f2b8-470b-9049-0cb48d5cdcbf', N'c25235d2-a796-4da7-b66a-8d3df37279af', N'Intern', N'IN')");
 
@@ -51,7 +51,7 @@ namespace UpDiddyApi.Migrations
 
             migrationBuilder.Sql("INSERT [dbo].[ExperienceLevel] ([ExperienceLevelId], [IsDeleted], [CreateDate], [ModifyDate], [CreateGuid], [ModifyGuid], [ExperienceLevelGuid], [DisplayName], [Code]) VALUES (26, 0, CAST(N'2019-05-07T13:17:12.3766667' AS DateTime2), CAST(N'2019-05-07T13:17:12.3766667' AS DateTime2), N'b2c254d2-4a7b-44ed-9086-f09cf2761db6', N'2110f77c-4b99-43b6-b090-720ff2df4a46', N'f3e95e74-1cc4-4547-8f29-11de077514c1', N'Senior Level', N'SL')");
 
-            migrationBuilder.Sql("SET IDENTITY_INSERT[dbo].[ExperienceLevelId] OFF");
+            migrationBuilder.Sql("SET IDENTITY_INSERT[dbo].[ExperienceLevel] OFF");
 
 
            
