@@ -11,11 +11,9 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
+    
     public class RecruiterActionRepository : UpDiddyRepositoryBase<RecruiterAction>, IRecruiterActionRepository
     {
-        public RecruiterActionRepository(UpDiddyDbContext dbContext) : base(dbContext)
-        {
-            
-        }
+        public RecruiterActionRepository(UpDiddyDbContext dbContext) : base(dbContext) { }
     }
 }

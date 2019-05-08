@@ -1265,7 +1265,9 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("JobApplicationGuid");
 
-                    b.Property<int>("JobApplicationStatusId");
+                    b.Property<int>("JobApplicationStatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue(1);
 
                     b.Property<int>("JobPostingId");
 

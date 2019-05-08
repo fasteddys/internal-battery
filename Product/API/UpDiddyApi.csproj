@@ -31,6 +31,14 @@
     <Compile Remove="Migrations\20190228135226_Adding Terms to Campaigns.Designer.cs" />
     <Compile Remove="Migrations\20190424110411_JobPostingFavorites.cs" />
     <Compile Remove="Migrations\20190424110411_JobPostingFavorites.Designer.cs" />
+    <Compile Remove="Migrations\20190507181852_added job application statuses.cs" />
+    <Compile Remove="Migrations\20190507181852_added job application statuses.Designer.cs" />
+    <Compile Remove="Migrations\20190508194106_added job application statuses.cs" />
+    <Compile Remove="Migrations\20190508194106_added job application statuses.Designer.cs" />
+    <Compile Remove="Migrations\20190508194257_added job application statuses.cs" />
+    <Compile Remove="Migrations\20190508194257_added job application statuses.Designer.cs" />
+    <Compile Remove="Migrations\20190508200738_added job application statuses.cs" />
+    <Compile Remove="Migrations\20190508200738_added job application statuses.Designer.cs" />
     <Compile Remove="Models\_Company.cs" />
     <Compile Remove="Models\_Country.cs" />
     <Compile Remove="Models\_EducationalDegree.cs" />

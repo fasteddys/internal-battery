@@ -79,7 +79,7 @@ namespace UpDiddyApi.ApplicationCore
             if(subscriber.SubscriberFile.FirstOrDefault() == null || string.IsNullOrEmpty(jobApplicationDto.CoverLetter))
             {
                 ErrorCode = 400;
-                ErrorMsg = "Subscriber has not suuplied both a cover letter and resume.";
+                ErrorMsg = "Subscriber has not supplied both a cover letter and resume.";
                 return false;
             }
                     

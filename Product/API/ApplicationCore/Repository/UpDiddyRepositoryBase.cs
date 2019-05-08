@@ -54,7 +54,5 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             await this._dbContext.SaveChangesAsync();
         }
-
-
     }
 }

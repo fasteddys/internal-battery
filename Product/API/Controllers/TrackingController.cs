@@ -100,14 +100,15 @@ namespace UpDiddyApi.Controllers
         }
 
         /// <summary>
-        /// Generic method which takes in
+        /// Recruiter tracking method to log when a recruiter perfors an action
+        /// on a job application.
         /// </summary>
         /// <param name="ActorGuid"></param>
         /// <param name="ActionGuid"></param>
         /// <param name="EntityGuid"></param>
-        /// <returns></returns>
+        /// <returns>1 pixel image back to the client.</returns>
         [HttpGet("api/[controller]/recruiter/{ActorGuid}/{ActionGuid}/{JobApplicationGuid}")]
-        public IActionResult Track(Guid ActorGuid, Guid ActionGuid, Guid JobApplicationGuid)
+        public IActionResult RecruiterJobApplication(Guid ActorGuid, Guid ActionGuid, Guid JobApplicationGuid)
         {
             Task.Run(() => ProcessRecruiterTrackingInformation(ActorGuid, ActionGuid, JobApplicationGuid));
             return _pixelResponse;
