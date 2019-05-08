@@ -23,10 +23,108 @@ namespace UpDiddyApi.ApplicationCore.Factory
     public class JobPostingFactory
     {
 
+  
         public static string JobPostingUrl(IConfiguration config, Guid subscriberGuid)
         {
             return config["CareerCircle:ViewJobPostingUrl"] + subscriberGuid;
         }
+        
+   
+
+        public static bool DeleteJob(UpDiddyDbContext db, Guid jobPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        {
+
+            JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
+            if (jobPosting == null)
+            {
+                ErrorMsg = $"Job posting {jobPostingGuid} does not exist";
+                return false;
+            }
+            Recruiter recruiter = RecruiterFactory.GetRecruiterById(db, jobPosting.RecruiterId.Value);
+            if (recruiter == null)
+            {
+                ErrorMsg = $"Recruiter {jobPosting.RecruiterId.Value} rec not found";
+                return false;
+            }
+            
+            if (jobPosting.RecruiterId != recruiter.RecruiterId)
+            {
+                ErrorMsg = "JobPosting owner is not specified or does not match user posting job";
+                return false;
+            }
+               
+            // queue a job to delete the posting from the job index and mark it as deleted in sql server
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteJob(jobPosting.JobPostingGuid));
+            syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");            
+            return true;
+        }
+     
+
+        public static bool PostJob(UpDiddyDbContext db, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid,  ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        {
+            int postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
+
+            if (jobPostingDto == null)
+            {
+                ErrorMsg = "JobPosting is required";
+                return false;
+            }
+            
+            syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
+            //todo move code below to factory method 
+            JobPosting jobPosting = mapper.Map<JobPosting>(jobPostingDto);
+            // todo find a better way to deal with the job posting having a collection of JobPostingSkill and the job posting DTO having a collection of SkillDto
+            // ignore posting skills that were mapped via automapper, they will be associated with the posting below 
+            jobPosting.JobPostingSkills = null;
+            // assign recruiter
+            jobPosting.RecruiterId = recruiterId;
+            // use factory method to make sure all the base data values are set just 
+            // in case the caller didn't set them
+            BaseModelFactory.SetDefaultsForAddNew(jobPosting);
+            // important! Init all reference object ids to null since further logic will use < 0 to check for 
+            // their validity
+            JobPostingFactory.SetDefaultsForAddNew(jobPosting);
+            // Asscociate related objects that were passed by guid
+            // todo find a more efficient way to do this
+            JobPostingFactory.MapRelatedObjects(db, jobPosting, jobPostingDto);
+
+            string msg = string.Empty;
+
+            if (JobPostingFactory.ValidateJobPosting(jobPosting, configuration, ref msg) == false)
+            {
+                ErrorMsg = msg;
+                syslog.Log(LogLevel.Warning, "JobPostingController.CreateJobPosting:: Bad Request {Description} {JobPosting}", msg, jobPostingDto);
+                return false;
+            }
+
+            jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.NotIndexed;
+            jobPosting.JobPostingGuid = Guid.NewGuid();
+            // set expiration date 
+            if (jobPosting.PostingDateUTC < DateTime.UtcNow)
+                jobPosting.PostingDateUTC = DateTime.UtcNow;
+            if (jobPosting.PostingExpirationDateUTC < DateTime.UtcNow)
+            {
+                jobPosting.PostingExpirationDateUTC = DateTime.UtcNow.AddDays(postingTTL);
+            }
+            // save the job to sql server 
+            // todo make saving the job posting and skills more efficient with a stored procedure 
+            db.JobPosting.Add(jobPosting);
+            db.SaveChanges();
+            // save associated job posting skills 
+            JobPostingFactory.SavePostingSkills(db, jobPosting, jobPostingDto);
+            //index active jobs into google 
+            if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
+
+
+            newPostingGuid = jobPosting.JobPostingGuid;
+            syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+
+            return true;
+        
+        }
+
+
 
         public static JobPosting GetJobPostingById(UpDiddyDbContext db, int jobPostingId)
         {
@@ -398,7 +496,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-            public static void UpdateJobPosting(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
+        public static void UpdateJobPosting(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
 
             jobPosting.Title = jobPostingDto.Title;
