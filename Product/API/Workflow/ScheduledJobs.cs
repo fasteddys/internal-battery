@@ -421,19 +421,23 @@ namespace UpDiddyApi.Workflow
 
                 foreach (var jobSite in jobSites)
                 {
+                    
                     // load the job data mining process for the job site
-                    IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite);
+                    IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite, _syslog);
+
+                    // load all existing job pages that are still 'active' (new, processed) - we can ignore error, deleted, and duplicate
+                    List<JobPage> existingJobPages = _repositoryWrapper.JobPage.GetActiveJobPagesForJobSiteAsync(jobSite.JobSiteGuid).Result.ToList();
 
                     // retrieve all current job pages that are visible on the job site
-                    List<JobPage> jobPages = jobDataMining.DiscoverJobPages();
+                    List<JobPage> jobPages = jobDataMining.DiscoverJobPages(existingJobPages);
 
                     // update our internal reference for job pages 
                     await UpdateJobPagesStoreAsync(jobSite, jobPages);
 
                     // process the jobPages that are in a new state
-                    
+                    // can we update our internal store before we process them? seems like we should do this one at a time - a unit of work is a.) creating/updating job posting, storing result of that operation in the db
 
-                        // what does the endpoint look like for creating a job posting? can i call this in a multi-threaded way? should the IJobDataMining method act on a list or one at a time?
+                        
                 }
             }
             catch (Exception e)
@@ -457,6 +461,12 @@ namespace UpDiddyApi.Workflow
         {
             if (discoveredJobPages != null)
             {
+                // JobPageStatus = 'Pending' - we want to process these (add new or update existing dbo.JobPosting)
+                // JobPageStatus = 'Active' - take no action (dbo.JobPosting remains active)
+                // JobPageStatus = 'Error' - delete dbo.JobPosting (if one exists)
+                // JobPageStatus = 'Deleted' - delete dbo.JobPosting (if one exists)
+                // JobPageStatus = 'Duplicate' - delete dbo.JobPosting (if one exists)
+                
                 // iterate over each job page discovered and insert or update them accordingly. don't update job pages that are identical (RawData and Uri).
                 // do not attempt to perform this operation in parallel - ef db connections are not thread-safe
                 foreach (var jobPage in discoveredJobPages)

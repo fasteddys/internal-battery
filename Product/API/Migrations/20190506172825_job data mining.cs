@@ -122,12 +122,12 @@ namespace UpDiddyApi.Migrations
             migrationBuilder.InsertData(
                 table: "JobPageStatus",
                 columns: new[] { "JobPageStatusGuid", "JobPageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
-                values: new object[] { new Guid("892D6662-2EC2-41E9-8CB1-6983A1893AC5"), 1, new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "New", "This status is applied to a JobPage when raw data has been inserted or modified. This occurs before processing occurs to act on an associated JobPosting." });
+                values: new object[] { new Guid("892D6662-2EC2-41E9-8CB1-6983A1893AC5"), 1, new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Pending", "This status is applied to a JobPage when raw data has been inserted or modified. This occurs before processing occurs to act on an associated JobPosting." });
 
             migrationBuilder.InsertData(
                 table: "JobPageStatus",
                 columns: new[] { "JobPageStatusGuid", "JobPageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
-                values: new object[] { new Guid("F20DD80D-D684-42DC-84A9-F47D22A1A33F"), 2, new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Processed", "This status is applied to a JobPage when raw data has been successfully parsed into an associated JobPosting." });
+                values: new object[] { new Guid("F20DD80D-D684-42DC-84A9-F47D22A1A33F"), 2, new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Active", "This status is applied to a JobPage when after a job page has been processed successfully and associated with an active JobPosting." });
 
             migrationBuilder.InsertData(
                 table: "JobPageStatus",
@@ -138,6 +138,11 @@ namespace UpDiddyApi.Migrations
                 table: "JobPageStatus",
                 columns: new[] { "JobPageStatusGuid", "JobPageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
                 values: new object[] { new Guid("5849C93F-8407-4A8D-B4FB-CEDC11CB94CE"), 4, new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Deleted", "This status is applied to a JobPage when it is discovered that a previously seen job is no longer visible on a JobSite." });
+
+            migrationBuilder.InsertData(
+                table: "JobPageStatus",
+                columns: new[] { "JobPageStatusGuid", "JobPageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
+                values: new object[] { new Guid("5849C93F-8407-4A8D-B4FB-CEDC11CB94CE"), 5, new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Duplicate", "This status is applied to a JobPage when it is identified as a duplicate of another JobPage for the same JobSite." });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

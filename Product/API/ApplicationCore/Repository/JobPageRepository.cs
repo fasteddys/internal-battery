@@ -9,14 +9,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class JobPageRepository : UpDiddyRepositoryBase<JobPage>, IJobPageRepository
     {
-        public JobPageRepository(UpDiddyDbContext dbContext) : base(dbContext)
-        {
+        public JobPageRepository(UpDiddyDbContext dbContext) : base(dbContext) { }
 
-        }
-
-        public async Task<IEnumerable<JobPage>> GetJobPagesForJobSiteAsync(Guid jobSiteGuid)
+        public async Task<IEnumerable<JobPage>> GetActiveJobPagesForJobSiteAsync(Guid jobSiteGuid)
         {
-            var jobPages = GetByConditionAsync(e => e.JobSite.JobSiteGuid == jobSiteGuid);
+            var jobPages = GetByConditionAsync(e => e.JobSite.JobSiteGuid == jobSiteGuid && e.JobPageStatus.Name == "Active" );
             return await jobPages;
         }
 

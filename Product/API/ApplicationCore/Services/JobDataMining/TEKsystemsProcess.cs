@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -14,18 +15,21 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 {
     public class TEKsystemsProcess : BaseProcess, IJobDataMining
     {
-        public TEKsystemsProcess(JobSite jobSite) : base(jobSite) { }
+        public TEKsystemsProcess(JobSite jobSite, ILogger logger) : base(jobSite, logger) { }
 
-        public List<JobPage> DiscoverJobPages()
+        public List<JobPage> DiscoverJobPages(List<JobPage> existingJobPages)
         {
+            // populate this collection with the results of the job discovery operation
             ConcurrentBag<JobPage> jobPages = new ConcurrentBag<JobPage>();
+
+            // diagnostics - remove this once we have tuned the process
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
             string response;
             using (var client = new HttpClient())
             {
-                // todo: refactor to make each method have one responsiblity only (or as close as we can get to this)
+                // call the api to retrieve a total number of job results
                 var request = new HttpRequestMessage()
                 {
                     RequestUri = _jobSite.Uri,
@@ -40,18 +44,22 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             /* haven't been able to determine a way to change the size of the 'results' collection 
              * using query string params, it seems to always be 10. until we can figure out a way 
              * to retrieve all job postings at once, divide the number of jobs by 10 (rounding up) 
-             * and call this endpoint this many times to ensure we get all jobs 
+             * and call this endpoint that many times to ensure we get all jobs 
              */
             int timesToRequestResultsPage = Convert.ToInt32(Math.Ceiling((double)jobCount / 10));
 
-            // run the paged requests in parallel - tested with a variety of MAXDOP settings and 10 was the sweet spot locally; 
-            // may need to adjust this once it is running in azure
+            /* run the paged requests in parallel - tested with a variety of MAXDOP settings and 50 was the sweet spot locally; 
+             * may need to adjust this once it is running in azure - leaving it up to the executing process to determine how many 
+             * threads to use for now. use maxdop = 1 for debugging.
+             */
+            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = -1 };
             int counter = 0;
-            Parallel.For(counter, timesToRequestResultsPage, new ParallelOptions { MaxDegreeOfParallelism = 50 }, i =>
+            Parallel.For(counter, timesToRequestResultsPage, maxdop, i =>
            {
                string jobData;
                using (var client = new HttpClient())
                {
+                   // call the api to retrieve a list of results incrementing the page number each time
                    int progress = Interlocked.Increment(ref counter);
                    UriBuilder builder = new UriBuilder(_jobSite.Uri);
                    builder.Query += "&page=" + progress.ToString();
@@ -68,33 +76,60 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                // keeping this loop serial rather than parallel intentionally (nesting parallel loops can quickly cause performance issues)
                foreach (var job in jsonResults.results)
                {
+                   int jobPageStatusId = 1;
                    string rawHtml;
                    Uri jobDetailUri = new Uri(_jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url);
-                   using (var client = new HttpClient())
+                   try
                    {
-                       var request = new HttpRequestMessage()
+                       using (var client = new HttpClient())
                        {
-                           RequestUri = jobDetailUri,
-                           Method = HttpMethod.Get
-                       };
-                       var result = client.SendAsync(request).Result;
-                       rawHtml = result.Content.ReadAsStringAsync().Result;
+                           var request = new HttpRequestMessage()
+                           {
+                               RequestUri = jobDetailUri,
+                               Method = HttpMethod.Get
+                           };
+                           var result = client.SendAsync(request).Result;
+                           rawHtml = result.Content.ReadAsStringAsync().Result;
+                       }
+                       HtmlDocument jobHtml = new HtmlDocument();
+                       jobHtml.LoadHtml(rawHtml);
+
+                       // check to see if the job page exists
+                       bool isJobPageExists = jobHtml.DocumentNode.SelectSingleNode("//results-main[@error-message=\"The job you have requested cannot be found. Please see our complete list of jobs below.\"]") == null ? true : false;
+                       if (!isJobPageExists)
+                       {
+                           // flag the job as deleted, do not attempt to extract additional job information
+                           jobPageStatusId = 4;
+                       }
+                       else
+                       {
+                           // append additional data that is not present in search results for the page, status already marked as new
+                           var scripNodetWithJson = jobHtml.DocumentNode.SelectSingleNode("(//script[@type='application/ld+json'])[1]");
+                           if (scripNodetWithJson != null)
+                           {
+                               var jobDataJson = JsonConvert.DeserializeObject<dynamic>(scripNodetWithJson.InnerHtml.ToString());
+                               job.responsibilities = jobDataJson.responsibilities.Value;
+                           }
+                       }
                    }
-                   HtmlDocument jobHtml = new HtmlDocument();
-                   jobHtml.LoadHtml(rawHtml);
-                   var scripNodetWithJson = jobHtml.DocumentNode.SelectSingleNode("(//script[@type='application/ld+json'])[1]");
-
-                   // todo: guard against missing or invalid data?
-                   var jobDataJson = JsonConvert.DeserializeObject<dynamic>(scripNodetWithJson.InnerHtml.ToString());
-                   job.responsibilities = jobDataJson.responsibilities.Value;
-
-                   jobPages.Add(new JobPage()
+                   catch (Exception e)
                    {
-                       JobPageStatusId = 1,
-                       RawData = job.ToString(),
-                       UniqueIdentifier = job.id,
-                       Uri = jobDetailUri
-                   });
+                       // flag the job as error
+                       jobPageStatusId = 3;
+                       // todo: implement better logging
+                       _syslog.Log(LogLevel.Error, $"***** TEKsystemProcess.DiscoverJobPages encountered an exception: {e.Message}");
+                   }
+                   finally
+                   {
+                       // add the job page to the collection
+                       jobPages.Add(new JobPage()
+                       {
+                           JobPageStatusId = jobPageStatusId,
+                           RawData = (job != null) ? job.ToString() : null,
+                           UniqueIdentifier = (job != null && job.id != null) ? job.id : Guid.NewGuid().ToString(),
+                           Uri = jobDetailUri != null ? jobDetailUri : null
+                       });
+                   }
                }
            });
 
@@ -108,19 +143,52 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              * yesterday the job data mining process chose job A and ignored job B, and tomorrow it chooses job B instead of job A, the end result could 
              * be inconsistent data in our scraped job and job applications. in addition, the audit trail of what we did could be quite confusing.
              */
-            var uniqueJobs = (from jp in jobPages
-                              group jp by jp.UniqueIdentifier into g
-                              select g.OrderBy(a => a, new CompareByUri()).First()).ToList();
+            var uniqueNewJobs = (from jp in jobPages
+                                 where jp.JobPageStatusId == 1
+                                 group jp by jp.UniqueIdentifier into g
+                                 select g.OrderBy(a => a, new CompareByUri()).First()).ToList();
 
+            /* mark anything in pending status that is not in the above list as deleted. to accomplish this, do the following:
+             * - compare unique new jobs to the list of existing job pages (active - new, processed)
+             * - existingNewJobs.Except(uniqueNewJobs) -> add these to the output and mark as deletes
+             */
+            var unreferencedJobs = existingJobPages.AsQueryable().Except(uniqueNewJobs, new EqualityComparerByUri()).ToList();
+            var jobsToDelete = unreferencedJobs.Select(x => { x.JobPageStatusId = 4; return x; }).ToList();
+
+            // combine new/modified jobs and unreferenced jobs which should be deleted
+            List<JobPage> updatedJobPages = new List<JobPage>();
+            updatedJobPages.AddRange(uniqueNewJobs);
+            updatedJobPages.AddRange(jobsToDelete);
+
+            // diagnostics - remove this once we have tuned the process
             stopwatch.Stop();
             var elapsed = stopwatch.ElapsedMilliseconds;
 
-            return uniqueJobs;
+            return uniqueNewJobs;
         }
 
         public JobPosting ProcessJobPage(JobPage jobPage)
         {
             throw new NotImplementedException();
+        }
+
+        public class EqualityComparerByUri : IEqualityComparer<JobPage>
+        {
+            public bool Equals(JobPage x, JobPage y)
+            {
+                if (Object.ReferenceEquals(x, y))
+                    return true;
+                if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+                    return false;
+                return x.Uri == y.Uri;
+            }
+
+            public int GetHashCode(JobPage jobPage)
+            {
+                if (Object.ReferenceEquals(jobPage, null))
+                    return 0;
+                return jobPage.Uri == null ? 0 : jobPage.Uri.GetHashCode();
+            }
         }
 
         public class CompareByUri : IComparer<JobPage>

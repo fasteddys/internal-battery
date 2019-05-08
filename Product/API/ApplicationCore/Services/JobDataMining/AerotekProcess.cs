@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,9 +10,9 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 {
     public class AerotekProcess : BaseProcess, IJobDataMining
     {
-        public AerotekProcess(JobSite jobSite) : base(jobSite) { }
+        public AerotekProcess(JobSite jobSite, ILogger logger) : base(jobSite, logger) { }
 
-        public List<JobPage> DiscoverJobPages()
+        public List<JobPage> DiscoverJobPages(List<JobPage> existingJobPages)
         {
             throw new NotImplementedException();
         }
