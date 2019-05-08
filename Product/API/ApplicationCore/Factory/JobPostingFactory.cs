@@ -282,9 +282,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
 
             // map subscriber 
-            if (jobPostingDto.Subscriber != null)
+            if (jobPostingDto.Recruiter.Subscriber != null)
             {
-                Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, jobPostingDto.Subscriber.SubscriberGuid.Value);
+                Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, jobPostingDto.Recruiter.Subscriber.SubscriberGuid.Value);
                 if (subscriber != null)        
                     jobPosting.Recruiter.SubscriberId = subscriber.SubscriberId;   
             }

@@ -2249,6 +2249,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
+                    b.Property<string>("PhoneNumber");
+
                     b.Property<Guid>("RecruiterGuid");
 
                     b.Property<int?>("SubscriberId");
