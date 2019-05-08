@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 {
@@ -76,11 +77,19 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                // keeping this loop serial rather than parallel intentionally (nesting parallel loops can quickly cause performance issues)
                foreach (var job in jsonResults.results)
                {
-                   int jobPageStatusId = 1;
+                   int? existingJobPostingId = null;
+                   int jobPageStatusId = 1; // pending
                    string rawHtml;
-                   Uri jobDetailUri = new Uri(_jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url);
+                   Uri jobDetailUri = null;
                    try
                    {
+                       jobDetailUri = new Uri(_jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url);
+
+                       // get the related JobPostingId (if one exists)
+                       var existingJobPage = existingJobPages.Where(jp => jp.Uri == jobDetailUri && jp.UniqueIdentifier == job.id).FirstOrDefault();
+                       if (existingJobPage != null)
+                           existingJobPostingId = existingJobPage.JobPostingId;
+
                        using (var client = new HttpClient())
                        {
                            var request = new HttpRequestMessage()
@@ -94,12 +103,11 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                        HtmlDocument jobHtml = new HtmlDocument();
                        jobHtml.LoadHtml(rawHtml);
 
-                       // check to see if the job page exists
-                       bool isJobPageExists = jobHtml.DocumentNode.SelectSingleNode("//results-main[@error-message=\"The job you have requested cannot be found. Please see our complete list of jobs below.\"]") == null ? true : false;
-                       if (!isJobPageExists)
+                       // does the html contain an error message indicating the job does not exist?
+                       bool isJobExists = jobHtml.DocumentNode.SelectSingleNode("//results-main[@error-message=\"The job you have requested cannot be found. Please see our complete list of jobs below.\"]") == null ? true : false;
+                       if (!isJobExists)
                        {
-                           // flag the job as deleted, do not attempt to extract additional job information
-                           jobPageStatusId = 4;
+                           jobPageStatusId = 4; // delete
                        }
                        else
                        {
@@ -114,9 +122,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                    }
                    catch (Exception e)
                    {
-                       // flag the job as error
-                       jobPageStatusId = 3;
-                       // todo: implement better logging
+                       jobPageStatusId = 3; // error
                        _syslog.Log(LogLevel.Error, $"***** TEKsystemProcess.DiscoverJobPages encountered an exception: {e.Message}");
                    }
                    finally
@@ -124,10 +130,15 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                        // add the job page to the collection
                        jobPages.Add(new JobPage()
                        {
+                           CreateDate = DateTime.UtcNow,
+                           CreateGuid = Guid.Empty,
+                           IsDeleted = 0,
+                           JobPageGuid = Guid.NewGuid(),
                            JobPageStatusId = jobPageStatusId,
                            RawData = (job != null) ? job.ToString() : null,
                            UniqueIdentifier = (job != null && job.id != null) ? job.id : Guid.NewGuid().ToString(),
-                           Uri = jobDetailUri != null ? jobDetailUri : null
+                           Uri = jobDetailUri != null ? jobDetailUri : null,
+                           JobPostingId = existingJobPostingId
                        });
                    }
                }
@@ -138,10 +149,11 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              * - two job listings that have the same id but different urls. when looking at the website, each lists a different canonical url. 
              *      we don't want to make the same mistake as this will hurt us from an SEO perspective.
              * 
-             * the goal of the code below is to eliminate these duplicates in a repeatable manner. the method used is secondary to the goal of it being 
-             * repeatable (in terms of importance). what we want to avoid is the following: two jobs are essentially identical; job A and job B. if 
-             * yesterday the job data mining process chose job A and ignored job B, and tomorrow it chooses job B instead of job A, the end result could 
-             * be inconsistent data in our scraped job and job applications. in addition, the audit trail of what we did could be quite confusing.
+             * the goal of the code below is to eliminate these duplicates in a repeatable manner before they make it to our db (dbo.JobPage). the 
+             * method used is secondary to the goal of it being repeatable (in terms of importance). what we want to avoid is the following: two jobs 
+             * are essentially identical; job A and job B. if yesterday the job data mining process chose job A and ignored job B, and tomorrow it 
+             * chooses job B instead of job A, the end result could be inconsistent data in our scraped job and job applications. in addition, the 
+             * audit trail of what we did could be quite confusing.
              */
             var uniqueNewJobs = (from jp in jobPages
                                  where jp.JobPageStatusId == 1
@@ -167,7 +179,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             return uniqueNewJobs;
         }
 
-        public JobPosting ProcessJobPage(JobPage jobPage)
+        public JobPostingDto ProcessJobPage(JobPage jobPage)
         {
             throw new NotImplementedException();
         }

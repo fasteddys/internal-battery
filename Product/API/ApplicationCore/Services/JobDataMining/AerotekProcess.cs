@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 {
@@ -17,7 +18,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             throw new NotImplementedException();
         }
 
-        public JobPosting ProcessJobPage(JobPage jobPage)
+        public JobPostingDto ProcessJobPage(JobPage jobPage)
         {
             throw new NotImplementedException();
         }

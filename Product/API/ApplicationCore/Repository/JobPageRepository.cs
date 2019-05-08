@@ -16,11 +16,5 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var jobPages = GetByConditionAsync(e => e.JobSite.JobSiteGuid == jobSiteGuid && e.JobPageStatus.Name == "Active" );
             return await jobPages;
         }
-
-        public async Task<JobPage> GetJobPageByJobSiteAndIdentifier(Guid jobSiteGuid, string uniqueIdentifier)
-        {
-            var jobPage = GetByConditionAsync(e => e.JobSite.JobSiteGuid == jobSiteGuid && e.UniqueIdentifier == uniqueIdentifier).Result.FirstOrDefault();
-            return jobPage;
-        }
     }
 }

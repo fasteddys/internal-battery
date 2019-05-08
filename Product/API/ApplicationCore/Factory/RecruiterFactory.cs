@@ -19,7 +19,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static Recruiter GetRecruiterBySubscriberGuid(UpDiddyDbContext db, Guid subscriberGuid)
         {
             return db.Recruiter
-                .Include ( s => s.Subscriber)
+                .Include(s => s.Subscriber)
                 .Where(s => s.IsDeleted == 0 && s.Subscriber.SubscriberGuid == subscriberGuid)
                 .FirstOrDefault();
         }
@@ -32,5 +32,36 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefault();
         }
 
+        public static Recruiter CreateRecruiter(string email, string firstName, string lastName, string phoneNumber, Subscriber subscriber)
+        {
+            Recruiter recruiter = new Recruiter();
+            recruiter.CreateDate = DateTime.UtcNow;
+            recruiter.CreateGuid = Guid.Empty;
+            recruiter.Email = email;
+            recruiter.FirstName = firstName;
+            recruiter.IsDeleted = 0;
+            recruiter.LastName = lastName;
+            recruiter.PhoneNumber = phoneNumber;
+            recruiter.RecruiterGuid = Guid.NewGuid();
+            if (subscriber != null && subscriber.SubscriberId > 0)
+                recruiter.SubscriberId = subscriber.SubscriberId;
+            return recruiter;
+        }
+
+        public static Recruiter GetOrAdd(UpDiddyDbContext db, string email, string firstName, string lastName, string phoneNumber, Subscriber subscriber)
+        {
+            email = email.Trim();
+            Recruiter recruiter = db.Recruiter
+                .Where(r => r.IsDeleted == 0 && r.Email == email)
+                .FirstOrDefault();
+
+            if (recruiter == null)
+            {
+                recruiter = CreateRecruiter(email,firstName, lastName, phoneNumber, subscriber);
+                db.Recruiter.Add(recruiter);
+                db.SaveChanges();
+            }
+            return recruiter;
+        }
     }
 }

@@ -421,7 +421,7 @@ namespace UpDiddyApi.Workflow
 
                 foreach (var jobSite in jobSites)
                 {
-                    
+
                     // load the job data mining process for the job site
                     IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite, _syslog);
 
@@ -429,15 +429,141 @@ namespace UpDiddyApi.Workflow
                     List<JobPage> existingJobPages = _repositoryWrapper.JobPage.GetActiveJobPagesForJobSiteAsync(jobSite.JobSiteGuid).Result.ToList();
 
                     // retrieve all current job pages that are visible on the job site
-                    List<JobPage> jobPages = jobDataMining.DiscoverJobPages(existingJobPages);
+                    List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages);
 
-                    // update our internal reference for job pages 
-                    await UpdateJobPagesStoreAsync(jobSite, jobPages);
 
-                    // process the jobPages that are in a new state
-                    // can we update our internal store before we process them? seems like we should do this one at a time - a unit of work is a.) creating/updating job posting, storing result of that operation in the db
 
-                        
+
+
+
+
+                    #region refactor everything in this section -- extract into separate methods where it makes sense to do so
+                    // JobPageStatus = 1 / 'Pending' - we want to process these (add new or update existing dbo.JobPosting)                     
+                    var pendingJobPages = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1).ToList();
+                    foreach (var jobPage in pendingJobPages)
+                    {
+                        try
+                        {
+                            bool? isJobPostingOperationSuccessful = null;
+                            Guid jobPostingGuid = Guid.Empty;
+                            string errorMessage = null;
+
+                            // convert JobPage into JobPostingDto
+                            var jobPostingDto = jobDataMining.ProcessJobPage(jobPage);
+
+                            if (jobPage.JobPostingId.HasValue)
+                            {
+                                // IMPORTANT TODO: replace once factory method has been updated to return a bool, then assign the bit flag below 
+                                isJobPostingOperationSuccessful = true;
+
+                                // attempt to update job posting
+                                JobPostingFactory.UpdateJobPosting(_db, new JobPosting() { JobPostingId = jobPage.JobPostingId.Value }, jobPostingDto);
+                            }
+                            else
+                            {
+                                // i have to create the recruiter - should the job posting factory encapsulate that logic?
+                                var recruiter = RecruiterFactory.CreateRecruiter(jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, jobPostingDto.Recruiter.PhoneNumber, null);
+
+                                // attempt to create job posting
+                                isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration);
+                            }
+                            if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
+                            {
+                                // indicate that the job was updated successfully and is now active
+                                jobPage.JobPageStatusId = 2;
+
+                                // i have the job posting guid but not the job posting id. retrieve that so i can associate the job posting with the job page
+                                int jobPostingId = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid).JobPostingId;
+
+                                if (jobPage.JobPageId > 0)
+                                {
+                                    // update existing job page                            
+                                    _repositoryWrapper.JobPage.Update(jobPage);
+                                    await _repositoryWrapper.JobPage.SaveAsync();
+                                }
+                                else
+                                {
+                                    // create new job page
+                                    _repositoryWrapper.JobPage.Create(jobPage);
+                                    await _repositoryWrapper.JobPage.SaveAsync();
+                                }
+
+                            }
+                            else if (isJobPostingOperationSuccessful.HasValue && !isJobPostingOperationSuccessful.Value)
+                            {
+                                // indicate that an error occurred
+                                jobPage.JobPageStatusId = 3;
+
+                                if (jobPage.JobPageId > 0)
+                                {
+                                    // update the existing job page      
+                                    _repositoryWrapper.JobPage.Update(jobPage);
+                                    await _repositoryWrapper.JobPage.SaveAsync();
+                                }
+                                else
+                                {
+                                    // create new job page
+                                    _repositoryWrapper.JobPage.Create(jobPage);
+                                    await _repositoryWrapper.JobPage.SaveAsync();
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            _syslog.Log(LogLevel.Error, $"***** METHOD_NAME encountered an exception: {e.Message}");
+                        }
+                        finally
+                        {
+                            // update job page?
+                        }
+                    }
+
+                    // JobPageStatus = 3 / 'Error' - delete dbo.JobPosting (if one exists), no changes to JobPage
+                    // JobPageStatus = 4 / 'Deleted' - delete dbo.JobPosting (if one exists), no change to JobPage
+                    var deleteJobPages = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 3 || jp.JobPageStatusId == 4).ToList();
+                    foreach (var jobPage in deleteJobPages)
+                    {
+                        try
+                        {
+                            bool? isJobDeleteOperationSuccessful = null;
+                            string errorMessage = null;
+                            Guid jobPostingGuid = Guid.Empty;
+                            // verify that there is a related job posting
+                            if (jobPage.JobPostingId.HasValue)
+                            {
+                                // get the job posting guid
+                                jobPostingGuid = JobPostingFactory.GetJobPostingById(_db, jobPage.JobPostingId.Value).JobPostingGuid;
+                                // attempt to delete job posting
+                                isJobDeleteOperationSuccessful = JobPostingFactory.DeleteJob(_db, jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration);
+
+                                if (isJobDeleteOperationSuccessful.HasValue && isJobDeleteOperationSuccessful.Value)
+                                {
+                                    // flag job page as deleted
+                                }
+                                else if (isJobDeleteOperationSuccessful.HasValue && !isJobDeleteOperationSuccessful.Value)
+                                {
+                                    // flag job page as error
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            _syslog.Log(LogLevel.Error, $"***** METHOD_NAME encountered an exception: {e.Message}");
+                        }
+                        finally
+                        {
+                            // update job page?
+                        }
+                    }
+
+                    // JobPageStatus = 2 / 'Active' - take no action (dbo.JobPosting remains active)
+
+                    #endregion
+
+
+
+
+
                 }
             }
             catch (Exception e)
@@ -449,67 +575,6 @@ namespace UpDiddyApi.Workflow
 
             _syslog.Log(LogLevel.Information, $"***** JobDataMining completed at: {DateTime.UtcNow.ToLongDateString()}");
             return result;
-        }
-
-        /// <summary>
-        /// Provides a common mechanism for updating discovered job pages from any job site in our database
-        /// </summary>
-        /// <param name="jobSite"></param>
-        /// <param name="discoveredJobPages"></param>
-        /// <returns></returns>
-        private async Task UpdateJobPagesStoreAsync(JobSite jobSite, List<JobPage> discoveredJobPages)
-        {
-            if (discoveredJobPages != null)
-            {
-                // JobPageStatus = 'Pending' - we want to process these (add new or update existing dbo.JobPosting)
-                // JobPageStatus = 'Active' - take no action (dbo.JobPosting remains active)
-                // JobPageStatus = 'Error' - delete dbo.JobPosting (if one exists)
-                // JobPageStatus = 'Deleted' - delete dbo.JobPosting (if one exists)
-                // JobPageStatus = 'Duplicate' - delete dbo.JobPosting (if one exists)
-                
-                // iterate over each job page discovered and insert or update them accordingly. don't update job pages that are identical (RawData and Uri).
-                // do not attempt to perform this operation in parallel - ef db connections are not thread-safe
-                foreach (var jobPage in discoveredJobPages)
-                {
-                    try
-                    {
-                        var existingJobPage = _repositoryWrapper.JobPage.GetJobPageByJobSiteAndIdentifier(jobSite.JobSiteGuid, jobPage.UniqueIdentifier).Result;
-                        if (existingJobPage != null)
-                        {
-                            if (existingJobPage.RawData != jobPage.RawData || existingJobPage.Uri != jobPage.Uri)
-                            {
-                                existingJobPage.RawData = jobPage.RawData;
-                                existingJobPage.ModifyDate = DateTime.UtcNow;
-                                existingJobPage.ModifyGuid = Guid.Empty;
-                                existingJobPage.JobPageStatusId = 1; // todo: replace w/ lookup
-                                existingJobPage.Uri = jobPage.Uri;
-                                _repositoryWrapper.JobPage.Update(existingJobPage);
-                                await _repositoryWrapper.JobPage.SaveAsync();
-                            }
-                        }
-                        else
-                        {
-                            _repositoryWrapper.JobPage.Create(new JobPage()
-                            {
-                                CreateDate = DateTime.UtcNow,
-                                CreateGuid = Guid.Empty,
-                                IsDeleted = 0,
-                                JobPageGuid = Guid.NewGuid(),
-                                JobPageStatusId = 1, // todo: replace w/ lookup
-                                JobSiteId = jobSite.JobSiteId,
-                                RawData = jobPage.RawData,
-                                UniqueIdentifier = jobPage.UniqueIdentifier,
-                                Uri = jobPage.Uri
-                            });
-                            await _repositoryWrapper.JobPage.SaveAsync();
-                        }
-                    }
-                    catch (DbUpdateException e)
-                    {
-                        _syslog.Log(LogLevel.Error, $"****ScheduledJobs.UpdateJobPagesStoreAsync failed to update jobPage.UniqueIdentifier: {jobPage.UniqueIdentifier} for jobSite.JobSiteGuid: {jobSite.JobSiteGuid}");
-                    }
-                }
-            }
         }
 
         #endregion
