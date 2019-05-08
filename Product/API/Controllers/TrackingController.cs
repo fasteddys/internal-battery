@@ -106,7 +106,7 @@ namespace UpDiddyApi.Controllers
         /// <param name="ActionGuid"></param>
         /// <param name="EntityGuid"></param>
         /// <returns></returns>
-        [HttpGet("api/[controller]/RecruiterEmail/{ActorGuid}/{ActionGuid}/{JobApplicationGuid}")]
+        [HttpGet("api/[controller]/recruiter/{ActorGuid}/{ActionGuid}/{JobApplicationGuid}")]
         public IActionResult Track(Guid ActorGuid, Guid ActionGuid, Guid JobApplicationGuid)
         {
             Task.Run(() => ProcessRecruiterTrackingInformation(ActorGuid, ActionGuid, JobApplicationGuid));
@@ -115,7 +115,7 @@ namespace UpDiddyApi.Controllers
 
         private void ProcessRecruiterTrackingInformation(Guid ActorGuid, Guid ActionGuid, Guid JobApplicationGuid)
         {
-            
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreRecruiterTrackingInformation(ActorGuid, ActionGuid, JobApplicationGuid));
         }
     }
 }

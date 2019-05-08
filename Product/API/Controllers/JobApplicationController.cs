@@ -262,7 +262,9 @@ namespace UpDiddyApi.Controllers
                         JobTitle = jobPosting.Title,
                         ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration, subscriber.SubscriberGuid.Value),
                         JobUrl = JobPostingFactory.JobPostingUrl(_configuration, jobPosting.JobPostingGuid),
-                        Subject = (IsExternalRecruiter == true ? $"{jobPosting.Company.CompanyName} job posting via CareerCircle" : "Applicant Alert")
+                        Subject = (IsExternalRecruiter == true ? $"{jobPosting.Company.CompanyName} job posting via CareerCircle" : "Applicant Alert"),
+                        RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
+                        JobApplicationGuid = jobApplication.JobApplicationGuid
                     },
                     null,
                     new List<Attachment>

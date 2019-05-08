@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
@@ -9,5 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     {
         ICountryRepository Country { get; }
         IStateRepository State { get; }
+        IRecruiterActionRepository RecruiterActionRepository { get; }
     }
 }

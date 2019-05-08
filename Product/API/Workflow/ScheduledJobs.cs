@@ -23,6 +23,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Helpers.Job;
+using UpDiddyLib.Helpers;
+using UpDiddyApi.ApplicationCore.Repository;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.Workflow
 {
@@ -30,8 +33,20 @@ namespace UpDiddyApi.Workflow
     {
         ICloudStorage _cloudStorage;
         ISysEmail _sysEmail;
+        IRepositoryWrapper _repositoryWrapper;
 
-        public ScheduledJobs(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ISysEmail sysEmail, IHttpClientFactory httpClientFactory, ILogger<ScheduledJobs> logger, ISovrenAPI sovrenApi, IHubContext<ClientHub> hub, IDistributedCache distributedCache, ICloudStorage cloudStorage)
+        public ScheduledJobs(
+            UpDiddyDbContext context, 
+            IMapper mapper, 
+            Microsoft.Extensions.Configuration.IConfiguration configuration, 
+            ISysEmail sysEmail, 
+            IHttpClientFactory httpClientFactory, 
+            ILogger<ScheduledJobs> logger, 
+            ISovrenAPI sovrenApi, 
+            IHubContext<ClientHub> hub, 
+            IDistributedCache distributedCache, 
+            ICloudStorage cloudStorage,
+            IRepositoryWrapper repositoryWrapper)
         {
             _db = context;
             _mapper = mapper;
@@ -45,6 +60,7 @@ namespace UpDiddyApi.Workflow
             _hub = hub;
             _cache = distributedCache;
             _sysEmail = sysEmail;
+            _repositoryWrapper = repositoryWrapper;
         }
 
         #region Marketing
@@ -583,18 +599,58 @@ namespace UpDiddyApi.Workflow
             }
         }
 
-        public void StoreRecruiterTrackingInformation(Guid ActorGuid, Guid ActionGuid, Guid JobApplicationGuid)
+        public async Task<RecruiterAction> StoreRecruiterTrackingInformation(Guid ActorGuid, Guid ActionGuid, Guid JobApplicationGuid)
         {
             var Recruiter = _db.Recruiter.Where(r => r.RecruiterGuid == ActorGuid && r.IsDeleted == 0).FirstOrDefault();
             var JobApplication = _db.JobApplication.Where(j => j.JobApplicationGuid == JobApplicationGuid && j.IsDeleted == 0).FirstOrDefault();
+            var EntityType = _db.EntityType.Where(e => e.Name.Equals(Constants.TRACKING_KEY_JOB_APPLICATION) && e.IsDeleted == 0).FirstOrDefault();
             var Action = _db.Action.Where(a => a.ActionGuid == ActionGuid && a.IsDeleted == 0).FirstOrDefault();
+            IRecruiterActionRepository RecruiterActionRepository = _repositoryWrapper.RecruiterActionRepository;
 
             // validate that the referenced entities exist
-            if (Recruiter != null && JobApplication != null && Action != null)
+            if (Recruiter != null && JobApplication != null && Action != null && EntityType != null)
             {
+                IEnumerable<RecruiterAction> RecruiterAction = await RecruiterActionRepository.GetByConditionAsync((r) =>
+                        r.RecruiterId == Recruiter.RecruiterId &&
+                        r.ActionId == Action.ActionId &&
+                        r.EntityId == JobApplication.JobApplicationId &&
+                        r.EntityTypeId == EntityType.EntityTypeId &&
+                        r.IsDeleted == 0);
 
+                RecruiterAction ExistingRecruiterAction = RecruiterAction.FirstOrDefault();
+
+                if (ExistingRecruiterAction != null)
+                {
+                    ExistingRecruiterAction.ModifyDate = DateTime.UtcNow;
+                    ExistingRecruiterAction.OccurredDate = DateTime.UtcNow;
+                    RecruiterActionRepository.Update(ExistingRecruiterAction);
+                    await RecruiterActionRepository.SaveAsync();
+                    return ExistingRecruiterAction;
+                }
+                else
+                {
+                    RecruiterAction NewRecruiterAction = (new RecruiterAction()
+                    {
+                        IsDeleted = 0,
+                        CreateDate = DateTime.UtcNow,
+                        ModifyDate = DateTime.UtcNow,
+                        CreateGuid = Guid.Empty,
+                        ModifyGuid = Guid.Empty,
+                        RecruiterActionGuid = Guid.NewGuid(),
+                        RecruiterId = Recruiter.RecruiterId,
+                        ActionId = Action.ActionId,
+                        OccurredDate = DateTime.UtcNow,
+                        EntityId = JobApplication.JobApplicationId,
+                        EntityTypeId = EntityType.EntityTypeId
+                    });
+                    RecruiterActionRepository.Create(NewRecruiterAction);
+                    await RecruiterActionRepository.SaveAsync();
+                    return NewRecruiterAction;
+                }
                 
             }
+            return null;
+
         }
 
         #endregion

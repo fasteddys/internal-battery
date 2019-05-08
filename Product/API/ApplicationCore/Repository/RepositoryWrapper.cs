@@ -12,6 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private readonly UpDiddyDbContext _dbContext;
         private ICountryRepository _countryRepository;
         private IStateRepository _stateRepository;
+        private IRecruiterActionRepository _recruiterActionRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -41,5 +42,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+        public IRecruiterActionRepository RecruiterActionRepository
+        {
+            get
+            {
+                if(_recruiterActionRepository == null)
+                {
+                    _recruiterActionRepository = new RecruiterActionRepository(_dbContext);
+                }
+                return _recruiterActionRepository;
+            }
+        }
     }
 }
