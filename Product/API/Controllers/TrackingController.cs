@@ -100,7 +100,7 @@ namespace UpDiddyApi.Controllers
         }
 
         /// <summary>
-        /// Recruiter tracking method to log when a recruiter perfors an action
+        /// Recruiter tracking method to log when a recruiter performs an action
         /// on a job application.
         /// </summary>
         /// <param name="ActorGuid"></param>
