@@ -218,7 +218,7 @@ namespace UpDiddyApi.Controllers
                     return NotFound(new { code = 404, message = $"Job posting {jobPostingGuid} does not exist" });
 
                 Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                if (jobPosting.Subscriber.SubscriberGuid != subsriberGuidClaim)
+                if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting owner is not specified or does not match user posting job" });
 
                 // queue a job to delete the posting from the job index and mark it as deleted in sql server
@@ -247,7 +247,7 @@ namespace UpDiddyApi.Controllers
             {
                 // Validate request 
                 Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                if (jobPostingDto.Subscriber == null || jobPostingDto.Subscriber.SubscriberGuid == null || jobPostingDto.Subscriber.SubscriberGuid != subsriberGuidClaim)
+                if (jobPostingDto.Recruiter.Subscriber == null || jobPostingDto.Recruiter.Subscriber.SubscriberGuid == null || jobPostingDto.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting owner is not specified or does not match user posting job" });
 
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
@@ -295,7 +295,7 @@ namespace UpDiddyApi.Controllers
             {
                 // Validate request 
                 Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                if (jobPostingDto.Subscriber == null || jobPostingDto.Subscriber.SubscriberGuid == null || jobPostingDto.Subscriber.SubscriberGuid != subsriberGuidClaim)
+                if (jobPostingDto.Recruiter.Subscriber == null || jobPostingDto.Recruiter.Subscriber.SubscriberGuid == null || jobPostingDto.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting owner is not specified or does not match user posting job" });
 
                 if (jobPostingDto == null)
@@ -304,6 +304,9 @@ namespace UpDiddyApi.Controllers
                 _syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
                 //todo move code below to factory method 
                 JobPosting jobPosting = _mapper.Map<JobPosting>(jobPostingDto);
+                // todo find a better way to deal with the job posting having a collection of JobPostingSkill and the job posting DTO having a collection of SkillDto
+                // ignore posting skills that were mapped via automapper, they will be associated with the posting below 
+                jobPosting.JobPostingSkills = null;
                 // use factory method to make sure all the base data values are set just 
                 // in case the caller didn't set them
                 BaseModelFactory.SetDefaultsForAddNew(jobPosting);
@@ -336,6 +339,7 @@ namespace UpDiddyApi.Controllers
                 // todo make saving the job posting and skills more efficient with a stored procedure 
                 _db.JobPosting.Add(jobPosting);
                 _db.SaveChanges();
+                // save associated job posting skills 
                 JobPostingFactory.SavePostingSkills(_db, jobPosting, jobPostingDto);
                 //index active jobs into google 
                 if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
@@ -367,7 +371,7 @@ namespace UpDiddyApi.Controllers
                 return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "JobPosting not found" });
 
             Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (jobPosting.Subscriber.SubscriberGuid != subsriberGuidClaim)
+            if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim)
                 return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Unauthorized to copy posting" });
 
             jobPosting = JobPostingFactory.CopyJobPosting(_db, jobPosting, _postingTTL);
@@ -432,7 +436,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("api/[controller]")]
-        public IActionResult JobSearchIndustry( [FromBody] JobQueryDto jobQueryDto)
+        public IActionResult JobSearch( [FromBody] JobQueryDto jobQueryDto)
         {
             int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]); 
             JobSearchResultDto rVal = _cloudTalent.Search(jobQueryDto);

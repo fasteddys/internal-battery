@@ -114,7 +114,7 @@ namespace UpDiddyApi.Controllers
 
 
             Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (jobPosting.Subscriber.SubscriberGuid != subsriberGuidClaim )
+            if (jobPosting.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim )
                 return BadRequest(new { code = 401, message = $"Job applications can only be viewed by posting owner" });
  
             List<JobApplication> applications = JobApplicationFactory.GetJobApplicationsForPosting(_db, jobPosting.JobPostingId);
@@ -146,12 +146,12 @@ namespace UpDiddyApi.Controllers
                 return NotFound(new { code = 404, message = $"Job application {jobApplicationGuid} does not exist" });
 
             Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (jobApplication.JobPosting.Subscriber.SubscriberGuid != subsriberGuidClaim && jobApplication.Subscriber.SubscriberGuid != subsriberGuidClaim)
+            if (jobApplication.JobPosting.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim && jobApplication.Subscriber.SubscriberGuid != subsriberGuidClaim)
                 return BadRequest(new { code = 401, message = $"Job application can only be deleted by jobseeker or posting owner" });
 
             // Hide the recruiters information 
             if (jobApplication.Subscriber.SubscriberGuid == subsriberGuidClaim)
-                jobApplication.JobPosting.Subscriber = null;
+                jobApplication.JobPosting.Recruiter.Subscriber = null;
 
             _syslog.Log(LogLevel.Information, $"***** JobApplicationController:GetJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");
             return Ok(_mapper.Map<JobApplicationDto>(jobApplication));
@@ -181,7 +181,7 @@ namespace UpDiddyApi.Controllers
                     return NotFound(new { code = 404, message = $"Job posting for application {jobApplication.JobApplicationGuid} does not exist" });
 
                 Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                if (jobApplication.JobPosting.Subscriber.SubscriberGuid != subsriberGuidClaim  && jobApplication.Subscriber.SubscriberGuid != subsriberGuidClaim)
+                if (jobApplication.JobPosting.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim  && jobApplication.Subscriber.SubscriberGuid != subsriberGuidClaim)
                     return BadRequest(new { code = 401, message = $"Job application can only be deleted by jobseeker or posting owner" });
 
                 jobApplication.IsDeleted = 1;
@@ -235,7 +235,7 @@ namespace UpDiddyApi.Controllers
     
                 // Send recruiter email alerting them to application
                 BackgroundJob.Enqueue(() =>_sysEmail.SendTemplatedEmailAsync
-                    (jobPosting.Subscriber.Email, 
+                    (jobPosting.Recruiter.Subscriber.Email, 
                      _configuration["SysEmail:TemplateIds:JobApplication-Recruiter"],
                      new
                      {
