@@ -244,7 +244,7 @@ namespace UpDiddyApi.Controllers
                         ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration,subscriber.SubscriberGuid.Value),
                         JobUrl = JobPostingFactory.JobPostingUrl(_configuration,jobPosting.JobPostingGuid)
                       },
-                      Constants.Appsettings.SendGrid_Transactional_ApiKey,
+                      Constants.SendGridAccount.Transactional,
                       null)
                 );
              

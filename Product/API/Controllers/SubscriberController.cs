@@ -928,7 +928,7 @@ namespace UpDiddyApi.Controllers
                     {
                         verificationLink = link
                     },
-                    Constants.Appsettings.SendGrid_Transactional_ApiKey,
+                    Constants.SendGridAccount.Transactional,
                     null
                 ));
         }

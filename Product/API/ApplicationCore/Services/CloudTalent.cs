@@ -42,7 +42,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _db = context;
             _mapper = mapper;
             _apiBaseUri = configuration["SysEmail:ApiUrl"];
-            _accessToken = configuration[Constants.Appsettings.SendGrid_Transactional_ApiKey];
+            _accessToken = configuration["SysEmail:Transactional:ApiKey"];
             _syslog = sysLog;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;

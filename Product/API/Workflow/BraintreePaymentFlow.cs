@@ -163,8 +163,7 @@ namespace UpDiddyApi.Workflow
                         enrollmentLog.PromoApplied, 
                         formattedStartDate, 
                         (Guid)EnrollmentDto.EnrollmentGuid, 
-                        rebateToc,
-                        Constants.Appsettings.SendGrid_Transactional_ApiKey);
+                        rebateToc);
                     SetSelfPacedOrInstructorLedStatus(Helper, EnrollmentDto);
                     BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString()));
                     return CreateResponse(CreateResponseJson(SuccessfulMessage), SuccessfulMessage, string.Empty, TransactionState.Complete);

@@ -21,22 +21,11 @@ namespace UpDiddyLib.Helpers
             //_apiKey = Configuration["SysEmail:ApiKey"];
         }
 
-        public async Task<bool> SendEmailAsync(string email, string subject, string htmlContent, string SendGridSubaccountAppsettingKey)
+        public async Task<bool> SendEmailAsync(string email, string subject, string htmlContent, Constants.SendGridAccount SendGridAccount)
         {
-            var client = new SendGridClient(_configuration[SendGridSubaccountAppsettingKey]);
-
-            // This is a hideous way to do this, but in the essence of time...
-            string EmailType = string.Empty;
-            if (SendGridSubaccountAppsettingKey.Equals(Constants.Appsettings.SendGrid_Transactional_ApiKey))
-                EmailType = "Transactional";
-            else if (SendGridSubaccountAppsettingKey.Equals(Constants.Appsettings.SendGrid_Marketing_ApiKey))
-                EmailType = "Marketing";
-            else if (SendGridSubaccountAppsettingKey.Equals(Constants.Appsettings.SendGrid_Leads_ApiKey))
-                EmailType = "Lead";
-            else
-                return false;
-
-            SendGrid.Helpers.Mail.EmailAddress from = new EmailAddress(_configuration[$"SysEmail:{EmailType}:FromEmailAddress"], "CareerCircle Support");
+            string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
+            var client = new SendGridClient(_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"]);
+            SendGrid.Helpers.Mail.EmailAddress from = new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"], "CareerCircle Support");
             SendGrid.Helpers.Mail.EmailAddress to = new EmailAddress(email);
             var plainTextContent = Regex.Replace(htmlContent, "<[^>]*>", "");
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
@@ -44,23 +33,14 @@ namespace UpDiddyLib.Helpers
             return true;
         }
 
-        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, string SendGridSubaccountAppsettingKey, string subject = null)
+        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null)
         {
-            var client = new SendGridClient(_configuration[SendGridSubaccountAppsettingKey]);
+            string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
+
+            var client = new SendGridClient(_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"]);
             var message = new SendGridMessage();
 
-            // This is a hideous way to do this, but in the essence of time...
-            string EmailType = string.Empty;
-            if (SendGridSubaccountAppsettingKey.Equals(Constants.Appsettings.SendGrid_Transactional_ApiKey))
-                EmailType = "Transactional";
-            else if (SendGridSubaccountAppsettingKey.Equals(Constants.Appsettings.SendGrid_Marketing_ApiKey))
-                EmailType = "Marketing";
-            else if (SendGridSubaccountAppsettingKey.Equals(Constants.Appsettings.SendGrid_Leads_ApiKey))
-                EmailType = "Lead";
-            else
-                return false;
-
-            message.SetFrom(new EmailAddress(_configuration[$"SysEmail:{EmailType}:FromEmailAddress"], "CareerCircle"));
+            message.SetFrom(new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"], "CareerCircle"));
             message.AddTo(new EmailAddress(email));
             message.SetTemplateId(templateId);
             message.SetTemplateData(templateData);
@@ -82,10 +62,9 @@ namespace UpDiddyLib.Helpers
             decimal promoApplied, 
             string formattedStartDate,
             Guid enrollmentGuid,
-            string rebateToc,
-            string SendGridSubaccountAppsettingKey)
+            string rebateToc)
         {
-            var client = new SendGridClient(_configuration[SendGridSubaccountAppsettingKey]);
+            var client = new SendGridClient(_configuration["SysEmail:Transactional:ApiKey"]);
             var message = new SendGridMessage();
             message.SetFrom(new EmailAddress(_configuration["SysEmail:Transactional:FromEmailAddress"], "CareerCircle"));
             message.AddTo(new EmailAddress(email));
