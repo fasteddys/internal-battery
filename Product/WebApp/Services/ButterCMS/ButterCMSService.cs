@@ -110,7 +110,8 @@ namespace UpDiddy.Services.ButterCMS
                 HtmlMessage.Append("Error retrieving " + CacheKey + " from ButterCMS, or Redis. Falling back to error navigation.");
                 _sysEmail.SendEmailAsync(_configuration["ButterCMS:CareerCirclePublicSiteNavigation:FailedFetchNotifyEmail"],
                     "ALERT! Navigation failed to load.",
-                    HtmlMessage.ToString());
+                    HtmlMessage.ToString(),
+                    Constants.Appsettings.SendGrid_Transactional);
                 _cacheService.SetCachedValue<string>(CacheKeyForNavigationLoadFailure, "true");
             }
             

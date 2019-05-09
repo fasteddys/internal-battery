@@ -18,6 +18,7 @@ using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
+using UpDiddyLib.Helpers;
 using System.Net;
 using Microsoft.SqlServer.Server;
 
@@ -153,7 +154,7 @@ namespace UpDiddyApi.Controllers
                 .ToList();
 
             string ResponseJson = string.Empty;
-            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory, Constants.Appsettings.SendGrid_Marketing_ApiKey);
             HttpResponseMessage Response = sendGridInterface.CreateListAndAddContacts(ContactListName, TheList, ref ResponseJson);
 
 
@@ -238,7 +239,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult AddContacts([FromBody] IList<EmailContactDto> contacts)
         {
             string ResponseJson = string.Empty;
-            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory, Constants.Appsettings.SendGrid_Marketing_ApiKey);
             HttpResponseMessage Response = sendGridInterface.AddContacts(contacts, ref ResponseJson);
 
             if (Response.StatusCode == HttpStatusCode.Created)
@@ -257,7 +258,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult CreateCampaignEmailList([FromBody] SendGridListDto List)
         {
             string ResponseJson = string.Empty;
-            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory, Constants.Appsettings.SendGrid_Marketing_ApiKey);
             HttpResponseMessage Response = sendGridInterface.CreateContactList(List, ref ResponseJson);
 
             if (Response.StatusCode == HttpStatusCode.Created)
@@ -273,7 +274,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetCampaignEmailLists()
         {
             string ResponseJson = string.Empty;
-            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory, Constants.Appsettings.SendGrid_Marketing_ApiKey);
             HttpResponseMessage Response = sendGridInterface.GetContactLists(ref ResponseJson);
 
             if (Response.StatusCode == HttpStatusCode.OK)
@@ -289,7 +290,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetCampaignEmailList(string ListName)
         {
             string ResponseJson = string.Empty;
-            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory, Constants.Appsettings.SendGrid_Marketing_ApiKey);
             HttpResponseMessage Response = sendGridInterface.GetContactList(ListName, ref ResponseJson);
 
             if (Response.StatusCode == HttpStatusCode.OK)
@@ -307,7 +308,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult AddContactstoList(string ListId, [FromBody] IList<EmailContactDto> contacts)
         {
             string ResponseJson = string.Empty;
-            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory, Constants.Appsettings.SendGrid_Marketing_ApiKey);
             HttpResponseMessage Response = sendGridInterface.AddContactsToList(ListId, contacts, ref ResponseJson);
 
             if (Response.StatusCode == HttpStatusCode.Created)
@@ -323,7 +324,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult CreateListAndContacts(string ListName, [FromBody] IList<EmailContactDto> contacts)
         {
             string ResponseJson = string.Empty;
-            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory, Constants.Appsettings.SendGrid_Marketing_ApiKey);
             HttpResponseMessage Response = sendGridInterface.CreateListAndAddContacts(ListName, contacts, ref ResponseJson);
 
             if (Response.StatusCode == HttpStatusCode.Created)

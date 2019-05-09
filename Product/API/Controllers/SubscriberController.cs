@@ -923,11 +923,12 @@ namespace UpDiddyApi.Controllers
             BackgroundJob.Enqueue(() =>
                 _sysEmail.SendTemplatedEmailAsync(
                     email,
-                    _configuration["SysEmail:TemplateIds:EmailVerification-LinkEmail"],
+                    _configuration["SysEmail:Transactional:TemplateIds:EmailVerification-LinkEmail"],
                     new
                     {
                         verificationLink = link
-                    }, 
+                    },
+                    Constants.Appsettings.SendGrid_Transactional_ApiKey,
                     null
                 ));
         }

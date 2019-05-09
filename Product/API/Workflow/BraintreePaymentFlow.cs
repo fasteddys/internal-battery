@@ -137,10 +137,10 @@ namespace UpDiddyApi.Workflow
                     switch (courseVariant.CourseVariantType.Name)
                     {
                         case "Self-Paced":
-                            templateId= _configuration["SysEmail:TemplateIds:PurchaseReceipt-SelfPaced"];
+                            templateId= _configuration["SysEmail:Transactional:TemplateIds:PurchaseReceipt-SelfPaced"];
                             break;
                         case "Instructor-Led":
-                            templateId = _configuration["SysEmail:TemplateIds:PurchaseReceipt-InstructorLed"];
+                            templateId = _configuration["SysEmail:Transactional:TemplateIds:PurchaseReceipt-InstructorLed"];
                             break;
                         default:
                             throw new ApplicationException("Unrecognized course variant type.");
@@ -153,7 +153,18 @@ namespace UpDiddyApi.Workflow
                     if(enrollment.CampaignCourseVariant != null)
                         rebateToc = enrollment.CampaignCourseVariant.RebateType.Terms;
 
-                    _sysEmail.SendPurchaseReceiptEmail(templateId, profileUrl, SubscriberDto.Email, $"Purchase Receipt For {courseType} CareerCircle Course", course.Name, enrollmentLog.CourseCost, enrollmentLog.PromoApplied, formattedStartDate, (Guid)EnrollmentDto.EnrollmentGuid, rebateToc);
+                    _sysEmail.SendPurchaseReceiptEmail(
+                        templateId, 
+                        profileUrl, 
+                        SubscriberDto.Email, 
+                        $"Purchase Receipt For {courseType} CareerCircle Course", 
+                        course.Name, 
+                        enrollmentLog.CourseCost, 
+                        enrollmentLog.PromoApplied, 
+                        formattedStartDate, 
+                        (Guid)EnrollmentDto.EnrollmentGuid, 
+                        rebateToc,
+                        Constants.Appsettings.SendGrid_Transactional_ApiKey);
                     SetSelfPacedOrInstructorLedStatus(Helper, EnrollmentDto);
                     BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString()));
                     return CreateResponse(CreateResponseJson(SuccessfulMessage), SuccessfulMessage, string.Empty, TransactionState.Complete);
