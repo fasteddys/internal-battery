@@ -63,7 +63,7 @@ namespace UpDiddyApi.Workflow
             };
 
             // send templated welcome email that links to custom landing page
-            _sysEmail.SendTemplatedEmailAsync(email, _configuration["SysEmail:Transactional:TemplateIds:LeadIntake-WelcomeEmail"].ToString(), templateData, null);
+            _sysEmail.SendTemplatedEmailAsync(email, _configuration["SysEmail:Leads:TemplateIds:LeadIntake-WelcomeEmail"].ToString(), templateData, null);
 
             return true;
         }
