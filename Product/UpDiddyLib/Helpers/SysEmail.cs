@@ -41,6 +41,7 @@ namespace UpDiddyLib.Helpers
             var message = new SendGridMessage();
 
             message.SetFrom(new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"], "CareerCircle"));
+            message.SetReplyTo(new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:ReplyToEmailAddress"]));
             message.AddTo(new EmailAddress(email));
             message.SetTemplateId(templateId);
             message.SetTemplateData(templateData);
@@ -67,6 +68,7 @@ namespace UpDiddyLib.Helpers
             var client = new SendGridClient(_configuration["SysEmail:Transactional:ApiKey"]);
             var message = new SendGridMessage();
             message.SetFrom(new EmailAddress(_configuration["SysEmail:Transactional:FromEmailAddress"], "CareerCircle"));
+            message.SetReplyTo(new EmailAddress(_configuration["SysEmail:Transactional:ReplyToEmailAddress"]));
             message.AddTo(new EmailAddress(email));
             message.SetTemplateId(sendgridTemplateId);
             PurchaseReceipt purchaseReceipt = new PurchaseReceipt

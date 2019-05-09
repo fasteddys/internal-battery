@@ -34,6 +34,7 @@ namespace UpDiddy.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
+        private readonly ISysEmail _sysEmail;
 
         [HttpGet]
         public async Task<IActionResult> GetCountries()
@@ -43,10 +44,12 @@ namespace UpDiddy.Controllers
 
         public HomeController(IApi api,
             IConfiguration configuration,
-            IHostingEnvironment env)
+            IHostingEnvironment env,
+            ISysEmail sysEmail)
             : base(api)
         {
             _env = env;
+            _sysEmail = sysEmail;
             _configuration = configuration;
         }
         [HttpGet]
@@ -405,10 +408,7 @@ namespace UpDiddy.Controllers
             string ContactUsType,
             string ContactUsComment)
         {
-            var client = new SendGridClient(_configuration["Sendgrid:ApiKey"]);
-            var from = new EmailAddress(_configuration["Sendgrid:EmailSender"]);
-            var subject = _configuration["Sendgrid:EmailSubject"];
-            var to = new EmailAddress(_configuration["Sendgrid:EmailRecipient"]);
+            var subject = _configuration["SysEmail:ContactUs:Subject"];
 
             string firstName = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsFirstName) ? "No first name enetered." : ContactUsFirstName);
             string lastName = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsLastName) ? "No last name entered." : ContactUsLastName);
@@ -417,10 +417,8 @@ namespace UpDiddy.Controllers
             string comment = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsComment) ? "No comment entered." : ContactUsComment);
 
             var emailBody = FormatContactEmail(firstName, lastName, email, type, comment);
-            var plainTextContent = emailBody;
-            var htmlContent = emailBody;
-            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-            var response = client.SendEmailAsync(msg);
+
+            _sysEmail.SendEmailAsync(_configuration["SysEmail:ContactUs:Recipient"], subject, emailBody, Constants.SendGridAccount.Transactional);
             return RedirectToAction("Contact", new AboutViewModel());
         }
 
