@@ -139,7 +139,7 @@ namespace UpDiddyApi.Controllers
                 new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "Partner offer", "Offer", offer.OfferGuid);
 
             BackgroundJob.Enqueue(() =>
-                _sysEmail.SendTemplatedEmailAsync(subscriber.Email, _configuration["SysEmail:TemplateIds:SubscriberOffer-Redemption"], offer, null));
+                _sysEmail.SendTemplatedEmailAsync(subscriber.Email, _configuration["SysEmail:Transactional:TemplateIds:SubscriberOffer-Redemption"], offer, Constants.SendGridAccount.Transactional, null));
             
             return Ok(offer);
         }
