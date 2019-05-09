@@ -11,11 +11,13 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
     {
         protected JobSite _jobSite;
         protected internal ILogger _syslog = null;
+        protected Guid _companyGuid = Guid.Empty;
 
-        public BaseProcess(JobSite jobSite, ILogger logger)
+        public BaseProcess(JobSite jobSite, ILogger logger, Guid companyGuid)
         {
             _syslog = logger;
             _jobSite = jobSite;
+            _companyGuid = companyGuid;
         }
     }
 }

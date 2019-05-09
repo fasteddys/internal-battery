@@ -11,7 +11,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 {
     public class AerotekProcess : BaseProcess, IJobDataMining
     {
-        public AerotekProcess(JobSite jobSite, ILogger logger) : base(jobSite, logger) { }
+        public AerotekProcess(JobSite jobSite, ILogger logger, Guid companyGuid) : base(jobSite, logger, companyGuid) { }
 
         public List<JobPage> DiscoverJobPages(List<JobPage> existingJobPages)
         {

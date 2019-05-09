@@ -48,6 +48,16 @@ namespace UpDiddyApi.Migrations
                     table.PrimaryKey("PK_JobSite", x => x.JobSiteId);
                 });
 
+            migrationBuilder.InsertData(
+                table: "JobSite",
+                columns: new[] { "JobSiteGuid", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Uri" },
+                values: new object[] { new Guid("D9C816C6-C6F9-4E23-981D-6BA29E83A48E"), new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "TEKsystems", "https://www.teksystems.com/it-jobs/api/results?geoIp=false" });
+
+            migrationBuilder.InsertData(
+                table: "JobSite",
+                columns: new[] { "JobSiteGuid", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Uri" },
+                values: new object[] { new Guid("034C10D5-FFFF-4CBD-BDDC-AF4B8460BFA3"), new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Aerotek", "https://www.aerotek.com/jobs/api/results?geoIp=false" });
+
             migrationBuilder.CreateTable(
                 name: "JobPage",
                 columns: table => new
@@ -137,14 +147,24 @@ namespace UpDiddyApi.Migrations
             migrationBuilder.InsertData(
                 table: "JobPageStatus",
                 columns: new[] { "JobPageStatusGuid", "JobPageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
-                values: new object[] { new Guid("5849C93F-8407-4A8D-B4FB-CEDC11CB94CE"), 4, new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Deleted", "This status is applied to a JobPage when it is discovered that a previously seen job is no longer visible on a JobSite." });
-            
-            /* don't think we need this if we remove these before they make it to our db
+                values: new object[] { new Guid("C0AB82C7-0443-4391-860D-2C972C480353"), 4, new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Deleted", "This status is applied to a JobPage when it is discovered that a previously seen job is no longer visible on a JobSite." });
+
+            /* don't think we need this if duplicates are dealt with before they make it into the db
             migrationBuilder.InsertData(
                 table: "JobPageStatus",
                 columns: new[] { "JobPageStatusGuid", "JobPageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
                 values: new object[] { new Guid("5849C93F-8407-4A8D-B4FB-CEDC11CB94CE"), 5, new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Duplicate", "This status is applied to a JobPage when it is identified as a duplicate of another JobPage for the same JobSite." });
             */
+
+            migrationBuilder.InsertData(
+                table: "Company",
+                columns: new[] { "CompanyGuid", "CreateDate", "CreateGuid", "IsDeleted", "CompanyName", "CloudTalentIndexStatus", "IsHiringAgency", "IsJobPoster" },
+                values: new object[] { new Guid("2C2BC0D6-416B-4B62-A16A-87AC9B95D0B2"), new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "TEKsystems", 0, 1, 1 });
+
+            migrationBuilder.InsertData(
+                table: "Company",
+                columns: new[] { "CompanyGuid", "CreateDate", "CreateGuid", "IsDeleted", "CompanyName", "CloudTalentIndexStatus", "IsHiringAgency", "IsJobPoster" },
+                values: new object[] { new Guid("7E1D8AB0-3440-4773-88B6-2722DA9F2FED"), new DateTime(2019, 5, 6, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Aerotek", 0, 1, 1 });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

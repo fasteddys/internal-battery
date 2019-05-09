@@ -16,7 +16,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 {
     public class TEKsystemsProcess : BaseProcess, IJobDataMining
     {
-        public TEKsystemsProcess(JobSite jobSite, ILogger logger) : base(jobSite, logger) { }
+        public TEKsystemsProcess(JobSite jobSite, ILogger logger, Guid companyGuid) : base(jobSite, logger, companyGuid) { }
 
         public List<JobPage> DiscoverJobPages(List<JobPage> existingJobPages)
         {
@@ -77,19 +77,13 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                // keeping this loop serial rather than parallel intentionally (nesting parallel loops can quickly cause performance issues)
                foreach (var job in jsonResults.results)
                {
-                   int? existingJobPostingId = null;
                    int jobPageStatusId = 1; // pending
                    string rawHtml;
                    Uri jobDetailUri = null;
                    try
                    {
-                       jobDetailUri = new Uri(_jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url);
-
-                       // get the related JobPostingId (if one exists)
-                       var existingJobPage = existingJobPages.Where(jp => jp.Uri == jobDetailUri && jp.UniqueIdentifier == job.id).FirstOrDefault();
-                       if (existingJobPage != null)
-                           existingJobPostingId = existingJobPage.JobPostingId;
-
+                       // retrieve the latest job page data
+                        jobDetailUri = new Uri(_jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url);
                        using (var client = new HttpClient())
                        {
                            var request = new HttpRequestMessage()
@@ -119,27 +113,44 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                                job.responsibilities = jobDataJson.responsibilities.Value;
                            }
                        }
+
+
+                       // get the related JobPostingId (if one exists)
+                       string jobId = job.id;
+                       var existingJobPage = existingJobPages.Where(jp => jp.Uri.ToString() == jobDetailUri.ToString() && jp.UniqueIdentifier == jobId).FirstOrDefault();
+                       if (existingJobPage != null)
+                       {
+                           // add the updated job page to the collection
+                           if (existingJobPage.RawData != job.ToString())
+                           {
+                               existingJobPage.JobPageStatusId = jobPageStatusId;
+                               existingJobPage.RawData = job.ToString();
+                               existingJobPage.ModifyDate = DateTime.UtcNow;
+                               existingJobPage.ModifyGuid = Guid.Empty;
+                               jobPages.Add(existingJobPage);
+                           }
+                       }
+                       else
+                       {
+                           // add the new job page to the collection
+                           jobPages.Add(new JobPage()
+                           {
+                               CreateDate = DateTime.UtcNow,
+                               CreateGuid = Guid.Empty,
+                               IsDeleted = 0,
+                               JobPageGuid = Guid.NewGuid(),
+                               JobPageStatusId = jobPageStatusId,
+                               RawData = job.ToString(),
+                               UniqueIdentifier = job.id.ToString(),
+                               Uri = jobDetailUri,
+                               JobSiteId = _jobSite.JobSiteId
+                           });
+                       }
                    }
                    catch (Exception e)
                    {
                        jobPageStatusId = 3; // error
                        _syslog.Log(LogLevel.Error, $"***** TEKsystemProcess.DiscoverJobPages encountered an exception: {e.Message}");
-                   }
-                   finally
-                   {
-                       // add the job page to the collection
-                       jobPages.Add(new JobPage()
-                       {
-                           CreateDate = DateTime.UtcNow,
-                           CreateGuid = Guid.Empty,
-                           IsDeleted = 0,
-                           JobPageGuid = Guid.NewGuid(),
-                           JobPageStatusId = jobPageStatusId,
-                           RawData = (job != null) ? job.ToString() : null,
-                           UniqueIdentifier = (job != null && job.id != null) ? job.id : Guid.NewGuid().ToString(),
-                           Uri = jobDetailUri != null ? jobDetailUri : null,
-                           JobPostingId = existingJobPostingId
-                       });
                    }
                }
            });
@@ -156,7 +167,6 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              * audit trail of what we did could be quite confusing.
              */
             var uniqueNewJobs = (from jp in jobPages
-                                 where jp.JobPageStatusId == 1
                                  group jp by jp.UniqueIdentifier into g
                                  select g.OrderBy(a => a, new CompareByUri()).First()).ToList();
 
@@ -165,7 +175,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              * - existingNewJobs.Except(uniqueNewJobs) -> add these to the output and mark as deletes
              */
             var unreferencedJobs = existingJobPages.AsQueryable().Except(uniqueNewJobs, new EqualityComparerByUri()).ToList();
-            var jobsToDelete = unreferencedJobs.Select(x => { x.JobPageStatusId = 4; return x; }).ToList();
+            var jobsToDelete = unreferencedJobs.Select(jp => { jp.JobPageStatusId = 4; return jp; }).ToList();
 
             // combine new/modified jobs and unreferenced jobs which should be deleted
             List<JobPage> updatedJobPages = new List<JobPage>();
@@ -176,12 +186,62 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             stopwatch.Stop();
             var elapsed = stopwatch.ElapsedMilliseconds;
 
-            return uniqueNewJobs;
+            return updatedJobPages;
         }
 
         public JobPostingDto ProcessJobPage(JobPage jobPage)
         {
-            throw new NotImplementedException();
+            JobPostingDto jobPostingDto = new JobPostingDto();
+            try
+            {
+                // set everything we can without relying on the raw data from the job page
+                jobPostingDto.CreateGuid = Guid.Empty;
+                jobPostingDto.IsDeleted = 0;
+                jobPostingDto.IsAgencyJobPosting = true;
+                jobPostingDto.ThirdPartyApplicationUrl = jobPage.Uri.ToString();
+                jobPostingDto.ThirdPartyApply = true;
+                jobPostingDto.JobStatus = (int)JobPostingStatus.Active;
+                jobPostingDto.Company = new CompanyDto() { CompanyGuid = _companyGuid };
+
+                // everything else relies upon valid raw data
+                if (!string.IsNullOrWhiteSpace(jobPage.RawData))
+                {
+                    var jobData = JsonConvert.DeserializeObject<dynamic>(jobPage.RawData);
+                    jobPostingDto.Description = jobData.responsibilities;
+                    jobPostingDto.City = jobData.city;
+                    DateTime datePosted;
+                    if (DateTime.TryParse(jobData.date_posted.ToString(), out datePosted))
+                        jobPostingDto.CreateDate = datePosted;
+                    else
+                        jobPostingDto.CreateDate = DateTime.UtcNow;
+                    jobPostingDto.Title = jobData.job_title;
+                    jobPostingDto.Province = jobData.admin_area_1;
+                    string recruiterName = jobData.discrete_field_3;
+                    string recruiterFirstName = null, recruiterLastName = null;
+                    if (!string.IsNullOrWhiteSpace(recruiterName))
+                    {
+                        string[] tmp = recruiterName.Split(' ');
+                        if (tmp.Length == 2)
+                        {
+                            recruiterFirstName = tmp[0];
+                            recruiterLastName = tmp[1];
+                        }
+                    }
+                    jobPostingDto.Recruiter = new RecruiterDto()
+                    {
+                        Email = jobData.discrete_field_4,
+                        FirstName = recruiterFirstName,
+                        LastName = recruiterLastName
+                    };
+                }
+
+                return jobPostingDto;
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Error, $"***** TEKsystemProcess.ProcessJobPage encountered an exception: {e.Message}");
+                return null;
+            }
         }
 
         public class EqualityComparerByUri : IEqualityComparer<JobPage>

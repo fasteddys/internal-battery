@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,7 @@ using Newtonsoft.Json.Serialization;
 using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Helpers.Job;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+
 
 namespace UpDiddyApi.Workflow
 {
@@ -425,17 +427,11 @@ namespace UpDiddyApi.Workflow
                     // load the job data mining process for the job site
                     IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite, _syslog);
 
-                    // load all existing job pages that are still 'active' (new, processed) - we can ignore error, deleted, and duplicate
-                    List<JobPage> existingJobPages = _repositoryWrapper.JobPage.GetActiveJobPagesForJobSiteAsync(jobSite.JobSiteGuid).Result.ToList();
+                    // load all existing job pages - it is important to retrieve all of them regardless of their JobPageStatus to avoid FK conflicts on insert and update operations
+                    List<JobPage> existingJobPages = _repositoryWrapper.JobPage.GetAllJobPagesForJobSiteAsync(jobSite.JobSiteGuid).Result.ToList();
 
                     // retrieve all current job pages that are visible on the job site
                     List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages);
-
-
-
-
-
-
 
                     #region refactor everything in this section -- extract into separate methods where it makes sense to do so
                     // JobPageStatus = 1 / 'Pending' - we want to process these (add new or update existing dbo.JobPosting)                     
@@ -447,7 +443,6 @@ namespace UpDiddyApi.Workflow
                             bool? isJobPostingOperationSuccessful = null;
                             Guid jobPostingGuid = Guid.Empty;
                             string errorMessage = null;
-
                             // convert JobPage into JobPostingDto
                             var jobPostingDto = jobDataMining.ProcessJobPage(jobPage);
 
@@ -461,8 +456,10 @@ namespace UpDiddyApi.Workflow
                             }
                             else
                             {
-                                // i have to create the recruiter - should the job posting factory encapsulate that logic?
-                                var recruiter = RecruiterFactory.CreateRecruiter(jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, jobPostingDto.Recruiter.PhoneNumber, null);
+                                // we have to add/update the recruiter and the associated company - should the job posting factory encapsulate that logic?
+                                Recruiter recruiter = RecruiterFactory.GetOrAdd(_db, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
+                                Company company = CompanyFactory.GetCompanyByGuid(_db, jobPostingDto.Company.CompanyGuid);
+                                RecruiterCompanyFactory.GetOrAdd(_db, recruiter.RecruiterId, company.CompanyId, true);
 
                                 // attempt to create job posting
                                 isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration);
@@ -472,49 +469,39 @@ namespace UpDiddyApi.Workflow
                                 // indicate that the job was updated successfully and is now active
                                 jobPage.JobPageStatusId = 2;
 
-                                // i have the job posting guid but not the job posting id. retrieve that so i can associate the job posting with the job page
-                                int jobPostingId = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid).JobPostingId;
+                                // we have the job posting guid but not the job posting id. retrieve that so we can associate the job posting with the job page
+                                jobPage.JobPostingId = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid).JobPostingId;
 
+                                // add or update the job page and save the changes
                                 if (jobPage.JobPageId > 0)
-                                {
-                                    // update existing job page                            
                                     _repositoryWrapper.JobPage.Update(jobPage);
-                                    await _repositoryWrapper.JobPage.SaveAsync();
-                                }
                                 else
-                                {
-                                    // create new job page
                                     _repositoryWrapper.JobPage.Create(jobPage);
-                                    await _repositoryWrapper.JobPage.SaveAsync();
-                                }
-
+                                await _repositoryWrapper.JobPage.SaveAsync();
                             }
                             else if (isJobPostingOperationSuccessful.HasValue && !isJobPostingOperationSuccessful.Value)
                             {
-                                // indicate that an error occurred
+                                // indicate that an error occurred and save the changes
                                 jobPage.JobPageStatusId = 3;
 
                                 if (jobPage.JobPageId > 0)
-                                {
-                                    // update the existing job page      
                                     _repositoryWrapper.JobPage.Update(jobPage);
-                                    await _repositoryWrapper.JobPage.SaveAsync();
-                                }
                                 else
-                                {
-                                    // create new job page
                                     _repositoryWrapper.JobPage.Create(jobPage);
-                                    await _repositoryWrapper.JobPage.SaveAsync();
-                                }
+                                await _repositoryWrapper.JobPage.SaveAsync();
                             }
                         }
                         catch (Exception e)
                         {
                             _syslog.Log(LogLevel.Error, $"***** METHOD_NAME encountered an exception: {e.Message}");
-                        }
-                        finally
-                        {
-                            // update job page?
+                            // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
+                            foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
+                            {
+                                if (entityEntry != null && (entityEntry.State == EntityState.Added || entityEntry.State == EntityState.Deleted || entityEntry.State == EntityState.Modified))
+                                {
+                                    entityEntry.State = EntityState.Detached;
+                                }
+                            }
                         }
                     }
 
@@ -538,21 +525,39 @@ namespace UpDiddyApi.Workflow
 
                                 if (isJobDeleteOperationSuccessful.HasValue && isJobDeleteOperationSuccessful.Value)
                                 {
-                                    // flag job page as deleted
+                                    // flag job page as deleted and save the changes
+                                    jobPage.JobPageStatusId = 4;
+
+                                    if (jobPage.JobPageId > 0)
+                                        _repositoryWrapper.JobPage.Update(jobPage);
+                                    else
+                                        _repositoryWrapper.JobPage.Create(jobPage);
+                                    await _repositoryWrapper.JobPage.SaveAsync();
                                 }
                                 else if (isJobDeleteOperationSuccessful.HasValue && !isJobDeleteOperationSuccessful.Value)
                                 {
-                                    // flag job page as error
+                                    // flag job page as error and save the changes
+                                    jobPage.JobPageStatusId = 3;
+
+                                    if (jobPage.JobPageId > 0)
+                                        _repositoryWrapper.JobPage.Update(jobPage);
+                                    else
+                                        _repositoryWrapper.JobPage.Create(jobPage);
+                                    await _repositoryWrapper.JobPage.SaveAsync();
                                 }
                             }
                         }
                         catch (Exception e)
                         {
                             _syslog.Log(LogLevel.Error, $"***** METHOD_NAME encountered an exception: {e.Message}");
-                        }
-                        finally
-                        {
-                            // update job page?
+                            // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
+                            foreach(EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
+                            {
+                                if (entityEntry != null && (entityEntry.State == EntityState.Added || entityEntry.State == EntityState.Deleted || entityEntry.State == EntityState.Modified))
+                                {
+                                    entityEntry.State = EntityState.Detached;
+                                }
+                            }
                         }
                     }
 

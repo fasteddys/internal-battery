@@ -11,9 +11,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
     {
         public JobPageRepository(UpDiddyDbContext dbContext) : base(dbContext) { }
 
-        public async Task<IEnumerable<JobPage>> GetActiveJobPagesForJobSiteAsync(Guid jobSiteGuid)
+        public async Task<IEnumerable<JobPage>> GetAllJobPagesForJobSiteAsync(Guid jobSiteGuid)
         {
-            var jobPages = GetByConditionAsync(e => e.JobSite.JobSiteGuid == jobSiteGuid && e.JobPageStatus.Name == "Active" );
+            var jobPages = GetByConditionAsync(e => e.JobSite.JobSiteGuid == jobSiteGuid);
             return await jobPages;
         }
     }

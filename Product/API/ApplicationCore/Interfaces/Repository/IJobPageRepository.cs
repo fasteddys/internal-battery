@@ -8,6 +8,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IJobPageRepository : IUpDiddyRepositoryBase<JobPage>
     {
-        Task<IEnumerable<JobPage>> GetActiveJobPagesForJobSiteAsync(Guid jobSiteGuid);
+        Task<IEnumerable<JobPage>> GetAllJobPagesForJobSiteAsync(Guid jobSiteGuid);
     }
 }
