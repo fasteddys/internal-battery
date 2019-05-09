@@ -160,6 +160,8 @@ namespace UpDiddyApi.Models
         public DbSet<JobSite> JobSite { get; set; }
         public DbSet<JobPage> JobPage { get; set; }
         public DbSet<JobPageStatus> JobPageStatus { get; set; }
+        public DbSet<JobSiteScrapeStatistic> JobSiteScrapeStatistic { get; set; }
+
 
         #region DBQueries
 

@@ -35,6 +35,19 @@ namespace UpDiddy.Controllers
             _cache = cache;
         }
 
+ 
+        [Authorize]
+        [HttpGet]
+        [Route("/admin/jobscrapestats")]
+        public async Task<IActionResult> JobScrapeStats()
+        {
+            HttpPutAttribute in web config 
+            var x = Request.Query["NumRecords"];
+
+            IList<JobSiteScrapeStatisticDto> Statistics = await _api.JobScrapeStatisticsSearchAsync(10);
+            return View(Statistics);
+        }
+        
         [HttpGet]
         [Route("/admin/courselookup")]
         public async Task<JsonResult> CourseLookup()

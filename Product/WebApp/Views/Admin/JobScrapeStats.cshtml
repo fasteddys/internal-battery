@@ -1,0 +1,73 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model IEnumerable<JobSiteScrapeStatisticDto>
+
+
+@Html.Partial("Admin/_AdminNavigation")
+
+<div class="container admin">
+    <div class="row">
+        <div class="col-sm mt-3 mb-3">
+            <div class="form-inline">
+            </div>
+        </div>
+    </div>
+    <form>
+        <div class="row">
+        
+            <div class="form-group col-6">
+                <input type="text" class="form-control" placeholder="Enter Number of Rows to Display" />
+            </div>
+            <div class="form-group col-6">
+                <button type="submit" class="btn btn-primary brand-button font-small">Submit</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="row">
+        <div class="col-sm">
+            @(Html
+                                        .Grid(Model)
+                                        .Css("admin-grid")
+                                        .Build(columns =>
+                                        {
+                                            columns.Add(model => model.JobSite.Name).Sortable(true).Titled("Job Site");
+                                            columns.Add(model => model.ScrapeDate).Sortable(true).InitialSort(GridSortOrder.Desc).Titled("Start Date").RenderedAs(model => model.ScrapeDate.ToShortDateString());
+
+                                            columns.Add(model => model.NumJobsProcessed).Sortable(true).Titled("Jobs Processed");
+                                            columns.Add(model => model.NumJobsAdded).Sortable(true).Titled("Jobs Added");
+                                            columns.Add(model => model.NumJobsUpdated).Sortable(true).Titled("Jobs Updated");
+                                            columns.Add(model => model.NumJobsDropped).Sortable(true).Titled("Job Dropped");
+                                            columns.Add(model => model.NumJobsErrored).Sortable(true).Titled("Jobs In Error");
+
+                                        })
+                                        .AppendCss("table table-primary table-striped")
+                                        .Empty("No data found")
+                                        .Pageable(pager =>
+                                        {
+                                            pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
+                                            pager.ShowPageSizes = true;
+                                            pager.RowsPerPage = 10;
+                                            pager.CssClasses = "admin-pager";
+                                        })
+                                        .Filterable()
+                                        .AppendCss("list-grid")
+            )
+        </div>
+    </div>
+    @section Scripts{
+        <script type="text/javascript">
+            $(".admin-nav-job-scrape-stats").addClass("active");
+            window.onload = function () {
+                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+            }
+        </script>
+        <style>
+            .list-grid {
+                font-size: 10px;
+            }
+        </style>}
+</div>
