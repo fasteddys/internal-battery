@@ -469,8 +469,11 @@ namespace UpDiddyApi.Workflow
                                 // indicate that the job was updated successfully and is now active
                                 jobPage.JobPageStatusId = 2;
 
-                                // we have the job posting guid but not the job posting id. retrieve that so we can associate the job posting with the job page
-                                jobPage.JobPostingId = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid).JobPostingId;
+                                if (!jobPage.JobPostingId.HasValue)
+                                {
+                                    // we have the job posting guid but not the job posting id. retrieve that so we can associate the job posting with the job page
+                                    jobPage.JobPostingId = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid)?.JobPostingId;
+                                }
 
                                 // add or update the job page and save the changes
                                 if (jobPage.JobPageId > 0)
@@ -551,7 +554,7 @@ namespace UpDiddyApi.Workflow
                         {
                             _syslog.Log(LogLevel.Error, $"***** METHOD_NAME encountered an exception: {e.Message}");
                             // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
-                            foreach(EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
+                            foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
                             {
                                 if (entityEntry != null && (entityEntry.State == EntityState.Added || entityEntry.State == EntityState.Deleted || entityEntry.State == EntityState.Modified))
                                 {
