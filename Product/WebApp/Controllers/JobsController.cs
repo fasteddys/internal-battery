@@ -89,6 +89,24 @@ namespace UpDiddy.Controllers
                 {
                     case (401):
                         return Unauthorized();
+                    case (404):
+                        job = await _api.GetExpiredJobAsync(JobGuid);
+                        if (job != null)
+                        {
+                            string location = job?.City + ", " + job?.Province + ", " + job?.PostalCode;
+                            JobSearchResultDto jobSearchResultDto = await _api.GetJobsByLocation(job.Title, location);
+
+                            if (jobSearchResultDto == null)
+                                return NotFound();
+
+                            JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
+                            {
+                                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, 0)
+                            };
+
+                            return View("Index", jobSearchViewModel);
+                        }
+                        break;
                     case (500):
                         return StatusCode(500);
                     default:
@@ -99,6 +117,7 @@ namespace UpDiddy.Controllers
             if (job == null)
                 return NotFound();
 
+      
             JobDetailsViewModel jdvm = new JobDetailsViewModel
             {
                 Name = job.Title,

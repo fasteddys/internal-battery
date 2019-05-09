@@ -106,7 +106,16 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefault();
         }
 
-
+        /// <summary>
+        /// Get an expired job posting by guid
+        /// </summary>       
+        /// <returns></returns>        
+        public static JobPosting GetExpiredJobPostingByGuid(UpDiddyDbContext db, Guid guid)
+        {
+            return db.JobPosting
+                .Where(s => s.IsDeleted == 1 && s.JobPostingGuid == guid)
+                .FirstOrDefault();
+        }
 
 
         /// <summary>

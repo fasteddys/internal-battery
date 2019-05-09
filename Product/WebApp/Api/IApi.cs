@@ -116,6 +116,7 @@ namespace UpDiddy.Api
         #region JobBoard
 
         Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid);
+        Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid);
         Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
         Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location);
 
