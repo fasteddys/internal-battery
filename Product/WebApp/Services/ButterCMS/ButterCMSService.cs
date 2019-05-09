@@ -111,7 +111,7 @@ namespace UpDiddy.Services.ButterCMS
                 _sysEmail.SendEmailAsync(_configuration["ButterCMS:CareerCirclePublicSiteNavigation:FailedFetchNotifyEmail"],
                     "ALERT! Navigation failed to load.",
                     HtmlMessage.ToString(),
-                    Constants.Appsettings.SendGrid_Transactional);
+                    Constants.SendGridAccount.Transactional);
                 _cacheService.SetCachedValue<string>(CacheKeyForNavigationLoadFailure, "true");
             }
             
