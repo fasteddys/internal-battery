@@ -14,11 +14,9 @@ namespace UpDiddyLib.Helpers
     public class SysEmail : ISysEmail
     {
         private IConfiguration _configuration;
-        //private string _apiKey = string.Empty;
         public SysEmail(IConfiguration Configuration)
         {
             _configuration = Configuration;
-            //_apiKey = Configuration["SysEmail:ApiKey"];
         }
 
         public async Task<bool> SendEmailAsync(string email, string subject, string htmlContent, Constants.SendGridAccount SendGridAccount)
