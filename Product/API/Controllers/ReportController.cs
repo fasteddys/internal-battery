@@ -158,20 +158,21 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        [Route("/api/[controller]/partner-contact-actions")]
-        public async Task<IActionResult> PCAReportAsync(ODataQueryOptions<PartnerContactAction> options)
+        [Route("/api/[controller]/subscriber-actions")]
+        public async Task<IActionResult> SAReportAsync(ODataQueryOptions<SubscriberAction> options)
         {
-            var queryable = options.ApplyTo(_db.PartnerContactAction.AsQueryable());
+            var queryable = options.ApplyTo(_db.SubscriberAction.AsQueryable());
 
-            var query = from pca in queryable.Cast<PartnerContactAction>()
-                join pc in _db.PartnerContact on pca.PartnerContactId equals pc.PartnerContactId
-                join p in _db.Partner on pc.PartnerId equals p.PartnerId
-                join a in _db.Action on pca.ActionId equals a.ActionId
+            var query = from sa in queryable.Cast<SubscriberAction>()
+                join partRef in _db.SubscriberSignUpPartnerReferences on sa.EntityId equals partRef.SubscriberId
+                join p in _db.Partner on partRef.PartnerId equals p.PartnerId into pGroup
+                from partner in pGroup.DefaultIfEmpty()
+                join a in _db.Action on sa.ActionId equals a.ActionId
                 group new {
-                    PartnerName = p.Name,
-                    ActionId = pca.ActionId,
+                    PartnerName = partner == null ? "N/A" : partner.Name,
+                    ActionId = sa.ActionId,
                     ActionName = a.Name
-                } by p.PartnerId into report
+                } by (partner.PartnerId == null) ? -1 : partner.PartnerId into report
                 select new PartnerStatsDto
                 {
                     PartnerName = report.First().PartnerName,
@@ -181,7 +182,7 @@ namespace UpDiddyApi.Controllers
                     }).ToDictionary(x => x.ActionId.ToString(), x=> x.Count)
                 };
 
-            var actions = _db.Action.Select(x => new ActionKeyDto{ Name = x.Name, ActionId = x.ActionId }).ToList();
+            var actions = _db.Action.Select(x => new ActionKeyDto{ Name = x.Name, ActionId = x.ActionId }).Where(x => x.ActionId == 6 || x.ActionId == 7).ToList();
             return Ok(new { report = query, actionKey = actions });
         }
     }

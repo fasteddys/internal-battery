@@ -130,7 +130,7 @@
     }
 
     var getPartnerContactActions = async function(query) {
-        return _http.get(`/report/partner-contact-actions${buildQuery(query)}`);
+        return _http.get(`/report/subscriber-actions${buildQuery(query)}`);
     }
 
     var requestVerification = function (verifyUrl) {

@@ -5,7 +5,7 @@ import DatePicker from 'react-datepicker';
 
 const ReactTableFixedColumns = withFixedColumns(ReactTable);
 
-class PCATable extends React.Component {
+class PATable extends React.Component {
     columns = [];
     constructor(props) {
         super(props);
@@ -109,11 +109,11 @@ class PCATable extends React.Component {
                     showPagination={false}
                     className="-striped -highlight"
                     minRows={4}
-                    noDataText="No Partner Contact Actions"
+                    noDataText="No Records"
                 />
             </div>
         );
     }
 }
 
-export default PCATable;
+export default PATable;

@@ -122,7 +122,7 @@ namespace UpDiddy.Controllers
             ViewBag.recruiterActionSummary = await _api.GetRecruiterActionSummaryAsync();
             ViewBag.subscriberActionSummary = await _api.GetSubscriberActionSummaryAsync();
             ViewBag.offerActionSummary = await _api.GetOfferActionSummaryAsync();
-            ViewBag.partnerContactReport = await _api.GetPartnerContactActionStatsAsync();
+            ViewBag.partnerSubActionReport = await _api.GetPartnerSubscriberActionStatsAsync();
             return View("Dashboard");
         }
 

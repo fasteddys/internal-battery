@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import ReactDOMServer from 'react-dom/server';
 
 import ResumeUpload from './ResumeUpload';
-import PCATable from './reports/PCATable';
+import PATable from './reports/PATable';
 
 global.React = React;
 global.ReactDOM = ReactDOM;
@@ -13,7 +13,7 @@ global.ReactDOMServer = ReactDOMServer;
 global.ResumeUpload = ResumeUpload;
 
 // reports
-global.PCATable = PCATable;
+global.PATable = PATable;
 
 // work around for require (until gulp refactor)
 import buildQuery from 'odata-query';
