@@ -3,18 +3,29 @@
 @using UpDiddy.ViewModels;
 @model JobSearchViewModel;
 
-@{ bool showCompJobsHeader = this.ViewContext?.HttpContext?.Response?.StatusCode == 404;}
+@{ bool showComparableJobsHeader = this.ViewContext?.HttpContext?.Response?.StatusCode == 404;}
 
 <div class="job-container">
     @if (Model.JobsSearchResult.Count != 0)
     {
-        @if (showCompJobsHeader)
+        @if (showComparableJobsHeader)
         {
-            <h2>
-                The job you selected is unavailable.
+            <div>
+                <h2>
+                    Sorry, this job has expired or no longer exists!
+                    <br />
+                    You could:
+                </h2>
                 <br />
-                Listed below are comparable jobs for @Model?.Keywords&nbsp;@Model?.Location
-            </h2>
+                <ul>
+                    <li>Try using the form at the top to start a new search.</li>
+                    <li>Try widening your search filters.</li>
+                    <li><a asp-area="" asp-controller="Jobs" asp-action="Index">Try browsing all jobs.</a></li>
+                    <li>Try searching the recommended jobs below:</li>
+                </ul>
+                <br />
+                <h2>Jobs that might interest you in @Model?.Location</h2>
+            </div>
         }
     
         foreach (var jobSearchResult in Model.JobsSearchResult)
@@ -23,7 +34,9 @@
                 <div class="row">
                     <div class="col-12 col-md-3">
                         <div class="row">
-                            <span class="job-title">@jobSearchResult.Title</span>
+                        <span class="job-title">
+                            <a target="_blank" href="/jobs/@jobSearchResult.JobPostingGuid">@jobSearchResult.Title</a>
+                        </span>    
                         </div>
                         <div class="row">
                             <span class="job-location">@jobSearchResult.Province - @jobSearchResult.City</span>
