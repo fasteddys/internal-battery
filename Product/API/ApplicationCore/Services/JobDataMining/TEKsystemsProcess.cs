@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
+using static UpDiddyApi.ApplicationCore.Services.JobDataMining.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 {
@@ -239,33 +240,6 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             {
                 _syslog.Log(LogLevel.Error, $"***** TEKsystemProcess.ProcessJobPage encountered an exception: {e.Message}");
                 return null;
-            }
-        }
-
-        public class EqualityComparerByUri : IEqualityComparer<JobPage>
-        {
-            public bool Equals(JobPage x, JobPage y)
-            {
-                if (Object.ReferenceEquals(x, y))
-                    return true;
-                if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
-                    return false;
-                return x.Uri == y.Uri;
-            }
-
-            public int GetHashCode(JobPage jobPage)
-            {
-                if (Object.ReferenceEquals(jobPage, null))
-                    return 0;
-                return jobPage.Uri == null ? 0 : jobPage.Uri.GetHashCode();
-            }
-        }
-
-        public class CompareByUri : IComparer<JobPage>
-        {
-            public int Compare(JobPage x, JobPage y)
-            {
-                return string.Compare(x.Uri.ToString(), y.Uri.ToString());
             }
         }
     }

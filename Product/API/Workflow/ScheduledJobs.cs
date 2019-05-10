@@ -522,7 +522,7 @@ namespace UpDiddyApi.Workflow
                 }
                 catch (Exception e)
                 {
-                    _syslog.Log(LogLevel.Error, $"***** METHOD_NAME encountered an exception: {e.Message}");
+                    _syslog.Log(LogLevel.Error, $"***** ProcessJobPages encountered an exception: {e.Message}");
                     // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
                     foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
                     {
