@@ -1148,6 +1148,10 @@ namespace UpDiddy.Api
         {
             return await GetAsync<List<OfferActionSummaryDto>>($"report/offer-action-summary");
         }
+        public async Task<PCAReportDto> GetPartnerContactActionStatsAsync()
+        {
+            return await GetAsync<PCAReportDto>("report/partner-contact-actions");
+        }
 
         public async Task<IList<PartnerDto>> GetPartnersAsync()
         {

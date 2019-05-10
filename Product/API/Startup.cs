@@ -45,6 +45,7 @@ using UpDiddyApi.Authorization.APIGateway;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
+using Microsoft.AspNet.OData.Extensions;
 
 namespace UpDiddyApi
 {
@@ -156,6 +157,9 @@ namespace UpDiddyApi
 
             // Add SignalR
             services.AddSignalR();
+
+            // Add Odata
+            services.AddOData();
 
             // Add AutoMapper 
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
@@ -274,6 +278,10 @@ namespace UpDiddyApi
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Version}/{action=Get}/{id?}");
+                
+                // Odata
+                routes.Filter().OrderBy().Count();
+                routes.EnableDependencyInjection();
             });
 
             // Added for SignalR

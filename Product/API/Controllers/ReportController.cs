@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto.Reporting;
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Query;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Controllers
 {
@@ -152,6 +155,34 @@ namespace UpDiddyApi.Controllers
                             partnerName = report.First().PartnerName
                         };
             return Ok(new { report = query.ToList() });
+        }
+
+        [HttpGet]
+        [Route("/api/[controller]/partner-contact-actions")]
+        public async Task<IActionResult> PCAReportAsync(ODataQueryOptions<PartnerContactAction> options)
+        {
+            var queryable = options.ApplyTo(_db.PartnerContactAction.AsQueryable());
+
+            var query = from pca in queryable.Cast<PartnerContactAction>()
+                join pc in _db.PartnerContact on pca.PartnerContactId equals pc.PartnerContactId
+                join p in _db.Partner on pc.PartnerId equals p.PartnerId
+                join a in _db.Action on pca.ActionId equals a.ActionId
+                group new {
+                    PartnerName = p.Name,
+                    ActionId = pca.ActionId,
+                    ActionName = a.Name
+                } by p.PartnerId into report
+                select new PartnerStatsDto
+                {
+                    PartnerName = report.First().PartnerName,
+                    Stats = report.GroupBy(x => x.ActionId).Select(y => new {
+                        ActionId = y.First().ActionId,
+                        Count = y.Count()
+                    }).ToDictionary(x => x.ActionId.ToString(), x=> x.Count)
+                };
+
+            var actions = _db.Action.Select(x => new ActionKeyDto{ Name = x.Name, ActionId = x.ActionId }).ToList();
+            return Ok(new { report = query, actionKey = actions });
         }
     }
 }
