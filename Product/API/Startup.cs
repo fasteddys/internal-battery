@@ -130,7 +130,7 @@ namespace UpDiddyApi
 
             // Get the connection string from the Azure secret vault
             var SqlConnection = Configuration["CareerCircleSqlConnection"];
-            services.AddDbContext<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
+            services.AddDbContextPool<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
 
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
@@ -233,6 +233,7 @@ namespace UpDiddyApi
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
 
             services.AddScoped<ISubscriberService, SubscriberService>();
+            services.AddScoped<IReportingService, ReportingService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

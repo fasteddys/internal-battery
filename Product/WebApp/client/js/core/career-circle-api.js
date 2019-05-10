@@ -129,7 +129,7 @@
         return await _http.get('/partners');
     }
 
-    var getPartnerContactActions = async function(query) {
+    var getSubscriberActionsReport = async function(query) {
         return _http.get(`/report/subscriber-actions${buildQuery(query)}`);
     }
 
@@ -145,7 +145,7 @@
         signOut: signOut,
         getContacts: getContacts,
         getPartners: getPartners,
-        getPartnerContactActions: getPartnerContactActions,
+        getSubscriberActionsReport: getSubscriberActionsReport,
         requestVerification: requestVerification,
         getOffer: getOffer,
         claimOffer: claimOffer

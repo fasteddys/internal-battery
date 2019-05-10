@@ -60,7 +60,7 @@ class PATable extends React.Component {
 
     reloadData() {
         this.setState({loading: true}, () =>
-            CareerCircleAPI.getPartnerContactActions(this.getQuery())
+            CareerCircleAPI.getSubscriberActionsReport(this.getQuery())
                 .then((res) => {
                     this.setState({data: res.data.report});
                 })

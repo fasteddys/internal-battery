@@ -12,6 +12,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private readonly UpDiddyDbContext _dbContext;
         private ICountryRepository _countryRepository;
         private IStateRepository _stateRepository;
+        private IJobPostingRepository _jobPostingRepository;
+        private ICompanyRepository _companyRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -41,5 +43,28 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+        public IJobPostingRepository JobPosting
+        {
+            get
+            {
+                if (_jobPostingRepository == null)
+                {
+                    _jobPostingRepository = new JobPostingRepository(_dbContext);
+                }
+                return _jobPostingRepository;
+            }
+        }
+
+        public ICompanyRepository Company
+        {
+            get
+            {
+                if (_companyRepository == null)
+                {
+                    _companyRepository = new CompanyRepository(_dbContext);
+                }
+                return _companyRepository;
+            }
+        }
     }
 }
