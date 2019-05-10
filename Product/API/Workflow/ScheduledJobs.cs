@@ -471,14 +471,13 @@ namespace UpDiddyApi.Workflow
                     string errorMessage = null;
                     // convert JobPage into JobPostingDto
                     var jobPostingDto = jobDataMining.ProcessJobPage(jobPage);
-
+                    
                     if (jobPage.JobPostingId.HasValue)
                     {
-                        // IMPORTANT TODO: replace once factory method has been updated to return a bool, then assign the bit flag below 
-                        isJobPostingOperationSuccessful = true;
-
+                        // get the job posting guid
+                        jobPostingGuid = JobPostingFactory.GetJobPostingById(_db, jobPage.JobPostingId.Value).JobPostingGuid;
                         // attempt to update job posting
-                        JobPostingFactory.UpdateJobPosting(_db, new JobPosting() { JobPostingId = jobPage.JobPostingId.Value }, jobPostingDto);
+                        isJobPostingOperationSuccessful= JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage);
                     }
                     else
                     {
