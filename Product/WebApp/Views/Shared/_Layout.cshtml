@@ -38,10 +38,8 @@
     <environment names="Staging,Production">
         <link rel="stylesheet" type="text/css" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
-    <meta property="og:title" content="CareerCircle">
-    <meta property="og:description" content="Preparing the workforce of today for the opportunities of tomorrow.">
-    <meta property="og:image" content="/images/cc_logo.png">
-    <meta property="og:url" content="https://@Context.Request.Host@Context.Request.Path" />
+    @await Component.InvokeAsync("PublicSiteNavigation")
+    
 </head>
 <body>
     <noscript>
