@@ -11,7 +11,7 @@ using UpDiddyLib.Dto.Reporting;
 
 namespace UpDiddyApi.Controllers
 {
-    //[Authorize(Policy = "IsCareerCircleAdmin")]
+    [Authorize(Policy = "IsCareerCircleAdmin")]
     public class ReportController : Controller
     {
         private UpDiddyDbContext _db { get; set; }
@@ -167,7 +167,7 @@ namespace UpDiddyApi.Controllers
         /// <param name="endDate"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("/api/[controller]/applicationCount/{companyGuid?}/{startDate?}/{endDate?}")]
+        [Route("/api/[controller]/application-count/{companyGuid?}/{startDate?}/{endDate?}")]
         public async Task<IActionResult> ApplicationCountPerCompanyByDates(Guid? companyGuid=null, DateTime? startDate=null, DateTime? endDate=null)
         {
             ActionResult response;
