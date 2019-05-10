@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto.Reporting;
 
@@ -13,10 +15,13 @@ namespace UpDiddyApi.Controllers
     public class ReportController : Controller
     {
         private UpDiddyDbContext _db { get; set; }
-
-        public ReportController(UpDiddyDbContext db)
+        private readonly IReportingService _reportingService;
+        private readonly ILogger _syslog;
+        public ReportController(UpDiddyDbContext db, IReportingService reportingService, ILogger<ReportController> sysLog)
         {
             _db = db;
+            _reportingService = reportingService;
+            _syslog = sysLog;
         }
 
         [HttpGet]
@@ -152,6 +157,39 @@ namespace UpDiddyApi.Controllers
                             partnerName = report.First().PartnerName
                         };
             return Ok(new { report = query.ToList() });
+        }
+
+        /// <summary>
+        /// Get Job Application Count by Company, StartDate and EndDate
+        /// </summary>
+        /// <param name="companyGuid"></param>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/[controller]/application-count/{companyGuid?}/{startDate?}/{endDate?}")]
+        public async Task<IActionResult> ApplicationCountPerCompanyByDates(Guid? companyGuid=null, DateTime? startDate=null, DateTime? endDate=null)
+        {
+            ActionResult response;
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var jobApplicationCountDtoList = await _reportingService.GetApplicationCountPerCompanyByDates(companyGuid, startDate, endDate);
+                    response = Ok(jobApplicationCountDtoList);
+
+                }
+                else
+                    response= BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _syslog.LogError(ex, $"Error in ReportController.ApplicationCountPerCompanyByDates method for CompanyGuid={companyGuid},StartDate={startDate} and EndDate={endDate}");
+                response = StatusCode(500);
+            }
+
+            
+            return response;
         }
     }
 }
