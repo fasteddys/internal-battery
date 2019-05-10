@@ -19,12 +19,18 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class SendGridInterface : BusinessVendorBase, ISendGridInterface
     {
         #region Constructor
-        public SendGridInterface(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory)
+        public SendGridInterface(
+            UpDiddyDbContext context, 
+            IMapper mapper, 
+            Microsoft.Extensions.Configuration.IConfiguration configuration, 
+            ILogger sysLog, 
+            IHttpClientFactory httpClientFactory,
+            string SendGridSubaccountAppsettingKey)
         {
             _db = context;
             _mapper = mapper;
             _apiBaseUri = configuration["SysEmail:ApiUrl"];
-            _accessToken = configuration["SysEmail:ApiKey"];
+            _accessToken = configuration[SendGridSubaccountAppsettingKey];
             _syslog = sysLog;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;

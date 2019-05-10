@@ -835,7 +835,7 @@ namespace UpDiddyApi.Controllers
             var filter = new SqlParameter("@Filter", searchFilter.ToLower() == "any" ? string.Empty : searchFilter);
             var query = new SqlParameter("@Query", searchQuery == null ? string.Empty : searchQuery);
             var spParams = new object[] { filter, query };
-
+ 
             var result = _db.SubscriberSearch.FromSql("[dbo].[System_Search_Subscribers] @Filter, @Query", spParams)
                 .ProjectTo<SubscriberDto>(_mapper.ConfigurationProvider)
                 .ToList();
@@ -923,11 +923,12 @@ namespace UpDiddyApi.Controllers
             BackgroundJob.Enqueue(() =>
                 _sysEmail.SendTemplatedEmailAsync(
                     email,
-                    _configuration["SysEmail:TemplateIds:EmailVerification-LinkEmail"],
+                    _configuration["SysEmail:Transactional:TemplateIds:EmailVerification-LinkEmail"],
                     new
                     {
                         verificationLink = link
-                    }, 
+                    },
+                    Constants.SendGridAccount.Transactional,
                     null
                 ));
         }
