@@ -168,12 +168,12 @@ namespace UpDiddyApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("/api/[controller]/applicationCount/{companyGuid?}/{startDate?}/{endDate?}")]
-        public async Task<IActionResult> ApplicationCountPerCompanyByDates(Guid? companyGuid, DateTime? startDate, DateTime? endDate)
+        public async Task<IActionResult> ApplicationCountPerCompanyByDates(Guid? companyGuid=null, DateTime? startDate=null, DateTime? endDate=null)
         {
             ActionResult response;
             try
             {
-                if (!ModelState.IsValid)
+                if (ModelState.IsValid)
                 {
                     var jobApplicationCountDtoList = await _reportingService.GetApplicationCountPerCompanyByDates(companyGuid, startDate, endDate);
                     response = Ok(jobApplicationCountDtoList);
