@@ -1,5 +1,4 @@
-﻿// todo: maybe utilize DI SessionStorage
-var CareerCircleAPI = (function (apiUrl) {
+﻿var CareerCircleAPI = (function (apiUrl) {
     var _session_key = "ccapi";
     var _api_url = apiUrl.trim().replace(/\/$/, "");
 
@@ -26,7 +25,7 @@ var CareerCircleAPI = (function (apiUrl) {
             })
         }
     );
-
+    
     // checks token to see if it is expired, if expired then get another one
     var getToken = function () {
         var jwt = SessionStorage.getJSON(_session_key);
@@ -130,6 +129,10 @@ var CareerCircleAPI = (function (apiUrl) {
         return await _http.get('/partners');
     }
 
+    var getSubscriberActionsReport = async function(query) {
+        return _http.get(`/report/subscriber-actions${buildQuery(query)}`);
+    }
+
     var requestVerification = function (verifyUrl) {
         return _http.post('/subscriber/request-verification', JSON.stringify({ verifyUrl: verifyUrl }));
     }
@@ -142,6 +145,7 @@ var CareerCircleAPI = (function (apiUrl) {
         signOut: signOut,
         getContacts: getContacts,
         getPartners: getPartners,
+        getSubscriberActionsReport: getSubscriberActionsReport,
         requestVerification: requestVerification,
         getOffer: getOffer,
         claimOffer: claimOffer
