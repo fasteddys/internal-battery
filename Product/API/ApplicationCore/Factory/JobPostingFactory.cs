@@ -71,7 +71,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             
             syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
-            //todo move code below to factory method 
+ 
             JobPosting jobPosting = mapper.Map<JobPosting>(jobPostingDto);
             // todo find a better way to deal with the job posting having a collection of JobPostingSkill and the job posting DTO having a collection of SkillDto
             // ignore posting skills that were mapped via automapper, they will be associated with the posting below 

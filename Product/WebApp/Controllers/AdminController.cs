@@ -41,11 +41,23 @@ namespace UpDiddy.Controllers
         [Route("/admin/jobscrapestats")]
         public async Task<IActionResult> JobScrapeStats()
         {
-            HttpPutAttribute in web config 
-            var x = Request.Query["NumRecords"];
-
-            IList<JobSiteScrapeStatisticDto> Statistics = await _api.JobScrapeStatisticsSearchAsync(10);
-            return View(Statistics);
+            // get default number of records to view 
+            int JobSiteScrapeAdminScreenDefaultNumRecords = int.Parse(_configuration["CareerCircle:JobSiteScrapeAdminScreenDefaultNumRecords"]);
+            // check to see if it's overwritten by a query value 
+            var queryNumRecords = Request.Query["NumRecords"];            
+            if (queryNumRecords.ToString() != string.Empty)
+                try
+                {
+                    JobSiteScrapeAdminScreenDefaultNumRecords = int.Parse(queryNumRecords);
+                }
+                catch { }
+            IList<JobSiteScrapeStatisticDto> Statistics = await _api.JobScrapeStatisticsSearchAsync(JobSiteScrapeAdminScreenDefaultNumRecords);
+            JobSiteScrapeStatisticViewModel model = new JobSiteScrapeStatisticViewModel()
+            {
+                Statistics = Statistics,
+                NumRecords = JobSiteScrapeAdminScreenDefaultNumRecords
+            };
+            return View(model);
         }
         
         [HttpGet]

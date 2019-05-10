@@ -3,7 +3,7 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
-@model IEnumerable<JobSiteScrapeStatisticDto>
+@model JobSiteScrapeStatisticViewModel
 
 
 @Html.Partial("Admin/_AdminNavigation")
@@ -15,54 +15,62 @@
             </div>
         </div>
     </div>
-    <form>
-        <div class="row">
-        
-            <div class="form-group col-6">
-                <input type="text" class="form-control" placeholder="Enter Number of Rows to Display" />
-            </div>
-            <div class="form-group col-6">
-                <button type="submit" class="btn btn-primary brand-button font-small">Submit</button>
-            </div>
-        </div>
-    </form>
+
 
     <div class="row">
         <div class="col-sm">
             @(Html
-                                        .Grid(Model)
-                                        .Css("admin-grid")
-                                        .Build(columns =>
-                                        {
-                                            columns.Add(model => model.JobSite.Name).Sortable(true).Titled("Job Site");
-                                            columns.Add(model => model.ScrapeDate).Sortable(true).InitialSort(GridSortOrder.Desc).Titled("Start Date").RenderedAs(model => model.ScrapeDate.ToShortDateString());
+                                                .Grid(Model.Statistics)
+                                                .Css("admin-grid")
+                                                .Build(columns =>
+                                                {
+                                                    columns.Add(model => model.JobSite.Name).Sortable(true).Titled("Job Site");
+                                                    columns.Add(model => model.ScrapeDate).Sortable(true).InitialSort(GridSortOrder.Desc).Titled("Start Date").RenderedAs(model => model.ScrapeDate.ToShortDateString());
 
-                                            columns.Add(model => model.NumJobsProcessed).Sortable(true).Titled("Jobs Processed");
-                                            columns.Add(model => model.NumJobsAdded).Sortable(true).Titled("Jobs Added");
-                                            columns.Add(model => model.NumJobsUpdated).Sortable(true).Titled("Jobs Updated");
-                                            columns.Add(model => model.NumJobsDropped).Sortable(true).Titled("Job Dropped");
-                                            columns.Add(model => model.NumJobsErrored).Sortable(true).Titled("Jobs In Error");
+                                                    columns.Add(model => model.NumJobsProcessed).Sortable(true).Titled("Jobs Processed");
+                                                    columns.Add(model => model.NumJobsAdded).Sortable(true).Titled("Jobs Added");
+                                                    columns.Add(model => model.NumJobsUpdated).Sortable(true).Titled("Jobs Updated");
+                                                    columns.Add(model => model.NumJobsDropped).Sortable(true).Titled("Job Dropped");
+                                                    columns.Add(model => model.NumJobsErrored).Sortable(true).Titled("Jobs In Error");
 
-                                        })
-                                        .AppendCss("table table-primary table-striped")
-                                        .Empty("No data found")
-                                        .Pageable(pager =>
-                                        {
-                                            pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
-                                            pager.ShowPageSizes = true;
-                                            pager.RowsPerPage = 10;
-                                            pager.CssClasses = "admin-pager";
-                                        })
-                                        .Filterable()
-                                        .AppendCss("list-grid")
+                                                })
+                                                .AppendCss("table table-primary table-striped")
+                                                .Empty("No data found")
+                                                .Pageable(pager =>
+                                                {
+                                                    pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
+                                                    pager.ShowPageSizes = true;
+                                                    pager.RowsPerPage = 10;
+                                                    pager.CssClasses = "admin-pager";
+                                                })
+                                                .Filterable()
+                                                .AppendCss("list-grid")
             )
         </div>
     </div>
+    <form>
+        <div class="row">
+            <div class="form-inline">
+                <div class="form-group p-3 ml-2">
+                    <label>Records To Show:</label>
+                    <input class="ml-2 w-25 form-control" type="text" id="txtNumRecords" maxlength="4" size="4" value="@Model.NumRecords" />
+                    <button type="submit" onclick="return ShowRecords()" class="btn btn-primary brand-button font-small ml-2">Update</button>
+                </div>
+            </div>
+        </div>
+    </form>
     @section Scripts{
         <script type="text/javascript">
             $(".admin-nav-job-scrape-stats").addClass("active");
-            window.onload = function () {
-                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+ 
+            $(document).ready(function () {
+                var grid = new MvcGrid(document.querySelector('.mvc-grid'));           
+            });
+
+            function ShowRecords() {
+                var url = "/admin/jobscrapestats?numrecords=" + $("#txtNumRecords").val();
+                window.location = url;
+                return false;
             }
         </script>
         <style>
