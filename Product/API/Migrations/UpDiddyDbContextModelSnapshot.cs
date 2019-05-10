@@ -1564,6 +1564,45 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("JobSite");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.JobSiteScrapeStatistic", b =>
+                {
+                    b.Property<int>("JobSiteScrapeStatisticId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<int>("JobSiteId");
+
+                    b.Property<Guid>("JobSiteScrapeStatisticGuid");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("NumJobsAdded");
+
+                    b.Property<int>("NumJobsDropped");
+
+                    b.Property<int>("NumJobsErrored");
+
+                    b.Property<int>("NumJobsProcessed");
+
+                    b.Property<int>("NumJobsUpdated");
+
+                    b.Property<DateTime>("ScrapeDate");
+
+                    b.HasKey("JobSiteScrapeStatisticId");
+
+                    b.HasIndex("JobSiteId");
+
+                    b.ToTable("JobSiteScrapeStatistic");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.LeadStatus", b =>
                 {
                     b.Property<int>("LeadStatusId")
@@ -3427,6 +3466,14 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Skill", "Skill")
                         .WithMany()
                         .HasForeignKey("SkillId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobSiteScrapeStatistic", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.JobSite", "JobSite")
+                        .WithMany()
+                        .HasForeignKey("JobSiteId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

@@ -32,6 +32,8 @@ using UpDiddyApi.Helpers.Job;
 using System.Security.Claims;
 using UpDiddyApi.ApplicationCore.Services.GoogleJobs;
 using Google.Apis.CloudTalentSolution.v3.Data;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace UpDiddyApi.Controllers
 {
@@ -46,21 +48,48 @@ namespace UpDiddyApi.Controllers
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly int _postingTTL = 30;
         private readonly CloudTalent _cloudTalent = null;
+        private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly IServiceProvider _services;
 
         #region constructor 
-        public JobController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory)
+        public JobController(IServiceProvider services)
 
-        {    
-            _db = db;
-            _mapper = mapper;
-            _configuration = configuration;
-            _syslog = sysLog;
-            _httpClientFactory = httpClientFactory;
-            _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+        {
+            _services = services;
+
+            _db = _services.GetService<UpDiddyDbContext>();
+            _mapper = _services.GetService<IMapper>();
+            _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
+            _syslog = _services.GetService<ILogger<JobController>>();
+            _httpClientFactory = _services.GetService<IHttpClientFactory>();
+            _repositoryWrapper = _services.GetService<IRepositoryWrapper>(); ;
+
+            _postingTTL = int.Parse(_configuration["JobPosting:PostingTTLInDays"]);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);        
         }
+
         #endregion
 
+
+        #region job statistics 
+
+
+        /// <summary>
+        /// Get all job postings for a subscriber 
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Route("api/[controller]/scrape-statistics/{numRecords}")]
+        public IActionResult GetJobsForSubscriber(int numRecords)
+        {
+            var stats = _repositoryWrapper.JobSiteScrapeStatistic.GetJobScrapeStatisticsAsync(numRecords).Result;
+            return Ok(_mapper.Map<IList<JobSiteScrapeStatisticDto>>(stats) );
+        }
+
+
+        #endregion
 
         #region job posting favorites
 
@@ -183,6 +212,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetJobsForSubscriber(Guid subscriberGuid)
         {
            
+
             Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if ( subscriberGuid == null ||   subscriberGuid != subsriberGuidClaim)
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting can only be viewed by their owner" });
@@ -236,30 +266,20 @@ namespace UpDiddyApi.Controllers
         {
             try
             {
-                // Validate request 
+                // validate request 
                 Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 if (jobPostingDto.Recruiter.Subscriber == null || jobPostingDto.Recruiter.Subscriber.SubscriberGuid == null || jobPostingDto.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting owner is not specified or does not match user posting job" });
 
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
-                // Retreive the current state of the job posting 
-                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(_db, jobPostingDto.JobPostingGuid.Value);
-                if (jobPosting == null)
-                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = $"{jobPostingDto.JobPostingGuid} is not a valid jobposting guid" });
-
-                try
-                {
-                    JobPostingFactory.UpdateJobPosting(_db, jobPosting, jobPostingDto);
-                }
-                catch ( Exception ex)
-                {
-                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = $"{jobPostingDto.JobPostingGuid} could not be updated.  Error: {ex.Message}" });
-                }
-                
+                // update the job posting 
+                string ErrorMsg = string.Empty;
+                bool UpdateOk = JobPostingFactory.UpdateJobPosting(_db, jobPostingDto.JobPostingGuid.Value, jobPostingDto, ref ErrorMsg);
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
-                
-                return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPosting.JobPostingGuid}" });
-           
+                if ( UpdateOk)
+                    return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPostingDto.JobPostingGuid.Value}" });
+                else
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ErrorMsg });                          
             }
             catch (Exception ex)
             {

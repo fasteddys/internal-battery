@@ -14,6 +14,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IStateRepository _stateRepository;
         private IJobSiteRepository _jobSiteRepository;
         private IJobPageRepository _jobPageRepository;
+        private IJobSiteScrapeStatisticRepository _jobSiteScrapeStatisticRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -66,5 +67,19 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _jobPageRepository;
             }
         }
+ 
+        public IJobSiteScrapeStatisticRepository JobSiteScrapeStatistic
+        {
+            get
+            {
+                if (_jobSiteScrapeStatisticRepository == null)
+                {
+                    _jobSiteScrapeStatisticRepository = new JobSiteScrapeStatisticRepository(_dbContext);
+                }
+                return _jobSiteScrapeStatisticRepository;
+            }
+        }
+
+
     }
 }
