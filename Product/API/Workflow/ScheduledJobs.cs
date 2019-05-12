@@ -254,7 +254,6 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
-
         #region Woz Private Helper Functions
 
 
@@ -416,6 +415,7 @@ namespace UpDiddyApi.Workflow
         /// This is the entry point for all third party job data mining.
         /// </summary>
         /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
         public async Task<bool> JobDataMining()
         {
             _syslog.Log(LogLevel.Information, $"***** JobDataMining started at: {DateTime.UtcNow.ToLongDateString()}");
@@ -427,6 +427,21 @@ namespace UpDiddyApi.Workflow
 
                 foreach (var jobSite in jobSites)
                 {
+                    // initialize stat tracking for operation
+                    JobSiteScrapeStatistic jobDataMiningStats =
+                        new JobSiteScrapeStatistic()
+                        {
+                            CreateDate = DateTime.UtcNow,
+                            CreateGuid = Guid.Empty,
+                            IsDeleted = 0,
+                            JobSiteId = jobSite.JobSiteId,
+                            JobSiteScrapeStatisticGuid = Guid.NewGuid(),
+                            NumJobsAdded = 0,
+                            NumJobsDropped = 0,
+                            NumJobsErrored = 0,
+                            NumJobsProcessed = 0,
+                            NumJobsUpdated = 0
+                        };
 
                     // load the job data mining process for the job site
                     IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite, _syslog);
@@ -438,7 +453,12 @@ namespace UpDiddyApi.Workflow
                     List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages);
 
                     // convert job pages to job postings and perform the necessary CRUD operations
-                    await ProcessJobPages(jobDataMining, jobPagesToProcess);
+                    jobDataMiningStats = await ProcessJobPages(jobDataMining, jobPagesToProcess, jobDataMiningStats);
+
+                    // store aggregate data about operations performed by job site; set scrape date at the very end of the process
+                    jobDataMiningStats.ScrapeDate = DateTime.UtcNow;
+                    _repositoryWrapper.JobSiteScrapeStatistic.Create(jobDataMiningStats);
+                    await _repositoryWrapper.JobSiteScrapeStatistic.SaveAsync();
                 }
             }
             catch (Exception e)
@@ -458,7 +478,7 @@ namespace UpDiddyApi.Workflow
         /// <param name="jobDataMining"></param>
         /// <param name="jobPagesToProcess"></param>
         /// <returns></returns>
-        private async Task ProcessJobPages(IJobDataMining jobDataMining, List<JobPage> jobPagesToProcess)
+        private async Task<JobSiteScrapeStatistic> ProcessJobPages(IJobDataMining jobDataMining, List<JobPage> jobPagesToProcess, JobSiteScrapeStatistic jobDataMiningStats)
         {
             // JobPageStatus = 1 / 'Pending' - we want to process these (add new or update existing dbo.JobPosting)                     
             var pendingJobPages = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1).ToList();
@@ -471,13 +491,16 @@ namespace UpDiddyApi.Workflow
                     string errorMessage = null;
                     // convert JobPage into JobPostingDto
                     var jobPostingDto = jobDataMining.ProcessJobPage(jobPage);
-                    
+
                     if (jobPage.JobPostingId.HasValue)
                     {
                         // get the job posting guid
                         jobPostingGuid = JobPostingFactory.GetJobPostingById(_db, jobPage.JobPostingId.Value).JobPostingGuid;
                         // attempt to update job posting
-                        isJobPostingOperationSuccessful= JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage);
+                        isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage);
+                        // increment updated count in stats
+                        if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
+                            jobDataMiningStats.NumJobsUpdated += 1;
                     }
                     else
                     {
@@ -488,6 +511,10 @@ namespace UpDiddyApi.Workflow
 
                         // attempt to create job posting
                         isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration);
+
+                        // increment added count in stats
+                        if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
+                            jobDataMiningStats.NumJobsAdded += 1;
                     }
                     if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
                     {
@@ -506,6 +533,7 @@ namespace UpDiddyApi.Workflow
                         else
                             _repositoryWrapper.JobPage.Create(jobPage);
                         await _repositoryWrapper.JobPage.SaveAsync();
+
                     }
                     else if (isJobPostingOperationSuccessful.HasValue && !isJobPostingOperationSuccessful.Value)
                     {
@@ -517,6 +545,9 @@ namespace UpDiddyApi.Workflow
                         else
                             _repositoryWrapper.JobPage.Create(jobPage);
                         await _repositoryWrapper.JobPage.SaveAsync();
+
+                        // increment error count in stats
+                        jobDataMiningStats.NumJobsErrored += 1;
                     }
                 }
                 catch (Exception e)
@@ -530,6 +561,13 @@ namespace UpDiddyApi.Workflow
                             entityEntry.State = EntityState.Detached;
                         }
                     }
+                    // increment error count in stats
+                    jobDataMiningStats.NumJobsErrored += 1;
+                }
+                finally
+                {
+                    // increment processed counter regardless of the outcome of the operation
+                    jobDataMiningStats.NumJobsProcessed += 1;
                 }
             }
 
@@ -561,6 +599,9 @@ namespace UpDiddyApi.Workflow
                             else
                                 _repositoryWrapper.JobPage.Create(jobPage);
                             await _repositoryWrapper.JobPage.SaveAsync();
+
+                            // increment drop count in stats
+                            jobDataMiningStats.NumJobsDropped += 1;
                         }
                         else if (isJobDeleteOperationSuccessful.HasValue && !isJobDeleteOperationSuccessful.Value)
                         {
@@ -572,12 +613,15 @@ namespace UpDiddyApi.Workflow
                             else
                                 _repositoryWrapper.JobPage.Create(jobPage);
                             await _repositoryWrapper.JobPage.SaveAsync();
+
+                            // increment error count in stats
+                            jobDataMiningStats.NumJobsErrored += 1;
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    _syslog.Log(LogLevel.Error, $"***** METHOD_NAME encountered an exception: {e.Message}");
+                    _syslog.Log(LogLevel.Error, $"***** ProcessJobPages encountered an exception: {e.Message}");
                     // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
                     foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
                     {
@@ -587,7 +631,14 @@ namespace UpDiddyApi.Workflow
                         }
                     }
                 }
+                finally
+                {
+                    // increment processed counter regardless of the outcome of the operation
+                    jobDataMiningStats.NumJobsProcessed += 1;
+                }
             }
+
+            return jobDataMiningStats;
         }
 
         #endregion
@@ -820,8 +871,6 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
-
-
         #region Cloud Talent
 
         public bool CloudTalentAddJob(Guid jobPostingGuid)
@@ -849,9 +898,5 @@ namespace UpDiddyApi.Workflow
 
 
         #endregion
-
-
-
-
     }
 }
