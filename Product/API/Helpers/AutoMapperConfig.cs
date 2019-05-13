@@ -63,7 +63,8 @@ namespace UpDiddyApi.Helpers
             CreateMap<RecruiterCompany, RecruiterCompanyDto>().ReverseMap();
             CreateMap<JobPostingFavorite, JobPostingFavoriteDto>().ReverseMap();
             CreateMap<Recruiter, RecruiterDto>().ReverseMap();
-
+            CreateMap<JobSite, JobSiteDto>().ReverseMap();
+            CreateMap<JobSiteScrapeStatistic, JobSiteScrapeStatisticDto>().ReverseMap();
 
             CreateMap<JobPostingSkill, SkillDto>()
             .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
