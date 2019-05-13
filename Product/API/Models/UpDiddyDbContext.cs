@@ -356,6 +356,9 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<JobPostingFavorite>()
                    .HasKey(ss => new { ss.JobPostingId, ss.SubscriberId });
 
+            // Add global query filter for enrollments 
+            modelBuilder.Entity<Enrollment>().HasQueryFilter(p => p.IsDeleted == 0);
+
 
         }
     }
