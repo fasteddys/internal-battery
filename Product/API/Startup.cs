@@ -190,7 +190,7 @@ namespace UpDiddyApi
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
 
             // do not run the job data mining process unless we are in production (may change this later)
-            if (_currentEnvironment.IsProduction())            
+            if (_currentEnvironment.IsProduction() || _currentEnvironment.IsStaging())            
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Hourly(8));
             
             // Add Polly 
