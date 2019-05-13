@@ -129,7 +129,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
                         // get the related JobPostingId (if one exists)
                         string jobId = job.id;
-                        var existingJobPage = existingJobPages.Where(jp => jp.Uri.ToString() == jobDetailUri.ToString() && jp.UniqueIdentifier == jobId).FirstOrDefault();
+                        var existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == jobId).FirstOrDefault();
                         if (existingJobPage != null)
                         {
                             // check to see if the page content has changed since we last ran this process
@@ -183,7 +183,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              */
             var uniqueDiscoveredJobs = (from jp in discoveredJobPages
                                         group jp by jp.UniqueIdentifier into g
-                                        select g.OrderBy(a => a, new CompareByUri()).First()).ToList();
+                                        select g.OrderByDescending(a => a, new CompareByJobPageId()).First()).ToList();
 
             // identify existing active jobs that were not discovered as valid and mark them for deletion
             var existingActiveJobs = existingJobPages.Where(jp => jp.JobPageStatusId == 2);

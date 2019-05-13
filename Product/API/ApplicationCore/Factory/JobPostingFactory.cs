@@ -293,7 +293,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
 
 
-            if (job.ThirdPartyApply = false && job.Recruiter.Subscriber == null && job.Recruiter.SubscriberId == null)
+            if (job.ThirdPartyApply == false && job.Recruiter.Subscriber == null && job.Recruiter.SubscriberId == null)
             {
                 message = Constants.JobPosting.ValidationError_SubscriberRequiredMsg;
                 return false;
@@ -306,37 +306,37 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 return false;
             }
 
-            if (job.ThirdPartyApply = false && job.SecurityClearance != null && job.SecurityClearanceId == null)
+            if (job.ThirdPartyApply == false && job.SecurityClearance != null && job.SecurityClearanceId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidSecurityClearanceMsg;
                 return false;
             }
 
-            if (job.ThirdPartyApply = false && job.Industry != null && job.IndustryId == null)
+            if (job.ThirdPartyApply == false && job.Industry != null && job.IndustryId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidIndustryMsg;
                 return false;
             }
 
-            if (job.ThirdPartyApply = false && job.JobCategory != null && job.JobCategoryId == null)
+            if (job.ThirdPartyApply == false && job.JobCategory != null && job.JobCategoryId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidJobCategoryMsg;
                 return false;
             }
 
-            if (job.ThirdPartyApply = false && job.EmploymentType != null && job.EmploymentTypeId == null)
+            if (job.ThirdPartyApply == false && job.EmploymentType != null && job.EmploymentTypeId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidEmploymentTypeMsg;
                 return false;
             }
 
-            if (job.ThirdPartyApply = false && job.EducationLevel != null && job.EducationLevelId == null)
+            if (job.ThirdPartyApply == false && job.EducationLevel != null && job.EducationLevelId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidEducationLevelMsg;
                 return false;
             }
 
-            if (job.ThirdPartyApply = false && job.ExperienceLevel != null && job.ExperienceLevelId == null)
+            if (job.ThirdPartyApply == false && job.ExperienceLevel != null && job.ExperienceLevelId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidExperienceLevelMsg;
                 return false;
@@ -528,6 +528,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 jobPosting.TelecommutePercentage = jobPostingDto.TelecommutePercentage;
                 jobPosting.Compensation = jobPostingDto.Compensation;
                 jobPosting.ThirdPartyApplicationUrl = jobPostingDto.ThirdPartyApplicationUrl;
+                jobPosting.ThirdPartyApply = jobPostingDto.ThirdPartyApply;
                 jobPosting.Country = jobPostingDto.Country;
                 jobPosting.City = jobPostingDto.City;
                 jobPosting.Province = jobPostingDto.Province;

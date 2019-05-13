@@ -26,12 +26,12 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 return jobPage.Uri == null ? 0 : jobPage.Uri.GetHashCode();
             }
         }
-
-        public class CompareByUri : IComparer<JobPage>
+        
+        public class CompareByJobPageId : IComparer<JobPage>
         {
             public int Compare(JobPage x, JobPage y)
             {
-                return string.Compare(x.Uri.ToString(), y.Uri.ToString());
+                return x.JobPageId.CompareTo(y.JobPageId);
             }
         }
     }

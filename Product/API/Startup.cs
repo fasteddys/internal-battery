@@ -51,6 +51,7 @@ namespace UpDiddyApi
 {
     public class Startup
     {
+        private readonly IHostingEnvironment _currentEnvironment;
         public static string ScopeRead;
         public static string ScopeWrite;
         public IConfigurationRoot Configuration { get; set; }
@@ -61,6 +62,9 @@ namespace UpDiddyApi
 
         public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
+            // set the current environment so that we can access it in ConfigureServices
+            _currentEnvironment = env;
+
             // Note: please refer to UpDiddyDbContext if this logic needs to be updated (configuration)
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -185,11 +189,10 @@ namespace UpDiddyApi
             // remove TinyIds from old CampaignPartnerContact records
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
 
-            // initiate job scrape once every 2 hours
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Hourly(2));
-            // debug only! keep this commented out unless you are trying to test locally
-            // BackgroundJob.Enqueue<ScheduledJobs>(j => j.JobDataMining());
-
+            // do not run the job data mining process unless we are in production (may change this later)
+            if (_currentEnvironment.IsProduction())            
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Hourly(8));
+            
             // Add Polly 
             // Create Policies  
             int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
