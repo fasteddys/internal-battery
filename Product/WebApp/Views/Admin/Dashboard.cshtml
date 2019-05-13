@@ -1,7 +1,18 @@
-﻿@Html.Partial("Admin/_AdminNavigation")
+﻿@using React.AspNet;
+@Html.Partial("Admin/_AdminNavigation")
 <section class="section cards-section mt-3 pt-3">
     <div class="container">
         <div class="row">
+            <div class="col-8">
+                <div class="card shadow my-3">
+                    <div class="card-header">
+                        Recruiter Actions By Company Report
+                    </div>
+                    <div class="card-body p-0">
+                        @Html.React("PATable", new { data = ViewBag.partnerSubActionReport })
+                    </div>
+                </div>
+            </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <!-- New Subscriber Report Card-->
                 <div class="card shadow mb-3">
@@ -63,9 +74,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-        @* subscriber action tracking *@
-        <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <div class="card shadow mb-3">
                     <div class="card-header">Recruiter Action Summary</div>
@@ -118,9 +126,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-        @* offer action tracking *@
-        <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <div class="card shadow mb-3">
                     <div class="card-header">Offer Action Summary</div>

@@ -574,6 +574,8 @@ namespace UpDiddy.Api
         public async Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location)
         {
             //job search criteria for api "/country/state/city/industry/job-category/skill/page-num" and query strings appended
+
+
             var searchFilter = $"all/all/all/all/all/all/0?page-size=100&location={location}&keywords={keywords}&page-num=0";
             string cacheKey = $"job-{keywords}/{location}";
             JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
@@ -589,7 +591,6 @@ namespace UpDiddy.Api
 
             return rval;
         }
-
 
         #endregion
 
@@ -1028,7 +1029,6 @@ namespace UpDiddy.Api
             return await GetAsync<IList<OfferDto>>("offers");
         }
 
-
         #endregion
 
         #region Private Cache Functions
@@ -1158,6 +1158,10 @@ namespace UpDiddy.Api
         {
             return await GetAsync<List<OfferActionSummaryDto>>($"report/offer-action-summary");
         }
+        public async Task<ActionReportDto> GetPartnerSubscriberActionStatsAsync()
+        {
+            return await GetAsync<ActionReportDto>("report/subscriber-actions");
+        }
 
         public async Task<IList<PartnerDto>> GetPartnersAsync()
         {
@@ -1249,6 +1253,11 @@ namespace UpDiddy.Api
         public async Task<JobSearchResultDto> _GetJobsByLocation(string searchFilter)
         {
             return await GetAsync<JobSearchResultDto>("job/browse-jobs-location/" + searchFilter);
+        }
+
+        public async Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid)
+        {
+            return await GetAsync<JobPostingDto>("job/expired/" + JobPostingGuid);
         }
 
         #endregion

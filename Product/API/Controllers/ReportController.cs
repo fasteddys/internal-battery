@@ -4,8 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto.Reporting;
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Query;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Controllers
 {
@@ -13,10 +18,13 @@ namespace UpDiddyApi.Controllers
     public class ReportController : Controller
     {
         private UpDiddyDbContext _db { get; set; }
-
-        public ReportController(UpDiddyDbContext db)
+        private readonly IReportingService _reportingService;
+        private readonly ILogger _syslog;
+        public ReportController(UpDiddyDbContext db, IReportingService reportingService, ILogger<ReportController> sysLog)
         {
             _db = db;
+            _reportingService = reportingService;
+            _syslog = sysLog;
         }
 
         [HttpGet]
@@ -152,6 +160,67 @@ namespace UpDiddyApi.Controllers
                             partnerName = report.First().PartnerName
                         };
             return Ok(new { report = query.ToList() });
+        }
+
+        [HttpGet]
+        [Route("/api/[controller]/subscriber-actions")]
+        public async Task<IActionResult> SAReportAsync(ODataQueryOptions<SubscriberAction> options)
+        {
+            var queryable = options.ApplyTo(_db.SubscriberAction.AsQueryable());
+
+            var query = from sa in queryable.Cast<SubscriberAction>()
+                join partRef in _db.SubscriberSignUpPartnerReferences on sa.EntityId equals partRef.SubscriberId
+                join p in _db.Partner on partRef.PartnerId equals p.PartnerId into pGroup
+                from partner in pGroup.DefaultIfEmpty()
+                join a in _db.Action on sa.ActionId equals a.ActionId
+                group new {
+                    PartnerName = partner == null ? "N/A" : partner.Name,
+                    ActionId = sa.ActionId,
+                    ActionName = a.Name
+                } by (partner.PartnerId == null) ? -1 : partner.PartnerId into report
+                select new PartnerStatsDto
+                {
+                    PartnerName = report.First().PartnerName,
+                    Stats = report.GroupBy(x => x.ActionId).Select(y => new {
+                        ActionId = y.First().ActionId,
+                        Count = y.Count()
+                    }).ToDictionary(x => x.ActionId.ToString(), x=> x.Count)
+                };
+
+            var actions = _db.Action.Select(x => new ActionKeyDto{ Name = x.Name, ActionId = x.ActionId }).Where(x => x.ActionId == 6 || x.ActionId == 7).ToList();
+            return Ok(new { report = query, actionKey = actions });
+        }
+
+        /// <summary>
+        /// Get Job Application Count by Company, StartDate and EndDate
+        /// </summary>
+        /// <param name="companyGuid"></param>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/[controller]/application-count/{companyGuid?}/{startDate?}/{endDate?}")]
+        public async Task<IActionResult> ApplicationCountPerCompanyByDates(Guid? companyGuid=null, DateTime? startDate=null, DateTime? endDate=null)
+        {
+            ActionResult response;
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var jobApplicationCountDtoList = await _reportingService.GetApplicationCountPerCompanyByDates(companyGuid, startDate, endDate);
+                    response = Ok(jobApplicationCountDtoList);
+
+                }
+                else
+                    response= BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _syslog.LogError(ex, $"Error in ReportController.ApplicationCountPerCompanyByDates method for CompanyGuid={companyGuid},StartDate={startDate} and EndDate={endDate}");
+                response = StatusCode(500);
+            }
+
+            return response;
         }
     }
 }

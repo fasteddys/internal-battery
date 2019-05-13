@@ -45,6 +45,7 @@ using UpDiddyApi.Authorization.APIGateway;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
+using Microsoft.AspNet.OData.Extensions;
 
 namespace UpDiddyApi
 {
@@ -92,7 +93,7 @@ namespace UpDiddyApi
                 .ReadFrom.Configuration(Configuration)
                 .WriteTo.ApplicationInsightsTraces(Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"])
                 .WriteTo
-                    .SendGrid(LogEventLevel.Fatal, Configuration["SysEmail:ApiKey"], Configuration["SysEmail:SystemErrorEmailAddress"])
+                    .SendGrid(LogEventLevel.Fatal, Configuration["SysEmail:Transactional:ApiKey"], Configuration["SysEmail:SystemErrorEmailAddress"])
                 .Enrich.FromLogContext()
                 .CreateLogger();
         }
@@ -129,7 +130,7 @@ namespace UpDiddyApi
 
             // Get the connection string from the Azure secret vault
             var SqlConnection = Configuration["CareerCircleSqlConnection"];
-            services.AddDbContext<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
+            services.AddDbContextPool<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
 
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
@@ -157,6 +158,9 @@ namespace UpDiddyApi
             // Add SignalR
             services.AddSignalR();
 
+            // Add Odata
+            services.AddOData();
+
             // Add AutoMapper 
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
 
@@ -181,11 +185,10 @@ namespace UpDiddyApi
             // remove TinyIds from old CampaignPartnerContact records
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
 
-            // initiate job scrape once per day at 07:00Z
-            // RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.InvokeJobDataMiningProcess(), Cron.Daily(7));
-
-            // debug only - remove this once development is complete
-           BackgroundJob.Enqueue<ScheduledJobs>(j => j.JobDataMining());
+            // initiate job scrape once every 2 hours
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Hourly(2));
+            // debug only! keep this commented out unless you are trying to test locally
+            // BackgroundJob.Enqueue<ScheduledJobs>(j => j.JobDataMining());
 
             // Add Polly 
             // Create Policies  
@@ -235,6 +238,7 @@ namespace UpDiddyApi
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
 
             services.AddScoped<ISubscriberService, SubscriberService>();
+            services.AddScoped<IReportingService, ReportingService>();
             #endregion
 
             // Configure SnapshotCollector from application settings
@@ -280,6 +284,10 @@ namespace UpDiddyApi
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Version}/{action=Get}/{id?}");
+                
+                // Odata
+                routes.Filter().OrderBy().Count();
+                routes.EnableDependencyInjection();
             });
 
             // Added for SignalR

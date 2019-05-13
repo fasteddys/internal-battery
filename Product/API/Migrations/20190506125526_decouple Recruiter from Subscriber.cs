@@ -8,6 +8,9 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("delete from JobPosting");
+            migrationBuilder.Sql("delete from RecruiterCompany");
+
             migrationBuilder.DropForeignKey(
                 name: "FK_JobPosting_Subscriber_SubscriberId",
                 table: "JobPosting");

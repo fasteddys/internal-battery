@@ -418,6 +418,22 @@ namespace UpDiddyApi.Controllers
             return Ok(rVal);
         }
 
+        /// <summary>
+        /// Get a specific job posting for an expired job to use its context for comparables.
+        /// </summary>
+        /// <param name="jobPostingGuid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("api/[controller]/expired/{jobPostingGuid}")]
+        public IActionResult GetExpiredJob(Guid jobPostingGuid)
+        {
+            JobPosting jobPosting = JobPostingFactory.GetExpiredJobPostingByGuid(_db, jobPostingGuid);
+            if (jobPosting == null)
+                return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "JobPosting not found" });
+
+            return Ok(_mapper.Map<JobPostingDto>(jobPosting));
+        }
+
         #endregion
     }
 }

@@ -68,7 +68,7 @@ namespace UpDiddyApi.Workflow
             };
 
             // send templated welcome email that links to custom landing page
-            _sysEmail.SendTemplatedEmailAsync(email, _configuration["SysEmail:TemplateIds:LeadIntake-WelcomeEmail"].ToString(), templateData, null);
+            _sysEmail.SendTemplatedEmailAsync(email, _configuration["SysEmail:Leads:TemplateIds:LeadIntake-WelcomeEmail"].ToString(), templateData, Constants.SendGridAccount.Leads, null);
 
             return true;
         }
@@ -464,11 +464,11 @@ namespace UpDiddyApi.Workflow
             catch (Exception e)
             {
                 // todo: implement better logging
-                _syslog.Log(LogLevel.Error, $"***** JobDataMining encountered an exception: {e.Message}");
+                _syslog.Log(LogLevel.Error, $"***** ScheduledJobs.JobDataMining encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 result = false;
             }
 
-            _syslog.Log(LogLevel.Information, $"***** JobDataMining completed at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.JobDataMining completed at: {DateTime.UtcNow.ToLongDateString()}");
             return result;
         }
 
@@ -552,7 +552,7 @@ namespace UpDiddyApi.Workflow
                 }
                 catch (Exception e)
                 {
-                    _syslog.Log(LogLevel.Error, $"***** ProcessJobPages add/update encountered an exception; name: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                    _syslog.Log(LogLevel.Error, $"***** ScheduledJobs.ProcessJobPages add/update encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                     // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
                     foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
                     {
@@ -621,7 +621,7 @@ namespace UpDiddyApi.Workflow
                 }
                 catch (Exception e)
                 {
-                    _syslog.Log(LogLevel.Error, $"***** ProcessJobPages delete/error encountered an exception; name: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                    _syslog.Log(LogLevel.Error, $"***** ScheduledJobs.ProcessJobPages delete/error encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                     // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
                     foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
                     {

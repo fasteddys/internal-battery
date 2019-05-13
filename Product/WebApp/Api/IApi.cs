@@ -113,11 +113,13 @@ namespace UpDiddy.Api
         Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync();
         Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync();
         Task<List<OfferActionSummaryDto>> GetOfferActionSummaryAsync();
+        Task<ActionReportDto> GetPartnerSubscriberActionStatsAsync();
         #endregion
 
         #region JobBoard
 
         Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid);
+        Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid);
         Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
         Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location);
 

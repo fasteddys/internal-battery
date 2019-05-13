@@ -50,11 +50,14 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              */
             int timesToRequestResultsPage = Convert.ToInt32(Math.Ceiling((double)jobCount / 10));
 
-            /* run the paged requests in parallel - tested with a variety of MAXDOP settings and 50 was the sweet spot locally; 
-             * may need to adjust this once it is running in azure - leaving it up to the executing process to determine how many 
-             * threads to use for now. use maxdop = 1 for debugging.
+
+            /* run the paged requests in parallel - tested with a variety of MAXDOP settings and 50 was the sweet spot locally 
+             * when developing in the office. from home, i had to limit it to 15; anything higher and i started getting SSL errors.
+             * i thought this had to do with my home network, but now i am getting SSL errors in the office too beyond 15 threads.
+             * i think we are being throttled by the job site? limiting this to 15; if we see SSL errors in staging/prod we may need
+             * to revisit this. use maxdop = 1 for debugging.
              */
-            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 20 };
+            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 15 };
             int counter = 0;
             Parallel.For(counter, timesToRequestResultsPage, maxdop, i =>
             {
@@ -150,10 +153,13 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     catch (Exception e)
                     {
                         jobPageStatusId = 3; // record that an error occurred while processing this job page
-                        _syslog.Log(LogLevel.Error, $"***** TEKsystemProcess.DiscoverJobPages encountered an exception: {e.Message}");
+                        _syslog.Log(LogLevel.Error, $"***** TEKsystemProcess.DiscoverJobPages encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                     }
                 }
             });
+
+            if (discoveredJobPages.Count() != jobCount)
+                _syslog.Log(LogLevel.Warning, $"***** TEKsystemsProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but TEKsystem's API indicates there should be {jobCount} jobs.");
 
             /* deal with duplicate job postings (or job postings that are similar enough to be considered duplicates). examples:
              * - two job listings that have the same url and id but in the raw data the "applications" property is different (id: J3Q20V76L8YK2XBR6S8)
@@ -238,7 +244,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Error, $"***** TEKsystemProcess.ProcessJobPage encountered an exception: {e.Message}");
+                _syslog.Log(LogLevel.Error, $"***** TEKsystemProcess.ProcessJobPage encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 return null;
             }
         }
