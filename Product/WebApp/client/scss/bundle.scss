@@ -23,6 +23,9 @@
 @import 'campaign/_community';
 @import 'campaign/_mom';
 
+// react components
+@import 'react/resume-upload';
+
 // page styles
 @import '_about';
 @import '_admin';
@@ -38,6 +41,7 @@
 @import '_faq';
 @import '_footer'; 
 @import '_home';
+@import '_job-details';
 @import '_login';
 @import '_navigation';
 @import '_privacy';
@@ -52,4 +56,5 @@
 @import 'admin/_add-partners';
 @import '_offers';
 @import '_create-job-posting';
+@import '_job-search';
  

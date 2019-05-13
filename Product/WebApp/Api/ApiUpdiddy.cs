@@ -356,8 +356,20 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public async Task<JobSearchResultDto> GetAllJobsAsync()
+        {
+            string cacheKey = "GetAllJobsAsync";
+            JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
 
-
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetAllJobsAsync();
+                SetCachedValue<JobSearchResultDto>(cacheKey, rval);
+            }
+            return rval;
+        }
 
         public async Task<IList<JobCategoryDto>> GetJobCategoryAsync()
         {
@@ -544,6 +556,41 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public async Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid)
+        {
+            string cacheKey = $"job-{JobPostingGuid}";
+            JobPostingDto rval = GetCachedValue<JobPostingDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetJobAsync(JobPostingGuid);
+                SetCachedValue<JobPostingDto>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public async Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location)
+        {
+            //job search criteria for api "/country/state/city/industry/job-category/skill/page-num" and query strings appended
+
+
+            var searchFilter = $"all/all/all/all/all/all/0?page-size=100&location={location}&keywords={keywords}&page-num=0";
+            string cacheKey = $"job-{keywords}/{location}";
+            JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                
+                rval = await _GetJobsByLocation(searchFilter);
+                SetCachedValue<JobSearchResultDto>(cacheKey, rval);
+            }
+
+            return rval;
+        }
 
         #endregion
 
@@ -635,6 +682,13 @@ namespace UpDiddy.Api
             return await PostAsync<BasicResponseDto>(string.Format("job"), jobPosting);
         }
 
+        public async Task<BasicResponseDto> UpdateJobPostingAsync(JobPostingDto jobPosting)
+        {
+            return await PutAsync<BasicResponseDto>(string.Format("job"), jobPosting);
+        }
+
+
+
         public async Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid) 
         {
                 return await GetAsync<List<JobPostingDto>>(string.Format("job/subscriber/{0}", subscriberGuid.ToString()));
@@ -658,6 +712,21 @@ namespace UpDiddy.Api
                             
           
         }
+
+        public async Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid)
+        {                        
+                return await PostAsync<JobPostingDto>(string.Format("job/{0}", jobPostingGuid.ToString()));        
+        }
+
+        public async Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid)
+        {             
+           return await DeleteAsync<BasicResponseDto>(string.Format("job/{0}", jobPostingGuid.ToString()));  
+        }
+
+
+
+
+
 
         public async Task<IList<SubscriberEducationHistoryDto>> GetEducationHistoryAsync(Guid subscriberGuid)
         {
@@ -713,6 +782,11 @@ namespace UpDiddy.Api
         #endregion
 
         #region Campaign
+
+        public async Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId)
+        {
+            return await GetAsync<CampaignPartnerContactDto>($"campaigns/partner-contact/{tinyId}");
+        }
         public async Task<IList<CampaignDetailDto>> CampaignDetailsSearchAsync(Guid CampaginGuid)
         {
             return await GetAsync<IList<CampaignDetailDto>>("marketing/campaign-detail/" + CampaginGuid);
@@ -859,6 +933,11 @@ namespace UpDiddy.Api
         }
 
 
+        public async Task<JobSearchResultDto> _GetAllJobsAsync()
+        {
+            return await GetAsync<JobSearchResultDto>("job/browse-jobs-location/all/all/all/all/all/all/0?page-size=1000000&exclude-facets=1&exclude-custom-properties=1");
+        }
+
         public async Task<IList<JobCategoryDto>> _GetJobCategoryAsync()
         {
 
@@ -939,7 +1018,6 @@ namespace UpDiddy.Api
         {
             return await GetAsync<IList<OfferDto>>("offers");
         }
-
 
         #endregion
 
@@ -1070,6 +1148,10 @@ namespace UpDiddy.Api
         {
             return await GetAsync<List<OfferActionSummaryDto>>($"report/offer-action-summary");
         }
+        public async Task<ActionReportDto> GetPartnerSubscriberActionStatsAsync()
+        {
+            return await GetAsync<ActionReportDto>("report/subscriber-actions");
+        }
 
         public async Task<IList<PartnerDto>> GetPartnersAsync()
         {
@@ -1144,6 +1226,30 @@ namespace UpDiddy.Api
             // Return the newly created partner
             return deletedPartnerResponse;
         }
+        #endregion
+
+        #region JobBoard
+
+        public async Task<JobPostingDto> _GetJobAsync(Guid JobPostingGuid)
+        {
+            return await GetAsync<JobPostingDto>("job/" + JobPostingGuid);
+        }
+
+        public async Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication)
+        {
+            return await PostAsync<BasicResponseDto>("jobApplication", JobApplication);
+        }
+
+        public async Task<JobSearchResultDto> _GetJobsByLocation(string searchFilter)
+        {
+            return await GetAsync<JobSearchResultDto>("job/browse-jobs-location/" + searchFilter);
+        }
+
+        public async Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid)
+        {
+            return await GetAsync<JobPostingDto>("job/expired/" + JobPostingGuid);
+        }
+
         #endregion
     }
 }

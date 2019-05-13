@@ -55,7 +55,7 @@ namespace UpDiddyApi.Helpers.Job
                     rVal = rVal = MapQueryStringFacet(LocationUrl, "education-level", facetValue);
                     break;
                 case "admin_1":
-                    rVal =  UrlComponentReplace(LocationUrl, 2, facetValue);
+                    rVal =  UrlComponentReplace(LocationUrl, 3, facetValue);
                     break;
                 case "company_display_name":
                     rVal = MapQueryStringFacet(LocationUrl, "company-name", facetValue);

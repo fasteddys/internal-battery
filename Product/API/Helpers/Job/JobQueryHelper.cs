@@ -65,11 +65,11 @@ namespace UpDiddyApi.Helpers.Job
         {
             // first check to see if the param was specified in the query string.  Highest priority 
             if (queryInfo.Keys.Contains(ParamName) && string.IsNullOrEmpty(queryInfo[ParamName]) == false && queryInfo[ParamName] != "all")
-                return WebUtility.UrlDecode(queryInfo[ParamName]);
+                return WebUtility.UrlDecode(queryInfo[ParamName]).Trim();
 
             // check to see if the param was specified through an url component 
             if (urlComponentValue != null && string.IsNullOrEmpty(urlComponentValue) == false && urlComponentValue != "all")
-                return WebUtility.UrlDecode(urlComponentValue);
+                return WebUtility.UrlDecode(urlComponentValue).Trim();
             
             // empty string -> not specified 
              return string.Empty;

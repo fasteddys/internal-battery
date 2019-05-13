@@ -5,10 +5,14 @@ using System.Text;
 namespace UpDiddyLib.Dto
 {
     public class JobSearchResultDto
-    {       
+    {
+        public string RequestId { get; set; }
+        public string ClientEventId { get; set; }
+        public int PageSize { get; set; }
         public int PageNum { get; set; }
         public int JobCount { get; set; }
         public int TotalHits { get; set; }
+        public int NumPages { get; set; }
 
         /// <summary>
         /// 

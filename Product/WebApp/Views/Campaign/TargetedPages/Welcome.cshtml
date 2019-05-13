@@ -6,7 +6,7 @@
 @model CampaignViewModel;
 
 <div id="CampaignContainer" class="mom-project-signup">
-    <div class="cc-campaign-sign-up-band row" style="background-image: url('/images/hero/barnett-offer.jpeg'); background-position: top">
+    <div class="cc-campaign-sign-up-band row" style="background-image: url('/images/hero/wozu-promo.jpeg'); background-position: top">
         <div class="col-12">
             <div class="container">
                 <div class="row">
@@ -17,11 +17,14 @@
                                     <div class="col-12 no-padding">
                                         <div class="row">
                                             <div class="col-12 hero-header font-bold">
-                                                Welcome to CareerCircle!</span>
+                                                Move at the same pace as Tech</span>
                                             </div>
                                             <div class="col-12 campaign-bullet-list">
-                                                <div class="d-flex flex-column bd-highlight mb-3 mt-3">
-                                                    <div class="bd-highlight font-bold">Let us help you advance your career!</div>
+                                                <div class="d-flex flex-column bd-highlight mb-1 mt-3">
+                                                    <div class="bd-highlight font-bold">Sign up.</div>
+                                                </div>
+                                                <div class="d-flex flex-column bd-highlight mb-1 mt-1">
+                                                    <div class="bd-highlight font-bold">Take your IT career to the next level.</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -58,16 +61,38 @@
     </div>
     @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
     {
-        Header = "TBD",
+        Header = "NEXXT Opt-In Special Discount Offer",
         Elements = new List<string>()
         {
             @"<div class='row'>
                 <div class='col-lg-8 offset-lg-2'>
-                    Content goes here
+                    The IT industry is moving fast and its only getting faster. At CareerCircle, we want to make sure your career is moving at the speed of Tech. We’ve partnered with IT training companies to put together unique course offerings aimed to help you get to the next level.
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-lg-8 offset-lg-2 mt-2 mb-2 d-flex justify-content-center'>
+                    <span style=""font-size:20px; font-weight:bold;"">$</span><span style=""font-size:24px; font-weight:bold;"">99 Limited Time Offer<sup>1</sup></span>
+                </div>
+            </div>
+            <div class='row'>
+                <div class='col-lg-8 offset-lg-2'>
+                    <p>By coming to us through NEXXT, you’re eligible for a special discount offer. When you create your free CareerCircle account, you will gain access to our specialized IT training courses through Woz U for only $99. <span style=""font-weight: bold;"">That’s a $150 discount.</span></p>
+                    <p>Taking advantage of this limited time offer will present you with the opportunity to gain highly sought-after IT skills that will propel your career forward.</p>
                 </div>
             </div>
             "
         }
+    })    
+    @{ List<DisclaimersViewModel.Disclaimer> Disclaimers = new List<DisclaimersViewModel.Disclaimer>()
+        {
+            new DisclaimersViewModel.Disclaimer("This offer is only valid for IT self-paced courses offered by Woz U priced at $249. This does not apply to instructor-led courses. Courses must be purchased using the promo code above on or before May 5, 2019.")
+        };
+    }
+
+    @Html.Partial("Components/Utilities/_Disclaimers", new DisclaimersViewModel
+    {
+        Disclaimers = Disclaimers,
+        ChosenColorScheme = "cc-cscheme-tertiary-light-gray"
     })
 </div>
 

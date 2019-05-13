@@ -36,7 +36,7 @@
                 </div>
             </div>
             <div class="row">
-                <a href="/talent/createjobposting" class="btn btn-info my-2" role="button">Add Job Posting</a>
+                <div class="col-12 float-right">   <a href="/talent/createjobposting" class="btn btn-info my-2" role="button">Add +</a> </div> 
             </div>
                 <div class="row">
                     <div class="col-sm">
@@ -45,11 +45,12 @@
                                                     .Css("admin-grid")
                                                     .Build(columns =>
                                                     {
-                                                        columns.Add(model => model.Title).Sortable(true).Titled("Posting Title");
-                                                        columns.Add(model => model.CreateDate).Sortable(true).Titled("Date Created");
-                                                        columns.Add(model => model.PostingExpirationDateUTC).Sortable(true).Titled("Expiration Date");
+                                                        columns.Add(model => model.Title).Sortable(true).Titled("Posting Title");                                           
+                                                        columns.Add(model => model.PostingExpirationDateUTC).Sortable(true).Titled("Expiration Date").AppendCss("d-none d-sm-none d-md-block d-lg-block");
 
-                                                        columns.Add(model => $"<a href=\"jobposting/{model.JobPostingGuid}/edit\"><i class=\"far fa-edit\"></i></a>").Titled("Edit").Encoded(false).AppendCss("text-center");
+                                                        columns.Add(model => $"<a  href='jobposting/{model.JobPostingGuid}/edit'> <i class=\"fa fa-pencil-alt\"></i></a>").Titled("Edit").Encoded(false).AppendCss("text-center");
+                                                        columns.Add(model => $"<a onclick='return CopyJobPosting(\"{model.JobPostingGuid}\")' href=\"#\"><i class=\"fa fa-copy\"></i></a>").Titled("Copy").Encoded(false).AppendCss("text-center");
+                                                        columns.Add(model => $"<a onclick='return DeleteJobPosting(this,\"{model.JobPostingGuid}\")' href='#' ><i class=\"fa fa-trash\"></i></a>").Titled("Delete").Encoded(false).AppendCss("text-center");
                                                     })
                                                     .AppendCss("table table-primary table-striped")
                                                     .Empty("No data found")
@@ -69,11 +70,71 @@
                 @section Scripts{
                     <script type="text/javascript">
 
+                        function CopyJobPosting(Guid) {
+                            bootbox.confirm({
+                                message: "Are you sure you want to copy this job posting?",
+                                buttons: {
+                                    confirm: {
+                                        label: 'Yes',
+                                        className: 'btn-success'
+                                    },
+                                    cancel: {
+                                        label: 'No',
+                                        classname: 'btn-danger'
+                                    }
+                                },
+                                callback: function callback(result) {
+                                    if (result) {
+                                        $.ajax({
+                                            url: 'jobposting/' +  Guid + '/copy',
+                                            method: "POST",
+                                            success: function (data, textStatus, jqXHR) {
+                                                location.reload(true);
+                                            },
+                                            error: function (jqXHR, textStatus, errorThrown) {
+                                                ToastService.error(textStatus, errorThrown);
+                                            }
+                                        });
+                                    }
+
+                                }
+                            });
+                        }
+ 
+                        function DeleteJobPosting(ctl, Guid) { 
+         
+     
+                            bootbox.confirm({
+                                message: "Are you sure you want to delete this job posting?",
+                                buttons: {
+                                    confirm: {
+                                        label: 'Yes',
+                                        className: 'btn-success'
+                                    },
+                                    cancel: {
+                                        label: 'No',
+                                        classname: 'btn-danger'
+                                    }
+                                },
+                                callback: function callback(result) {
+                                    if (result)
+                                        $.ajax({
+                                            url: 'jobposting/' + Guid + '/delete',
+                                            method: "delete",
+                                            success: function (data, textStatus, jqXHR) {                     
+                                                ctl.closest('tr').remove();
+                                            },
+                                            error: function (jqXHR, textStatus, errorThrown) {
+                                               ToastService.error(textStatus, jqXHR.responseJSON.value.description);                                               
+                                            }
+                                        });
+                                }
+                            });
+                        }
 
                         $(document).ready(function () {
 
                         });
-
 
                         $(".admin-nav-campaign-stats").addClass("active");
                         window.onload = function () {
@@ -81,8 +142,6 @@
                         }
                     </script>
                     <style>
-                        .list-grid {
-                            font-size: 10px;
-                        }
+                     
                     </style>}
             </div>

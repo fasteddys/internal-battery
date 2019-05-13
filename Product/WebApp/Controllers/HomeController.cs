@@ -28,14 +28,13 @@ using UpDiddyLib.Dto.Marketing;
 using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
 
- 
-
 namespace UpDiddy.Controllers
 {
     public class HomeController : BaseController
     {
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
+        private readonly ISysEmail _sysEmail;
 
         [HttpGet]
         public async Task<IActionResult> GetCountries()
@@ -45,10 +44,12 @@ namespace UpDiddy.Controllers
 
         public HomeController(IApi api,
             IConfiguration configuration,
-            IHostingEnvironment env)
+            IHostingEnvironment env,
+            ISysEmail sysEmail)
             : base(api)
         {
             _env = env;
+            _sysEmail = sysEmail;
             _configuration = configuration;
         }
         [HttpGet]
@@ -135,10 +136,10 @@ namespace UpDiddy.Controllers
                 if (!OffersViewModel.UserHasUploadedResume)
                     OffersViewModel.StepsRequired.Add("Upload your resume (located at the top of your <a href=\"/Home/Profile\">profile</a>) to your CareerCircle account.");
 
-                if(OffersViewModel.UserIsEligibleForOffers)
+                if (OffersViewModel.UserIsEligibleForOffers)
                     OffersViewModel.CtaText = "Congratulations, your account is eligible to take advantage of the offers listed below!";
             }
-                                   
+
             return View("Offers", OffersViewModel);
         }
 
@@ -380,7 +381,7 @@ namespace UpDiddy.Controllers
                 await _Api.VerifyEmailAsync(token);
                 ViewBag.returnUrl = string.IsNullOrEmpty(returnUrl) ? "/Home/Profile" : returnUrl;
             }
-            catch(ApiException ex)
+            catch (ApiException ex)
             {
                 ViewBag.Message = ex.ResponseDto?.Description;
                 if (ex.StatusCode.Equals(HttpStatusCode.Conflict))
@@ -398,6 +399,8 @@ namespace UpDiddy.Controllers
             return View("ContactUs");
         }
 
+
+
         [HttpPost]
         public IActionResult ContactUs(string ContactUsFirstName,
             string ContactUsLastName,
@@ -405,10 +408,7 @@ namespace UpDiddy.Controllers
             string ContactUsType,
             string ContactUsComment)
         {
-            var client = new SendGridClient(_configuration["Sendgrid:ApiKey"]);
-            var from = new EmailAddress(_configuration["Sendgrid:EmailSender"]);
-            var subject = _configuration["Sendgrid:EmailSubject"];
-            var to = new EmailAddress(_configuration["Sendgrid:EmailRecipient"]);
+            var subject = _configuration["SysEmail:ContactUs:Subject"];
 
             string firstName = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsFirstName) ? "No first name enetered." : ContactUsFirstName);
             string lastName = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsLastName) ? "No last name entered." : ContactUsLastName);
@@ -417,10 +417,8 @@ namespace UpDiddy.Controllers
             string comment = HttpUtility.HtmlEncode(string.IsNullOrEmpty(ContactUsComment) ? "No comment entered." : ContactUsComment);
 
             var emailBody = FormatContactEmail(firstName, lastName, email, type, comment);
-            var plainTextContent = emailBody;
-            var htmlContent = emailBody;
-            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-            var response = client.SendEmailAsync(msg);
+
+            _sysEmail.SendEmailAsync(_configuration["SysEmail:ContactUs:Recipient"], subject, emailBody, Constants.SendGridAccount.Transactional);
             return RedirectToAction("Contact", new AboutViewModel());
         }
 
@@ -553,7 +551,7 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpPost]
         [Route("/Home/AddWorkHistory")]
-        public async Task<IActionResult> AddWorkHistoryAsync([FromBody] SubscriberWorkHistoryDto wh )
+        public async Task<IActionResult> AddWorkHistoryAsync([FromBody] SubscriberWorkHistoryDto wh)
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             if (wh == null)
@@ -577,14 +575,14 @@ namespace UpDiddy.Controllers
         {
             Guid subscriberGuid = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-            if (wh == null)              
+            if (wh == null)
                 return BadRequest("Oops, We're sorry somthing went wrong!");
 
             try
             {
                 return Ok(await _Api.UpdateWorkHistoryAsync(subscriberGuid, wh));
             }
-            catch(ApiException ex)
+            catch (ApiException ex)
             {
                 Response.StatusCode = (int)ex.StatusCode;
                 return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
@@ -602,7 +600,7 @@ namespace UpDiddy.Controllers
             {
                 return Ok(await _Api.DeleteWorkHistoryAsync(subscriberGuid, WorkHistoryGuid));
             }
-            catch(ApiException ex)
+            catch (ApiException ex)
             {
                 Response.StatusCode = (int)ex.StatusCode;
                 return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
@@ -623,7 +621,7 @@ namespace UpDiddy.Controllers
             {
                 return Ok(await _Api.AddEducationalHistoryAsync(subscriberGuid, eh));
             }
-            catch(ApiException ex)
+            catch (ApiException ex)
             {
                 Response.StatusCode = (int)ex.StatusCode;
                 return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });

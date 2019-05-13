@@ -43,6 +43,9 @@ using Microsoft.AspNetCore.SignalR;
 using UpDiddyApi.Helpers.SignalR;
 using UpDiddyApi.Authorization.APIGateway;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Repository;
+using Microsoft.AspNet.OData.Extensions;
 
 namespace UpDiddyApi
 {
@@ -90,7 +93,7 @@ namespace UpDiddyApi
                 .ReadFrom.Configuration(Configuration)
                 .WriteTo.ApplicationInsightsTraces(Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"])
                 .WriteTo
-                    .SendGrid(LogEventLevel.Fatal, Configuration["SysEmail:ApiKey"], Configuration["SysEmail:SystemErrorEmailAddress"])
+                    .SendGrid(LogEventLevel.Fatal, Configuration["SysEmail:Transactional:ApiKey"], Configuration["SysEmail:SystemErrorEmailAddress"])
                 .Enrich.FromLogContext()
                 .CreateLogger();
         }
@@ -127,7 +130,7 @@ namespace UpDiddyApi
 
             // Get the connection string from the Azure secret vault
             var SqlConnection = Configuration["CareerCircleSqlConnection"];
-            services.AddDbContext<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
+            services.AddDbContextPool<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
 
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
@@ -144,6 +147,8 @@ namespace UpDiddyApi
                        .AllowAnyHeader();
             }));
 
+            //configuring RepositoryWrapper class to implement repository pattern
+            services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
             // Add framework services.
             // the 'ignore' option for reference loop handling was implemented to prevent circular errors during serialization 
@@ -152,6 +157,9 @@ namespace UpDiddyApi
 
             // Add SignalR
             services.AddSignalR();
+
+            // Add Odata
+            services.AddOData();
 
             // Add AutoMapper 
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
@@ -173,6 +181,9 @@ namespace UpDiddyApi
             int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
             int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
+
+            // remove TinyIds from old CampaignPartnerContact records
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
 
             // Add Polly 
             // Create Policies  
@@ -222,6 +233,7 @@ namespace UpDiddyApi
             services.AddHttpClient<IB2CGraph, B2CGraphClient>();
 
             services.AddScoped<ISubscriberService, SubscriberService>();
+            services.AddScoped<IReportingService, ReportingService>();
             #endregion
 
             // Configure SnapshotCollector from application settings
@@ -267,6 +279,10 @@ namespace UpDiddyApi
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Version}/{action=Get}/{id?}");
+                
+                // Odata
+                routes.Filter().OrderBy().Count();
+                routes.EnableDependencyInjection();
             });
 
             // Added for SignalR

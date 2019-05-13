@@ -4,17 +4,25 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using UpDiddyLib.Dto;
 
 namespace UpDiddy.ViewModels
 {
     public class CreateJobPostingViewModel : BaseViewModel
     {
+        public bool IsEdit { get; set; }
+        public Guid EditGuid { get; set; }
+        public string RequestPath { get; set; }
+        public string ErrorMsg { get; set; }
+ 
+ 
 
         #region Basic job posting information 
         [Required(ErrorMessage = "Job title is required")]
         public string Title { get; set; }
 
         [Required(ErrorMessage = "Job description is required")]
+        [StringLength(6000, MinimumLength = 300, ErrorMessage = "Job postings must contain between 300-6000 characters")]
         public string Description { get; set; }
 
 
@@ -63,9 +71,14 @@ namespace UpDiddy.ViewModels
 
         public string StreetAddress{ get; set; }
 
+
+        public IList<SkillDto> Skills { get; set; }
+
         #endregion
 
         #region Select lists 
+
+
 
         public IEnumerable<SelectListItem> States { get; set; }
 

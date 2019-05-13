@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Localization
 @using Microsoft.AspNetCore.Mvc.Localization
 @using System.Web
+@using React.AspNet;
 
 @using Microsoft.AspNetCore.Http;
 @using Microsoft.AspNetCore.Mvc
@@ -38,7 +39,7 @@
         <link rel="stylesheet" type="text/css" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
     <meta property="og:title" content="CareerCircle">
-    <meta property="og:description" content="Preparing the workforce of today with the opportunities of tomorrow.">
+    <meta property="og:description" content="Preparing the workforce of today for the opportunities of tomorrow.">
     <meta property="og:image" content="/images/cc_logo.png">
     <meta property="og:url" content="https://@Context.Request.Host@Context.Request.Path" />
 </head>
@@ -77,7 +78,11 @@
     <environment names="Staging,Production">
         <script type="text/javascript" src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
-    <script type="text/javascript" src="~/js/bundle.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/runtime.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/vendor.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/js/components.js" asp-append-version="true"></script>
+
     @RenderSection("Scripts", false)
+    @Html.ReactInitJavaScript()
 </body>
 </html>

@@ -1,0 +1,70 @@
+﻿@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@using UpDiddy.ViewModels;
+@model JobSearchViewModel;
+
+@{ bool showComparableJobsHeader = this.ViewContext?.HttpContext?.Response?.StatusCode == 404;}
+
+<div class="job-container">
+    @if (Model.JobsSearchResult.Count != 0)
+    {
+        @if (showComparableJobsHeader)
+        {
+            <div>
+                <h2>
+                    Sorry, this job has expired or no longer exists!
+                    <br />
+                    You could:
+                </h2>
+                <br />
+                <ul>
+                    <li>Try using the form at the top to start a new search.</li>
+                    <li>Try widening your search filters.</li>
+                    <li><a asp-area="" asp-controller="Jobs" asp-action="Index">Try browsing all jobs.</a></li>
+                    <li>Try searching the recommended jobs below:</li>
+                </ul>
+                <br />
+                <h2>Jobs that might interest you in @Model?.Location</h2>
+            </div>
+        }
+    
+        foreach (var jobSearchResult in Model.JobsSearchResult)
+        {
+            <div class="job-tile">
+                <div class="row">
+                    <div class="col-12 col-md-3">
+                        <div class="row">
+                        <span class="job-title">
+                            <a target="_blank" href="/jobs/@jobSearchResult.JobPostingGuid">@jobSearchResult.Title</a>
+                        </span>    
+                        </div>
+                        <div class="row">
+                            <span class="job-location">@jobSearchResult.Province - @jobSearchResult.City</span>
+                        </div>
+                        <div class="row">
+                            <span class="job-post-date">Posted- @jobSearchResult.PostingDateUTC.ToShortDateString()</span>
+                        </div>
+
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="row">
+                            <span class="job-description"> @jobSearchResult.Description</span>
+                        </div>
+                        <div class="row">
+                            <a target="_blank" href="/jobs/@jobSearchResult.JobPostingGuid">More</a>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="no-job-text">
+            There are no results available.
+        </div>
+    }
+</div>

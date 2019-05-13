@@ -1,0 +1,63 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using UpDiddy.Helpers
+@model AboutViewModel
+
+<div class="clinical-research-container">
+    <div class="clinical-hero-container">
+        @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
+            {
+                BackgroundImage = "/images/barnett_header.jpg",
+                Elements = new List<string>()
+                {
+                    ""
+                }
+            }
+        )
+    </div>
+    @{
+        List<string> Elements = new List<string>()
+    {
+        "People with clinical trial skills are in high demand and short supply. CareerCircle is here to address the already present talent shortage our customers within the clinical research space are facing. We have specialized training available to propel you into the clinical research career you deserve. Upon completion of the course, you will gain access to a network of dedicated recruiters through CareerCircle to support you in your career journey.  "
+    };
+    }
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+    {
+        Header = "30-Hour Clinical Research Coordinator On-Boarding Program",
+        Class = "skew skew-left-to-right cc-cscheme-secondary-dark",
+        Elements = Elements
+    })
+    @{
+        List<string> Elements2 = new List<string>()
+    {
+        "<h3>We have partnered with Barnett International to bring you this 30-Hour Clinical Research Coordinator On-Boarding program.</h3>",
+        "This recorded, self-paced course provides 24/7 access to a comprehensive introduction to clinical research and the job functions of the Clinical Research Coordinator (CRC). Focused on the core skills required of the CRC job role, the learning approach in this course encourages critical thinking for those looking to support, facilitate and coordinate the daily activities of clinical trials at research sites."    };
+    }
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+    {
+        Class = "cc-cscheme-secondary-white",
+        Elements = Elements2
+    })
+
+    @{
+        List<string> Elements3 = new List<string>()
+        {
+            "As a CareerCircle member, you have access to this specialized training at a discounted rate! Use promo code: '<strong>CIRCLE10</strong>' at checkout to redeem this course for 10% off.<br /><br /><div class=\"container-align-center\">" + @Html.PartialToHtmlMarkup("Components/Buttons/_Action", new ActionButtonViewModel {
+                                            Text = "Access course here",
+                                            Hyperlink = "https://www.barnettinternational.com/barnetts-on-demand-30-hour-clinical-research-coordinator-on-boarding-program",
+                                            FitToText = true,
+                                            ChosenColorScheme = "cc-cscheme-white",
+                                            ButtonAction = ActionButtonViewModel.Action.CTA,
+                                            ButtonClass = "signup-cta"
+                                        }) + "</div>"
+            
+        };
+    }
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+    {
+        Header = "10% Special Offer:",
+        Class = "skew skew-right-to-left cc-cscheme-primary",
+        Elements = Elements3
+    })
+
+</div>

@@ -154,6 +154,10 @@ namespace UpDiddyApi.Models
 
         public DbSet<RecruiterCompany> RecruiterCompany { get; set; }
 
+        public DbSet<JobPostingFavorite> JobPostingFavorite { get; set; }
+        public DbSet<Recruiter> Recruiter { get; set; }
+        public DbSet<RecruiterAction> RecruiterAction { get; set; }
+
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
@@ -179,6 +183,10 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<CampaignContact>()
                 .HasKey(cc => new { cc.CampaignId, cc.ContactId });
             #endregion
+
+            modelBuilder.Entity<RecruiterAction>()
+                .Property(ra => ra.OccurredDate)
+                .HasDefaultValueSql("GETUTCDATE()");
 
             modelBuilder.Entity<PartnerContactFileLeadStatus>()
                 .HasKey(pcfls => new { pcfls.PartnerContactFileId, pcfls.LeadStatusId });
@@ -227,13 +235,22 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Campaign>()
                 .HasIndex(pc => pc.Name)
                 .IsUnique();
-            
+
+            modelBuilder.Entity<Campaign>()
+                .Property(e => e.TargetedViewName)
+                .HasColumnType("varchar(100)");
+
             modelBuilder.Entity<Contact>()
                 .HasMany<PartnerContact>(c => c.PartnerContacts);
 
             modelBuilder.Entity<PartnerContact>()
                 .Property<string>("MetaDataJSON")
                 .HasField("_metadata");
+
+            modelBuilder.Entity<PartnerContact>()
+                .HasIndex(pc => pc.PartnerContactGuid)
+                .HasName("UIX_PartnerContact_PartnerContactGuid")
+                .IsUnique(true);
 
             modelBuilder.Entity<PartnerContactFile>()
                 .HasOne(e => e.PartnerContact)
@@ -251,11 +268,20 @@ namespace UpDiddyApi.Models
                 .IsUnique();
 
             modelBuilder.Entity<CampaignPartnerContact>()
+                .HasIndex(e => e.TinyId)
+                .HasName("UIX_CampaignPartnerContact_TinyId")
+                .IsUnique(true);
+
+            modelBuilder.Entity<CampaignPartnerContact>()
+                .Property(e => e.TinyId)
+                .HasColumnType("char(8)");
+
+            modelBuilder.Entity<CampaignPartnerContact>()
                 .HasKey(cpc => new { cpc.CampaignId, cpc.PartnerContactId });
 
             modelBuilder.Entity<CampaignCourseVariant>()
                 .HasKey(ccv => new { ccv.CampaignId, ccv.CourseVariantId });
-
+            
             modelBuilder.Entity<PartnerContactAction>()
                 .HasKey(pca => new { pca.PartnerContactId, pca.CampaignId, pca.ActionId, pca.CampaignPhaseId });
 
@@ -299,6 +325,10 @@ namespace UpDiddyApi.Models
 
             modelBuilder.Entity<JobPostingSkill>()
                 .HasKey(ss => new { ss.SkillId, ss.JobPostingId });
+
+            modelBuilder.Entity<JobPostingFavorite>()
+                   .HasKey(ss => new { ss.JobPostingId, ss.SubscriberId });
+
 
         }
     }

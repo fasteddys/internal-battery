@@ -1,0 +1,83 @@
+﻿@model UpDiddy.ViewModels.JobSearchViewModel
+@using UpDiddyLib.Dto;
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+
+@section Scripts{
+
+
+}
+
+    <div class="job-search-container">
+
+        @*search filter*@
+        <div class="job-search-criteria">
+            <form asp-controller="Jobs" asp-action="Index" id="SearchJobsForm" method="get">
+                <div class="container job-search-block">
+                    <div class="row">
+                        <!--Bring to center of container-->
+                        <div class="col-12 col-md-8 offset-md-2">
+                            <div class="row job-search-header">
+                                <h2 class="job-search-header-text">Find Your Next Job</h2>
+                            </div>
+                            <div class="row job-search-content">
+                                <p>
+                                    At CareerCircle, we're in the business of helping you succeed. Let us connect you with opportunities that propel your career forward.
+                                </p>
+                                <p>
+                                    Begin the path to career advancement here:
+                                </p>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 col-md-6 pb-3">
+                                    @Html.TextBox("keywords", null, new { PlaceHolder = "Keywords", @class = "form-control", form = "SearchJobsForm" })
+                                </div>
+                                <div class="col-12 col-md-6 pb-3">
+                                    @Html.TextBox("location", null, new { PlaceHolder = "Location (optional)", @class = "form-control", form = "SearchJobsForm" })
+                                </div>
+                            </div>
+                            <div class="row job-search-button">
+                                <button id="SearchJobs" form="SearchJobsForm" type="submit" class="btn btn-primary"> Search Jobs</button>
+                            </div>
+                        </div>
+                        <!--Bring to center of container-->
+                    </div>
+                </div>
+            </form>
+        </div>
+        @*search filter*@
+
+        @*search results*@
+        <div class="job-search-results">
+            <div class="container">
+                    @{ await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);}
+                
+                <div class="row job-pagination container-align-center">
+                    @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("Index", new
+                      { page,
+                          keywords = ViewContext.HttpContext.Request.Query["keywords"],
+                          location = ViewContext.HttpContext.Request.Query["location"]
+                      }),new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                          LiElementClasses = new string[] { "page-item" },
+                          PageClasses = new string[] { "page-link" },
+                          MaximumPageNumbersToDisplay=5,
+                          DisplayLinkToFirstPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                          DisplayLinkToLastPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                          DisplayLinkToPreviousPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                          DisplayLinkToNextPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                          LinkToFirstPageFormat = "««",
+                          LinkToPreviousPageFormat = "«",
+                          LinkToNextPageFormat = "»",
+                          LinkToLastPageFormat = "»»",
+                          DisplayEllipsesWhenNotShowingAllPageNumbers = true,
+                          ContainerDivClasses = new[] { "pagination-container" },
+                          UlElementClasses = new[] { "pagination" }
+                           })
+                </div>
+               
+            </div>
+        </div>
+        @*search results*@
+    </div>
+
+

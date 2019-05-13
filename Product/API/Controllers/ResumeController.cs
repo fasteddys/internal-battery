@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using AutoMapper;
 
 namespace UpDiddyApi.Controllers
 {
@@ -23,13 +24,15 @@ namespace UpDiddyApi.Controllers
     {
         private UpDiddyDbContext _db;
         private ISubscriberService _subscriberService;
+        private IMapper _mapper;
         protected internal ILogger _syslog = null;
 
-        public ResumeController(UpDiddyDbContext db, ISubscriberService subscriberService, ILogger<ResumeController> sysLog)
+        public ResumeController(UpDiddyDbContext db, ISubscriberService subscriberService, IMapper mapper, ILogger<ResumeController> sysLog)
         {
             this._db = db;
             this._syslog = sysLog;
             this._subscriberService = subscriberService;
+            this._mapper = mapper;
         }
 
         /// <summary>
@@ -56,7 +59,8 @@ namespace UpDiddyApi.Controllers
 
             await _subscriberService.AddResumeAsync(subscriber, resume.FileName, resume.OpenReadStream(), parseResume);
 
-            return Ok(new BasicResponseDto { StatusCode = 200, Description = "Success!" });
+            SubscriberFileDto dto = _mapper.Map<SubscriberFileDto>(subscriber.SubscriberFile[0]);
+            return Ok(dto);
         }
 
         [Authorize]

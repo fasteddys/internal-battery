@@ -12,5 +12,6 @@ namespace UpDiddyApi.Models
         public int PartnerContactId { get; set; }
         public virtual PartnerContact PartnerContact { get; set; }
         public Guid? CampaignPartnerContactGuid { get; set; }
+        public string TinyId { get; set; }
     }
 }
