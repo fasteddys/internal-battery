@@ -357,6 +357,9 @@ namespace UpDiddyApi.Models
                    .HasKey(ss => new { ss.JobPostingId, ss.SubscriberId });
 
 
+            modelBuilder.Entity<Enrollment>().HasQueryFilter(p => p.IsDeleted == 0);
+
+
         }
     }
 }
