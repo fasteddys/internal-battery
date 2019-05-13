@@ -189,8 +189,8 @@ namespace UpDiddyApi
             // remove TinyIds from old CampaignPartnerContact records
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
 
-            // do not run the job data mining process unless we are in production (may change this later)
-            if (_currentEnvironment.IsProduction() || _currentEnvironment.IsStaging())            
+            // do not run the job data mining process if in a dev environment
+            if (!_currentEnvironment.IsDevelopment())            
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Hourly(8));
             
             // Add Polly 
