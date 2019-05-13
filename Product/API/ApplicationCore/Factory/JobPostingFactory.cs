@@ -23,10 +23,108 @@ namespace UpDiddyApi.ApplicationCore.Factory
     public class JobPostingFactory
     {
 
+  
         public static string JobPostingUrl(IConfiguration config, Guid subscriberGuid)
         {
             return config["CareerCircle:ViewJobPostingUrl"] + subscriberGuid;
         }
+        
+   
+
+        public static bool DeleteJob(UpDiddyDbContext db, Guid jobPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        {
+
+            JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
+            if (jobPosting == null)
+            {
+                ErrorMsg = $"Job posting {jobPostingGuid} does not exist";
+                return false;
+            }
+            Recruiter recruiter = RecruiterFactory.GetRecruiterById(db, jobPosting.RecruiterId.Value);
+            if (recruiter == null)
+            {
+                ErrorMsg = $"Recruiter {jobPosting.RecruiterId.Value} rec not found";
+                return false;
+            }
+            
+            if (jobPosting.RecruiterId != recruiter.RecruiterId)
+            {
+                ErrorMsg = "JobPosting owner is not specified or does not match user posting job";
+                return false;
+            }
+               
+            // queue a job to delete the posting from the job index and mark it as deleted in sql server
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteJob(jobPosting.JobPostingGuid));
+            syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");            
+            return true;
+        }
+     
+
+        public static bool PostJob(UpDiddyDbContext db, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid,  ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        {
+            int postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
+
+            if (jobPostingDto == null)
+            {
+                ErrorMsg = "JobPosting is required";
+                return false;
+            }
+            
+            syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
+ 
+            JobPosting jobPosting = mapper.Map<JobPosting>(jobPostingDto);
+            // todo find a better way to deal with the job posting having a collection of JobPostingSkill and the job posting DTO having a collection of SkillDto
+            // ignore posting skills that were mapped via automapper, they will be associated with the posting below 
+            jobPosting.JobPostingSkills = null;
+            // assign recruiter
+            jobPosting.RecruiterId = recruiterId;
+            // use factory method to make sure all the base data values are set just 
+            // in case the caller didn't set them
+            BaseModelFactory.SetDefaultsForAddNew(jobPosting);
+            // important! Init all reference object ids to null since further logic will use < 0 to check for 
+            // their validity
+            JobPostingFactory.SetDefaultsForAddNew(jobPosting);
+            // Asscociate related objects that were passed by guid
+            // todo find a more efficient way to do this
+            JobPostingFactory.MapRelatedObjects(db, jobPosting, jobPostingDto);
+
+            string msg = string.Empty;
+
+            if (JobPostingFactory.ValidateJobPosting(jobPosting, configuration, ref msg) == false)
+            {
+                ErrorMsg = msg;
+                syslog.Log(LogLevel.Warning, "JobPostingController.CreateJobPosting:: Bad Request {Description} {JobPosting}", msg, jobPostingDto);
+                return false;
+            }
+
+            jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.NotIndexed;
+            jobPosting.JobPostingGuid = Guid.NewGuid();
+            // set expiration date 
+            if (jobPosting.PostingDateUTC < DateTime.UtcNow)
+                jobPosting.PostingDateUTC = DateTime.UtcNow;
+            if (jobPosting.PostingExpirationDateUTC < DateTime.UtcNow)
+            {
+                jobPosting.PostingExpirationDateUTC = DateTime.UtcNow.AddDays(postingTTL);
+            }
+            // save the job to sql server 
+            // todo make saving the job posting and skills more efficient with a stored procedure 
+            db.JobPosting.Add(jobPosting);
+            db.SaveChanges();
+            // save associated job posting skills 
+            JobPostingFactory.SavePostingSkills(db, jobPosting, jobPostingDto);
+            //index active jobs into google 
+            if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
+
+
+            newPostingGuid = jobPosting.JobPostingGuid;
+            syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
+
+            return true;
+        
+        }
+
+
 
         public static JobPosting GetJobPostingById(UpDiddyDbContext db, int jobPostingId)
         {
@@ -106,7 +204,16 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefault();
         }
 
-
+        /// <summary>
+        /// Get an expired job posting by guid
+        /// </summary>       
+        /// <returns></returns>        
+        public static JobPosting GetExpiredJobPostingByGuid(UpDiddyDbContext db, Guid guid)
+        {
+            return db.JobPosting
+                .Where(s => s.IsDeleted == 1 && s.JobPostingGuid == guid)
+                .FirstOrDefault();
+        }
 
 
         /// <summary>
@@ -186,7 +293,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
 
 
-            if (job.Recruiter.Subscriber == null && job.Recruiter.SubscriberId == null)
+            if (job.ThirdPartyApply == false && job.Recruiter.Subscriber == null && job.Recruiter.SubscriberId == null)
             {
                 message = Constants.JobPosting.ValidationError_SubscriberRequiredMsg;
                 return false;
@@ -199,37 +306,37 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 return false;
             }
 
-            if (job.SecurityClearance != null && job.SecurityClearanceId == null)
+            if (job.ThirdPartyApply == false && job.SecurityClearance != null && job.SecurityClearanceId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidSecurityClearanceMsg;
                 return false;
             }
 
-            if (job.Industry != null && job.IndustryId == null)
+            if (job.ThirdPartyApply == false && job.Industry != null && job.IndustryId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidIndustryMsg;
                 return false;
             }
 
-            if (job.JobCategory != null && job.JobCategoryId == null)
+            if (job.ThirdPartyApply == false && job.JobCategory != null && job.JobCategoryId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidJobCategoryMsg;
                 return false;
             }
 
-            if (job.EmploymentType != null && job.EmploymentTypeId == null)
+            if (job.ThirdPartyApply == false && job.EmploymentType != null && job.EmploymentTypeId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidEmploymentTypeMsg;
                 return false;
             }
 
-            if (job.EducationLevel != null && job.EducationLevelId == null)
+            if (job.ThirdPartyApply == false && job.EducationLevel != null && job.EducationLevelId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidEducationLevelMsg;
                 return false;
             }
 
-            if (job.ExperienceLevel != null && job.ExperienceLevelId == null)
+            if (job.ThirdPartyApply == false && job.ExperienceLevel != null && job.ExperienceLevelId == null)
             {
                 message = Constants.JobPosting.ValidationError_InvalidExperienceLevelMsg;
                 return false;
@@ -398,130 +505,151 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-            public static void UpdateJobPosting(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
+        public static bool UpdateJobPosting(UpDiddyDbContext db, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg)
         {
 
-            jobPosting.Title = jobPostingDto.Title;
-            jobPosting.Description = jobPostingDto.Description;
-            jobPosting.PostingExpirationDateUTC = jobPostingDto.PostingExpirationDateUTC;
-            jobPosting.ApplicationDeadlineUTC = jobPostingDto.ApplicationDeadlineUTC;
-            jobPosting.JobStatus = jobPostingDto.JobStatus;
-            jobPosting.IsAgencyJobPosting = jobPostingDto.IsAgencyJobPosting;
-            jobPosting.H2Visa = jobPostingDto.H2Visa;
-            jobPosting.TelecommutePercentage = jobPostingDto.TelecommutePercentage;
-            jobPosting.Compensation = jobPostingDto.Compensation;
-            jobPosting.ThirdPartyApplicationUrl = jobPostingDto.ThirdPartyApplicationUrl;
-            jobPosting.Country = jobPostingDto.Country;
-            jobPosting.City = jobPostingDto.City;
-            jobPosting.Province = jobPostingDto.Province;
-            jobPosting.PostalCode = jobPostingDto.PostalCode;
-            jobPosting.StreetAddress = jobPostingDto.StreetAddress;
-            // Update the modify date to now
-            jobPosting.ModifyDate = DateTime.UtcNow;
-
-            // Map select items 
-            if (jobPostingDto.Company == null)
-                jobPosting.CompanyId = null;
-            else if (jobPostingDto.Company?.CompanyGuid != jobPosting.Company?.CompanyGuid)
+            try
             {
-                Company Company = CompanyFactory.GetCompanyByGuid(db, jobPostingDto.Company.CompanyGuid);
-                if (Company != null)
-                    jobPosting.CompanyId = Company.CompanyId;
-                else
-                    jobPosting.CompanyId = 0;
+                // Retreive the current state of the job posting 
+                JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingDto.JobPostingGuid.Value);
+                if (jobPosting == null)
+                {
+                    ErrorMsg = $"{jobPostingDto.JobPostingGuid} is not a valid jobposting guid";
+                    return false;
+                }
+
+                jobPosting.Title = jobPostingDto.Title;
+                jobPosting.Description = jobPostingDto.Description;
+                jobPosting.PostingExpirationDateUTC = jobPostingDto.PostingExpirationDateUTC;
+                jobPosting.ApplicationDeadlineUTC = jobPostingDto.ApplicationDeadlineUTC;
+                jobPosting.JobStatus = jobPostingDto.JobStatus;
+                jobPosting.IsAgencyJobPosting = jobPostingDto.IsAgencyJobPosting;
+                jobPosting.H2Visa = jobPostingDto.H2Visa;
+                jobPosting.TelecommutePercentage = jobPostingDto.TelecommutePercentage;
+                jobPosting.Compensation = jobPostingDto.Compensation;
+                jobPosting.ThirdPartyApplicationUrl = jobPostingDto.ThirdPartyApplicationUrl;
+                jobPosting.ThirdPartyApply = jobPostingDto.ThirdPartyApply;
+                jobPosting.Country = jobPostingDto.Country;
+                jobPosting.City = jobPostingDto.City;
+                jobPosting.Province = jobPostingDto.Province;
+                jobPosting.PostalCode = jobPostingDto.PostalCode;
+                jobPosting.StreetAddress = jobPostingDto.StreetAddress;
+                // Update the modify date to now
+                jobPosting.ModifyDate = DateTime.UtcNow;
+
+                // Map select items 
+                if (jobPostingDto.Company == null)
+                    jobPosting.CompanyId = null;
+                else if (jobPostingDto.Company?.CompanyGuid != jobPosting.Company?.CompanyGuid)
+                {
+                    Company Company = CompanyFactory.GetCompanyByGuid(db, jobPostingDto.Company.CompanyGuid);
+                    if (Company != null)
+                        jobPosting.CompanyId = Company.CompanyId;
+                    else
+                        jobPosting.CompanyId = 0;
+                }
+
+                if (jobPostingDto.Industry == null)
+                    jobPosting.IndustryId = null;
+                else if (jobPostingDto.Industry?.IndustryGuid != jobPosting.Industry?.IndustryGuid)
+                {
+                    Industry industry = IndustryFactory.GetIndustryByGuid(db, jobPostingDto.Industry.IndustryGuid);
+                    if (industry != null)
+                        jobPosting.IndustryId = industry.IndustryId;
+                    else
+                        jobPosting.IndustryId = 0;
+                }
+
+                if (jobPostingDto.JobCategory == null)
+                    jobPosting.JobCategoryId = null;
+                else if (jobPostingDto.JobCategory?.JobCategoryGuid != jobPosting.JobCategory?.JobCategoryGuid)
+                {
+                    JobCategory JobCategory = JobCategoryFactory.GetJobCategoryByGuid(db, jobPostingDto.JobCategory.JobCategoryGuid);
+                    if (JobCategory != null)
+                        jobPosting.JobCategoryId = JobCategory.JobCategoryId;
+                    else
+                        jobPosting.JobCategoryId = 0;
+                }
+
+                if (jobPostingDto.SecurityClearance == null)
+                    jobPosting.SecurityClearanceId = null;
+                else if (jobPostingDto.SecurityClearance?.SecurityClearanceGuid != jobPosting.SecurityClearance?.SecurityClearanceGuid)
+                {
+                    SecurityClearance SecurityClearance = SecurityClearanceFactory.GetSecurityClearanceByGuid(db, jobPostingDto.SecurityClearance.SecurityClearanceGuid);
+                    if (SecurityClearance != null)
+                        jobPosting.SecurityClearanceId = SecurityClearance.SecurityClearanceId;
+                    else
+                        jobPosting.SecurityClearanceId = 0;
+                }
+
+                if (jobPostingDto.EmploymentType == null)
+                    jobPosting.EmploymentTypeId = null;
+                else if (jobPostingDto.EmploymentType?.EmploymentTypeGuid != jobPosting.EmploymentType?.EmploymentTypeGuid)
+                {
+                    EmploymentType EmploymentType = EmploymentTypeFactory.GetEmploymentTypeByGuid(db, jobPostingDto.EmploymentType.EmploymentTypeGuid);
+                    if (EmploymentType != null)
+                        jobPosting.EmploymentTypeId = EmploymentType.EmploymentTypeId;
+                    else
+                        jobPosting.EmploymentTypeId = 0;
+                }
+
+                if (jobPostingDto.EducationLevel == null)
+                    jobPosting.EducationLevelId = null;
+                else if (jobPostingDto.EducationLevel?.EducationLevelGuid != jobPosting.EducationLevel?.EducationLevelGuid)
+                {
+                    EducationLevel EducationLevel = EducationLevelFactory.GetEducationLevelByGuid(db, jobPostingDto.EducationLevel.EducationLevelGuid);
+                    if (EducationLevel != null)
+                        jobPosting.EducationLevelId = EducationLevel.EducationLevelId;
+                    else
+                        jobPosting.EducationLevelId = 0;
+                }
+
+                if (jobPostingDto.ExperienceLevel == null)
+                    jobPosting.ExperienceLevelId = null;
+                else if (jobPostingDto.ExperienceLevel?.ExperienceLevelGuid != jobPosting.ExperienceLevel?.ExperienceLevelGuid)
+                {
+                    ExperienceLevel ExperienceLevel = ExperienceLevelFactory.GetExperienceLevelByGuid(db, jobPostingDto.ExperienceLevel.ExperienceLevelGuid);
+                    if (ExperienceLevel != null)
+                        jobPosting.ExperienceLevelId = ExperienceLevel.ExperienceLevelId;
+                    else
+                        jobPosting.ExperienceLevelId = 0;
+                }
+
+
+                if (jobPostingDto.CompensationType == null)
+                    jobPosting.CompensationTypeId = null;
+                else if (jobPostingDto.CompensationType?.CompensationTypeGuid != jobPosting.CompensationType?.CompensationTypeGuid)
+                {
+                    CompensationType CompensationType = CompensationTypeFactory.GetCompensationTypeByGuid(db, jobPostingDto.CompensationType.CompensationTypeGuid);
+                    if (CompensationType != null)
+                        jobPosting.CompensationTypeId = CompensationType.CompensationTypeId;
+                    else
+                        jobPosting.CompensationTypeId = 0;
+                }
+
+
+                db.SaveChanges();
+                JobPostingFactory.UpdatePostingSkills(db, jobPosting, jobPostingDto);
+                // index active jobs in cloud talent 
+                if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
+                {
+                    // Check to see if the job has been indexed into google 
+                    if (string.IsNullOrEmpty(jobPosting.CloudTalentUri) == false)
+                        BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobPosting.JobPostingGuid));
+                    else
+                        BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
+                }
+                return true;
+
+            }
+            catch ( Exception ex )
+            {
+                ErrorMsg = ex.Message;
+                return false;
+
             }
 
-            if (jobPostingDto.Industry == null)
-                jobPosting.IndustryId = null;
-            else if (jobPostingDto.Industry?.IndustryGuid != jobPosting.Industry?.IndustryGuid)
-            {
-                Industry industry = IndustryFactory.GetIndustryByGuid(db, jobPostingDto.Industry.IndustryGuid);
-                if (industry != null)
-                    jobPosting.IndustryId = industry.IndustryId;
-                else
-                    jobPosting.IndustryId = 0;
-            }
-
-            if (jobPostingDto.JobCategory == null)
-                jobPosting.JobCategoryId = null;
-            else if (jobPostingDto.JobCategory?.JobCategoryGuid != jobPosting.JobCategory?.JobCategoryGuid)
-            {
-                JobCategory JobCategory = JobCategoryFactory.GetJobCategoryByGuid(db, jobPostingDto.JobCategory.JobCategoryGuid);
-                if (JobCategory != null)
-                    jobPosting.JobCategoryId = JobCategory.JobCategoryId;
-                else
-                    jobPosting.JobCategoryId = 0;
-            }
-
-            if (jobPostingDto.SecurityClearance == null)
-                jobPosting.SecurityClearanceId = null;
-            else if (jobPostingDto.SecurityClearance?.SecurityClearanceGuid != jobPosting.SecurityClearance?.SecurityClearanceGuid)
-            {
-                SecurityClearance SecurityClearance = SecurityClearanceFactory.GetSecurityClearanceByGuid(db, jobPostingDto.SecurityClearance.SecurityClearanceGuid);
-                if (SecurityClearance != null)
-                    jobPosting.SecurityClearanceId = SecurityClearance.SecurityClearanceId;
-                else
-                    jobPosting.SecurityClearanceId = 0;
-            }
-
-            if (jobPostingDto.EmploymentType == null)
-                jobPosting.EmploymentTypeId = null;
-            else if (jobPostingDto.EmploymentType?.EmploymentTypeGuid != jobPosting.EmploymentType?.EmploymentTypeGuid)
-            {
-                EmploymentType EmploymentType = EmploymentTypeFactory.GetEmploymentTypeByGuid(db, jobPostingDto.EmploymentType.EmploymentTypeGuid);
-                if (EmploymentType != null)
-                    jobPosting.EmploymentTypeId = EmploymentType.EmploymentTypeId;
-                else
-                    jobPosting.EmploymentTypeId = 0;
-            }
-
-            if (jobPostingDto.EducationLevel == null)
-                jobPosting.EducationLevelId = null;
-            else if (jobPostingDto.EducationLevel?.EducationLevelGuid != jobPosting.EducationLevel?.EducationLevelGuid)
-            {
-                EducationLevel EducationLevel = EducationLevelFactory.GetEducationLevelByGuid(db, jobPostingDto.EducationLevel.EducationLevelGuid);
-                if (EducationLevel != null)
-                    jobPosting.EducationLevelId = EducationLevel.EducationLevelId;
-                else
-                    jobPosting.EducationLevelId = 0;
-            }
-
-            if (jobPostingDto.ExperienceLevel == null)
-                jobPosting.ExperienceLevelId = null;
-            else if (jobPostingDto.ExperienceLevel?.ExperienceLevelGuid != jobPosting.ExperienceLevel?.ExperienceLevelGuid)
-            {
-                ExperienceLevel ExperienceLevel = ExperienceLevelFactory.GetExperienceLevelByGuid(db, jobPostingDto.ExperienceLevel.ExperienceLevelGuid);
-                if (ExperienceLevel != null)
-                    jobPosting.ExperienceLevelId = ExperienceLevel.ExperienceLevelId;
-                else
-                    jobPosting.ExperienceLevelId = 0;
-            }
-
-
-            if (jobPostingDto.CompensationType == null)
-                jobPosting.CompensationTypeId = null;
-            else if (jobPostingDto.CompensationType?.CompensationTypeGuid != jobPosting.CompensationType?.CompensationTypeGuid)
-            {
-                CompensationType CompensationType = CompensationTypeFactory.GetCompensationTypeByGuid(db, jobPostingDto.CompensationType.CompensationTypeGuid);
-                if (CompensationType != null)
-                    jobPosting.CompensationTypeId = CompensationType.CompensationTypeId;
-                else
-                    jobPosting.CompensationTypeId = 0;
-            }
-
-
-            db.SaveChanges();
-            JobPostingFactory.UpdatePostingSkills(db, jobPosting, jobPostingDto);
-            // index active jobs in cloud talent 
-            if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
-            {
-                // Check to see if the job has been indexed into google 
-                if ( string.IsNullOrEmpty(jobPosting.CloudTalentUri)  == false )
-                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobPosting.JobPostingGuid));
-                else
-                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
-            }
-                
+          
 
         }
         

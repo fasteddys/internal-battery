@@ -16,22 +16,10 @@ namespace UpDiddy.ViewModels.ButterCMS
         public string HeroHeader { get; set; }
         [JsonProperty("hero_image")]
         public string HeroImage { get; set; }
-        [JsonProperty("topics_vendor_logo")]
-        public string TopicsVendorLogo { get; set; }
-        [JsonProperty("topics_listing")]
-        public IList<TopicLandingViewModel> Topics { get; set; }
         [JsonProperty("hero_description")]
         public string HeroDescription { get; set; }
-    }
-
-    public class TopicLandingViewModel
-    {
-        [JsonProperty("topic_title")]
-        public string TopicTitle { get; set; }
-        [JsonProperty("url")]
-        public string Url { get; set; }
-        [JsonProperty("image")]
-        public string Image { get; set; }
+        [JsonProperty("training_vendors")]
+        public IList<TrainingVendorViewModel> TrainingVendors { get; set; }
     }
 
     
