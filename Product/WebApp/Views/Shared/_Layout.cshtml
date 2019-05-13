@@ -38,7 +38,7 @@
     <environment names="Staging,Production">
         <link rel="stylesheet" type="text/css" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
-    @await Component.InvokeAsync("PublicSiteNavigation")
+    @await Component.InvokeAsync("OpenGraph", new { PagePath = Context.Request.Path.ToString()})
     
 </head>
 <body>

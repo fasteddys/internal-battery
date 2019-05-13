@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using UpDiddy.Api;
 using UpDiddy.Services.ButterCMS;
+using UpDiddy.ViewModels.ButterCMS;
 using UpDiddy.ViewModels.Components.Layout;
 using UpDiddyLib.Helpers;
 
@@ -47,24 +48,25 @@ namespace UpDiddy.ViewComponents
             _sysEmail = sysEmail;
         }
 
-        public IViewComponentResult Invoke()
+        public IViewComponentResult Invoke(string PagePath)
         {
             
-            var ButterResponse = _butterService.RetrieveContentFields<PublicSiteNavigationViewModel<PublicSiteNavigationMenuItemViewModel>>(
-                "CareerCirclePublicSiteNavigation",
-                new string[1] { _configuration["ButterCMS:CareerCirclePublicSiteNavigation:Slug"] },
-                new Dictionary<string, string> {
-                    {
-                        "levels", _configuration["ButterCMS:CareerCirclePublicSiteNavigation:Levels"]
-                    }
-                });
+            var ButterResponse = _butterService.RetrievePage<ButterCMSBaseViewModel>($"bcms_page_{PagePath}", PagePath.Split("/").Last());
+            ButterCMSBaseViewModel ButterViewModel = new ButterCMSBaseViewModel
+            {
+                ogtitle = _configuration["SEO:OpenGraph:Title"],
+                ogdescription = _configuration["SEO:OpenGraph:Description"],
+                ogimage = _configuration["SEO:OpenGraph:Image"]
+            };
 
             if (ButterResponse != null)
             {
-                PublicSiteNavigationMenuItemViewModel PublicSiteNavigation = FindDesiredNavigation(ButterResponse, "CareerCirclePublicSiteNavigation");
-                return View(PublicSiteNavigation);
+                ButterViewModel.ogtitle = ButterResponse.Data.Fields.ogtitle ?? _configuration["SEO:OpenGraph:Title"];
+                ButterViewModel.ogdescription = ButterResponse.Data.Fields.ogdescription ?? _configuration["SEO:OpenGraph:Description"];
+                ButterViewModel.ogimage = ButterResponse.Data.Fields.ogimage ?? _configuration["SEO:OpenGraph:Image"];
+                
             }
-            return View("Error");
+            return View(ButterViewModel);
 
         }
 

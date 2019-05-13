@@ -67,7 +67,7 @@ namespace UpDiddy.Services.ButterCMS
             return CachedButterResponse;
         }
 
-        public PageResponse<T> RetrievePage<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters) where T : class
+        public PageResponse<T> RetrievePage<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters = null) where T : ButterCMSBaseViewModel
         {
             PageResponse<T> CachedButterResponse = _cacheService.GetCachedValue<PageResponse<T>>(CacheKey);
             try

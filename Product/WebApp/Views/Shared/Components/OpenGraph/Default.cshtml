@@ -1,8 +1,8 @@
-﻿@using UpDiddy.ViewModels.Components.OpenGraph
-@model OpenGraphViewModel  
+﻿@using UpDiddy.ViewModels.ButterCMS
+@model ButterCMSBaseViewModel  
 
 
-<meta property="og:title" content="@Model.Title">
-<meta property="og:description" content="@Model.Description">
-<meta property="og:image" content="@Model.Image">
+<meta property="og:title" content="@Model.ogtitle">
+<meta property="og:description" content="@Model.ogdescription">
+<meta property="og:image" content="@Model.ogimage">
 <meta property="og:url" content="https://@Context.Request.Host@Context.Request.Path" />
