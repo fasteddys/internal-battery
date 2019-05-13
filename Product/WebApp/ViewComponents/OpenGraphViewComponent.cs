@@ -54,16 +54,16 @@ namespace UpDiddy.ViewComponents
             var ButterResponse = _butterService.RetrievePage<ButterCMSBaseViewModel>($"bcms_page_{PagePath}", PagePath.Split("/").Last());
             ButterCMSBaseViewModel ButterViewModel = new ButterCMSBaseViewModel
             {
-                ogtitle = _configuration["SEO:OpenGraph:Title"],
-                ogdescription = _configuration["SEO:OpenGraph:Description"],
-                ogimage = _configuration["SEO:OpenGraph:Image"]
+                OpenGraphTitle = _configuration["SEO:OpenGraph:Title"],
+                OpenGraphDescription = _configuration["SEO:OpenGraph:Description"],
+                OpenGraphImage = _configuration["SEO:OpenGraph:Image"]
             };
 
             if (ButterResponse != null)
             {
-                ButterViewModel.ogtitle = ButterResponse.Data.Fields.ogtitle ?? _configuration["SEO:OpenGraph:Title"];
-                ButterViewModel.ogdescription = ButterResponse.Data.Fields.ogdescription ?? _configuration["SEO:OpenGraph:Description"];
-                ButterViewModel.ogimage = ButterResponse.Data.Fields.ogimage ?? _configuration["SEO:OpenGraph:Image"];
+                ButterViewModel.OpenGraphTitle = ButterResponse.Data.Fields.OpenGraphTitle ?? _configuration["SEO:OpenGraph:Title"];
+                ButterViewModel.OpenGraphDescription = ButterResponse.Data.Fields.OpenGraphDescription ?? _configuration["SEO:OpenGraph:Description"];
+                ButterViewModel.OpenGraphImage = ButterResponse.Data.Fields.OpenGraphImage ?? _configuration["SEO:OpenGraph:Image"];
                 
             }
             return View(ButterViewModel);
