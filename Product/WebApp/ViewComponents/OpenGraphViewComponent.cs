@@ -51,7 +51,7 @@ namespace UpDiddy.ViewComponents
         public IViewComponentResult Invoke(string PagePath)
         {
             
-            var ButterResponse = _butterService.RetrievePage<ButterCMSBaseViewModel>($"bcms_page_{PagePath}", PagePath.Split("/").Last());
+            var ButterResponse = _butterService.RetrievePage<ButterCMSBaseViewModel>($"bcms_page_{PagePath}", PagePath.Split("/").Last().ToLower());
             ButterCMSBaseViewModel ButterViewModel = new ButterCMSBaseViewModel
             {
                 OpenGraphTitle = _configuration["SEO:OpenGraph:Title"],
