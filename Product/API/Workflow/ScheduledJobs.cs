@@ -552,7 +552,7 @@ namespace UpDiddyApi.Workflow
                 }
                 catch (Exception e)
                 {
-                    _syslog.Log(LogLevel.Error, $"***** ProcessJobPages encountered an exception: {e.Message}");
+                    _syslog.Log(LogLevel.Error, $"***** ProcessJobPages add/update encountered an exception; name: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                     // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
                     foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
                     {
@@ -621,7 +621,7 @@ namespace UpDiddyApi.Workflow
                 }
                 catch (Exception e)
                 {
-                    _syslog.Log(LogLevel.Error, $"***** ProcessJobPages encountered an exception: {e.Message}");
+                    _syslog.Log(LogLevel.Error, $"***** ProcessJobPages delete/error encountered an exception; name: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                     // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
                     foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
                     {
