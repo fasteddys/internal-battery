@@ -21,12 +21,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<IEnumerable<JobSiteScrapeStatistic>> GetJobScrapeStatisticsAsync(int numRecords )
         {
-          return _dbContext.JobSiteScrapeStatistic
+          return await _dbContext.JobSiteScrapeStatistic
                  .Include ( s => s.JobSite )
                  .Where(s => s.IsDeleted == 0)
                  .OrderByDescending(s => s.ScrapeDate)
                  .Take(numRecords)
-                 .ToList();    
+                 .ToListAsync();    
         }
 
     }
