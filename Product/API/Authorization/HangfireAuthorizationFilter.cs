@@ -23,6 +23,9 @@ namespace UpDiddyApi.Authorization
 
         public bool Authorize(DashboardContext context)
         {
+            if (_environment.IsDevelopment())
+                return true;
+
             string HangfireUnlockedCookie = string.Empty;
             try
             {
@@ -38,7 +41,7 @@ namespace UpDiddyApi.Authorization
             bool IsUnlocked = HangfireUnlockedCookie.Equals(_configuration["Hangfire:UnlockToken"]);
             
 
-            if ((_environment.IsDevelopment() || _environment.IsStaging()) && IsUnlocked)
+            if ((_environment.IsProduction() || _environment.IsStaging()) && IsUnlocked)
                 return true;
             return false;
         }
