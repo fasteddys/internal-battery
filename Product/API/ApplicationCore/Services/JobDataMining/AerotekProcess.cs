@@ -53,10 +53,10 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             /* run the paged requests in parallel - tested with a variety of MAXDOP settings and 50 was the sweet spot locally 
              * when developing in the office. from home, i had to limit it to 15; anything higher and i started getting SSL errors.
              * i thought this had to do with my home network, but now i am getting SSL errors in the office too beyond 15 threads.
-             * i think we are being throttled by the job site? limiting this to 15; if we see SSL errors in staging/prod we may need
+             * i think we are being throttled by the job site? limiting this to 20; if we see SSL errors in staging/prod we may need
              * to revisit this. use maxdop = 1 for debugging.
              */
-            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 15 };
+            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 20 };
             int counter = 0;
             Parallel.For(counter, timesToRequestResultsPage, maxdop, i =>
             {
@@ -129,7 +129,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
                         // get the related JobPostingId (if one exists)
                         string jobId = job.id;
-                        var existingJobPage = existingJobPages.Where(jp => jp.Uri.ToString() == jobDetailUri.ToString() && jp.UniqueIdentifier == jobId).FirstOrDefault();
+                        var existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == jobId).FirstOrDefault();
                         if (existingJobPage != null)
                         {
                             // check to see if the page content has changed since we last ran this process
@@ -188,7 +188,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             // identify existing active jobs that were not discovered as valid and mark them for deletion
             var existingActiveJobs = existingJobPages.Where(jp => jp.JobPageStatusId == 2);
             var discoveredActiveAndPendingJobs = uniqueDiscoveredJobs.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2);
-            var unreferencedActiveJobs = existingActiveJobs.Except(discoveredActiveAndPendingJobs, new EqualityComparerByUri());
+            var unreferencedActiveJobs = existingActiveJobs.Except(discoveredActiveAndPendingJobs, new EqualityComparerByUniqueIdentifier());
             var jobsToDelete = unreferencedActiveJobs.Select(jp => { jp.JobPageStatusId = 4; return jp; }).ToList();
 
             // combine new/modified jobs and unreferenced jobs which should be deleted

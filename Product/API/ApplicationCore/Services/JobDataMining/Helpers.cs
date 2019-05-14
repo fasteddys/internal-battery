@@ -35,6 +35,25 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             }
         }
 
+        public class EqualityComparerByUniqueIdentifier : IEqualityComparer<JobPage>
+        {
+            public bool Equals(JobPage x, JobPage y)
+            {
+                if (Object.ReferenceEquals(x, y))
+                    return true;
+                if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+                    return false;
+                return x.UniqueIdentifier == y.UniqueIdentifier;
+            }
+
+            public int GetHashCode(JobPage jobPage)
+            {
+                if (Object.ReferenceEquals(jobPage, null))
+                    return 0;
+                return jobPage.UniqueIdentifier == null ? 0 : jobPage.UniqueIdentifier.GetHashCode();
+            }
+        }
+
         public class CompareByJobPageId : IComparer<JobPage>
         {
             public int Compare(JobPage x, JobPage y)
