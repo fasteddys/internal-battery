@@ -281,7 +281,7 @@ namespace UpDiddyApi
 
             app.UseHangfireDashboard("/dashboard", new DashboardOptions
             {
-                Authorization = new[] { new HangfireAuthorizationFilter(env) }
+                Authorization = new[] { new HangfireAuthorizationFilter(env, Configuration) }
             });
             app.UseHangfireServer();
 
