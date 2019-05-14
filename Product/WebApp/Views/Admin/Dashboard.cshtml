@@ -152,6 +152,32 @@
                     </div>
                 </div>
             </div>
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                <div class="card shadow mb-3">
+                    <div class="card-header">Active Job Posting Counts By Company</div>
+                    <div class="card-body p-0">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Company</th>
+                                    <th scope="col">Posting Date</th>
+                                    <th class="text-right" scope="col">Posting Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in ViewBag.activeJobPostsByCompanyReport)
+                                {
+                                    <tr>
+                                        <td>@r.CompanyName</td>
+                                        <td>@r.PostingDate</td>
+                                        <td class="text-right">@r.PostingCount</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>

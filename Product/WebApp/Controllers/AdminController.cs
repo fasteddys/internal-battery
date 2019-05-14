@@ -123,6 +123,8 @@ namespace UpDiddy.Controllers
             ViewBag.subscriberActionSummary = await _api.GetSubscriberActionSummaryAsync();
             ViewBag.offerActionSummary = await _api.GetOfferActionSummaryAsync();
             ViewBag.partnerSubActionReport = await _api.GetPartnerSubscriberActionStatsAsync();
+            // todo: this is temporary until active jobs postings report gets a dedicated tab w/criteria filters.
+            ViewBag.activeJobPostsByCompanyReport = await _api.GetActiveJobPostCountPerCompanyByDatesAsynch(null, null);
             return View("Dashboard");
         }
 

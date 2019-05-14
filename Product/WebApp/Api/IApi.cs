@@ -97,6 +97,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);
         Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey);
+        Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDatesAsynch(DateTime? startPostDate, DateTime? endPostDate);
 
         #endregion
 

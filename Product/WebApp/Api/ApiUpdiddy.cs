@@ -121,7 +121,7 @@ namespace UpDiddy.Api
         private async Task<HttpClient> AddBearerTokenAsync(HttpClient client)
         {
             if (_contextAccessor.HttpContext.User.Identity.IsAuthenticated)
-            { 
+            {
                 AuthenticationResult authResult = await GetBearerTokenAsync();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
             }
@@ -143,7 +143,7 @@ namespace UpDiddy.Api
                 SetCachedValue<IList<TopicDto>>(cacheKey, rval);
             }
             return rval;
-             
+
         }
 
         public async Task<TopicDto> TopicByIdAsync(int TopicId)
@@ -403,7 +403,7 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        
+
         public async Task<CourseVariantDto> GetCourseVariantAsync(Guid courseVariantGuid)
         {
             string cacheKey = $"GetCourseVariant{courseVariantGuid}";
@@ -584,7 +584,7 @@ namespace UpDiddy.Api
                 return rval;
             else
             {
-                
+
                 rval = await _GetJobsByLocation(searchFilter);
                 SetCachedValue<JobSearchResultDto>(cacheKey, rval);
             }
@@ -676,7 +676,7 @@ namespace UpDiddy.Api
         {
             return await PostAsync<SubscriberEducationHistoryDto>(string.Format("subscriber/{0}/education-history", subscriberGuid.ToString()), educationHistory);
         }
- 
+
         public async Task<BasicResponseDto> AddJobPostingAsync(JobPostingDto jobPosting)
         {
             return await PostAsync<BasicResponseDto>(string.Format("job"), jobPosting);
@@ -689,9 +689,9 @@ namespace UpDiddy.Api
 
 
 
-        public async Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid) 
+        public async Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid)
         {
-                return await GetAsync<List<JobPostingDto>>(string.Format("job/subscriber/{0}", subscriberGuid.ToString()));
+            return await GetAsync<List<JobPostingDto>>(string.Format("job/subscriber/{0}", subscriberGuid.ToString()));
         }
 
 
@@ -703,24 +703,24 @@ namespace UpDiddy.Api
             //  return JsonConvert.DeserializeObject<JobPostingDto>(BasicResponseDto.ResponseObject.ToString());
             try
             {
-               return await GetAsync<JobPostingDto>(string.Format("job/{0}", jobPostingGuid.ToString()));                 
+                return await GetAsync<JobPostingDto>(string.Format("job/{0}", jobPostingGuid.ToString()));
             }
             catch
             {
                 return null;
             };
-                            
-          
+
+
         }
 
         public async Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid)
-        {                        
-                return await PostAsync<JobPostingDto>(string.Format("job/{0}", jobPostingGuid.ToString()));        
+        {
+            return await PostAsync<JobPostingDto>(string.Format("job/{0}", jobPostingGuid.ToString()));
         }
 
         public async Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid)
-        {             
-           return await DeleteAsync<BasicResponseDto>(string.Format("job/{0}", jobPostingGuid.ToString()));  
+        {
+            return await DeleteAsync<BasicResponseDto>(string.Format("job/{0}", jobPostingGuid.ToString()));
         }
 
 
@@ -946,7 +946,7 @@ namespace UpDiddy.Api
 
         public async Task<IList<IndustryDto>> _GetIndustryAsync()
         {
-            
+
             return await GetAsync<IList<IndustryDto>>("lookupdata/industry");
         }
 
@@ -1123,7 +1123,7 @@ namespace UpDiddy.Api
         public async Task<SubscriberReportDto> GetSubscriberReportAsync(List<DateTime> dates = null)
         {
             string query = string.Empty;
-            if(dates.Any())
+            if (dates.Any())
             {
                 query += "?dates=" + string.Join("&dates=", dates);
             }
@@ -1226,6 +1226,23 @@ namespace UpDiddy.Api
             // Return the newly created partner
             return deletedPartnerResponse;
         }
+
+        public async Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDatesAsynch(DateTime? startPostDate = null, DateTime? endPostDate = null)
+        {
+            string query = string.Empty;
+            if (startPostDate.HasValue)
+            {
+                query += string.Join("?startPostDate=", startPostDate.Value);
+            }
+
+            if (endPostDate.HasValue)
+            {
+                query += string.Join("&endPostDate=", startPostDate.Value);
+            }
+
+            return await GetAsync<List<JobPostingCountReportDto>>($"report/job-post-count{query}");
+        }
+
         #endregion
 
         #region JobBoard

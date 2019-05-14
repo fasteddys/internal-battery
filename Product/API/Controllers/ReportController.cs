@@ -169,25 +169,27 @@ namespace UpDiddyApi.Controllers
             var queryable = options.ApplyTo(_db.SubscriberAction.AsQueryable());
 
             var query = from sa in queryable.Cast<SubscriberAction>()
-                join partRef in _db.SubscriberSignUpPartnerReferences on sa.EntityId equals partRef.SubscriberId
-                join p in _db.Partner on partRef.PartnerId equals p.PartnerId into pGroup
-                from partner in pGroup.DefaultIfEmpty()
-                join a in _db.Action on sa.ActionId equals a.ActionId
-                group new {
-                    PartnerName = partner == null ? "N/A" : partner.Name,
-                    ActionId = sa.ActionId,
-                    ActionName = a.Name
-                } by (partner.PartnerId == null) ? -1 : partner.PartnerId into report
-                select new PartnerStatsDto
-                {
-                    PartnerName = report.First().PartnerName,
-                    Stats = report.GroupBy(x => x.ActionId).Select(y => new {
-                        ActionId = y.First().ActionId,
-                        Count = y.Count()
-                    }).ToDictionary(x => x.ActionId.ToString(), x=> x.Count)
-                };
+                        join partRef in _db.SubscriberSignUpPartnerReferences on sa.EntityId equals partRef.SubscriberId
+                        join p in _db.Partner on partRef.PartnerId equals p.PartnerId into pGroup
+                        from partner in pGroup.DefaultIfEmpty()
+                        join a in _db.Action on sa.ActionId equals a.ActionId
+                        group new
+                        {
+                            PartnerName = partner == null ? "N/A" : partner.Name,
+                            ActionId = sa.ActionId,
+                            ActionName = a.Name
+                        } by (partner.PartnerId == null) ? -1 : partner.PartnerId into report
+                        select new PartnerStatsDto
+                        {
+                            PartnerName = report.First().PartnerName,
+                            Stats = report.GroupBy(x => x.ActionId).Select(y => new
+                            {
+                                ActionId = y.First().ActionId,
+                                Count = y.Count()
+                            }).ToDictionary(x => x.ActionId.ToString(), x => x.Count)
+                        };
 
-            var actions = _db.Action.Select(x => new ActionKeyDto{ Name = x.Name, ActionId = x.ActionId }).Where(x => x.ActionId == 6 || x.ActionId == 7).ToList();
+            var actions = _db.Action.Select(x => new ActionKeyDto { Name = x.Name, ActionId = x.ActionId }).Where(x => x.ActionId == 6 || x.ActionId == 7).ToList();
             return Ok(new { report = query, actionKey = actions });
         }
 
@@ -200,7 +202,7 @@ namespace UpDiddyApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("/api/[controller]/application-count/{companyGuid?}/{startDate?}/{endDate?}")]
-        public async Task<IActionResult> ApplicationCountPerCompanyByDates(Guid? companyGuid=null, DateTime? startDate=null, DateTime? endDate=null)
+        public async Task<IActionResult> ApplicationCountPerCompanyByDates(Guid? companyGuid = null, DateTime? startDate = null, DateTime? endDate = null)
         {
             ActionResult response;
             try
@@ -212,11 +214,42 @@ namespace UpDiddyApi.Controllers
 
                 }
                 else
-                    response= BadRequest();
+                    response = BadRequest();
             }
             catch (Exception ex)
             {
                 _syslog.LogError(ex, $"Error in ReportController.ApplicationCountPerCompanyByDates method for CompanyGuid={companyGuid},StartDate={startDate} and EndDate={endDate}");
+                response = StatusCode(500);
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Get active/published job counts per company and posted date range.
+        /// </summary>
+        /// <param name="startPostDate"></param>
+        /// <param name="endPostDate"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/[controller]/job-post-count/{startPostDate?}/{endPostDate?}")]
+        public async Task<IActionResult> ActiveJobPostCountPerCompanyByDates(DateTime? startPostDate = null, DateTime? endPostDate = null)
+        {
+            ActionResult response;
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var jobPostingCountReportDtos = await _reportingService.GetActiveJobPostCountPerCompanyByDates(startPostDate, endPostDate);
+                    response = Ok(jobPostingCountReportDtos);
+
+                }
+                else
+                    response = BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _syslog.LogError(ex, $"Error in ReportController.ActiveJobPostCountPerCompanyByDates method for StartPostDate={startPostDate} and EndPostDate={endPostDate}");
                 response = StatusCode(500);
             }
 
