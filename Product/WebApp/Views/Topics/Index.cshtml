@@ -23,37 +23,27 @@
     </div>
     <div class="row topics-courses" id="career-training-categories">
         <div class="container">
-            <div class="row course-categories">
-                <div class="col-12 career-training-header-container">
-                    <span class="section-heading f-color-primary">
-                        <img src="@Model.TopicsVendorLogo" style="width: 200px" />
-                    </span>
-                </div>
-                @foreach (TopicLandingViewModel topic in Model.Topics)
-                {
-                    <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 card-column">
-                        <a class="card-hyperlink-container" href="@(topic.Url)">
-                            <div class="card">
-                                <img class="card-img-top" src="@topic.Image" alt="Card image cap">
-                            </div>
-                        </a>
+            @foreach (TrainingVendorViewModel vendor in Model.TrainingVendors)
+            {
+                <div class="row course-categories">
+                    <div class="col-12 career-training-header-container">
+                        <span class="section-heading f-color-primary">
+                            <img src="@vendor.VendorLogo" style="width: 200px" />
+                        </span>
                     </div>
-                }
-            </div>
-            <div class="row course-categories">
-                <div class="col-12 career-training-header-container pt-4">
-                    <span class="section-heading f-color-primary">
-                        <img src="~/images/Barnett_Logo.png" style="width: 200px" />
-                    </span>
-                </div>
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 card-column">
-                    <a class="card-hyperlink-container" asp-controller="Course" asp-action="ClinicalResearchCoordinator">
-                        <div class="card">
-                            <img class="card-img-top" src="~/images/BarnettTile.png" alt="Card image cap">
+                    @foreach (TrainingTopicViewModel topic in vendor.TrainingTopicsList)
+                    {
+                        <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 card-column">
+                            <a class="card-hyperlink-container" href="@(topic.Url)">
+                                <div class="card">
+                                    <img class="card-img-top" src="@topic.Image" alt="Card image cap">
+                                </div>
+                            </a>
                         </div>
-                    </a>
+                    }
                 </div>
-            </div>
+            }
+
         </div>
     </div>
 </div>

@@ -36,6 +36,7 @@ namespace UpDiddy.Controllers
             {
                 QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
             }
+            QueryParams.Add("levels", _configuration["ButterCMS:CareerCircleTopicsPage:Levels"]);
             PageResponse<TopicsLandingPageViewModel> TopicsPage = _butterService.RetrievePage<TopicsLandingPageViewModel>("TopicsPage", "topics", QueryParams);
 
             if (TopicsPage == null)
@@ -45,8 +46,7 @@ namespace UpDiddy.Controllers
             TopicsLandingPageViewModel TopicsViewModel = new TopicsLandingPageViewModel {
                  HeroHeader = TopicsPage.Data.Fields.HeroHeader,
                  HeroImage = TopicsPage.Data.Fields.HeroImage,
-                 TopicsVendorLogo = TopicsPage.Data.Fields.TopicsVendorLogo,
-                 Topics = TopicsPage.Data.Fields.Topics,
+                 TrainingVendors = TopicsPage.Data.Fields.TrainingVendors,
                  HeroDescription = TopicsPage.Data.Fields.HeroDescription
             };
 

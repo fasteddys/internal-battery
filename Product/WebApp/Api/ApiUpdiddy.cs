@@ -601,6 +601,16 @@ namespace UpDiddy.Api
             return await PutAsync<List<ImportActionDto>>("contact/import/" + partnerGuid + "/" + HttpUtility.UrlEncode(cacheKey));
         }
 
+
+        #region jobs
+        public async Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords)
+        {
+            return await GetAsync<IList<JobSiteScrapeStatisticDto>>($"job/scrape-statistics/{numRecords}");
+        }
+
+        #endregion
+
+
         #region Promocode
         public async Task<PromoCodeDto> PromoCodeRedemptionValidationAsync(string promoCodeRedemptionGuid, string courseGuid)
         {
