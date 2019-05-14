@@ -1478,6 +1478,9 @@ namespace UpDiddyApi.Migrations
 
                     b.HasIndex("SecurityClearanceId");
 
+                    b.HasIndex("IsDeleted", "JobPostingGuid")
+                        .HasName("IX_JobPosting_IsDeletedJobPostingGuid");
+
                     b.ToTable("JobPosting");
                 });
 

@@ -464,7 +464,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception e)
             {
                 // todo: implement better logging
-                _syslog.Log(LogLevel.Error, $"***** ScheduledJobs.JobDataMining encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.JobDataMining encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 result = false;
             }
 
@@ -552,7 +552,7 @@ namespace UpDiddyApi.Workflow
                 }
                 catch (Exception e)
                 {
-                    _syslog.Log(LogLevel.Error, $"***** ScheduledJobs.ProcessJobPages add/update encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                    _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ProcessJobPages add/update encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                     // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
                     foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
                     {
@@ -621,7 +621,7 @@ namespace UpDiddyApi.Workflow
                 }
                 catch (Exception e)
                 {
-                    _syslog.Log(LogLevel.Error, $"***** ScheduledJobs.ProcessJobPages delete/error encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                    _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ProcessJobPages delete/error encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                     // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
                     foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
                     {

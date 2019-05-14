@@ -189,6 +189,10 @@ namespace UpDiddyApi.Models
                 .HasKey(cc => new { cc.CampaignId, cc.ContactId });
             #endregion
 
+            modelBuilder.Entity<JobPosting>()
+                .HasIndex(jp => new { jp.IsDeleted, jp.JobPostingGuid })
+                .HasName("IX_JobPosting_IsDeletedJobPostingGuid");
+
             modelBuilder.Entity<JobSite>()
                 .HasIndex(js => js.Name)
                 .HasName("UIX_JobSite_Name")

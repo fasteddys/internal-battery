@@ -120,7 +120,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
                         // get the related JobPostingId (if one exists)
                         string jobId = job.id;
-                        var existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == jobId).FirstOrDefault();
+                        var existingJobPage = existingJobPages.Where(jp => jp.Uri.ToString() == jobDetailUri.ToString() && jp.UniqueIdentifier == jobId).FirstOrDefault();
                         if (existingJobPage != null)
                         {
                             // check to see if the page content has changed since we last ran this process
@@ -153,13 +153,13 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     catch (Exception e)
                     {
                         jobPageStatusId = 3; // record that an error occurred while processing this job page
-                        _syslog.Log(LogLevel.Error, $"***** TEKsystemProcess.DiscoverJobPages encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                        _syslog.Log(LogLevel.Information, $"***** TEKsystemProcess.DiscoverJobPages encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                     }
                 }
             });
 
             if (discoveredJobPages.Count() != jobCount)
-                _syslog.Log(LogLevel.Warning, $"***** TEKsystemsProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but TEKsystem's API indicates there should be {jobCount} jobs.");
+                _syslog.Log(LogLevel.Information, $"***** TEKsystemsProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but TEKsystem's API indicates there should be {jobCount} jobs.");
 
             /* deal with duplicate job postings (or job postings that are similar enough to be considered duplicates). examples:
              * - two job listings that have the same url and id but in the raw data the "applications" property is different (id: J3Q20V76L8YK2XBR6S8)
@@ -174,9 +174,9 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              */
             var uniqueDiscoveredJobs = (from jp in discoveredJobPages
                                         group jp by jp.UniqueIdentifier into g
-                                        select g.OrderBy(a => a, new CompareByJobPageId()).First()).ToList();
+                                        select g.OrderBy(a => a, new CompareByUri()).First()).ToList();
 
-             // identify existing active jobs that were not discovered as valid and mark them for deletion
+            // identify existing active jobs that were not discovered as valid and mark them for deletion
             var existingActiveJobs = existingJobPages.Where(jp => jp.JobPageStatusId == 2);
             var discoveredActiveAndPendingJobs = uniqueDiscoveredJobs.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2);
             var unreferencedActiveJobs = existingActiveJobs.Except(discoveredActiveAndPendingJobs, new EqualityComparerByUri());
@@ -244,7 +244,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Error, $"***** TEKsystemProcess.ProcessJobPage encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Information, $"***** TEKsystemProcess.ProcessJobPage encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 return null;
             }
         }
