@@ -10,6 +10,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ICountryRepository Country { get; }
         IStateRepository State { get; }
         IJobPostingRepository JobPosting { get; }
+        IJobApplicationRepository JobApplication { get; }
         ICompanyRepository Company { get; }
     }
 }
