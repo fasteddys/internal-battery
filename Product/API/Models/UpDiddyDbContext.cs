@@ -157,6 +157,11 @@ namespace UpDiddyApi.Models
         public DbSet<JobPostingFavorite> JobPostingFavorite { get; set; }
         public DbSet<Recruiter> Recruiter { get; set; }
         public DbSet<RecruiterAction> RecruiterAction { get; set; }
+        public DbSet<JobSite> JobSite { get; set; }
+        public DbSet<JobPage> JobPage { get; set; }
+        public DbSet<JobPageStatus> JobPageStatus { get; set; }
+        public DbSet<JobSiteScrapeStatistic> JobSiteScrapeStatistic { get; set; }
+
 
         #region DBQueries
 
@@ -183,6 +188,32 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<CampaignContact>()
                 .HasKey(cc => new { cc.CampaignId, cc.ContactId });
             #endregion
+
+            modelBuilder.Entity<JobPosting>()
+                .HasIndex(jp => new { jp.IsDeleted, jp.JobPostingGuid })
+                .HasName("IX_JobPosting_IsDeletedJobPostingGuid");
+
+            modelBuilder.Entity<JobSite>()
+                .HasIndex(js => js.Name)
+                .HasName("UIX_JobSite_Name")
+                .IsUnique(true);
+                
+            modelBuilder.Entity<JobPage>()
+                .HasIndex(jp => new { jp.UniqueIdentifier, jp.JobSiteId })
+                .HasName("UIX_JobPage_JobSite_UniqueIdentifier")
+                .IsUnique(true);
+
+            modelBuilder.Entity<JobSite>()
+                .Property(js => js.Uri)
+                .HasConversion(
+                js => js.ToString(),
+                js => new Uri(js));
+
+            modelBuilder.Entity<JobPage>()
+                .Property(jp => jp.Uri)
+                .HasConversion(
+                jp => jp.ToString(),
+                jp => new Uri(jp));
 
             modelBuilder.Entity<RecruiterAction>()
                 .Property(ra => ra.OccurredDate)
@@ -328,6 +359,9 @@ namespace UpDiddyApi.Models
 
             modelBuilder.Entity<JobPostingFavorite>()
                    .HasKey(ss => new { ss.JobPostingId, ss.SubscriberId });
+
+            // Add global query filter for enrollments 
+            modelBuilder.Entity<Enrollment>().HasQueryFilter(p => p.IsDeleted == 0);
 
 
         }

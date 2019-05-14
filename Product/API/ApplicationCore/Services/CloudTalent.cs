@@ -109,7 +109,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                     isIndexed = true;
                     _jobServiceClient.Projects.Jobs.Delete(jobPosting.CloudTalentUri).Execute();
                 }
-                    
+
+                // remove reference to this job posting in job pages table
+                _db.JobPage.Where(jp => jp.JobPostingId == jobPosting.JobPostingId).ToList().ForEach(jp => {
+                    jp.ModifyDate = DateTime.UtcNow;
+                    jp.ModifyGuid = Guid.Empty;
+                    jp.JobPostingId = null;
+                });
+
                 // Update job posting with index error
                 jobPosting.IsDeleted = 1;
                 if (isIndexed)
