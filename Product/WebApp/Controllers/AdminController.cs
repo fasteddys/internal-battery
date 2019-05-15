@@ -35,6 +35,31 @@ namespace UpDiddy.Controllers
             _cache = cache;
         }
 
+ 
+        [Authorize]
+        [HttpGet]
+        [Route("/admin/jobscrapestats")]
+        public async Task<IActionResult> JobScrapeStats()
+        {
+            // get default number of records to view 
+            int JobSiteScrapeAdminScreenDefaultNumRecords = int.Parse(_configuration["CareerCircle:JobSiteScrapeAdminScreenDefaultNumRecords"]);
+            // check to see if it's overwritten by a query value 
+            var queryNumRecords = Request.Query["NumRecords"];            
+            if (queryNumRecords.ToString() != string.Empty)
+                try
+                {
+                    JobSiteScrapeAdminScreenDefaultNumRecords = int.Parse(queryNumRecords);
+                }
+                catch { }
+            IList<JobSiteScrapeStatisticDto> Statistics = await _api.JobScrapeStatisticsSearchAsync(JobSiteScrapeAdminScreenDefaultNumRecords);
+            JobSiteScrapeStatisticViewModel model = new JobSiteScrapeStatisticViewModel()
+            {
+                Statistics = Statistics,
+                NumRecords = JobSiteScrapeAdminScreenDefaultNumRecords
+            };
+            return View(model);
+        }
+        
         [HttpGet]
         [Route("/admin/courselookup")]
         public async Task<JsonResult> CourseLookup()
@@ -122,6 +147,7 @@ namespace UpDiddy.Controllers
             ViewBag.recruiterActionSummary = await _api.GetRecruiterActionSummaryAsync();
             ViewBag.subscriberActionSummary = await _api.GetSubscriberActionSummaryAsync();
             ViewBag.offerActionSummary = await _api.GetOfferActionSummaryAsync();
+            ViewBag.partnerSubActionReport = await _api.GetPartnerSubscriberActionStatsAsync();
             return View("Dashboard");
         }
 

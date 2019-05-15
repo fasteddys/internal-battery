@@ -98,6 +98,29 @@ namespace UpDiddy.Controllers
                 {
                     case (401):
                         return Unauthorized();
+                    case (404):
+                        job = await _api.GetExpiredJobAsync(JobGuid);
+                        if (job != null)
+                        {
+                            string location = job?.City + ", " + job?.Province;
+                            JobSearchResultDto jobSearchResultDto = await _api.GetJobsByLocation(job.Title, location);
+                            int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
+
+                            if (jobSearchResultDto == null)
+                                return NotFound();
+
+                            var jobSearchViewModel = new JobSearchViewModel()
+                            {
+                                Keywords = job.Title,
+                                Location = location,
+                                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, pageCount)
+                            };
+
+                            // Remove the expired job link from the search provider's index.
+                            Response.StatusCode = 404;
+                            return View("Index", jobSearchViewModel);
+                        }
+                        break;
                     case (500):
                         return StatusCode(500);
                     default:
@@ -108,6 +131,7 @@ namespace UpDiddy.Controllers
             if (job == null)
                 return NotFound();
 
+      
             JobDetailsViewModel jdvm = new JobDetailsViewModel
             {
                 RequestId = job.RequestId,
@@ -119,10 +143,25 @@ namespace UpDiddy.Controllers
                 PostingId = job.JobPostingGuid?.ToString(),
                 EmployeeType = job.EmploymentType?.Name,
                 Summary = job.Description,
-                ContactEmail = job.Subscriber?.Email,
-                ContactName = $"{job.Subscriber?.LastName}, {job.Subscriber?.FirstName}",
-                ContactPhone = job.Subscriber?.PhoneNumber
+
             };
+
+            // Display subscriber info if it exists
+            if ( job.Recruiter.Subscriber != null )
+            {
+                jdvm.ContactEmail = job.Recruiter.Subscriber?.Email;
+                jdvm.ContactName = $"{job.Recruiter.Subscriber?.LastName}, {job.Recruiter.Subscriber?.FirstName}";
+                jdvm.ContactPhone = job.Recruiter.Subscriber?.PhoneNumber;
+
+            }
+            else // Use recruiter info in no subscriber exists
+            {
+                jdvm.ContactEmail = job.Recruiter?.Email;
+                jdvm.ContactName = $"{job.Recruiter?.LastName}, {job.Recruiter?.FirstName}";
+                jdvm.ContactPhone = job.Recruiter?.PhoneNumber;
+
+            }
+ 
 
 
             return View("JobDetails", jdvm);

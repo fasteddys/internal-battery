@@ -304,5 +304,19 @@ namespace UpDiddy.Controllers
                 return View(courseViewModel);
             }
         }
+
+        [Authorize]
+        [HttpGet("[controller]/ClinicalResearchCoordinator")]
+        public async Task<IActionResult> ClinicalResearchCoordinator()
+        {
+            return View("ClinicalResearchCoordinator");
+        }
+
+        [Authorize]
+        [HttpGet("[controller]/itprotv-comptia-it-fundamentals")]
+        public async Task<IActionResult> ITProTVCourse()
+        {
+            return View("ITProTVCourse");
+        }
     }
 }

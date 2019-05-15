@@ -15,12 +15,14 @@ namespace UpDiddy.ViewModels
         public string RequestPath { get; set; }
         public string ErrorMsg { get; set; }
  
+ 
 
         #region Basic job posting information 
         [Required(ErrorMessage = "Job title is required")]
         public string Title { get; set; }
 
         [Required(ErrorMessage = "Job description is required")]
+        [StringLength(6000, MinimumLength = 300, ErrorMessage = "Job postings must contain between 300-6000 characters")]
         public string Description { get; set; }
 
 

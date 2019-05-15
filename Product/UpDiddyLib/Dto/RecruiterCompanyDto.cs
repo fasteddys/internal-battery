@@ -14,8 +14,6 @@ namespace UpDiddyLib.Dto
  
         public CompanyDto Company { get; set; }
 
-        public Guid CompanyGuid { get; set; }
- 
         public int IsStaff { get; set; }
     }
 }

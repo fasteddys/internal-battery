@@ -97,6 +97,8 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);
         Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey);
+        Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords);
+
 
         #endregion
 
@@ -111,11 +113,13 @@ namespace UpDiddy.Api
         Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync();
         Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync();
         Task<List<OfferActionSummaryDto>> GetOfferActionSummaryAsync();
+        Task<ActionReportDto> GetPartnerSubscriberActionStatsAsync();
         #endregion
 
         #region JobBoard
 
         Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null);
+        Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid);
         Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
         Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location);
 
