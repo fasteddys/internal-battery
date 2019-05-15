@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 namespace UpDiddy.ViewModels.ButterCMS
 {
     
-    public class TopicsLandingPageViewModel
+    public class TopicsLandingPageViewModel : ButterCMSBaseViewModel
     {
         [JsonProperty("hero_header")]
         public string HeroHeader { get; set; }
