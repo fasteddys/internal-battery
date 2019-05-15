@@ -251,7 +251,7 @@ namespace UpDiddyApi.Controllers
                 // Send recruiter email alerting them to application
                 BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
                     (jobPosting.Recruiter.Email,
-                    _configuration["SysEmail:TemplateIds:JobApplication-Recruiter" +
+                    _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter" +
                         (IsExternalRecruiter == true ? "-External" : string.Empty)],
                     new
                     {
