@@ -31,7 +31,7 @@ namespace UpDiddyLib.Helpers
             return true;
         }
 
-        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null)
+        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null)
         {
             string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
 
@@ -43,8 +43,11 @@ namespace UpDiddyLib.Helpers
             message.AddTo(new EmailAddress(email));
             message.SetTemplateId(templateId);
             message.SetTemplateData(templateData);
+            if(attachments != null)
+                message.AddAttachments(attachments);
             if (subject != null)
                 message.SetSubject(subject);
+
             var response = await client.SendEmailAsync(message);
             int statusCode = (int)response.StatusCode;
 

@@ -279,7 +279,10 @@ namespace UpDiddyApi
 
             app.UseCors("Cors");
 
-            app.UseHangfireDashboard("/dashboard");
+            app.UseHangfireDashboard("/dashboard", new DashboardOptions
+            {
+                Authorization = new[] { new HangfireAuthorizationFilter(env, Configuration) }
+            });
             app.UseHangfireServer();
 
             app.UseMvc(routes =>

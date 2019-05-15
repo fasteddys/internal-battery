@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -229,6 +230,19 @@ namespace UpDiddyApi.ApplicationCore.Services
             subscriber.SubscriberFile.Add(subscriberFileResume);
 
             return subscriberFileResume;
+        }
+
+        public async Task<Stream> GetResumeAsync(Subscriber subscriber)
+        {
+
+            SubscriberFile file = subscriber.SubscriberFile.Where(
+                f => f.SubscriberFileGuid.Equals(
+                    subscriber.SubscriberFile.FirstOrDefault()?.SubscriberFileGuid)).First();
+
+            if (file == null)
+                return null;
+            
+            return await _cloudStorage.OpenReadAsync(file.BlobName);
         }
 
         public async Task<bool> QueueScanResumeJobAsync(Guid subscriberGuid)
