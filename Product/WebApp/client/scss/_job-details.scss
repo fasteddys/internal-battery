@@ -23,21 +23,21 @@
     }
     .job-details-hero-band {
         background-position: center;
-        background-image: url("/images/AdobeStock_220264462.jpeg");
+        background-image: url("/images/AdobeStock_220264462.jpg");
     }
     .job-application-hero-band {
         background-position: center;
-        background-image: url("/images/AdobeStock_208921640.jpeg");
+        background-image: url("/images/AdobeStock_208921640.jpg");
     }
     .job-application-finish-hero-band {
         &.Success {
             background-position: top;
-            background-image: url("/images/AdobeStock_113261535.jpeg");
+            background-image: url("/images/AdobeStock_113261535.jpg");
         }
 
         &.Failed {
             background-position: center;
-            background-image: url("/images/AdobeStock_189186643.jpeg");
+            background-image: url("/images/AdobeStock_189186643.jpg");
         }
     }
     .job-details-container {

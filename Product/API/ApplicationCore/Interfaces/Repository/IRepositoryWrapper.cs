@@ -15,5 +15,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
       
         IJobPostingRepository JobPosting { get; }
         ICompanyRepository Company { get; }
+        IRecruiterActionRepository RecruiterActionRepository { get; }
     }
 }

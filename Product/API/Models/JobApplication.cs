@@ -22,8 +22,8 @@ namespace UpDiddyApi.Models
 
         public string CoverLetter { get; set; }
 
+        public virtual JobApplicationStatus JobApplicationStatus { get; set; }
 
-
-
+        public int JobApplicationStatusId { get; set; }
     }
 }

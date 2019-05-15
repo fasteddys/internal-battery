@@ -201,6 +201,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             return db.JobPosting
                 .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
+                .Include(s => s.Recruiter).ThenInclude(r => r.Subscriber)
+                .Include(s => s.Company)
                 .FirstOrDefault();
         }
 

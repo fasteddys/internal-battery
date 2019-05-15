@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-
+using System.IO;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +32,8 @@ using UpDiddyApi.Helpers.Job;
 using System.Security.Claims;
 using UpDiddyLib.Helpers;
 using System.Dynamic;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using SendGrid.Helpers.Mail;
 
 namespace UpDiddyApi.Controllers
 {
@@ -47,9 +49,17 @@ namespace UpDiddyApi.Controllers
         private readonly int _postingTTL = 30;
         private readonly CloudTalent _cloudTalent = null;
         private ISysEmail _sysEmail;
+        private ISubscriberService _subscriberService;
 
         #region constructor 
-        public JobApplicationController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory, ISysEmail sysEmail)
+        public JobApplicationController(
+            UpDiddyDbContext db, 
+            IMapper mapper, 
+            Microsoft.Extensions.Configuration.IConfiguration configuration, 
+            ILogger<ProfileController> sysLog, 
+            IHttpClientFactory httpClientFactory, 
+            ISysEmail sysEmail,
+            ISubscriberService subscriberService)
 
         {
             _db = db;
@@ -60,6 +70,7 @@ namespace UpDiddyApi.Controllers
             _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
             _sysEmail = sysEmail;
+            _subscriberService = subscriberService;
         }
         #endregion
 
@@ -209,7 +220,7 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Authorize]
         [Route("api/[controller]")]
-        public IActionResult CreateJobApplication([FromBody] JobApplicationDto jobApplicationDto)
+        public async Task<IActionResult> CreateJobApplication([FromBody] JobApplicationDto jobApplicationDto)
         {
             try
             {
@@ -218,11 +229,11 @@ namespace UpDiddyApi.Controllers
                 Subscriber subscriber = null;
                 string ErrorMsg = string.Empty;
                 int ErrorCode = 0;
-                if ( JobApplicationFactory.ValidateJobApplication(_db,jobApplicationDto, ref subscriber, ref jobPosting,ref ErrorCode, ref ErrorMsg) == false )
+                if (JobApplicationFactory.ValidateJobApplication(_db, jobApplicationDto, ref subscriber, ref jobPosting, ref ErrorCode, ref ErrorMsg) == false)
                 {
-                   return BadRequest(new BasicResponseDto() {StatusCode = ErrorCode, Description = ErrorMsg });
+                    return BadRequest(new BasicResponseDto() { StatusCode = ErrorCode, Description = ErrorMsg });
                 }
-                
+
                 // create job application 
                 JobApplication jobApplication = new JobApplication();
                 BaseModelFactory.SetDefaultsForAddNew(jobApplication);
@@ -232,21 +243,45 @@ namespace UpDiddyApi.Controllers
                 jobApplication.CoverLetter = jobApplicationDto.CoverLetter == null ? string.Empty : jobApplicationDto.CoverLetter;
                 _db.JobApplication.Add(jobApplication);
                 _db.SaveChanges();
-    
+
+                Stream SubscriberResumeAsStream = await _subscriberService.GetResumeAsync(subscriber);
+
+                bool IsExternalRecruiter = jobPosting.Recruiter.Subscriber == null;
+
                 // Send recruiter email alerting them to application
-                BackgroundJob.Enqueue(() =>_sysEmail.SendTemplatedEmailAsync
-                    (jobPosting.Recruiter.Subscriber.Email, 
-                     _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter"],
-                     new
-                     {
+                BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
+                    (jobPosting.Recruiter.Email,
+                    _configuration["SysEmail:TemplateIds:JobApplication-Recruiter" +
+                        (IsExternalRecruiter == true ? "-External" : string.Empty)],
+                    new
+                    {
                         ApplicantName = subscriber.FirstName + " " + subscriber.LastName,
+                        ApplicantFirstName = subscriber.FirstName,
+                        ApplicantLastName = subscriber.LastName,
+                        ApplicantEmail = subscriber.Email,
                         JobTitle = jobPosting.Title,
-                        ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration,subscriber.SubscriberGuid.Value),
-                        JobUrl = JobPostingFactory.JobPostingUrl(_configuration,jobPosting.JobPostingGuid)
-                      },
-                      Constants.SendGridAccount.Transactional,
-                      null)
-                );
+                        ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration, subscriber.SubscriberGuid.Value),
+                        JobUrl = JobPostingFactory.JobPostingUrl(_configuration, jobPosting.JobPostingGuid),
+                        Subject = (IsExternalRecruiter == true ? $"{jobPosting.Company.CompanyName} job posting via CareerCircle" : "Applicant Alert"),
+                        RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
+                        JobApplicationGuid = jobApplication.JobApplicationGuid
+                    },
+                    Constants.SendGridAccount.Transactional,
+                    null,
+                    new List<Attachment>
+                    {
+                        new Attachment
+                        {
+                            Content = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream)),
+                            Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName)
+                        },
+                        new Attachment
+                        {
+                            Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jobApplicationDto.CoverLetter)),
+                            Filename = "CoverLetter.txt"
+                        }
+                    }
+                ));
              
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPosting.JobPostingGuid}" });
