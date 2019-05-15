@@ -12,7 +12,7 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
 {
-    [Route("[controller]")]
+    [Route("cms")]
     public class ButterCMSController : BaseController
     {
         public IButterCMSService _butterService;
@@ -27,7 +27,7 @@ namespace UpDiddy.Controllers
             _configuration = configuration;
         }
         
-        [HttpPost("ClearCachedNavigation")]
+        [HttpPost("clear-cached-navigation")]
         public IActionResult ClearCachedNavigation()
         {
             if (Request.Headers["CC-Webhook-Unauthenticated"].Count > 0 
