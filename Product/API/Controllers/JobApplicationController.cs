@@ -266,6 +266,7 @@ namespace UpDiddyApi.Controllers
                         RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
                         JobApplicationGuid = jobApplication.JobApplicationGuid
                     },
+                    Constants.SendGridAccount.Transactional,
                     null,
                     new List<Attachment>
                     {

@@ -106,7 +106,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _companyRepository;
             }
         }
-        }
+        
 
         public IRecruiterActionRepository RecruiterActionRepository
         {

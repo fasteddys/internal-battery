@@ -12,7 +12,8 @@ namespace UpDiddyLib.Helpers
         Task<bool> SendTemplatedEmailAsync(
             string email, 
             string templateId, 
-            dynamic templateData, 
+            dynamic templateData,
+            Constants.SendGridAccount SendGridAccount, 
             string subject = null, 
             List<Attachment> attachments = null);
 
