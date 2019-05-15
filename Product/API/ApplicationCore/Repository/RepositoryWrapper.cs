@@ -12,6 +12,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private readonly UpDiddyDbContext _dbContext;
         private ICountryRepository _countryRepository;
         private IStateRepository _stateRepository;
+        private IJobSiteRepository _jobSiteRepository;
+        private IJobPageRepository _jobPageRepository;
+        private IJobPostingRepository _jobPostingRepository;
+        private ICompanyRepository _companyRepository;
+        private IJobSiteScrapeStatisticRepository _jobSiteScrapeStatisticRepository;
         private IRecruiterActionRepository _recruiterActionRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -40,6 +45,67 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 }
                 return _stateRepository;
             }
+        }
+
+        public IJobSiteRepository JobSite
+        {
+            get
+            {
+                if(_jobSiteRepository == null)
+                {
+                    _jobSiteRepository = new JobSiteRepository(_dbContext);
+                }
+                return _jobSiteRepository;
+            }
+        }
+
+        public IJobPageRepository JobPage
+        {
+            get
+            {
+                if(_jobPageRepository == null)
+                {
+                    _jobPageRepository = new JobPageRepository(_dbContext);
+                }
+                return _jobPageRepository;
+            }
+        }
+ 
+        public IJobSiteScrapeStatisticRepository JobSiteScrapeStatistic
+        {
+            get
+            {
+                if (_jobSiteScrapeStatisticRepository == null)
+                {
+                    _jobSiteScrapeStatisticRepository = new JobSiteScrapeStatisticRepository(_dbContext);
+                }
+                return _jobSiteScrapeStatisticRepository;
+            }
+        }
+
+        public IJobPostingRepository JobPosting
+        {
+            get
+            {
+                if (_jobPostingRepository == null)
+                {
+                    _jobPostingRepository = new JobPostingRepository(_dbContext);
+                }
+                return _jobPostingRepository;
+            }
+        }
+
+        public ICompanyRepository Company
+        {
+            get
+            {
+                if (_companyRepository == null)
+                {
+                    _companyRepository = new CompanyRepository(_dbContext);
+                }
+                return _companyRepository;
+            }
+        }
         }
 
         public IRecruiterActionRepository RecruiterActionRepository

@@ -3,6 +3,8 @@
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 @model TalentSubscriberViewModel
 <div class="container-fluid bg-color-primary">
     <div class="container">
@@ -37,6 +39,11 @@
                 </div>
                 <button class="btn btn-primary" onclick="doSearch(false);">Search</button>
                 <button class="btn btn-primary" onclick="doSearch(true);">Reset</button>
+                @if ((await AuthorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin")).Succeeded)
+                {
+                    <button class="btn btn-primary" onclick="doDownload();">Download</button>
+                }
+
             </div>
         </div>
     </div>
@@ -51,6 +58,62 @@
 
             window.onload = function () {
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+            }
+
+
+            function doDownload() {
+                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                var search = document.getElementById('GridSearch').value;
+                var searchQuery = encodeURIComponent(search);
+                var searchFilter = encodeURIComponent(document.getElementById('SelectedSubscriberSource').value);
+                var url = 'subscriberData/' + searchFilter + '/' + searchQuery;
+                $.ajax({
+                    url: url,
+                    method: "get",
+                    success: function (data, textStatus, jqXHR) {
+                        downloadUserFile(data);
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        ToastService.error(textStatus, jqXHR.responseJSON.value.description);
+                    }
+                });
+            }
+
+            function downloadUserFile(data) {
+                var campaign = $("#SelectedSubscriberSource option:selected").text();
+                campaign = campaign.substring(0, campaign.indexOf('('));
+                var fileData = createCsv(campaign, data);
+                var fileName = "users-" + campaign + "-" + moment().format("MMDDYYYYYHHMMSS") + ".csv";
+                var regex = new RegExp(" ", "g");
+                fileName = fileName.replace(regex, "");
+                downloadFile(fileName, fileData);
+            }
+
+            function createCsv(campaign, subscribers) {
+                var rVal = "Campaign, Email,FirstName,LastName,CreateDate" + '\n';
+                var i = 0;
+                while(i < subscribers.length)
+                {
+                    rVal += campaign + "," +  subscribers[i].email + "," + subscribers[i].firstName + "," + subscribers[i].lastName + "," +  moment(subscribers[i].createDate).format("MM/DD/YYYY") + '\n';
+                    ++i;
+                }
+                var regex = new RegExp("null", "g");
+                return rVal.replace(regex, "");
+            }
+
+            function downloadFile(filename, data) {
+                var blob = new Blob([data], { type: 'text/csv' });
+                if (window.navigator.msSaveOrOpenBlob) {
+                    window.navigator.msSaveBlob(blob, filename);
+                }
+                else {
+                    var elem = window.document.createElement('a');
+                    elem.href = window.URL.createObjectURL(blob);
+                    elem.download = filename;
+                    document.body.appendChild(elem);
+                    elem.click();
+                    document.body.removeChild(elem);
+                }
             }
 
             function doSearch(isReset) {
@@ -74,5 +137,5 @@
                 font-size: 12px;
             }
         </style>
-        }
-    </div>
+    }
+</div>

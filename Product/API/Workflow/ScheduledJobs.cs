@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,13 +28,14 @@ using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
+
 namespace UpDiddyApi.Workflow
 {
     public class ScheduledJobs : BusinessVendorBase
     {
         ICloudStorage _cloudStorage;
         ISysEmail _sysEmail;
-        IRepositoryWrapper _repositoryWrapper;
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
         public ScheduledJobs(
             UpDiddyDbContext context, 
@@ -69,7 +71,7 @@ namespace UpDiddyApi.Workflow
         {
             // retrieve the unique identifier for the lead and campaign
             var tinyId = _db.CampaignPartnerContact.Where(cpc => cpc.PartnerContact.PartnerContactGuid == partnerContactGuid && cpc.Campaign.Name == "PPL Lead Gen").FirstOrDefault()?.TinyId;
-            
+
             // dynamic data should include: first/last name, tinyId (which can be used to infer campaign, partner contact, and view)
             var templateData = new
             {
@@ -79,7 +81,7 @@ namespace UpDiddyApi.Workflow
             };
 
             // send templated welcome email that links to custom landing page
-            _sysEmail.SendTemplatedEmailAsync(email, _configuration["SysEmail:TemplateIds:LeadIntake-WelcomeEmail"].ToString(), templateData, null);
+            _sysEmail.SendTemplatedEmailAsync(email, _configuration["SysEmail:Leads:TemplateIds:LeadIntake-WelcomeEmail"].ToString(), templateData, Constants.SendGridAccount.Leads, null);
 
             return true;
         }
@@ -265,7 +267,6 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
-
         #region Woz Private Helper Functions
 
 
@@ -421,6 +422,241 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
+        #region Third Party Jobs
+
+        /// <summary>
+        /// This is the entry point for all third party job data mining.
+        /// </summary>
+        /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task<bool> JobDataMining()
+        {
+            _syslog.Log(LogLevel.Information, $"***** JobDataMining started at: {DateTime.UtcNow.ToLongDateString()}");
+
+            var result = true;
+            try
+            {
+                List<JobSite> jobSites = _repositoryWrapper.JobSite.GetAllJobSitesAsync().Result.ToList();
+
+                foreach (var jobSite in jobSites)
+                {
+                    // initialize stat tracking for operation
+                    JobSiteScrapeStatistic jobDataMiningStats =
+                        new JobSiteScrapeStatistic()
+                        {
+                            CreateDate = DateTime.UtcNow,
+                            CreateGuid = Guid.Empty,
+                            IsDeleted = 0,
+                            JobSiteId = jobSite.JobSiteId,
+                            JobSiteScrapeStatisticGuid = Guid.NewGuid(),
+                            NumJobsAdded = 0,
+                            NumJobsDropped = 0,
+                            NumJobsErrored = 0,
+                            NumJobsProcessed = 0,
+                            NumJobsUpdated = 0
+                        };
+
+                    // load the job data mining process for the job site
+                    IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite, _syslog);
+
+                    // load all existing job pages - it is important to retrieve all of them regardless of their JobPageStatus to avoid FK conflicts on insert and update operations
+                    List<JobPage> existingJobPages = _repositoryWrapper.JobPage.GetAllJobPagesForJobSiteAsync(jobSite.JobSiteGuid).Result.ToList();
+
+                    // retrieve all current job pages that are visible on the job site
+                    List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages);
+
+                    // convert job pages to job postings and perform the necessary CRUD operations
+                    jobDataMiningStats = await ProcessJobPages(jobDataMining, jobPagesToProcess, jobDataMiningStats);
+
+                    // store aggregate data about operations performed by job site; set scrape date at the very end of the process
+                    jobDataMiningStats.ScrapeDate = DateTime.UtcNow;
+                    _repositoryWrapper.JobSiteScrapeStatistic.Create(jobDataMiningStats);
+                    await _repositoryWrapper.JobSiteScrapeStatistic.SaveAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                // todo: implement better logging
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.JobDataMining encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                result = false;
+            }
+
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.JobDataMining completed at: {DateTime.UtcNow.ToLongDateString()}");
+            return result;
+        }
+
+        /// <summary>
+        /// This private method provides a common way to process job pages and perform the necessary db and Google Talent Cloud operations.
+        /// </summary>
+        /// <param name="jobDataMining"></param>
+        /// <param name="jobPagesToProcess"></param>
+        /// <returns></returns>
+        private async Task<JobSiteScrapeStatistic> ProcessJobPages(IJobDataMining jobDataMining, List<JobPage> jobPagesToProcess, JobSiteScrapeStatistic jobDataMiningStats)
+        {
+            // JobPageStatus = 1 / 'Pending' - we want to process these (add new or update existing dbo.JobPosting)                     
+            var pendingJobPages = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1).ToList();
+            foreach (var jobPage in pendingJobPages)
+            {
+                try
+                {
+                    bool? isJobPostingOperationSuccessful = null;
+                    Guid jobPostingGuid = Guid.Empty;
+                    string errorMessage = null;
+                    // convert JobPage into JobPostingDto
+                    var jobPostingDto = jobDataMining.ProcessJobPage(jobPage);
+
+                    if (jobPage.JobPostingId.HasValue)
+                    {
+                        // get the job posting guid
+                        jobPostingGuid = JobPostingFactory.GetJobPostingById(_db, jobPage.JobPostingId.Value).JobPostingGuid;
+                        // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
+                        jobPostingDto.JobPostingGuid = jobPostingGuid;
+                        // attempt to update job posting
+                        isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage);
+                        // increment updated count in stats
+                        if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
+                            jobDataMiningStats.NumJobsUpdated += 1;
+                    }
+                    else
+                    {
+                        // we have to add/update the recruiter and the associated company - should the job posting factory encapsulate that logic?
+                        Recruiter recruiter = RecruiterFactory.GetOrAdd(_db, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
+                        Company company = CompanyFactory.GetCompanyByGuid(_db, jobPostingDto.Company.CompanyGuid);
+                        RecruiterCompanyFactory.GetOrAdd(_db, recruiter.RecruiterId, company.CompanyId, true);
+
+                        // attempt to create job posting
+                        isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration);
+
+                        // increment added count in stats
+                        if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
+                            jobDataMiningStats.NumJobsAdded += 1;
+                    }
+                    if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
+                    {
+                        // indicate that the job was updated successfully and is now active
+                        jobPage.JobPageStatusId = 2;
+
+                        if (!jobPage.JobPostingId.HasValue)
+                        {
+                            // we have the job posting guid but not the job posting id. retrieve that so we can associate the job posting with the job page
+                            jobPage.JobPostingId = JobPostingFactory.GetJobPostingByGuid(_db, jobPostingGuid)?.JobPostingId;
+                        }
+
+                        // add or update the job page and save the changes
+                        if (jobPage.JobPageId > 0)
+                            _repositoryWrapper.JobPage.Update(jobPage);
+                        else
+                            _repositoryWrapper.JobPage.Create(jobPage);
+                        await _repositoryWrapper.JobPage.SaveAsync();
+
+                    }
+                    else if (isJobPostingOperationSuccessful.HasValue && !isJobPostingOperationSuccessful.Value)
+                    {
+                        // indicate that an error occurred and save the changes
+                        jobPage.JobPageStatusId = 3;
+
+                        if (jobPage.JobPageId > 0)
+                            _repositoryWrapper.JobPage.Update(jobPage);
+                        else
+                            _repositoryWrapper.JobPage.Create(jobPage);
+                        await _repositoryWrapper.JobPage.SaveAsync();
+
+                        // increment error count in stats
+                        jobDataMiningStats.NumJobsErrored += 1;
+                    }
+                }
+                catch (Exception e)
+                {
+                    _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ProcessJobPages add/update encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                    // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
+                    foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
+                    {
+                        if (entityEntry != null && (entityEntry.State == EntityState.Added || entityEntry.State == EntityState.Deleted || entityEntry.State == EntityState.Modified))
+                        {
+                            entityEntry.State = EntityState.Detached;
+                        }
+                    }
+                    // increment error count in stats
+                    jobDataMiningStats.NumJobsErrored += 1;
+                }
+                finally
+                {
+                    // increment processed counter regardless of the outcome of the operation
+                    jobDataMiningStats.NumJobsProcessed += 1;
+                }
+            }
+
+            // JobPageStatus = 3 / 'Error' - delete dbo.JobPosting (if one exists)
+            // JobPageStatus = 4 / 'Deleted' - delete dbo.JobPosting (if one exists)
+            var deleteJobPages = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 3 || jp.JobPageStatusId == 4).ToList();
+            foreach (var jobPage in deleteJobPages)
+            {
+                try
+                {
+                    bool? isJobDeleteOperationSuccessful = null;
+                    string errorMessage = null;
+                    Guid jobPostingGuid = Guid.Empty;
+                    // verify that there is a related job posting
+                    if (jobPage.JobPostingId.HasValue)
+                    {
+                        // get the job posting guid
+                        jobPostingGuid = JobPostingFactory.GetJobPostingById(_db, jobPage.JobPostingId.Value).JobPostingGuid;
+                        // attempt to delete job posting
+                        isJobDeleteOperationSuccessful = JobPostingFactory.DeleteJob(_db, jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration);
+
+                        if (isJobDeleteOperationSuccessful.HasValue && isJobDeleteOperationSuccessful.Value)
+                        {
+                            // flag job page as deleted and save the changes
+                            jobPage.JobPageStatusId = 4;
+
+                            if (jobPage.JobPageId > 0)
+                                _repositoryWrapper.JobPage.Update(jobPage);
+                            else
+                                _repositoryWrapper.JobPage.Create(jobPage);
+                            await _repositoryWrapper.JobPage.SaveAsync();
+
+                            // increment drop count in stats
+                            jobDataMiningStats.NumJobsDropped += 1;
+                        }
+                        else if (isJobDeleteOperationSuccessful.HasValue && !isJobDeleteOperationSuccessful.Value)
+                        {
+                            // flag job page as error and save the changes
+                            jobPage.JobPageStatusId = 3;
+
+                            if (jobPage.JobPageId > 0)
+                                _repositoryWrapper.JobPage.Update(jobPage);
+                            else
+                                _repositoryWrapper.JobPage.Create(jobPage);
+                            await _repositoryWrapper.JobPage.SaveAsync();
+
+                            // increment error count in stats
+                            jobDataMiningStats.NumJobsErrored += 1;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ProcessJobPages delete/error encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                    // remove added/modified/deleted entities that are currently in the change tracker to prevent them from being retried
+                    foreach (EntityEntry entityEntry in _db.ChangeTracker.Entries().ToArray())
+                    {
+                        if (entityEntry != null && (entityEntry.State == EntityState.Added || entityEntry.State == EntityState.Deleted || entityEntry.State == EntityState.Modified))
+                        {
+                            entityEntry.State = EntityState.Detached;
+                        }
+                    }
+                }
+                finally
+                {
+                    // increment processed counter regardless of the outcome of the operation
+                    jobDataMiningStats.NumJobsProcessed += 1;
+                }
+            }
+
+            return jobDataMiningStats;
+        }
+
+        #endregion
 
         #region CareerCircle Jobs 
 
@@ -533,7 +769,7 @@ namespace UpDiddyApi.Workflow
                         .Where(cpc => cpc.IsDeleted == 0 && cpc.CreateDate.DateDiff(DateTime.UtcNow).TotalDays > 60)
                         .ToList();
 
-                    foreach(CampaignPartnerContact campaignPartnerContact in campaignPartnerContacts)
+                    foreach (CampaignPartnerContact campaignPartnerContact in campaignPartnerContacts)
                     {
                         campaignPartnerContact.ModifyDate = DateTime.UtcNow;
                         campaignPartnerContact.ModifyGuid = Guid.Empty;
@@ -704,8 +940,6 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
-
-
         #region Cloud Talent
 
         public bool CloudTalentAddJob(Guid jobPostingGuid)
@@ -733,9 +967,5 @@ namespace UpDiddyApi.Workflow
 
 
         #endregion
-
-
-
-
     }
 }

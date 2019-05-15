@@ -14,17 +14,16 @@ namespace UpDiddyLib.Helpers
     public class SysEmail : ISysEmail
     {
         private IConfiguration _configuration;
-        private string _apiKey = string.Empty;
         public SysEmail(IConfiguration Configuration)
         {
             _configuration = Configuration;
-            _apiKey = Configuration["SysEmail:ApiKey"];
         }
 
-        public async Task<bool> SendEmailAsync(string email, string subject, string htmlContent)
+        public async Task<bool> SendEmailAsync(string email, string subject, string htmlContent, Constants.SendGridAccount SendGridAccount)
         {
-            var client = new SendGridClient(_apiKey);
-            SendGrid.Helpers.Mail.EmailAddress from = new EmailAddress("support@careercircle.com", "CareerCircle Support");
+            string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
+            var client = new SendGridClient(_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"]);
+            SendGrid.Helpers.Mail.EmailAddress from = new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"], "CareerCircle Support");
             SendGrid.Helpers.Mail.EmailAddress to = new EmailAddress(email);
             var plainTextContent = Regex.Replace(htmlContent, "<[^>]*>", "");
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
@@ -32,17 +31,15 @@ namespace UpDiddyLib.Helpers
             return true;
         }
 
-        public async Task<bool> SendTemplatedEmailAsync(
-            string email, 
-            string templateId, 
-            dynamic templateData, 
-            string subject = null, 
-            List<Attachment> attachments = null)
+        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null)
         {
-            var client = new SendGridClient(_apiKey);
+            string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
+
+            var client = new SendGridClient(_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"]);
             var message = new SendGridMessage();
 
-            message.SetFrom(new EmailAddress("support@careercircle.com", "CareerCircle Support"));
+            message.SetFrom(new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"], "CareerCircle"));
+            message.SetReplyTo(new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:ReplyToEmailAddress"]));
             message.AddTo(new EmailAddress(email));
             message.SetTemplateId(templateId);
             message.SetTemplateData(templateData);
@@ -69,9 +66,10 @@ namespace UpDiddyLib.Helpers
             Guid enrollmentGuid,
             string rebateToc)
         {
-            var client = new SendGridClient(_apiKey);
+            var client = new SendGridClient(_configuration["SysEmail:Transactional:ApiKey"]);
             var message = new SendGridMessage();
-            message.SetFrom(new EmailAddress("support@careercircle.com", "CareerCircle Support"));
+            message.SetFrom(new EmailAddress(_configuration["SysEmail:Transactional:FromEmailAddress"], "CareerCircle"));
+            message.SetReplyTo(new EmailAddress(_configuration["SysEmail:Transactional:ReplyToEmailAddress"]));
             message.AddTo(new EmailAddress(email));
             message.SetTemplateId(sendgridTemplateId);
             PurchaseReceipt purchaseReceipt = new PurchaseReceipt

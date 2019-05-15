@@ -21,6 +21,7 @@
             columns.Add(model => model.LastName).Sortable(true).Titled("Last Name");
             columns.Add(model => model.City).Sortable(true).Titled("City");
             columns.Add(model => model.State.Name).Titled("State").Sortable(true).Filterable(true);
+            columns.Add(model => model.CreateDate).Sortable(true).Titled("Joined").RenderedAs(model => model.CreateDate != DateTime.MinValue  ? model.CreateDate.ToShortDateString() : string.Empty);
             columns.Add(model => model.ModifyDate).Sortable(true).Titled("Last Modified").RenderedAs(model => model.ModifyDate.HasValue ? model.ModifyDate.Value.ToShortDateString() : string.Empty);
             columns.Add(model => $"<a href=\"Subscriber/{model.SubscriberGuid}\"><i class=\"far fa-eye\"></i></a>").Titled("View").Encoded(false).AppendCss("text-center");
             if (isCareerCircleAdmin)

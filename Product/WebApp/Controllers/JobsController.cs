@@ -89,6 +89,29 @@ namespace UpDiddy.Controllers
                 {
                     case (401):
                         return Unauthorized();
+                    case (404):
+                        job = await _api.GetExpiredJobAsync(JobGuid);
+                        if (job != null)
+                        {
+                            string location = job?.City + ", " + job?.Province;
+                            JobSearchResultDto jobSearchResultDto = await _api.GetJobsByLocation(job.Title, location);
+                            int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
+
+                            if (jobSearchResultDto == null)
+                                return NotFound();
+
+                            var jobSearchViewModel = new JobSearchViewModel()
+                            {
+                                Keywords = job.Title,
+                                Location = location,
+                                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, pageCount)
+                            };
+
+                            // Remove the expired job link from the search provider's index.
+                            Response.StatusCode = 404;
+                            return View("Index", jobSearchViewModel);
+                        }
+                        break;
                     case (500):
                         return StatusCode(500);
                     default:
@@ -99,6 +122,7 @@ namespace UpDiddy.Controllers
             if (job == null)
                 return NotFound();
 
+      
             JobDetailsViewModel jdvm = new JobDetailsViewModel
             {
                 Name = job.Title,

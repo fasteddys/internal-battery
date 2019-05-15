@@ -229,6 +229,18 @@ namespace UpDiddy.Controllers
             return View(new TalentSubscriberViewModel() { SubscriberSources = selectListItems });
         }
 
+
+
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [HttpGet]
+        [Route("[controller]/subscriberData/{searchFilter}/{searchQuery?}")] 
+        public async Task<IList<SubscriberDto>> SubscriberData(string searchFilter, string searchQuery = "" )
+        {            
+            IList<SubscriberDto> subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery);
+            return subscribers;
+        }
+
+
         [Authorize]
         [HttpGet]
         public async Task<PartialViewResult> SubscriberGrid(string searchAndFilter)
