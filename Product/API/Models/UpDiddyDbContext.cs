@@ -364,6 +364,9 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Enrollment>().HasQueryFilter(p => p.IsDeleted == 0);
 
 
+            modelBuilder.Entity<JobApplication>()
+                .Property(ja => ja.JobApplicationStatusId)
+                .HasDefaultValue(1);
         }
     }
 }

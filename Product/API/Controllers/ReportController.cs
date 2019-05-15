@@ -196,20 +196,19 @@ namespace UpDiddyApi.Controllers
         /// <summary>
         /// Get Job Application Count by Company, StartDate and EndDate
         /// </summary>
-        /// <param name="companyGuid"></param>
-        /// <param name="startDate"></param>
-        /// <param name="endDate"></param>
+        /// <param name="options"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("/api/[controller]/application-count/{companyGuid?}/{startDate?}/{endDate?}")]
-        public async Task<IActionResult> ApplicationCountPerCompanyByDates(Guid? companyGuid = null, DateTime? startDate = null, DateTime? endDate = null)
+        [Route("/api/[controller]/job-applications")]
+        [Route("/api/[controller]/job-applications/company/{companyGuid?}")]
+        public async Task<IActionResult> JobApplicationsAsync(ODataQueryOptions<JobApplication> options, Guid? companyGuid = null)
         {
             ActionResult response;
             try
             {
                 if (ModelState.IsValid)
                 {
-                    var jobApplicationCountDtoList = await _reportingService.GetApplicationCountPerCompanyByDates(companyGuid, startDate, endDate);
+                    var jobApplicationCountDtoList = await _reportingService.GetApplicationCountByCompanyAsync(options, companyGuid);
                     response = Ok(jobApplicationCountDtoList);
 
                 }
@@ -218,7 +217,7 @@ namespace UpDiddyApi.Controllers
             }
             catch (Exception ex)
             {
-                _syslog.LogError(ex, $"Error in ReportController.ApplicationCountPerCompanyByDates method for CompanyGuid={companyGuid},StartDate={startDate} and EndDate={endDate}");
+                _syslog.LogError(ex, $"Error in ReportController.JobApplicationsAsync method for CompanyGuid={companyGuid.Value}");
                 response = StatusCode(500);
             }
 

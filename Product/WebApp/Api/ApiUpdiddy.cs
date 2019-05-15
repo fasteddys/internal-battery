@@ -556,18 +556,25 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        public async Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid)
+        public async Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null)
         {
             string cacheKey = $"job-{JobPostingGuid}";
             JobPostingDto rval = GetCachedValue<JobPostingDto>(cacheKey);
-
-            if (rval != null)
-                return rval;
-            else
+            if (rval == null)
             {
                 rval = await _GetJobAsync(JobPostingGuid);
                 SetCachedValue<JobPostingDto>(cacheKey, rval);
             }
+
+            #region analytics
+            GoogleCloudEventsTrackingDto eventDto = null;
+            if (dto != null)
+                eventDto = await RecordClientEventAsync(JobPostingGuid, dto);
+
+            rval.RequestId = eventDto?.RequestId;
+            rval.ClientEventId = eventDto?.ClientEventId;
+            #endregion
+
             return rval;
         }
 
@@ -1146,6 +1153,14 @@ namespace UpDiddy.Api
             return await GetAsync<SubscriberReportDto>($"report/partners");
         }
 
+        public async Task<List<JobApplicationCountDto>> GetJobApplicationCount(Guid? companyGuid = null)
+        {
+            string endpoint = "/api/report/job-applications";
+            if(companyGuid.HasValue)
+                endpoint += string.Format("/company/{0}", companyGuid.Value);
+            return await GetAsync<List<JobApplicationCountDto>>(endpoint);
+        }
+
         public async Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync()
         {
             return await GetAsync<List<RecruiterActionSummaryDto>>($"report/recruiter-action-summary");
@@ -1272,6 +1287,24 @@ namespace UpDiddy.Api
             return await GetAsync<JobSearchResultDto>("job/browse-jobs-location/" + searchFilter);
         }
 
+        public async Task<GoogleCloudEventsTrackingDto> RecordClientEventAsync(Guid jobGuid, GoogleCloudEventsTrackingDto dto)
+        {
+            // covenience check to allow callers to not have to check dto for null
+            if (dto == null)
+                return null;
+
+            // this is purely for analytics purposes if this call fails we don't need to break anything else calling it
+            try
+            {
+                return await PostAsync<GoogleCloudEventsTrackingDto>(string.Format("job/{0}/track", jobGuid), dto);
+            }
+            catch(Exception e)
+            {
+                // todo: add logger
+                return null;
+            }
+        }
+        
         public async Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid)
         {
             return await GetAsync<JobPostingDto>("job/expired/" + JobPostingGuid);

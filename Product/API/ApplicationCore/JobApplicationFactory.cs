@@ -67,11 +67,19 @@ namespace UpDiddyApi.ApplicationCore
                 return false;
             }
                         
-            subscriber = SubscriberFactory.GetSubscriberByGuid(db, jobApplicationDto.Subscriber.SubscriberGuid.Value);
+            subscriber = SubscriberFactory.GetSubscriberWithSubscriberFiles(db, jobApplicationDto.Subscriber.SubscriberGuid.Value);
             if (subscriber == null)
             {
                 ErrorCode = 404;
                 ErrorMsg = $"Subscriber {jobApplicationDto.Subscriber.SubscriberGuid.Value} does not exist.";
+                return false;
+            }
+
+            //validate that resume and cover letter are present
+            if(subscriber.SubscriberFile.FirstOrDefault() == null || string.IsNullOrEmpty(jobApplicationDto.CoverLetter))
+            {
+                ErrorCode = 400;
+                ErrorMsg = "Subscriber has not supplied both a cover letter and resume.";
                 return false;
             }
                     
