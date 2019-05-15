@@ -64,8 +64,9 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> Jobs(int? currentPage)
 
         {
-            JobSearchResultDto jobSearchResult = await _Api.GetAllJobsAsync();
-            var jobSitemapIndexConfiguration = new JobSitemapIndexConfiguration(jobSearchResult.Jobs.AsQueryable(), currentPage, Url);
+
+            List<JobPostingDto> jobs = await _Api.GetAllJobsAsync();
+            var jobSitemapIndexConfiguration = new JobSitemapIndexConfiguration(jobs.AsQueryable(), currentPage, Url);
             return new DynamicSitemapIndexProvider().CreateSitemapIndex(new SitemapProvider(), jobSitemapIndexConfiguration);
         }
 

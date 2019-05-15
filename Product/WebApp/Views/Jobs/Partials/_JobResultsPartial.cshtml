@@ -35,7 +35,7 @@
                     <div class="col-12 col-md-3">
                         <div class="row">
                         <span class="job-title">
-                            <a target="_blank" href="/jobs/@jobSearchResult.JobPostingGuid">@jobSearchResult.Title</a>
+                            <a target="_blank" href="@jobSearchResult.SemanticJobPath">@jobSearchResult.Title</a>
                         </span>    
                         </div>
                         <div class="row">
@@ -44,14 +44,13 @@
                         <div class="row">
                             <span class="job-post-date">Posted- @jobSearchResult.PostingDateUTC.ToShortDateString()</span>
                         </div>
-
                     </div>
                     <div class="col-12 col-md-6">
                         <div class="row">
                             <span class="job-description"> @jobSearchResult.Description</span>
                         </div>
                         <div class="row">
-                            <a target="_blank" href="/jobs/@jobSearchResult.JobPostingGuid">More</a>
+                            <a target="_blank" href="@jobSearchResult.SemanticJobPath">More</a>
                         </div>
                     </div>
                     <div class="col-12 col-md-3">

@@ -124,6 +124,6 @@ namespace UpDiddyLib.Dto
 
         public int CommuteTime { get; set; }
 
-
+        public string SemanticJobPath { get; set; }
     }
 }

@@ -18,9 +18,58 @@ namespace UpDiddyLib.Helpers
     static public class Utils
     {
 
+        /// <summary>
+        /// Returns the path of a semantic job url. Note that this does not include other components of the url (protocol, scheme, host, query string)
+        /// </summary>
+        /// <param name="baseUrl"></param>
+        /// <param name="industry"></param>
+        /// <param name="jobCategory"></param>
+        /// <param name="country"></param>
+        /// <param name="province"></param>
+        /// <param name="city"></param>
+        /// <param name="jobIdentifier"></param>
+        /// <returns></returns>
+        public static string CreateSemanticJobPath(string industry, string jobCategory, string country, string province, string city, string jobIdentifier)
+        {
+            StringBuilder jobPath = new StringBuilder("/jobs/");
 
- 
- 
+            // industry 
+            if (!string.IsNullOrWhiteSpace(industry))
+                jobPath.Append(Uri.EscapeUriString(industry));
+            else
+                jobPath.Append("all");
+            // job category 
+            jobPath.Append("/");
+            if (!string.IsNullOrWhiteSpace(jobCategory))
+                jobPath.Append(Uri.EscapeUriString(jobCategory));
+            else
+                jobPath.Append("all");
+            //  country  
+            jobPath.Append("/");
+            if (!string.IsNullOrWhiteSpace(country))
+                jobPath.Append(Uri.EscapeUriString(country));
+            else
+                jobPath.Append("all");
+            // state 
+            jobPath.Append("/");
+            if (!string.IsNullOrWhiteSpace(province))
+                jobPath.Append(Uri.EscapeUriString(province));
+            else
+                jobPath.Append("all");
+            // city 
+            jobPath.Append("/");
+            if (!string.IsNullOrWhiteSpace(city))
+                jobPath.Append(Uri.EscapeUriString(city));
+            else
+                jobPath.Append("all");
+            // job identifier 
+            jobPath.Append("/");
+            jobPath.Append(jobIdentifier);
+
+            return jobPath.ToString();
+        }
+
+
 
         /// <summary>
         /// Convert a datetime object to a ISO8601 date string 
@@ -54,7 +103,7 @@ namespace UpDiddyLib.Helpers
             var NumSeconds = new DateTimeOffset(dt).ToUnixTimeSeconds();
             GoogleTypes.Timestamp ts = new GoogleTypes.Timestamp();
             ts.Seconds = NumSeconds;
-            return ts; 
+            return ts;
         }
 
         /// <summary>

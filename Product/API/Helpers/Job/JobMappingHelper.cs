@@ -25,9 +25,9 @@ namespace UpDiddyApi.Helpers.Job
     {
         #region Cloud talent job -> CC job helpers
 
-        public static JobViewDto CreateJobView( CloudTalentSolution.MatchingJob matchingJob)
+        public static JobViewDto CreateJobView(CloudTalentSolution.MatchingJob matchingJob)
         {
-            JobViewDto  rVal = new JobViewDto();
+            JobViewDto rVal = new JobViewDto();
             rVal.JobSummary = matchingJob.JobSummary;
             rVal.JobTitleSnippet = matchingJob.SearchTextSnippet;
             rVal.SearchTextSnippet = matchingJob.SearchTextSnippet;
@@ -39,11 +39,11 @@ namespace UpDiddyApi.Helpers.Job
             rVal.CompanyName = matchingJob.Job.CompanyDisplayName;
             rVal.Title = matchingJob.Job.Title;
             rVal.Description = matchingJob.Job.Description;
-            rVal.PostingDateUTC =  DateTime.Parse(matchingJob.Job.PostingPublishTime.ToString() );
+            rVal.PostingDateUTC = DateTime.Parse(matchingJob.Job.PostingPublishTime.ToString());
             // map location that was indexed into google -- do not use a foreach loop since it's sloooooow (might be string concat0
-            if (matchingJob.Job.Addresses != null && matchingJob.Job.Addresses.Count > 0 )
+            if (matchingJob.Job.Addresses != null && matchingJob.Job.Addresses.Count > 0)
                 rVal.Location = matchingJob.Job.Addresses[0];
-                  
+
             return rVal;
         }
 
@@ -59,7 +59,7 @@ namespace UpDiddyApi.Helpers.Job
 
             JobSearchResultDto rVal = new JobSearchResultDto();
             // handle case of no jobs found 
-            if ( searchJobsResponse.MatchingJobs == null )
+            if (searchJobsResponse.MatchingJobs == null)
             {
                 rVal.JobCount = 0;
                 return rVal;
@@ -69,9 +69,9 @@ namespace UpDiddyApi.Helpers.Job
             rVal.TotalHits = searchJobsResponse.TotalSize.Value;
             rVal.RequestId = searchJobsResponse.Metadata.RequestId;
             rVal.PageSize = jobQuery.PageSize;
-            rVal.NumPages =   rVal.PageSize != 0 ? (int)Math.Ceiling((double) rVal.TotalHits / rVal.PageSize) : 0; 
+            rVal.NumPages = rVal.PageSize != 0 ? (int)Math.Ceiling((double)rVal.TotalHits / rVal.PageSize) : 0;
 
- 
+
 
             foreach (CloudTalentSolution.MatchingJob j in searchJobsResponse.MatchingJobs)
             {
@@ -82,8 +82,8 @@ namespace UpDiddyApi.Helpers.Job
                     // Map commute properties 
                     JobMappingHelper.MapCommuteTime(j, jv);
                     // Map custom attributes to job view
-                    if ( jobQuery.ExcludeCustomProperties == 0)
-                      JobMappingHelper.MapCustomJobPostingAttributes(j, jv);
+                    if (jobQuery.ExcludeCustomProperties == 0)
+                        JobMappingHelper.MapCustomJobPostingAttributes(j, jv);
                     rVal.Jobs.Add(jv);
                 }
                 catch (Exception e)
@@ -91,23 +91,23 @@ namespace UpDiddyApi.Helpers.Job
                     syslog.LogError(e, "JobPostingFactory.MapSearchResults Error mapping job", e, j);
                 }
             }
-            if ( jobQuery.ExcludeFacets == 0) 
-                rVal.Facets = JobMappingHelper.MapFacets(configuration,jobQuery, searchJobsResponse);
+            if (jobQuery.ExcludeFacets == 0)
+                rVal.Facets = JobMappingHelper.MapFacets(configuration, jobQuery, searchJobsResponse);
             return rVal;
         }
 
         static public List<JobQueryFacetDto> MapFacets(IConfiguration config, JobQueryDto jobQuery, CloudTalentSolution.SearchJobsResponse searchJobsResponse)
         {
             List<JobQueryFacetDto> rVal = new List<JobQueryFacetDto>();
-            
+
             string JobIndustryUrlPrefix = config["CloudTalent:JobIndustryUrlPrefix"].ToString();
             string JobLocationUrlPrefix = config["CloudTalent:JobLocationUrlPrefix"].ToString();
             string TopLevelDomain = config["CloudTalent:JobControllerUrl"].ToString();
-            string IndustryUrl = JobUrlHelper.GetDefaultIndustryUrl(JobIndustryUrlPrefix,jobQuery);
-            string LocationtUrl = JobUrlHelper.GetDefaultLocationUrl(JobLocationUrlPrefix,jobQuery);
+            string IndustryUrl = JobUrlHelper.GetDefaultIndustryUrl(JobIndustryUrlPrefix, jobQuery);
+            string LocationtUrl = JobUrlHelper.GetDefaultLocationUrl(JobLocationUrlPrefix, jobQuery);
 
             // Map simple histogram results 
-            if (searchJobsResponse.HistogramResults.SimpleHistogramResults != null )
+            if (searchJobsResponse.HistogramResults.SimpleHistogramResults != null)
             {
                 foreach (CloudTalentSolution.HistogramResult hr in searchJobsResponse.HistogramResults.SimpleHistogramResults)
                 {
@@ -133,7 +133,7 @@ namespace UpDiddyApi.Helpers.Job
 
             // map custom facets  
             // Note: currently not using nor supporting cloud talent custom long facet values
-            if ( searchJobsResponse.HistogramResults.CustomAttributeHistogramResults != null )
+            if (searchJobsResponse.HistogramResults.CustomAttributeHistogramResults != null)
             {
                 foreach (CloudTalentSolution.CustomAttributeHistogramResult hr in searchJobsResponse.HistogramResults.CustomAttributeHistogramResults)
                 {
@@ -166,7 +166,7 @@ namespace UpDiddyApi.Helpers.Job
 
 
 
-        public static void MapCommuteTime (CloudTalentSolution.MatchingJob matchingJob, JobViewDto jobViewDto)
+        public static void MapCommuteTime(CloudTalentSolution.MatchingJob matchingJob, JobViewDto jobViewDto)
         {
             if (matchingJob.CommuteInfo != null && matchingJob.CommuteInfo.TravelDuration != null)
             {
@@ -209,7 +209,7 @@ namespace UpDiddyApi.Helpers.Job
 
             // map third party apply url
             jobViewDto.ThirdPartyApplyUrl = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "ThirdPartyApplyUrl");
- 
+
             // map annual compensation
             jobViewDto.AnnualCompensation = MapCustomLongAttribute(matchingJob.Job.CustomAttributes, "AnnualCompensation");
 
@@ -221,7 +221,7 @@ namespace UpDiddyApi.Helpers.Job
                 jobViewDto.ThirdPartyApply = true;
             else
                 jobViewDto.ThirdPartyApply = false;
-          
+
             // map industry
             jobViewDto.Industry = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "Industry");
 
@@ -244,6 +244,9 @@ namespace UpDiddyApi.Helpers.Job
             jobViewDto.PostalCode = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "PostalCode");
             // map street address 
             jobViewDto.StreetAddress = MapCustomStringAttribute(matchingJob.Job.CustomAttributes, "StreetAddress");
+            // semantic url
+            jobViewDto.SemanticJobPath = Utils.CreateSemanticJobPath(jobViewDto.Industry, jobViewDto.JobCategory, jobViewDto.Country, jobViewDto.Province, jobViewDto.City, jobViewDto.JobPostingGuid.ToString());
+
         }
 
 
@@ -263,7 +266,7 @@ namespace UpDiddyApi.Helpers.Job
             };
 
             // Create custom job posting attributes 
-            IDictionary<string, CloudTalentSolution.CustomAttribute> customAttributes = CreateGoogleJobCustomAttributes(db,jobPosting);
+            IDictionary<string, CloudTalentSolution.CustomAttribute> customAttributes = CreateGoogleJobCustomAttributes(db, jobPosting);
 
             // Set the jobs expire timestamp
             string ExpireTimestamp = Utils.GetTimestampAsString(jobPosting.PostingExpirationDateUTC);
@@ -284,7 +287,7 @@ namespace UpDiddyApi.Helpers.Job
             };
 
             // Add compensation info if its specified 
-            if ( jobPosting.Compensation > 0 )
+            if (jobPosting.Compensation > 0)
             {
                 long AnnualSalaryDollarAmount = CompensationTypeFactory.AnnualCompensation(jobPosting.Compensation, jobPosting.CompensationType);
 
@@ -308,11 +311,11 @@ namespace UpDiddyApi.Helpers.Job
                 };
                 jobToBeCreated.CompensationInfo = new CloudTalentSolution.CompensationInfo()
                 {
-                   Entries = compensationEntries
+                    Entries = compensationEntries
                 };
 
             }
-           
+
             // Add google name if it exists (needed for updates)
             if (string.IsNullOrEmpty(jobPosting.CloudTalentUri) == false)
                 jobToBeCreated.Name = jobPosting.CloudTalentUri;
@@ -325,7 +328,7 @@ namespace UpDiddyApi.Helpers.Job
         }
 
         #endregion
- 
+
         #region Helper functions 
 
         static private long MapCustomLongAttribute(IDictionary<string, CloudTalentSolution.CustomAttribute> attributes, string attributeName)
@@ -342,17 +345,17 @@ namespace UpDiddyApi.Helpers.Job
         }
 
 
-        static private string MapCustomStringAttribute( IDictionary<string, CloudTalentSolution.CustomAttribute> attributes,  string attributeName )
+        static private string MapCustomStringAttribute(IDictionary<string, CloudTalentSolution.CustomAttribute> attributes, string attributeName)
         {
             string rVal = string.Empty;
 
-            if ( attributes.Keys.Contains(attributeName) &&
+            if (attributes.Keys.Contains(attributeName) &&
                  attributes[attributeName] != null &&
                  attributes[attributeName].StringValues != null
                )
                 rVal = attributes[attributeName].StringValues[0].ToString();
 
-                return rVal;
+            return rVal;
         }
 
 
@@ -416,7 +419,7 @@ namespace UpDiddyApi.Helpers.Job
             // Add employment type
             if (jobPosting.EmploymentType != null)
             {
- 
+
                 CloudTalentSolution.CustomAttribute EmploymentType = new CloudTalentSolution.CustomAttribute()
                 {
                     Filterable = true,
@@ -469,13 +472,13 @@ namespace UpDiddyApi.Helpers.Job
             // Add posting thirdparty apply as a long so it can be queried with boolean <= logic  
             long ApplyFlag = jobPosting.ThirdPartyApply == true ? 1 : 0;
             CloudTalentSolution.CustomAttribute ThirdPartyApply = new CloudTalentSolution.CustomAttribute()
-            {            
+            {
                 Filterable = true,
                 LongValues = new List<long?>() { ApplyFlag }
             };
             rVal.Add("ThirdPartyApply", ThirdPartyApply);
 
-            if ( jobPosting.ThirdPartyApplicationUrl != null )
+            if (jobPosting.ThirdPartyApplicationUrl != null)
             {
                 // Add posting thirdparty url so it can be returned as part of the job        
                 CloudTalentSolution.CustomAttribute ThirdPartyApplyUrl = new CloudTalentSolution.CustomAttribute()
@@ -496,13 +499,13 @@ namespace UpDiddyApi.Helpers.Job
 
             var jobSkills = JobPostingFactory.GetPostingSkills(db, jobPosting);
             List<string> skillsList = new List<string>();
-            foreach ( JobPostingSkill jps in jobSkills)
+            foreach (JobPostingSkill jps in jobSkills)
             {
                 if (jps.Skill != null)
                     skillsList.Add(jps.Skill.SkillName.Trim());
             }
-   
-            if ( skillsList.Count > 0 )
+
+            if (skillsList.Count > 0)
             {
                 CloudTalentSolution.CustomAttribute Skills = new CloudTalentSolution.CustomAttribute()
                 {
@@ -512,7 +515,7 @@ namespace UpDiddyApi.Helpers.Job
                 rVal.Add("Skills", Skills);
             }
             // Index Country 
-            if ( jobPosting.Country != null )
+            if (jobPosting.Country != null)
             {
                 CloudTalentSolution.CustomAttribute Country = new CloudTalentSolution.CustomAttribute()
                 {
@@ -521,9 +524,9 @@ namespace UpDiddyApi.Helpers.Job
                 };
                 rVal.Add("Country", Country);
             }
-            
+
             // Index Province 
-            if ( jobPosting.Province != null )
+            if (jobPosting.Province != null)
             {
                 CloudTalentSolution.CustomAttribute Province = new CloudTalentSolution.CustomAttribute()
                 {
@@ -532,9 +535,9 @@ namespace UpDiddyApi.Helpers.Job
                 };
                 rVal.Add("Province", Province);
             }
-            
+
             // Index Postal code  
-            if ( jobPosting.PostalCode != null )
+            if (jobPosting.PostalCode != null)
             {
                 CloudTalentSolution.CustomAttribute PostalCode = new CloudTalentSolution.CustomAttribute()
                 {
@@ -543,9 +546,9 @@ namespace UpDiddyApi.Helpers.Job
                 };
                 rVal.Add("PostalCode", PostalCode);
             }
-            
+
             // Index City
-            if ( jobPosting.City != null )
+            if (jobPosting.City != null)
             {
                 CloudTalentSolution.CustomAttribute City = new CloudTalentSolution.CustomAttribute()
                 {
@@ -554,9 +557,9 @@ namespace UpDiddyApi.Helpers.Job
                 };
                 rVal.Add("City", City);
             }
-            
+
             // Index street address 
-            if ( jobPosting.StreetAddress != null )
+            if (jobPosting.StreetAddress != null)
             {
                 CloudTalentSolution.CustomAttribute StreetAddress = new CloudTalentSolution.CustomAttribute()
                 {
@@ -565,15 +568,15 @@ namespace UpDiddyApi.Helpers.Job
                 };
                 rVal.Add("StreetAddress", StreetAddress);
             }
-            
-            return rVal; 
+
+            return rVal;
         }
 
     }
 
 
-        #endregion
+    #endregion
 
 
-    
+
 }

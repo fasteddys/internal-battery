@@ -5,14 +5,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddy.Helpers
 {
-    public class JobSitemapIndexConfiguration : SitemapIndexConfiguration<JobViewDto>
+    public class JobSitemapIndexConfiguration : SitemapIndexConfiguration<JobPostingDto>
     {
         private readonly IUrlHelper urlHelper;
 
-        public JobSitemapIndexConfiguration(IQueryable<JobViewDto> dataSource, int? currentPage, IUrlHelper urlHelper)
+        public JobSitemapIndexConfiguration(IQueryable<JobPostingDto> dataSource, int? currentPage, IUrlHelper urlHelper)
             :base(dataSource, currentPage)
         {
             this.urlHelper = urlHelper;
@@ -22,10 +23,12 @@ namespace UpDiddy.Helpers
         {
             return new SitemapIndexNode(urlHelper.Action("jobs-sitemap.xml", "sitemap", new { currentPage }));
         }
-        public override SitemapNode CreateNode(JobViewDto source)
+        public override SitemapNode CreateNode(JobPostingDto source)
         {
-            return new SitemapNode(urlHelper.Action(source.JobPostingGuid.ToString(), "jobs")) { LastModificationDate = source.PostingDateUTC, ChangeFrequency = ChangeFrequency.Daily };
-            
+            // this line can be removed once semantic job path is built using automapper
+            source.SemanticJobPath = Utils.CreateSemanticJobPath(source.Industry?.Name, source.JobCategory?.Name, source.Country, source.Province, source.City, source.JobPostingGuid.ToString());
+
+            return new SitemapNode(source.SemanticJobPath) { LastModificationDate = source.ModifyDate, ChangeFrequency = ChangeFrequency.Hourly };
         }
     }
 }
