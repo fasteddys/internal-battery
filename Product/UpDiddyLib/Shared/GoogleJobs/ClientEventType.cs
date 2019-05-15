@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace UpDiddyApi.ApplicationCore.Services.GoogleJobs
+namespace UpDiddyLib.Shared.GoogleJobs
 {
     // https://cloud.google.com/talent-solution/job-search/docs/client-event#eventtype
     public enum ClientEventType

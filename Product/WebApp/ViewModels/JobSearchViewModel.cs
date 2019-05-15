@@ -10,6 +10,8 @@ namespace UpDiddy.ViewModels
 {
     public class JobSearchViewModel : BaseViewModel
     {
+        public string RequestId { get; set; }
+        public string ClientEventId { get; set; }
         public string Keywords { get; set; }
         public string Location { get; set; }
         public IPagedList<JobViewDto> JobsSearchResult { get; set; }

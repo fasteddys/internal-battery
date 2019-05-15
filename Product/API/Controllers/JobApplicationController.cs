@@ -292,8 +292,5 @@ namespace UpDiddyApi.Controllers
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
             }
         }
-
-
-
     }
 }
