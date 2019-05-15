@@ -98,5 +98,25 @@ namespace UpDiddyApi.Controllers
                 }
             }
         }
+
+        /// <summary>
+        /// Recruiter tracking method to log when a recruiter performs an action
+        /// on a job application.
+        /// </summary>
+        /// <param name="ActorGuid"></param>
+        /// <param name="ActionGuid"></param>
+        /// <param name="EntityGuid"></param>
+        /// <returns>1 pixel image back to the client.</returns>
+        [HttpGet("api/[controller]/recruiter/{ActorGuid}/{ActionGuid}/{JobApplicationGuid}")]
+        public IActionResult RecruiterJobApplication(Guid ActorGuid, Guid ActionGuid, Guid JobApplicationGuid)
+        {
+            Task.Run(() => ProcessRecruiterTrackingInformation(ActorGuid, ActionGuid, JobApplicationGuid));
+            return _pixelResponse;
+        }
+
+        private void ProcessRecruiterTrackingInformation(Guid ActorGuid, Guid ActionGuid, Guid JobApplicationGuid)
+        {
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreRecruiterTrackingInformation(ActorGuid, ActionGuid, JobApplicationGuid));
+        }
     }
 }

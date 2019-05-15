@@ -929,6 +929,7 @@ namespace UpDiddyApi.Controllers
                         verificationLink = link
                     },
                     Constants.SendGridAccount.Transactional,
+                    null,
                     null
                 ));
         }

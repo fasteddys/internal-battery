@@ -133,6 +133,10 @@
         return _http.get(`/report/subscriber-actions${buildQuery(query)}`);
     }
 
+    var getJobAppReport = async function(query) {
+        return _http.get(`/report/job-applications${buildQuery(query)}`);
+    }
+
     var requestVerification = function (verifyUrl) {
         return _http.post('/subscriber/request-verification', JSON.stringify({ verifyUrl: verifyUrl }));
     }
@@ -146,6 +150,7 @@
         getContacts: getContacts,
         getPartners: getPartners,
         getSubscriberActionsReport: getSubscriberActionsReport,
+        getJobAppReport: getJobAppReport,
         requestVerification: requestVerification,
         getOffer: getOffer,
         claimOffer: claimOffer

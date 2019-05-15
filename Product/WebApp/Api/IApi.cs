@@ -114,14 +114,17 @@ namespace UpDiddy.Api
         Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync();
         Task<List<OfferActionSummaryDto>> GetOfferActionSummaryAsync();
         Task<ActionReportDto> GetPartnerSubscriberActionStatsAsync();
+        Task<List<JobApplicationCountDto>> GetJobApplicationCount(Guid? companyGuid = null);
         #endregion
 
         #region JobBoard
 
-        Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid);
+        Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null);
         Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid);
         Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
         Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location);
+
+        Task<GoogleCloudEventsTrackingDto> RecordClientEventAsync(Guid jobGuid, GoogleCloudEventsTrackingDto dto);
 
         #endregion
 

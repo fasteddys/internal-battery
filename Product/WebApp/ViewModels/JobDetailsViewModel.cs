@@ -12,7 +12,8 @@ namespace UpDiddy.ViewModels
 {
     public class JobDetailsViewModel : BaseViewModel
     {
-
+        public string ClientEventId { get; set; }
+        public string RequestId { get; set; }
         public string Name { get; set; }
         public string Company { get; set; }
         public string PostedDate { get; set; }

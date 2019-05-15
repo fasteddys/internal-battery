@@ -13,6 +13,8 @@ namespace UpDiddy.ViewModels
 {
     public class JobApplicationViewModel : BaseViewModel
     {
+        public string RequestId { get; set; }
+        public string ClientEventId { get; set; }
         [Required]
         public string FirstName { get; set; }
         [Required]

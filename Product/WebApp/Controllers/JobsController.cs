@@ -70,6 +70,8 @@ namespace UpDiddy.Controllers
 
             JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
             {
+                RequestId = jobSearchResultDto.RequestId,
+                ClientEventId = jobSearchResultDto.ClientEventId,
                 JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page ?? 1, pageCount)
             };
 
@@ -85,7 +87,7 @@ namespace UpDiddy.Controllers
             JobPostingDto job = null;
             try
             {
-                job = await _api.GetJobAsync(JobGuid);
+                job = await _api.GetJobAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.View));
             }
             catch(ApiException e)
             {
@@ -135,6 +137,8 @@ namespace UpDiddy.Controllers
 
             JobDetailsViewModel jdvm = new JobDetailsViewModel
             {
+                RequestId = job.RequestId,
+                ClientEventId = job.ClientEventId,
                 Name = job.Title,
                 Company = job.Company?.CompanyName,
                 PostedDate = job.PostingDateUTC == null ? string.Empty : job.PostingDateUTC.ToLocalTime().ToString(),
@@ -191,10 +195,12 @@ namespace UpDiddy.Controllers
 
             if (job == null)
                 return NotFound();
-            
 
-            
+
+            var trackingDto = await _api.RecordClientEventAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.Application_Start));
             return View("Apply", new JobApplicationViewModel() {
+                RequestId = trackingDto?.RequestId,
+                ClientEventId = trackingDto?.ClientEventId,
                 Email = this.subscriber.Email,
                 FirstName = string.IsNullOrEmpty(this.subscriber.FirstName) ? string.Empty : this.subscriber.FirstName,
                 LastName = string.IsNullOrEmpty(this.subscriber.LastName) ? string.Empty : this.subscriber.LastName,
@@ -252,10 +258,16 @@ namespace UpDiddy.Controllers
             BasicResponseDto Response = null;
 
             CompletedJobApplicationViewModel cjavm = new CompletedJobApplicationViewModel();
-
             try
             {
                 Response = await _api.ApplyToJobAsync(jadto);
+
+                await _api.RecordClientEventAsync(JobApplicationViewModel.JobPostingGuid, new GoogleCloudEventsTrackingDto(){
+                    RequestId = JobApplicationViewModel.RequestId,
+                    ParentClientEventId = JobApplicationViewModel.ClientEventId,
+                    Type = UpDiddyLib.Shared.GoogleJobs.ClientEventType.Application_Finish
+                });
+
                 cjavm.JobApplicationStatus = CompletedJobApplicationViewModel.ApplicationStatus.Success;
             }
             catch(ApiException e)

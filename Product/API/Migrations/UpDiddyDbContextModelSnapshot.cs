@@ -1265,6 +1265,10 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("JobApplicationGuid");
 
+                    b.Property<int>("JobApplicationStatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue(1);
+
                     b.Property<int>("JobPostingId");
 
                     b.Property<DateTime?>("ModifyDate");
@@ -1275,11 +1279,38 @@ namespace UpDiddyApi.Migrations
 
                     b.HasKey("JobApplicationId");
 
+                    b.HasIndex("JobApplicationStatusId");
+
                     b.HasIndex("JobPostingId");
 
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("JobApplication");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobApplicationStatus", b =>
+                {
+                    b.Property<int>("JobApplicationStatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<Guid>("JobApplicationStatusGuid");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Status");
+
+                    b.HasKey("JobApplicationStatusId");
+
+                    b.ToTable("JobApplicationStatus");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.JobCategory", b =>
@@ -3379,6 +3410,11 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.JobApplication", b =>
                 {
+                    b.HasOne("UpDiddyApi.Models.JobApplicationStatus", "JobApplicationStatus")
+                        .WithMany()
+                        .HasForeignKey("JobApplicationStatusId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("UpDiddyApi.Models.JobPosting", "JobPosting")
                         .WithMany()
                         .HasForeignKey("JobPostingId")

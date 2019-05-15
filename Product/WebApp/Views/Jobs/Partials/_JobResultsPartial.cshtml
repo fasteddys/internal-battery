@@ -1,5 +1,6 @@
 ﻿@using X.PagedList.Mvc.Core;
 @using X.PagedList;
+@using UpDiddyLib.Dto;
 @using UpDiddy.ViewModels;
 @model JobSearchViewModel;
 
@@ -30,12 +31,14 @@
     
         foreach (var jobSearchResult in Model.JobsSearchResult)
         {
+            string url = @jobSearchResult.SemanticJobPath;
+            url = GoogleCloudEventsTrackingDto.AddParametersToUrl(url, Model.RequestId, Model.ClientEventId);
             <div class="job-tile">
                 <div class="row">
                     <div class="col-12 col-md-3">
                         <div class="row">
                         <span class="job-title">
-                            <a target="_blank" href="@jobSearchResult.SemanticJobPath">@jobSearchResult.Title</a>
+                            <a target="_blank" href="@url">@jobSearchResult.Title</a>
                         </span>    
                         </div>
                         <div class="row">
@@ -50,7 +53,7 @@
                             <span class="job-description"> @jobSearchResult.Description</span>
                         </div>
                         <div class="row">
-                            <a target="_blank" href="@jobSearchResult.SemanticJobPath">More</a>
+                            <a target="_blank" href="@url">More</a>
                         </div>
                     </div>
                     <div class="col-12 col-md-3">
