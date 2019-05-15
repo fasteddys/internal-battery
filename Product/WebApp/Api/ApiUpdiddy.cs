@@ -1153,6 +1153,14 @@ namespace UpDiddy.Api
             return await GetAsync<SubscriberReportDto>($"report/partners");
         }
 
+        public async Task<List<JobApplicationCountDto>> GetJobApplicationCount(Guid? companyGuid = null)
+        {
+            string endpoint = "/api/report/job-applications";
+            if(companyGuid.HasValue)
+                endpoint += string.Format("/company/{0}", companyGuid.Value);
+            return await GetAsync<List<JobApplicationCountDto>>(endpoint);
+        }
+
         public async Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync()
         {
             return await GetAsync<List<RecruiterActionSummaryDto>>($"report/recruiter-action-summary");

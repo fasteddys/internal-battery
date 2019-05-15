@@ -15,6 +15,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IJobSiteRepository _jobSiteRepository;
         private IJobPageRepository _jobPageRepository;
         private IJobPostingRepository _jobPostingRepository;
+        private IJobApplicationRepository _jobApplicationRepository;
         private ICompanyRepository _companyRepository;
         private IJobSiteScrapeStatisticRepository _jobSiteScrapeStatisticRepository;
         private IRecruiterActionRepository _recruiterActionRepository;
@@ -92,6 +93,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _jobPostingRepository = new JobPostingRepository(_dbContext);
                 }
                 return _jobPostingRepository;
+            }
+        }
+
+        public IJobApplicationRepository JobApplication
+        {
+            get
+            {
+                if(_jobApplicationRepository == null)
+                {
+                    _jobApplicationRepository = new JobApplicationRepository(_dbContext);
+                }
+                return _jobApplicationRepository;
             }
         }
 

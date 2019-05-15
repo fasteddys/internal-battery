@@ -5,7 +5,7 @@ import DatePicker from 'react-datepicker';
 
 const ReactTableFixedColumns = withFixedColumns(ReactTable);
 
-class PATable extends React.Component {
+class SATable extends React.Component {
     columns = [];
     constructor(props) {
         super(props);
@@ -26,6 +26,8 @@ class PATable extends React.Component {
                 Header: x.name,
                 id: "col-actionId" + x.actionId,
                 width: 175,
+                headerClassName: 'text-right mr-2',
+                className: 'text-right mr-2',
                 accessor: (data) => data.stats[x.actionId] || 0
             }
         });
@@ -54,7 +56,6 @@ class PATable extends React.Component {
             query.filter.createDate.ge = this.state.date.ge;
         if(this.state.date.le)
             query.filter.createDate.le = this.state.date.le;
-        console.log(query);
         return query;
     }
 
@@ -73,28 +74,35 @@ class PATable extends React.Component {
 
     render() {
         return (
-            <div className="pca-table">
+            <div className="react-report-table">
                 <div className="advanced-filters-wrapper p-2">
                     <div className="form-inline">
-                    <div className="form-group mr-2">
-                        <label className="mr-2">Start Date:</label>
+                    <div className="form-group mr-1">
                         <div className="d-block">
                             <DatePicker
+                                placeholderText="Start Date"
                                 selected={this.state.date.ge}
                                 onChange={(date) => this.handleStartDateChange(date)}
                                 showYearDropdown
+                                selectsStart
+                                startDate={this.state.date.ge}
+                                endDate={this.state.date.le}
                                 isClearable={true}
                                 maxDate={new Date()}
                             />
                         </div>
                     </div>
-                    <div className="form-group">
-                        <label className="mr-2">End Date:</label>
+                    -
+                    <div className="form-group ml-1">
                         <div className="d-block">
                             <DatePicker
+                                placeholderText="End Date"
                                 selected={this.state.date.le}
                                 onChange={(date) => this.handleEndDateChange(date)}
                                 showYearDropdown
+                                selectsEnd
+                                startDate={this.state.date.ge}
+                                endDate={this.state.date.le}
                                 isClearable={true}
                                 maxDate={new Date()}
                             />
@@ -116,4 +124,4 @@ class PATable extends React.Component {
     }
 }
 
-export default PATable;
+export default SATable;

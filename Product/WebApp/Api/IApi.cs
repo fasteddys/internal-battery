@@ -114,6 +114,7 @@ namespace UpDiddy.Api
         Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync();
         Task<List<OfferActionSummaryDto>> GetOfferActionSummaryAsync();
         Task<ActionReportDto> GetPartnerSubscriberActionStatsAsync();
+        Task<List<JobApplicationCountDto>> GetJobApplicationCount(Guid? companyGuid = null);
         #endregion
 
         #region JobBoard
