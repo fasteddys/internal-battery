@@ -75,7 +75,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// </summary>
         /// <param name="startPostDate"></param>
         /// <param name="endPostDate"></param>
-        /// <returns>A list</returns>
+        /// <returns>A list of DTOs representing a job posting per company by date report.</returns>
         public async Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDates(DateTime? startPostDate, DateTime? endPostDate)
         {
             List<JobPostingCountReportDto> jobPostingCountReportDtos;
@@ -89,6 +89,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var query = from c in companyRepo
                         join jp in jobPostingRepo on c.CompanyId equals jp.CompanyId
                         where jp.JobStatus == (int)JobPostingStatus.Active
+                            && c.IsJobPoster == 1
                             && (startPostDate == null || (jp.PostingDateUTC.Date >= startPostDate))
                             && (endPostDate == null || (jp.PostingDateUTC.Date <= endPostDate))
                         group new { c, jp } by new { c.CompanyName, jp.PostingDateUTC.Date } into g
