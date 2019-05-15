@@ -255,9 +255,9 @@ namespace UpDiddyApi.Controllers
                         (IsExternalRecruiter == true ? "-External" : string.Empty)],
                     new
                     {
-                        ApplicantName = subscriber.FirstName + " " + subscriber.LastName,
-                        ApplicantFirstName = subscriber.FirstName,
-                        ApplicantLastName = subscriber.LastName,
+                        ApplicantName = jobApplicationDto.Subscriber.FirstName + " " + jobApplicationDto.Subscriber.LastName,
+                        ApplicantFirstName = jobApplicationDto.Subscriber.FirstName,
+                        ApplicantLastName = jobApplicationDto.Subscriber.LastName,
                         ApplicantEmail = subscriber.Email,
                         JobTitle = jobPosting.Title,
                         ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration, subscriber.SubscriberGuid.Value),
