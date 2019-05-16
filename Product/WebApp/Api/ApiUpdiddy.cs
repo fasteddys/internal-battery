@@ -1251,6 +1251,23 @@ namespace UpDiddy.Api
             // Return the newly created partner
             return deletedPartnerResponse;
         }
+
+        public async Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDatesAsynch(DateTime? startPostDate = null, DateTime? endPostDate = null)
+        {
+            string query = string.Empty;
+            if (startPostDate.HasValue)
+            {
+                query += string.Join("?startPostDate=", startPostDate.Value);
+            }
+
+            if (endPostDate.HasValue)
+            {
+                query += string.Join("&endPostDate=", startPostDate.Value);
+            }
+
+            return await GetAsync<List<JobPostingCountReportDto>>($"report/job-post-count{query}");
+        }
+
         #endregion
 
         #region JobBoard
