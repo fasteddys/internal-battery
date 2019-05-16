@@ -35,40 +35,57 @@ namespace UpDiddyLib.Helpers
 
             // industry 
             if (!string.IsNullOrWhiteSpace(industry))
-                jobPath.Append(Uri.EscapeUriString(industry));
+                jobPath.Append(industry);
             else
                 jobPath.Append("all");
             // job category 
             jobPath.Append("/");
             if (!string.IsNullOrWhiteSpace(jobCategory))
-                jobPath.Append(Uri.EscapeUriString(jobCategory));
+                jobPath.Append(jobCategory);
             else
                 jobPath.Append("all");
             //  country  
             jobPath.Append("/");
             if (!string.IsNullOrWhiteSpace(country))
-                jobPath.Append(Uri.EscapeUriString(country));
+                jobPath.Append(country);
             else
                 jobPath.Append("all");
             // state 
             jobPath.Append("/");
             if (!string.IsNullOrWhiteSpace(province))
-                jobPath.Append(Uri.EscapeUriString(province));
+                jobPath.Append(province);
             else
                 jobPath.Append("all");
             // city 
             jobPath.Append("/");
             if (!string.IsNullOrWhiteSpace(city))
-                jobPath.Append(Uri.EscapeUriString(city));
+                jobPath.Append(city);
             else
                 jobPath.Append("all");
             // job identifier 
             jobPath.Append("/");
             jobPath.Append(jobIdentifier);
 
-            return jobPath.ToString();
+            return jobPath.ToString().ToUrlSlug();
         }
 
+        public static string ToUrlSlug(this string value)
+        {
+            //First to lower case
+            value = value.ToLowerInvariant();
+            //Remove all accents
+            var bytes = Encoding.GetEncoding("Cyrillic").GetBytes(value);
+            value = Encoding.ASCII.GetString(bytes);
+            //Replace spaces
+            value = Regex.Replace(value, @"\s", "-", RegexOptions.Compiled);
+            //Remove invalid chars
+            value = Regex.Replace(value, @"[^a-z0-9\s-_\/]", "", RegexOptions.Compiled);
+            //Trim dashes from end
+            value = value.Trim('-', '_');
+            //Replace double occurences of - or _
+            value = Regex.Replace(value, @"([-_]){2,}", "$1", RegexOptions.Compiled);
+            return value;
+        }
 
 
         /// <summary>
@@ -156,7 +173,7 @@ namespace UpDiddyLib.Helpers
 
             return obfuscatedEmail.ToString();
         }
-
+        
         /// <remarks>
         /// Shamelessly stolen from https://stackoverflow.com/questions/457676/check-if-a-class-is-derived-from-a-generic-class
         /// </remarks>
