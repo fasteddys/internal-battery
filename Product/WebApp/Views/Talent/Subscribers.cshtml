@@ -66,12 +66,18 @@
                 var search = document.getElementById('GridSearch').value;
                 var searchQuery = encodeURIComponent(search);
                 var searchFilter = encodeURIComponent(document.getElementById('SelectedSubscriberSource').value);
-                var url = 'subscriberData/' + searchFilter + '/' + searchQuery;
+                //var url = 'subscriberData/' + searchFilter + '/' + searchQuery;
+                var url = 'subscriberData';
                 $.ajax({
                     url: url,
+                    data: {
+                        searchQuery: searchQuery,
+                        searchFilter: searchFilter
+                    },
+                    contentType: "application/json; charset=utf-8",
                     method: "get",
                     success: function (data, textStatus, jqXHR) {
-                        downloadUserFile(data);
+                        downloadUserFile(data);   
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
                         ToastService.error(textStatus, jqXHR.responseJSON.value.description);
