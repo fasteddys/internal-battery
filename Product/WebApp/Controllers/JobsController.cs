@@ -65,7 +65,8 @@ namespace UpDiddy.Controllers
 
             if (jobSearchResultDto == null)
                 return NotFound();
-            
+
+
 
             JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
             {
@@ -77,14 +78,10 @@ namespace UpDiddy.Controllers
             return View("Index", jobSearchViewModel);
         }
 
-        /// <summary>
-        /// Job Details Page
-        /// </summary>
-        /// <param name="JobGuid"></param>
-        /// <param name="r">Request Id (Google Request Id) optional</param>
-        /// <param name="ce">Client Event Id optional</param>
-        /// <returns>ActionResult</returns>
-        [HttpGet("[controller]/{JobGuid}")]
+        
+        [HttpGet]
+        [Route("[controller]/{JobGuid}")]
+        [Route("[controller]/{industry}/{category}/{country}/{state}/{city}/{JobGuid}")]
         public async Task<IActionResult> JobAsync(Guid JobGuid)
         {
             JobPostingDto job = null;
@@ -131,7 +128,13 @@ namespace UpDiddy.Controllers
             if (job == null)
                 return NotFound();
 
-      
+            // check to see if the inbound url matches the semantic url
+            if (job.SemanticJobPath.ToLower() != Request.Path.Value.ToLower())
+            {
+                // if it does not match, redirect to the semantic url
+                return RedirectPermanent(job.SemanticJobPath.ToLower());
+            }
+
             JobDetailsViewModel jdvm = new JobDetailsViewModel
             {
                 RequestId = job.RequestId,

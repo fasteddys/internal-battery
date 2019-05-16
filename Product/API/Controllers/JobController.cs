@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
- 
+
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,6 +34,7 @@ using UpDiddyLib.Shared.GoogleJobs;
 using Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Microsoft.Extensions.DependencyInjection;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers
 {
@@ -65,7 +66,7 @@ namespace UpDiddyApi.Controllers
             _repositoryWrapper = _services.GetService<IRepositoryWrapper>(); ;
 
             _postingTTL = int.Parse(_configuration["JobPosting:PostingTTLInDays"]);
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);        
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
         }
 
         #endregion
@@ -85,7 +86,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetJobsForSubscriber(int numRecords)
         {
             var stats = _repositoryWrapper.JobSiteScrapeStatistic.GetJobScrapeStatisticsAsync(numRecords).Result;
-            return Ok(_mapper.Map<IList<JobSiteScrapeStatisticDto>>(stats) );
+            return Ok(_mapper.Map<IList<JobSiteScrapeStatisticDto>>(stats));
         }
 
 
@@ -135,7 +136,7 @@ namespace UpDiddyApi.Controllers
                 jobPostingFavorite.ModifyDate = DateTime.UtcNow;
 
                 _db.SaveChanges();
- 
+
                 _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPostingFavorite completed at: {DateTime.UtcNow.ToLongDateString()}");
             }
             catch (Exception ex)
@@ -156,7 +157,7 @@ namespace UpDiddyApi.Controllers
             try
             {
                 _syslog.Log(LogLevel.Information, $"***** JobController:JobPostingFavoriteDto started at: {DateTime.UtcNow.ToLongDateString()}");
-                if (jobPostingFavoriteDto == null )
+                if (jobPostingFavoriteDto == null)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job posting favorite required" });
 
                 // Validate request 
@@ -168,8 +169,8 @@ namespace UpDiddyApi.Controllers
                 JobPosting jobPosting = null;
                 Subscriber subscriber = null;
                 string ErrorMsg = string.Empty;
-                if (JobPostingFavoriteFactory.ValidateJobPostingFavorite(_db, jobPostingFavoriteDto, subsriberGuidClaim, ref subscriber, ref jobPosting, ref ErrorMsg) == false )               
-                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ErrorMsg });                
+                if (JobPostingFavoriteFactory.ValidateJobPostingFavorite(_db, jobPostingFavoriteDto, subsriberGuidClaim, ref subscriber, ref jobPosting, ref ErrorMsg) == false)
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ErrorMsg });
                 else
                 {
                     JobPostingFavorite jobPostingFavorite = JobPostingFavoriteFactory.CreateJobPostingFavorite(subscriber, jobPosting);
@@ -211,14 +212,14 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/subscriber/{subscriberGuid}")]
         public IActionResult GetJobsForSubscriber(Guid subscriberGuid)
         {
-           
+
 
             Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if ( subscriberGuid == null ||   subscriberGuid != subsriberGuidClaim)
+            if (subscriberGuid == null || subscriberGuid != subsriberGuidClaim)
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting can only be viewed by their owner" });
 
             List<JobPosting> jobPostings = JobPostingFactory.GetJobPostingsForSubscriber(_db, subscriberGuid);
-         
+
             return Ok(_mapper.Map<List<JobPostingDto>>(jobPostings));
         }
 
@@ -233,25 +234,25 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/{jobPostingGuid}")]
         public IActionResult DeleteJobPosting(Guid jobPostingGuid)
         {
-      
+
             try
             {
                 _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting started at: {DateTime.UtcNow.ToLongDateString()} for posting {jobPostingGuid}");
 
                 if (jobPostingGuid == null)
-                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "No job posting identifier was provided"}); 
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "No job posting identifier was provided" });
 
                 string ErrorMsg = string.Empty;
-                if ( JobPostingFactory.DeleteJob(_db,  jobPostingGuid, ref ErrorMsg, _syslog, _mapper, _configuration) == false )
+                if (JobPostingFactory.DeleteJob(_db, jobPostingGuid, ref ErrorMsg, _syslog, _mapper, _configuration) == false)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ErrorMsg });
-                else   
-                    return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"JobPosting {jobPostingGuid}  has been deleted " });   
+                else
+                    return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"JobPosting {jobPostingGuid}  has been deleted " });
             }
             catch (Exception ex)
             {
                 _syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting exception : {ex.Message} while deleting posting {jobPostingGuid}");
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
-            } 
+            }
         }
 
         /// <summary>
@@ -276,10 +277,10 @@ namespace UpDiddyApi.Controllers
                 string ErrorMsg = string.Empty;
                 bool UpdateOk = JobPostingFactory.UpdateJobPosting(_db, jobPostingDto.JobPostingGuid.Value, jobPostingDto, ref ErrorMsg);
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
-                if ( UpdateOk)
+                if (UpdateOk)
                     return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPostingDto.JobPostingGuid.Value}" });
                 else
-                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ErrorMsg });                          
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ErrorMsg });
             }
             catch (Exception ex)
             {
@@ -300,7 +301,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult CreateJobPosting([FromBody] JobPostingDto jobPostingDto)
         {
             try
-            {   
+            {
                 // Validate request 
                 Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 if (jobPostingDto.Recruiter.Subscriber == null || jobPostingDto.Recruiter.Subscriber.SubscriberGuid == null || jobPostingDto.Recruiter.Subscriber.SubscriberGuid != subsriberGuidClaim)
@@ -309,7 +310,7 @@ namespace UpDiddyApi.Controllers
                 if (jobPostingDto == null)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "JobPosting is required" });
 
-                Recruiter recruiter = RecruiterFactory.GetRecruiterBySubscriberGuid(_db,jobPostingDto.Recruiter.Subscriber.SubscriberGuid.Value);
+                Recruiter recruiter = RecruiterFactory.GetRecruiterBySubscriberGuid(_db, jobPostingDto.Recruiter.Subscriber.SubscriberGuid.Value);
 
                 if (recruiter == null)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = $"Recruiter {jobPostingDto.Recruiter.Subscriber.SubscriberId} rec not found" });
@@ -317,11 +318,11 @@ namespace UpDiddyApi.Controllers
 
                 string errorMsg = string.Empty;
                 Guid newPostingGuid = Guid.Empty;
-                if ( JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg,_syslog,_mapper,_configuration) == true )               
-                    return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{newPostingGuid}" });                
-                else                
-                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = errorMsg});
-                 
+                if (JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg, _syslog, _mapper, _configuration) == true)
+                    return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{newPostingGuid}" });
+                else
+                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
+
             }
             catch (Exception ex)
             {
@@ -330,11 +331,11 @@ namespace UpDiddyApi.Controllers
             }
         }
 
-       /// <summary>
-       /// Copy a job posting 
-       /// </summary>
-       /// <param name="jobPostingGuid"></param>
-       /// <returns></returns>
+        /// <summary>
+        /// Copy a job posting 
+        /// </summary>
+        /// <param name="jobPostingGuid"></param>
+        /// <returns></returns>
         [HttpPost]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         [Route("api/[controller]/{jobPostingGuid}")]
@@ -350,7 +351,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Unauthorized to copy posting" });
 
             jobPosting = JobPostingFactory.CopyJobPosting(_db, jobPosting, _postingTTL);
-  
+
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPosting.JobPostingGuid}" });
         }
 
@@ -368,19 +369,40 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetJob(Guid jobPostingGuid)
         {
             JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(_db, jobPostingGuid);
-           if ( jobPosting == null )
+            if (jobPosting == null)
                 return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "JobPosting not found" });
+            JobPostingDto rVal = _mapper.Map<JobPostingDto>(jobPosting);
+            /* i would prefer to get the semantic url in automapper, but i ran into a blocker while trying to call the static util method
+             * in "MapFrom" while guarding against null refs: an expression tree lambda may not contain a null propagating operator
+             * .ForMember(jp => jp.SemanticUrl, opt => opt.MapFrom(src => Utils.GetSemanticJobUrlPath(src.Industry?.Name,"","","","","")))
+             */
+            rVal.SemanticJobPath = Utils.CreateSemanticJobPath(
+                jobPosting.Industry?.Name,
+                jobPosting.JobCategory?.Name,
+                jobPosting.Country,
+                jobPosting.Province,
+                jobPosting.City,
+                jobPostingGuid.ToString());
+            return Ok(rVal);
+        }
 
-            return Ok(_mapper.Map<JobPostingDto>(jobPosting));
+        [HttpGet]
+        [Route("api/sitemap/[controller]/")]
+        public IActionResult GetAllJobsForSitemap()
+        {
+            var allJobsForSitemap = JobPostingFactory.GetAllJobPostingsForSitemap(_db);
+            return Ok(_mapper.Map<List<JobPostingDto>>(allJobsForSitemap));            
         }
 
         [HttpGet]
         [Route("api/[controller]/browse-jobs-location/{Country?}/{Province?}/{City?}/{Industry?}/{JobCategory?}/{Skill?}/{PageNum?}")]
         public async Task<IActionResult> JobSearchByLocation(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum)
+
+
         {
 
             int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
-            JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize,  Request.Query);
+            JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize, Request.Query);
             JobSearchResultDto rVal = _cloudTalent.Search(jobQuery);
 
             // don't let this stop job search from returning
@@ -389,7 +411,7 @@ namespace UpDiddyApi.Controllers
                 ClientEvent ce = await _cloudTalent.CreateClientEventAsync(rVal.RequestId, ClientEventType.Impression, rVal.Jobs.Select(job => job.CloudTalentUri).ToList<string>());
                 rVal.ClientEventId = ce.EventId;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _syslog.Log(LogLevel.Error, "JobController.JobSearchByLocation:: Unable to record client event");
             }
@@ -399,7 +421,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("api/[controller]/browse-jobs-industry/{Industry?}/{JobCategory?}/{Country?}/{Province?}/{City?}/{Skill?}/{PageNum?}")]
-        public IActionResult JobSearchIndustry(string Industry, string JobCategory, string Country, string Province, string City,  string Skill, int PageNum)
+        public IActionResult JobSearchIndustry(string Industry, string JobCategory, string Country, string Province, string City, string Skill, int PageNum)
         {
 
             int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
@@ -411,9 +433,9 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("api/[controller]")]
-        public IActionResult JobSearch( [FromBody] JobQueryDto jobQueryDto)
+        public IActionResult JobSearch([FromBody] JobQueryDto jobQueryDto)
         {
-            int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]); 
+            int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
             JobSearchResultDto rVal = _cloudTalent.Search(jobQueryDto);
             return Ok(rVal);
         }

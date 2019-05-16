@@ -17,19 +17,36 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Hangfire;
 using UpDiddyApi.Workflow;
+using System.Net;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class JobPostingFactory
     {
-
-  
         public static string JobPostingUrl(IConfiguration config, Guid subscriberGuid)
         {
             return config["CareerCircle:ViewJobPostingUrl"] + subscriberGuid;
         }
-        
-   
+
+        public static List<JobPosting> GetAllJobPostingsForSitemap(UpDiddyDbContext db)
+        {
+            // note that this doesn't include all related entities; only those that we need to build the semantic url
+            return db.JobPosting
+                .Include(jp => jp.Industry)
+                .Include(jp => jp.JobCategory)
+                .Where(s => s.IsDeleted == 0)
+                .Select(jp => new JobPosting()
+                {
+                    JobPostingGuid = jp.JobPostingGuid,
+                    Industry = new Industry() { Name = jp.Industry.Name },
+                    JobCategory = new JobCategory() { Name = jp.JobCategory.Name },
+                    Country = jp.Country,
+                    Province = jp.Province,
+                    City = jp.City,
+                    ModifyDate = jp.ModifyDate.HasValue ? jp.ModifyDate.Value : jp.CreateDate
+                })
+                .ToList();
+        }
 
         public static bool DeleteJob(UpDiddyDbContext db, Guid jobPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
@@ -46,21 +63,21 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 ErrorMsg = $"Recruiter {jobPosting.RecruiterId.Value} rec not found";
                 return false;
             }
-            
+
             if (jobPosting.RecruiterId != recruiter.RecruiterId)
             {
                 ErrorMsg = "JobPosting owner is not specified or does not match user posting job";
                 return false;
             }
-               
+
             // queue a job to delete the posting from the job index and mark it as deleted in sql server
             BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteJob(jobPosting.JobPostingGuid));
-            syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");            
+            syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
             return true;
         }
-     
 
-        public static bool PostJob(UpDiddyDbContext db, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid,  ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+
+        public static bool PostJob(UpDiddyDbContext db, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             int postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
 
@@ -69,9 +86,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 ErrorMsg = "JobPosting is required";
                 return false;
             }
-            
+
             syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
- 
+
             JobPosting jobPosting = mapper.Map<JobPosting>(jobPostingDto);
             // todo find a better way to deal with the job posting having a collection of JobPostingSkill and the job posting DTO having a collection of SkillDto
             // ignore posting skills that were mapped via automapper, they will be associated with the posting below 
@@ -121,7 +138,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             syslog.Log(LogLevel.Information, $"***** JobController:CreateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
 
             return true;
-        
+
         }
 
 
@@ -162,7 +179,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(c => c.JobCategory)
                 .Include(c => c.Recruiter.Subscriber)
                 .Where(s => s.IsDeleted == 0 && s.Recruiter.Subscriber.SubscriberGuid == guid)
-                .OrderByDescending( s => s.CreateDate)
+                .OrderByDescending(s => s.CreateDate)
                 .ToList();
         }
 
@@ -176,7 +193,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static JobPosting GetJobPostingByGuidWithRelatedObjects(UpDiddyDbContext db, Guid guid)
         {
             return db.JobPosting
-                .Include(c => c.Company )
+                .Include(c => c.Company)
                 .Include(c => c.Industry)
                 .Include(c => c.SecurityClearance)
                 .Include(c => c.EmploymentType)
@@ -239,7 +256,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         }
 
-        public static string  GetJobPostingLocation(JobPosting jobPosting)
+        public static string GetJobPostingLocation(JobPosting jobPosting)
         {
             return jobPosting.StreetAddress + " " + jobPosting.City + " " + jobPosting.Province + " " + jobPosting.PostalCode;
         }
@@ -273,7 +290,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <returns></returns>
         public static bool ValidateUpdatedJobPosting(JobPosting job, IConfiguration config, ref string message)
         {
-           
+
             return ValidateJobPosting(job, config, ref message);
         }
 
@@ -287,8 +304,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
 
             int MinDescriptionLen = int.Parse(config["CloudTalent:JobDescriptionMinLength"]);
-            
-            if ( job.Description.Trim().Length < MinDescriptionLen)
+
+            if (job.Description.Trim().Length < MinDescriptionLen)
             {
                 message = string.Format(Constants.JobPosting.ValidationError_InvalidDescriptionLength, MinDescriptionLen);
                 return false;
@@ -350,7 +367,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static void CopyPostingSkills(UpDiddyDbContext db, int sourcePostingId, int destinationPostingId)
         {
             List<JobPostingSkill> skills = JobPostingSkillFactory.GetSkillsForPosting(db, sourcePostingId);
-            foreach ( JobPostingSkill s in skills)
+            foreach (JobPostingSkill s in skills)
             {
                 JobPostingSkillFactory.Add(db, destinationPostingId, s.Skill.SkillGuid.Value);
             }
@@ -372,7 +389,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             if (jobPostingDto.JobPostingSkills == null)
                 return;
 
-            foreach ( SkillDto skillDto in jobPostingDto.JobPostingSkills)
+            foreach (SkillDto skillDto in jobPostingDto.JobPostingSkills)
             {
                 JobPostingSkillFactory.Add(db, jobPosting.JobPostingId, skillDto.SkillGuid.Value);
             }
@@ -387,15 +404,15 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <param name="db"></param>
         /// <param name="jobPosting"></param>
         /// <param name="jobPostingDto"></param>
-        public static void MapRelatedObjects(UpDiddyDbContext  db, JobPosting jobPosting, JobPostingDto jobPostingDto)
+        public static void MapRelatedObjects(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
 
             // map subscriber 
             if (jobPostingDto.Recruiter.Subscriber != null)
             {
                 Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, jobPostingDto.Recruiter.Subscriber.SubscriberGuid.Value);
-                if (subscriber != null)        
-                    jobPosting.Recruiter.SubscriberId = subscriber.SubscriberId;   
+                if (subscriber != null)
+                    jobPosting.Recruiter.SubscriberId = subscriber.SubscriberId;
             }
 
             // map company id 
@@ -455,7 +472,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 if (compensationType != null)
                     jobPosting.CompensationTypeId = compensationType.CompensationTypeId;
             }
-      
+
 
 
         }
@@ -644,18 +661,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 return true;
 
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 ErrorMsg = ex.Message;
                 return false;
 
             }
-
-          
-
         }
-        
-
-
     }
 }

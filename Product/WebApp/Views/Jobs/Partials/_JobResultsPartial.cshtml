@@ -31,7 +31,7 @@
     
         foreach (var jobSearchResult in Model.JobsSearchResult)
         {
-            string url = $"/jobs/{jobSearchResult.JobPostingGuid}";
+            string url = @jobSearchResult.SemanticJobPath;
             url = GoogleCloudEventsTrackingDto.AddParametersToUrl(url, Model.RequestId, Model.ClientEventId);
             <div class="job-tile">
                 <div class="row">
@@ -47,7 +47,6 @@
                         <div class="row">
                             <span class="job-post-date">Posted- @jobSearchResult.PostingDateUTC.ToShortDateString()</span>
                         </div>
-
                     </div>
                     <div class="col-12 col-md-6">
                         <div class="row">
