@@ -248,9 +248,11 @@ namespace UpDiddyApi.Controllers
 
                 bool IsExternalRecruiter = jobPosting.Recruiter.Subscriber == null;
 
+                string RecruiterEmailToUse = jobPosting.Recruiter.Subscriber?.Email ?? jobPosting.Recruiter.Email;
+
                 // Send recruiter email alerting them to application
                 BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
-                    (jobPosting.Recruiter.Email,
+                    (RecruiterEmailToUse,
                     _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter" +
                         (IsExternalRecruiter == true ? "-External" : string.Empty)],
                     new
