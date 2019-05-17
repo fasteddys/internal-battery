@@ -25,10 +25,13 @@
                     <li>Try searching the recommended jobs below:</li>
                 </ul>
                 <br />
-                <h2>Jobs that might interest you in @Model?.Location</h2>
+                @if (!string.IsNullOrEmpty(Model.Location))
+                {
+                    <h2>Jobs that might interest you in @Model?.Location</h2>
+                }
             </div>
         }
-    
+
         foreach (var jobSearchResult in Model.JobsSearchResult)
         {
             string url = @jobSearchResult.SemanticJobPath;
@@ -37,9 +40,9 @@
                 <div class="row">
                     <div class="col-12 col-md-3">
                         <div class="row">
-                        <span class="job-title">
-                            <a target="_blank" href="@url">@jobSearchResult.Title</a>
-                        </span>    
+                            <span class="job-title">
+                                <a target="_blank" href="@url">@jobSearchResult.Title</a>
+                            </span>
                         </div>
                         <div class="row">
                             <span class="job-location">@jobSearchResult.Province - @jobSearchResult.City</span>

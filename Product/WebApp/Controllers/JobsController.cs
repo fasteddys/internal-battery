@@ -96,28 +96,37 @@ namespace UpDiddy.Controllers
                     case (401):
                         return Unauthorized();
                     case (404):
+                        // Try to find as an expired job for representatives search.
                         job = await _api.GetExpiredJobAsync(JobGuid);
-                        if (job != null)
+
+                        int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
+                        string location = string.Empty;
+                        JobSearchResultDto jobSearchResultDto;
+
+                        if (job is null)
                         {
-                            string location = job?.City + ", " + job?.Province;
-                            JobSearchResultDto jobSearchResultDto = await _api.GetJobsByLocation(job.Title, location);
-                            int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
-
-                            if (jobSearchResultDto == null)
-                                return NotFound();
-
-                            var jobSearchViewModel = new JobSearchViewModel()
-                            {
-                                Keywords = job.Title,
-                                Location = location,
-                                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, pageCount)
-                            };
-
-                            // Remove the expired job link from the search provider's index.
-                            Response.StatusCode = 404;
-                            return View("Index", jobSearchViewModel);
+                            // Show all jobs.
+                            jobSearchResultDto = await _api.GetJobsByLocation(null, null);
                         }
-                        break;
+                        else
+                        {   // Show representatives.
+                            location = job?.City + ", " + job?.Province;
+                            jobSearchResultDto = await _api.GetJobsByLocation(job.Title, location);
+                        }
+
+                        if (jobSearchResultDto == null)
+                            return NotFound();
+
+                        var jobSearchViewModel = new JobSearchViewModel()
+                        {
+                            Keywords = job?.Title ?? string.Empty,
+                            Location = location,
+                            JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, pageCount)
+                        };
+
+                        // Remove the expired job link from the search provider's index.
+                        Response.StatusCode = 404;
+                        return View("Index", jobSearchViewModel);
                     case (500):
                         return StatusCode(500);
                     default:

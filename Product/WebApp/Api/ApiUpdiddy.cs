@@ -1307,7 +1307,15 @@ namespace UpDiddy.Api
         
         public async Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid)
         {
-            return await GetAsync<JobPostingDto>("job/expired/" + JobPostingGuid);
+            // Null result is possible if job GUID doesn't exist in our repo.
+            try
+            {
+                return await GetAsync<JobPostingDto>("job/expired/" + JobPostingGuid);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         #endregion
