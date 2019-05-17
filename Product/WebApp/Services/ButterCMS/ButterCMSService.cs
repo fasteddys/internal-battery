@@ -69,25 +69,31 @@ namespace UpDiddy.Services.ButterCMS
 
         public PageResponse<T> RetrievePage<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters = null) where T : ButterCMSBaseViewModel
         {
-            PageResponse<T> CachedButterResponse = _cacheService.GetCachedValue<PageResponse<T>>(CacheKey);
+            CMSResponseHelper<PageResponse<T>> ResponseHelper = _cacheService.GetCachedValue<CMSResponseHelper<PageResponse<T>>>(CacheKey);
+
             try
             {
-                if (CachedButterResponse == null)
+                if (ResponseHelper == null)
                 {
-                    CachedButterResponse = _butterClient.RetrievePage<T>("*", Slug, QueryParameters);
+                    ResponseHelper = new CMSResponseHelper<PageResponse<T>>();
+                    PageResponse<T> CachedButterResponse = _butterClient.RetrievePage<T>("*", Slug, QueryParameters);
+                    ResponseHelper.Data = CachedButterResponse;
 
                     if (CachedButterResponse == null)
-                    {
-                        return null;
-                    }
-                    _cacheService.SetCachedValue(CacheKey, CachedButterResponse);
+                        ResponseHelper.ResponseCode = Constants.CMS.NULL_RESPONSE;
+                    else
+                        ResponseHelper.ResponseCode = Constants.CMS.RESPONSE_RECEIVED;
+
+                    _cacheService.SetCachedValue(CacheKey, ResponseHelper);
                 }
+
             }
             catch (ContentFieldObjectMismatchException Exception)
             {
                 return null;
             }
-            return CachedButterResponse;
+
+            return ResponseHelper.Data;
             
         }
 
@@ -115,6 +121,12 @@ namespace UpDiddy.Services.ButterCMS
                 _cacheService.SetCachedValue<string>(CacheKeyForNavigationLoadFailure, "true");
             }
             
+        }
+
+        private class CMSResponseHelper<T>
+        {
+            public string ResponseCode { get; set; }
+            public T Data { get; set; }
         }
     }
 }
