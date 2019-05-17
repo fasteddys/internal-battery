@@ -369,7 +369,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // defined, if not use city state parameters if they have been defined 
                 string addressInfo = string.Empty;
                 if (string.IsNullOrEmpty(jobQuery.Location) == false)
-                    addressInfo = jobQuery.Location;
+                {
+                    // work around a google bug where they don't recognize md and ny as administrative areas (although they do recognize pa and in 
+                    // as administrative areas)
+                    if (jobQuery.Location.Trim().Length == 2)
+                        addressInfo = jobQuery.Location + "," + regionCode;
+                    else
+                        addressInfo = jobQuery.Location;
+                }
                 else
                 {
                     // build address with comma placeholders to help google parse the location
