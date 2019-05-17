@@ -24,6 +24,8 @@ namespace UpDiddy.ViewModels
         public string ContactName { get; set; }
         public string ContactPhone { get; set; }
         public string ContactEmail { get; set; }
-
+        public string ThirdPartyIdentifier { get; set; }
+        public string CompanyBoilerplate { get; set; }
+        public bool IsThirdPartyJob { get; set; }
     }
 }

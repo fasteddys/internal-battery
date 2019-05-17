@@ -128,7 +128,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                         }
 
                         // get the related JobPostingId (if one exists)
-                        string jobId = job.id;
+                        string jobId = job.display_job_id;
                         var existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == jobId).FirstOrDefault();
                         if (existingJobPage != null)
                         {
@@ -153,7 +153,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                                 JobPageGuid = Guid.NewGuid(),
                                 JobPageStatusId = jobPageStatusId,
                                 RawData = job.ToString(),
-                                UniqueIdentifier = job.id.ToString(),
+                                UniqueIdentifier = jobId,
                                 Uri = jobDetailUri,
                                 JobSiteId = _jobSite.JobSiteId
                             });
@@ -216,6 +216,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 jobPostingDto.ThirdPartyApply = true;
                 jobPostingDto.JobStatus = (int)JobPostingStatus.Active;
                 jobPostingDto.Company = new CompanyDto() { CompanyGuid = _companyGuid };
+                jobPostingDto.ThirdPartyIdentifier = jobPage.UniqueIdentifier;
 
                 // everything else relies upon valid raw data
                 if (!string.IsNullOrWhiteSpace(jobPage.RawData))
@@ -232,6 +233,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     jobPostingDto.Province = jobData.admin_area_1;
                     string recruiterName = jobData.discrete_field_3;
                     string recruiterFirstName = null, recruiterLastName = null;
+                    string recruiterPhone = jobData.discrete_field_5;
                     if (!string.IsNullOrWhiteSpace(recruiterName))
                     {
                         string[] tmp = recruiterName.Split(' ');
@@ -245,7 +247,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     {
                         Email = jobData.discrete_field_4,
                         FirstName = recruiterFirstName,
-                        LastName = recruiterLastName
+                        LastName = recruiterLastName,
+                        PhoneNumber = recruiterPhone
                     };
                 }
 
