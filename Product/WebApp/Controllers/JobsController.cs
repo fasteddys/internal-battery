@@ -97,8 +97,16 @@ namespace UpDiddy.Controllers
                         return Unauthorized();
                     case (404):
                         // Try to find as an expired job for representatives search.
-                        job = await _api.GetExpiredJobAsync(JobGuid);
-
+                        //todo: See if we can allow expired/deleted jobs to get here to decide to show representatives and save an API call.
+                        try
+                        {
+                            job = await _api.GetExpiredJobAsync(JobGuid);
+                        }
+                        catch (ApiException ae)
+                        {
+                            return StatusCode(ae.ResponseDto.StatusCode);
+                        }
+                     
                         int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
                         string location = string.Empty;
                         JobSearchResultDto jobSearchResultDto;
@@ -110,7 +118,8 @@ namespace UpDiddy.Controllers
                         }
                         else
                         {   // Show representatives.
-                            location = job?.City + ", " + job?.Province;
+                            var tempLocation = new string[] { job?.City, job?.Province };
+                            location = string.Join(", ", tempLocation.Where(s => !string.IsNullOrEmpty(s)));
                             jobSearchResultDto = await _api.GetJobsByLocation(job.Title, location);
                         }
 
