@@ -1,5 +1,6 @@
 ﻿@using UpDiddy.ViewModels
-@using UpDiddyLib.Dto;
+@using UpDiddyLib.Dto
+@using UpDiddyLib.Helpers
 @model JobDetailsViewModel
 @{
     string url = string.Format("/jobs/apply/{0}", Model.PostingId);
@@ -86,7 +87,7 @@
         @if (!string.IsNullOrEmpty(Model.ContactPhone))
         {
             <div>
-                <strong>Phone:</strong> <span class="job-contact-phone">@Model.ContactPhone</span>
+                <strong>Phone:</strong> <span class="job-contact-phone">@Utils.FormatPhoneNumber(Model.ContactPhone)</span>
             </div>
         }
 
