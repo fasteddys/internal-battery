@@ -94,5 +94,11 @@ namespace UpDiddyLib.Helpers
             Marketing,
             Leads
         }
+
+        public static class CMS
+        {
+            public static readonly string NULL_RESPONSE = "NULL_RESPONSE";
+            public static readonly string RESPONSE_RECEIVED = "RESPONSE_RECEIVED";
+        }
     }
 }
