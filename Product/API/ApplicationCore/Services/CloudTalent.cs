@@ -83,10 +83,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 _jobServiceClient.Projects.Jobs.Delete(googleUri).Execute();
- 
+
             }
             catch (Exception e)
-            {   
+            {
                 throw e;
             }
 
@@ -104,14 +104,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
 
                 bool isIndexed = false;
-                if ( jobPosting.CloudTalentUri != null && string.IsNullOrEmpty(jobPosting.CloudTalentUri.Trim()) == false )
+                if (jobPosting.CloudTalentUri != null && string.IsNullOrEmpty(jobPosting.CloudTalentUri.Trim()) == false)
                 {
                     isIndexed = true;
                     _jobServiceClient.Projects.Jobs.Delete(jobPosting.CloudTalentUri).Execute();
                 }
 
                 // remove reference to this job posting in job pages table
-                _db.JobPage.Where(jp => jp.JobPostingId == jobPosting.JobPostingId).ToList().ForEach(jp => {
+                _db.JobPage.Where(jp => jp.JobPostingId == jobPosting.JobPostingId).ToList().ForEach(jp =>
+                {
                     jp.ModifyDate = DateTime.UtcNow;
                     jp.ModifyGuid = Guid.Empty;
                     jp.JobPostingId = null;
@@ -121,7 +122,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobPosting.IsDeleted = 1;
                 if (isIndexed)
                     jobPosting.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now);
-                else 
+                else
                     jobPosting.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now) + " (not google indexed)";
 
                 jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.DeletedFromIndex;
@@ -156,7 +157,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 CloudTalentSolution.Job TalentCloudJob = JobMappingHelper.CreateGoogleJob(_db, jobPosting);
                 CloudTalentSolution.UpdateJobRequest UpdateJobRequest = new CloudTalentSolution.UpdateJobRequest();
-                UpdateJobRequest.Job = TalentCloudJob;                        
+                UpdateJobRequest.Job = TalentCloudJob;
                 CloudTalentSolution.Job jobCreated = _jobServiceClient.Projects.Jobs.Patch(UpdateJobRequest, TalentCloudJob.Name).Execute();
                 // Update job posting with index error
                 jobPosting.CloudTalentUri = jobCreated.Name;
@@ -184,7 +185,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <param name="jobPosting"></param>
         /// <returns></returns>
         public CloudTalentSolution.Job IndexJob(JobPosting jobPosting)
-        {            
+        {
             try
             {
                 CloudTalentSolution.Job TalentCloudJob = JobMappingHelper.CreateGoogleJob(_db, jobPosting);
@@ -204,7 +205,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 // Update job posting with index error
                 jobPosting.CloudTalentIndexInfo = e.Message;
-                jobPosting.CloudTalentIndexStatus = (int) JobPostingIndexStatus.IndexError;
+                jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.IndexError;
                 _db.SaveChanges();
                 _syslog.LogError(e, "CloudTalent.IndexJob Error", e, jobPosting);
                 throw e;
@@ -281,7 +282,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
-                    // validate we have good data 
+                // validate we have good data 
                 if (jobPosting == null || jobPosting.Company == null)
                     return false;
                 // validate the company is known to google, if not add it to the cloud talent 
@@ -336,14 +337,14 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             CloudTalentSolution.JobQuery cloudTalentJobQuery = new CloudTalentSolution.JobQuery();
             // add keywords 
-            if ( string.IsNullOrEmpty(jobQuery.Keywords) == false )
-            {                
+            if (string.IsNullOrEmpty(jobQuery.Keywords) == false)
+            {
                 cloudTalentJobQuery.Query = jobQuery.Keywords;
             }
 
-     
 
-            if ( jobQuery.Lat != 0  && jobQuery.Lng != 0)
+
+            if (jobQuery.Lat != 0 && jobQuery.Lng != 0)
             {
                 cloudTalentJobQuery.CommuteFilter = new CloudTalentSolution.CommuteFilter()
                 {
@@ -358,7 +359,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     // format in the required format 
                     TravelDuration = (jobQuery.CommuteTime * 60).ToString() + "s",
                     RoadTraffic = jobQuery.RushHour ? "BUSY_HOUR" : "TRAFFIC_FREE"
-                
+
                 };
             }
             else // not commute search 
@@ -380,29 +381,28 @@ namespace UpDiddyApi.ApplicationCore.Services
                 else
                 {
                     // build address with comma placeholders to help google parse the location
-                    addressInfo = jobQuery.StreetAddress + ", " + jobQuery.City + ", " + jobQuery.Province + ", " + regionCode;
-                    addressInfo = addressInfo.Trim();
+                    addressInfo = BuildAddress(jobQuery, regionCode);
                 }
                 // add location filter if any address information has been provided  
-                if (string.IsNullOrEmpty(addressInfo) == false ||  string.IsNullOrEmpty(jobQuery.Province) == false )
+                if (string.IsNullOrEmpty(addressInfo) == false || string.IsNullOrEmpty(jobQuery.Province) == false)
                 {
                     CloudTalentSolution.LocationFilter locationFilter = new CloudTalentSolution.LocationFilter()
-                    {                
+                    {
                         Address = addressInfo,
                         DistanceInMiles = jobQuery.SearchRadius,
-                        RegionCode = regionCode                                              
+                        RegionCode = regionCode
                     };
- 
+
                     cloudTalentJobQuery.LocationFilters = new List<CloudTalentSolution.LocationFilter>()
                     {
-                        locationFilter                        
+                        locationFilter
                     };
-                    
+
                 }
             }
-          
+
             // publish time range 
-            if ( string.IsNullOrEmpty(jobQuery.DatePublished) == false)
+            if (string.IsNullOrEmpty(jobQuery.DatePublished) == false)
             {
                 cloudTalentJobQuery.PublishTimeRange = GetPublishTimeRange(jobQuery.DatePublished);
             }
@@ -411,7 +411,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (string.IsNullOrEmpty(jobQuery.CompanyName) == false)
             {
                 string[] companyNames = { jobQuery.CompanyName };
-                cloudTalentJobQuery.CompanyDisplayNames = companyNames;                
+                cloudTalentJobQuery.CompanyDisplayNames = companyNames;
             }
 
             // custom attribute filters 
@@ -419,8 +419,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // add skills 
             string attributeFilters = string.Empty;
-            if ( string.IsNullOrEmpty (jobQuery.Skill) == false )
-                attributeFilters = "LOWER(Skills) = \"" + jobQuery.Skill.Trim().ToLower()  + "\"";
+            if (string.IsNullOrEmpty(jobQuery.Skill) == false)
+                attributeFilters = "LOWER(Skills) = \"" + jobQuery.Skill.Trim().ToLower() + "\"";
 
             // add industry 
             if (string.IsNullOrEmpty(jobQuery.Industry) == false)
@@ -469,9 +469,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
 
             // Add Custom Attribute Filter 
-            if ( attributeFilters.Length > 0 )
+            if (attributeFilters.Length > 0)
                 cloudTalentJobQuery.CustomAttributeFilter = attributeFilters;
- 
+
             // Add histograms 
             CloudTalentSolution.HistogramFacets histogramFacets = new CloudTalentSolution.HistogramFacets()
             {
@@ -526,15 +526,15 @@ namespace UpDiddyApi.ApplicationCore.Services
                 RequestMetadata = requestMetadata,
                 JobQuery = cloudTalentJobQuery,
                 SearchMode = "JOB_SEARCH",
-                HistogramFacets = histogramFacets, 
+                HistogramFacets = histogramFacets,
                 PageSize = jobQuery.PageSize,
                 Offset = jobQuery.PageSize * (jobQuery.PageNum - 1),
                 OrderBy = jobQuery.OrderBy
-               
+
 
             };
 
-            
+
 
             return searchJobRequest;
         }
@@ -547,17 +547,17 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <param name="jobQuery"></param>
         /// <returns></returns>
         public JobSearchResultDto Search(JobQueryDto jobQuery)
-        {            
+        {
             // map jobquery to cloud talent search request 
             DateTime startSearch = DateTime.Now;
             CloudTalentSolution.SearchJobsRequest searchJobRequest = CreateJobSearchRequest(jobQuery);
-            
+
             // search the cloud talent 
             CloudTalentSolution.SearchJobsResponse searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
 
             // map cloud talent results to cc search results 
-            DateTime startMap= DateTime.Now;
-            JobSearchResultDto rval = JobMappingHelper.MapSearchResults(_syslog, _mapper,_configuration, searchJobsResponse, jobQuery);
+            DateTime startMap = DateTime.Now;
+            JobSearchResultDto rval = JobMappingHelper.MapSearchResults(_syslog, _mapper, _configuration, searchJobsResponse, jobQuery);
             DateTime stopMap = DateTime.Now;
 
             // calculate search timing metrics 
@@ -615,12 +615,12 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region Helper functions
 
-        static private CloudTalentSolution.TimestampRange GetPublishTimeRange( string timeRange )
+        static private CloudTalentSolution.TimestampRange GetPublishTimeRange(string timeRange)
         {
             CloudTalentSolution.TimestampRange rVal = new CloudTalentSolution.TimestampRange();
             rVal.EndTime = Utils.GetTimestampAsString(DateTime.Now);
 
-            switch ( timeRange.ToLower() )
+            switch (timeRange.ToLower())
             {
                 case "past_24_hours":
                     rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddHours(-24));
@@ -636,12 +636,37 @@ namespace UpDiddyApi.ApplicationCore.Services
                     break;
                 default:
                     rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddDays(-365));
-                    break;                    
+                    break;
             }
             return rVal;
         }
 
+        private static string BuildAddress(JobQueryDto jobQuery, string regionCode)
+        {
+            string rVal = string.Empty;
+
+            if (string.IsNullOrEmpty(jobQuery.StreetAddress) == false)
+                rVal += jobQuery.StreetAddress;
+            if (string.IsNullOrEmpty(jobQuery.City) == false)
+            {
+                if (string.IsNullOrEmpty(rVal) == false)
+                    rVal += ", ";
+                rVal += jobQuery.City;
+            }
+
+            if (string.IsNullOrEmpty(jobQuery.Province) == false)
+            {
+                if (string.IsNullOrEmpty(rVal) == false)
+                    rVal += ", ";
+                rVal += jobQuery.Province;
+            }
+            if (string.IsNullOrEmpty(rVal) == false)
+                rVal += ", ";
+            // always add region code
+            rVal += regionCode;
+            return rVal.Trim();
+        }
+
         #endregion
-        
     }
 }
