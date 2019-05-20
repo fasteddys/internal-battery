@@ -80,8 +80,8 @@ namespace UpDiddy.Controllers
 
         
         [HttpGet]
-        [Route("[controller]/{JobGuid}")]
-        [Route("[controller]/{industry}/{category}/{country}/{state}/{city}/{JobGuid}")]
+        [Route("job/{JobGuid}")]
+        [Route("job/{industry}/{category}/{country}/{state}/{city}/{JobGuid}")]
         public async Task<IActionResult> JobAsync(Guid JobGuid)
         {
             JobPostingDto job = null;

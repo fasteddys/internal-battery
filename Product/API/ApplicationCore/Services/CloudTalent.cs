@@ -377,12 +377,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                     else
                         addressInfo = jobQuery.Location;
                 }
-                else
-                {
+                else          
                     // build address with comma placeholders to help google parse the location
-                    addressInfo = jobQuery.StreetAddress + ", " + jobQuery.City + ", " + jobQuery.Province + ", " + regionCode;
-                    addressInfo = addressInfo.Trim();
-                }
+                    addressInfo = BuildAddress(jobQuery, regionCode);
+               
                 // add location filter if any address information has been provided  
                 if (string.IsNullOrEmpty(addressInfo) == false ||  string.IsNullOrEmpty(jobQuery.Province) == false )
                 {
@@ -552,7 +550,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             DateTime startSearch = DateTime.Now;
             CloudTalentSolution.SearchJobsRequest searchJobRequest = CreateJobSearchRequest(jobQuery);
             
-            // search the cloud talent 
+            // search the cloud talent  
             CloudTalentSolution.SearchJobsResponse searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
 
             // map cloud talent results to cc search results 
@@ -570,6 +568,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             rval.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
             rval.SearchMappingTimeInTicks = intervalMapTime.Ticks;
             return rval;
+ 
         }
 
 
@@ -614,6 +613,34 @@ namespace UpDiddyApi.ApplicationCore.Services
         #endregion
 
         #region Helper functions
+
+        static private string  BuildAddress(JobQueryDto jobQuery, string regionCode)
+        {
+
+            string rVal = string.Empty;
+            if (string.IsNullOrEmpty(jobQuery.StreetAddress) == false)
+                rVal += jobQuery.StreetAddress;
+
+            if (string.IsNullOrEmpty(jobQuery.City) == false)
+            {
+                if (string.IsNullOrEmpty(rVal) == false)
+                    rVal += ", ";
+                rVal += jobQuery.City;
+            }
+
+            if (string.IsNullOrEmpty(jobQuery.Province) == false)
+            {
+                if (string.IsNullOrEmpty(rVal) == false)
+                    rVal += ", ";
+                rVal += jobQuery.Province;
+            }
+
+            if (string.IsNullOrEmpty(rVal) == false)
+                rVal += ", ";
+            // always add region code
+            rVal +=  regionCode;
+            return rVal.Trim();
+        }
 
         static private CloudTalentSolution.TimestampRange GetPublishTimeRange( string timeRange )
         {
