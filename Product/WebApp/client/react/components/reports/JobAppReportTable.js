@@ -23,7 +23,7 @@ class JobAppReportTable extends React.Component {
     buildColumns(props) {
         this.columns = [
             {
-                Header: "Partner",
+                Header: "Company",
                 accessor: "companyName"
             },
             {
