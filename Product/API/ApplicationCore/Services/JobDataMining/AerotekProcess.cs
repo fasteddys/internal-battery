@@ -231,6 +231,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                         jobPostingDto.CreateDate = DateTime.UtcNow;
                     jobPostingDto.Title = jobData.job_title;
                     jobPostingDto.Province = jobData.admin_area_1;
+                    jobPostingDto.Country = jobData.country_code;
+                    jobPostingDto.Country = jobPostingDto.Country.ToUpper();
                     string recruiterName = jobData.discrete_field_3;
                     string recruiterFirstName = null, recruiterLastName = null;
                     string recruiterPhone = jobData.discrete_field_5;

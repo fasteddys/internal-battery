@@ -109,10 +109,23 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                         }
                         else
                         {
-                            // add the formatted job description to responsibilities 
-                            var formattedJobDescription = jobHtml.DocumentNode.SelectSingleNode("(//div[@class='job-description'])[1]");
-                            if (formattedJobDescription != null && !string.IsNullOrWhiteSpace(formattedJobDescription.InnerHtml))
-                                job.responsibilities = formattedJobDescription.InnerHtml;
+                            // append additional data that is not present in search results for the page, status already marked as new
+                            var scripNodetWithJson = jobHtml.DocumentNode.SelectSingleNode("(//script[@type='application/ld+json'])[1]");
+                            if (scripNodetWithJson != null)
+                            {
+                                dynamic jobDataJson = null;
+                                try
+                                {
+                                    jobDataJson = JsonConvert.DeserializeObject<dynamic>(scripNodetWithJson.InnerHtml.ToString());
+                                    job.responsibilities = jobDataJson.responsibilities.Value;
+                                }
+                                catch (JsonException)
+                                {
+                                    // some Aerotek job postings contain malformed JSON. for these, grab the description from the html instead
+                                    var descriptionFromHtml = jobHtml.DocumentNode.SelectSingleNode("//div[@class=\"job-description\"]");
+                                    job.responsibilities = descriptionFromHtml.InnerHtml;
+                                }
+                            }
                         }
 
                         // get the related JobPostingId (if one exists)
@@ -220,7 +233,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     jobPostingDto.Title = jobData.job_title;
                     jobPostingDto.Province = jobData.admin_area_1;
                     jobPostingDto.Country = jobData.country_code;
-
+                    jobPostingDto.Country = jobPostingDto.Country.ToUpper();
                     string recruiterName = jobData.discrete_field_3;
                     string recruiterFirstName = null, recruiterLastName = null;
                     string recruiterPhone = jobData.discrete_field_5;
