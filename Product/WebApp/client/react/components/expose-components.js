@@ -5,6 +5,8 @@ import ReactDOMServer from 'react-dom/server';
 import ResumeUpload from './ResumeUpload';
 import SATable from './reports/SATable';
 import JobAppReportTable from './reports/JobAppReportTable';
+import BrowseJobsByCategory from './jobs/BrowseCategory';
+import BrowseJobsByLocation from './jobs/BrowseLocation';
 
 global.React = React;
 global.ReactDOM = ReactDOM;
@@ -12,6 +14,8 @@ global.ReactDOMServer = ReactDOMServer;
 
 // components
 global.ResumeUpload = ResumeUpload;
+global.BrowseJobsByCategory = BrowseJobsByCategory;
+global.BrowseJobsByLocation = BrowseJobsByLocation;
 
 // reports
 global.SATable = SATable;

@@ -20,6 +20,7 @@ namespace UpDiddy.Api
         Task<IList<CourseDto>> CoursesAsync();
         Task<IList<CountryDto>> GetCountriesAsync();
         Task<IList<StateDto>> GetStatesByCountryAsync(Guid? countryGuid);
+        Task<IList<StateDto>> GetAllStatesAsync();
         Task<IList<IndustryDto>> GetIndustryAsync();
         Task<IList<JobCategoryDto>> GetJobCategoryAsync();
         Task<List<JobPostingDto>> GetAllJobsAsync();
@@ -124,7 +125,7 @@ namespace UpDiddy.Api
         Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid);
         Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
         Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location);
-
+        Task<IList<JobCategoryDto>> GetJobCategories();
         Task<GoogleCloudEventsTrackingDto> RecordClientEventAsync(Guid jobGuid, GoogleCloudEventsTrackingDto dto);
 
         #endregion

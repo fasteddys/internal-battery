@@ -279,5 +279,17 @@ namespace UpDiddy.Controllers
 
             return View("Finish", cjavm);
         }
+   
+        [HttpGet("Browse-Jobs")]
+        public async Task<IActionResult> BrowseAsync()
+        {
+            BrowseJobsViewModel bjvm = new BrowseJobsViewModel
+            {
+                JobCategories = await _api.GetJobCategories(),
+                States = await _api.GetAllStatesAsync()
+            };
+
+            return View("Browse", bjvm);
+        }
     }
 }

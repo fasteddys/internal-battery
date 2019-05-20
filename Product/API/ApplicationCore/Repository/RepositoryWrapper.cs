@@ -19,6 +19,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ICompanyRepository _companyRepository;
         private IJobSiteScrapeStatisticRepository _jobSiteScrapeStatisticRepository;
         private IRecruiterActionRepository _recruiterActionRepository;
+        private IJobCategoryRepository _jobCategoryRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -130,6 +131,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _recruiterActionRepository = new RecruiterActionRepository(_dbContext);
                 }
                 return _recruiterActionRepository;
+            }
+        }
+
+        public IJobCategoryRepository JobCategoryRepository
+        {
+            get
+            {
+                if(_jobCategoryRepository == null)
+                {
+                    _jobCategoryRepository = new JobCategoryRepository(_dbContext);
+                }
+                return _jobCategoryRepository;
             }
         }
     }

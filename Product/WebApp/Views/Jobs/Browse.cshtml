@@ -1,0 +1,13 @@
+﻿@using React.AspNet;
+@using UpDiddy.ViewModels
+@model BrowseJobsViewModel
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            @Html.React("BrowseJobsByCategory", new { jobCategories = Model.JobCategories })
+            @Html.React("BrowseJobsByLocation", new { states = Model.States })
+
+        </div>
+    </div>
+</div>

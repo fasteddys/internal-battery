@@ -910,6 +910,21 @@ namespace UpDiddy.Api
             return await GetAsync<IList<StateDto>>("country/" + countryGuid?.ToString() + "/state");
         }
 
+        public async Task<IList<StateDto>> GetAllStatesAsync()
+        {
+            string cacheKey = $"States";
+            IList<StateDto> rval = GetCachedValue<IList<StateDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await GetStatesAsync();
+                SetCachedValue<IList<StateDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
         public async Task<IList<ExperienceLevelDto>> _GetExperienceLevelAsync()
         {
 
@@ -1308,6 +1323,26 @@ namespace UpDiddy.Api
         public async Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid)
         {
             return await GetAsync<JobPostingDto>("job/expired/" + JobPostingGuid);
+        }
+
+        public async Task<IList<JobCategoryDto>> GetJobCategories()
+        {
+            string cacheKey = $"JobCategories";
+            IList<JobCategoryDto> rval = GetCachedValue<IList<JobCategoryDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetJobCategories();
+                SetCachedValue<IList<JobCategoryDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        private async Task<IList<JobCategoryDto>> _GetJobCategories()
+        {
+            return await GetAsync<IList<JobCategoryDto>>("job/categories");
         }
 
         #endregion
