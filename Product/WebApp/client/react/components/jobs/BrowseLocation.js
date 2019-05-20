@@ -16,6 +16,9 @@ class BrowseJobsByLocation extends React.Component {
         return (
             <div className="browse-jobs-container">
                 <div className="row">
+                    <div className="col-12">
+                        <h2>Location</h2>
+                    </div>
                     {this.states}
                 </div>
 

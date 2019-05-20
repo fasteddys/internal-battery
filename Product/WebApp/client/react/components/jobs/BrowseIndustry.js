@@ -1,13 +1,13 @@
 ﻿import React from 'react';
 
-class BrowseJobsByCategory extends React.Component {
+class BrowseJobsByIndustry extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            jobCategories: props.jobCategories
+            industries: props.industries
         };
 
-        this.categories = this.state.jobCategories.map((item) =>
+        this.industries = this.state.industries.map((item) =>
             <div className="col-12 col-md-6" id={item.jobCategoryGuid}>{item.name}</div>
         );
     }
@@ -17,14 +17,14 @@ class BrowseJobsByCategory extends React.Component {
             <div className="browse-jobs-container">
                 <div className="row">
                     <div className="col-12">
-                        <h2>Categories</h2>
+                        <h2>Industries</h2>
                     </div>
-                    {this.categories}
+                    {this.industries}
                 </div>
-                
+
             </div>
         );
     }
 }
 
-export default BrowseJobsByCategory;
+export default BrowseJobsByIndustry;

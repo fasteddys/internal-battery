@@ -7,6 +7,7 @@ import SATable from './reports/SATable';
 import JobAppReportTable from './reports/JobAppReportTable';
 import BrowseJobsByCategory from './jobs/BrowseCategory';
 import BrowseJobsByLocation from './jobs/BrowseLocation';
+import BrowseJobsByIndustry from './jobs/BrowseIndustry';
 
 global.React = React;
 global.ReactDOM = ReactDOM;
@@ -16,6 +17,7 @@ global.ReactDOMServer = ReactDOMServer;
 global.ResumeUpload = ResumeUpload;
 global.BrowseJobsByCategory = BrowseJobsByCategory;
 global.BrowseJobsByLocation = BrowseJobsByLocation;
+global.BrowseJobsByIndustry = BrowseJobsByIndustry;
 
 // reports
 global.SATable = SATable;

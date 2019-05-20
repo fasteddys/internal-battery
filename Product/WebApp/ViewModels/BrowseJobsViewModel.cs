@@ -11,5 +11,6 @@ namespace UpDiddy.ViewModels
     {
         public IList<JobCategoryDto> JobCategories { get; set; }
         public IList<StateDto> States { get; set; }
+        public IList<IndustryDto> Industries { get; set; }
     }
 }

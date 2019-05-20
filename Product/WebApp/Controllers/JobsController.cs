@@ -286,7 +286,8 @@ namespace UpDiddy.Controllers
             BrowseJobsViewModel bjvm = new BrowseJobsViewModel
             {
                 JobCategories = await _api.GetJobCategories(),
-                States = await _api.GetAllStatesAsync()
+                States = await _api.GetAllStatesAsync(),
+                Industries = await _api.GetIndustryAsync()
             };
 
             return View("Browse", bjvm);
