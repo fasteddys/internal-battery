@@ -6,9 +6,10 @@
 <div class="container">
     <div class="row">
         <div class="col-12">
-
-            @Html.React("BrowseJobsByLocation", new { cities = Model.List })
-
+            @{ 
+                string ReactComponent = Enum.GetName(typeof(BrowseJobsLocationViewModel.ReactComponent), Model.Component);
+            }
+            @Html.React("BrowseJobsByLocation" , new { list = Model.Locations, type = ReactComponent})
         </div>
     </div>
 </div>

@@ -9,12 +9,15 @@ namespace UpDiddy.ViewModels
 {
     public class BrowseJobsLocationViewModel : BaseViewModel
     {
-        public List<JobQueryFacetItemDto> List { get; set; }
-        public IList<string> States { get; set; }
+        public IList<LocationItem> Locations { get; set; }
+        public enum ReactComponent { BrowseJobsByStates, BrowseJobsByCity }
+        public ReactComponent Component { get; set; }
 
-        // Create list of react components so controller can tell view which to use based on
-        // the state of the browse process.
-        public static IList<string> ReactComponents { get; set; }
+    }
 
+    public class LocationItem
+    {
+        public string Location { get; set; }
+        public string Url { get; set; }
     }
 }

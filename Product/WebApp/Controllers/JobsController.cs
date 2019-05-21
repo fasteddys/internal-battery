@@ -317,8 +317,35 @@ namespace UpDiddy.Controllers
             string category)
         {
 
+
             if (!string.IsNullOrEmpty(city))
                 return Redirect($"/jobs?location={FormatLocation(country, state, city)}&keywords={FormatKeywords(industry, category)}");
+
+            
+
+            if (string.IsNullOrEmpty(state))
+            {
+                List<LocationItem> StateLocations = new List<LocationItem>();
+
+                var States = await _api.GetAllStatesAsync();
+                foreach (StateDto State in States)
+                {
+                    StateLocations.Add(new LocationItem
+                    {
+                        Location = State.Name,
+                        Url = $"{Request.Path}/{State.Name.ToLower()}"
+                    });
+                }
+
+                BrowseJobsLocationViewModel bjlvmState = new BrowseJobsLocationViewModel()
+                {
+                    Component = BrowseJobsLocationViewModel.ReactComponent.BrowseJobsByStates,
+                    Locations = StateLocations
+                };
+
+                return View("BrowseByType", bjlvmState);
+            }
+               
 
             JobSearchResultDto jobSearchResultDto = null;
 
@@ -349,9 +376,22 @@ namespace UpDiddy.Controllers
             if (jqfdto == null)
                 return NotFound();
 
+            List<LocationItem> Locations = new List<LocationItem>();
+
+          
+            foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
+            {
+                Locations.Add(new LocationItem
+                {
+                    Location = FacetItem.Label,
+                    Url = $"{Request.Path}/{FacetItem.Label.Split(",")[0].ToLower()}"
+                });
+            }
+
             BrowseJobsLocationViewModel bjlvm = new BrowseJobsLocationViewModel()
             {
-                List = jqfdto.Facets
+                Component = BrowseJobsLocationViewModel.ReactComponent.BrowseJobsByCity,
+                Locations = Locations
             };
 
             return View("BrowseByType", bjlvm);

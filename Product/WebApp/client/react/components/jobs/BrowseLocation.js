@@ -4,12 +4,16 @@ class BrowseJobsByLocation extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            locations: props.cities
+            list: props.list,
+            type: props.type
         };
-
-        this.locations = this.state.locations.map((item) =>
-            <div className="col-12 col-md-3">{item.label} ({item.count})</div>
-        );
+        this.locationList = this.state.list.map((item) => (
+            <div className="col-12 col-md-3">
+                <a href={item.url}>
+                    {item.location}
+                </a>
+            </div>
+        ));
     }
 
     render() {
@@ -19,7 +23,7 @@ class BrowseJobsByLocation extends React.Component {
                     <div className="col-12">
                         <h2>Location</h2>
                     </div>
-                    {this.locations}
+                    {this.locationList}
                 </div>
 
             </div>
