@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using X.PagedList;
+using System.Text;
 
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -291,6 +292,100 @@ namespace UpDiddy.Controllers
             };
 
             return View("Browse", bjvm);
+        }
+
+        [HttpGet("browse-jobs-industry/{industry}/{category}/{country}/{state}/{city}")]
+        public async Task<IActionResult> BrowseJobsByIndustryAsync()
+        {
+            BrowseJobsViewModel bjvm = new BrowseJobsViewModel
+            {
+                JobCategories = await _api.GetJobCategories(),
+                States = await _api.GetAllStatesAsync(),
+                Industries = await _api.GetIndustryAsync()
+            };
+
+            return View("Browse", bjvm);
+        }
+
+
+        [HttpGet("browse-jobs-location/{country}/{state?}/{city?}/{industry?}/{category?}")]
+        public async Task<IActionResult> BrowseJobsByLocationAsync(
+            string country,
+            string state,
+            string city,
+            string industry,
+            string category)
+        {
+
+            if (!string.IsNullOrEmpty(city))
+                return Redirect($"/jobs?location={FormatLocation(country, state, city)}&keywords={FormatKeywords(industry, category)}");
+
+            JobSearchResultDto jobSearchResultDto = null;
+
+            try
+            {
+                jobSearchResultDto = await _api.GetJobsByLocation(
+                                     FormatKeywords(industry, category), 
+                                     FormatLocation(country, state, city));
+            }
+            catch (ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+
+            if (jobSearchResultDto == null)
+                return NotFound();
+
+            JobQueryFacetDto jqfdto = FindNeededFacet("city", jobSearchResultDto.Facets);
+
+            if (jqfdto == null)
+                return NotFound();
+
+            BrowseJobsLocationViewModel bjlvm = new BrowseJobsLocationViewModel()
+            {
+                List = jqfdto.Facets
+            };
+
+            return View("BrowseByType", bjlvm);
+        }
+
+        private JobQueryFacetDto FindNeededFacet(string key, List<JobQueryFacetDto> List)
+        {
+            foreach(JobQueryFacetDto facet in List)
+            {
+                if (facet.Name.ToLower().Equals(key.ToLower()))
+                    return facet;
+            }
+
+            return null;
+        }
+
+        private string FormatKeywords(string keywords, string industry)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(keywords ?? string.Empty);
+            sb.Append((!string.IsNullOrEmpty(keywords) && !string.IsNullOrEmpty(industry)) ? " " : string.Empty);
+            sb.Append(industry ?? string.Empty);
+            return sb.ToString();
+        }
+
+        private string FormatLocation(string country, string state, string city)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(country ?? string.Empty);
+            sb.Append((!string.IsNullOrEmpty(country) && (!string.IsNullOrEmpty(state) || !string.IsNullOrEmpty(city))) ? "," : string.Empty);
+            sb.Append(state ?? string.Empty);
+            sb.Append((!string.IsNullOrEmpty(state) && !string.IsNullOrEmpty(city)) ? "," : string.Empty);
+            sb.Append(city ?? string.Empty);
+            return sb.ToString();
         }
     }
 }
