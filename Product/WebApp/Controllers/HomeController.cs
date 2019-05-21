@@ -235,7 +235,8 @@ namespace UpDiddy.Controllers
                 Skills = await _Api.GetSkillsBySubscriberAsync(this.subscriber.SubscriberGuid.Value),
                 Files = this.subscriber?.Files,
                 WorkHistory = await _Api.GetWorkHistoryAsync(this.subscriber.SubscriberGuid.Value),
-                EducationHistory = await _Api.GetEducationHistoryAsync(this.subscriber.SubscriberGuid.Value)
+                EducationHistory = await _Api.GetEducationHistoryAsync(this.subscriber.SubscriberGuid.Value),
+                LinkedInSyncDate = this.subscriber.LinkedInSyncDate
             };
 
             // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.

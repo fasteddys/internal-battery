@@ -12,11 +12,36 @@ using System.Globalization;
 using System.Reflection;
 using GoogleTypes = Google.Protobuf.WellKnownTypes;
 using System.Text;
+using System.Net;
 
 namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+
+        public static bool GetImageAsBlob( string imgUrl, int maxSize, ref byte[] imageBytes )
+        {
+        
+            HttpWebRequest imageRequest = (HttpWebRequest)WebRequest.Create(imgUrl);
+            WebResponse imageResponse = imageRequest.GetResponse();
+            Stream responseStream = imageResponse.GetResponseStream();
+
+            bool rVal = true;
+            using (BinaryReader br = new BinaryReader(responseStream))
+            {  
+                imageBytes = br.ReadBytes(maxSize);
+                // check for eos
+                if (br.PeekChar() != -1)
+                    rVal = false;          
+                br.Close();
+            }
+            responseStream.Close();
+            imageResponse.Close();
+
+            return rVal;
+        }
+
+
 
         /// <summary>
         /// Returns the path of a semantic job url. Note that this does not include other components of the url (protocol, scheme, host, query string)

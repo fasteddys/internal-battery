@@ -6,12 +6,15 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
@@ -117,6 +120,34 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .Include(s => s.SubscriberFile)
                 .FirstOrDefault();
+        }
+
+
+
+        public static bool ImportLinkedInImage(UpDiddyDbContext db, IConfiguration config,  string responseJSon, Guid subscriberGuid)
+        {
+
+            JObject o = JObject.Parse(responseJSon);
+
+            JToken imageUrlToken = o.SelectToken("$.profilePicture.displayImage~.elements[0].identifiers[0].identifier");
+            string imageUrl = imageUrlToken.ToString();
+            int MaxAvatarFileSize = int.Parse(config["CareerCircle:MaxAvatarFileSize"]);
+
+            byte[] imageBytes = new byte[MaxAvatarFileSize];
+            Utils.GetImageAsBlob(imageUrl, MaxAvatarFileSize, ref imageBytes);
+
+            AzureBlobStorage abs = new AzureBlobStorage(config);            
+            string blobFilePath = subscriberGuid + config["CareerCircle:LinkedInAvatarName"];
+    
+            abs.UploadBlobAsync(blobFilePath, imageBytes);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db,subscriberGuid);
+            subscriber.LinkedInSyncDate = DateTime.Now;
+            subscriber.LinkedInAvatarUrl = blobFilePath;
+            if (string.IsNullOrEmpty(subscriber.AvatarUrl))
+                subscriber.AvatarUrl = blobFilePath;
+            db.SaveChanges();
+
+            return true;
         }
 
 

@@ -32,6 +32,7 @@ namespace UpDiddy.ViewModels
         public string Address { get; set; }
         public string City { get; set; }
         public string PostalCode { get; set; }
+        public DateTime? LinkedInSyncDate { get; set; }
         private string _FormattedPhone;
 
         // todo: refactor for future use

@@ -11,6 +11,7 @@
             <div class="linkedin-profile-img">
                 <img src="@Model.ProfileImageUrl" />
                 <i class="fab fa-linkedin"></i>
+
             </div>
 
         }
@@ -21,4 +22,6 @@
     }
 
     <span class="text font-bold">Synced!</span>
+    <span class="text font-bold">@Model.LastLinkedInSyncDate.ToShortDateString()</span>
+    
 </a>

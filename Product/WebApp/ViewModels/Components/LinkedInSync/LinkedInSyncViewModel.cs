@@ -10,5 +10,7 @@ namespace UpDiddy.ViewModels
     {
         public string ProfileImageUrl { get; set; }
         public string SyncLink { get; set; }
+
+        public DateTime LastLinkedInSyncDate { get; set; }
     }
 }

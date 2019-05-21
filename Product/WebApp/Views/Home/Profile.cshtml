@@ -203,7 +203,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md">
-                        @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.SubscriberGuid })
+                        @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.SubscriberGuid, LastSyncDate = Model.LinkedInSyncDate == null ? DateTime.MinValue : Model.LinkedInSyncDate })
                     </div>
                 </div>
                 <div class="row">

@@ -37,5 +37,9 @@ namespace UpDiddyLib.Dto
         // Marketing campaign offers that have not been used by subscriber
         public string CampaignOffer { get; set; }
         public bool HasVerificationEmail { get; set; }
+        public DateTime? LinkedInSyncDate { get; set; }       
+        public string LinkedInAvatarUrl { get; set; }
+        public string AvatarUrl { get; set; }
+        
     }
 }
