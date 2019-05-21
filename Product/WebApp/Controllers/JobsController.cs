@@ -146,27 +146,26 @@ namespace UpDiddy.Controllers
                 PostingId = job.JobPostingGuid?.ToString(),
                 EmployeeType = job.EmploymentType?.Name,
                 Summary = job.Description,
-
+                ThirdPartyIdentifier = job.ThirdPartyIdentifier,
+                CompanyBoilerplate = job.Company.JobPageBoilerplate,
+                IsThirdPartyJob = job.ThirdPartyApply
             };
 
             // Display subscriber info if it exists
             if ( job.Recruiter.Subscriber != null )
             {
                 jdvm.ContactEmail = job.Recruiter.Subscriber?.Email;
-                jdvm.ContactName = $"{job.Recruiter.Subscriber?.LastName}, {job.Recruiter.Subscriber?.FirstName}";
+                jdvm.ContactName = $"{job.Recruiter.Subscriber?.FirstName} {job.Recruiter.Subscriber?.LastName}";
                 jdvm.ContactPhone = job.Recruiter.Subscriber?.PhoneNumber;
 
             }
             else // Use recruiter info in no subscriber exists
             {
                 jdvm.ContactEmail = job.Recruiter?.Email;
-                jdvm.ContactName = $"{job.Recruiter?.LastName}, {job.Recruiter?.FirstName}";
+                jdvm.ContactName = $"{job.Recruiter.Subscriber?.FirstName} {job.Recruiter?.LastName}";
                 jdvm.ContactPhone = job.Recruiter?.PhoneNumber;
-
             }
  
-
-
             return View("JobDetails", jdvm);
         }
 
