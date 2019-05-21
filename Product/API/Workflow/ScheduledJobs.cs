@@ -520,7 +520,7 @@ namespace UpDiddyApi.Workflow
                     else
                     {
                         // we have to add/update the recruiter and the associated company - should the job posting factory encapsulate that logic?
-                        Recruiter recruiter = RecruiterFactory.GetOrAdd(_db, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
+                        Recruiter recruiter = RecruiterFactory.GetAddOrUpdate(_db, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
                         Company company = CompanyFactory.GetCompanyByGuid(_db, jobPostingDto.Company.CompanyGuid);
                         RecruiterCompanyFactory.GetOrAdd(_db, recruiter.RecruiterId, company.CompanyId, true);
 

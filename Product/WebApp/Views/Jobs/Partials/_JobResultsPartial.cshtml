@@ -1,6 +1,7 @@
 ﻿@using X.PagedList.Mvc.Core;
 @using X.PagedList;
 @using UpDiddyLib.Dto;
+@using UpDiddyLib.Helpers;
 @using UpDiddy.ViewModels;
 @model JobSearchViewModel;
 
@@ -48,10 +49,10 @@
                             <span class="job-post-date">Posted- @jobSearchResult.PostingDateUTC.ToShortDateString()</span>
                         </div>
                     </div>
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-9">
                         <div class="row">
-                            <span class="job-description"> @jobSearchResult.Description?.Substring(0, 150)...</span>
-                        </div>
+                            <span class="job-description"> @Html.Raw(Utils.RemoveHTML(jobSearchResult.Description).Substring(0, 227)))...</span>
+                    </div>
                         <div class="row">
                             <a target="_blank" href="@url">More</a>
                         </div>

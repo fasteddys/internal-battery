@@ -1487,6 +1487,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<bool>("ThirdPartyApply");
 
+                    b.Property<string>("ThirdPartyIdentifier");
+
                     b.Property<string>("Title");
 
                     b.HasKey("JobPostingId");
