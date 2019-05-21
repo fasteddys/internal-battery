@@ -72,10 +72,10 @@ namespace UpDiddyLib.Helpers
         public static string ToUrlSlug(this string value)
         {
             //First to lower case
-            value = value.ToLowerInvariant();
-            //Remove all accents
-            var bytes = Encoding.GetEncoding("Cyrillic").GetBytes(value);
-            value = Encoding.ASCII.GetString(bytes);
+            value = value.ToLowerInvariant();            
+            //Remove all accents - removing this code for now; it worked once but having trouble getting the Cyrillic encoding to be recognized even after including System.Text.Encoding.CodePages
+            //var bytes = Encoding.GetEncoding("Cyrillic").GetBytes(value);
+            //value = Encoding.ASCII.GetString(bytes);
             //Replace spaces
             value = Regex.Replace(value, @"\s", "-", RegexOptions.Compiled);
             //Remove invalid chars
