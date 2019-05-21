@@ -37,7 +37,7 @@ namespace UpDiddy.Controllers
             List<SitemapNode> topicNodes = new List<SitemapNode>();
             foreach (var topic in topics)
             {
-                topicNodes.Add(new SitemapNode(Url.Action(topic.Slug, "topics")) { LastModificationDate = topic.ModifyDate.HasValue ? topic.ModifyDate.Value : topic.CreateDate, ChangeFrequency = ChangeFrequency.Monthly });
+                topicNodes.Add(new SitemapNode(Url.Action(topic.Slug, "topics")) { ChangeFrequency = ChangeFrequency.Monthly });
             }
             return new SitemapProvider().CreateSitemap(new SitemapModel(topicNodes));
         }
