@@ -45,5 +45,13 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="subscriber"></param>
         /// <returns>Stream containing a subscriber's resume</returns>
         Task<Stream> GetResumeAsync(Subscriber subscriber);
+
+        /// <summary>
+        /// Gets a mapping of JobPosting (Guid) to JobPostingFavorite (guid)
+        /// </summary>
+        /// <param name="subscriberGuid">subscriber guid in which to retrieve favorites for</param>
+        /// <param name="jobGuids">List of Job Posting Guids</param>
+        /// <returns>Dictionary<Guid, Guid></returns>
+        Task<Dictionary<Guid, Guid>> GetSubscriberJobPostingFavoritesByJobGuid(Guid subscriberGuid, List<Guid> jobGuids);
     }
 }

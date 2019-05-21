@@ -365,6 +365,22 @@ nav .brand-button-light {
     font-size: $rem-13;
 }
 
+.no-select {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                        supported by Chrome and Opera */
+}
+
+.pointer {
+    &:hover {
+        cursor: pointer;
+    }
+}
+
 input {
     font-family: FontAwesome, "Open Sans", Verdana, sans-serif;
 }

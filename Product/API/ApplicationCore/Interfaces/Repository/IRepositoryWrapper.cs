@@ -14,8 +14,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IJobSiteScrapeStatisticRepository JobSiteScrapeStatistic { get; }
       
         IJobPostingRepository JobPosting { get; }
+        IJobPostingFavoriteRepository JobPostingFavorite { get; }
         IJobApplicationRepository JobApplication { get; }
         ICompanyRepository Company { get; }
         IRecruiterActionRepository RecruiterActionRepository { get; }
+        ISubscriberRepository Subscriber { get; }
     }
 }

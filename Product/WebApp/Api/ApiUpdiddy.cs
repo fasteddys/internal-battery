@@ -726,8 +726,16 @@ namespace UpDiddy.Api
             {
                 return null;
             };
+        }
 
-
+        /// <summary>
+        /// POST search for getting mapping of job guid favorites for a subscriber.
+        /// </summary>
+        /// <param name="jobGuids"></param>
+        /// <returns>Dictionary<Guid, Guid> JobPosting Guid to JobPostingFavorite Guid</returns>
+        public async Task<Dictionary<Guid, Guid>> JobFavoritesByJobGuidAsync(List<Guid> jobGuids)
+        {
+            return await PostAsync<Dictionary<Guid, Guid>>("subscriber/me/job-favorite/map", jobGuids);
         }
 
         public async Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid)

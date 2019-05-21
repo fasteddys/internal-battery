@@ -917,6 +917,15 @@ namespace UpDiddyApi.Controllers
             return Ok();
         }
 
+        [Authorize]
+        [HttpPost("/api/[controller]/me/job-favorite/map")]
+        public async Task<IActionResult> JobFavoriteMap([FromBody] List<Guid> jobGuids)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var map = await _subscriberService.GetSubscriberJobPostingFavoritesByJobGuid(subscriberGuid, jobGuids);
+            return Ok(map);
+        }
+
         private void SendVerificationEmail(string email, string link)
         {
             // send verification email in background

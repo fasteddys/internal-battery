@@ -173,22 +173,29 @@ namespace UpDiddyApi.Controllers
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ErrorMsg });
                 else
                 {
-                    JobPostingFavorite jobPostingFavorite = JobPostingFavoriteFactory.CreateJobPostingFavorite(subscriber, jobPosting);
-                    _db.JobPostingFavorite.Add(jobPostingFavorite);
+                    JobPostingFavorite jobPostingFavorite = _db.JobPostingFavorite.Where(jpf => jpf.SubscriberId == subscriber.SubscriberId && jpf.JobPostingId == jobPosting.JobPostingId).FirstOrDefault();
+                    if(jobPostingFavorite == null)
+                    {
+                        jobPostingFavorite = JobPostingFavoriteFactory.CreateJobPostingFavorite(subscriber, jobPosting);
+                        _db.JobPostingFavorite.Add(jobPostingFavorite);
+                    }
+                    else 
+                    {
+                        jobPostingFavorite.IsDeleted = 0;
+                        jobPostingFavorite.ModifyDate = DateTime.UtcNow;
+                    }
+
                     try
                     {
                         _db.SaveChanges();
                     }
                     catch (DbUpdateException ex)
                     {
-                        if (ex.InnerException.HResult == -2146232060)
-                            return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job is already a favorite" });
-                        else
-                            return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
+                        return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ex.Message });
                     }
 
                     _syslog.Log(LogLevel.Information, $"***** JobController:JobPostingFavoriteDto completed at: {DateTime.UtcNow.ToLongDateString()}");
-                    return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPostingFavorite.JobPostingFavoriteGuid}" });
+                    return Ok(new JobPostingFavoriteDto() { JobPostingFavoriteGuid = jobPostingFavorite.JobPostingFavoriteGuid });
                 }
             }
             catch (Exception ex)

@@ -44,11 +44,15 @@ namespace UpDiddy.Controllers
             int pageCount=_configuration.GetValue<int>("Pagination:PageCount");
 
             JobSearchResultDto jobSearchResultDto = null;
+            Dictionary<Guid, Guid> favoritesMap = new Dictionary<Guid, Guid>();
 
             try
             {
-                 jobSearchResultDto = await _api.GetJobsByLocation(
+                jobSearchResultDto = await _api.GetJobsByLocation(
                                       keywords, location);
+                
+                if(User.Identity.IsAuthenticated)
+                    favoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page ?? 1, pageCount).Select(job => job.JobPostingGuid).ToList());
             }
             catch(ApiException e)
             {
@@ -72,7 +76,8 @@ namespace UpDiddy.Controllers
             {
                 RequestId = jobSearchResultDto.RequestId,
                 ClientEventId = jobSearchResultDto.ClientEventId,
-                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page ?? 1, pageCount)
+                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page ?? 1, pageCount),
+                FavoritesMap = favoritesMap
             };
 
             return View("Index", jobSearchViewModel);

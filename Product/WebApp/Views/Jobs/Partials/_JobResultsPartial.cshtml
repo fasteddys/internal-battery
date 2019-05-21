@@ -2,10 +2,10 @@
 @using X.PagedList;
 @using UpDiddyLib.Dto;
 @using UpDiddy.ViewModels;
+@using React.AspNet;
 @model JobSearchViewModel;
 
-@{ bool showComparableJobsHeader = this.ViewContext?.HttpContext?.Response?.StatusCode == 404;}
-
+@{ bool showComparableJobsHeader = this.ViewContext?.HttpContext?.Response?.StatusCode == 404; }
 <div class="job-container">
     @if (Model.JobsSearchResult.Count != 0)
     {
@@ -35,29 +35,33 @@
             url = GoogleCloudEventsTrackingDto.AddParametersToUrl(url, Model.RequestId, Model.ClientEventId);
             <div class="job-tile">
                 <div class="row">
-                    <div class="col-12 col-md-3">
-                        <div class="row">
-                        <span class="job-title">
-                            <a target="_blank" href="@url">@jobSearchResult.Title</a>
-                        </span>    
+                    <div class="col-12 col-lg-3">
+                        <div>
+                            <span class="job-title">
+                                <a target="_blank" href="@url">@jobSearchResult.Title</a>
+                            </span>    
                         </div>
-                        <div class="row">
+                        <div>
                             <span class="job-location">@jobSearchResult.Province - @jobSearchResult.City</span>
                         </div>
-                        <div class="row">
+                        <div>
                             <span class="job-post-date">Posted- @jobSearchResult.PostingDateUTC.ToShortDateString()</span>
                         </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="row">
-                            <span class="job-description"> @jobSearchResult.Description</span>
+                        <div class="mt-1">
+                            @Html.React("Favorite", 
+                                new { 
+                                    isFavorite = false,
+                                    jobGuid = jobSearchResult.JobPostingGuid,
+                                    jobPostingFavoriteGuid = Model.FavoritesMap.ContainsKey(jobSearchResult.JobPostingGuid) ? (Guid?) Model.FavoritesMap[jobSearchResult.JobPostingGuid] : null
+                                }
+                            )
                         </div>
-                        <div class="row">
-                            <a target="_blank" href="@url">More</a>
-                        </div>
                     </div>
-                    <div class="col-12 col-md-3">
-
+                    <div class="col-12 col-lg-6">
+                        <div class="job-description">
+                            @jobSearchResult.Description
+                        </div>
+                        <a target="_blank" href="@url">More</a>
                     </div>
                 </div>
             </div>

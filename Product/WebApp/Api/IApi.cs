@@ -124,6 +124,7 @@ namespace UpDiddy.Api
         Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid);
         Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
         Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location);
+        Task<Dictionary<Guid, Guid>> JobFavoritesByJobGuidAsync(List<Guid> jobGuids);
 
         Task<GoogleCloudEventsTrackingDto> RecordClientEventAsync(Guid jobGuid, GoogleCloudEventsTrackingDto dto);
 
