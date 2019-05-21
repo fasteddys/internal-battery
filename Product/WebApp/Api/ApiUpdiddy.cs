@@ -599,6 +599,35 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public async Task<JobSearchResultDto> GetJobsByLocationUsingRoute(
+            string country = null,
+            string state = null,
+            string city = null,
+            string industry = null,
+            string category = null)
+        {
+            country = country == null ? "all" : country;
+            state = state == null ? "all" : state;
+            city = city == null ? "all" : city;
+            industry = industry == null ? "all" : industry;
+            category = category == null ? "all" : category;
+
+            var searchFilter = $"{country}/{state}/{city}/{industry}/{category}/all/0?page-size=100&page-num=0";
+            string cacheKey = string.Format("job-{0}/{1}/{2}/{3}/{4}", country, state, city, industry, category);
+            JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+
+                rval = await _GetJobsByLocation(searchFilter);
+                SetCachedValue<JobSearchResultDto>(cacheKey, rval);
+            }
+
+            return rval;
+        }
+
         #endregion
 
         #region Public UnCached Methods

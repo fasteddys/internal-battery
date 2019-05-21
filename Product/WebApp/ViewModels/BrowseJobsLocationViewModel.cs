@@ -7,17 +7,15 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddy.ViewModels
 {
-    public class BrowseJobsLocationViewModel : BaseViewModel
+    public class BrowseJobsLocationViewModel : JobSearchViewModel
     {
-        public IList<LocationItem> Locations { get; set; }
-        public enum ReactComponent { BrowseJobsByStates, BrowseJobsByCity }
-        public ReactComponent Component { get; set; }
+        public IList<DisplayItem> Items { get; set; }
 
     }
 
-    public class LocationItem
+    public class DisplayItem
     {
-        public string Location { get; set; }
+        public string Label { get; set; }
         public string Url { get; set; }
     }
 }
