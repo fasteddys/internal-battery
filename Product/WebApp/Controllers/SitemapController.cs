@@ -37,7 +37,7 @@ namespace UpDiddy.Controllers
             List<SitemapNode> topicNodes = new List<SitemapNode>();
             foreach (var topic in topics)
             {
-                topicNodes.Add(new SitemapNode(Url.Action(topic.Slug, "topics")) { LastModificationDate = topic.ModifyDate.HasValue ? topic.ModifyDate.Value : topic.CreateDate, ChangeFrequency = ChangeFrequency.Monthly });
+                topicNodes.Add(new SitemapNode(Url.Action(topic.Slug, "topics")) { ChangeFrequency = ChangeFrequency.Monthly });
             }
             return new SitemapProvider().CreateSitemap(new SitemapModel(topicNodes));
         }
@@ -48,13 +48,13 @@ namespace UpDiddy.Controllers
         {
             List<SitemapNode> nodes = new List<SitemapNode>
             {
-                new SitemapNode(Url.Action("Index","Home")) { ChangeFrequency = ChangeFrequency.Weekly, LastModificationDate = new DateTime(2019, 4, 11) },
-                new SitemapNode(Url.Action("About","Home")) { ChangeFrequency = ChangeFrequency.Monthly, LastModificationDate = new DateTime(2019, 1, 1) },
-                new SitemapNode(Url.Action("Offers","Home")){ ChangeFrequency = ChangeFrequency.Daily, LastModificationDate = new DateTime(2019, 4, 19) },
-                new SitemapNode(Url.Action("Contact","Home")){ ChangeFrequency = ChangeFrequency.Monthly, LastModificationDate = new DateTime(2019, 1, 1) },
-                new SitemapNode(Url.Action("Privacy","Home")){ ChangeFrequency = ChangeFrequency.Monthly, LastModificationDate = new DateTime(2019, 1, 1) },
-                new SitemapNode(Url.Action("FAQ","Home")){ ChangeFrequency = ChangeFrequency.Monthly, LastModificationDate = new DateTime(2019, 1, 1) },
-                new SitemapNode(Url.Action("TermsOfService","Home")){ ChangeFrequency = ChangeFrequency.Monthly, LastModificationDate = new DateTime(2019, 1, 1) },
+                new SitemapNode(Url.Action("Index","Home")) { ChangeFrequency = ChangeFrequency.Weekly },
+                new SitemapNode(Url.Action("About","Home")) { ChangeFrequency = ChangeFrequency.Monthly },
+                new SitemapNode(Url.Action("Offers","Home")){ ChangeFrequency = ChangeFrequency.Daily },
+                new SitemapNode(Url.Action("Contact","Home")){ ChangeFrequency = ChangeFrequency.Monthly },
+                new SitemapNode(Url.Action("Privacy","Home")){ ChangeFrequency = ChangeFrequency.Monthly },
+                new SitemapNode(Url.Action("FAQ","Home")){ ChangeFrequency = ChangeFrequency.Monthly },
+                new SitemapNode(Url.Action("TermsOfService","Home")){ ChangeFrequency = ChangeFrequency.Monthly },
             };
             return new SitemapProvider().CreateSitemap(new SitemapModel(nodes));
         }
@@ -62,7 +62,6 @@ namespace UpDiddy.Controllers
         [HttpGet]
         [Route("[controller]/jobs-sitemap.xml")]
         public async Task<IActionResult> Jobs(int? currentPage)
-
         {
 
             List<JobPostingDto> jobs = await _Api.GetAllJobsAsync();

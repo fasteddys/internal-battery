@@ -1,6 +1,7 @@
 ﻿@using X.PagedList.Mvc.Core;
 @using X.PagedList;
 @using UpDiddyLib.Dto;
+@using UpDiddyLib.Helpers;
 @using UpDiddy.ViewModels;
 @using React.AspNet;
 @model JobSearchViewModel;
@@ -57,11 +58,13 @@
                             )
                         </div>
                     </div>
-                    <div class="col-12 col-lg-6">
-                        <div class="job-description">
-                            @jobSearchResult.Description
+                    <div class="col-12 col-md-9">
+                        <div class="row">
+                            <span class="job-description"> @Html.Raw(Utils.RemoveHTML(jobSearchResult.Description))</span>
                         </div>
-                        <a target="_blank" href="@url">More</a>
+                        <div class="row">
+                            <a target="_blank" href="@url">More</a>
+                        </div>
                     </div>
                 </div>
             </div>

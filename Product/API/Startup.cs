@@ -191,7 +191,7 @@ namespace UpDiddyApi
 
             // do not run the job data mining process if in a dev environment
             if (!_currentEnvironment.IsDevelopment())            
-                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.HourInterval(1));
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.HourInterval(4));
             
             // Add Polly 
             // Create Policies  
