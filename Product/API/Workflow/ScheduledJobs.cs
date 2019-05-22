@@ -38,15 +38,15 @@ namespace UpDiddyApi.Workflow
         private readonly IRepositoryWrapper _repositoryWrapper;
 
         public ScheduledJobs(
-            UpDiddyDbContext context, 
-            IMapper mapper, 
-            Microsoft.Extensions.Configuration.IConfiguration configuration, 
-            ISysEmail sysEmail, 
-            IHttpClientFactory httpClientFactory, 
-            ILogger<ScheduledJobs> logger, 
-            ISovrenAPI sovrenApi, 
-            IHubContext<ClientHub> hub, 
-            IDistributedCache distributedCache, 
+            UpDiddyDbContext context,
+            IMapper mapper,
+            Microsoft.Extensions.Configuration.IConfiguration configuration,
+            ISysEmail sysEmail,
+            IHttpClientFactory httpClientFactory,
+            ILogger<ScheduledJobs> logger,
+            ISovrenAPI sovrenApi,
+            IHubContext<ClientHub> hub,
+            IDistributedCache distributedCache,
             ICloudStorage cloudStorage,
             IRepositoryWrapper repositoryWrapper)
         {
@@ -67,23 +67,42 @@ namespace UpDiddyApi.Workflow
 
         #region Marketing
 
-        public async Task<bool> SendWelcomeEmail(Guid partnerContactGuid, string firstName, string lastName, string email)
+        public async Task<bool> SendWelcomeEmail(Guid partnerContactGuid, string firstName, string lastName, string email, int verificationFailureLeadStatusId)
         {
-            // retrieve the unique identifier for the lead and campaign
-            var tinyId = _db.CampaignPartnerContact.Where(cpc => cpc.PartnerContact.PartnerContactGuid == partnerContactGuid && cpc.Campaign.Name == "PPL Lead Gen").FirstOrDefault()?.TinyId;
+            bool isWelcomeEmailSent = false;
 
-            // dynamic data should include: first/last name, tinyId (which can be used to infer campaign, partner contact, and view)
-            var templateData = new
+            // retrieve the partner contact that will be associated with any lead statuses we store and the log of the zero bounce request
+            var partnerContact = _db.PartnerContact.Where(pc => pc.PartnerContactGuid == partnerContactGuid).FirstOrDefault();
+
+            if (partnerContact == null)
+                throw new ApplicationException("Unrecognized partner contact");
+
+            // verify that the email is valid using ZeroBounce
+            ZeroBounceApi api = new ZeroBounceApi(_configuration, _repositoryWrapper, _syslog);
+            bool? isEmailValid = api.ValidatePartnerContactEmail(partnerContact.PartnerContactId, email, verificationFailureLeadStatusId);
+
+            // send the welcome email if: 
+            if ((isEmailValid.HasValue && isEmailValid.Value)   // ZeroBounce indicates that the email is valid
+                || isEmailValid == null)                        // or there was a problem communicating with ZeroBounce
             {
-                firstName = firstName,
-                lastName = lastName,
-                tinyId = tinyId
-            };
+                // retrieve the unique identifier for the lead and campaign
+                var tinyId = _db.CampaignPartnerContact.Where(cpc => cpc.PartnerContact.PartnerContactGuid == partnerContactGuid && cpc.Campaign.Name == "PPL Lead Gen").FirstOrDefault()?.TinyId;
 
-            // send templated welcome email that links to custom landing page
-            _sysEmail.SendTemplatedEmailAsync(email, _configuration["SysEmail:Leads:TemplateIds:LeadIntake-WelcomeEmail"].ToString(), templateData, Constants.SendGridAccount.Leads, null);
+                // dynamic data should include: first/last name, tinyId (which can be used to infer campaign, partner contact, and view)
+                var templateData = new
+                {
+                    firstName = firstName,
+                    lastName = lastName,
+                    tinyId = tinyId
+                };
 
-            return true;
+                // send templated welcome email that links to custom landing page
+                _sysEmail.SendTemplatedEmailAsync(email, _configuration["SysEmail:Leads:TemplateIds:LeadIntake-WelcomeEmail"].ToString(), templateData, Constants.SendGridAccount.Leads, null);
+
+                isWelcomeEmailSent = true;
+            }
+
+            return isWelcomeEmailSent;
         }
 
         #endregion
@@ -789,6 +808,55 @@ namespace UpDiddyApi.Workflow
             return result;
         }
 
+        public void StoreTrackingInformation(string tinyId, Guid actionGuid, string campaignPhaseName, string headers)
+        {
+            var trackingInfoFromTinyId = _db.CampaignPartnerContact
+                .Include(cpc => cpc.Campaign)
+                .Include(cpc => cpc.PartnerContact)
+                .Where(cpc => cpc.IsDeleted == 0 && cpc.TinyId == tinyId)
+                .FirstOrDefault();
+            var actionEntity = _db.Action.Where(a => a.ActionGuid == actionGuid && a.IsDeleted == 0).FirstOrDefault();
+
+            // validate that the referenced entities exist
+            if (trackingInfoFromTinyId != null && actionEntity != null)
+            {
+                // locate the campaign phase (if one exists - not required)
+                CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, trackingInfoFromTinyId.Campaign.CampaignId, campaignPhaseName);
+
+                // look for an existing contact action               
+                var existingPartnerContactAction = PartnerContactActionFactory.GetPartnerContactAction(_db, trackingInfoFromTinyId.Campaign, trackingInfoFromTinyId.PartnerContact, actionEntity, campaignPhase);
+
+                if (existingPartnerContactAction != null)
+                {
+                    // update the existing tracking event with a new occurred date
+                    existingPartnerContactAction.ModifyDate = DateTime.UtcNow;
+                    existingPartnerContactAction.OccurredDate = DateTime.UtcNow;
+                    if (!string.IsNullOrWhiteSpace(headers))
+                        existingPartnerContactAction.Headers = headers;
+                }
+                else
+                {
+                    // create a unique record for the tracking event
+                    _db.PartnerContactAction.Add(new PartnerContactAction()
+                    {
+                        ActionId = actionEntity.ActionId,
+                        CampaignId = trackingInfoFromTinyId.CampaignId,
+                        PartnerContactId = trackingInfoFromTinyId.PartnerContactId,
+                        PartnerContactActionGuid = Guid.NewGuid(),
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.Empty,
+                        IsDeleted = 0,
+                        ModifyDate = DateTime.UtcNow,
+                        ModifyGuid = Guid.Empty,
+                        OccurredDate = DateTime.UtcNow,
+                        Headers = !string.IsNullOrWhiteSpace(headers) ? headers : null,
+                        CampaignPhaseId = campaignPhase.CampaignPhaseId
+                    });
+                }
+                _db.SaveChanges();
+            }
+        }
+
         public void StoreTrackingInformation(Guid campaignGuid, Guid partnerContactGuid, Guid actionGuid, string campaignPhaseName, string headers)
         {
             var campaignEntity = _db.Campaign.Where(c => c.CampaignGuid == campaignGuid && c.IsDeleted == 0).FirstOrDefault();
@@ -883,7 +951,7 @@ namespace UpDiddyApi.Workflow
                     await RecruiterActionRepository.SaveAsync();
                     return NewRecruiterAction;
                 }
-                
+
             }
             return null;
 

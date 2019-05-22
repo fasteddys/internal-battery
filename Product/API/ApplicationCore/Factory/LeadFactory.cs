@@ -327,7 +327,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
                 // entry point for welcome email... how will we handle save file trigger?
                 // TODO: identify any business rule failures that would prevent us from sending a welcome email (dupe, missing fields, etc?)
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.SendWelcomeEmail(_leadResponse.LeadIdentifier.Value, leadRequest.FirstName, leadRequest.LastName, leadRequest.EmailAddress));
+                int verificationFailureLeadStatusId = _allLeadStatuses.Where(ls => ls.Name == "Verification Failure").FirstOrDefault().LeadStatusId;
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.SendWelcomeEmail(_leadResponse.LeadIdentifier.Value, leadRequest.FirstName, leadRequest.LastName, leadRequest.EmailAddress, verificationFailureLeadStatusId));
             }
             catch (Exception e)
             {
