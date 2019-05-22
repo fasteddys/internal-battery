@@ -36,6 +36,7 @@ namespace UpDiddy.ViewModels
         public string LinkedInAvatarUrl { get; set; }
         public string AvatarUrl { get; set; }
         public int MaxAvatarFileSize { get; set; }
+        public string DefaultAvatar { get; set; }
         private string _FormattedPhone;
 
 

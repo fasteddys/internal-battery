@@ -237,9 +237,10 @@ namespace UpDiddy.Controllers
                 WorkHistory = await _Api.GetWorkHistoryAsync(this.subscriber.SubscriberGuid.Value),
                 EducationHistory = await _Api.GetEducationHistoryAsync(this.subscriber.SubscriberGuid.Value),
                 LinkedInSyncDate = this.subscriber.LinkedInSyncDate,
-                LinkedInAvatarUrl = AssestBaseUrl + this.subscriber.LinkedInAvatarUrl,   
+                LinkedInAvatarUrl = AssestBaseUrl + this.subscriber.LinkedInAvatarUrl,
                 AvatarUrl = string.IsNullOrEmpty(this.subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.AvatarUrl,
-                MaxAvatarFileSize = int.Parse(_configuration["CareerCircle:MaxAvatarFileSize"])
+                MaxAvatarFileSize = int.Parse(_configuration["CareerCircle:MaxAvatarFileSize"]),
+                DefaultAvatar = _configuration["CareerCircle:DefaultAvatar"]
 
             };
 

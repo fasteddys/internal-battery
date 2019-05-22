@@ -79,6 +79,12 @@
         });
     }
 
+    var removeAvatar = function () {
+        return _http.put('/subscriber/remove-avatar');
+    }
+
+
+
     var uploadResume = function (resume, parseResume) {
         var formData = new FormData();
         formData.append("resume", resume);
@@ -166,6 +172,7 @@
         requestVerification: requestVerification,
         getOffer: getOffer,
         claimOffer: claimOffer,
-        uploadAvatar: uploadAvatar
+        uploadAvatar: uploadAvatar,
+        removeAvatar: removeAvatar
     };
 })(API_URL);

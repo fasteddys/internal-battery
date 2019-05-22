@@ -124,6 +124,26 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
+        public static bool RemoveAvatar(UpDiddyDbContext db, IConfiguration config,  Guid subscriberGuid, ref string msg)
+        {
+
+            int MaxAvatarFileSize = int.Parse(config["CareerCircle:MaxAvatarFileSize"]);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, subscriberGuid);
+            if (subscriber == null)
+            {
+                msg = $"SubscriberFactory.ImportLinkedInImage: {subscriberGuid} is not a valid subscriber";
+                return false;
+            }
+            subscriber.AvatarUrl = string.Empty;
+            subscriber.ModifyDate = DateTime.Now;
+            db.SaveChanges();
+
+            return true;
+
+        }
+
+
+
         public static bool UpdateAvatar(UpDiddyDbContext db, IConfiguration config, IFormFile avatarFile, Guid subscriberGuid, ref string msg)
         {
  

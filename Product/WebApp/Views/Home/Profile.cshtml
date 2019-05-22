@@ -41,6 +41,31 @@
             });
         });
 
+        function avatarDelete() {
+
+            bootbox.confirm({
+                message: "Are you sure you want to delete your avatar?",
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'No',
+                        classname: 'btn-danger'
+                    }
+                },
+                callback: function callback(result) {
+                    if (result) {
+                        var DefaultAvatar = '@Model.DefaultAvatar';
+                        // remove the image on the server 
+                        CareerCircleAPI.removeAvatar();
+                        // update the local image
+                        document.getElementById('imgAvatar').src = DefaultAvatar;
+                    }
+                }
+            });
+        }
 
         function avatarSelect() {
             $("#fuAvatar").click();            
@@ -225,7 +250,7 @@
                                         <input type="file" id="fuAvatar" class="d-none" accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/* .heic .heif" onchange="avatarUpload()"/>
 
                                         <button type="button" class="btn btn-text text-primary edit px-2" onclick="avatarSelect()" > <i class="fas fa-edit text-light-blue" title="Edit"></i></button>
-                                        <button type="button" class="btn btn-text text-primary delete px-2"><i class="fas fa-minus-circle text-light-blue" title="Delete"></i> </button>
+                                        <button type="button" class="btn btn-text text-primary delete px-2" onclick="avatarDelete()"><i class="fas fa-minus-circle text-light-blue" title="Delete"></i> </button>
                           
                                     </form>
                            

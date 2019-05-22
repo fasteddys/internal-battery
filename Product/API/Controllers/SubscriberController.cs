@@ -618,8 +618,7 @@ namespace UpDiddyApi.Controllers
 
         /// <summary>
         /// Avatar upload endpoint 
-        /// </summary>
-        /// <param name="resumeDto">The data transfer object which contains a subscriber guid and a base 64 encoded string representation of a resume</param>
+        /// </summary>  
         /// <returns></returns>
         [Authorize]
         [HttpPost]
@@ -632,8 +631,23 @@ namespace UpDiddyApi.Controllers
             if (SubscriberFactory.UpdateAvatar(_db, _configuration, avatar, subscriberGuid, ref errorMsg))
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Email verification token successfully created. Email queued." });
             else
-                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg});
-            
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg});            
+        }
+
+
+        [Authorize]
+        [HttpPut]
+        [Route("remove-avatar")]
+        public async Task<IActionResult> RemoveAvatar()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            string errorMsg = string.Empty;
+
+            if (SubscriberFactory.RemoveAvatar(_db, _configuration, subscriberGuid, ref errorMsg))
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Avatar removed." });
+            else
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
         }
 
 
@@ -646,12 +660,9 @@ namespace UpDiddyApi.Controllers
             string errorMsg = string.Empty;
  
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
-
         }
 
-
-
-
+        
         [HttpPut("/api/[controller]/onboard")]
         public IActionResult Onboard()
         {
