@@ -67,6 +67,18 @@
         });
     }
 
+
+    var uploadAvatar = function (avatar) {
+        var formData = new FormData();
+        formData.append("avatar", avatar);  
+
+        return _http.post('/subscriber/upload-avatar', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+    }
+
     var uploadResume = function (resume, parseResume) {
         var formData = new FormData();
         formData.append("resume", resume);
@@ -153,6 +165,7 @@
         getJobAppReport: getJobAppReport,
         requestVerification: requestVerification,
         getOffer: getOffer,
-        claimOffer: claimOffer
+        claimOffer: claimOffer,
+        uploadAvatar: uploadAvatar
     };
 })(API_URL);

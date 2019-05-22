@@ -616,6 +616,42 @@ namespace UpDiddyApi.Controllers
         }
         #endregion
 
+        /// <summary>
+        /// Avatar upload endpoint 
+        /// </summary>
+        /// <param name="resumeDto">The data transfer object which contains a subscriber guid and a base 64 encoded string representation of a resume</param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpPost]
+        [Route("upload-avatar")]
+        public async Task<IActionResult> UploadAvatar(IFormFile avatar)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            string errorMsg = string.Empty;
+
+            if (SubscriberFactory.UpdateAvatar(_db, _configuration, avatar, subscriberGuid, ref errorMsg))
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Email verification token successfully created. Email queued." });
+            else
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg});
+            
+        }
+
+
+        [Authorize]
+        [HttpPost]
+        [Route("delete-avatar")]
+        public async Task<IActionResult> DeleteAvatart()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            string errorMsg = string.Empty;
+ 
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
+
+        }
+
+
+
+
         [HttpPut("/api/[controller]/onboard")]
         public IActionResult Onboard()
         {

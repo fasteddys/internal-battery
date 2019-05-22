@@ -33,7 +33,11 @@ namespace UpDiddy.ViewModels
         public string City { get; set; }
         public string PostalCode { get; set; }
         public DateTime? LinkedInSyncDate { get; set; }
+        public string LinkedInAvatarUrl { get; set; }
+        public string AvatarUrl { get; set; }
+        public int MaxAvatarFileSize { get; set; }
         private string _FormattedPhone;
+
 
         // todo: refactor for future use
         public SubscriberFileDto Resume

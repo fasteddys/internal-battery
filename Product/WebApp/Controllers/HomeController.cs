@@ -196,7 +196,7 @@ namespace UpDiddy.Controllers
         {
             var countries = await _Api.GetCountriesAsync();
             var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
-
+            string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
                 SubscriberGuid = this.subscriber?.SubscriberGuid,
@@ -236,7 +236,11 @@ namespace UpDiddy.Controllers
                 Files = this.subscriber?.Files,
                 WorkHistory = await _Api.GetWorkHistoryAsync(this.subscriber.SubscriberGuid.Value),
                 EducationHistory = await _Api.GetEducationHistoryAsync(this.subscriber.SubscriberGuid.Value),
-                LinkedInSyncDate = this.subscriber.LinkedInSyncDate
+                LinkedInSyncDate = this.subscriber.LinkedInSyncDate,
+                LinkedInAvatarUrl = AssestBaseUrl + this.subscriber.LinkedInAvatarUrl,   
+                AvatarUrl = string.IsNullOrEmpty(this.subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.AvatarUrl,
+                MaxAvatarFileSize = int.Parse(_configuration["CareerCircle:MaxAvatarFileSize"])
+
             };
 
             // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
@@ -499,6 +503,9 @@ namespace UpDiddy.Controllers
             );
             return LocalRedirect(returnUrl);
         }
+
+
+        
 
         // TODO find a better home for these lookup endpoints - maybe a new lookup or data endpoint?
         [Authorize]

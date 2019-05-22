@@ -48,12 +48,14 @@ namespace UpDiddyApi.ApplicationCore
                 var responseJson = string.Empty;
                 // Call linkedin to acquire user's profile data 
                 HttpResponseMessage response = _GetUserProfileData(lit, ref responseJson);
-
+                string errorMsg = string.Empty;
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     // Update or create users linked profile data 
                     SubscriberProfileStagingStoreFactory.StoreProfileData(_db, subscriberGuid, responseJson);
-                    SubscriberFactory.ImportLinkedInImage(_db, _configuration, responseJson, subscriberGuid);
+                    if (SubscriberFactory.ImportLinkedInAvatar(_db, _configuration, responseJson, subscriberGuid, ref errorMsg) == false)
+                        _syslog.Log(LogLevel.Information, errorMsg);
+                    
                     rVal = (int)ProfileDataStatus.Acquired;
                 }
                 else

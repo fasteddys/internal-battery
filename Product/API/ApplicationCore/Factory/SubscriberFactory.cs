@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -123,28 +124,65 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
-
-        public static bool ImportLinkedInImage(UpDiddyDbContext db, IConfiguration config,  string responseJSon, Guid subscriberGuid)
+        public static bool UpdateAvatar(UpDiddyDbContext db, IConfiguration config, IFormFile avatarFile, Guid subscriberGuid, ref string msg)
         {
+ 
+            int MaxAvatarFileSize = int.Parse(config["CareerCircle:MaxAvatarFileSize"]);
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, subscriberGuid);
+            if (subscriber == null)
+            {
+                msg = $"SubscriberFactory.ImportLinkedInImage: {subscriberGuid} is not a valid subscriber";
+                return false;
+            }
 
+            byte[] imageBytes = new byte[MaxAvatarFileSize];
+            using (var ms = new MemoryStream())
+            {
+                avatarFile.CopyTo(ms);
+                imageBytes = ms.ToArray();
+            }
+               
+            AzureBlobStorage abs = new AzureBlobStorage(config);
+            string blobFilePath = subscriberGuid + config["CareerCircle:AvatarName"];
+            abs.UploadBlobAsync(blobFilePath, imageBytes);
+            subscriber.AvatarUrl = blobFilePath;
+            subscriber.ModifyDate = DateTime.Now;            
+            db.SaveChanges();
+
+            return true;
+        }
+
+
+
+        public static bool ImportLinkedInAvatar(UpDiddyDbContext db, IConfiguration config,  string responseJSon, Guid subscriberGuid, ref string msg)
+        {
             JObject o = JObject.Parse(responseJSon);
-
             JToken imageUrlToken = o.SelectToken("$.profilePicture.displayImage~.elements[0].identifiers[0].identifier");
             string imageUrl = imageUrlToken.ToString();
             int MaxAvatarFileSize = int.Parse(config["CareerCircle:MaxAvatarFileSize"]);
 
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db, subscriberGuid);
+            if (subscriber == null)
+            {
+                msg = $"SubscriberFactory.ImportLinkedInImage: {subscriberGuid} is not a valid subscriber";
+                return false;
+            }
+                
             byte[] imageBytes = new byte[MaxAvatarFileSize];
-            Utils.GetImageAsBlob(imageUrl, MaxAvatarFileSize, ref imageBytes);
+            if ( Utils.GetImageAsBlob(imageUrl, MaxAvatarFileSize, ref imageBytes) )
+            {
+                AzureBlobStorage abs = new AzureBlobStorage(config);
+                string blobFilePath = subscriberGuid + config["CareerCircle:LinkedInAvatarName"];
+                abs.UploadBlobAsync(blobFilePath, imageBytes);
+                subscriber.LinkedInAvatarUrl = blobFilePath;
+                if (string.IsNullOrEmpty(subscriber.AvatarUrl))
+                    subscriber.AvatarUrl = blobFilePath;
+                subscriber.ModifyDate = DateTime.Now;
+            }
+            else
+                msg = $"SubscriberFactory.ImportLinkedInImage: subsscriber {subscriberGuid} has an avatar that is too large";
 
-            AzureBlobStorage abs = new AzureBlobStorage(config);            
-            string blobFilePath = subscriberGuid + config["CareerCircle:LinkedInAvatarName"];
-    
-            abs.UploadBlobAsync(blobFilePath, imageBytes);
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(db,subscriberGuid);
-            subscriber.LinkedInSyncDate = DateTime.Now;
-            subscriber.LinkedInAvatarUrl = blobFilePath;
-            if (string.IsNullOrEmpty(subscriber.AvatarUrl))
-                subscriber.AvatarUrl = blobFilePath;
+            subscriber.LinkedInSyncDate = DateTime.Now;  
             db.SaveChanges();
 
             return true;

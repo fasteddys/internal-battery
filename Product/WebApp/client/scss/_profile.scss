@@ -167,6 +167,11 @@
                 .career-circle-profile-email {
                     color: $color-primary;
                 }
+
+                .career-circle-profile-avatar {
+                    border-radius: 100%;
+                    max-width: 100px;
+                }
             }
         }
 

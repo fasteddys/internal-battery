@@ -34,9 +34,9 @@ namespace UpDiddy.ViewComponents
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync(Guid SubscriberGuid, DateTime LastSyncDate)
+        public async Task<IViewComponentResult> InvokeAsync(Guid SubscriberGuid, DateTime LastSyncDate, string LinkedInAvatarUrl)
         {
-
+            // TODO JAB check various states as synced, syncing unsynced etc. 
 
             var responseQuery = _httpContextAccessor.HttpContext.Request.Query;
             var returnUrl = UriHelper.GetDisplayUrl(_httpContextAccessor.HttpContext.Request);
@@ -51,7 +51,8 @@ namespace UpDiddy.ViewComponents
             {
                 return View(LinkedInSyncViewComponent.SYNCED_VIEW, new LinkedInSyncViewModel {
                     SyncLink = GetLinkedInRequestAuthCodeUrl(),
-                    ProfileImageUrl = lidto.PictureUrl
+                    LinkedInAvatarUrl = LinkedInAvatarUrl,
+                    LastLinkedInSyncDate = LastSyncDate
                 });
             }
   
