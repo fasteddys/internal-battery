@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 
-class BrowseJobsByLocation extends React.Component {
+class BrowseJobs extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -30,4 +30,4 @@ class BrowseJobsByLocation extends React.Component {
     }
 }
 
-export default BrowseJobsByLocation;
+export default BrowseJobs;

@@ -308,7 +308,11 @@ namespace UpDiddy.Controllers
         }
 
 
-        [HttpGet("browse-jobs-location/{country?}/{state?}/{city?}/{industry?}/{category?}/{page?}")]
+        [HttpGet("browse-jobs-location/{country?}")]
+        [HttpGet("browse-jobs-location/{country}/{state?}/{page:int?}")]
+        [HttpGet("browse-jobs-location/{country}/{state}/{city?}/{page:int?}")]
+        [HttpGet("browse-jobs-location/{country}/{state}/{city}/{industry?}/{page:int?}")]
+        [HttpGet("browse-jobs-location/{country}/{state}/{city}/{industry}/{category?}/{page:int?}")]
         public async Task<IActionResult> BrowseJobsByLocationAsync(
             string country,
             string state,
@@ -319,7 +323,7 @@ namespace UpDiddy.Controllers
         {
             // If user types in root url, default to US.
             if (string.IsNullOrEmpty(country))
-                return Redirect($"{Request.Path}/us");
+                return RedirectPermanent($"{Request.Path}/us");
 
 
             
@@ -343,7 +347,7 @@ namespace UpDiddy.Controllers
                 }
             }
 
-            if (jobSearchResultDto == null)
+            if (jobSearchResultDto == null || !IsValidUrl(jobSearchResultDto, country, state, city, industry, category))
                 return NotFound();
 
             int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
@@ -356,7 +360,7 @@ namespace UpDiddy.Controllers
             };
 
             // User has reached the end of the browse flow, so present results.
-            if (!string.IsNullOrEmpty(category))
+            if (!string.IsNullOrEmpty(category) || page != null)
                 return View("BrowseByType", jobSearchViewModel);
 
 
@@ -391,11 +395,12 @@ namespace UpDiddy.Controllers
             // needs to choose city
             if (string.IsNullOrEmpty(city))
             {
+
                 jqfdto = FindNeededFacet("city", jobSearchResultDto.Facets);
 
                 // City histogram wasn't found
                 if (jqfdto == null)
-                    return NotFound();
+                    return RedirectPermanent(Request.Path + "/1");
 
                 List<DisplayItem> LocationsCities = new List<DisplayItem>();
                 jqfdto.Facets.Sort((x, y) => string.Compare(x.Label, y.Label));
@@ -420,11 +425,13 @@ namespace UpDiddy.Controllers
             {
                 jqfdto = FindNeededFacet("industry", jobSearchResultDto.Facets);
 
-                // Industry histogram wasn't found
-                if (jqfdto == null)
-                    return View("BrowseByType", jobSearchViewModel);
-
                 List<DisplayItem> Industries = new List<DisplayItem>();
+
+
+                if (jqfdto?.Facets == null)
+                    return RedirectPermanent(Request.Path + "/1");
+
+
                 foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
                 {
                     Industries.Add(new DisplayItem
@@ -433,24 +440,19 @@ namespace UpDiddy.Controllers
                         Url = $"{Request.Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}"
                     });
                 }
-
-                BrowseJobsLocationViewModel bjlvm = new BrowseJobsLocationViewModel()
-                {
-                    Items = Industries
-                };
-
-                return View("BrowseByType", bjlvm);
+                return View("BrowseByType", new BrowseJobsLocationViewModel() { Items = Industries });
             }
 
             if (string.IsNullOrEmpty(category))
             {
                 jqfdto = FindNeededFacet("jobcategory", jobSearchResultDto.Facets);
 
-                // Job category histogram wasn't found
-                if (jqfdto == null)
-                    return View("BrowseByType", jobSearchViewModel);
 
                 List<DisplayItem> Categories = new List<DisplayItem>();
+
+                if (jqfdto?.Facets == null)
+                    return RedirectPermanent(Request.Path + "/1");
+
                 foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
                 {
                     Categories.Add(new DisplayItem
@@ -459,13 +461,8 @@ namespace UpDiddy.Controllers
                         Url = $"{Request.Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}/1"
                     });
                 }
+                return View("BrowseByType", new BrowseJobsLocationViewModel() { Items = Categories });
 
-                BrowseJobsLocationViewModel bjlvm = new BrowseJobsLocationViewModel()
-                {
-                    Items = Categories
-                };
-
-                return View("BrowseByType", bjlvm);
             }
 
             return NotFound();
@@ -475,6 +472,60 @@ namespace UpDiddy.Controllers
         }
 
         #region Browse job by location helpers
+
+        private bool IsValidUrl(
+            JobSearchResultDto SearchResult, 
+            string country,
+            string state,
+            string city,
+            string industry,
+            string category)
+        {
+            if (!country.ToLower().Equals("us"))
+                return false;
+
+            if (!string.IsNullOrEmpty(state))
+            {
+                JobQueryFacetDto StateFacet = FindNeededFacet("admin_1", SearchResult.Facets);
+                if (StateFacet == null || !FacetLabelExists(StateFacet.Facets, state))
+                    return false;
+            }
+
+            if (!string.IsNullOrEmpty(city))
+            {
+                JobQueryFacetDto CityFacet = FindNeededFacet("city", SearchResult.Facets);
+                if (CityFacet == null || !FacetLabelExists(CityFacet.Facets, city))
+                    return false;
+            }
+
+            if (!string.IsNullOrEmpty(industry))
+            {
+                JobQueryFacetDto IndustryFacet = FindNeededFacet("industry", SearchResult.Facets);
+                if (IndustryFacet == null || !FacetLabelExists(IndustryFacet.Facets, industry))
+                    return false;
+            }
+
+            if (!string.IsNullOrEmpty(category))
+            {
+                JobQueryFacetDto CategoryFacet = FindNeededFacet("category", SearchResult.Facets);
+                if (CategoryFacet == null || !FacetLabelExists(CategoryFacet.Facets, category))
+                    return false;
+            }
+
+
+            return true;
+            
+        }
+
+        private bool FacetLabelExists(List<JobQueryFacetItemDto> List, string Label)
+        {
+            foreach (JobQueryFacetItemDto Item in List)
+            {
+                if (Item.Label.ToLower().Replace(" ", "-").Equals(Label.ToLower()))
+                    return true;
+            }
+            return false;
+        }
 
         private JobQueryFacetDto FindNeededFacet(string key, List<JobQueryFacetDto> List)
         {

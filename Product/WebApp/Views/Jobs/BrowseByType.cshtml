@@ -8,36 +8,36 @@
 <div class="job-search-container">
     <div class="job-search-results">
         <div class="container">
-            @if (Model.Items?.Count > 0)
-            {
-                @Html.React("BrowseJobsByLocation", new { list = Model.Items });
-            }
-            else
+            @if (Model.Items == null)
             {
                 await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);
 
                 <div class="row job-pagination container-align-center">
-                    @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("Index", new
-                        { page,
-                            keywords = ViewContext.HttpContext.Request.Query["keywords"],
-                            location = ViewContext.HttpContext.Request.Query["location"]
-                        }),new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                            LiElementClasses = new string[] { "page-item" },
-                            PageClasses = new string[] { "page-link" },
-                            MaximumPageNumbersToDisplay=5,
-                            DisplayLinkToFirstPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                            DisplayLinkToLastPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                            DisplayLinkToPreviousPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                            DisplayLinkToNextPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                            LinkToFirstPageFormat = "««",
-                            LinkToPreviousPageFormat = "«",
-                            LinkToNextPageFormat = "»",
-                            LinkToLastPageFormat = "»»",
-                            DisplayEllipsesWhenNotShowingAllPageNumbers = true,
-                            ContainerDivClasses = new[] { "pagination-container" },
-                            UlElementClasses = new[] { "pagination" }
-                            })
+                    @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("BrowseByType", new
+               { page,
+                   keywords = ViewContext.HttpContext.Request.Query["keywords"],
+                   location = ViewContext.HttpContext.Request.Query["location"]
+               }), new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                   LiElementClasses = new string[] { "page-item" },
+                   PageClasses = new string[] { "page-link" },
+                   MaximumPageNumbersToDisplay = 5,
+                   DisplayLinkToFirstPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                   DisplayLinkToLastPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                   DisplayLinkToPreviousPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                   DisplayLinkToNextPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                   LinkToFirstPageFormat = "««",
+                   LinkToPreviousPageFormat = "«",
+                   LinkToNextPageFormat = "»",
+                   LinkToLastPageFormat = "»»",
+                   DisplayEllipsesWhenNotShowingAllPageNumbers = true,
+                   ContainerDivClasses = new[] { "pagination-container" },
+                   UlElementClasses = new[] { "pagination" }
+               })
                 </div>
+            }
+            else
+            {
+                @Html.React("BrowseJobs", new { list = Model.Items });
             }
         </div>
     </div>

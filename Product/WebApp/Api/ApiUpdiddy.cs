@@ -600,20 +600,20 @@ namespace UpDiddy.Api
         }
 
         public async Task<JobSearchResultDto> GetJobsByLocationUsingRoute(
-            string country = null,
-            string state = null,
-            string city = null,
-            string industry = null,
-            string category = null)
+            string Country = null,
+            string State = null,
+            string City = null,
+            string Industry = null,
+            string Category = null)
         {
-            country = country == null ? "all" : country;
-            state = state == null ? "all" : state;
-            city = city == null ? "all" : city;
-            industry = industry == null ? "all" : industry;
-            category = category == null ? "all" : category;
+            Country = Country ?? "all";
+            State = State ?? "all";
+            City = City ?? "all";
+            Industry = Industry ?? "all";
+            Category = Category ?? "all";
 
-            var searchFilter = $"{country}/{state}/{city}/{industry}/{category}/all/0?page-size=100&page-num=0";
-            string cacheKey = string.Format("job-{0}/{1}/{2}/{3}/{4}", country, state, city, industry, category);
+            var searchFilter = $"{Country}/{State}/{City}/{Industry}/{Category}/all/0?page-size=100&page-num=0";
+            string cacheKey = string.Format("job-{0}/{1}/{2}/{3}/{4}", Country, State, City, Industry, Category);
             JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
 
             if (rval != null)
