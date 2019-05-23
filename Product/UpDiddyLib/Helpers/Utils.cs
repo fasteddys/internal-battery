@@ -12,11 +12,50 @@ using System.Globalization;
 using System.Reflection;
 using GoogleTypes = Google.Protobuf.WellKnownTypes;
 using System.Text;
+using HtmlAgilityPack;
 
 namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+        /// <summary>
+        /// Removes unwanted HTML while preserving any tags which have been explicitly whitelisted
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="whitelistedTags"></param>
+        /// <returns></returns>
+        public static string RemoveUnwantedTags(string data, List<string> whitelistedTags = null)
+        {
+            if (string.IsNullOrEmpty(data)) return string.Empty;
+
+            var document = new HtmlDocument();
+            document.LoadHtml(data);
+            
+            var nodes = new Queue<HtmlNode>(document.DocumentNode.SelectNodes("./*|./text()"));
+            while (nodes.Count > 0)
+            {
+                var node = nodes.Dequeue();
+                var parentNode = node.ParentNode;
+
+                if((whitelistedTags == null || !whitelistedTags.Contains(node.Name)) && node.Name != "#text")
+                {
+                    var childNodes = node.SelectNodes("./*|./text()");
+
+                    if (childNodes != null)
+                    {
+                        foreach (var child in childNodes)
+                        {
+                            nodes.Enqueue(child);
+                            parentNode.InsertBefore(child, node);
+                        }
+                    }
+
+                    parentNode.RemoveChild(node);
+                }
+            }
+
+            return document.DocumentNode.InnerHtml;
+        }
 
         /// <summary>
         /// Returns the path of a semantic job url. Note that this does not include other components of the url (protocol, scheme, host, query string)
@@ -72,10 +111,10 @@ namespace UpDiddyLib.Helpers
         public static string ToUrlSlug(this string value)
         {
             //First to lower case
-            value = value.ToLowerInvariant();
-            //Remove all accents
-            var bytes = Encoding.GetEncoding("Cyrillic").GetBytes(value);
-            value = Encoding.ASCII.GetString(bytes);
+            value = value.ToLowerInvariant();            
+            //Remove all accents - removing this code for now; it worked once but having trouble getting the Cyrillic encoding to be recognized even after including System.Text.Encoding.CodePages
+            //var bytes = Encoding.GetEncoding("Cyrillic").GetBytes(value);
+            //value = Encoding.ASCII.GetString(bytes);
             //Replace spaces
             value = Regex.Replace(value, @"\s", "-", RegexOptions.Compiled);
             //Remove invalid chars

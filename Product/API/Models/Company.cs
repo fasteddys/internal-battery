@@ -30,7 +30,5 @@ namespace UpDiddyApi.Models
         /// </summary>
         public string CloudTalentIndexInfo { get; set; }
 
-
-
     }
 }

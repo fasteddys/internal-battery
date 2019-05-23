@@ -245,11 +245,12 @@ namespace UpDiddyApi.Controllers
                 Stream SubscriberResumeAsStream = await _subscriberService.GetResumeAsync(subscriber);
                 bool IsExternalRecruiter = jobPosting.Recruiter.Subscriber == null;
 
+                string RecruiterEmailToUse = jobPosting.Recruiter.Subscriber?.Email ?? jobPosting.Recruiter.Email;
                 // Create a jobposting dto needed for the fully qualified job posting url in the recuriter email
                 JobPostingDto jobPostingDto = _mapper.Map<JobPostingDto>(jobPosting);
                 // Send recruiter email alerting them to application
                 BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
-                    (jobPosting.Recruiter.Email,
+                    (RecruiterEmailToUse,
                     _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter" +
                         (IsExternalRecruiter == true ? "-External" : string.Empty)],
                     new

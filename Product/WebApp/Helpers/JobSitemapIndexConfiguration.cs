@@ -28,7 +28,7 @@ namespace UpDiddy.Helpers
             // this line can be removed once semantic job path is built using automapper
             source.SemanticJobPath = Utils.CreateSemanticJobPath(source.Industry?.Name, source.JobCategory?.Name, source.Country, source.Province, source.City, source.JobPostingGuid.ToString());
 
-            return new SitemapNode(source.SemanticJobPath) { LastModificationDate = source.ModifyDate, ChangeFrequency = ChangeFrequency.Hourly };
+            return new SitemapNode(source.SemanticJobPath) { ChangeFrequency = ChangeFrequency.Hourly };
         }
     }
 }

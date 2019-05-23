@@ -67,13 +67,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                             && c.IsJobPoster == 1
                             && (startPostDate == null || (jp.PostingDateUTC.Date >= startPostDate))
                             && (endPostDate == null || (jp.PostingDateUTC.Date <= endPostDate))
-                        group new { c, jp } by new { c.CompanyName, jp.PostingDateUTC.Date } into g
+                        group new { c.CompanyName, jp.PostingDateUTC } 
+                        by new { c.CompanyName, jp.PostingDateUTC.Date } into g
                         orderby g.Key.CompanyName, g.Key.Date
                         select new JobPostingCountReportDto
                         {
                             CompanyName = g.Key.CompanyName,
                             PostingDate = g.Key.Date,
-                            PostingCount = g.Select(x => x.jp.PostingDateUTC.Date).Count()
+                            PostingCount = g.Select(x => x.PostingDateUTC.Date).Count()
                         };
 
             jobPostingCountReportDtos = await query.ToListAsync();

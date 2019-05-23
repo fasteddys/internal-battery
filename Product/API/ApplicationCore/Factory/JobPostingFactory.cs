@@ -547,6 +547,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     return false;
                 }
 
+                if (jobPosting.ThirdPartyApply)
+                {
+                    // update the recruiter information if it has changed since the last time the job page was inspected
+                    RecruiterFactory.GetAddOrUpdate(db, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, jobPostingDto.Recruiter.PhoneNumber, null);
+                }
+
                 jobPosting.Title = jobPostingDto.Title;
                 jobPosting.Description = jobPostingDto.Description;
                 jobPosting.PostingExpirationDateUTC = jobPostingDto.PostingExpirationDateUTC;
@@ -563,6 +569,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 jobPosting.Province = jobPostingDto.Province;
                 jobPosting.PostalCode = jobPostingDto.PostalCode;
                 jobPosting.StreetAddress = jobPostingDto.StreetAddress;
+                jobPosting.ThirdPartyIdentifier = jobPostingDto.ThirdPartyIdentifier;
                 // Update the modify date to now
                 jobPosting.ModifyDate = DateTime.UtcNow;
 
