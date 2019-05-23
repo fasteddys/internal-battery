@@ -614,7 +614,7 @@ namespace UpDiddy.Api
             Category = Category ?? "all";
 
             var searchFilter = $"{Country}/{State}/{City}/{Industry}/{Category}/all/{page}";
-            string cacheKey = string.Format("job-{0}/{1}/{2}/{3}/{4}", Country, State, City, Industry, Category);
+            string cacheKey = string.Format("job-{0}/{1}/{2}/{3}/{4}/{5}", Country, State, City, Industry, Category, page);
             JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
 
             if (rval != null)
@@ -623,7 +623,7 @@ namespace UpDiddy.Api
             {
 
                 rval = await _GetJobsByLocation(searchFilter);
-                //SetCachedValue<JobSearchResultDto>(cacheKey, rval);
+                SetCachedValue<JobSearchResultDto>(cacheKey, rval);
             }
 
             return rval;

@@ -341,7 +341,7 @@ namespace UpDiddy.Controllers
             {
                 jobSearchResultDto = await _api.GetJobsByLocationUsingRoute(
                     country, 
-                    state?.Replace("-", "+"), 
+                    state, 
                     city, 
                     industry?.Replace("-", "+"), 
                     category?.Replace("-", "+"), 
@@ -432,7 +432,7 @@ namespace UpDiddy.Controllers
                     LocationsCities.Add(new DisplayItem
                     {
                         Label = $"{FacetItem.Label} ({FacetItem.Count})",
-                        Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.ToLower(), "-")}"
+                        Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.Split(",")[0].ToLower(), "-")}"
                     });
                 }
 
