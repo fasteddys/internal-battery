@@ -552,13 +552,27 @@ namespace UpDiddyApi.ApplicationCore.Services
             DateTime startSearch = DateTime.Now;
             CloudTalentSolution.SearchJobsRequest searchJobRequest = CreateJobSearchRequest(jobQuery);
 
-            // search the cloud talent 
-            CloudTalentSolution.SearchJobsResponse searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
+            // search the cloud talent
+            CloudTalentSolution.SearchJobsResponse searchJobsResponse;
+            
+            DateTime startMap = DateTime.Now;
+            try
+            {
+                searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
+
+            }
+            catch (Exception e)
+            {
+                // We sent a query to Google that it doesn't understand (e.g. "laksdbf" as a state)
+                _syslog.LogWarning(e, "CloudTalent.Search Error: Google unable to resolve our search query.");
+                searchJobsResponse = null;
+            }
+            DateTime stopMap = DateTime.Now;
 
             // map cloud talent results to cc search results 
-            DateTime startMap = DateTime.Now;
             JobSearchResultDto rval = JobMappingHelper.MapSearchResults(_syslog, _mapper, _configuration, searchJobsResponse, jobQuery);
-            DateTime stopMap = DateTime.Now;
+
+            
 
             // calculate search timing metrics 
             TimeSpan intervalTotalSearch = stopMap - startSearch;

@@ -604,7 +604,8 @@ namespace UpDiddy.Api
             string State = null,
             string City = null,
             string Industry = null,
-            string Category = null)
+            string Category = null,
+            int page = 0)
         {
             Country = Country ?? "all";
             State = State ?? "all";
@@ -612,7 +613,7 @@ namespace UpDiddy.Api
             Industry = Industry ?? "all";
             Category = Category ?? "all";
 
-            var searchFilter = $"{Country}/{State}/{City}/{Industry}/{Category}/all/0?page-size=100&page-num=0";
+            var searchFilter = $"{Country}/{State}/{City}/{Industry}/{Category}/all/{page}?page-size=100";
             string cacheKey = string.Format("job-{0}/{1}/{2}/{3}/{4}", Country, State, City, Industry, Category);
             JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
 

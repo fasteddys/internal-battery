@@ -13,6 +13,7 @@ using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using X.PagedList;
 using System.Text;
+using System.Text.RegularExpressions;
 
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -319,20 +320,32 @@ namespace UpDiddy.Controllers
             string city,
             string industry,
             string category,
-            int? page)
+            int page)
         {
             // If user types in root url, default to US.
             if (string.IsNullOrEmpty(country))
                 return RedirectPermanent($"{Request.Path}/us");
 
 
-            
+            if (!string.IsNullOrEmpty(country) &&
+                !string.IsNullOrEmpty(state) &&
+                !string.IsNullOrEmpty(city) &&
+                !string.IsNullOrEmpty(industry) &&
+                !string.IsNullOrEmpty(category) &&
+                page == 0)
+                return RedirectPermanent($"{Request.Path}/1");
 
             JobSearchResultDto jobSearchResultDto = null;
 
             try
             {
-                jobSearchResultDto = await _api.GetJobsByLocationUsingRoute(country, state, city, industry?.Replace("-", "+"), category?.Replace("-", "+"));
+                jobSearchResultDto = await _api.GetJobsByLocationUsingRoute(
+                    country, 
+                    state?.Replace("-", "+"), 
+                    city?.Replace("-", "+"), 
+                    industry?.Replace("-", "+"), 
+                    category?.Replace("-", "+"), 
+                    page);
             }
             catch (ApiException e)
             {
@@ -347,6 +360,9 @@ namespace UpDiddy.Controllers
                 }
             }
 
+            if (page > jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0) || page < 0)
+                return NotFound();
+
             if (jobSearchResultDto == null || !IsValidUrl(jobSearchResultDto, country, state, city, industry, category))
                 return NotFound();
 
@@ -356,12 +372,18 @@ namespace UpDiddy.Controllers
             {
                 RequestId = jobSearchResultDto.RequestId,
                 ClientEventId = jobSearchResultDto.ClientEventId,
-                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page ?? 1, pageCount)
+                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount),
+                CurrentPage = page,
+                NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
             };
 
             // User has reached the end of the browse flow, so present results.
-            if (!string.IsNullOrEmpty(category) || page != null)
+            if (!string.IsNullOrEmpty(category) || page != 0)
+            {
+                jobSearchViewModel.BaseUrl = AssembleBaseUrl(country, state, city, industry, category);
                 return View("BrowseByType", jobSearchViewModel);
+            }
+                
 
 
             JobQueryFacetDto jqfdto = FindNeededFacet("admin_1", jobSearchResultDto.Facets);
@@ -379,7 +401,7 @@ namespace UpDiddy.Controllers
                     StateLocations.Add(new DisplayItem
                     {
                         Label = $"{UpDiddyLib.Helpers.Utils.ToTitleCase(StateName)} ({JobQueryFacet.Count})",
-                        Url = $"{Request.Path}/{StateName.ToLower().Replace(" ", "-")}"
+                        Url = $"{Request.Path}/{JobQueryFacet.Label.ToLower()}"
                     });
                 }
 
@@ -406,10 +428,11 @@ namespace UpDiddy.Controllers
                 jqfdto.Facets.Sort((x, y) => string.Compare(x.Label, y.Label));
                 foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
                 {
+                    Regex rgx = new Regex("[^a-zA-Z]");
                     LocationsCities.Add(new DisplayItem
                     {
                         Label = $"{FacetItem.Label} ({FacetItem.Count})",
-                        Url = $"{Request.Path}/{FacetItem.Label.Split(",")[0].ToLower().Replace(" ", "-")}"
+                        Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.ToLower(), "-")}"
                     });
                 }
 
@@ -473,6 +496,23 @@ namespace UpDiddy.Controllers
 
         #region Browse job by location helpers
 
+        private string AssembleBaseUrl(
+            string country = null,
+            string state = null,
+            string city = null,
+            string industry = null,
+            string category = null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/browse-jobs-location" + 
+                (country == null ? string.Empty : "/" + country) +
+                (state == null ? string.Empty : "/" + state) +
+                (city == null ? string.Empty : "/" + city) +
+                (industry == null ? string.Empty : "/" + industry) +
+                (category == null ? string.Empty : "/" + category));
+            return sb.ToString();
+        }
+
         private bool IsValidUrl(
             JobSearchResultDto SearchResult, 
             string country,
@@ -487,28 +527,52 @@ namespace UpDiddy.Controllers
             if (!string.IsNullOrEmpty(state))
             {
                 JobQueryFacetDto StateFacet = FindNeededFacet("admin_1", SearchResult.Facets);
-                if (StateFacet == null || !FacetLabelExists(StateFacet.Facets, state))
+                if (StateFacet == null)
                     return false;
+
+                if (state.Length == 2)
+                {
+                    if (!FacetLabelExists(StateFacet.Facets, state))
+                        return false;
+                }
+                else
+                {
+                    try
+                    {
+                        /**
+                         * It's possible for a user to enter either "MD" or "Maryland", so we need to check either input
+                         * against the returned facet, which will be the two-character state code (e.g. "md").
+                         */
+                        if (!FacetLabelExists(StateFacet.Facets, UpDiddyLib.Helpers.Utils.GetStateByName(state.Replace("-", " ")).ToString()))
+                            return false;
+                    }
+                    catch (Exception e)
+                    {
+                        // Returns false if unable to find matching state from
+                        return false;
+                    }
+                }
+                
             }
 
             if (!string.IsNullOrEmpty(city))
             {
                 JobQueryFacetDto CityFacet = FindNeededFacet("city", SearchResult.Facets);
-                if (CityFacet == null || !FacetLabelExists(CityFacet.Facets, city))
+                if (CityFacet == null)
                     return false;
             }
 
             if (!string.IsNullOrEmpty(industry))
             {
                 JobQueryFacetDto IndustryFacet = FindNeededFacet("industry", SearchResult.Facets);
-                if (IndustryFacet == null || !FacetLabelExists(IndustryFacet.Facets, industry))
+                if (IndustryFacet == null)
                     return false;
             }
 
             if (!string.IsNullOrEmpty(category))
             {
-                JobQueryFacetDto CategoryFacet = FindNeededFacet("category", SearchResult.Facets);
-                if (CategoryFacet == null || !FacetLabelExists(CategoryFacet.Facets, category))
+                JobQueryFacetDto CategoryFacet = FindNeededFacet("jobcategory", SearchResult.Facets);
+                if (CategoryFacet == null)
                     return false;
             }
 
@@ -537,27 +601,7 @@ namespace UpDiddy.Controllers
 
             return null;
         }
-
-        private string FormatKeywords(string industry, string category)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append((!string.IsNullOrEmpty(industry) || !string.IsNullOrEmpty(category)) ? "?" : string.Empty);
-            sb.Append(industry == null ? string.Empty : "industry=" + industry.Replace("-", "+"));
-            sb.Append((!string.IsNullOrEmpty(industry) && !string.IsNullOrEmpty(category)) ? "&" : string.Empty);
-            sb.Append(category == null ? string.Empty : "jobcategory=" + category.Replace("-", "+"));
-            return sb.ToString();
-        }
-
-        private string FormatLocation(string country, string state, string city)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(country ?? string.Empty);
-            sb.Append((!string.IsNullOrEmpty(country) && (!string.IsNullOrEmpty(state) || !string.IsNullOrEmpty(city))) ? "," : string.Empty);
-            sb.Append(state ?? string.Empty);
-            sb.Append((!string.IsNullOrEmpty(state) && !string.IsNullOrEmpty(city)) ? "," : string.Empty);
-            sb.Append(city ?? string.Empty);
-            return sb.ToString();
-        }
+        
 
         #endregion
 

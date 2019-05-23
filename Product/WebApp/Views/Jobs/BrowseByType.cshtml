@@ -12,28 +12,38 @@
             {
                 await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);
 
-                <div class="row job-pagination container-align-center">
-                    @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("BrowseByType", new
-               { page,
-                   keywords = ViewContext.HttpContext.Request.Query["keywords"],
-                   location = ViewContext.HttpContext.Request.Query["location"]
-               }), new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                   LiElementClasses = new string[] { "page-item" },
-                   PageClasses = new string[] { "page-link" },
-                   MaximumPageNumbersToDisplay = 5,
-                   DisplayLinkToFirstPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                   DisplayLinkToLastPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                   DisplayLinkToPreviousPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                   DisplayLinkToNextPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                   LinkToFirstPageFormat = "««",
-                   LinkToPreviousPageFormat = "«",
-                   LinkToNextPageFormat = "»",
-                   LinkToLastPageFormat = "»»",
-                   DisplayEllipsesWhenNotShowingAllPageNumbers = true,
-                   ContainerDivClasses = new[] { "pagination-container" },
-                   UlElementClasses = new[] { "pagination" }
-               })
-                </div>
+                if (Model.NumberOfPages > 1)
+                {
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.CurrentPage != 1)
+                            {
+                                <li class="page-item">
+                                    @{
+                                        string url = Model.BaseUrl + "/" + (Model.CurrentPage - 1);
+                                    }
+                                    <a class="page-link" href="@url" tabindex="-1">Previous</a>
+                                </li>
+                            }
+                            @for (int i = 1; i < Model.NumberOfPages + 1; i++)
+                            {
+                                string url = Model.BaseUrl + "/" + i;
+                                string active = i == Model.CurrentPage ? "active" : string.Empty;
+                                <li class="page-item @active"><a class="page-link" href="@url">@i</a></li>
+                            }
+                            @if (Model.CurrentPage != Model.NumberOfPages)
+                            {
+                                <li class="page-item">
+                                    @{
+                                        string url = Model.BaseUrl + "/" + (Model.CurrentPage + 1);
+                                    }
+                                    <a class="page-link" href="@url" tabindex="-1">Next</a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+
             }
             else
             {
