@@ -16,7 +16,7 @@ namespace UpDiddyLib.Dto
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
         public int? GenderId { get; set; }
-        public int? EducationLevelId { get; set; }
+        public int? EducationLevelId { get; set; }        
         public string ProfileImage { get; set; }
         public string City { get; set; }
         public string PostalCode { get; set; }

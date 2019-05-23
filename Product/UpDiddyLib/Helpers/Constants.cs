@@ -13,7 +13,7 @@ namespace UpDiddyLib.Helpers
         public const string TRACKING_KEY_CAMPAIGN = "Campaign";
         public const string TRACKING_KEY_CAMPAIGN_PHASE = "CampaignPhase";
         public const string TRACKING_KEY_JOB_APPLICATION = "JobApplication";
-
+        public const string TRACKING_KEY_TINY_ID = "TinyId";
 
         static public string  SubsriberSessionKey = "Subscriber";
         static public readonly string EMPTY_STRING = "";

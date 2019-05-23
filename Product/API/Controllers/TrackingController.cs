@@ -53,6 +53,27 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
+        [Route("api/[controller]/{tinyId}/{actionGuid}")]
+        public IActionResult GetCampaignTrackingWithTinyId(string tinyId, string actionGuid)
+        {
+            // construct tracking parameters
+            Dictionary<string, StringValues> parameters = new Dictionary<string, StringValues>();
+            parameters.Add(Constants.TRACKING_KEY_TINY_ID, tinyId);
+            parameters.Add(Constants.TRACKING_KEY_ACTION, actionGuid);
+            // add the phase if one has been specified, otherwise leave it null since ther is logic 
+            // that depends it being null if un-specified
+            string phase = Request.Query[Constants.TRACKING_KEY_CAMPAIGN_PHASE].ToString();
+            if (!string.IsNullOrEmpty(phase))
+                parameters.Add(Constants.TRACKING_KEY_CAMPAIGN_PHASE, phase);
+            // serialize all headers into json
+            var headers = JsonConvert.SerializeObject(Request.Headers, Formatting.Indented, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
+
+            Task.Run(() => ProcessTrackingInformation(parameters, headers));
+
+            return _pixelResponse;
+        }
+
+        [HttpGet]
         [Route("api/[controller]/{campaignGuid?}/{partnerContactGuid?}/{actionGuid?}")]
         public IActionResult Get(string campaignGuid, string partnerContactGuid, string actionGuid)
         {
@@ -77,14 +98,13 @@ namespace UpDiddyApi.Controllers
         }
 
         private void ProcessTrackingInformation(Dictionary<string, StringValues> parameters, string headers)
-
         {
-
             // look for expected parameters (contact, action, campaign, campaignPhase)
             var campaign = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_CAMPAIGN)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
             var partnerContact = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_PARTNER_CONTACT)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
             var action = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_ACTION)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
             var campaignPhase = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_CAMPAIGN_PHASE)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
+            var tinyId = parameters.Where(p => p.Key.EqualsInsensitive(Constants.TRACKING_KEY_TINY_ID)).Select(p => p.Value).FirstOrDefault().FirstOrDefault();
 
             // must have all three tracking parameters in order to continue
             if (campaign != null && partnerContact != null && action != null)
@@ -95,6 +115,16 @@ namespace UpDiddyApi.Controllers
                 {
                     // invoke the Hangfire job to store the tracking information
                     BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreTrackingInformation(campaignGuid, partnerContactGuid, actionGuid, campaignPhase, headers));
+                }
+            }
+            else if (tinyId != null && action != null)
+            {
+                // validate that action is a guid and that tinyId is not an empty string or null
+                Guid actionGuid;
+                if (Guid.TryParse(action, out actionGuid) && !string.IsNullOrWhiteSpace(tinyId))
+                {
+                    // invoke the Hangfire job to store the tracking information
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreTrackingInformation(tinyId, actionGuid, campaignPhase, headers));
                 }
             }
         }

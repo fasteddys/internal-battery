@@ -180,6 +180,9 @@ namespace UpDiddyApi.Models
         /// </summary>
         public string StreetAddress { get; set; }
 
-
+        /// <summary>
+        /// Jobs pulled from third party sites will have a value here
+        /// </summary>
+        public string ThirdPartyIdentifier { get; set; }
     }
 }
