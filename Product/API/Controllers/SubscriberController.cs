@@ -622,7 +622,7 @@ namespace UpDiddyApi.Controllers
         /// <returns></returns>
         [Authorize]
         [HttpPost]
-        [Route("upload-avatar")]
+        [Route("/api/[controller]/avatar")]
         public async Task<IActionResult> UploadAvatar(IFormFile avatar)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -636,8 +636,8 @@ namespace UpDiddyApi.Controllers
 
 
         [Authorize]
-        [HttpPut]
-        [Route("remove-avatar")]
+        [HttpDelete]
+        [Route("/api/[controller]/avatar")]
         public async Task<IActionResult> RemoveAvatar()
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -651,18 +651,7 @@ namespace UpDiddyApi.Controllers
         }
 
 
-        [Authorize]
-        [HttpPost]
-        [Route("delete-avatar")]
-        public async Task<IActionResult> DeleteAvatart()
-        {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            string errorMsg = string.Empty;
- 
-                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
-        }
-
-        
+         
         [HttpPut("/api/[controller]/onboard")]
         public IActionResult Onboard()
         {

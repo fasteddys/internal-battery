@@ -59,9 +59,14 @@
                     if (result) {
                         var DefaultAvatar = '@Model.DefaultAvatar';
                         // remove the image on the server 
-                        CareerCircleAPI.removeAvatar();
-                        // update the local image
-                        document.getElementById('imgAvatar').src = DefaultAvatar;
+                        CareerCircleAPI.removeAvatar()                    
+                            .then(function (payload) {
+                                // update the local image
+                                document.getElementById('imgAvatar').src = DefaultAvatar;
+                            })
+                            .catch(function (err) {
+                                ToastService.error('Something unexpected happened, and we are looking into it.');
+                            })                                           
                     }
                 }
             });
@@ -80,9 +85,15 @@
                 return;
             }
             // update the image on the server 
-            CareerCircleAPI.uploadAvatar(myFile);
-            // set the image locally 
-            document.getElementById('imgAvatar').src = window.URL.createObjectURL(myFile);
+            CareerCircleAPI.uploadAvatar(myFile)
+            .then(function (payload) {
+                // set the image locally 
+                document.getElementById('imgAvatar').src = window.URL.createObjectURL(myFile);
+            })
+            .catch(function (err) {
+                    ToastService.error('Something unexpected happened, and we are looking into it.');
+            })
+
         }
 
         var resumeUpload = {

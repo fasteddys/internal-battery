@@ -71,16 +71,15 @@
     var uploadAvatar = function (avatar) {
         var formData = new FormData();
         formData.append("avatar", avatar);  
-
-        return _http.post('/subscriber/upload-avatar', formData, {
+        return _http.post('/subscriber/avatar', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
         });
-    }
+    }  
 
     var removeAvatar = function () {
-        return _http.put('/subscriber/remove-avatar');
+        return _http.delete('/subscriber/avatar');
     }
 
 
