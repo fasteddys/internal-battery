@@ -15,5 +15,6 @@ namespace UpDiddy.ViewModels
         public string Keywords { get; set; }
         public string Location { get; set; }
         public IPagedList<JobViewDto> JobsSearchResult { get; set; }
+        public List<JobQueryFacetDto> Facets { get; set; }
     }
 }

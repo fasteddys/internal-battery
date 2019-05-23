@@ -38,17 +38,32 @@ namespace UpDiddy.Controllers
         }
         
         [HttpGet("[controller]")]
-        public async Task<IActionResult> Index(string keywords, string location, int? page)
+        public async Task<IActionResult> Index()
         {
             //get pageCount from Configuration file
             int pageCount=_configuration.GetValue<int>("Pagination:PageCount");
 
             JobSearchResultDto jobSearchResultDto = null;
 
+            var queryParametersString = Request.QueryString.ToString();
+            // get Query String Parameters
+            if (string.IsNullOrEmpty(queryParametersString) || string.IsNullOrWhiteSpace(queryParametersString))
+            {
+                queryParametersString += "?";
+            }
+            else
+            {
+                queryParametersString += "&";
+            }
+
+            ViewBag.QueryUrl = Request.Path + queryParametersString;
+
+            int.TryParse(Request.Query["page"], out int page);
+
             try
             {
                  jobSearchResultDto = await _api.GetJobsByLocation(
-                                      keywords, location);
+                                      queryParametersString);
             }
             catch(ApiException e)
             {
@@ -72,7 +87,8 @@ namespace UpDiddy.Controllers
             {
                 RequestId = jobSearchResultDto.RequestId,
                 ClientEventId = jobSearchResultDto.ClientEventId,
-                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page ?? 1, pageCount)
+                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page==0?1:page, pageCount),
+                Facets= jobSearchResultDto.Facets
             };
 
             return View("Index", jobSearchViewModel);
@@ -100,7 +116,11 @@ namespace UpDiddy.Controllers
                         if (job != null)
                         {
                             string location = job?.City + ", " + job?.Province;
-                            JobSearchResultDto jobSearchResultDto = await _api.GetJobsByLocation(job.Title, location);
+
+
+                            var queryParametersString = $"?{job.Title}&{location}";
+
+                            JobSearchResultDto jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
                             int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
 
                             if (jobSearchResultDto == null)

@@ -2,82 +2,279 @@
 @using UpDiddyLib.Dto;
 @using X.PagedList.Mvc.Core;
 @using X.PagedList;
+@using React.AspNet;
 
-@section Scripts{
-
-
+@{
+    string url = ViewBag.QueryUrl as string;
+    int counter = 0;
 }
-
-    <div class="job-search-container">
-
-        @*search filter*@
-        <div class="job-search-criteria">
-            <form asp-controller="Jobs" asp-action="Index" id="SearchJobsForm" method="get">
-                <div class="container job-search-block">
-                    <div class="row">
-                        <!--Bring to center of container-->
-                        <div class="col-12 col-md-8 offset-md-2">
-                            <div class="row job-search-header">
-                                <h2 class="job-search-header-text">Find Your Next Job</h2>
+<div class="job-search-container">
+    @*search filter*@
+    <div class="job-search-criteria">
+        <form asp-controller="Jobs" asp-action="Index" id="SearchJobsForm" method="get">
+            <div class="container job-search-block">
+                <div class="row">
+                    <!--Bring to center of container-->
+                    <div class="col-12 col-md-8 offset-md-2">
+                        <div class="row job-search-header">
+                            <h2 class="job-search-header-text">Find Your Next Job</h2>
+                        </div>
+                        <div class="row job-search-content">
+                            <p>
+                                At CareerCircle, we're in the business of helping you succeed. Let us connect you with opportunities that propel your career forward.
+                            </p>
+                            <p>
+                                Begin the path to career advancement here:
+                            </p>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 col-md-6 pb-3">
+                                @Html.TextBox("keywords", null, new { PlaceHolder = "Keywords", @class = "form-control", form = "SearchJobsForm" })
                             </div>
-                            <div class="row job-search-content">
-                                <p>
-                                    At CareerCircle, we're in the business of helping you succeed. Let us connect you with opportunities that propel your career forward.
-                                </p>
-                                <p>
-                                    Begin the path to career advancement here:
-                                </p>
-                            </div>
-                            <div class="row">
-                                <div class="col-12 col-md-6 pb-3">
-                                    @Html.TextBox("keywords", null, new { PlaceHolder = "Keywords", @class = "form-control", form = "SearchJobsForm" })
-                                </div>
-                                <div class="col-12 col-md-6 pb-3">
-                                    @Html.TextBox("location", null, new { PlaceHolder = "Location (optional)", @class = "form-control", form = "SearchJobsForm" })
-                                </div>
-                            </div>
-                            <div class="row job-search-button">
-                                <button id="SearchJobs" form="SearchJobsForm" type="submit" class="btn btn-primary"> Search Jobs</button>
+                            <div class="col-12 col-md-6 pb-3">
+                                @Html.TextBox("location", null, new { PlaceHolder = "Location (optional)", @class = "form-control", form = "SearchJobsForm" })
                             </div>
                         </div>
-                        <!--Bring to center of container-->
+                        <div class="row job-search-button">
+                            <button id="SearchJobs" form="SearchJobsForm" type="submit" class="btn btn-primary"> Search Jobs</button>
+                        </div>
+                    </div>
+                    <!--Bring to center of container-->
+                </div>
+            </div>
+        </form>
+    </div>
+    @*search filter*@
+
+    @*search results*@
+    <div class="job-search-results">
+        <div class="row">
+            <div class="col-2">
+                <div class="facet-container">
+                    <div class="container">
+
+                        <div id="active-filters">
+
+                        </div>
+
+                        @foreach (var facets in Model.Facets)
+                        {
+
+                            //Date Published Search Navigator
+                            if (!url.Contains("date_published"))
+                            {
+                                if (facets.Name == "DATE_PUBLISHED" && facets.Facets.Count > 1)
+                                {
+                                    counter = 0;
+                                    <div class="date_published">
+                                        <div> Date Posted</div>
+                                        @foreach (var facet in facets.Facets)
+                                        {
+                                            counter++;
+                                            <div>
+                                                <a href="@string.Format("{0}date_published={1}",@ViewBag.QueryUrl,@facet.Label)" class="@((counter>5)?"moreLink":"")">@facet.Label &nbsp(@facet.Count)</a>
+                                            </div>
+                                        }
+                                        @if (facets.Facets.Count > 5)
+                                        {
+                                            <div>
+                                                <a onclick="expandMoreLinks(this)">+ more >></a>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+
+
+                            //Employment Type Search Navigator
+                            if (!url.Contains("employment_type"))
+                            {
+                                if (facets.Name == "EmploymentType" && facets.Facets.Count > 1)
+                                {
+                                    counter = 0;
+                                    <div class="employment_type">
+                                        <div>Employment Type</div>
+                                        @foreach (var facet in facets.Facets)
+                                        {
+                                            counter++;
+                                            <div>
+                                                <a href="@string.Format("{0}employment_type={1}",@ViewBag.QueryUrl,@facet.Label)" class="@((counter>5)?"moreLink":"")">@facet.Label &nbsp(@facet.Count)</a>
+                                            </div>
+                                        }
+                                        @if (facets.Facets.Count > 5)
+                                        {
+                                            <div>
+                                                <a onclick="expandMoreLinks(this)">+ more >></a>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+
+                            //Location Search Navigator
+                            if (!url.Contains("city"))
+                            {
+                                if (facets.Name == "CITY" && facets.Facets.Count > 1)
+                                {
+                                    counter = 0;
+                                    <div class="city">
+                                        <div>Location</div>
+                                        @foreach (var facet in facets.Facets)
+                                        {
+                                            counter++;
+                                            <div>
+                                                <a href="@string.Format("{0}city={1}",@ViewBag.QueryUrl,@facet.Label)" class="@((counter>5)?"moreLink":"")">@facet.Label &nbsp(@facet.Count)</a>
+                                            </div>
+                                        }
+                                        @if (facets.Facets.Count > 5)
+                                        {
+                                            <div>
+                                                <a onclick="expandMoreLinks(this)">+ more >></a>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+
+                            //Job Category Search Navigator
+                            if (!url.Contains("job_category"))
+                            {
+                                if (facets.Name == "JobCategory" && facets.Facets.Count > 1)
+                                {
+                                    counter = 0;
+                                    <div class="job_category">
+                                        <div>Job Category</div>
+                                        @foreach (var facet in facets.Facets)
+                                        {
+                                            counter++;
+                                            <div>
+                                                <a href="@string.Format("{0}job_category={1}",@ViewBag.QueryUrl,@facet.Label)" class="@((counter>5)?"moreLink":"")">@facet.Label &nbsp(@facet.Count)</a>
+                                            </div>
+                                        }
+                                        @if (facets.Facets.Count > 5)
+                                        {
+                                            <div>
+                                                <a onclick="expandMoreLinks(this)">+ more >></a>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+
+                            //Industry Search Navigator
+                            if (!url.Contains("industry"))
+                            {
+                                if (facets.Name == "Industry" && facets.Facets.Count > 1)
+                                {
+                                    counter = 0;
+                                    <div class="industry">
+                                        <div>Industry</div>
+                                        @foreach (var facet in facets.Facets)
+                                        {
+                                            counter++;
+                                            <div>
+                                                <a href="@string.Format("{0}industry={1}",@ViewBag.QueryUrl,@facet.Label)" class="@((counter>5)?"moreLink":"")">@facet.Label &nbsp(@facet.Count)</a>
+                                            </div>
+                                        }
+                                        @if (facets.Facets.Count > 5)
+                                        {
+                                            <div>
+                                                <a onclick="expandMoreLinks(this)">+ more >></a>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+                        }
+
                     </div>
                 </div>
-            </form>
-        </div>
-        @*search filter*@
+            </div>
 
-        @*search results*@
-        <div class="job-search-results">
-            <div class="container">
+            <div class="col-10">
+                <div class="container">
                     @{ await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);}
-                
-                <div class="row job-pagination container-align-center">
-                    @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("Index", new
-                      { page,
-                          keywords = ViewContext.HttpContext.Request.Query["keywords"],
-                          location = ViewContext.HttpContext.Request.Query["location"]
-                      }),new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                          LiElementClasses = new string[] { "page-item" },
-                          PageClasses = new string[] { "page-link" },
-                          MaximumPageNumbersToDisplay=5,
-                          DisplayLinkToFirstPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                          DisplayLinkToLastPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                          DisplayLinkToPreviousPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                          DisplayLinkToNextPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                          LinkToFirstPageFormat = "««",
-                          LinkToPreviousPageFormat = "«",
-                          LinkToNextPageFormat = "»",
-                          LinkToLastPageFormat = "»»",
-                          DisplayEllipsesWhenNotShowingAllPageNumbers = true,
-                          ContainerDivClasses = new[] { "pagination-container" },
-                          UlElementClasses = new[] { "pagination" }
-                           })
+
+                    <div class="row job-pagination container-align-center">
+                        @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("Index", new
+                   { page,
+                       date_published= ViewContext.HttpContext.Request.Query["date_published"],
+                       employment_type= ViewContext.HttpContext.Request.Query["employment_type"],
+                       city= ViewContext.HttpContext.Request.Query["city"],
+                       job_category= ViewContext.HttpContext.Request.Query["job_category"],
+                       industry= ViewContext.HttpContext.Request.Query["industry"]
+                   }),new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                       LiElementClasses = new string[] { "page-item" },
+                       PageClasses = new string[] { "page-link" },
+                       MaximumPageNumbersToDisplay=5,
+                       DisplayLinkToFirstPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                       DisplayLinkToLastPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                       DisplayLinkToPreviousPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                       DisplayLinkToNextPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                       LinkToFirstPageFormat = "««",
+                       LinkToPreviousPageFormat = "«",
+                       LinkToNextPageFormat = "»",
+                       LinkToLastPageFormat = "»»",
+                       DisplayEllipsesWhenNotShowingAllPageNumbers = true,
+                       ContainerDivClasses = new[] { "pagination-container" },
+                       UlElementClasses = new[] { "pagination" }
+                   })
+                    </div>
                 </div>
-               
             </div>
         </div>
-        @*search results*@
-    </div>
+        </div>
+    @*search results*@
+</div>
+
+@section Scripts{
+<script type="text/javascript">
+        "use strict";
+
+        $(document).ready(function () {
+            var parentElementUndoElement = document.getElementById('active-filters');
+            var innerHtml = "<div>Selected Filters</div>";
+
+            @{
+                var queryParameterList = @ViewContext.HttpContext.Request.Query.ToArray();
+            }
+
+            @foreach (var queryParameter in queryParameterList)
+            {
+                if (queryParameter.Key != "page")
+                {
+                     var removeQueryParameter = queryParameter.Key + '=' + queryParameter.Value + '&';
+                var encodedRemoveQueryParameter=Uri.EscapeUriString(removeQueryParameter);
+
+                var undoUrl = url.Replace(encodedRemoveQueryParameter, "").Trim('&');
+
+
+               <text>
+            innerHtml = innerHtml + "<div><span>@queryParameter.Value<span>&nbsp<a href='@undoUrl'>undo</a></div>";
+            parentElementUndoElement.innerHTML = innerHtml;
+                </text>
+            }
+                }
+
+
+            });
+
+        function expandMoreLinks(element) {
+
+            var parentClassName = element.parentElement.parentElement.className;
+
+            //querySelector to get list of child elements
+            var querySelector = '.' + parentClassName + ' .moreLink';
+
+            var childElements = document.querySelectorAll(querySelector);
+
+            for (var i = 0; i < childElements.length; i++) {
+                console.log(childElements[i].style.display);
+                childElements[i].style.display = 'block';
+            }
+            element.style.display = 'none';
+        }
+</script>
+}
 
 
