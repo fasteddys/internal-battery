@@ -342,7 +342,7 @@ namespace UpDiddy.Controllers
                 jobSearchResultDto = await _api.GetJobsByLocationUsingRoute(
                     country, 
                     state?.Replace("-", "+"), 
-                    city?.Replace("-", "+"), 
+                    city, 
                     industry?.Replace("-", "+"), 
                     category?.Replace("-", "+"), 
                     page);
@@ -372,7 +372,7 @@ namespace UpDiddy.Controllers
             {
                 RequestId = jobSearchResultDto.RequestId,
                 ClientEventId = jobSearchResultDto.ClientEventId,
-                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount),
+                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, pageCount),
                 CurrentPage = page,
                 NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
             };
