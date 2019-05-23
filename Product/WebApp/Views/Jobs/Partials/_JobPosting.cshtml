@@ -1,7 +1,8 @@
 ﻿@using UpDiddy.ViewModels
-@using UpDiddyLib.Dto;
+@using UpDiddyLib.Dto
+@using UpDiddyLib.Helpers
 @model JobDetailsViewModel
-@{ 
+@{
     string url = string.Format("/jobs/apply/{0}", Model.PostingId);
     url = GoogleCloudEventsTrackingDto.AddParametersToUrl(url, Model.RequestId, Model.ClientEventId);
 }
@@ -38,7 +39,13 @@
             <strong>Location:</strong> <span class="job-location">@Model.Location</span>
         </div>
         <div>
-            <strong>Posting ID:</strong> <span class="job-location">@Model.PostingId</span>
+            <strong>Posting ID:</strong> <span class="job-location">
+                @{
+                    // display the identifier that came from the third party site (if one exists)
+                    var jobIdentifier = !string.IsNullOrWhiteSpace(Model.ThirdPartyIdentifier) ? Model.ThirdPartyIdentifier : Model.PostingId;
+                }
+                @jobIdentifier
+            </span>
         </div>
     </div>
     @if (!string.IsNullOrEmpty(Model.EmployeeType))
@@ -50,7 +57,7 @@
     <div class="col-12 pt-3">
         <h4 class="job-board-heading">Job Summary</h4>
         <div class="job-summary">
-            @Model.Summary
+            @Html.Raw(Model.Summary)
         </div>
         <div class="pt-4">
             <h4>About CareerCircle</h4>
@@ -75,12 +82,12 @@
             </div>
         }
         <div>
-            <strong>Email:</strong> <span class="job-contact-email">@Model.ContactEmail</span>
+            <strong>Email:</strong> <span class="job-contact-email"><a href="mailto:@Model.ContactEmail">@Model.ContactEmail</a></span>
         </div>
         @if (!string.IsNullOrEmpty(Model.ContactPhone))
         {
             <div>
-                <strong>Phone:</strong> <span class="job-contact-phone">@Model.ContactPhone</span>
+                <strong>Phone:</strong> <span class="job-contact-phone">@Utils.FormatPhoneNumber(Model.ContactPhone)</span>
             </div>
         }
 

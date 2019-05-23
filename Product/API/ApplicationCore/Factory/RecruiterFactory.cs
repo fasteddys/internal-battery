@@ -48,7 +48,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return recruiter;
         }
 
-        public static Recruiter GetOrAdd(UpDiddyDbContext db, string email, string firstName, string lastName, string phoneNumber, Subscriber subscriber)
+        public static Recruiter GetAddOrUpdate(UpDiddyDbContext db, string email, string firstName, string lastName, string phoneNumber, Subscriber subscriber)
         {
             email = email.Trim();
             Recruiter recruiter = db.Recruiter
@@ -57,8 +57,17 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             if (recruiter == null)
             {
-                recruiter = CreateRecruiter(email,firstName, lastName, phoneNumber, subscriber);
+                recruiter = CreateRecruiter(email, firstName, lastName, phoneNumber, subscriber);
                 db.Recruiter.Add(recruiter);
+                db.SaveChanges();
+            }
+            else if ((!string.IsNullOrWhiteSpace(phoneNumber) && recruiter.PhoneNumber != phoneNumber)
+                || (!string.IsNullOrWhiteSpace(firstName) && recruiter.FirstName != firstName)
+                || (!string.IsNullOrWhiteSpace(lastName) && recruiter.LastName != lastName))
+            {
+                recruiter.PhoneNumber = phoneNumber;
+                recruiter.FirstName = firstName;
+                recruiter.LastName = lastName;
                 db.SaveChanges();
             }
             return recruiter;
