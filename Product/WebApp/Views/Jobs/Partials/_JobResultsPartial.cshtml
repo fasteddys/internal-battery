@@ -51,8 +51,8 @@
                     </div>
                     <div class="col-12 col-md-9">
                         <div class="row">
-                            <span class="job-description"> @Html.Raw(Utils.RemoveHTML(jobSearchResult.Description))</span>
-                        </div>
+                            <span class="job-description"> @Html.Raw(Utils.RemoveHTML(jobSearchResult.Description).Substring(0, 227)))...</span>
+                    </div>
                         <div class="row">
                             <a target="_blank" href="@url">More</a>
                         </div>
