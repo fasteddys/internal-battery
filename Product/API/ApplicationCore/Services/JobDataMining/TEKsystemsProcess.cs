@@ -19,6 +19,14 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
     {
         public TEKsystemsProcess(JobSite jobSite, ILogger logger, Guid companyGuid) : base(jobSite, logger, companyGuid) { }
 
+        private HttpClientHandler GetHttpClientHandler()
+        {
+            return new HttpClientHandler()
+            {
+                SslProtocols = System.Security.Authentication.SslProtocols.Tls12
+            };
+        }
+
         public List<JobPage> DiscoverJobPages(List<JobPage> existingJobPages)
         {
             // populate this collection with the results of the job discovery operation
@@ -29,7 +37,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             stopwatch.Start();
 
             string response;
-            using (var client = new HttpClient())
+            using (var client = new HttpClient(GetHttpClientHandler()))
             {
                 // call the api to retrieve a total number of job results
                 var request = new HttpRequestMessage()
@@ -62,7 +70,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             Parallel.For(counter, timesToRequestResultsPage, maxdop, i =>
             {
                 string jobData;
-                using (var client = new HttpClient())
+                using (var client = new HttpClient(GetHttpClientHandler()))
                 {
                     // call the api to retrieve a list of results incrementing the page number each time
                     int progress = Interlocked.Increment(ref counter);
@@ -88,7 +96,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     {
                         // retrieve the latest job page data
                         jobDetailUri = new Uri(_jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url);
-                        using (var client = new HttpClient())
+                        using (var client = new HttpClient(GetHttpClientHandler()))
                         {
                             var request = new HttpRequestMessage()
                             {
