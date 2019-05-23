@@ -629,7 +629,7 @@ namespace UpDiddyApi.Controllers
             string errorMsg = string.Empty;
 
             if (SubscriberFactory.UpdateAvatar(_db, _configuration, avatar, subscriberGuid, ref errorMsg))
-                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Email verification token successfully created. Email queued." });
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Avatar updated." });
             else
                 return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg});            
         }

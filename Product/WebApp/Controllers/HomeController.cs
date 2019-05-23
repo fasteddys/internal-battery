@@ -197,6 +197,7 @@ namespace UpDiddy.Controllers
             var countries = await _Api.GetCountriesAsync();
             var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
             string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
+            string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
                 SubscriberGuid = this.subscriber?.SubscriberGuid,
@@ -237,8 +238,8 @@ namespace UpDiddy.Controllers
                 WorkHistory = await _Api.GetWorkHistoryAsync(this.subscriber.SubscriberGuid.Value),
                 EducationHistory = await _Api.GetEducationHistoryAsync(this.subscriber.SubscriberGuid.Value),
                 LinkedInSyncDate = this.subscriber.LinkedInSyncDate,
-                LinkedInAvatarUrl = AssestBaseUrl + this.subscriber.LinkedInAvatarUrl,
-                AvatarUrl = string.IsNullOrEmpty(this.subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.AvatarUrl,
+                LinkedInAvatarUrl = string.IsNullOrEmpty(this.subscriber.LinkedInAvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.LinkedInAvatarUrl + CacheBuster,
+                AvatarUrl = string.IsNullOrEmpty(this.subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.AvatarUrl + CacheBuster,
                 MaxAvatarFileSize = int.Parse(_configuration["CareerCircle:MaxAvatarFileSize"]),
                 DefaultAvatar = _configuration["CareerCircle:DefaultAvatar"]
 
