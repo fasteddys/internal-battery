@@ -35,9 +35,7 @@ namespace UpDiddy.ViewComponents
         }
 
         public async Task<IViewComponentResult> InvokeAsync(Guid SubscriberGuid, DateTime LastSyncDate, string LinkedInAvatarUrl)
-        {
-            // TODO JAB check various states as synced, syncing unsynced etc. 
-
+        {   
             var responseQuery = _httpContextAccessor.HttpContext.Request.Query;
             var returnUrl = UriHelper.GetDisplayUrl(_httpContextAccessor.HttpContext.Request);
             // not null indicates user has requested a resync

@@ -60,6 +60,7 @@ namespace UpDiddyLib.Helpers
         public static string CreateSemanticJobPath(string industry, string jobCategory, string country, string province, string city, string jobIdentifier)
         {
             StringBuilder jobPath = new StringBuilder("/jobs/");
+         
 
             // industry 
             if (!string.IsNullOrWhiteSpace(industry))
