@@ -29,6 +29,9 @@ namespace UpDiddy.ViewModels
         public string SelectedSkills { get; set; }
         public bool IsAgency { get; set; }
 
+
+        public bool IsPrivate { get; set; }
+
         public bool IsDraft { get; set; }
 
 

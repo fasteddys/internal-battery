@@ -49,7 +49,7 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> EditJobPosting(Guid jobPostingGuid)
         {
 
-            CreateJobPostingViewModel model = await CreateViewModel(jobPostingGuid);            
+            CreateJobPostingViewModel model = await CreateJobPostingViewModel(jobPostingGuid);            
             return View("CreateJobPosting",model);
         }
 
@@ -104,22 +104,15 @@ namespace UpDiddy.Controllers
 
         }
 
-
-
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> CreateJobPosting()
         {           
-            CreateJobPostingViewModel model = await CreateViewModel();
+            CreateJobPostingViewModel model = await CreateJobPostingViewModel();
             return View(model);
         }
  
-
-
-
-
-
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [HttpPost]
         [Authorize]
@@ -138,7 +131,8 @@ namespace UpDiddy.Controllers
                     },
                     Title = model.Title,
                     Description = model.Description,
-                    JobStatus = model.IsDraft == true ? (int) JobPostingStatus.Draft :  (int) JobPostingStatus.Active,
+                    JobStatus = model.IsDraft == true ? (int)JobPostingStatus.Draft : (int)JobPostingStatus.Active,
+                    IsPrivate = model.IsPrivate == true ? 1 : 0,
                     City = model.City,
                     PostingExpirationDateUTC = model.PostingExpirationDate,
                     Recruiter = new RecruiterDto()
@@ -319,12 +313,9 @@ namespace UpDiddy.Controllers
         }
 
         #region private helper functions
-        private async Task<CreateJobPostingViewModel> CreateViewModel(Guid? jobPostingGuid = null )
+        private async Task<CreateJobPostingViewModel> CreateJobPostingViewModel(Guid? jobPostingGuid = null )
         {
-        
-
-
-
+         
             JobPostingDto jobPostingDto = null;
             if ( jobPostingGuid != null )
             {
@@ -412,6 +403,7 @@ namespace UpDiddy.Controllers
             model.StreetAddress = jobPostingDto == null ? string.Empty : jobPostingDto.StreetAddress;
             model.PostalCode = jobPostingDto == null ? string.Empty : jobPostingDto.PostalCode; 
             model.IsDraft = jobPostingDto == null ? true : jobPostingDto.JobStatus == (int) JobPostingStatus.Draft;
+            model.IsPrivate = jobPostingDto == null ? false : jobPostingDto.IsPrivate == 1 ? true : false;
             model.IsAgency = jobPostingDto == null ? true : jobPostingDto.IsAgencyJobPosting;
 
             if (jobPostingDto != null && jobPostingDto.Compensation != 0)
