@@ -47,7 +47,7 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Route("api/[controller]")]
         public IActionResult GetProfile()
-        {
+        {           
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var rVal = SubscriberProfileStagingStoreFactory.GetProfileAsLinkedInDto(_db, subscriberGuid,_syslog);
             return Ok(rVal); ;
