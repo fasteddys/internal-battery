@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
@@ -243,17 +244,13 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     jobPostingDto.Country = jobData.country_code;
                     jobPostingDto.Country = jobPostingDto.Country.ToUpper();
                     string recruiterName = jobData.discrete_field_3;
-                    string recruiterFirstName = null, recruiterLastName = null;
                     string recruiterPhone = jobData.discrete_field_5;
-                    if (!string.IsNullOrWhiteSpace(recruiterName))
-                    {
-                        string[] tmp = recruiterName.Split(' ');
-                        if (tmp.Length == 2)
-                        {
-                            recruiterFirstName = tmp[0];
-                            recruiterLastName = tmp[1];
-                        }
-                    }
+
+                    Regex regex = new Regex(@"(\w+)\s?(((\w+\s?(^|\s+)[^@]+(\s+|$)))|(\w+))?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                    var match = regex.Match(recruiterName);
+                    string recruiterFirstName = string.IsNullOrEmpty(match.Groups[1].Value) ? null : match.Groups[1].Value;
+                    string recruiterLastName = string.IsNullOrEmpty(match.Groups[2].Value) ? null : match.Groups[2].Value;
+
                     jobPostingDto.Recruiter = new RecruiterDto()
                     {
                         Email = jobData.discrete_field_4,
