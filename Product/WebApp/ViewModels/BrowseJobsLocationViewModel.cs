@@ -13,6 +13,8 @@ namespace UpDiddy.ViewModels
         public string BaseUrl { get; set; }
         public int NumberOfPages { get; set; }
         public int? CurrentPage { get; set; }
+        public int PaginationRangeLow { get; set; }
+        public int PaginationRangeHigh { get; set; }
 
     }
 

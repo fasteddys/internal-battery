@@ -377,6 +377,8 @@ namespace UpDiddy.Controllers
                 NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
             };
 
+            DeterminePaginationRange(ref jobSearchViewModel);
+
             // User has reached the end of the browse flow, so present results.
             if (!string.IsNullOrEmpty(category) || page != 0)
             {
@@ -495,6 +497,41 @@ namespace UpDiddy.Controllers
         }
 
         #region Browse job by location helpers
+        private void DeterminePaginationRange(ref BrowseJobsLocationViewModel Model)
+        {
+            int? CurrentPage = Model.CurrentPage;
+            int NumberOfPages = Model.NumberOfPages;
+
+            // Base case when there are less than 5 pages of results returned
+            if(NumberOfPages <= 5)
+            {
+                Model.PaginationRangeLow = 1;
+                Model.PaginationRangeHigh = NumberOfPages;
+                return;
+            }
+            
+            // Base case when the current page is one of first two pages
+            if(CurrentPage < 3)
+            {
+                Model.PaginationRangeLow = 1;
+                Model.PaginationRangeHigh = 5;
+                return;
+            }
+
+            // Base case for when current page is one of last two pages
+            if(CurrentPage > (NumberOfPages - 2))
+            {
+                Model.PaginationRangeLow = NumberOfPages - 4;
+                Model.PaginationRangeHigh = NumberOfPages;
+                return;
+            }
+
+            // Last case for when current page is somewhere in the middle of a result set
+            // of greater than 5 pages.
+            Model.PaginationRangeLow = (int)CurrentPage - 2;
+            Model.PaginationRangeHigh = (int)CurrentPage + 2;
+        }
+
 
         private string AssembleBaseUrl(
             string country = null,
