@@ -2,6 +2,36 @@
 
 //Base styles
 @media (min-width:0px) {
+    .browse-jobs-container {
+        .job-type-listing {
+            margin: .5rem;
+            transition: box-shadow 0.1s ease-in-out;
+            border-top-left-radius: .5rem;
+            border-bottom-right-radius: 1rem;
+            margin-bottom: 1rem;
+
+            a{
+                color: $color-secondary;
+            }
+
+            &:hover {
+                box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+            }
+
+            .row {
+                > div {
+                    padding: .5rem;
+                }
+            }
+
+
+            .col-3 {
+                background-color: $color-primary;
+                color: $color-white;
+                border-bottom-right-radius: .5rem;
+            }
+        }
+    }
     .job-search-container {
         font-family: $opensans-regular;
 

@@ -310,6 +310,7 @@ namespace UpDiddy.Controllers
 
 
         [HttpGet("browse-jobs-location/{country?}")]
+        [HttpGet("browse-jobs-location/{country}/{page:int?}")]
         [HttpGet("browse-jobs-location/{country}/{state?}/{page:int?}")]
         [HttpGet("browse-jobs-location/{country}/{state}/{city?}/{page:int?}")]
         [HttpGet("browse-jobs-location/{country}/{state}/{city}/{industry?}/{page:int?}")]
@@ -339,7 +340,7 @@ namespace UpDiddy.Controllers
 
             try
             {
-                jobSearchResultDto = await _api.GetJobsByLocationUsingRoute(
+                jobSearchResultDto = await _api.GetJobsUsingRoute(
                     country, 
                     state, 
                     city, 
@@ -368,7 +369,7 @@ namespace UpDiddy.Controllers
 
             int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
 
-            BrowseJobsLocationViewModel jobSearchViewModel = new BrowseJobsLocationViewModel()
+            BrowseJobsByTypeViewModel jobSearchViewModel = new BrowseJobsByTypeViewModel()
             {
                 RequestId = jobSearchResultDto.RequestId,
                 ClientEventId = jobSearchResultDto.ClientEventId,
@@ -402,14 +403,16 @@ namespace UpDiddy.Controllers
                     string StateName = UpDiddyLib.Helpers.Utils.GetState(State);
                     StateLocations.Add(new DisplayItem
                     {
-                        Label = $"{UpDiddyLib.Helpers.Utils.ToTitleCase(StateName)} ({JobQueryFacet.Count})",
-                        Url = $"{Request.Path}/{JobQueryFacet.Label.ToLower()}"
+                        Label = $"{UpDiddyLib.Helpers.Utils.ToTitleCase(StateName)}",
+                        Url = $"{Request.Path}/{JobQueryFacet.Label.ToLower()}",
+                        Count = $"{JobQueryFacet.Count}"
                     });
                 }
 
-                BrowseJobsLocationViewModel bjlvmState = new BrowseJobsLocationViewModel()
+                BrowseJobsByTypeViewModel bjlvmState = new BrowseJobsByTypeViewModel()
                 {
-                    Items = StateLocations
+                    Items = StateLocations,
+                    Header = "Select desired state"
                 };
 
                 return View("BrowseByType", bjlvmState);
@@ -433,14 +436,16 @@ namespace UpDiddy.Controllers
                     Regex rgx = new Regex("[^a-zA-Z]");
                     LocationsCities.Add(new DisplayItem
                     {
-                        Label = $"{FacetItem.Label} ({FacetItem.Count})",
-                        Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.Split(",")[0].ToLower(), "-")}"
+                        Label = $"{FacetItem.Label}",
+                        Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.Split(",")[0].ToLower(), "-")}",
+                        Count = $"{FacetItem.Count}"
                     });
                 }
 
-                BrowseJobsLocationViewModel bjlvm = new BrowseJobsLocationViewModel()
+                BrowseJobsByTypeViewModel bjlvm = new BrowseJobsByTypeViewModel()
                 {
-                    Items = LocationsCities
+                    Items = LocationsCities,
+                    Header = "Select desired city"
                 };
 
                 return View("BrowseByType", bjlvm);
@@ -461,11 +466,12 @@ namespace UpDiddy.Controllers
                 {
                     Industries.Add(new DisplayItem
                     {
-                        Label = $"{FacetItem.Label} ({FacetItem.Count})",
-                        Url = $"{Request.Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}"
+                        Label = $"{FacetItem.Label}",
+                        Url = $"{Request.Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}",
+                        Count = $"{FacetItem.Count}"
                     });
                 }
-                return View("BrowseByType", new BrowseJobsLocationViewModel() { Items = Industries });
+                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select desired industry" });
             }
 
             if (string.IsNullOrEmpty(category))
@@ -482,11 +488,12 @@ namespace UpDiddy.Controllers
                 {
                     Categories.Add(new DisplayItem
                     {
-                        Label = $"{FacetItem.Label} ({FacetItem.Count})",
-                        Url = $"{Request.Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}/1"
+                        Label = $"{FacetItem.Label}",
+                        Url = $"{Request.Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}/1",
+                        Count = $"{FacetItem.Count}"
                     });
                 }
-                return View("BrowseByType", new BrowseJobsLocationViewModel() { Items = Categories });
+                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select desired category" });
 
             }
 
@@ -497,7 +504,7 @@ namespace UpDiddy.Controllers
         }
 
         #region Browse job by location helpers
-        private void DeterminePaginationRange(ref BrowseJobsLocationViewModel Model)
+        private void DeterminePaginationRange(ref BrowseJobsByTypeViewModel Model)
         {
             int? CurrentPage = Model.CurrentPage;
             int NumberOfPages = Model.NumberOfPages;

@@ -599,7 +599,7 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        public async Task<JobSearchResultDto> GetJobsByLocationUsingRoute(
+        public async Task<JobSearchResultDto> GetJobsUsingRoute(
             string Country = null,
             string State = null,
             string City = null,
