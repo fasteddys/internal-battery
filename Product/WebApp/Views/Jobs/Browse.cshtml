@@ -6,10 +6,11 @@
     <div class="row">
         <div class="col-12">
 
-            @Html.React("BrowseJobsByLocation", new { states = Model.States })
-            @Html.React("BrowseJobsByCategory", new { jobCategories = Model.JobCategories })
-            @Html.React("BrowseJobsByIndustry", new { industries = Model.Industries })
+            @foreach (BrowseJobsByTypeViewModel bjbtvm in Model.ViewModels)
+            {
+                @Html.React("BrowseJobs", new { list = bjbtvm.Items, header = bjbtvm.Header });
 
+            }
         </div>
     </div>
 </div>

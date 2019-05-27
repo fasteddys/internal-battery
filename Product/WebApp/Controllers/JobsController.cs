@@ -285,24 +285,33 @@ namespace UpDiddy.Controllers
         [HttpGet("Browse-Jobs")]
         public async Task<IActionResult> BrowseAsync()
         {
-            BrowseJobsViewModel bjvm = new BrowseJobsViewModel
-            {
-                JobCategories = await _api.GetJobCategories(),
-                States = await _api.GetAllStatesAsync(),
-                Industries = await _api.GetIndustryAsync()
-            };
 
-            return View("Browse", bjvm);
-        }
+            JobSearchResultDto jobSearchResultDto = null;
 
-        [HttpGet("browse-jobs-industry/{industry}/{category}/{country}/{state}/{city}")]
-        public async Task<IActionResult> BrowseJobsByIndustryAsync()
-        {
-            BrowseJobsViewModel bjvm = new BrowseJobsViewModel
+            try
             {
-                JobCategories = await _api.GetJobCategories(),
-                States = await _api.GetAllStatesAsync(),
-                Industries = await _api.GetIndustryAsync()
+                jobSearchResultDto = await _api.GetJobsUsingRoute();
+            }
+            catch (ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+
+
+            BrowseJobsViewModel bjvm = new BrowseJobsViewModel();
+            bjvm.ViewModels = new List<BrowseJobsByTypeViewModel>
+            {
+                GetStateViewModel(jobSearchResultDto.Facets, "/browse-jobs-location/us"),
+                GetIndustryViewModel(jobSearchResultDto.Facets, "/browse-jobs-industry"),
+                GetCategoryViewModel(jobSearchResultDto.Facets, "/browse-jobs-category", false)
             };
 
             return View("Browse", bjvm);
@@ -387,35 +396,13 @@ namespace UpDiddy.Controllers
                 return View("BrowseByType", jobSearchViewModel);
             }
                 
-
-
-            JobQueryFacetDto jqfdto = FindNeededFacet("admin_1", jobSearchResultDto.Facets);
+            
 
             // Return state view if user has only specified country
             if (string.IsNullOrEmpty(state))
             {
-                List<DisplayItem> StateLocations = new List<DisplayItem>();
-                jqfdto.Facets.Sort((x, y) => string.Compare(x.Label, y.Label));
-                foreach (JobQueryFacetItemDto JobQueryFacet in jqfdto.Facets)
-                {
-                    UpDiddyLib.Helpers.Utils.State State;
-                    Enum.TryParse(JobQueryFacet.Label.ToUpper(), out State);
-                    string StateName = UpDiddyLib.Helpers.Utils.GetState(State);
-                    StateLocations.Add(new DisplayItem
-                    {
-                        Label = $"{UpDiddyLib.Helpers.Utils.ToTitleCase(StateName)}",
-                        Url = $"{Request.Path}/{JobQueryFacet.Label.ToLower()}",
-                        Count = $"{JobQueryFacet.Count}"
-                    });
-                }
-
-                BrowseJobsByTypeViewModel bjlvmState = new BrowseJobsByTypeViewModel()
-                {
-                    Items = StateLocations,
-                    Header = "Select desired state"
-                };
-
-                return View("BrowseByType", bjlvmState);
+                BrowseJobsByTypeViewModel bjbtvm = GetStateViewModel(jobSearchResultDto.Facets, Request.Path);
+                return View("BrowseByType", bjbtvm);
             }
 
             // If flow reaches this point, user has specified country and state, but 
@@ -423,7 +410,7 @@ namespace UpDiddy.Controllers
             if (string.IsNullOrEmpty(city))
             {
 
-                jqfdto = FindNeededFacet("city", jobSearchResultDto.Facets);
+                JobQueryFacetDto jqfdto = FindNeededFacet("city", jobSearchResultDto.Facets);
 
                 // City histogram wasn't found
                 if (jqfdto == null)
@@ -453,47 +440,18 @@ namespace UpDiddy.Controllers
 
             if (string.IsNullOrEmpty(industry))
             {
-                jqfdto = FindNeededFacet("industry", jobSearchResultDto.Facets);
-
-                List<DisplayItem> Industries = new List<DisplayItem>();
-
-
-                if (jqfdto?.Facets == null)
+                BrowseJobsByTypeViewModel bjbtvm = GetIndustryViewModel(jobSearchResultDto.Facets, Request.Path);
+                if (bjbtvm == null)
                     return RedirectPermanent(Request.Path + "/1");
-
-
-                foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
-                {
-                    Industries.Add(new DisplayItem
-                    {
-                        Label = $"{FacetItem.Label}",
-                        Url = $"{Request.Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}",
-                        Count = $"{FacetItem.Count}"
-                    });
-                }
-                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select desired industry" });
+                return View("BrowseByType", bjbtvm);
             }
 
             if (string.IsNullOrEmpty(category))
             {
-                jqfdto = FindNeededFacet("jobcategory", jobSearchResultDto.Facets);
-
-
-                List<DisplayItem> Categories = new List<DisplayItem>();
-
-                if (jqfdto?.Facets == null)
+                BrowseJobsByTypeViewModel bjbtvm = GetCategoryViewModel(jobSearchResultDto.Facets, Request.Path, true);
+                if(bjbtvm == null)
                     return RedirectPermanent(Request.Path + "/1");
-
-                foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
-                {
-                    Categories.Add(new DisplayItem
-                    {
-                        Label = $"{FacetItem.Label}",
-                        Url = $"{Request.Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}/1",
-                        Count = $"{FacetItem.Count}"
-                    });
-                }
-                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select desired category" });
+                return View("BrowseByType", bjbtvm);
 
             }
 
@@ -502,6 +460,74 @@ namespace UpDiddy.Controllers
             
             
         }
+
+        public BrowseJobsByTypeViewModel GetStateViewModel(List<JobQueryFacetDto> Facets, string Path)
+        {
+            JobQueryFacetDto jqfdto = FindNeededFacet("admin_1", Facets);
+            List<DisplayItem> StateLocations = new List<DisplayItem>();
+            jqfdto.Facets.Sort((x, y) => string.Compare(x.Label, y.Label));
+            foreach (JobQueryFacetItemDto JobQueryFacet in jqfdto.Facets)
+            {
+                UpDiddyLib.Helpers.Utils.State State;
+                Enum.TryParse(JobQueryFacet.Label.ToUpper(), out State);
+                string StateName = UpDiddyLib.Helpers.Utils.GetState(State);
+                StateLocations.Add(new DisplayItem
+                {
+                    Label = $"{UpDiddyLib.Helpers.Utils.ToTitleCase(StateName)}",
+                    Url = $"{Path}/{JobQueryFacet.Label.ToLower()}",
+                    Count = $"{JobQueryFacet.Count}"
+                });
+            }
+
+            BrowseJobsByTypeViewModel bjbtvm = new BrowseJobsByTypeViewModel()
+            {
+                Items = StateLocations,
+                Header = "Select desired state"
+            };
+            return bjbtvm;
+        }
+
+        public BrowseJobsByTypeViewModel GetIndustryViewModel(List<JobQueryFacetDto> Facets, string Path)
+        {
+            JobQueryFacetDto jqfdto = FindNeededFacet("industry", Facets);
+
+            if (jqfdto == null)
+                return null;
+
+            List<DisplayItem> Industries = new List<DisplayItem>();
+
+            foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
+            {
+                Industries.Add(new DisplayItem
+                {
+                    Label = $"{FacetItem.Label}",
+                    Url = $"{Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}",
+                    Count = $"{FacetItem.Count}"
+                });
+            }
+            return new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select desired industry" };
+        }
+
+        public BrowseJobsByTypeViewModel GetCategoryViewModel(List<JobQueryFacetDto> Facets, string Path, bool ShowResults)
+        {
+            JobQueryFacetDto jqfdto = FindNeededFacet("jobcategory", Facets);
+
+            if (jqfdto == null)
+                return null;
+
+            List<DisplayItem> Categories = new List<DisplayItem>();
+            foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
+            {
+                Categories.Add(new DisplayItem
+                {
+                    Label = $"{FacetItem.Label}",
+                    Url = $"{Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}" + (ShowResults ? "/1" : string.Empty),
+                    Count = $"{FacetItem.Count}"
+                });
+            }
+            return new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select desired category" };
+        }
+
 
         #region Browse job by location helpers
         private void DeterminePaginationRange(ref BrowseJobsByTypeViewModel Model)
@@ -620,7 +646,7 @@ namespace UpDiddy.Controllers
             if (!string.IsNullOrEmpty(city))
             {
                 JobQueryFacetDto CityFacet = FindNeededFacet("city", SearchResult.Facets);
-                if (CityFacet == null)
+                if (CityFacet == null || !FacetLabelExists(CityFacet.Facets, city))
                     return false;
             }
 
@@ -647,7 +673,7 @@ namespace UpDiddy.Controllers
         {
             foreach (JobQueryFacetItemDto Item in List)
             {
-                if (Item.Label.ToLower().Replace(" ", "-").Equals(Label.ToLower()))
+                if (Item.Label.Split(",")[0].ToLower().Replace(" ", "-").Equals(Label.ToLower()))
                     return true;
             }
             return false;

@@ -9,8 +9,6 @@ namespace UpDiddy.ViewModels
 {
     public class BrowseJobsViewModel : BaseViewModel
     {
-        public IList<JobCategoryDto> JobCategories { get; set; }
-        public IList<StateDto> States { get; set; }
-        public IList<IndustryDto> Industries { get; set; }
+        public IList<BrowseJobsByTypeViewModel> ViewModels { get; set; }
     }
 }
