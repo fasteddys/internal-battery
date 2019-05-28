@@ -560,6 +560,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 jobPosting.PostalCode = jobPostingDto.PostalCode;
                 jobPosting.StreetAddress = jobPostingDto.StreetAddress;
                 jobPosting.ThirdPartyIdentifier = jobPostingDto.ThirdPartyIdentifier;
+                jobPosting.IsPrivate = jobPostingDto.IsPrivate;
                 // Update the modify date to now
                 jobPosting.ModifyDate = DateTime.UtcNow;
 
