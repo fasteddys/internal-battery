@@ -68,8 +68,12 @@ namespace UpDiddyLib.Dto
 
         public List<SkillDto> JobPostingSkills { get; set; }
 
+
+        public int IsPrivate { get; set; }
+
         public int JobStatus { get; set; }
 
         public string SemanticJobPath { get; set; }
+        public string ThirdPartyIdentifier { get; set; }
     }
 }

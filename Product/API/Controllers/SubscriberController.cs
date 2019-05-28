@@ -75,21 +75,21 @@ namespace UpDiddyApi.Controllers
         #region Basic Subscriber Endpoints
 
         [HttpGet("{subscriberGuid}/company")]
-        [Authorize]       
+        [Authorize]
         public async Task<IActionResult> GetCompanies(Guid subscriberGuid)
         {
             // Validate guid for GetSubscriber call
             if (Guid.Empty.Equals(subscriberGuid) || subscriberGuid == null)
                 return NotFound();
 
-            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db,subscriberGuid);
-            if ( subscriber == null )
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            if (subscriber == null)
             {
                 return NotFound(new { code = 404, message = $"Subscriber {subscriberGuid} not found" });
             }
 
-            List<RecruiterCompany> companies = RecruiterCompanyFactory.GetRecruiterCompanyById(_db, subscriber.SubscriberId);         
-            return Ok(_mapper.Map<List<RecruiterCompanyDto>>(companies));         
+            List<RecruiterCompany> companies = RecruiterCompanyFactory.GetRecruiterCompanyById(_db, subscriber.SubscriberId);
+            return Ok(_mapper.Map<List<RecruiterCompanyDto>>(companies));
         }
 
         [HttpGet("{subscriberGuid}")]
@@ -125,11 +125,11 @@ namespace UpDiddyApi.Controllers
         {
             try
             {
-              
+
                 if (subscriberGuid == null)
                     return BadRequest(new { code = 400, message = "No subscriber identifier was provided" });
 
-                var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();          
+                var subscriber = _db.Subscriber.Where(s => s.SubscriberGuid == subscriberGuid).FirstOrDefault();
                 if (subscriber == null)
                     return BadRequest(new { code = 404, message = "No subscriber could be found with that identifier" });
 
@@ -616,6 +616,42 @@ namespace UpDiddyApi.Controllers
         }
         #endregion
 
+        /// <summary>
+        /// Avatar upload endpoint 
+        /// </summary>  
+        /// <returns></returns>
+        [Authorize]
+        [HttpPost]
+        [Route("/api/[controller]/avatar")]
+        public async Task<IActionResult> UploadAvatar(IFormFile avatar)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            string errorMsg = string.Empty;
+
+            if (SubscriberFactory.UpdateAvatar(_db, _configuration, avatar, subscriberGuid, ref errorMsg))
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Avatar updated." });
+            else
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg});            
+        }
+
+
+        [Authorize]
+        [HttpDelete]
+        [Route("/api/[controller]/avatar")]
+        public async Task<IActionResult> RemoveAvatar()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            string errorMsg = string.Empty;
+
+            if (SubscriberFactory.RemoveAvatar(_db, _configuration, subscriberGuid, ref errorMsg))
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Avatar removed." });
+            else
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
+        }
+
+
+         
         [HttpPut("/api/[controller]/onboard")]
         public IActionResult Onboard()
         {
@@ -658,12 +694,12 @@ namespace UpDiddyApi.Controllers
             string link;
             body.TryGetValue("verifyUrl", out link);
             Uri uri = new Uri(link);
-            link = String.Concat( 
-                uri.Scheme, Uri.SchemeDelimiter, 
-                uri.Authority, uri.AbsolutePath, 
+            link = String.Concat(
+                uri.Scheme, Uri.SchemeDelimiter,
+                uri.Authority, uri.AbsolutePath,
                 subscriber.EmailVerification.Token, uri.Query
             );
-            
+
             // send email
             SendVerificationEmail(subscriber.Email, link);
 
@@ -832,7 +868,7 @@ namespace UpDiddyApi.Controllers
             searchQuery = Utils.ToSqlServerFullTextQuery(searchQuery);
             searchFilter = HttpUtility.UrlDecode(searchFilter);
 
-            var filter = new SqlParameter("@Filter", searchFilter.ToLower() == "any" ? string.Empty : searchFilter);
+            var filter = new SqlParameter("@Filter", (searchFilter == null || searchFilter.ToLower() == "any" ) ? string.Empty : searchFilter);
             var query = new SqlParameter("@Query", searchQuery == null ? string.Empty : searchQuery);
             var spParams = new object[] { filter, query };
  

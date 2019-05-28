@@ -12,11 +12,39 @@ using System.Globalization;
 using System.Reflection;
 using GoogleTypes = Google.Protobuf.WellKnownTypes;
 using System.Text;
+using System.Net;
+using HtmlAgilityPack;
 
 namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+
+
+
+
+
+        public static bool GetImageAsBlob(string imgUrl, int maxSize, ref byte[] imageBytes)
+        {
+
+            HttpWebRequest imageRequest = (HttpWebRequest)WebRequest.Create(imgUrl);
+            WebResponse imageResponse = imageRequest.GetResponse();
+            Stream responseStream = imageResponse.GetResponseStream();
+
+            bool rVal = true;
+            using (BinaryReader br = new BinaryReader(responseStream))
+            {
+                imageBytes = br.ReadBytes(maxSize);
+                // check for eos
+                if (br.PeekChar() != -1)
+                    rVal = false;
+                br.Close();
+            }
+            responseStream.Close();
+            imageResponse.Close();
+
+            return rVal;
+        }
 
         /// <summary>
         /// Returns the path of a semantic job url. Note that this does not include other components of the url (protocol, scheme, host, query string)
@@ -31,7 +59,7 @@ namespace UpDiddyLib.Helpers
         /// <returns></returns>
         public static string CreateSemanticJobPath(string industry, string jobCategory, string country, string province, string city, string jobIdentifier)
         {
-            StringBuilder jobPath = new StringBuilder("/jobs/");
+            StringBuilder jobPath = new StringBuilder("/job/");
 
             // industry 
             if (!string.IsNullOrWhiteSpace(industry))
@@ -72,10 +100,10 @@ namespace UpDiddyLib.Helpers
         public static string ToUrlSlug(this string value)
         {
             //First to lower case
-            value = value.ToLowerInvariant();
-            //Remove all accents
-            var bytes = Encoding.GetEncoding("Cyrillic").GetBytes(value);
-            value = Encoding.ASCII.GetString(bytes);
+            value = value.ToLowerInvariant();            
+            //Remove all accents - removing this code for now; it worked once but having trouble getting the Cyrillic encoding to be recognized even after including System.Text.Encoding.CodePages
+            //var bytes = Encoding.GetEncoding("Cyrillic").GetBytes(value);
+            //value = Encoding.ASCII.GetString(bytes);
             //Replace spaces
             value = Regex.Replace(value, @"\s", "-", RegexOptions.Compiled);
             //Remove invalid chars

@@ -45,14 +45,17 @@ namespace UpDiddyApi.ApplicationCore
                 if (lit == null)
                     return (int)ProfileDataStatus.AccountNotFound;
 
-                var ResponseJson = string.Empty;
+                var responseJson = string.Empty;
                 // Call linkedin to acquire user's profile data 
-                HttpResponseMessage response = _GetUserProfileData(lit, ref ResponseJson);
-
+                HttpResponseMessage response = _GetUserProfileData(lit, ref responseJson);
+                string errorMsg = string.Empty;
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     // Update or create users linked profile data 
-                    SubscriberProfileStagingStoreFactory.StoreProfileData(_db, subscriberGuid, ResponseJson);
+                    SubscriberProfileStagingStoreFactory.StoreProfileData(_db, subscriberGuid, responseJson);
+                    if (SubscriberFactory.ImportLinkedInAvatar(_db, _configuration, responseJson, subscriberGuid, ref errorMsg) == false)
+                        _syslog.Log(LogLevel.Information, errorMsg);
+                    
                     rVal = (int)ProfileDataStatus.Acquired;
                 }
                 else
@@ -156,8 +159,13 @@ namespace UpDiddyApi.ApplicationCore
                 // Get the linked in bearer token for the user 
                 LinkedInToken lit = LinkedInTokenFactory.GetBySubcriber(_db, subscriberGuid);
 
-                // If the user does not have a linked in token or their bearer token has expired get them a bearer token
-                if (lit == null || lit.AccessTokenExpiry < DateTime.UtcNow)
+                
+                // get the minimum valid date for linked in tokens.  This value should be set to the date of major linkedin version changes
+                // to force the user to get a new access under the current linkedin api since older tokens acquired under a prior version
+                // will not work
+                DateTime AccessTokenMinDate = DateTime.Parse(_configuration["LinkedIn:AccessTokenMinDate"]);
+                // check to see if the user need a new access token 
+                if (lit == null || lit.AccessTokenExpiry < DateTime.UtcNow || lit.AccessTokenExpiry < AccessTokenMinDate)
                     rval = AcquireBearerToken(subscriberGuid, code, returnUrl, lit);
 
                 // Import the user's profile data from linkein

@@ -1457,6 +1457,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
+                    b.Property<int>("IsPrivate");
+
                     b.Property<int?>("JobCategoryId");
 
                     b.Property<Guid>("JobPostingGuid");
@@ -1486,6 +1488,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("ThirdPartyApplicationUrl");
 
                     b.Property<bool>("ThirdPartyApply");
+
+                    b.Property<string>("ThirdPartyIdentifier");
 
                     b.Property<string>("Title");
 
@@ -2592,6 +2596,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("Address");
 
+                    b.Property<string>("AvatarUrl");
+
                     b.Property<string>("City");
 
                     b.Property<DateTime>("CreateDate");
@@ -2620,6 +2626,10 @@ namespace UpDiddyApi.Migrations
                     b.Property<bool>("IsVerified");
 
                     b.Property<string>("LastName");
+
+                    b.Property<string>("LinkedInAvatarUrl");
+
+                    b.Property<DateTime?>("LinkedInSyncDate");
 
                     b.Property<string>("LinkedInUrl");
 
@@ -3263,6 +3273,39 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("WozTransactionLog");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.ZeroBounce", b =>
+                {
+                    b.Property<int>("ZeroBounceId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("ElapsedTimeInMilliseconds");
+
+                    b.Property<string>("HttpStatus");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int?>("PartnerContactId");
+
+                    b.Property<string>("ResponseJSON");
+
+                    b.Property<Guid>("ZeroBounceGuid");
+
+                    b.HasKey("ZeroBounceId");
+
+                    b.HasIndex("PartnerContactId");
+
+                    b.ToTable("ZeroBounce");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.CampaignContact", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.Campaign", "Campaign")
@@ -3781,6 +3824,13 @@ namespace UpDiddyApi.Migrations
                         .WithMany("SubscriberWorkHistory")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.ZeroBounce", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.PartnerContact", "PartnerContact")
+                        .WithMany()
+                        .HasForeignKey("PartnerContactId");
                 });
 #pragma warning restore 612, 618
         }

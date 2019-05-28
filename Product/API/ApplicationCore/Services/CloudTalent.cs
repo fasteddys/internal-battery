@@ -260,7 +260,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
                 // validate we have good data 
-                if (jobPosting == null || jobPosting.Company == null)
+                if (jobPosting == null || jobPosting.Company == null || jobPosting.IsPrivate == 1)
                     return false;
                 // validate the company is known to google, if not add it to the cloud talent 
                 if (string.IsNullOrEmpty(jobPosting.Company.CloudTalentUri))
@@ -283,7 +283,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
                 // validate we have good data 
-                if (jobPosting == null || jobPosting.Company == null)
+                if (jobPosting == null || jobPosting.Company == null || jobPosting.IsPrivate == 1)
                     return false;
                 // validate the company is known to google, if not add it to the cloud talent 
                 if (string.IsNullOrEmpty(jobPosting.Company.CloudTalentUri))
@@ -307,7 +307,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
                 // validate we have good data 
-                if (jobPosting == null)
+                if (jobPosting == null )
                     return false;
 
                 // index the job to google 
@@ -378,11 +378,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                     else
                         addressInfo = jobQuery.Location;
                 }
-                else
-                {
+                else          
                     // build address with comma placeholders to help google parse the location
                     addressInfo = BuildAddress(jobQuery, regionCode);
-                }
+               
                 // add location filter if any address information has been provided  
                 if (string.IsNullOrEmpty(addressInfo) == false || string.IsNullOrEmpty(jobQuery.Province) == false)
                 {
@@ -584,6 +583,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             rval.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
             rval.SearchMappingTimeInTicks = intervalMapTime.Ticks;
             return rval;
+ 
         }
 
 
@@ -629,7 +629,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region Helper functions
 
-        static private CloudTalentSolution.TimestampRange GetPublishTimeRange(string timeRange)
+  
+
+        static private CloudTalentSolution.TimestampRange GetPublishTimeRange( string timeRange )
         {
             CloudTalentSolution.TimestampRange rVal = new CloudTalentSolution.TimestampRange();
             rVal.EndTime = Utils.GetTimestampAsString(DateTime.Now);

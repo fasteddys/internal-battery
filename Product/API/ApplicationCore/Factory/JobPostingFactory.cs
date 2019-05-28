@@ -23,9 +23,19 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class JobPostingFactory
     {
-        public static string JobPostingUrl(IConfiguration config, Guid subscriberGuid)
+        public static string JobPostingFullyQualifiedUrl(IConfiguration config, JobPostingDto jobPostingDto)
         {
-            return config["CareerCircle:ViewJobPostingUrl"] + subscriberGuid;
+
+      
+            string jobPostingUrl = config["CareerCircle:BaseUrl"] + Utils.CreateSemanticJobPath(
+                 jobPostingDto.Industry == null ? string.Empty : jobPostingDto.Industry.Name,
+                 jobPostingDto.JobCategory == null ? string.Empty : jobPostingDto.JobCategory.Name,
+                 jobPostingDto.Country,
+                 jobPostingDto.Province,
+                 jobPostingDto.City,
+                 jobPostingDto.JobPostingGuid.ToString()
+                );
+            return jobPostingUrl;
         }
 
         public static List<JobPosting> GetAllJobPostingsForSitemap(UpDiddyDbContext db)
@@ -537,6 +547,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     return false;
                 }
 
+                if (jobPosting.ThirdPartyApply)
+                {
+                    // update the recruiter information if it has changed since the last time the job page was inspected
+                    RecruiterFactory.GetAddOrUpdate(db, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, jobPostingDto.Recruiter.PhoneNumber, null);
+                }
+
                 jobPosting.Title = jobPostingDto.Title;
                 jobPosting.Description = jobPostingDto.Description;
                 jobPosting.PostingExpirationDateUTC = jobPostingDto.PostingExpirationDateUTC;
@@ -553,6 +569,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 jobPosting.Province = jobPostingDto.Province;
                 jobPosting.PostalCode = jobPostingDto.PostalCode;
                 jobPosting.StreetAddress = jobPostingDto.StreetAddress;
+                jobPosting.ThirdPartyIdentifier = jobPostingDto.ThirdPartyIdentifier;
+                jobPosting.IsPrivate = jobPostingDto.IsPrivate;
                 // Update the modify date to now
                 jobPosting.ModifyDate = DateTime.UtcNow;
 

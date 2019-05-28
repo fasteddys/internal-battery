@@ -125,8 +125,8 @@
         <form asp-controller="Talent" asp-action="CreateJobPosting" class="w-100 mt-2">
 
             <input type="hidden" class="form-control" id="hdnIsEdit" asp-for="IsEdit">
-            <input type="hidden" class="form-control" id="hdnEditGuid"  asp-for="EditGuid">
-            <input type="hidden" class="form-control" id="hdnRequestPath"  asp-for="RequestPath">
+            <input type="hidden" class="form-control" id="hdnEditGuid" asp-for="EditGuid">
+            <input type="hidden" class="form-control" id="hdnRequestPath" asp-for="RequestPath">
             <input type="hidden" class="form-control" id="hdnErrorMsg" asp-for="ErrorMsg">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -137,6 +137,13 @@
                 <label class="form-check-label" for="chkIsDraft">Is Draft</label>
                 <small class="form-text text-muted">Check if posting is a draft</small>
             </div>
+
+            <div class="form-group">
+                <input type="checkbox" id="chkIsPrivate" asp-for="IsPrivate">
+                <label class="form-check-label" for="chkIsPrivate">Is Private</label>
+                <small class="form-text text-muted">Check if posting is private</small>
+            </div>
+
 
             <div class="form-group">
                 <div class="modal-edit-input-label">Company</div>
@@ -319,7 +326,7 @@
 
 
             <button type="submit" class="btn btn-primary my-3">Save Job Posting</button>
-            <a class="btn btn-secondary my-3" href='/talent/jobpostings' >Cancel</a>
+            <a class="btn btn-secondary my-3" href='/talent/jobpostings'>Cancel</a>
         </form>
 
  

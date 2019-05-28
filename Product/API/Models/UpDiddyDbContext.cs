@@ -161,7 +161,7 @@ namespace UpDiddyApi.Models
         public DbSet<JobPage> JobPage { get; set; }
         public DbSet<JobPageStatus> JobPageStatus { get; set; }
         public DbSet<JobSiteScrapeStatistic> JobSiteScrapeStatistic { get; set; }
-
+        public DbSet<ZeroBounce> ZeroBounce { get; set; }
 
         #region DBQueries
 
@@ -188,6 +188,10 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<CampaignContact>()
                 .HasKey(cc => new { cc.CampaignId, cc.ContactId });
             #endregion
+            
+            modelBuilder.Entity<ZeroBounce>()
+                .Property<string>("ResponseJSON")
+                .HasField("_response");
 
             modelBuilder.Entity<JobPosting>()
                 .HasIndex(jp => new { jp.IsDeleted, jp.JobPostingGuid })

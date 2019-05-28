@@ -50,7 +50,10 @@ namespace UpDiddyApi.Models
         public string CloudTalentIndexInfo { get; set; }
 
         /**************** job posting data   ****************************/
-        
+        /// <summary>
+        /// Private postings - never indexed into google 
+        /// </summary>
+        public int IsPrivate { get; set; }
         /// <summary>
         /// Status of the job e.g. Draft, Live, Expired etc.   
         /// </summary>
@@ -180,6 +183,9 @@ namespace UpDiddyApi.Models
         /// </summary>
         public string StreetAddress { get; set; }
 
-
+        /// <summary>
+        /// Jobs pulled from third party sites will have a value here
+        /// </summary>
+        public string ThirdPartyIdentifier { get; set; }
     }
 }
