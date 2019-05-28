@@ -39,5 +39,10 @@ namespace UpDiddyApi.Models
         public List<SubscriberFile> SubscriberFile { get; set; } = new List<SubscriberFile>();
         public EmailVerification EmailVerification {get; set;}
         public List<SubscriberProfileStagingStore> ProfileStagingStore { get; set; } = new List<SubscriberProfileStagingStore>();
+        public DateTime? LinkedInSyncDate { get; set; }
+        #region Avatar Urls
+        public string LinkedInAvatarUrl { get; set; }
+        public string AvatarUrl { get; set; }
+        #endregion
     }
 }

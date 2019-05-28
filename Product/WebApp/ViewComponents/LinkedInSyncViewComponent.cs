@@ -34,21 +34,29 @@ namespace UpDiddy.ViewComponents
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync(Guid SubscriberGuid)
-        {
+        public async Task<IViewComponentResult> InvokeAsync(Guid SubscriberGuid, DateTime LastSyncDate, string LinkedInAvatarUrl)
+        {   
+            var responseQuery = _httpContextAccessor.HttpContext.Request.Query;
+            var returnUrl = UriHelper.GetDisplayUrl(_httpContextAccessor.HttpContext.Request);
+            // not null indicates user has requested a resync
+            string liCode = responseQuery["code"].ToString();
+
+
+            // check to see if the user has synced with linked at some point 
             LinkedInProfileDto lidto = await _Api.GetLinkedInProfileAsync();
-            if(lidto != null)
+            // if the licode is null then the user has not requested a sync return the synced view 
+            if(lidto != null && string.IsNullOrEmpty(liCode) )
             {
                 return View(LinkedInSyncViewComponent.SYNCED_VIEW, new LinkedInSyncViewModel {
                     SyncLink = GetLinkedInRequestAuthCodeUrl(),
-                    ProfileImageUrl = lidto.PictureUrl
+                    LinkedInAvatarUrl = LinkedInAvatarUrl,
+                    LastLinkedInSyncDate = LastSyncDate
                 });
             }
-            var responseQuery = _httpContextAccessor.HttpContext.Request.Query;
-            var returnUrl = UriHelper.GetDisplayUrl(_httpContextAccessor.HttpContext.Request);
-         
-            // if true then send code to API
-            if (CheckGetParams(responseQuery))
+  
+
+            // if the use has requested a synce
+            if ( liCode != null && CheckGetParams(responseQuery))
             {
                 BasicResponseDto apiResponse = await _Api.SyncLinkedInAccountAsync(responseQuery["code"], returnUrl);
 
@@ -58,6 +66,7 @@ namespace UpDiddy.ViewComponents
                     return View(LinkedInSyncViewComponent.SYNCING_VIEW, GetLinkedInRequestAuthCodeUrl());
             }
 
+            // return the default view 
             return View(LinkedInSyncViewComponent.DEFAULT_VIEW, GetLinkedInRequestAuthCodeUrl() );
         }
 

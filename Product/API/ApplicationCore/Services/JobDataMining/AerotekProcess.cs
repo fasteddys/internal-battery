@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
@@ -19,6 +20,14 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
     {
         public AerotekProcess(JobSite jobSite, ILogger logger, Guid companyGuid) : base(jobSite, logger, companyGuid) { }
 
+        private HttpClientHandler GetHttpClientHandler()
+        {
+            return new HttpClientHandler()
+            {
+                SslProtocols = System.Security.Authentication.SslProtocols.Tls12
+            };
+        }
+
         public List<JobPage> DiscoverJobPages(List<JobPage> existingJobPages)
         {
             // populate this collection with the results of the job discovery operation
@@ -29,7 +38,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             stopwatch.Start();
 
             string response;
-            using (var client = new HttpClient())
+            using (var client = new HttpClient(GetHttpClientHandler()))
             {
                 // call the api to retrieve a total number of job results
                 var request = new HttpRequestMessage()
@@ -61,7 +70,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             Parallel.For(counter, timesToRequestResultsPage, maxdop, i =>
             {
                 string jobData;
-                using (var client = new HttpClient())
+                using (var client = new HttpClient(GetHttpClientHandler()))
                 {
                     // call the api to retrieve a list of results incrementing the page number each time
                     int progress = Interlocked.Increment(ref counter);
@@ -87,7 +96,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     {
                         // retrieve the latest job page data
                         jobDetailUri = new Uri(_jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url);
-                        using (var client = new HttpClient())
+                        using (var client = new HttpClient(GetHttpClientHandler()))
                         {
                             var request = new HttpRequestMessage()
                             {
@@ -234,17 +243,13 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     jobPostingDto.Country = jobData.country_code;
                     jobPostingDto.Country = jobPostingDto.Country.ToUpper();
                     string recruiterName = jobData.discrete_field_3;
-                    string recruiterFirstName = null, recruiterLastName = null;
                     string recruiterPhone = jobData.discrete_field_5;
-                    if (!string.IsNullOrWhiteSpace(recruiterName))
-                    {
-                        string[] tmp = recruiterName.Split(' ');
-                        if (tmp.Length == 2)
-                        {
-                            recruiterFirstName = tmp[0];
-                            recruiterLastName = tmp[1];
-                        }
-                    }
+
+                    Regex regex = new Regex(@"(\w+)\s?(((\w+\s?(^|\s+)[^@]+(\s+|$)))|(\w+))?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                    var match = regex.Match(recruiterName);
+                    string recruiterFirstName = string.IsNullOrEmpty(match.Groups[1].Value) ? null : match.Groups[1].Value;
+                    string recruiterLastName = string.IsNullOrEmpty(match.Groups[2].Value) ? null : match.Groups[2].Value;
+
                     jobPostingDto.Recruiter = new RecruiterDto()
                     {
                         Email = jobData.discrete_field_4,

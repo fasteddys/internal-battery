@@ -260,7 +260,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
                 // validate we have good data 
-                if (jobPosting == null || jobPosting.Company == null)
+                if (jobPosting == null || jobPosting.Company == null || jobPosting.IsPrivate == 1)
                     return false;
                 // validate the company is known to google, if not add it to the cloud talent 
                 if (string.IsNullOrEmpty(jobPosting.Company.CloudTalentUri))
@@ -283,7 +283,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
                 // validate we have good data 
-                if (jobPosting == null || jobPosting.Company == null)
+                if (jobPosting == null || jobPosting.Company == null || jobPosting.IsPrivate == 1)
                     return false;
                 // validate the company is known to google, if not add it to the cloud talent 
                 if (string.IsNullOrEmpty(jobPosting.Company.CloudTalentUri))
@@ -307,7 +307,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
                 // validate we have good data 
-                if (jobPosting == null)
+                if (jobPosting == null )
                     return false;
 
                 // index the job to google 

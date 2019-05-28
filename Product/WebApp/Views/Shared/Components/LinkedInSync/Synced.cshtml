@@ -6,11 +6,12 @@
 @model LinkedInSyncViewModel
 <a href="@Model.SyncLink" class="linkedin btn btn-large btn-primary">
     @{
-        if (!string.IsNullOrEmpty(Model.ProfileImageUrl))
+        if (!string.IsNullOrEmpty(Model.LinkedInAvatarUrl))
         {
             <div class="linkedin-profile-img">
-                <img src="@Model.ProfileImageUrl" />
+                <img src="@Model.LinkedInAvatarUrl" />
                 <i class="fab fa-linkedin"></i>
+
             </div>
 
         }
@@ -19,6 +20,10 @@
             <i class="fab fa-linkedin float-left mr-2"></i>
         }
     }
+    <span class="text font-bold">Synced On</span>
+    <span class="text font-bold">@Model.LastLinkedInSyncDate.ToShortDateString()</span>
 
-    <span class="text font-bold">Synced!</span>
+
+
+
 </a>

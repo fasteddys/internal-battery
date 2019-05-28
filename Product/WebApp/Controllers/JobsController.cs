@@ -88,6 +88,13 @@ namespace UpDiddy.Controllers
             try
             {
                 job = await _api.GetJobAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.View));
+                if (job.JobStatus == (int)JobPostingStatus.Draft)
+                {
+                    BasicResponseDto ResponseDto = new BasicResponseDto() { StatusCode = 401, Description = "Draft jobs cannot be viewed" };
+                    throw new ApiException( new System.Net.Http.HttpResponseMessage(), ResponseDto);
+                }
+                    
+
             }
             catch(ApiException e)
             {
@@ -173,14 +180,23 @@ namespace UpDiddy.Controllers
             if ( job.Recruiter.Subscriber != null )
             {
                 jdvm.ContactEmail = job.Recruiter.Subscriber?.Email;
-                jdvm.ContactName = $"{job.Recruiter.Subscriber?.FirstName} {job.Recruiter.Subscriber?.LastName}";
+                jdvm.ContactName = string.Join(' ', 
+                    new[] {
+                        job.Recruiter.Subscriber?.FirstName,
+                        job.Recruiter.Subscriber?.LastName }
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                );
                 jdvm.ContactPhone = job.Recruiter.Subscriber?.PhoneNumber;
-
             }
             else // Use recruiter info in no subscriber exists
             {
                 jdvm.ContactEmail = job.Recruiter?.Email;
-                jdvm.ContactName = $"{job.Recruiter.Subscriber?.FirstName} {job.Recruiter?.LastName}";
+                jdvm.ContactName = string.Join(' ',
+                    new[] {
+                        job.Recruiter?.FirstName,
+                        job.Recruiter?.LastName }
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                );
                 jdvm.ContactPhone = job.Recruiter?.PhoneNumber;
             }
  
