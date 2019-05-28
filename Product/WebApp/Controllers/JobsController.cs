@@ -309,9 +309,9 @@ namespace UpDiddy.Controllers
             BrowseJobsViewModel bjvm = new BrowseJobsViewModel();
             bjvm.ViewModels = new List<BrowseJobsByTypeViewModel>
             {
-                GetStateViewModel(jobSearchResultDto.Facets, "/browse-jobs-location/us"),
-                GetIndustryViewModel(jobSearchResultDto.Facets, "/browse-jobs-industry"),
-                GetCategoryViewModel(jobSearchResultDto.Facets, "/browse-jobs-category", false)
+                GetStateViewModel(jobSearchResultDto.Facets, "/browse-jobs-location/us", true),
+                GetIndustryViewModel(jobSearchResultDto.Facets, "/browse-jobs-industry", true),
+                GetCategoryViewModel(jobSearchResultDto.Facets, "/browse-jobs-category", false, true)
             };
 
             return View("Browse", bjvm);
@@ -461,7 +461,7 @@ namespace UpDiddy.Controllers
             
         }
 
-        public BrowseJobsByTypeViewModel GetStateViewModel(List<JobQueryFacetDto> Facets, string Path)
+        public BrowseJobsByTypeViewModel GetStateViewModel(List<JobQueryFacetDto> Facets, string Path, bool HideAllLink = false)
         {
             JobQueryFacetDto jqfdto = FindNeededFacet("admin_1", Facets);
             List<DisplayItem> StateLocations = new List<DisplayItem>();
@@ -482,12 +482,13 @@ namespace UpDiddy.Controllers
             BrowseJobsByTypeViewModel bjbtvm = new BrowseJobsByTypeViewModel()
             {
                 Items = StateLocations,
-                Header = "Select desired state"
+                Header = "Select desired state",
+                HideAllLink = HideAllLink
             };
             return bjbtvm;
         }
 
-        public BrowseJobsByTypeViewModel GetIndustryViewModel(List<JobQueryFacetDto> Facets, string Path)
+        public BrowseJobsByTypeViewModel GetIndustryViewModel(List<JobQueryFacetDto> Facets, string Path, bool HideAllLink = false)
         {
             JobQueryFacetDto jqfdto = FindNeededFacet("industry", Facets);
 
@@ -505,10 +506,10 @@ namespace UpDiddy.Controllers
                     Count = $"{FacetItem.Count}"
                 });
             }
-            return new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select desired industry" };
+            return new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select desired industry", HideAllLink = HideAllLink };
         }
 
-        public BrowseJobsByTypeViewModel GetCategoryViewModel(List<JobQueryFacetDto> Facets, string Path, bool ShowResults)
+        public BrowseJobsByTypeViewModel GetCategoryViewModel(List<JobQueryFacetDto> Facets, string Path, bool ShowResults, bool HideAllLink = false)
         {
             JobQueryFacetDto jqfdto = FindNeededFacet("jobcategory", Facets);
 
@@ -525,7 +526,7 @@ namespace UpDiddy.Controllers
                     Count = $"{FacetItem.Count}"
                 });
             }
-            return new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select desired category" };
+            return new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select desired category", HideAllLink = HideAllLink };
         }
 
 
@@ -693,7 +694,7 @@ namespace UpDiddy.Controllers
 
         #endregion
 
-
+        [HttpGet("browse-jobs-industry/{page:int?}")]
         [HttpGet("browse-jobs-industry/{industry?}")]
         [HttpGet("browse-jobs-industry/{industry}/{page:int?}")]
         [HttpGet("browse-jobs-industry/{industry}/{category?}/{page:int?}")]
@@ -708,7 +709,8 @@ namespace UpDiddy.Controllers
            string city,
            int page)
         {
-            
+
+
 
 
             if (!string.IsNullOrEmpty(industry) &&
@@ -891,6 +893,7 @@ namespace UpDiddy.Controllers
 
         }
 
+        [HttpGet("browse-jobs-category/{page:int?}")]
         [HttpGet("browse-jobs-category/{category?}")]
         [HttpGet("browse-jobs-category/{category}/{page:int?}")]
         [HttpGet("browse-jobs-category/{category}/{industry?}/{page:int?}")]

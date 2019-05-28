@@ -60,7 +60,7 @@
                 }
                 else
                 {
-                    @Html.React("BrowseJobs", new { list = Model.Items, header = Model.Header });
+                    @Html.React("BrowseJobs", new { list = Model.Items, header = Model.Header, baseUrl = Context.Request.Path });
                 }
             </div>
         </div>

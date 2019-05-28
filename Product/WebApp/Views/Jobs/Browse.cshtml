@@ -41,7 +41,7 @@
     <div class="container">
         @foreach (BrowseJobsByTypeViewModel bjbtvm in Model.ViewModels)
         {
-            @Html.React("BrowseJobs", new { list = bjbtvm.Items, header = bjbtvm.Header });
+            @Html.React("BrowseJobs", new { list = bjbtvm.Items, header = bjbtvm.Header, hideAllLink = bjbtvm.HideAllLink });
 
         }
     </div>
