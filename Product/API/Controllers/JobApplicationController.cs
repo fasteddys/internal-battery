@@ -97,11 +97,9 @@ namespace UpDiddyApi.Controllers
             List<JobApplication> applications = JobApplicationFactory.GetJobApplicationsForSubscriber(_db, subscriber.SubscriberId);
             _syslog.Log(LogLevel.Information, $"***** JobApplicationController:GetJobApplicationForSubscriber completed at: {DateTime.UtcNow.ToLongDateString()}");
 
-            List<JobApplicationApplicantViewDto> rVal = _mapper.Map<List<JobApplicationApplicantViewDto>>(applications);
-
-            string jobPostingUrl = _configuration["CareerCircle:ViewJobPostingUrl"];
+            List<JobApplicationApplicantViewDto> rVal = _mapper.Map<List<JobApplicationApplicantViewDto>>(applications); 
             foreach (JobApplicationApplicantViewDto av in rVal)
-                av.JobPostingUrl =     JobPostingFactory.JobPostingUrl(_configuration, av.JobPosting.JobPostingGuid.Value);
+                av.JobPostingUrl =     JobPostingFactory.JobPostingFullyQualifiedUrl(_configuration, av.JobPosting);
 
             return Ok(rVal);
         }
@@ -245,11 +243,11 @@ namespace UpDiddyApi.Controllers
                 _db.SaveChanges();
 
                 Stream SubscriberResumeAsStream = await _subscriberService.GetResumeAsync(subscriber);
-
                 bool IsExternalRecruiter = jobPosting.Recruiter.Subscriber == null;
 
                 string RecruiterEmailToUse = jobPosting.Recruiter.Subscriber?.Email ?? jobPosting.Recruiter.Email;
-
+                // Create a jobposting dto needed for the fully qualified job posting url in the recuriter email
+                JobPostingDto jobPostingDto = _mapper.Map<JobPostingDto>(jobPosting);
                 // Send recruiter email alerting them to application
                 BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
                     (RecruiterEmailToUse,
@@ -263,7 +261,7 @@ namespace UpDiddyApi.Controllers
                         ApplicantEmail = subscriber.Email,
                         JobTitle = jobPosting.Title,
                         ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration, subscriber.SubscriberGuid.Value),
-                        JobUrl = JobPostingFactory.JobPostingUrl(_configuration, jobPosting.JobPostingGuid),
+                        JobUrl = JobPostingFactory.JobPostingFullyQualifiedUrl(_configuration, jobPostingDto),
                         Subject = (IsExternalRecruiter == true ? $"{jobPosting.Company.CompanyName} job posting via CareerCircle" : "Applicant Alert"),
                         RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
                         JobApplicationGuid = jobApplication.JobApplicationGuid

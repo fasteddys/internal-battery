@@ -378,11 +378,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                     else
                         addressInfo = jobQuery.Location;
                 }
-                else
-                {
+                else          
                     // build address with comma placeholders to help google parse the location
                     addressInfo = BuildAddress(jobQuery, regionCode);
-                }
+               
                 // add location filter if any address information has been provided  
                 if (string.IsNullOrEmpty(addressInfo) == false || string.IsNullOrEmpty(jobQuery.Province) == false)
                 {
@@ -551,8 +550,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             // map jobquery to cloud talent search request 
             DateTime startSearch = DateTime.Now;
             CloudTalentSolution.SearchJobsRequest searchJobRequest = CreateJobSearchRequest(jobQuery);
-
-            // search the cloud talent 
+            
+            // search the cloud talent  
             CloudTalentSolution.SearchJobsResponse searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
 
             // map cloud talent results to cc search results 
@@ -570,6 +569,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             rval.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
             rval.SearchMappingTimeInTicks = intervalMapTime.Ticks;
             return rval;
+ 
         }
 
 
@@ -615,7 +615,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region Helper functions
 
-        static private CloudTalentSolution.TimestampRange GetPublishTimeRange(string timeRange)
+  
+
+        static private CloudTalentSolution.TimestampRange GetPublishTimeRange( string timeRange )
         {
             CloudTalentSolution.TimestampRange rVal = new CloudTalentSolution.TimestampRange();
             rVal.EndTime = Utils.GetTimestampAsString(DateTime.Now);
