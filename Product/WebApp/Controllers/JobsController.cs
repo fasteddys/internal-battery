@@ -88,6 +88,13 @@ namespace UpDiddy.Controllers
             try
             {
                 job = await _api.GetJobAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.View));
+                if (job.JobStatus == (int)JobPostingStatus.Draft)
+                {
+                    BasicResponseDto ResponseDto = new BasicResponseDto() { StatusCode = 401, Description = "Draft jobs cannot be viewed" };
+                    throw new ApiException( new System.Net.Http.HttpResponseMessage(), ResponseDto);
+                }
+                    
+
             }
             catch(ApiException e)
             {
