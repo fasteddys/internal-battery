@@ -387,6 +387,10 @@ namespace UpDiddy.Controllers
                 NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
             };
 
+            // Google seems to be capping the number of results at 500, so we account for that here.
+            if (jobSearchViewModel.NumberOfPages > 500)
+                jobSearchViewModel.NumberOfPages = 500;
+
             DeterminePaginationRange(ref jobSearchViewModel);
 
             // User has reached the end of the browse flow, so present results.
@@ -763,6 +767,10 @@ namespace UpDiddy.Controllers
                 NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
             };
 
+            // Google seems to be capping the number of results at 500, so we account for that here.
+            if (jobSearchViewModel.NumberOfPages > 500)
+                jobSearchViewModel.NumberOfPages = 500;
+
             DeterminePaginationRange(ref jobSearchViewModel);
 
             // User has reached the end of the browse flow, so present results.
@@ -961,6 +969,10 @@ namespace UpDiddy.Controllers
                 CurrentPage = page,
                 NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
             };
+
+            // Google seems to be capping the number of results at 500, so we account for that here.
+            if (jobSearchViewModel.NumberOfPages > 500)
+                jobSearchViewModel.NumberOfPages = 500;
 
             DeterminePaginationRange(ref jobSearchViewModel);
 
