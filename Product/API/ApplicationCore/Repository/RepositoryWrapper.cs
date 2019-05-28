@@ -21,11 +21,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IJobSiteScrapeStatisticRepository _jobSiteScrapeStatisticRepository;
         private IRecruiterActionRepository _recruiterActionRepository;
         private ISubscriberRepository _subscriberRepository;
+        private IZeroBounceRepository _zeroBounceRepository;
+        private IPartnerContactLeadStatusRepository _partnerContactLeadStatusRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
             _dbContext = dbContext;
         }
+
         public ICountryRepository Country
         {
             get
@@ -156,6 +159,30 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _subscriberRepository = new SubscriberRepository(_dbContext);
                 }
                 return _subscriberRepository;
+            }
+        }
+
+        public IZeroBounceRepository ZeroBounceRepository
+        {
+            get
+            {
+                if (_zeroBounceRepository == null)
+                {
+                    _zeroBounceRepository = new ZeroBounceRepository(_dbContext);
+                }
+                return _zeroBounceRepository;
+            }
+        }
+
+        public IPartnerContactLeadStatusRepository PartnerContactLeadStatusRepository
+        {
+            get
+            {
+                if (_partnerContactLeadStatusRepository == null)
+                {
+                    _partnerContactLeadStatusRepository = new PartnerContactLeadStatusRepository(_dbContext);
+                }
+                return _partnerContactLeadStatusRepository;
             }
         }
     }

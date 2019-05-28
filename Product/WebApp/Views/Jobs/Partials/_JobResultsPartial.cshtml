@@ -26,21 +26,24 @@
                     <li>Try searching the recommended jobs below:</li>
                 </ul>
                 <br />
-                <h2>Jobs that might interest you in @Model?.Location</h2>
+                @if (!string.IsNullOrEmpty(Model.Location))
+                {
+                    <h2>Jobs that might interest you in @Model?.Location</h2>
+                }
             </div>
         }
-    
+
         foreach (var jobSearchResult in Model.JobsSearchResult)
         {
             string url = @jobSearchResult.SemanticJobPath;
             url = GoogleCloudEventsTrackingDto.AddParametersToUrl(url, Model.RequestId, Model.ClientEventId);
             <div class="job-tile">
                 <div class="row">
-                    <div class="col-12 col-lg-3">
-                        <div>
+                    <div class="col-12 col-md-3">
+                        <div class="row">
                             <span class="job-title">
                                 <a target="_blank" href="@url">@jobSearchResult.Title</a>
-                            </span>    
+                            </span>
                         </div>
                         <div>
                             <span class="job-location">@jobSearchResult.Province - @jobSearchResult.City</span>
@@ -60,8 +63,8 @@
                     </div>
                     <div class="col-12 col-md-9">
                         <div class="row">
-                            <span class="job-description"> @Html.Raw(Utils.RemoveHTML(jobSearchResult.Description))</span>
-                        </div>
+                            <span class="job-description"> @Html.Raw(Utils.RemoveHTML(jobSearchResult.Description).Substring(0, 227)))...</span>
+                    </div>
                         <div class="row">
                             <a target="_blank" href="@url">More</a>
                         </div>

@@ -1,4 +1,7 @@
 .selectize-control {
+    .selectize-dropdown .create {
+        padding: 5px 8px;
+    }
     &.multi {
         .selectize-input {
             > div.item,
