@@ -436,7 +436,7 @@ namespace UpDiddy.Controllers
                 BrowseJobsByTypeViewModel bjlvm = new BrowseJobsByTypeViewModel()
                 {
                     Items = LocationsCities,
-                    Header = "Select desired city"
+                    Header = "Select Desired City:"
                 };
 
                 return View("BrowseByType", bjlvm);
@@ -486,7 +486,7 @@ namespace UpDiddy.Controllers
             BrowseJobsByTypeViewModel bjbtvm = new BrowseJobsByTypeViewModel()
             {
                 Items = StateLocations,
-                Header = "Select desired state",
+                Header = "Select Desired State:",
                 HideAllLink = HideAllLink
             };
             return bjbtvm;
@@ -510,7 +510,7 @@ namespace UpDiddy.Controllers
                     Count = $"{FacetItem.Count}"
                 });
             }
-            return new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select desired industry", HideAllLink = HideAllLink };
+            return new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select Desired Industry:", HideAllLink = HideAllLink };
         }
 
         public BrowseJobsByTypeViewModel GetCategoryViewModel(List<JobQueryFacetDto> Facets, string Path, bool ShowResults, bool HideAllLink = false)
@@ -530,7 +530,7 @@ namespace UpDiddy.Controllers
                     Count = $"{FacetItem.Count}"
                 });
             }
-            return new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select desired category", HideAllLink = HideAllLink };
+            return new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select Desired Category:", HideAllLink = HideAllLink };
         }
 
 
@@ -801,7 +801,7 @@ namespace UpDiddy.Controllers
                         Count = $"{FacetItem.Count}"
                     });
                 }
-                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select desired industry" });
+                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select Desired Industry:" });
             }
 
             if (string.IsNullOrEmpty(category))
@@ -823,7 +823,7 @@ namespace UpDiddy.Controllers
                         Count = $"{FacetItem.Count}"
                     });
                 }
-                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select desired category" });
+                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select Desired Category:" });
 
             }
 
@@ -852,7 +852,7 @@ namespace UpDiddy.Controllers
                 BrowseJobsByTypeViewModel bjlvmState = new BrowseJobsByTypeViewModel()
                 {
                     Items = StateLocations,
-                    Header = "Select desired state"
+                    Header = "Select Desired State:"
                 };
 
                 return View("BrowseByType", bjlvmState);
@@ -885,7 +885,7 @@ namespace UpDiddy.Controllers
                 BrowseJobsByTypeViewModel bjlvm = new BrowseJobsByTypeViewModel()
                 {
                     Items = LocationsCities,
-                    Header = "Select desired city"
+                    Header = "Select Desired City:"
                 };
 
                 return View("BrowseByType", bjlvm);
@@ -1005,7 +1005,7 @@ namespace UpDiddy.Controllers
                         Count = $"{FacetItem.Count}"
                     });
                 }
-                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select desired category" });
+                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select Desired Category:" });
 
             }
 
@@ -1028,7 +1028,7 @@ namespace UpDiddy.Controllers
                         Count = $"{FacetItem.Count}"
                     });
                 }
-                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select desired industry" });
+                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select Desired Industry:" });
             }
 
             
@@ -1058,7 +1058,7 @@ namespace UpDiddy.Controllers
                 BrowseJobsByTypeViewModel bjlvmState = new BrowseJobsByTypeViewModel()
                 {
                     Items = StateLocations,
-                    Header = "Select desired state"
+                    Header = "Select Desired State:"
                 };
 
                 return View("BrowseByType", bjlvmState);
@@ -1091,7 +1091,7 @@ namespace UpDiddy.Controllers
                 BrowseJobsByTypeViewModel bjlvm = new BrowseJobsByTypeViewModel()
                 {
                     Items = LocationsCities,
-                    Header = "Select desired city"
+                    Header = "Select Desired City:"
                 };
 
                 return View("BrowseByType", bjlvm);

@@ -9,9 +9,9 @@
                 <div class="job-search-criteria">
                     <form asp-controller="Jobs" asp-action="Index" id="SearchJobsForm" method="get">
                         <div class="job-search-block">
-                            <div class="row">
+                            <div class="row d-flex align-items-center">
                                 <div class="col-12 col-lg-4 no-padding">
-                                    <h2 class="job-search-header-text">Search Jobs:</h2>
+                                    <h1 class="job-search-header-text">Search Jobs:</h1>
                                 </div>
                                 <div class="col-12 col-lg-3">
                                     @Html.TextBox("keywords", null, new { PlaceHolder = "Keywords", @class = "form-control", form = "SearchJobsForm" })
@@ -33,7 +33,7 @@
         </div>
         <div class="or-container">
             <div class="or-inner-box shadow-2">
-                <h4><strong>Or...</strong></h4>
+                <h4><strong>Or</strong></h4>
             </div>
         </div>
 
