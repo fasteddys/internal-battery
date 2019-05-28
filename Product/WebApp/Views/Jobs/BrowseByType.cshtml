@@ -5,65 +5,67 @@
 @using X.PagedList;
 @model BrowseJobsByTypeViewModel
 
-
-<div class="job-search-container">
-    <div class="job-search-results">
-        <div class="container">
-            @if (Model.Items == null)
-            {
-                await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);
-
-                if (Model.NumberOfPages > 1)
+<div class="browse-jobs-body-container">
+    <div class="job-search-container">
+        <div class="job-search-results">
+            <div class="container">
+                @if (Model.Items == null)
                 {
-                    <nav aria-label="Page navigation example">
-                        <ul class="pagination justify-content-center">
-                            @if (Model.CurrentPage != 1)
-                            {
-                                <li class="page-item">
-                                    @{
-                                        string urlFirst = Model.BaseUrl + "/1";
-                                    }
-                                    <a class="page-link" href="@urlFirst">First</a>
-                                </li>
-                                <li class="page-item">
-                                    @{
-                                        string url = Model.BaseUrl + "/" + (Model.CurrentPage - 1);
-                                    }
-                                    <a class="page-link" href="@url">Previous</a>
-                                </li>
-                            }
-                            @for (int i = Model.PaginationRangeLow; i <= Model.PaginationRangeHigh; i++)
-                            {
-                                string url = Model.BaseUrl + "/" + i;
-                                string active = i == Model.CurrentPage ? "active" : string.Empty;
-                                <li class="page-item @active"><a class="page-link" href="@url">@i</a></li>
-                            }
-                            @if (Model.CurrentPage != Model.NumberOfPages)
-                            {
-                                <li class="page-item">
-                                    @{
-                                        string url = Model.BaseUrl + "/" + (Model.CurrentPage + 1);
-                                    }
-                                    <a class="page-link" href="@url">Next</a>
-                                </li>
-                                <li class="page-item">
-                                    @{
-                                        string urlLast = Model.BaseUrl + "/" + Model.NumberOfPages;
-                                    }
-                                    <a class="page-link" href="@urlLast">Last</a>
-                                </li>
-                            }
-                        </ul>
-                    </nav>
+                    await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);
+
+                    if (Model.NumberOfPages > 1)
+                    {
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination justify-content-center">
+                                @if (Model.CurrentPage != 1)
+                                {
+                                    <li class="page-item">
+                                        @{
+                                            string urlFirst = Model.BaseUrl + "/1";
+                                        }
+                                        <a class="page-link" href="@urlFirst">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        @{
+                                            string url = Model.BaseUrl + "/" + (Model.CurrentPage - 1);
+                                        }
+                                        <a class="page-link" href="@url">Previous</a>
+                                    </li>
+                                }
+                                @for (int i = Model.PaginationRangeLow; i <= Model.PaginationRangeHigh; i++)
+                                {
+                                    string url = Model.BaseUrl + "/" + i;
+                                    string active = i == Model.CurrentPage ? "active" : string.Empty;
+                                    <li class="page-item @active"><a class="page-link" href="@url">@i</a></li>
+                                }
+                                @if (Model.CurrentPage != Model.NumberOfPages)
+                                {
+                                    <li class="page-item">
+                                        @{
+                                            string url = Model.BaseUrl + "/" + (Model.CurrentPage + 1);
+                                        }
+                                        <a class="page-link" href="@url">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        @{
+                                            string urlLast = Model.BaseUrl + "/" + Model.NumberOfPages;
+                                        }
+                                        <a class="page-link" href="@urlLast">Last</a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+
                 }
-
-            }
-            else
-            {
-                @Html.React("BrowseJobs", new { list = Model.Items, header = Model.Header });
-            }
+                else
+                {
+                    @Html.React("BrowseJobs", new { list = Model.Items, header = Model.Header });
+                }
+            </div>
         </div>
-    </div>
-    
 
+
+    </div>
 </div>
+

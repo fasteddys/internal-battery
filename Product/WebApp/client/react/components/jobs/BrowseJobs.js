@@ -8,7 +8,7 @@ class BrowseJobs extends React.Component {
             header: props.header
         };
         this.locationList = this.state.list.map((item) => (
-            <div className="col-12 col-md-6 col-lg-4">
+            <div className="col-12 col-md-6 col-lg-4 no-padding">
                 <div className="job-type-listing shadow-2">
                     <a href={item.url}>
                         <div className="row">
@@ -29,10 +29,8 @@ class BrowseJobs extends React.Component {
     render() {
         return (
             <div className="browse-jobs-container bounceInRight animated">
+                <h1><strong>{this.state.header}</strong></h1>
                 <div className="row">
-                    <div className="col-12">
-                        <h1>{this.state.header}</h1>
-                    </div>
                     {this.locationList}
                 </div>
 
