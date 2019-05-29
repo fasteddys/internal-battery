@@ -342,9 +342,9 @@ namespace UpDiddy.Controllers
             BrowseJobsViewModel bjvm = new BrowseJobsViewModel();
             bjvm.ViewModels = new List<BrowseJobsByTypeViewModel>
             {
-                GetStateViewModel(jobSearchResultDto.Facets, "/browse-jobs-location/us", "Select Desired State", true),
-                GetIndustryViewModel(jobSearchResultDto.Facets, "/browse-jobs-industry", "Select Desired Industry", true),
-                GetCategoryViewModel(jobSearchResultDto.Facets, "/browse-jobs-category", false, "Select Desired Category", true)
+                GetStateViewModel(jobSearchResultDto.Facets, "/browse-jobs-location/us", "Select Desired State", true)
+                //GetIndustryViewModel(jobSearchResultDto.Facets, "/browse-jobs-industry", "Select Desired Industry", true),
+                //GetCategoryViewModel(jobSearchResultDto.Facets, "/browse-jobs-category", false, "Select Desired Category", true)
             };
 
             return View("Browse", bjvm);
