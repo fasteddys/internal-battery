@@ -3,21 +3,93 @@
 @using UpDiddy.Helpers
 @model JobDetailsViewModel
 
-<div class="job-details-hero-band">
-    <div class="p-5"></div>
-</div>
-<div class="container animated bounceInUp">
-    <div class="job-details-container shadow-5">
-        @{
-            List<string> Elements = new List<string>()
+
+
+@if (Model.LoggedInSubscriberGuid != null)
+{
+    <div class="modal fade openEmailModal" id="openEmailModal" tabindex="-1" role="dialog" aria-labelledby="openEmailModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <form id="emailJobDetails" method="post"  asp-controller="Jobs" asp-action="ReferAJob">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Refer a Friend</h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <div class="form-group row">
+                            <label class="emailModalBodyHeadings col-sm-4 col-form-label">Referrer Name :</label>
+                            <div class="col-sm-8">
+                                <span class="form-control-plaintext" form="emailJobDetails">@Model.LoggedInSubscriberName</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="emailModalBodyHeadings col-sm-4 col-form-label">Referrer Email :</label>
+                            <div class="col-sm-8">
+                                <span class="form-control-plaintext" form="emailJobDetails">@Model.LoggedInSubscriberEmail</span>
+                                @*<input type="text" readonly class="form-control-plaintext" form="emailJobDetails" value="@Model.LoggedInSubscriberEmail">*@
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="emailModalBodyHeadings col-sm-4 col-form-label">To Name :</label>
+                            <div class="col-sm-8">
+                                @Html.TextBox("refereeName", null, new { PlaceHolder = "Name", @class = "form-control", form = "emailJobDetails", required = true })
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="emailModalBodyHeadings col-sm-4 col-form-label">To Email :</label>
+                            <div class="col-sm-8">
+                                @Html.TextBox("refereeEmailId", null, new { PlaceHolder = "Email Id", @class = "form-control", form = "emailJobDetails", required = true })
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="emailModalBodyHeadings col-sm-12 col-form-label">Description :</label>
+                            <div class="col-sm-12">
+                                @Html.TextArea("descriptionEmailBody", "Checkout about this awesome job", new { PlaceHolder = "Description", @class = "form-control", form = "emailJobDetails", rows = "4", cols = "50" })
+                            </div>
+                        </div>
+                      
+                        @Html.Hidden("referrerGuid", Model.LoggedInSubscriberGuid, new { @class = "form-control", form = "emailJobDetails" })
+                        @Html.Hidden("jobPostingId", Model.PostingId, new { @class = "form-control", form = "emailJobDetails" })
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button id="submitReferrerEmail" form="emailJobDetails" type="submit" class="btn btn-primary">Send message</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+}
+
+
+
+
+    <div class="job-details-hero-band">
+        <div class="p-5"></div>
+    </div>
+    <div class="container animated bounceInUp">
+        <div class="job-details-container shadow-5">
+            @{
+                List<string> Elements = new List<string>()
         {
             Html.PartialToHtmlMarkup("Partials/_JobPosting", Model).ToString()
         };
-        }
-        @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
-        {
-            Class = "skew skew-left-to-right cc-cscheme-white",
-            Elements = Elements
-        })
+            }
+            @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+            {
+                Class = "skew skew-left-to-right cc-cscheme-white",
+                Elements = Elements
+            })
+        </div>
     </div>
-</div>

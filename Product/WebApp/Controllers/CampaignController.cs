@@ -289,6 +289,9 @@ namespace UpDiddy.Controllers
                 campaignGuid = signUpViewModel.CampaignGuid,
                 referer = Request.Headers["Referer"].ToString(),
                 verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
+
+                //check for any referrerCode 
+                referralCode = Request.Cookies["referrerCode"]==null ? null : Request.Cookies["referrerCode"].ToString()
             };
 
             // Guard UX from any unforeseen server error.

@@ -1,5 +1,6 @@
 ﻿
 
+using System;
 using UpDiddyLib.Dto;
 
 namespace UpDiddy.ViewModels
@@ -11,5 +12,9 @@ namespace UpDiddy.ViewModels
         {
             return "Hello";
         }
+
+        public Guid? LoggedInSubscriberGuid { get; set; }
+        public string LoggedInSubscriberName { get; set; }
+        public string LoggedInSubscriberEmail { get; set; }
     }
 }

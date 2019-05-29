@@ -10,6 +10,7 @@ namespace UpDiddyLib.Dto.Marketing
         public string campaignPhase { get; set; }
         public string referer { get; set; }
         public string verifyUrl { get; set; }
+        public string referralCode { get; set; }
     }
 }
  
