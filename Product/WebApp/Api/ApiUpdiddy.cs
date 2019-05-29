@@ -815,9 +815,9 @@ namespace UpDiddy.Api
             return await PutAsync<BasicResponseDto>("subscriber/onboard");
         }
 
-        public async Task<SubscriberDto> CreateSubscriberAsync(string referralCode)
+        public async Task<SubscriberDto> CreateSubscriberAsync(string referralCode = null)
         {
-            return await PostAsync<SubscriberDto>("subscriber", referralCode);
+            return await PostAsync<SubscriberDto>("subscriber", new ReferralDto() { ReferralCode = referralCode });
         }
         public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid)
         {
