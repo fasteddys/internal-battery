@@ -400,6 +400,14 @@ namespace UpDiddy.Controllers
             return View("EmailVerification/Success");
         }
 
+
+        [HttpGet]
+        public IActionResult MessageReceived()
+        {
+            return View();
+        }
+
+
         [HttpGet]
         public IActionResult Contact()
         {
@@ -426,7 +434,7 @@ namespace UpDiddy.Controllers
             var emailBody = FormatContactEmail(firstName, lastName, email, type, comment);
 
             _sysEmail.SendEmailAsync(_configuration["SysEmail:ContactUs:Recipient"], subject, emailBody, Constants.SendGridAccount.Transactional);
-            return RedirectToAction("Contact", new AboutViewModel());
+            return RedirectToAction("MessageReceived");
         }
 
         private string FormatContactEmail(string ContactUsFirstName,

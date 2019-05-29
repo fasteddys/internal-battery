@@ -2,6 +2,9 @@
 @using UpDiddyLib.Dto
 @model ContactUsViewModel
 
+
+
+
 <div class="contact-us-container">
     <div class="row contact-us-tertiary-band">
         <div class="col-md-12">
@@ -13,8 +16,8 @@
                                 <h1>Contact Us</h1>
                                 <i class="fas fa-map-marker-alt"></i> 7301 Parkway Drive Hanover, MD 21076
                             </div>
-                            
-                            <form id="ContactUsForm" asp-controller="Home" asp-action="ContactUs">
+
+                            <form id="ContactUsForm" asp-controller="Home" asp-action="ContactUs" onsubmit="return validateRecaptcha();">
                                 <div class="form-group">
                                     <label for="ContactUsFirstName">First Name</label>
                                     <input required type="text" class="form-control" asp-for="ContactUsFirstName" pattern="^([A-Za-z]+[,.]?[ ]?|[A-Za-z]+['-]?)+$">
@@ -39,10 +42,14 @@
                                     <label for="ContactUsComment">General</label>
                                     <textarea required class="form-control" id="ContactUsComment" rows="3" asp-for="ContactUsComment"></textarea>
                                 </div>
+                                <div class="form-group g-recaptcha" data-sitekey="6LfyG6YUAAAAACnUU2wHebNKpTqaOnuQOuMG3OU4"></div>
                                 <div class="contact-us-button-container">
                                     <button type="submit" class="btn btn-primary brand-button font-small">Submit</button>
+
+                                    <br />
                                 </div>
                             </form>
+
                         </div>
                     </div>
                 </div>
@@ -50,6 +57,24 @@
         </div>
     </div>
 </div>
-<script>
-    document.getElementById("ContactUsForm").trigger('reset');
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+@section Scripts
+{
+
+<script type="text/javascript">
+
+    function validateRecaptcha()
+            {
+                var response = grecaptcha.getResponse();
+                if (response.length === 0)
+                {
+                    ToastService.warning('Please confirm you are not a robot');
+                    return false;
+                }
+                else
+                    return true;
+            }
+
 </script>
+
+}
