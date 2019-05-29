@@ -80,7 +80,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 BaseModelFactory.SetDefaultsForAddNew(jobReferral);
 
                 //update jobReferralGuid only if Referee is new subscriber, for old subscriber we do not jobReferralCode
-                //if(referee!=null)
                      jobReferralGuid = await _repositoryWrapper.JobReferralRepository.AddJobReferralAsync(jobReferral);
             }
             catch(Exception ex)
