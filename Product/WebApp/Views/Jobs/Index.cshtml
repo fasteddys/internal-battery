@@ -131,7 +131,7 @@
                                                 {
                                                     counter++;
                                                     <div>
-                                                        <a href="@string.Format("{0}city={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a href="@string.Format("{0}city={1}", @ViewBag.QueryUrl, @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                     @if (counter >= 15)
                                                     {
