@@ -608,6 +608,36 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public async Task<JobSearchResultDto> GetJobsUsingRoute(
+            string Country = null,
+            string State = null,
+            string City = null,
+            string Industry = null,
+            string Category = null,
+            int page = 0)
+        {
+            Country = Country ?? "all";
+            State = State ?? "all";
+            City = City ?? "all";
+            Industry = Industry ?? "all";
+            Category = Category ?? "all";
+
+            var searchFilter = $"{Country}/{State}/{City}/{Industry}/{Category}/all/{page}";
+            string cacheKey = string.Format("job-{0}/{1}/{2}/{3}/{4}/{5}", Country, State, City, Industry, Category, page);
+            JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+
+                rval = await _GetJobsByLocation(searchFilter);
+                SetCachedValue<JobSearchResultDto>(cacheKey, rval);
+            }
+
+            return rval;
+        }
+
         #endregion
 
         #region Public UnCached Methods
@@ -925,6 +955,21 @@ namespace UpDiddy.Api
                 return await GetStatesAsync();
 
             return await GetAsync<IList<StateDto>>("country/" + countryGuid?.ToString() + "/state");
+        }
+
+        public async Task<IList<StateDto>> GetAllStatesAsync()
+        {
+            string cacheKey = $"States";
+            IList<StateDto> rval = GetCachedValue<IList<StateDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await GetStatesAsync();
+                SetCachedValue<IList<StateDto>>(cacheKey, rval);
+            }
+            return rval;
         }
 
         public async Task<IList<ExperienceLevelDto>> _GetExperienceLevelAsync()
@@ -1341,6 +1386,26 @@ namespace UpDiddy.Api
                     throw;
                 }
             }
+        }
+
+        public async Task<IList<JobCategoryDto>> GetJobCategories()
+        {
+            string cacheKey = $"JobCategories";
+            IList<JobCategoryDto> rval = GetCachedValue<IList<JobCategoryDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetJobCategories();
+                SetCachedValue<IList<JobCategoryDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        private async Task<IList<JobCategoryDto>> _GetJobCategories()
+        {
+            return await GetAsync<IList<JobCategoryDto>>("job/categories");
         }
 
         #endregion

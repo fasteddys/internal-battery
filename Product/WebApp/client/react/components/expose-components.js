@@ -7,6 +7,7 @@ import Checkbox from './Checkbox';
 import Favorite from './jobs/Favorite';
 import SATable from './reports/SATable';
 import JobAppReportTable from './reports/JobAppReportTable';
+import BrowseJobs from './jobs/BrowseJobs';
 
 global.React = React;
 global.ReactDOM = ReactDOM;
@@ -16,6 +17,7 @@ global.ReactDOMServer = ReactDOMServer;
 global.ResumeUpload = ResumeUpload;
 global.Checkbox = Checkbox;
 global.Favorite = Favorite;
+global.BrowseJobs = BrowseJobs;
 
 // reports
 global.SATable = SATable;

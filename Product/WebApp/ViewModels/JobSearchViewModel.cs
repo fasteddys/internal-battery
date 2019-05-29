@@ -15,6 +15,6 @@ namespace UpDiddy.ViewModels
         public string Keywords { get; set; }
         public string Location { get; set; }
         public IPagedList<JobViewDto> JobsSearchResult { get; set; }
-        public Dictionary<Guid, Guid> FavoritesMap { get; set; }
+        public Dictionary<Guid, Guid> FavoritesMap { get; set; } = new Dictionary<Guid,Guid>();
     }
 }

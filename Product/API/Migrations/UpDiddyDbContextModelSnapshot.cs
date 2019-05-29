@@ -1457,6 +1457,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
+                    b.Property<int>("IsPrivate");
+
                     b.Property<int?>("JobCategoryId");
 
                     b.Property<Guid>("JobPostingGuid");

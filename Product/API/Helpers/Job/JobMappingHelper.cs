@@ -59,9 +59,11 @@ namespace UpDiddyApi.Helpers.Job
 
             JobSearchResultDto rVal = new JobSearchResultDto();
             // handle case of no jobs found 
-            if (searchJobsResponse.MatchingJobs == null)
+            if (searchJobsResponse == null || searchJobsResponse.MatchingJobs == null)
             {
                 rVal.JobCount = 0;
+                rVal.TotalHits = 0;
+                rVal.NumPages = 0;
                 return rVal;
             }
 
