@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
@@ -28,13 +29,15 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ICloudStorage _cloudStorage { get; set; }
         private IB2CGraph _graphClient { get; set; }
         private ILogger _logger { get; set; }
+        private IRepositoryWrapper _repository { get; set; }
 
-        public SubscriberService(UpDiddyDbContext context, IConfiguration configuration, ICloudStorage cloudStorage, IB2CGraph graphClient, ILogger<SubscriberService> logger)
+        public SubscriberService(UpDiddyDbContext context, IConfiguration configuration, ICloudStorage cloudStorage, IB2CGraph graphClient, IRepositoryWrapper repository, ILogger<SubscriberService> logger)
         {
             _db = context;
             _configuration = configuration;
             _cloudStorage = cloudStorage;
             _graphClient = graphClient;
+            _repository = repository;
             _logger = logger;
         }
 
@@ -258,6 +261,25 @@ namespace UpDiddyApi.ApplicationCore.Services
                 BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(resume));
 
             return true;
+        }
+
+        public async Task<Dictionary<Guid, Guid>> GetSubscriberJobPostingFavoritesByJobGuid(Guid subscriberGuid, List<Guid> jobGuids)
+        {
+            var subscribers = await _repository.Subscriber.GetAllSubscribersAsync();
+            var jobPostingFavorites = await _repository.JobPostingFavorite.GetAllJobPostingFavoritesAsync();
+            var jobPostings = await _repository.JobPosting.GetAllJobPostings();
+
+            var query = from jobGuid in jobGuids
+            join jp in jobPostings on jobGuid equals jp.JobPostingGuid 
+            join favorites in jobPostingFavorites on jp.JobPostingId equals favorites.JobPostingId
+            join sub in subscribers on favorites.SubscriberId equals sub.SubscriberId
+            where (sub.SubscriberGuid == subscriberGuid && favorites.IsDeleted == 0)
+            select new {
+                jobPostingGuid = jp.JobPostingGuid,
+                jobPostingFavoriteGuid = favorites.JobPostingFavoriteGuid
+            };
+            var map = query.ToDictionary(x => x.jobPostingGuid, x => x.jobPostingFavoriteGuid);
+            return map;
         }
     }
 }

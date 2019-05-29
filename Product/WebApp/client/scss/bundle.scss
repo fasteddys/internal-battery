@@ -9,6 +9,7 @@
 @import 'components/utilities/_disclaimers';
 
 @import 'components/_linkedIn';
+@import 'components/jobCard';
 @import 'components/bands/_cc-text-video-band';
 @import 'components/bands/_cc-content-band';
 @import 'components/bands/_cc-triple-container-band';
@@ -25,6 +26,7 @@
 
 // react components
 @import 'react/resume-upload';
+@import 'react/checkbox';
 
 // page styles
 @import '_about';

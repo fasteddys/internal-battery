@@ -83,6 +83,7 @@ namespace UpDiddy.Api
         Task<CampaignDto> GetCampaignAsync(Guid campaignGuid);
         Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId);
         Task<IList<OfferDto>> GetOffersAsync();
+        Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page);
 
         #region TalentPortal
         Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery);
@@ -124,6 +125,7 @@ namespace UpDiddy.Api
         Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null);
         Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid);
         Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
+        Task<Dictionary<Guid, Guid>> JobFavoritesByJobGuidAsync(List<Guid> jobGuids);
 
         Task<JobSearchResultDto> GetJobsUsingRoute(string country = null, string state = null, string city = null, string industry = null, string category = null, int page = 0);
         Task<IList<JobCategoryDto>> GetJobCategories();
