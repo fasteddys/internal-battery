@@ -29,7 +29,7 @@
                                 if (errorsList[i] !== "") {
                                     ToastService.warning(errorsList[i]);
                                 }
-
+                                
                             }
                         }
                         else {
@@ -41,6 +41,60 @@
             });
         });
 
+        function avatarDelete() {
+
+            bootbox.confirm({
+                message: "Are you sure you want to delete your avatar?",
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'No',
+                        classname: 'btn-danger'
+                    }
+                },
+                callback: function callback(result) {
+                    if (result) {
+                        var DefaultAvatar = '@Model.DefaultAvatar';
+                        // remove the image on the server 
+                        CareerCircleAPI.removeAvatar()                    
+                            .then(function (payload) {
+                                // update the local image
+                                document.getElementById('imgAvatar').src = DefaultAvatar;
+                            })
+                            .catch(function (err) {
+                                ToastService.error('Something unexpected happened, and we are looking into it.');
+                            })                                           
+                    }
+                }
+            });
+        }
+
+        function avatarSelect() {
+            $("#fuAvatar").click();            
+        }
+
+        function avatarUpload() {
+            var maxFileSize = @Model.MaxAvatarFileSize;
+            var myFiles = $('#fuAvatar').prop('files');
+            var myFile = myFiles[0];
+            if (myFile.size > maxFileSize) {
+                ToastService.error("Sorry the selected avatar file is too big.  Maximum allowable size is " + maxFileSize);
+                return;
+            }
+            // update the image on the server 
+            CareerCircleAPI.uploadAvatar(myFile)
+            .then(function (payload) {
+                // set the image locally 
+                document.getElementById('imgAvatar').src = window.URL.createObjectURL(myFile);
+            })
+            .catch(function (err) {
+                    ToastService.error('Something unexpected happened, and we are looking into it.');
+            })
+
+        }
 
         var resumeUpload = {
             init: function () {
@@ -179,31 +233,49 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="row profile-header-info">
-                            <div class="col-md-8 no-padding">
+
+                            <div class="col-md-4 no-padding">
                                 <div class="career-circle-profile-text">My CareerCircle Profile</div>
                                 <div id="ProfileName" class="career-circle-profile-name">
                                     <span id="ProfileFirstName">@(string.IsNullOrEmpty(Model.FirstName) ? "CareerCircle User" : Model.FirstName)</span>
                                     <span id="ProfileLastName">@(string.IsNullOrEmpty(Model.LastName) ? "" : Model.LastName)</span>
+
                                 </div>
                                 <div class="career-circle-profile-email">
                                     <i class="fa fa-envelope" aria-hidden="true"></i>
                                     @Model.Email
-                                    @{ 
+                                    @{
                                         string send = Model.HasVerificationEmail ? "Resend" : "Send";
                                     }
-                                    @if(!Model.IsVerified)
+                                    @if (!Model.IsVerified)
                                     {
                                         <span class="badge badge-light">Unverified <i class="fas fa-exclamation-triangle"></i></span> <button class="btn btn-link email-verification-btn">@send Verification Email</button>
+                                      
                                     }
                                 </div>
                             </div>
+                            <div class="col-md-8">
+                                <img src="@Model.AvatarUrl" id="imgAvatar" class="career-circle-profile-avatar" onclick="avatarSelect()" />
+                                <div>  
+                                    <form>
+                                        <input type="file" id="fuAvatar" class="d-none" accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/* .heic .heif" onchange="avatarUpload()"/>
+
+                                        <button type="button" class="btn btn-text text-primary edit px-2" onclick="avatarSelect()" > <i class="fas fa-edit text-light-blue" title="Edit"></i></button>
+                                        <button type="button" class="btn btn-text text-primary delete px-2" onclick="avatarDelete()"><i class="fas fa-minus-circle text-light-blue" title="Delete"></i> </button>
+                          
+                                    </form>
+                           
+                                
+                                </div>
+                            </div>
                         </div>
+                    
 
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md">
-                        @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.SubscriberGuid })
+                        @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.SubscriberGuid, LastSyncDate = Model.LinkedInSyncDate == null ? DateTime.MinValue : Model.LinkedInSyncDate, Model.LinkedInAvatarUrl })
                     </div>
                 </div>
                 <div class="row">

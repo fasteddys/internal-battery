@@ -12,49 +12,38 @@ using System.Globalization;
 using System.Reflection;
 using GoogleTypes = Google.Protobuf.WellKnownTypes;
 using System.Text;
+using System.Net;
 using HtmlAgilityPack;
 
 namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
-        /// <summary>
-        /// Removes unwanted HTML while preserving any tags which have been explicitly whitelisted
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="whitelistedTags"></param>
-        /// <returns></returns>
-        public static string RemoveUnwantedTags(string data, List<string> whitelistedTags = null)
+
+
+
+
+
+        public static bool GetImageAsBlob(string imgUrl, int maxSize, ref byte[] imageBytes)
         {
-            if (string.IsNullOrEmpty(data)) return string.Empty;
 
-            var document = new HtmlDocument();
-            document.LoadHtml(data);
-            
-            var nodes = new Queue<HtmlNode>(document.DocumentNode.SelectNodes("./*|./text()"));
-            while (nodes.Count > 0)
+            HttpWebRequest imageRequest = (HttpWebRequest)WebRequest.Create(imgUrl);
+            WebResponse imageResponse = imageRequest.GetResponse();
+            Stream responseStream = imageResponse.GetResponseStream();
+
+            bool rVal = true;
+            using (BinaryReader br = new BinaryReader(responseStream))
             {
-                var node = nodes.Dequeue();
-                var parentNode = node.ParentNode;
-
-                if((whitelistedTags == null || !whitelistedTags.Contains(node.Name)) && node.Name != "#text")
-                {
-                    var childNodes = node.SelectNodes("./*|./text()");
-
-                    if (childNodes != null)
-                    {
-                        foreach (var child in childNodes)
-                        {
-                            nodes.Enqueue(child);
-                            parentNode.InsertBefore(child, node);
-                        }
-                    }
-
-                    parentNode.RemoveChild(node);
-                }
+                imageBytes = br.ReadBytes(maxSize);
+                // check for eos
+                if (br.PeekChar() != -1)
+                    rVal = false;
+                br.Close();
             }
+            responseStream.Close();
+            imageResponse.Close();
 
-            return document.DocumentNode.InnerHtml;
+            return rVal;
         }
 
         /// <summary>
@@ -70,7 +59,7 @@ namespace UpDiddyLib.Helpers
         /// <returns></returns>
         public static string CreateSemanticJobPath(string industry, string jobCategory, string country, string province, string city, string jobIdentifier)
         {
-            StringBuilder jobPath = new StringBuilder("/jobs/");
+            StringBuilder jobPath = new StringBuilder("/job/");
 
             // industry 
             if (!string.IsNullOrWhiteSpace(industry))

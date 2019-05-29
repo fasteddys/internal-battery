@@ -196,7 +196,8 @@ namespace UpDiddy.Controllers
         {
             var countries = await _Api.GetCountriesAsync();
             var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
-
+            string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
+            string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
                 SubscriberGuid = this.subscriber?.SubscriberGuid,
@@ -235,7 +236,13 @@ namespace UpDiddy.Controllers
                 Skills = await _Api.GetSkillsBySubscriberAsync(this.subscriber.SubscriberGuid.Value),
                 Files = this.subscriber?.Files,
                 WorkHistory = await _Api.GetWorkHistoryAsync(this.subscriber.SubscriberGuid.Value),
-                EducationHistory = await _Api.GetEducationHistoryAsync(this.subscriber.SubscriberGuid.Value)
+                EducationHistory = await _Api.GetEducationHistoryAsync(this.subscriber.SubscriberGuid.Value),
+                LinkedInSyncDate = this.subscriber.LinkedInSyncDate,
+                LinkedInAvatarUrl = string.IsNullOrEmpty(this.subscriber.LinkedInAvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.LinkedInAvatarUrl + CacheBuster,
+                AvatarUrl = string.IsNullOrEmpty(this.subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.AvatarUrl + CacheBuster,
+                MaxAvatarFileSize = int.Parse(_configuration["CareerCircle:MaxAvatarFileSize"]),
+                DefaultAvatar = _configuration["CareerCircle:DefaultAvatar"]
+
             };
 
             // we have to call this other api method directly because it can trigger a refresh of course progress from Woz.
@@ -498,6 +505,9 @@ namespace UpDiddy.Controllers
             );
             return LocalRedirect(returnUrl);
         }
+
+
+        
 
         // TODO find a better home for these lookup endpoints - maybe a new lookup or data endpoint?
         [Authorize]

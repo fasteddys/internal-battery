@@ -625,6 +625,42 @@ namespace UpDiddyApi.Controllers
         }
         #endregion
 
+        /// <summary>
+        /// Avatar upload endpoint 
+        /// </summary>  
+        /// <returns></returns>
+        [Authorize]
+        [HttpPost]
+        [Route("/api/[controller]/avatar")]
+        public async Task<IActionResult> UploadAvatar(IFormFile avatar)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            string errorMsg = string.Empty;
+
+            if (SubscriberFactory.UpdateAvatar(_db, _configuration, avatar, subscriberGuid, ref errorMsg))
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Avatar updated." });
+            else
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg});            
+        }
+
+
+        [Authorize]
+        [HttpDelete]
+        [Route("/api/[controller]/avatar")]
+        public async Task<IActionResult> RemoveAvatar()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            string errorMsg = string.Empty;
+
+            if (SubscriberFactory.RemoveAvatar(_db, _configuration, subscriberGuid, ref errorMsg))
+                return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Avatar removed." });
+            else
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
+        }
+
+
+         
         [HttpPut("/api/[controller]/onboard")]
         public IActionResult Onboard()
         {

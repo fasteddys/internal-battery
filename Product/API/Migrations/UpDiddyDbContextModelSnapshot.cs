@@ -1457,6 +1457,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
+                    b.Property<int>("IsPrivate");
+
                     b.Property<int?>("JobCategoryId");
 
                     b.Property<Guid>("JobPostingGuid");
@@ -2633,6 +2635,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("Address");
 
+                    b.Property<string>("AvatarUrl");
+
                     b.Property<string>("City");
 
                     b.Property<DateTime>("CreateDate");
@@ -2661,6 +2665,10 @@ namespace UpDiddyApi.Migrations
                     b.Property<bool>("IsVerified");
 
                     b.Property<string>("LastName");
+
+                    b.Property<string>("LinkedInAvatarUrl");
+
+                    b.Property<DateTime?>("LinkedInSyncDate");
 
                     b.Property<string>("LinkedInUrl");
 

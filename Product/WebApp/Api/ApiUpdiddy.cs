@@ -1312,7 +1312,23 @@ namespace UpDiddy.Api
         
         public async Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid)
         {
-            return await GetAsync<JobPostingDto>("job/expired/" + JobPostingGuid);
+            try
+            {
+                return await GetAsync<JobPostingDto>("job/expired/" + JobPostingGuid);
+            }
+            catch (ApiException ae)
+            {
+                //todo: add logger
+                if (ae.ResponseDto.StatusCode == 404)
+                {
+                    // Null result is possible if job GUID doesn't exist in our repo.
+                    return null;
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         public async Task ReferJobPosting(string jobPostingId, string referrerGuid, string refereeName, string refereeEmailId, string descriptionEmailBody)
