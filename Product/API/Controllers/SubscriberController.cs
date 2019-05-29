@@ -160,7 +160,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost("/api/[controller]")]
-        public IActionResult NewSubscriber([FromBody]string referralCode=null)
+        public IActionResult NewSubscriber([FromBody] ReferralDto dto)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefault();
@@ -184,9 +184,9 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             //updatejiobReferral if referral is not empty
-            if(!string.IsNullOrEmpty(referralCode))
+            if(!string.IsNullOrEmpty(dto.ReferralCode))
             {
-                _jobService.UpdateJobReferral(referralCode, subscriber.SubscriberGuid.ToString());
+                _jobService.UpdateJobReferral(dto.ReferralCode, subscriber.SubscriberGuid.ToString());
             }
 
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
