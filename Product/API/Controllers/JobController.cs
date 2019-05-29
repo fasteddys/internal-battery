@@ -471,5 +471,15 @@ namespace UpDiddyApi.Controllers
             });
         }
         #endregion
+
+        #region Misc Job Utilities
+
+        [HttpGet("api/[controller]/categories")]
+        public async Task<IList<JobCategory>> GetJobCategories()
+        {
+            return _repositoryWrapper.JobCategoryRepository.GetAllAsync().Result.ToList();
+        }
+
+        #endregion
     }
 }

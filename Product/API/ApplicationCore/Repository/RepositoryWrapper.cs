@@ -21,6 +21,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IRecruiterActionRepository _recruiterActionRepository;
         private IZeroBounceRepository _zeroBounceRepository;
         private IPartnerContactLeadStatusRepository _partnerContactLeadStatusRepository;
+        private IJobCategoryRepository _jobCategoryRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -156,6 +157,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _partnerContactLeadStatusRepository = new PartnerContactLeadStatusRepository(_dbContext);
                 }
                 return _partnerContactLeadStatusRepository;
+            }
+        }
+
+        public IJobCategoryRepository JobCategoryRepository
+        {
+            get
+            {
+                if(_jobCategoryRepository == null)
+                {
+                    _jobCategoryRepository = new JobCategoryRepository(_dbContext);
+                }
+                return _jobCategoryRepository;
             }
         }
     }
