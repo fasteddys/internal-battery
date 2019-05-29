@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authorization;
 using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using X.PagedList;
+using System.Text;
+using System.Text.RegularExpressions;
 
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -96,14 +98,21 @@ namespace UpDiddy.Controllers
 
         
         [HttpGet]
-        [Route("[controller]/{JobGuid}")]
-        [Route("[controller]/{industry}/{category}/{country}/{state}/{city}/{JobGuid}")]
+        [Route("job/{JobGuid}")]
+        [Route("job/{industry}/{category}/{country}/{state}/{city}/{JobGuid}")]
         public async Task<IActionResult> JobAsync(Guid JobGuid)
         {
             JobPostingDto job = null;
             try
             {
                 job = await _api.GetJobAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.View));
+                if (job.JobStatus == (int)JobPostingStatus.Draft)
+                {
+                    BasicResponseDto ResponseDto = new BasicResponseDto() { StatusCode = 401, Description = "Draft jobs cannot be viewed" };
+                    throw new ApiException( new System.Net.Http.HttpResponseMessage(), ResponseDto);
+                }
+                    
+
             }
             catch(ApiException e)
             {
@@ -112,32 +121,53 @@ namespace UpDiddy.Controllers
                     case (401):
                         return Unauthorized();
                     case (404):
-                        job = await _api.GetExpiredJobAsync(JobGuid);
-                        if (job != null)
+                        // Try to find as an expired job for representatives search.
+                        //todo: See if we can allow expired/deleted jobs to get here to decide to show representatives and save an API call.
+                        try
                         {
-                            string location = job?.City + ", " + job?.Province;
-
-
-                            var queryParametersString = $"?{job.Title}&{location}";
-
-                            JobSearchResultDto jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
-                            int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
-
-                            if (jobSearchResultDto == null)
-                                return NotFound();
-
-                            var jobSearchViewModel = new JobSearchViewModel()
-                            {
-                                Keywords = job.Title,
-                                Location = location,
-                                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, pageCount)
-                            };
-
-                            // Remove the expired job link from the search provider's index.
-                            Response.StatusCode = 404;
-                            return View("Index", jobSearchViewModel);
+                            job = await _api.GetExpiredJobAsync(JobGuid);
                         }
-                        break;
+                        catch (ApiException ae)
+                        {
+                            return StatusCode(ae.ResponseDto.StatusCode);
+                        }
+                     
+                        int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
+                        string location = string.Empty;
+                        JobSearchResultDto jobSearchResultDto;
+
+                        if (job is null)
+                        {
+                            // Show all jobs.
+                            jobSearchResultDto = await _api.GetJobsByLocation(null);
+                        }
+                        else
+                        {
+
+                            // Show representatives.
+                             location = job?.City + ", " + job?.Province;
+                            var queryParametersString = $"?{job.Title}&{location}";
+                            
+                            jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
+
+                            jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
+                        }
+
+                        if (jobSearchResultDto == null)
+                            return NotFound();
+
+                        var jobSearchViewModel = new JobSearchViewModel()
+                        {
+                            Keywords = job?.Title ?? string.Empty,
+                            Location = location,
+                            JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, pageCount)
+                        };
+
+                        // Remove the expired job link from the search provider's index.
+                        Response.StatusCode = 404;
+
+                        ViewBag.QueryUrl = string.Empty;
+                        return View("Index", jobSearchViewModel);
                     case (500):
                         return StatusCode(500);
                     default:
@@ -175,14 +205,23 @@ namespace UpDiddy.Controllers
             if ( job.Recruiter.Subscriber != null )
             {
                 jdvm.ContactEmail = job.Recruiter.Subscriber?.Email;
-                jdvm.ContactName = $"{job.Recruiter.Subscriber?.FirstName} {job.Recruiter.Subscriber?.LastName}";
+                jdvm.ContactName = string.Join(' ', 
+                    new[] {
+                        job.Recruiter.Subscriber?.FirstName,
+                        job.Recruiter.Subscriber?.LastName }
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                );
                 jdvm.ContactPhone = job.Recruiter.Subscriber?.PhoneNumber;
-
             }
             else // Use recruiter info in no subscriber exists
             {
                 jdvm.ContactEmail = job.Recruiter?.Email;
-                jdvm.ContactName = $"{job.Recruiter.Subscriber?.FirstName} {job.Recruiter?.LastName}";
+                jdvm.ContactName = string.Join(' ',
+                    new[] {
+                        job.Recruiter?.FirstName,
+                        job.Recruiter?.LastName }
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                );
                 jdvm.ContactPhone = job.Recruiter?.PhoneNumber;
             }
  
@@ -297,6 +336,831 @@ namespace UpDiddy.Controllers
 
 
             return View("Finish", cjavm);
+        }
+   
+        [HttpGet("Browse-Jobs")]
+        public async Task<IActionResult> BrowseAsync()
+        {
+
+            JobSearchResultDto jobSearchResultDto = null;
+
+            try
+            {
+                jobSearchResultDto = await _api.GetJobsUsingRoute();
+            }
+            catch (ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+
+
+            BrowseJobsViewModel bjvm = new BrowseJobsViewModel();
+            bjvm.ViewModels = new List<BrowseJobsByTypeViewModel>
+            {
+                GetStateViewModel(jobSearchResultDto.Facets, "/browse-jobs-location/us", true),
+                GetIndustryViewModel(jobSearchResultDto.Facets, "/browse-jobs-industry", true),
+                GetCategoryViewModel(jobSearchResultDto.Facets, "/browse-jobs-category", false, true)
+            };
+
+            return View("Browse", bjvm);
+        }
+
+
+        [HttpGet("browse-jobs-location/{country?}")]
+        [HttpGet("browse-jobs-location/{country}/{page:int?}")]
+        [HttpGet("browse-jobs-location/{country}/{state?}/{page:int?}")]
+        [HttpGet("browse-jobs-location/{country}/{state}/{city?}/{page:int?}")]
+        [HttpGet("browse-jobs-location/{country}/{state}/{city}/{industry?}/{page:int?}")]
+        [HttpGet("browse-jobs-location/{country}/{state}/{city}/{industry}/{category?}/{page:int?}")]
+        public async Task<IActionResult> BrowseJobsByLocationAsync(
+            string country,
+            string state,
+            string city,
+            string industry,
+            string category,
+            int page)
+        {
+            // If user types in root url, default to US.
+            if (string.IsNullOrEmpty(country))
+                return RedirectPermanent($"{Request.Path}/us");
+
+
+            if (!string.IsNullOrEmpty(country) &&
+                !string.IsNullOrEmpty(state) &&
+                !string.IsNullOrEmpty(city) &&
+                !string.IsNullOrEmpty(industry) &&
+                !string.IsNullOrEmpty(category) &&
+                page == 0)
+                return RedirectPermanent($"{Request.Path}/1");
+
+            JobSearchResultDto jobSearchResultDto = null;
+
+            try
+            {
+                jobSearchResultDto = await _api.GetJobsUsingRoute(
+                    country, 
+                    state, 
+                    city, 
+                    industry?.Replace("-", "+"), 
+                    category?.Replace("-", "+"), 
+                    page);
+            }
+            catch (ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+
+            if (page > jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0) || page < 0)
+                return NotFound();
+
+            if (jobSearchResultDto == null || !IsValidUrl(jobSearchResultDto, country, state, city, industry, category))
+                return NotFound();
+
+            int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
+
+            BrowseJobsByTypeViewModel jobSearchViewModel = new BrowseJobsByTypeViewModel()
+            {
+                RequestId = jobSearchResultDto.RequestId,
+                ClientEventId = jobSearchResultDto.ClientEventId,
+                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, pageCount),
+                CurrentPage = page,
+                NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
+            };
+
+            // Google seems to be capping the number of results at 500, so we account for that here.
+            if (jobSearchViewModel.NumberOfPages > 500)
+                jobSearchViewModel.NumberOfPages = 500;
+
+            DeterminePaginationRange(ref jobSearchViewModel);
+
+            // User has reached the end of the browse flow, so present results.
+            if (!string.IsNullOrEmpty(category) || page != 0)
+            {
+                jobSearchViewModel.BaseUrl = AssembleBaseLocationUrl(country, state, city, industry, category);
+                return View("BrowseByType", jobSearchViewModel);
+            }
+                
+            
+
+            // Return state view if user has only specified country
+            if (string.IsNullOrEmpty(state))
+            {
+                BrowseJobsByTypeViewModel bjbtvm = GetStateViewModel(jobSearchResultDto.Facets, Request.Path);
+                return View("BrowseByType", bjbtvm);
+            }
+
+            // If flow reaches this point, user has specified country and state, but 
+            // needs to choose city
+            if (string.IsNullOrEmpty(city))
+            {
+
+                JobQueryFacetDto jqfdto = FindNeededFacet("city", jobSearchResultDto.Facets);
+
+                // City histogram wasn't found
+                if (jqfdto == null)
+                    return RedirectPermanent(Request.Path + "/1");
+
+                List<DisplayItem> LocationsCities = new List<DisplayItem>();
+                jqfdto.Facets.Sort((x, y) => string.Compare(x.Label, y.Label));
+                foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
+                {
+                    Regex rgx = new Regex("[^a-zA-Z]");
+                    LocationsCities.Add(new DisplayItem
+                    {
+                        Label = $"{FacetItem.Label}",
+                        Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.Split(",")[0].ToLower(), "-")}",
+                        Count = $"{FacetItem.Count}"
+                    });
+                }
+
+                BrowseJobsByTypeViewModel bjlvm = new BrowseJobsByTypeViewModel()
+                {
+                    Items = LocationsCities,
+                    Header = "Select Desired City:"
+                };
+
+                return View("BrowseByType", bjlvm);
+            }
+
+            if (string.IsNullOrEmpty(industry))
+            {
+                BrowseJobsByTypeViewModel bjbtvm = GetIndustryViewModel(jobSearchResultDto.Facets, Request.Path);
+                if (bjbtvm == null)
+                    return RedirectPermanent(Request.Path + "/1");
+                return View("BrowseByType", bjbtvm);
+            }
+
+            if (string.IsNullOrEmpty(category))
+            {
+                BrowseJobsByTypeViewModel bjbtvm = GetCategoryViewModel(jobSearchResultDto.Facets, Request.Path, true);
+                if(bjbtvm == null)
+                    return RedirectPermanent(Request.Path + "/1");
+                return View("BrowseByType", bjbtvm);
+
+            }
+
+            return NotFound();
+
+            
+            
+        }
+
+        public BrowseJobsByTypeViewModel GetStateViewModel(List<JobQueryFacetDto> Facets, string Path, bool HideAllLink = false)
+        {
+            JobQueryFacetDto jqfdto = FindNeededFacet("admin_1", Facets);
+            List<DisplayItem> StateLocations = new List<DisplayItem>();
+            jqfdto.Facets.Sort((x, y) => string.Compare(x.Label, y.Label));
+            foreach (JobQueryFacetItemDto JobQueryFacet in jqfdto.Facets)
+            {
+                UpDiddyLib.Helpers.Utils.State State;
+                Enum.TryParse(JobQueryFacet.Label.ToUpper(), out State);
+                string StateName = UpDiddyLib.Helpers.Utils.GetState(State);
+                StateLocations.Add(new DisplayItem
+                {
+                    Label = $"{UpDiddyLib.Helpers.Utils.ToTitleCase(StateName)}",
+                    Url = $"{Path}/{JobQueryFacet.Label.ToLower()}",
+                    Count = $"{JobQueryFacet.Count}"
+                });
+            }
+
+            BrowseJobsByTypeViewModel bjbtvm = new BrowseJobsByTypeViewModel()
+            {
+                Items = StateLocations,
+                Header = "Select Desired State:",
+                HideAllLink = HideAllLink
+            };
+            return bjbtvm;
+        }
+
+        public BrowseJobsByTypeViewModel GetIndustryViewModel(List<JobQueryFacetDto> Facets, string Path, bool HideAllLink = false)
+        {
+            JobQueryFacetDto jqfdto = FindNeededFacet("industry", Facets);
+
+            if (jqfdto == null)
+                return null;
+
+            List<DisplayItem> Industries = new List<DisplayItem>();
+
+            foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
+            {
+                Industries.Add(new DisplayItem
+                {
+                    Label = $"{FacetItem.Label}",
+                    Url = $"{Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}",
+                    Count = $"{FacetItem.Count}"
+                });
+            }
+            return new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select Desired Industry:", HideAllLink = HideAllLink };
+        }
+
+        public BrowseJobsByTypeViewModel GetCategoryViewModel(List<JobQueryFacetDto> Facets, string Path, bool ShowResults, bool HideAllLink = false)
+        {
+            JobQueryFacetDto jqfdto = FindNeededFacet("jobcategory", Facets);
+
+            if (jqfdto == null)
+                return null;
+
+            List<DisplayItem> Categories = new List<DisplayItem>();
+            foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
+            {
+                Categories.Add(new DisplayItem
+                {
+                    Label = $"{FacetItem.Label}",
+                    Url = $"{Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}" + (ShowResults ? "/1" : string.Empty),
+                    Count = $"{FacetItem.Count}"
+                });
+            }
+            return new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select Desired Category:", HideAllLink = HideAllLink };
+        }
+
+
+        #region Browse job by location helpers
+        private void DeterminePaginationRange(ref BrowseJobsByTypeViewModel Model)
+        {
+            int? CurrentPage = Model.CurrentPage;
+            int NumberOfPages = Model.NumberOfPages;
+
+            // Base case when there are less than 5 pages of results returned
+            if(NumberOfPages <= 5)
+            {
+                Model.PaginationRangeLow = 1;
+                Model.PaginationRangeHigh = NumberOfPages;
+                return;
+            }
+            
+            // Base case when the current page is one of first two pages
+            if(CurrentPage < 3)
+            {
+                Model.PaginationRangeLow = 1;
+                Model.PaginationRangeHigh = 5;
+                return;
+            }
+
+            // Base case for when current page is one of last two pages
+            if(CurrentPage > (NumberOfPages - 2))
+            {
+                Model.PaginationRangeLow = NumberOfPages - 4;
+                Model.PaginationRangeHigh = NumberOfPages;
+                return;
+            }
+
+            // Last case for when current page is somewhere in the middle of a result set
+            // of greater than 5 pages.
+            Model.PaginationRangeLow = (int)CurrentPage - 2;
+            Model.PaginationRangeHigh = (int)CurrentPage + 2;
+        }
+
+
+        private string AssembleBaseLocationUrl(
+            string country = null,
+            string state = null,
+            string city = null,
+            string industry = null,
+            string category = null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/browse-jobs-location" + 
+                (country == null ? string.Empty : "/" + country) +
+                (state == null ? string.Empty : "/" + state) +
+                (city == null ? string.Empty : "/" + city) +
+                (industry == null ? string.Empty : "/" + industry) +
+                (category == null ? string.Empty : "/" + category));
+            return sb.ToString();
+        }
+
+        private string AssembleBaseIndustryUrl(
+            string industry = null,
+            string category = null,
+            string country = null,
+            string state = null,
+            string city = null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/browse-jobs-industry" +
+                
+                (industry == null ? string.Empty : "/" + industry) +
+                (category == null ? string.Empty : "/" + category) +
+                (country == null ? string.Empty : "/" + country) +
+                (state == null ? string.Empty : "/" + state) +
+                (city == null ? string.Empty : "/" + city));
+            return sb.ToString();
+        }
+
+        private bool IsValidUrl(
+            JobSearchResultDto SearchResult, 
+            string country,
+            string state,
+            string city,
+            string industry,
+            string category)
+        {
+            if (!string.IsNullOrEmpty(country) && !country.ToLower().Equals("us"))
+                return false;
+
+            if (!string.IsNullOrEmpty(state))
+            {
+                JobQueryFacetDto StateFacet = FindNeededFacet("admin_1", SearchResult.Facets);
+                if (StateFacet == null)
+                    return false;
+
+                if (state.Length == 2)
+                {
+                    if (!FacetLabelExists(StateFacet.Facets, state))
+                        return false;
+                }
+                else
+                {
+                    try
+                    {
+                        /**
+                         * It's possible for a user to enter either "MD" or "Maryland", so we need to check either input
+                         * against the returned facet, which will be the two-character state code (e.g. "md").
+                         */
+                        if (!FacetLabelExists(StateFacet.Facets, UpDiddyLib.Helpers.Utils.GetStateByName(state.Replace("-", " ")).ToString()))
+                            return false;
+                    }
+                    catch (Exception e)
+                    {
+                        // Returns false if unable to find matching state from
+                        return false;
+                    }
+                }
+                
+            }
+
+            if (!string.IsNullOrEmpty(city))
+            {
+                JobQueryFacetDto CityFacet = FindNeededFacet("city", SearchResult.Facets);
+                if (CityFacet == null || !FacetLabelExists(CityFacet.Facets, city))
+                    return false;
+            }
+
+            if (!string.IsNullOrEmpty(industry))
+            {
+                JobQueryFacetDto IndustryFacet = FindNeededFacet("industry", SearchResult.Facets);
+                if (IndustryFacet == null)
+                    return false;
+            }
+
+            if (!string.IsNullOrEmpty(category))
+            {
+                JobQueryFacetDto CategoryFacet = FindNeededFacet("jobcategory", SearchResult.Facets);
+                if (CategoryFacet == null)
+                    return false;
+            }
+
+
+            return true;
+            
+        }
+
+        private bool FacetLabelExists(List<JobQueryFacetItemDto> List, string Label)
+        {
+            foreach (JobQueryFacetItemDto Item in List)
+            {
+                if (Item.Label.Split(",")[0].ToLower().Replace(" ", "-").Equals(Label.ToLower()))
+                    return true;
+            }
+            return false;
+        }
+
+        private JobQueryFacetDto FindNeededFacet(string key, List<JobQueryFacetDto> List)
+        {
+            foreach(JobQueryFacetDto facet in List)
+            {
+                if (facet.Name.ToLower().Equals(key.ToLower()))
+                    return facet;
+            }
+
+            return null;
+        }
+
+
+        #endregion
+
+        [HttpGet("browse-jobs-industry/{page:int?}")]
+        [HttpGet("browse-jobs-industry/{industry?}")]
+        [HttpGet("browse-jobs-industry/{industry}/{page:int?}")]
+        [HttpGet("browse-jobs-industry/{industry}/{category?}/{page:int?}")]
+        [HttpGet("browse-jobs-industry/{industry}/{category}/{country?}/{page:int?}")]
+        [HttpGet("browse-jobs-industry/{industry}/{category}/{country}/{state?}/{page:int?}")]
+        [HttpGet("browse-jobs-industry/{industry}/{category}/{country}/{state}/{city?}/{page:int?}")]
+        public async Task<IActionResult> BrowseJobsByIndustryAsync(
+           string industry,
+           string category,
+           string country,
+           string state,
+           string city,
+           int page)
+        {
+
+
+
+
+            if (!string.IsNullOrEmpty(industry) &&
+                !string.IsNullOrEmpty(category) &&
+                !string.IsNullOrEmpty(country) &&
+                !string.IsNullOrEmpty(state) &&
+                !string.IsNullOrEmpty(city) &&
+                page == 0)
+                return RedirectPermanent($"{Request.Path}/1");
+
+            JobSearchResultDto jobSearchResultDto = null;
+
+            try
+            {
+                jobSearchResultDto = await _api.GetJobsUsingRoute(
+                    country,
+                    state,
+                    city,
+                    industry?.Replace("-", "+"),
+                    category?.Replace("-", "+"),
+                    page);
+            }
+            catch (ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+
+            if (page > jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0) || page < 0)
+                return NotFound();
+
+            if (jobSearchResultDto == null || !IsValidUrl(jobSearchResultDto, country, state, city, industry, category))
+                return NotFound();
+
+            int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
+
+            BrowseJobsByTypeViewModel jobSearchViewModel = new BrowseJobsByTypeViewModel()
+            {
+                RequestId = jobSearchResultDto.RequestId,
+                ClientEventId = jobSearchResultDto.ClientEventId,
+                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, pageCount),
+                CurrentPage = page,
+                NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
+            };
+
+            // Google seems to be capping the number of results at 500, so we account for that here.
+            if (jobSearchViewModel.NumberOfPages > 500)
+                jobSearchViewModel.NumberOfPages = 500;
+
+            DeterminePaginationRange(ref jobSearchViewModel);
+
+            // User has reached the end of the browse flow, so present results.
+            if (!string.IsNullOrEmpty(city) || page != 0)
+            {
+                jobSearchViewModel.BaseUrl = AssembleBaseIndustryUrl(country, state, city, industry, category);
+                return View("BrowseByType", jobSearchViewModel);
+            }
+
+            JobQueryFacetDto jqfdto = FindNeededFacet("industry", jobSearchResultDto.Facets);
+
+            if (string.IsNullOrEmpty(industry))
+            {
+
+                List<DisplayItem> Industries = new List<DisplayItem>();
+
+
+                if (jqfdto?.Facets == null)
+                    return RedirectPermanent(Request.Path + "/1");
+
+
+                foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
+                {
+                    Industries.Add(new DisplayItem
+                    {
+                        Label = $"{FacetItem.Label}",
+                        Url = $"{Request.Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}",
+                        Count = $"{FacetItem.Count}"
+                    });
+                }
+                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select Desired Industry:" });
+            }
+
+            if (string.IsNullOrEmpty(category))
+            {
+                jqfdto = FindNeededFacet("jobcategory", jobSearchResultDto.Facets);
+
+
+                List<DisplayItem> Categories = new List<DisplayItem>();
+
+                if (jqfdto?.Facets == null)
+                    return RedirectPermanent(Request.Path + "/1");
+
+                foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
+                {
+                    Categories.Add(new DisplayItem
+                    {
+                        Label = $"{FacetItem.Label}",
+                        Url = $"{Request.Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}",
+                        Count = $"{FacetItem.Count}"
+                    });
+                }
+                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select Desired Category:" });
+
+            }
+
+
+
+
+            // Return state view if user has only specified country
+            if (string.IsNullOrEmpty(state))
+            {
+                jqfdto = FindNeededFacet("admin_1", jobSearchResultDto.Facets);
+                List<DisplayItem> StateLocations = new List<DisplayItem>();
+                jqfdto.Facets.Sort((x, y) => string.Compare(x.Label, y.Label));
+                foreach (JobQueryFacetItemDto JobQueryFacet in jqfdto.Facets)
+                {
+                    UpDiddyLib.Helpers.Utils.State State;
+                    Enum.TryParse(JobQueryFacet.Label.ToUpper(), out State);
+                    string StateName = UpDiddyLib.Helpers.Utils.GetState(State);
+                    StateLocations.Add(new DisplayItem
+                    {
+                        Label = $"{UpDiddyLib.Helpers.Utils.ToTitleCase(StateName)}",
+                        Url = $"{Request.Path}/us/{JobQueryFacet.Label.ToLower()}",
+                        Count = $"{JobQueryFacet.Count}"
+                    });
+                }
+
+                BrowseJobsByTypeViewModel bjlvmState = new BrowseJobsByTypeViewModel()
+                {
+                    Items = StateLocations,
+                    Header = "Select Desired State:"
+                };
+
+                return View("BrowseByType", bjlvmState);
+            }
+
+            // If flow reaches this point, user has specified country and state, but 
+            // needs to choose city
+            if (string.IsNullOrEmpty(city))
+            {
+
+                jqfdto = FindNeededFacet("city", jobSearchResultDto.Facets);
+
+                // City histogram wasn't found
+                if (jqfdto == null)
+                    return RedirectPermanent(Request.Path + "/1");
+
+                List<DisplayItem> LocationsCities = new List<DisplayItem>();
+                jqfdto.Facets.Sort((x, y) => string.Compare(x.Label, y.Label));
+                foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
+                {
+                    Regex rgx = new Regex("[^a-zA-Z]");
+                    LocationsCities.Add(new DisplayItem
+                    {
+                        Label = $"{FacetItem.Label}",
+                        Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.Split(",")[0].ToLower(), "-")}/1",
+                        Count = $"{FacetItem.Count}"
+                    });
+                }
+
+                BrowseJobsByTypeViewModel bjlvm = new BrowseJobsByTypeViewModel()
+                {
+                    Items = LocationsCities,
+                    Header = "Select Desired City:"
+                };
+
+                return View("BrowseByType", bjlvm);
+            }
+
+            
+
+            
+
+            return NotFound();
+
+
+
+        }
+
+        [HttpGet("browse-jobs-category/{page:int?}")]
+        [HttpGet("browse-jobs-category/{category?}")]
+        [HttpGet("browse-jobs-category/{category}/{page:int?}")]
+        [HttpGet("browse-jobs-category/{category}/{industry?}/{page:int?}")]
+        [HttpGet("browse-jobs-category/{category}/{industry}/{country?}/{page:int?}")]
+        [HttpGet("browse-jobs-category/{category}/{industry}/{country}/{state?}/{page:int?}")]
+        [HttpGet("browse-jobs-category/{category}/{industry}/{country}/{state}/{city?}/{page:int?}")]
+        public async Task<IActionResult> BrowseJobsByCategoryAsync(
+           string category,
+           string industry,
+           string country,
+           string state,
+           string city,
+           int page)
+        {
+
+
+
+
+            if (!string.IsNullOrEmpty(industry) &&
+                !string.IsNullOrEmpty(category) &&
+                !string.IsNullOrEmpty(country) &&
+                !string.IsNullOrEmpty(state) &&
+                !string.IsNullOrEmpty(city) &&
+                page == 0)
+                return RedirectPermanent($"{Request.Path}/1");
+
+            JobSearchResultDto jobSearchResultDto = null;
+
+            try
+            {
+                jobSearchResultDto = await _api.GetJobsUsingRoute(
+                    country,
+                    state,
+                    city,
+                    industry?.Replace("-", "+"),
+                    category?.Replace("-", "+"),
+                    page);
+            }
+            catch (ApiException e)
+            {
+                switch (e.ResponseDto.StatusCode)
+                {
+                    case (401):
+                        return Unauthorized();
+                    case (500):
+                        return StatusCode(500);
+                    default:
+                        return NotFound();
+                }
+            }
+
+            if (page > jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0) || page < 0)
+                return NotFound();
+
+            if (jobSearchResultDto == null || !IsValidUrl(jobSearchResultDto, country, state, city, industry, category))
+                return NotFound();
+
+            int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
+
+            BrowseJobsByTypeViewModel jobSearchViewModel = new BrowseJobsByTypeViewModel()
+            {
+                RequestId = jobSearchResultDto.RequestId,
+                ClientEventId = jobSearchResultDto.ClientEventId,
+                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, pageCount),
+                CurrentPage = page,
+                NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
+            };
+
+            // Google seems to be capping the number of results at 500, so we account for that here.
+            if (jobSearchViewModel.NumberOfPages > 500)
+                jobSearchViewModel.NumberOfPages = 500;
+
+            DeterminePaginationRange(ref jobSearchViewModel);
+
+            // User has reached the end of the browse flow, so present results.
+            if (!string.IsNullOrEmpty(city) || page != 0)
+            {
+                jobSearchViewModel.BaseUrl = AssembleBaseIndustryUrl(country, state, city, industry, category);
+                return View("BrowseByType", jobSearchViewModel);
+            }
+
+            JobQueryFacetDto jqfdto = FindNeededFacet("jobcategory", jobSearchResultDto.Facets);
+
+
+            if (string.IsNullOrEmpty(category))
+            {
+                
+
+
+                List<DisplayItem> Categories = new List<DisplayItem>();
+
+                if (jqfdto?.Facets == null)
+                    return RedirectPermanent(Request.Path + "/1");
+
+                foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
+                {
+                    Categories.Add(new DisplayItem
+                    {
+                        Label = $"{FacetItem.Label}",
+                        Url = $"{Request.Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}",
+                        Count = $"{FacetItem.Count}"
+                    });
+                }
+                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Categories, Header = "Select Desired Category:" });
+
+            }
+
+            if (string.IsNullOrEmpty(industry))
+            {
+                jqfdto = FindNeededFacet("industry", jobSearchResultDto.Facets);
+                List<DisplayItem> Industries = new List<DisplayItem>();
+
+
+                if (jqfdto?.Facets == null)
+                    return RedirectPermanent(Request.Path + "/1");
+
+
+                foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
+                {
+                    Industries.Add(new DisplayItem
+                    {
+                        Label = $"{FacetItem.Label}",
+                        Url = $"{Request.Path}/{FacetItem.Label.Replace(" ", "-").ToLower()}",
+                        Count = $"{FacetItem.Count}"
+                    });
+                }
+                return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Industries, Header = "Select Desired Industry:" });
+            }
+
+            
+
+
+
+
+            // Return state view if user has only specified country
+            if (string.IsNullOrEmpty(state))
+            {
+                jqfdto = FindNeededFacet("admin_1", jobSearchResultDto.Facets);
+                List<DisplayItem> StateLocations = new List<DisplayItem>();
+                jqfdto.Facets.Sort((x, y) => string.Compare(x.Label, y.Label));
+                foreach (JobQueryFacetItemDto JobQueryFacet in jqfdto.Facets)
+                {
+                    UpDiddyLib.Helpers.Utils.State State;
+                    Enum.TryParse(JobQueryFacet.Label.ToUpper(), out State);
+                    string StateName = UpDiddyLib.Helpers.Utils.GetState(State);
+                    StateLocations.Add(new DisplayItem
+                    {
+                        Label = $"{UpDiddyLib.Helpers.Utils.ToTitleCase(StateName)}",
+                        Url = $"{Request.Path}/us/{JobQueryFacet.Label.ToLower()}",
+                        Count = $"{JobQueryFacet.Count}"
+                    });
+                }
+
+                BrowseJobsByTypeViewModel bjlvmState = new BrowseJobsByTypeViewModel()
+                {
+                    Items = StateLocations,
+                    Header = "Select Desired State:"
+                };
+
+                return View("BrowseByType", bjlvmState);
+            }
+
+            // If flow reaches this point, user has specified country and state, but 
+            // needs to choose city
+            if (string.IsNullOrEmpty(city))
+            {
+
+                jqfdto = FindNeededFacet("city", jobSearchResultDto.Facets);
+
+                // City histogram wasn't found
+                if (jqfdto == null)
+                    return RedirectPermanent(Request.Path + "/1");
+
+                List<DisplayItem> LocationsCities = new List<DisplayItem>();
+                jqfdto.Facets.Sort((x, y) => string.Compare(x.Label, y.Label));
+                foreach (JobQueryFacetItemDto FacetItem in jqfdto.Facets)
+                {
+                    Regex rgx = new Regex("[^a-zA-Z]");
+                    LocationsCities.Add(new DisplayItem
+                    {
+                        Label = $"{FacetItem.Label}",
+                        Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.Split(",")[0].ToLower(), "-")}/1",
+                        Count = $"{FacetItem.Count}"
+                    });
+                }
+
+                BrowseJobsByTypeViewModel bjlvm = new BrowseJobsByTypeViewModel()
+                {
+                    Items = LocationsCities,
+                    Header = "Select Desired City:"
+                };
+
+                return View("BrowseByType", bjlvm);
+            }
+
+
+
+
+
+            return NotFound();
+
+
+
         }
     }
 }

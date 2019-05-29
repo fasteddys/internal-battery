@@ -44,6 +44,7 @@
       "node_modules/jquery-knob/js/jquery.knob.js",
       "node_modules/jquery-ui/ui/widget.js",
       "node_modules/jquery-background-video/jquery.background-video.js",
+      "node_modules/jquery-mask-plugin/dist/jquery.mask.js",
       "client/dist/js/core.js"
 
     ],
@@ -97,6 +98,7 @@
       "node_modules/jquery-knob/js/jquery.knob.js",
       "node_modules/jquery-ui/ui/widget.js",
       "node_modules/jquery-background-video/jquery.background-video.js",
+      "node_modules/jquery-mask-plugin/dist/jquery.mask.js",
       "client/dist/js/core.js"
     ],
     "minify": {

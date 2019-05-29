@@ -16,7 +16,7 @@ namespace UpDiddyLib.Dto
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
         public int? GenderId { get; set; }
-        public int? EducationLevelId { get; set; }
+        public int? EducationLevelId { get; set; }        
         public string ProfileImage { get; set; }
         public string City { get; set; }
         public string PostalCode { get; set; }
@@ -37,5 +37,9 @@ namespace UpDiddyLib.Dto
         // Marketing campaign offers that have not been used by subscriber
         public string CampaignOffer { get; set; }
         public bool HasVerificationEmail { get; set; }
+        public DateTime? LinkedInSyncDate { get; set; }       
+        public string LinkedInAvatarUrl { get; set; }
+        public string AvatarUrl { get; set; }
+        
     }
 }

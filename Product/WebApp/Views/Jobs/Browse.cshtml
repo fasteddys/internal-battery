@@ -1,0 +1,49 @@
+﻿@using React.AspNet;
+@using UpDiddy.ViewModels
+@model BrowseJobsViewModel
+
+<div class="browse-jobs-body-container">
+    <div class="browse-jobs-search">
+        <div class="container">
+            <div class="job-search-container">
+                <div class="job-search-criteria">
+                    <form asp-controller="Jobs" asp-action="Index" id="SearchJobsForm" method="get">
+                        <div class="job-search-block">
+                            <div class="row d-flex align-items-center">
+                                <div class="col-12 col-lg-4 no-padding">
+                                    <h1 class="job-search-header-text">Search Jobs:</h1>
+                                </div>
+                                <div class="col-12 col-lg-3">
+                                    @Html.TextBox("keywords", null, new { PlaceHolder = "Keywords", @class = "form-control", form = "SearchJobsForm" })
+                                </div>
+                                <div class="col-12 col-lg-3">
+                                    @Html.TextBox("location", null, new { PlaceHolder = "Location (optional)", @class = "form-control", form = "SearchJobsForm" })
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <div class="row job-search-button">
+                                        <button id="SearchJobs" form="SearchJobsForm" type="submit" class="btn btn-primary"> Search Jobs</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+        <div class="or-container">
+            <div class="or-inner-box shadow-2">
+                <h4><strong>Or</strong></h4>
+            </div>
+        </div>
+
+    </div>
+    <div class="container">
+        @foreach (BrowseJobsByTypeViewModel bjbtvm in Model.ViewModels)
+        {
+            @Html.React("BrowseJobs", new { list = bjbtvm.Items, header = bjbtvm.Header, hideAllLink = bjbtvm.HideAllLink });
+
+        }
+    </div>
+</div>
+

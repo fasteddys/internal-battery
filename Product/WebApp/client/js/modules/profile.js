@@ -5,10 +5,6 @@
         this.innerHTML = FormattedDateRange($(this).data('startdate'), $(this).data('enddate'));
     });
 
-    $('.work-history-compensation').each(function () {
-        this.innerHTML = FormattedCompensation($(this).data('compensationtype'), $(this).data('compensation'));
-    });
-
     $('.education-history-degree').each(function () {
         this.innerHTML = FormattedDegreeAndType($(this).data('degreetype'), $(this).data('degree'));
     });
@@ -429,7 +425,6 @@ function CreateWorkHistoryDiv(WorkHistoryInfo) {
     divHtml += FormattedDateRange(WorkHistoryInfo.startDate, WorkHistoryInfo.endDate);
     divHtml += "</div>";
     divHtml += "<div id=\"ProfileWorkHistory_Compensation_@wh.SubscriberWorkHistoryGuid\" class=\"col-11 work-history-compensation\" data-compensation=\"@wh.Compensation\" data-compensationtype=\"@wh.CompensationType\">";
-    divHtml += FormattedCompensation(WorkHistoryInfo.compensationType, WorkHistoryInfo.compensation);
     divHtml += "</div>";
     divHtml += "<div id=\"ProfileWorkHistory_Description_@wh.SubscriberWorkHistoryGuid\" class=\"col-11 work-history-description more\" data-description=\"@wh.JobDecription\">";
     divHtml += "@wh.JobDecription";

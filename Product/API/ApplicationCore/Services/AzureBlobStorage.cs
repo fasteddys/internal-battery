@@ -15,11 +15,15 @@ namespace UpDiddyApi.ApplicationCore.Services
         private CloudStorageAccount _account;
         private CloudBlobClient _client;
         private string _containerName;
+        private string _assetContainer;
+        private string _appDataContainer;
 
         public AzureBlobStorage(IConfiguration config)
         {
             string storageConnectionString = config["StorageAccount:ConnectionString"];
             _containerName = config["StorageAccount:DefaultContainer"];
+            _assetContainer = config["StorageAccount:AssetContainer"];
+            _appDataContainer = config["StorageAccount:AppDataContainer"];
             if (!CloudStorageAccount.TryParse(storageConnectionString, out _account))
                 throw new Exception("Unable to parse StorageAccount:ConnectionString");
 
@@ -65,6 +69,21 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return blob.Name;
         }
+
+
+        public async Task<string> UploadBlobAsync(string blobName, byte[] blobArray)
+        {
+            CloudBlobContainer cloudBlobContainer = _client.GetContainerReference(_assetContainer);
+            await cloudBlobContainer.CreateIfNotExistsAsync();
+
+            CloudBlockBlob blob = cloudBlobContainer.GetBlockBlobReference(blobName);
+            Stream stream = new MemoryStream(blobArray);
+            await blob.UploadFromStreamAsync(stream);
+
+            return blob.Name;
+        }
+
+
 
         private async Task<string> UploadFileAsync(string fileName, Stream fileStream)
         {

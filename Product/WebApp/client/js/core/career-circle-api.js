@@ -67,6 +67,23 @@
         });
     }
 
+
+    var uploadAvatar = function (avatar) {
+        var formData = new FormData();
+        formData.append("avatar", avatar);  
+        return _http.post('/subscriber/avatar', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+    }  
+
+    var removeAvatar = function () {
+        return _http.delete('/subscriber/avatar');
+    }
+
+
+
     var uploadResume = function (resume, parseResume) {
         var formData = new FormData();
         formData.append("resume", resume);
@@ -153,6 +170,8 @@
         getJobAppReport: getJobAppReport,
         requestVerification: requestVerification,
         getOffer: getOffer,
-        claimOffer: claimOffer
+        claimOffer: claimOffer,
+        uploadAvatar: uploadAvatar,
+        removeAvatar: removeAvatar
     };
 })(API_URL);

@@ -18,6 +18,7 @@
     #SocialLinksModal,
     #SkillsModal {
         .modal-body {
+            line-height: 1;
             .profile-edit-modal-header-container {
                 border-bottom: 1px solid $color-secondary;
                 margin-bottom: 2rem;
@@ -44,7 +45,7 @@
 
                 .modal-edit-input-label {
                     position: absolute;
-                    top: -10px;
+                    top: -8px;
                     left: 1rem;
                     background-color: $color-white;
                     color: $color-secondary;
@@ -90,7 +91,7 @@
                 }
 
                 .modal-edit-input {
-                    padding: 2px 0;
+                    padding-top: 2px;
 
                     span {
                         display: inline;
@@ -166,6 +167,11 @@
 
                 .career-circle-profile-email {
                     color: $color-primary;
+                }
+
+                .career-circle-profile-avatar {
+                    border-radius: 100%;
+                    max-width: 100px;
                 }
             }
         }
