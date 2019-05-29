@@ -9,5 +9,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public interface IJobPostingRepository : IUpDiddyRepositoryBase<JobPosting>
     {
         Task<IQueryable<JobPosting>> GetAllJobPostings();
+        Task<JobPosting> GetJobPostingByGuid(Guid jobPostingGuid);
     }
 }

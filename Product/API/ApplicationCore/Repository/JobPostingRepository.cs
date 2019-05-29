@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,6 +19,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public Task<IQueryable<JobPosting>> GetAllJobPostings()
         {
            return GetAllAsync();
+        }
+
+        public  async Task<JobPosting> GetJobPostingByGuid(Guid jobPostingGuid)
+        {
+
+            var queryableJobPosting = await GetAllAsync();
+            var jobPostingResult=queryableJobPosting
+                                .Where(jp => jp.IsDeleted == 0 && jp.JobPostingGuid == jobPostingGuid)
+                                .ToList();
+
+            return jobPostingResult.Count==0 ? null : jobPostingResult[0];
         }
     }
 }

@@ -163,6 +163,8 @@ namespace UpDiddyApi.Models
         public DbSet<JobSiteScrapeStatistic> JobSiteScrapeStatistic { get; set; }
         public DbSet<ZeroBounce> ZeroBounce { get; set; }
 
+        public DbSet<JobReferral> JobReferral { get; set; }
+
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
@@ -371,6 +373,18 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<JobApplication>()
                 .Property(ja => ja.JobApplicationStatusId)
                 .HasDefaultValue(1);
+
+            //added for foreign key relationship
+            modelBuilder.Entity<JobReferral>()
+                .HasOne<Subscriber>()
+                .WithMany()
+                .HasForeignKey(jr => jr.ReferralId);
+
+            modelBuilder.Entity<JobReferral>()
+               .HasOne<Subscriber>()
+               .WithMany()
+               .HasForeignKey(jr => jr.RefereeId)
+               .IsRequired(false);
         }
     }
 }

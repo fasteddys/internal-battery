@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using X.PagedList;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Security.Claims;
 
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -69,7 +70,7 @@ namespace UpDiddy.Controllers
                                       queryParametersString);
 
                 if (User.Identity.IsAuthenticated)
-                    favoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1:page, pageCount).Select(job => job.JobPostingGuid).ToList());
+                    favoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
                  
             }
             catch(ApiException e)
@@ -95,6 +96,7 @@ namespace UpDiddy.Controllers
                 RequestId = jobSearchResultDto.RequestId,
                 ClientEventId = jobSearchResultDto.ClientEventId,
                 JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount),
+                FavoritesMap = favoritesMap,
                 Facets= jobSearchResultDto.Facets
             };
 
@@ -239,6 +241,19 @@ namespace UpDiddy.Controllers
                 );
                 jdvm.ContactPhone = job.Recruiter?.PhoneNumber;
             }
+
+            //check if user is logged in
+            if(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value!=null)
+            {
+                var subscriber = await _api.SubscriberAsync(Guid.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value), false);
+                jdvm.LoggedInSubscriberGuid = subscriber.SubscriberGuid;
+                jdvm.LoggedInSubscriberEmail = subscriber.Email;
+                jdvm.LoggedInSubscriberName = subscriber.FirstName + " "+ subscriber.LastName;
+            }
+
+            //update job as viewed if there is referrer code
+            if (Request.Cookies["referrerCode"] != null)
+                await _Api.UpdateJobViewed(Request.Cookies["referrerCode"].ToString());
  
             return View("JobDetails", jdvm);
         }
@@ -1212,6 +1227,18 @@ namespace UpDiddy.Controllers
 
 
 
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("[controller]/ReferAJob", Name = "ReferJobToFriend")]
+        public async Task<IActionResult> ReferAJob(string jobPostingId, string referrerGuid,string refereeName, string refereeEmailId, string descriptionEmailBody)
+        {
+            //send email to referree for the job posting
+            await _api.ReferJobPosting(jobPostingId, referrerGuid, refereeName, refereeEmailId, descriptionEmailBody);
+
+            Guid jobPostingGuid = Guid.Parse(jobPostingId);
+            return await JobAsync(jobPostingGuid);
         }
     }
 }

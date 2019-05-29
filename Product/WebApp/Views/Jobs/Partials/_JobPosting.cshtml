@@ -1,6 +1,7 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
 @using UpDiddyLib.Helpers
+@using System.Security.Claims;
 @using React.AspNet;
 @model JobDetailsViewModel
 @{
@@ -26,6 +27,17 @@
                     <div class="job-company"><i class="far fa-building mr-2"></i> @Model.Company</div>
                     <div class="job-posted-date"><i class="fas fa-clock mr-2"></i> Posted: @Model.PostedDate</div>
                 </div>
+
+
+
+
+                @if (Model.LoggedInSubscriberGuid!=null)
+                {
+                    <div class="container-align-right">
+                        <button type="button" data-toggle="modal" data-target="#openEmailModal">Send Email</button>
+                    </div>
+                }
+
                 <div class="apply-button container-align-right">
                     @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
                             Text = "Apply <i class=\"fas fa-arrow-right\"></i>",

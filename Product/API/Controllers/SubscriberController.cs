@@ -49,6 +49,7 @@ namespace UpDiddyApi.Controllers
         private ISubscriberService _subscriberService;
         private ICloudStorage _cloudStorage;
         private ISysEmail _sysEmail;
+        private IJobService _jobService;
         private readonly IRepositoryWrapper _repositoryWrapper;
 
         public SubscriberController(UpDiddyDbContext db,
@@ -61,7 +62,8 @@ namespace UpDiddyApi.Controllers
             ISysEmail sysEmail,
             IAuthorizationService authorizationService,
             IRepositoryWrapper repositoryWrapper,
-            ISubscriberService subscriberService)
+            ISubscriberService subscriberService,
+            IJobService jobService)
         {
             _db = db;
             _mapper = mapper;
@@ -74,6 +76,7 @@ namespace UpDiddyApi.Controllers
             _authorizationService = authorizationService;
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = subscriberService;
+            _jobService = jobService;
         }
 
         #region Basic Subscriber Endpoints
@@ -157,7 +160,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost("/api/[controller]")]
-        public IActionResult NewSubscriber()
+        public IActionResult NewSubscriber([FromBody]string referralCode=null)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             Subscriber subscriber = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid).FirstOrDefault();
@@ -179,6 +182,12 @@ namespace UpDiddyApi.Controllers
             // Save subscriber to database 
             _db.Subscriber.Add(subscriber);
             _db.SaveChanges();
+
+            //updatejiobReferral if referral is not empty
+            if(!string.IsNullOrEmpty(referralCode))
+            {
+                _jobService.UpdateJobReferral(referralCode, subscriber.SubscriberGuid.ToString());
+            }
 
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
         }
@@ -840,6 +849,12 @@ namespace UpDiddyApi.Controllers
                     _syslog.Log(LogLevel.Error, "SubscriberController.ExpressSignUp:: Error occured while attempting save Subscriber and contact DB updates for (email: {@Email}). Exception: {@Exception}", signUpDto.email, ex);
                     return StatusCode(500);
                 }
+            }
+
+            //check to see if there is any referralCode to map to JobReferral
+            if (signUpDto.referralCode != null)
+            {
+                _jobService.UpdateJobReferral(signUpDto.referralCode, subscriber.SubscriberGuid.ToString());
             }
 
             SendVerificationEmail(subscriber.Email, signUpDto.verifyUrl + subscriber.EmailVerification.Token);

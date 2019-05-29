@@ -1,3 +1,4 @@
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
-    public class SubscriberRepository :UpDiddyRepositoryBase<Subscriber>, ISubscriberRepository
+    public class SubscriberRepository : UpDiddyRepositoryBase<Subscriber>, ISubscriberRepository
     {
         private readonly UpDiddyDbContext _dbContext;
         public SubscriberRepository(UpDiddyDbContext dbContext) : base(dbContext)
@@ -17,7 +18,29 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public Task<IQueryable<Subscriber>> GetAllSubscribersAsync()
         {
-           return GetAllAsync();
+            return GetAllAsync();
+        }
+
+        public async Task<Subscriber> GetSubscriberByEmailAsync(string email)
+        {
+            var queryableSubscriber = await GetAllAsync();
+
+            var subscriberResult = queryableSubscriber
+                              .Where(s => s.IsDeleted == 0 && s.Email == email)
+                              .ToList();
+
+            return subscriberResult.Count == 0 ? null : subscriberResult[0];
+        }
+
+        public async Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid)
+        {
+            var queryableSubscriber = await GetAllAsync();
+
+            var subscriberResult = queryableSubscriber
+                              .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                              .ToList();
+
+            return subscriberResult.Count == 0 ? null : subscriberResult[0];
         }
     }
 }

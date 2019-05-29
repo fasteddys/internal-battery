@@ -35,6 +35,7 @@ using Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyLib.Helpers;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.Controllers
 {
@@ -51,6 +52,7 @@ namespace UpDiddyApi.Controllers
         private readonly CloudTalent _cloudTalent = null;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IServiceProvider _services;
+        private readonly IJobService _jobService;
 
         #region constructor 
         public JobController(IServiceProvider services)
@@ -63,10 +65,13 @@ namespace UpDiddyApi.Controllers
             _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
             _syslog = _services.GetService<ILogger<JobController>>();
             _httpClientFactory = _services.GetService<IHttpClientFactory>();
-            _repositoryWrapper = _services.GetService<IRepositoryWrapper>(); ;
+            _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
 
             _postingTTL = int.Parse(_configuration["JobPosting:PostingTTLInDays"]);
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+
+            //job Service to perform all business logic related to jobs
+            _jobService = _services.GetService<IJobService>();
         }
 
         #endregion
@@ -161,15 +166,12 @@ namespace UpDiddyApi.Controllers
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job posting favorite required" });
 
                 // Validate request 
-                Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                // validate the user is trying to create a favorite for themselves 
-                if (jobPostingFavoriteDto.Subscriber == null || jobPostingFavoriteDto.Subscriber.SubscriberGuid == null || jobPostingFavoriteDto.Subscriber.SubscriberGuid != subsriberGuidClaim)
-                    return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Cannot create job favorites for other users" });
+                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
                 JobPosting jobPosting = null;
                 Subscriber subscriber = null;
                 string ErrorMsg = string.Empty;
-                if (JobPostingFavoriteFactory.ValidateJobPostingFavorite(_db, jobPostingFavoriteDto, subsriberGuidClaim, ref subscriber, ref jobPosting, ref ErrorMsg) == false)
+                if (JobPostingFavoriteFactory.ValidateJobPostingFavorite(_db, jobPostingFavoriteDto, subscriberGuid, ref subscriber, ref jobPosting, ref ErrorMsg) == false)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ErrorMsg });
                 else
                 {
@@ -487,6 +489,34 @@ namespace UpDiddyApi.Controllers
             return _repositoryWrapper.JobCategoryRepository.GetAllAsync().Result.ToList();
         }
 
+        #endregion
+
+        #region Job Referral
+        [HttpPost]
+        [Authorize]
+        [Route("api/[controller]/referral")]
+        public async Task<IActionResult> JobReferral([FromBody]JobReferralDto jobReferralDto)
+        {
+            await _jobService.ReferJobToFriend(jobReferralDto);
+            return Ok();
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("api/[controller]/update-referral")]
+        public async Task<IActionResult> UpdateReferral([FromBody]JobReferralDto jobReferralDto)
+        {
+            await _jobService.UpdateJobReferral(jobReferralDto.JobReferralGuid, jobReferralDto.RefereeGuid);
+            return Ok();
+        }
+
+        [HttpPut]
+        [Route("api/[controller]/update-job-viewed")]
+        public async Task<IActionResult> UpdateJobViewed([FromBody]string referrerCode)
+        {
+            await _jobService.UpdateJobViewed(referrerCode);
+            return Ok();
+        }
         #endregion
     }
 }
