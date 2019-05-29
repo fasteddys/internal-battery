@@ -46,14 +46,14 @@
                         <div class="form-group row">
                             <label class="emailModalBodyHeadings col-sm-4 col-form-label">To Email :</label>
                             <div class="col-sm-8">
-                                @Html.TextBox("refereeEmailId", null, new { PlaceHolder = "Email Id", @class = "form-control", form = "emailJobDetails", required = true })
+                                @Html.TextBox("refereeEmailId", null, new { PlaceHolder = "Email", @class = "form-control", form = "emailJobDetails", required = true })
                             </div>
                         </div>
 
                         <div class="form-group row">
                             <label class="emailModalBodyHeadings col-sm-12 col-form-label">Description :</label>
                             <div class="col-sm-12">
-                                @Html.TextArea("descriptionEmailBody", "Checkout about this awesome job", new { PlaceHolder = "Description", @class = "form-control", form = "emailJobDetails", rows = "4", cols = "50" })
+                                @Html.TextArea("descriptionEmailBody", "Checkout this awesome job!", new { PlaceHolder = "Description", @class = "form-control", form = "emailJobDetails", rows = "4", cols = "50" })
                             </div>
                         </div>
                       
