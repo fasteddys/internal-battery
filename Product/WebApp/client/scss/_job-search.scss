@@ -111,9 +111,11 @@
                 margin: 0;
 
                 .page-item.active {
-                    a {
+
+                    span {
                         background-color: $color-secondary;
                         border-color: $color-secondary;
+                        cursor: default;
                     }
                 }
 
