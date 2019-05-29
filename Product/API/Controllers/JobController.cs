@@ -479,6 +479,7 @@ namespace UpDiddyApi.Controllers
 
         #region Job Referral
         [HttpPost]
+        [Authorize]
         [Route("api/[controller]/referral")]
         public async Task<IActionResult> JobReferral([FromBody]JobReferralDto jobReferralDto)
         {
@@ -487,6 +488,7 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPut]
+        [Authorize]
         [Route("api/[controller]/update-referral")]
         public async Task<IActionResult> UpdateReferral([FromBody]JobReferralDto jobReferralDto)
         {
