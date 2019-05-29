@@ -125,7 +125,7 @@
             }
         }
     }
-    
+
     .job-search-container {
         font-family: $opensans-regular;
 
@@ -169,6 +169,8 @@
             padding-bottom: $rem-24;
 
             .facet-container {
+                background-color: $color-white;
+
                 .moreLink {
                     display: none;
                 }
@@ -201,11 +203,11 @@
                 }
 
                 i {
-                    border: solid blue;
+                    border: solid white;
                     border-width: 0 3px 3px 0;
                     display: inline-block;
                     padding: 3px;
-                    font-size:8px;
+                    font-size: 8px;
                 }
 
                 .up {
@@ -222,8 +224,10 @@
             .togglelink {
                 float: right !important;
                 font-size: 14px;
-                color: blue;
-                font-weight:bold;
+                color: white;
+                font-weight: bold;
+                background-color: #03264A;
+                border: 0.125rem solid #03264A;
             }
 
             .job-container {

@@ -3,10 +3,12 @@
 @using X.PagedList.Mvc.Core;
 @using X.PagedList;
 @using React.AspNet;
+@using System.Globalization;
+@using System.Threading;
 
 @{
     string url = ViewBag.QueryUrl as string;
-    int counter = 0;
+ int counter = 0;
 }
 <div class="job-search-container">
     @*search filter*@
@@ -55,7 +57,7 @@
                     <div class="facet-container">
                         <div class="container row">
                             <div class="col-12">
-                                <a id="toggleLink" class="togglelink" data-toggle="collapse" data-target="#SearchParameters">Filter <i id="toggleArrow" class="arrow down"></i></a>
+                                <button id="toggleLink" class="togglelink col-12 btn btn-primary" data-toggle="collapse" data-target="#SearchParameters">Filter <i id="toggleArrow" class="arrow down"></i></button>
                             </div>
                             <div id="SearchParameters" class="col-12">
                                 <div id="active-filters">
@@ -131,6 +133,10 @@
                                                     <div>
                                                         <a href="@string.Format("{0}city={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
+                                                    @if (counter >= 15)
+                                                    {
+                                                        break;
+                                                    }
                                                 }
                                                 @if (facets.Facets.Count > 5)
                                                 {
@@ -191,7 +197,7 @@
                                             </div>
                                         }
                                     }
-                                
+
                                 }
 
 
@@ -200,49 +206,49 @@
                     </div>
                 </div>
             }
-            @{ 
+            @{
                 string columnClass = Model.Facets != null ? "10" : "12";
             }
-                <div class="col-12 col-md-@columnClass">
-                    <div class="container" id="">
-                        @{ await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);}
+            <div class="col-12 col-md-@columnClass">
+                <div class="container" id="">
+                    @{ await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);}
 
-                        <div class="row job-pagination container-align-center">
-                            @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("Index", new
-                       { page,
-                           keywords= ViewContext.HttpContext.Request.Query["keywords"],
-                           location= ViewContext.HttpContext.Request.Query["location"],
-                           datepublished = ViewContext.HttpContext.Request.Query["datepublished"],
-                           employmenttype= ViewContext.HttpContext.Request.Query["employmenttype"],
-                           city= ViewContext.HttpContext.Request.Query["city"],
-                           jobcategory= ViewContext.HttpContext.Request.Query["jobcategory"],
-                           industry= ViewContext.HttpContext.Request.Query["industry"]
-                       }),new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                           LiElementClasses = new string[] { "page-item" },
-                           PageClasses = new string[] { "page-link" },
-                           MaximumPageNumbersToDisplay=5,
-                           DisplayLinkToFirstPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                           DisplayLinkToLastPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                           DisplayLinkToPreviousPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                           DisplayLinkToNextPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
-                           LinkToFirstPageFormat = "««",
-                           LinkToPreviousPageFormat = "«",
-                           LinkToNextPageFormat = "»",
-                           LinkToLastPageFormat = "»»",
-                           DisplayEllipsesWhenNotShowingAllPageNumbers = true,
-                           ContainerDivClasses = new[] { "pagination-container" },
-                           UlElementClasses = new[] { "pagination" }
-                       })
-                        </div>
+                    <div class="row job-pagination container-align-center">
+                        @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("Index", new
+                   { page,
+                       keywords= ViewContext.HttpContext.Request.Query["keywords"],
+                       location= ViewContext.HttpContext.Request.Query["location"],
+                       datepublished = ViewContext.HttpContext.Request.Query["datepublished"],
+                       employmenttype= ViewContext.HttpContext.Request.Query["employmenttype"],
+                       city= ViewContext.HttpContext.Request.Query["city"],
+                       jobcategory= ViewContext.HttpContext.Request.Query["jobcategory"],
+                       industry= ViewContext.HttpContext.Request.Query["industry"]
+                   }),new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                       LiElementClasses = new string[] { "page-item" },
+                       PageClasses = new string[] { "page-link" },
+                       MaximumPageNumbersToDisplay=5,
+                       DisplayLinkToFirstPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                       DisplayLinkToLastPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                       DisplayLinkToPreviousPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                       DisplayLinkToNextPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                       LinkToFirstPageFormat = "««",
+                       LinkToPreviousPageFormat = "«",
+                       LinkToNextPageFormat = "»",
+                       LinkToLastPageFormat = "»»",
+                       DisplayEllipsesWhenNotShowingAllPageNumbers = true,
+                       ContainerDivClasses = new[] { "pagination-container" },
+                       UlElementClasses = new[] { "pagination" }
+                   })
                     </div>
                 </div>
             </div>
         </div>
+    </div>
     @*search results*@
 </div>
 
 @section Scripts{
-<script type="text/javascript">
+    <script type="text/javascript">
         "use strict";
 
         $(document).ready(function () {
@@ -251,8 +257,11 @@
 
             @{
                 var queryParameterList = @ViewContext.HttpContext.Request.Query.ToArray();
+
+                CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
+                TextInfo textInfo = cultureInfo.TextInfo;
             }
-            @if(!string.IsNullOrEmpty(url))
+            @if (!string.IsNullOrEmpty(url))
             {
                  @foreach (var queryParameter in queryParameterList)
             {
@@ -265,7 +274,7 @@
 
 
                <text>
-            innerHtml = innerHtml + "<div class='facet-link'><span>@queryParameter.Value<span>&nbsp<a href='@undoUrl'>undo</a></div>";
+            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl'>undo</a></div>";
             parentElementUndoElement.innerHTML = innerHtml;
                 </text>
             }
@@ -286,7 +295,7 @@
 
             for (var i = 0; i < childElements.length; i++) {
                 console.log(childElements[i].style.display);
-                childElements[i].style.display = 'block';
+                childElements[i].style.display = 'inline-block';
             }
             element.style.display = 'none';
     }
@@ -309,7 +318,7 @@
             }
         });
     });
-</script>
+    </script>
 }
 
 

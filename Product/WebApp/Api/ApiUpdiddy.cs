@@ -1414,7 +1414,7 @@ namespace UpDiddy.Api
         public async Task ReferJobPosting(string jobPostingId, string referrerGuid, string refereeName, string refereeEmailId, string descriptionEmailBody)
         {
             //refer Url
-            var referUrl = $"{_configuration["Environment:BaseUrl"].TrimEnd('/')}/jobs/{Guid.Parse(jobPostingId)}";
+            var referUrl = $"{_configuration["Environment:BaseUrl"].TrimEnd('/')}/job/{Guid.Parse(jobPostingId)}";
 
             JobReferralDto jobReferralDto = new JobReferralDto()
             {
