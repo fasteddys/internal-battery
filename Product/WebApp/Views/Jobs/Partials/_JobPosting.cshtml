@@ -2,6 +2,7 @@
 @using UpDiddyLib.Dto
 @using UpDiddyLib.Helpers
 @using System.Security.Claims;
+@using React.AspNet;
 @model JobDetailsViewModel
 @{
     string url = string.Format("/jobs/apply/{0}", Model.PostingId);
@@ -15,8 +16,16 @@
                     @Model.Name
                 </h1>
                 <div class="job-details mb-3">
-                    <div class="job-company"><i class="far fa-building"></i> @Model.Company</div>
-                    <div class="job-posted-date"><i class="fas fa-clock"></i> Posted: @Model.PostedDate</div>
+                    <div class="mb-3">
+                        @Html.React("Favorite", 
+                            new { 
+                                jobGuid = Model.JobPostingGuid.Value,
+                                jobPostingFavoriteGuid = Model.JobPostingFavoriteGuid.HasValue ? Model.JobPostingFavoriteGuid.Value.ToString() : null 
+                            }
+                        )
+                    </div>
+                    <div class="job-company"><i class="far fa-building mr-2"></i> @Model.Company</div>
+                    <div class="job-posted-date"><i class="fas fa-clock mr-2"></i> Posted: @Model.PostedDate</div>
                 </div>
 
 

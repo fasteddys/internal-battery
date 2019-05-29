@@ -2,6 +2,128 @@
 
 //Base styles
 @media (min-width:0px) {
+    .browse-jobs-body-container {
+        background-color: $color-tertiary-light-gray;
+
+        .job-search-container {
+            .job-search-criteria {
+                .job-search-block {
+                    text-align: center;
+
+                    .row {
+                        > div {
+                            margin-bottom: 1rem;
+
+                            @media (min-width: 992px) {
+                                margin-bottom: 0;
+                            }
+                        }
+                    }
+
+                    .job-search-header-text {
+                        @media (min-width: 992px) {
+                            text-align: left;
+                        }
+                    }
+
+                    .job-search-button {
+                        margin: 0;
+                        text-align: center;
+
+                        @media (min-width: 992px) {
+                            text-align: right;
+                        }
+                    }
+                }
+            }
+        }
+
+        .browse-jobs-search {
+            padding: 3rem 0;
+            background-color: $color-secondary;
+            position: relative;
+
+            .or-container {
+                position: absolute;
+                background-color: $color-tertiary-light-gray;
+                padding: .5rem;
+                border-radius: 3rem;
+                left: 50%;
+                transform: translateX(-50%);
+                bottom: -1.75rem;
+
+                .or-inner-box {
+                    background-color: $color-white;
+                    padding: .5rem 1rem;
+                    border-radius: 2rem;
+
+                    h4 {
+                        margin: 0;
+                    }
+                }
+            }
+        }
+
+        .browse-jobs-container {
+            padding: 3rem 0;
+
+            > .row {
+                padding-top: 1rem;
+            }
+
+            .job-type-listing {
+                margin: .5rem;
+                transition: box-shadow 0.1s ease-in-out;
+                border-top-left-radius: .5rem;
+                border-bottom-right-radius: 1rem;
+                background-color: $color-white;
+                margin-bottom: 1rem;
+
+                a {
+                    color: $color-secondary;
+                }
+
+                &:hover {
+                    box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+                }
+
+                .row {
+                    > div {
+                        padding: .5rem;
+                    }
+                }
+
+
+                .col-3 {
+                    background-color: $color-primary;
+                    color: $color-white;
+                    border-bottom-right-radius: .5rem;
+                }
+            }
+        }
+
+        nav {
+            text-transform: none;
+            height: initial;
+            border: 0;
+
+            ul {
+                margin: 0;
+
+                .page-item.active {
+                    a {
+                        background-color: $color-secondary;
+                        border-color: $color-secondary;
+                    }
+                }
+
+                .page-link {
+                    color: $color-secondary;
+                }
+            }
+        }
+    }
+    
     .job-search-container {
         font-family: $opensans-regular;
 
@@ -43,6 +165,64 @@
             background-color: $color-alabaster;
             padding-top: $rem-24;
             padding-bottom: $rem-24;
+
+            .facet-container {
+                .moreLink {
+                    display: none;
+                }
+
+                .facets-style {
+                    box-sizing: border-box;
+                    padding: 35px 0px 35px 0px;
+                }
+
+                .facet-header {
+                    font-size: 15px;
+                    font-weight: bold;
+                }
+
+                .facet-link {
+                    font-size: 12px;
+                }
+
+                .moreLink-style {
+                    font-size: 12px;
+                }
+
+                #SearchParameters.in,
+                #SearchParameters.collapsing {
+                    display: block !important;
+                }
+
+                .city {
+                    display: none;
+                }
+
+                i {
+                    border: solid blue;
+                    border-width: 0 3px 3px 0;
+                    display: inline-block;
+                    padding: 3px;
+                    font-size:8px;
+                }
+
+                .up {
+                    transform: rotate(-135deg);
+                    -webkit-transform: rotate(-135deg);
+                }
+
+                .down {
+                    transform: rotate(45deg);
+                    -webkit-transform: rotate(45deg);
+                }
+            }
+
+            .togglelink {
+                float: right !important;
+                font-size: 14px;
+                color: blue;
+                font-weight:bold;
+            }
 
             .job-container {
                 .job-tile {
@@ -106,20 +286,43 @@
 
 // Extra Small Styles
 @media (min-width: 320px) {
+
 }
 
 // Small Styles
 @media (min-width: 576px) {
+
 }
 
 // Medium Styles
 @media (min-width: 768px) {
+    .togglelink {
+        display: none;
+    }
+
+    .city {
+        display: block!important;
+    }
 }
 
 // Large Styles
 @media (min-width: 992px) {
+    .togglelink {
+        display: none;
+    }
+
+    .city {
+        display: block!important;
+    }
 }
 
 // Extra Large Styles
 @media (min-width: 1200px) {
+    .togglelink {
+        display: none;
+    }
+
+    .city {
+        display: block!important;
+    }
 }

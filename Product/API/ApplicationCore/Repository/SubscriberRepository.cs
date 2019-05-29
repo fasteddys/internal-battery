@@ -15,6 +15,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             _dbContext = dbContext;
         }
+
+        public Task<IQueryable<Subscriber>> GetAllSubscribersAsync()
+        {
+            return GetAllAsync();
+        }
+
         public async Task<Subscriber> GetSubscriberByEmailAsync(string email)
         {
             var queryableSubscriber = await GetAllAsync();

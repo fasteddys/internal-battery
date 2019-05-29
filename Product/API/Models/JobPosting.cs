@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using UpDiddyLib.Dto;
 
 
@@ -62,6 +63,7 @@ namespace UpDiddyApi.Models
         /// <summary>
         /// The recruiter (which may or may not also be a subscriber) who posted the job 
         /// </summary>
+        [JsonIgnore]
         public int? RecruiterId { get; set; }
 
         public virtual Recruiter Recruiter { get; set; }
@@ -69,6 +71,7 @@ namespace UpDiddyApi.Models
         /// <summary>
         /// Guid of the company that owns the posting
         /// </summary>
+        [JsonIgnore]
         public int? CompanyId { get; set; }
 
         public virtual Company Company { get; set; }

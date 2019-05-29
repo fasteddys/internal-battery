@@ -23,6 +23,7 @@ using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 using System.Threading;
 using UpDiddyLib.Dto.Reporting;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace UpDiddy.Api
 {
@@ -556,6 +557,14 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public async Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page)
+        {
+            string endpoint = "subscriber/me/jobs";
+            if(page.HasValue)
+                endpoint = QueryHelpers.AddQueryString(endpoint, "page", page.Value.ToString());
+            return await GetAsync<PagingDto<UpDiddyLib.Dto.User.JobDto>>(endpoint);
+        }
+
         public async Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null)
         {
             string cacheKey = $"job-{JobPostingGuid}";
@@ -568,7 +577,7 @@ namespace UpDiddy.Api
 
             #region analytics
             GoogleCloudEventsTrackingDto eventDto = null;
-            if (dto != null)
+            if (dto != null && dto.RequestId != null)
                 eventDto = await RecordClientEventAsync(JobPostingGuid, dto);
 
             rval.RequestId = eventDto?.RequestId;
@@ -578,13 +587,41 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        public async Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location)
+        public async Task<JobSearchResultDto> GetJobsByLocation(string searchQueryParameterString)
         {
-            //job search criteria for api "/country/state/city/industry/job-category/skill/page-num" and query strings appended
 
+            var searchFilter = $"all/all/all/all/all/all/0{searchQueryParameterString}page-size=100";
+            string cacheKey = $"job-{searchFilter}";
+            JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
 
-            var searchFilter = $"all/all/all/all/all/all/0?page-size=100&location={location}&keywords={keywords}&page-num=0";
-            string cacheKey = $"job-{keywords}/{location}";
+            if (rval != null)
+                return rval;
+            else
+            {
+
+                rval = await _GetJobsByLocation(searchFilter);
+                SetCachedValue<JobSearchResultDto>(cacheKey, rval);
+            }
+
+            return rval;
+        }
+
+        public async Task<JobSearchResultDto> GetJobsUsingRoute(
+            string Country = null,
+            string State = null,
+            string City = null,
+            string Industry = null,
+            string Category = null,
+            int page = 0)
+        {
+            Country = Country ?? "all";
+            State = State ?? "all";
+            City = City ?? "all";
+            Industry = Industry ?? "all";
+            Category = Category ?? "all";
+
+            var searchFilter = $"{Country}/{State}/{City}/{Industry}/{Category}/all/{page}";
+            string cacheKey = string.Format("job-{0}/{1}/{2}/{3}/{4}/{5}", Country, State, City, Industry, Category, page);
             JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
 
             if (rval != null)
@@ -726,8 +763,16 @@ namespace UpDiddy.Api
             {
                 return null;
             };
+        }
 
-
+        /// <summary>
+        /// POST search for getting mapping of job guid favorites for a subscriber.
+        /// </summary>
+        /// <param name="jobGuids"></param>
+        /// <returns>Dictionary<Guid, Guid> JobPosting Guid to JobPostingFavorite Guid</returns>
+        public async Task<Dictionary<Guid, Guid>> JobFavoritesByJobGuidAsync(List<Guid> jobGuids)
+        {
+            return await PostAsync<Dictionary<Guid, Guid>>("subscriber/me/job-favorite/map", jobGuids);
         }
 
         public async Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid)
@@ -908,6 +953,21 @@ namespace UpDiddy.Api
                 return await GetStatesAsync();
 
             return await GetAsync<IList<StateDto>>("country/" + countryGuid?.ToString() + "/state");
+        }
+
+        public async Task<IList<StateDto>> GetAllStatesAsync()
+        {
+            string cacheKey = $"States";
+            IList<StateDto> rval = GetCachedValue<IList<StateDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await GetStatesAsync();
+                SetCachedValue<IList<StateDto>>(cacheKey, rval);
+            }
+            return rval;
         }
 
         public async Task<IList<ExperienceLevelDto>> _GetExperienceLevelAsync()
@@ -1331,6 +1391,26 @@ namespace UpDiddy.Api
             }
         }
 
+        public async Task<IList<JobCategoryDto>> GetJobCategories()
+        {
+            string cacheKey = $"JobCategories";
+            IList<JobCategoryDto> rval = GetCachedValue<IList<JobCategoryDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetJobCategories();
+                SetCachedValue<IList<JobCategoryDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        private async Task<IList<JobCategoryDto>> _GetJobCategories()
+        {
+            return await GetAsync<IList<JobCategoryDto>>("job/categories");
+            }
+
         public async Task ReferJobPosting(string jobPostingId, string referrerGuid, string refereeName, string refereeEmailId, string descriptionEmailBody)
         {
             //refer Url
@@ -1340,10 +1420,10 @@ namespace UpDiddy.Api
             {
                 JobPostingId = jobPostingId,
                 ReferrerGuid = referrerGuid,
-                RefereeName=refereeName,
+                RefereeName = refereeName,
                 RefereeEmailId = refereeEmailId,
                 DescriptionEmailBody = descriptionEmailBody,
-                ReferUrl= referUrl
+                ReferUrl = referUrl
             };
 
 
@@ -1352,13 +1432,14 @@ namespace UpDiddy.Api
 
         public async Task UpdateJobReferral(string referrerCode, Guid subscriberGuid)
         {
-            await PutAsync<BasicResponseDto>("job/update-referral", new JobReferralDto{ JobReferralGuid = referrerCode, RefereeGuid = subscriberGuid.ToString() });
+            await PutAsync<BasicResponseDto>("job/update-referral", new JobReferralDto { JobReferralGuid = referrerCode, RefereeGuid = subscriberGuid.ToString() });
         }
 
         public async Task UpdateJobViewed(string referrerCode)
         {
-            await PutAsync<BasicResponseDto>("job/update-job-viewed",referrerCode);
+            await PutAsync<BasicResponseDto>("job/update-job-viewed", referrerCode);
         }
+
 
         #endregion
     }

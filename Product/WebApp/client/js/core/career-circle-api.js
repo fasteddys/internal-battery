@@ -7,6 +7,9 @@
         baseURL: apiUrl,
 
         transformRequest: [function (data, headers) {
+            if(!SessionStorage.getJSON(_session_key))
+                return data;
+
             headers['Authorization'] = 'Bearer ' + SessionStorage.getJSON(_session_key).accessToken;
             return data;
         }],
@@ -22,6 +25,11 @@
                 getToken().then(function (jwt) {
                     resolve(config);
                 })
+                .catch(function(err) {
+                    // if I fail to get token then I must not be logged in
+                    window.location = '/Session/SignIn';
+                    reject(err);
+                });
             })
         }
     );
@@ -31,11 +39,15 @@
         var jwt = SessionStorage.getJSON(_session_key);
 
         if (jwt == null || new Date() >= new Date(jwt.expiresOn)) {
-            return new Promise(function(resolve) {
-                retrieveToken().done(function (response) {
-                    SessionStorage.set(_session_key, JSON.stringify(response.data));
-                    resolve(SessionStorage.getJSON(_session_key));
-                });
+            return new Promise(function(resolve, reject) {
+                retrieveToken()
+                    .then(function (response) {
+                        SessionStorage.set(_session_key, JSON.stringify(response.data));
+                        resolve(SessionStorage.getJSON(_session_key));
+                    })
+                    .catch(function(res) {
+                        reject(res);
+                    });
             });
         };
 
@@ -147,15 +159,32 @@
     }
 
     var getSubscriberActionsReport = async function(query) {
-        return _http.get(`/report/subscriber-actions${buildQuery(query)}`);
+        return await _http.get(`/report/subscriber-actions${buildQuery(query)}`);
     }
 
     var getJobAppReport = async function(query) {
-        return _http.get(`/report/job-applications${buildQuery(query)}`);
+        return await _http.get(`/report/job-applications${buildQuery(query)}`);
     }
 
     var requestVerification = function (verifyUrl) {
         return _http.post('/subscriber/request-verification', JSON.stringify({ verifyUrl: verifyUrl }));
+    }
+
+    var addJobFavorite = async function(jobGuid) {
+        var subscriberGuid = SessionStorage.getJSON(_session_key) ? SessionStorage.getJSON(_session_key).uniqueId : null;
+        return await _http.post('/job/favorite', 
+            JSON.stringify({ 
+                jobPosting: {
+                    jobPostingGuid: jobGuid
+                },
+                subscriber: { 
+                    subscriberGuid: subscriberGuid
+                } 
+            }));
+    }
+
+    var deleteJobFavorite = async function(jobGuid) {
+        return await _http.delete(`/job/favorite/${jobGuid}`);
     }
 
     return {
@@ -171,7 +200,10 @@
         requestVerification: requestVerification,
         getOffer: getOffer,
         claimOffer: claimOffer,
+        addJobFavorite: addJobFavorite,
+        deleteJobFavorite: deleteJobFavorite,
         uploadAvatar: uploadAvatar,
         removeAvatar: removeAvatar
     };
+    
 })(API_URL);

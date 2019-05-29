@@ -14,8 +14,6 @@ namespace UpDiddy.ViewModels
         public Guid EditGuid { get; set; }
         public string RequestPath { get; set; }
         public string ErrorMsg { get; set; }
- 
- 
 
         #region Basic job posting information 
         [Required(ErrorMessage = "Job title is required")]
