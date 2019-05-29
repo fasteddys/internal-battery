@@ -22,16 +22,16 @@ namespace UpDiddyApi.Helpers.Job
             jobQuery.Province = GetQueryParam(query, "province", Province);
             jobQuery.City = GetQueryParam(query, "city", City);
             jobQuery.Industry = GetQueryParam(query, "industry", Industry);
-            jobQuery.JobCategory = GetQueryParam(query, "job_category", JobCategory);
+            jobQuery.JobCategory = GetQueryParam(query, "jobcategory", JobCategory);
             jobQuery.Skill = GetQueryParam(query, "skill", Skill);
             // map parameters that can only be specied via a query string parameter 
             jobQuery.Location = GetQueryParam(query, "location");
             jobQuery.PostalCode = GetQueryParam(query, "postal-code");
             jobQuery.StreetAddress = GetQueryParam(query, "street-address");
             jobQuery.Keywords = GetQueryParam(query, "keywords");
-            jobQuery.DatePublished = GetQueryParam(query, "date_published");
+            jobQuery.DatePublished = GetQueryParam(query, "datepublished");
             jobQuery.CompanyName = GetQueryParam(query, "company-name");
-            jobQuery.EmploymentType = GetQueryParam(query, "employment_type");
+            jobQuery.EmploymentType = GetQueryParam(query, "employmenttype");
             jobQuery.ExperienceLevel = GetQueryParam(query, "experience-level");
             jobQuery.EducationLevel = GetQueryParam(query, "education-level");
             jobQuery.SearchRadius = GetIntQueryParam(query, "search-radius");

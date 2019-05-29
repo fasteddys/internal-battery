@@ -15,6 +15,8 @@ using UpDiddyApi.ApplicationCore.Services;
 using System.Net;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using System.Globalization;
+using System.Threading;
 
 namespace UpDiddyApi.Helpers.Job
 {
@@ -106,6 +108,11 @@ namespace UpDiddyApi.Helpers.Job
             string IndustryUrl = JobUrlHelper.GetDefaultIndustryUrl(JobIndustryUrlPrefix, jobQuery);
             string LocationtUrl = JobUrlHelper.GetDefaultLocationUrl(JobLocationUrlPrefix, jobQuery);
 
+
+            //Culture Info for facets
+            CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
+            TextInfo textInfo = cultureInfo.TextInfo;
+
             // Map simple histogram results 
             if (searchJobsResponse.HistogramResults.SimpleHistogramResults != null)
             {
@@ -122,8 +129,8 @@ namespace UpDiddyApi.Helpers.Job
                         {
                             Url = JobUrlHelper.MapFacetToUrl(jobQuery, facet.Name, hrValue.Key, IndustryUrl, LocationtUrl, TopLevelDomain),
                             Count = hrValue.Value.Value,
-                            Label = hrValue.Key
-
+                            UrlParam = hrValue.Key,
+                            Label= textInfo.ToTitleCase(hrValue.Key.ToLower().Replace('_',' '))
                         };
                         facet.Facets.Add(facetItem);
                     }
