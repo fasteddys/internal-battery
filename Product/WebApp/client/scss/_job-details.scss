@@ -90,6 +90,19 @@
         }
     }
 
+    .modal-styling-link {
+        font-weight: bolder;
+        font-size:20px;
+        a {
+            text-decoration: underline;
+        }
+
+
+        a:hover {
+            background-color: blue;
+        }
+    }
+
     .modal input {
         border: 1px solid #03264A !important;
     }
