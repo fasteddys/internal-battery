@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace UpDiddyLib.Dto
@@ -72,5 +73,15 @@ namespace UpDiddyLib.Dto
 
         public string SemanticJobPath { get; set; }
         public string ThirdPartyIdentifier { get; set; }
+
+        public string CityProvince
+        {
+            get
+            {
+                var array = new string[]{ City, Province };
+                return String.Join(", ", array.Where(s => !string.IsNullOrEmpty(s)));
+            }
+        }
     }
+
 }

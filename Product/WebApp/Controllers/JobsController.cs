@@ -158,11 +158,21 @@ namespace UpDiddy.Controllers
                 return RedirectPermanent(job.SemanticJobPath.ToLower());
             }
 
+            Guid? jobFavoriteGuid = null;
+            if(User.Identity.IsAuthenticated)
+            {
+                var favorite = await _api.JobFavoritesByJobGuidAsync(new List<Guid>(){ job.JobPostingGuid.Value });
+                if(favorite.Any())
+                    jobFavoriteGuid = favorite.First().Value;
+            }
+
             JobDetailsViewModel jdvm = new JobDetailsViewModel
             {
                 RequestId = job.RequestId,
                 ClientEventId = job.ClientEventId,
+                JobPostingFavoriteGuid = jobFavoriteGuid,
                 Name = job.Title,
+                JobPostingGuid = job.JobPostingGuid,
                 Company = job.Company?.CompanyName,
                 PostedDate = job.PostingDateUTC == null ? string.Empty : job.PostingDateUTC.ToLocalTime().ToString(),
                 Location = $"{job.City}, {job.Province}, {job.Country}",

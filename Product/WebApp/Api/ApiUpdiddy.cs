@@ -23,6 +23,7 @@ using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 using System.Threading;
 using UpDiddyLib.Dto.Reporting;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace UpDiddy.Api
 {
@@ -554,6 +555,14 @@ namespace UpDiddy.Api
                 SetCachedValue<IList<OfferDto>>(cacheKey, rval);
             }
             return rval;
+        }
+
+        public async Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page)
+        {
+            string endpoint = "subscriber/me/jobs";
+            if(page.HasValue)
+                endpoint = QueryHelpers.AddQueryString(endpoint, "page", page.Value.ToString());
+            return await GetAsync<PagingDto<UpDiddyLib.Dto.User.JobDto>>(endpoint);
         }
 
         public async Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null)

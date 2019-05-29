@@ -13,6 +13,7 @@ namespace UpDiddy.ViewModels
     public class JobDetailsViewModel : BaseViewModel
     {
         public string ClientEventId { get; set; }
+        public Guid? JobPostingFavoriteGuid { get; set; }
         public string RequestId { get; set; }
         public string Name { get; set; }
         public string Company { get; set; }
@@ -25,6 +26,7 @@ namespace UpDiddy.ViewModels
         public string ContactPhone { get; set; }
         public string ContactEmail { get; set; }
         public string ThirdPartyIdentifier { get; set; }
+        public Guid? JobPostingGuid { get; set; }
         public string CompanyBoilerplate { get; set; }
         public bool IsThirdPartyJob { get; set; }
     }

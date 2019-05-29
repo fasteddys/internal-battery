@@ -54,7 +54,6 @@
                         <div class="mt-1">
                             @Html.React("Favorite", 
                                 new { 
-                                    isFavorite = false,
                                     jobGuid = jobSearchResult.JobPostingGuid,
                                     jobPostingFavoriteGuid = Model.FavoritesMap.ContainsKey(jobSearchResult.JobPostingGuid) ? (Guid?) Model.FavoritesMap[jobSearchResult.JobPostingGuid] : null
                                 }
