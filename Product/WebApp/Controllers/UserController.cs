@@ -14,7 +14,7 @@ namespace UpDiddy.Controllers
             _api = api;
         }
         
-        [HttpGet("my-jobs")]
+        [HttpGet("jobs")]
         public async Task<IActionResult> MyJobsAsync(int? page)
         {
             page = page.HasValue ? page.Value : 1;
