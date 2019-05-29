@@ -770,9 +770,9 @@ namespace UpDiddy.Api
             return await PutAsync<BasicResponseDto>("subscriber/onboard");
         }
 
-        public async Task<SubscriberDto> CreateSubscriberAsync()
+        public async Task<SubscriberDto> CreateSubscriberAsync(string referralCode)
         {
-            return await PostAsync<SubscriberDto>("subscriber");
+            return await PostAsync<SubscriberDto>("subscriber", referralCode);
         }
         public async Task<bool> DeleteSubscriberAsync(Guid subscriberGuid)
         {
@@ -1104,7 +1104,12 @@ namespace UpDiddy.Api
             {
                 rval = await _SubscriberAsync(subscriberGuid);
                 if (rval == null)
-                    rval = await CreateSubscriberAsync();
+                {
+                    //check if there is any referralCode
+                    var referralCode=_contextAccessor.HttpContext.Request.Cookies["referrerCode"] == null ? null : _contextAccessor.HttpContext.Request.Cookies["referrerCode"].ToString();
+                    rval = await CreateSubscriberAsync(referralCode);
+                }
+                   
                 SetCachedValue<SubscriberDto>(cacheKey, rval);
             }
             return rval;
@@ -1308,6 +1313,35 @@ namespace UpDiddy.Api
         public async Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid)
         {
             return await GetAsync<JobPostingDto>("job/expired/" + JobPostingGuid);
+        }
+
+        public async Task ReferJobPosting(string jobPostingId, string referrerGuid, string refereeName, string refereeEmailId, string descriptionEmailBody)
+        {
+            //refer Url
+            var referUrl = $"{_configuration["Environment:BaseUrl"].TrimEnd('/')}/jobs/{Guid.Parse(jobPostingId)}";
+
+            JobReferralDto jobReferralDto = new JobReferralDto()
+            {
+                JobPostingId = jobPostingId,
+                ReferrerGuid = referrerGuid,
+                RefereeName=refereeName,
+                RefereeEmailId = refereeEmailId,
+                DescriptionEmailBody = descriptionEmailBody,
+                ReferUrl= referUrl
+            };
+
+
+            await PostAsync<BasicResponseDto>("job/referral", jobReferralDto);
+        }
+
+        public async Task UpdateJobReferral(string referrerCode, Guid subscriberGuid)
+        {
+            await PutAsync<BasicResponseDto>("job/update-referral", new JobReferralDto{ JobReferralGuid = referrerCode, RefereeGuid = subscriberGuid.ToString() });
+        }
+
+        public async Task UpdateJobViewed(string referrerCode)
+        {
+            await PutAsync<BasicResponseDto>("job/update-job-viewed",referrerCode);
         }
 
         #endregion

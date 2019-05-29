@@ -37,7 +37,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdateProfileInformationAsync(SubscriberDto Subscriber);
         Task<BasicResponseDto> UpdateOnboardingStatusAsync();
         Task<Guid> EnrollStudentAndObtainEnrollmentGUIDAsync(EnrollmentFlowDto enrollmentFlowDto);
-        Task<SubscriberDto> CreateSubscriberAsync();
+        Task<SubscriberDto> CreateSubscriberAsync(string referralCode);
         Task<bool> DeleteSubscriberAsync(Guid subscriberGuid);
         Task<WozCourseProgressDto> UpdateStudentCourseProgressAsync(bool FutureSchedule);
         Task<BraintreeResponseDto> SubmitBraintreePaymentAsync(BraintreePaymentDto BraintreePaymentDto);
@@ -126,6 +126,11 @@ namespace UpDiddy.Api
         Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location);
 
         Task<GoogleCloudEventsTrackingDto> RecordClientEventAsync(Guid jobGuid, GoogleCloudEventsTrackingDto dto);
+        Task ReferJobPosting(string jobPostingId, string referrerGuid, string refereeName, string refereeEmailId, string descriptionEmailBody);
+
+        Task UpdateJobReferral(string referrerCode, Guid subscriberGuid);
+
+        Task UpdateJobViewed(string referrerCode);
 
         #endregion
 

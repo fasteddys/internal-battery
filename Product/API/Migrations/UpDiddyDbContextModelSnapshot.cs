@@ -1567,6 +1567,45 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("JobPostingSkill");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.JobReferral", b =>
+                {
+                    b.Property<int>("JobReferralId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<bool>("IsJobViewed");
+
+                    b.Property<int>("JobPostingId");
+
+                    b.Property<Guid>("JobReferralGuid");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("RefereeEmailId");
+
+                    b.Property<int?>("RefereeId");
+
+                    b.Property<int>("ReferralId");
+
+                    b.HasKey("JobReferralId");
+
+                    b.HasIndex("JobPostingId");
+
+                    b.HasIndex("RefereeId");
+
+                    b.HasIndex("ReferralId");
+
+                    b.ToTable("JobReferral");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.JobSite", b =>
                 {
                     b.Property<int>("JobSiteId")
@@ -3540,6 +3579,23 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Skill", "Skill")
                         .WithMany()
                         .HasForeignKey("SkillId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobReferral", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.JobPosting", "JobPosting")
+                        .WithMany()
+                        .HasForeignKey("JobPostingId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber")
+                        .WithMany()
+                        .HasForeignKey("RefereeId");
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber")
+                        .WithMany()
+                        .HasForeignKey("ReferralId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

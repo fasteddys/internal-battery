@@ -95,6 +95,23 @@
             }
         }
     }
+
+    .modal input {
+        border: 1px solid #03264A !important;
+    }
+    .openEmailModal {
+        .modal-dialog {
+            .modal-content {
+                background-color: $color-alabaster;
+
+                .modal-body {
+                    .emailModalBodyHeadings {
+                        font-weight: bold;
+                    }
+                }
+            }
+        }
+    }
 }
 
 // Extra Small Styles
