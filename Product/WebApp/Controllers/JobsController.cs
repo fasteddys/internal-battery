@@ -40,7 +40,7 @@ namespace UpDiddy.Controllers
         }
         
         [HttpGet("[controller]")]
-        public async Task<IActionResult> Index(string keywords, string location, int? page)
+        public async Task<IActionResult> Index()
         {
             //get pageCount from Configuration file
             int pageCount=_configuration.GetValue<int>("Pagination:PageCount");
@@ -48,13 +48,29 @@ namespace UpDiddy.Controllers
             JobSearchResultDto jobSearchResultDto = null;
             Dictionary<Guid, Guid> favoritesMap = new Dictionary<Guid, Guid>();
 
+            var queryParametersString = Request.QueryString.ToString();
+            // get Query String Parameters
+            if (string.IsNullOrEmpty(queryParametersString) || string.IsNullOrWhiteSpace(queryParametersString))
+            {
+                queryParametersString += "?";
+            }
+            else
+            {
+                queryParametersString += "&";
+            }
+
+            ViewBag.QueryUrl = Request.Path + queryParametersString;
+
+            int.TryParse(Request.Query["page"], out int page);
+
             try
             {
                 jobSearchResultDto = await _api.GetJobsByLocation(
-                                      keywords, location);
-                
-                if(User.Identity.IsAuthenticated)
-                    favoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page ?? 1, pageCount).Select(job => job.JobPostingGuid).ToList());
+                                      queryParametersString);
+
+                if (User.Identity.IsAuthenticated)
+                    favoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1:page, pageCount).Select(job => job.JobPostingGuid).ToList());
+                 
             }
             catch(ApiException e)
             {
@@ -78,8 +94,8 @@ namespace UpDiddy.Controllers
             {
                 RequestId = jobSearchResultDto.RequestId,
                 ClientEventId = jobSearchResultDto.ClientEventId,
-                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page ?? 1, pageCount),
-                FavoritesMap = favoritesMap
+                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount),
+                Facets= jobSearchResultDto.Facets
             };
 
             return View("Index", jobSearchViewModel);
@@ -128,13 +144,18 @@ namespace UpDiddy.Controllers
                         if (job is null)
                         {
                             // Show all jobs.
-                            jobSearchResultDto = await _api.GetJobsByLocation(null, null);
+                            jobSearchResultDto = await _api.GetJobsByLocation(null);
                         }
                         else
-                        {   // Show representatives.
-                            var tempLocation = new string[] { job?.City, job?.Province };
-                            location = string.Join(", ", tempLocation.Where(s => !string.IsNullOrEmpty(s)));
-                            jobSearchResultDto = await _api.GetJobsByLocation(job.Title, location);
+                        {
+
+                            // Show representatives.
+                             location = job?.City + ", " + job?.Province;
+                            var queryParametersString = $"?{job.Title}&{location}";
+                            
+                            jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
+
+                            jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
                         }
 
                         if (jobSearchResultDto == null)
@@ -149,6 +170,8 @@ namespace UpDiddy.Controllers
 
                         // Remove the expired job link from the search provider's index.
                         Response.StatusCode = 404;
+
+                        ViewBag.QueryUrl = string.Empty;
                         return View("Index", jobSearchViewModel);
                     case (500):
                         return StatusCode(500);

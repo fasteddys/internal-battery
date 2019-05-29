@@ -166,6 +166,64 @@
             padding-top: $rem-24;
             padding-bottom: $rem-24;
 
+            .facet-container {
+                .moreLink {
+                    display: none;
+                }
+
+                .facets-style {
+                    box-sizing: border-box;
+                    padding: 35px 0px 35px 0px;
+                }
+
+                .facet-header {
+                    font-size: 15px;
+                    font-weight: bold;
+                }
+
+                .facet-link {
+                    font-size: 12px;
+                }
+
+                .moreLink-style {
+                    font-size: 12px;
+                }
+
+                #SearchParameters.in,
+                #SearchParameters.collapsing {
+                    display: block !important;
+                }
+
+                .city {
+                    display: none;
+                }
+
+                i {
+                    border: solid blue;
+                    border-width: 0 3px 3px 0;
+                    display: inline-block;
+                    padding: 3px;
+                    font-size:8px;
+                }
+
+                .up {
+                    transform: rotate(-135deg);
+                    -webkit-transform: rotate(-135deg);
+                }
+
+                .down {
+                    transform: rotate(45deg);
+                    -webkit-transform: rotate(45deg);
+                }
+            }
+
+            .togglelink {
+                float: right !important;
+                font-size: 14px;
+                color: blue;
+                font-weight:bold;
+            }
+
             .job-container {
                 .job-tile {
                     background-color: $color-white;
@@ -228,20 +286,43 @@
 
 // Extra Small Styles
 @media (min-width: 320px) {
+
 }
 
 // Small Styles
 @media (min-width: 576px) {
+
 }
 
 // Medium Styles
 @media (min-width: 768px) {
+    .togglelink {
+        display: none;
+    }
+
+    .city {
+        display: block!important;
+    }
 }
 
 // Large Styles
 @media (min-width: 992px) {
+    .togglelink {
+        display: none;
+    }
+
+    .city {
+        display: block!important;
+    }
 }
 
 // Extra Large Styles
 @media (min-width: 1200px) {
+    .togglelink {
+        display: none;
+    }
+
+    .city {
+        display: block!important;
+    }
 }

@@ -587,13 +587,11 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        public async Task<JobSearchResultDto> GetJobsByLocation(string keywords, string location)
+        public async Task<JobSearchResultDto> GetJobsByLocation(string searchQueryParameterString)
         {
-            //job search criteria for api "/country/state/city/industry/job-category/skill/page-num" and query strings appended
 
-
-            var searchFilter = $"all/all/all/all/all/all/0?page-size=100&location={location}&keywords={keywords}&page-num=0";
-            string cacheKey = $"job-{keywords}/{location}";
+            var searchFilter = $"all/all/all/all/all/all/0{searchQueryParameterString}page-size=100";
+            string cacheKey = $"job-{searchFilter}";
             JobSearchResultDto rval = GetCachedValue<JobSearchResultDto>(cacheKey);
 
             if (rval != null)
