@@ -40,17 +40,37 @@ namespace UpDiddy.Controllers
         }
         
         [HttpGet("[controller]")]
-        public async Task<IActionResult> Index(string keywords, string location, int? page)
+        public async Task<IActionResult> Index()
         {
             //get pageCount from Configuration file
             int pageCount=_configuration.GetValue<int>("Pagination:PageCount");
 
             JobSearchResultDto jobSearchResultDto = null;
+            Dictionary<Guid, Guid> favoritesMap = new Dictionary<Guid, Guid>();
+
+            var queryParametersString = Request.QueryString.ToString();
+            // get Query String Parameters
+            if (string.IsNullOrEmpty(queryParametersString) || string.IsNullOrWhiteSpace(queryParametersString))
+            {
+                queryParametersString += "?";
+            }
+            else
+            {
+                queryParametersString += "&";
+            }
+
+            ViewBag.QueryUrl = Request.Path + queryParametersString;
+
+            int.TryParse(Request.Query["page"], out int page);
 
             try
             {
-                 jobSearchResultDto = await _api.GetJobsByLocation(
-                                      keywords, location);
+                jobSearchResultDto = await _api.GetJobsByLocation(
+                                      queryParametersString);
+
+                if (User.Identity.IsAuthenticated)
+                    favoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1:page, pageCount).Select(job => job.JobPostingGuid).ToList());
+                 
             }
             catch(ApiException e)
             {
@@ -74,7 +94,8 @@ namespace UpDiddy.Controllers
             {
                 RequestId = jobSearchResultDto.RequestId,
                 ClientEventId = jobSearchResultDto.ClientEventId,
-                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page ?? 1, pageCount)
+                JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount),
+                Facets= jobSearchResultDto.Facets
             };
 
             return View("Index", jobSearchViewModel);
@@ -123,13 +144,18 @@ namespace UpDiddy.Controllers
                         if (job is null)
                         {
                             // Show all jobs.
-                            jobSearchResultDto = await _api.GetJobsByLocation(null, null);
+                            jobSearchResultDto = await _api.GetJobsByLocation(null);
                         }
                         else
-                        {   // Show representatives.
-                            var tempLocation = new string[] { job?.City, job?.Province };
-                            location = string.Join(", ", tempLocation.Where(s => !string.IsNullOrEmpty(s)));
-                            jobSearchResultDto = await _api.GetJobsByLocation(job.Title, location);
+                        {
+
+                            // Show representatives.
+                             location = job?.City + ", " + job?.Province;
+                            var queryParametersString = $"?{job.Title}&{location}";
+                            
+                            jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
+
+                            jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
                         }
 
                         if (jobSearchResultDto == null)
@@ -144,6 +170,8 @@ namespace UpDiddy.Controllers
 
                         // Remove the expired job link from the search provider's index.
                         Response.StatusCode = 404;
+
+                        ViewBag.QueryUrl = string.Empty;
                         return View("Index", jobSearchViewModel);
                     case (500):
                         return StatusCode(500);
@@ -162,11 +190,21 @@ namespace UpDiddy.Controllers
                 return RedirectPermanent(job.SemanticJobPath.ToLower());
             }
 
+            Guid? jobFavoriteGuid = null;
+            if(User.Identity.IsAuthenticated)
+            {
+                var favorite = await _api.JobFavoritesByJobGuidAsync(new List<Guid>(){ job.JobPostingGuid.Value });
+                if(favorite.Any())
+                    jobFavoriteGuid = favorite.First().Value;
+            }
+
             JobDetailsViewModel jdvm = new JobDetailsViewModel
             {
                 RequestId = job.RequestId,
                 ClientEventId = job.ClientEventId,
+                JobPostingFavoriteGuid = jobFavoriteGuid,
                 Name = job.Title,
+                JobPostingGuid = job.JobPostingGuid,
                 Company = job.Company?.CompanyName,
                 PostedDate = job.PostingDateUTC == null ? string.Empty : job.PostingDateUTC.ToLocalTime().ToString(),
                 Location = $"{job.City}, {job.Province}, {job.Country}",
@@ -419,6 +457,11 @@ namespace UpDiddy.Controllers
                 CurrentPage = page,
                 NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
             };
+
+            if(User.Identity.IsAuthenticated)
+            {
+                jobSearchViewModel.FavoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
+            }
 
             // Google seems to be capping the number of results at 500, so we account for that here.
             if (jobSearchViewModel.NumberOfPages > 500)
@@ -813,6 +856,11 @@ namespace UpDiddy.Controllers
                 NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
             };
 
+            if(User.Identity.IsAuthenticated)
+            {
+                jobSearchViewModel.FavoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
+            }
+
             // Google seems to be capping the number of results at 500, so we account for that here.
             if (jobSearchViewModel.NumberOfPages > 500)
                 jobSearchViewModel.NumberOfPages = 500;
@@ -1020,6 +1068,11 @@ namespace UpDiddy.Controllers
                 NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
             };
 
+            if(User.Identity.IsAuthenticated)
+            {
+                jobSearchViewModel.FavoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
+            }
+            
             // Google seems to be capping the number of results at 500, so we account for that here.
             if (jobSearchViewModel.NumberOfPages > 500)
                 jobSearchViewModel.NumberOfPages = 500;
