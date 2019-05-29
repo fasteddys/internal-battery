@@ -70,7 +70,7 @@ namespace UpDiddy.Controllers
                                       queryParametersString);
 
                 if (User.Identity.IsAuthenticated)
-                    favoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1:page, pageCount).Select(job => job.JobPostingGuid).ToList());
+                    favoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
                  
             }
             catch(ApiException e)
@@ -96,6 +96,7 @@ namespace UpDiddy.Controllers
                 RequestId = jobSearchResultDto.RequestId,
                 ClientEventId = jobSearchResultDto.ClientEventId,
                 JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount),
+                FavoritesMap = favoritesMap,
                 Facets= jobSearchResultDto.Facets
             };
 
