@@ -10,14 +10,11 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using UpDiddyApi.Authorization;
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Dto.User;
 using UpDiddyLib.Helpers;
 using System.IO;
 using UpDiddyApi.ApplicationCore.Interfaces;
@@ -31,6 +28,10 @@ using UpDiddyLib.Shared;
 using Hangfire;
 using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Query;
+using X.PagedList;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.Controllers
 {
@@ -44,10 +45,11 @@ namespace UpDiddyApi.Controllers
         private readonly ILogger _syslog;
         private readonly IDistributedCache _cache;
         private IB2CGraph _graphClient;
-        private IAuthorizationService _authorizationService;
+    private IAuthorizationService _authorizationService;
         private ISubscriberService _subscriberService;
         private ICloudStorage _cloudStorage;
         private ISysEmail _sysEmail;
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
         public SubscriberController(UpDiddyDbContext db,
             IMapper mapper,
@@ -58,6 +60,7 @@ namespace UpDiddyApi.Controllers
             ICloudStorage cloudStorage,
             ISysEmail sysEmail,
             IAuthorizationService authorizationService,
+            IRepositoryWrapper repositoryWrapper,
             ISubscriberService subscriberService)
         {
             _db = db;
@@ -69,6 +72,7 @@ namespace UpDiddyApi.Controllers
             _cloudStorage = cloudStorage;
             _sysEmail = sysEmail;
             _authorizationService = authorizationService;
+            _repositoryWrapper = repositoryWrapper;
             _subscriberService = subscriberService;
         }
 
@@ -951,6 +955,57 @@ namespace UpDiddyApi.Controllers
             await _db.SaveChangesAsync();
 
             return Ok();
+        }
+
+        [Authorize]
+        [HttpPost("/api/[controller]/me/job-favorite/map")]
+        public async Task<IActionResult> JobFavoriteMap([FromBody] List<Guid> jobGuids)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var map = await _subscriberService.GetSubscriberJobPostingFavoritesByJobGuid(subscriberGuid, jobGuids);
+            return Ok(map);
+        }
+
+        [HttpGet("/api/[controller]/me/jobs")]
+        public async Task<IActionResult> GetSubscriberJobFavorites(int? page)
+        {
+
+            // todo: move to service
+            Guid userGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(userGuid))
+                .First();
+
+            var favoriteQuery = await _repositoryWrapper.JobPostingFavorite.GetAllJobPostingFavoritesAsync();
+            favoriteQuery = favoriteQuery.Where(fave => fave.IsDeleted == 0 && fave.SubscriberId == subscriber.SubscriberId);
+            var companyQuery = await _repositoryWrapper.Company.GetAllCompanies();
+            var jobAppQuery = await _repositoryWrapper.JobApplication.GetAllJobApplicationsAsync();
+            jobAppQuery = jobAppQuery.Where(app => app.SubscriberId == subscriber.SubscriberId);
+            var jobQuery = await _repositoryWrapper.JobPosting.GetAllJobPostings();
+            jobQuery = jobQuery.Where(job => job.PostingExpirationDateUTC > DateTime.UtcNow.Date);
+
+            var query = (from job in jobQuery
+            join company in companyQuery on job.CompanyId equals company.CompanyId
+            join favorite in favoriteQuery on job.JobPostingId equals favorite.JobPostingId into jobFavorite
+            from subFavorite in jobFavorite.DefaultIfEmpty() 
+            join applied in jobAppQuery on job.JobPostingId equals applied.JobPostingId into jobApplied
+            from subApplied in jobApplied.DefaultIfEmpty()
+            where subFavorite.JobPostingFavoriteGuid != null || subApplied.JobApplicationGuid != null
+            select new UpDiddyLib.Dto.User.JobDto {
+                JobPosting = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(job),
+                JobPostingFavoriteGuid = subFavorite.JobPostingFavoriteGuid,
+                JobApplication = _mapper.Map<JobApplicationDto>(subApplied),
+                Company = _mapper.Map<CompanyDto>(company)
+            });
+
+            var result = new PagingDto<UpDiddyLib.Dto.User.JobDto>()
+            {
+                Page = page.HasValue ? page.Value : 1,
+                PageSize = 10,
+                Count = query.Count()
+            };
+            result.Results = query.Skip((result.Page - 1) * result.PageSize).Take(result.PageSize).ToList();
+
+            return Ok(result);
         }
 
         private void SendVerificationEmail(string email, string link)

@@ -1,0 +1,36 @@
+.react-cc-checkbox {
+    .hidden-checkbox-wrapper {
+        input {
+            border: 0;
+            clip: rect(0 0 0 0);
+            clippath: inset(50%);
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            padding: 0;
+            position: absolute;
+            white-space: nowrap;
+            width: 1px;
+        }
+    }
+}
+
+.favorite-job-checkbox {
+    &.loading {
+        .fave-icon {
+            animation-name: spin;
+            animation-duration: 750ms;
+            animation-iteration-count: infinite;
+            animation-timing-function: cubic-bezier(1,.02,0,.61);
+        }
+    }
+}
+
+@keyframes spin {
+    from {
+        transform:rotate(0deg);
+    }
+    to {
+        transform:rotate(360deg);
+    }
+}

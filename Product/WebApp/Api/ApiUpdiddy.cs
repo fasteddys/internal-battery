@@ -23,6 +23,7 @@ using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 using System.Threading;
 using UpDiddyLib.Dto.Reporting;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace UpDiddy.Api
 {
@@ -556,6 +557,14 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public async Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page)
+        {
+            string endpoint = "subscriber/me/jobs";
+            if(page.HasValue)
+                endpoint = QueryHelpers.AddQueryString(endpoint, "page", page.Value.ToString());
+            return await GetAsync<PagingDto<UpDiddyLib.Dto.User.JobDto>>(endpoint);
+        }
+
         public async Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null)
         {
             string cacheKey = $"job-{JobPostingGuid}";
@@ -756,8 +765,16 @@ namespace UpDiddy.Api
             {
                 return null;
             };
+        }
 
-
+        /// <summary>
+        /// POST search for getting mapping of job guid favorites for a subscriber.
+        /// </summary>
+        /// <param name="jobGuids"></param>
+        /// <returns>Dictionary<Guid, Guid> JobPosting Guid to JobPostingFavorite Guid</returns>
+        public async Task<Dictionary<Guid, Guid>> JobFavoritesByJobGuidAsync(List<Guid> jobGuids)
+        {
+            return await PostAsync<Dictionary<Guid, Guid>>("subscriber/me/job-favorite/map", jobGuids);
         }
 
         public async Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid)
