@@ -795,7 +795,7 @@ namespace UpDiddy.Controllers
         {
             // The following uses the C# inline out function, which initializes
             // the variable for the local scope.
-            Enum.TryParse(stateCode, out UpDiddyLib.Helpers.Utils.State state);
+            Enum.TryParse(stateCode.ToUpper(), out UpDiddyLib.Helpers.Utils.State state);
             return UpDiddyLib.Helpers.Utils.GetState(state);
         }
 
