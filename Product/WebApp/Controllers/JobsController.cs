@@ -622,7 +622,7 @@ namespace UpDiddy.Controllers
             int NumberOfPages = Model.NumberOfPages;
 
             // Base case when there are less than 5 pages of results returned
-            if(NumberOfPages <= 5)
+            if(NumberOfPages <= 3)
             {
                 Model.PaginationRangeLow = 1;
                 Model.PaginationRangeHigh = NumberOfPages;
@@ -630,25 +630,25 @@ namespace UpDiddy.Controllers
             }
             
             // Base case when the current page is one of first two pages
-            if(CurrentPage < 3)
+            if(CurrentPage < 2)
             {
                 Model.PaginationRangeLow = 1;
-                Model.PaginationRangeHigh = 5;
+                Model.PaginationRangeHigh = 3;
                 return;
             }
 
             // Base case for when current page is one of last two pages
-            if(CurrentPage > (NumberOfPages - 2))
+            if(CurrentPage > (NumberOfPages - 1))
             {
-                Model.PaginationRangeLow = NumberOfPages - 4;
+                Model.PaginationRangeLow = NumberOfPages - 2;
                 Model.PaginationRangeHigh = NumberOfPages;
                 return;
             }
 
             // Last case for when current page is somewhere in the middle of a result set
             // of greater than 5 pages.
-            Model.PaginationRangeLow = (int)CurrentPage - 2;
-            Model.PaginationRangeHigh = (int)CurrentPage + 2;
+            Model.PaginationRangeLow = (int)CurrentPage - 1;
+            Model.PaginationRangeHigh = (int)CurrentPage + 1;
         }
 
 
