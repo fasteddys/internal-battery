@@ -568,7 +568,7 @@ namespace UpDiddy.Api
 
             #region analytics
             GoogleCloudEventsTrackingDto eventDto = null;
-            if (dto != null)
+            if (dto != null && dto.RequestId != null)
                 eventDto = await RecordClientEventAsync(JobPostingGuid, dto);
 
             rval.RequestId = eventDto?.RequestId;
