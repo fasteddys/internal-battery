@@ -263,7 +263,8 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> SubscriberAsync(Guid subscriberGuid)
         {
             SubscriberDto subscriber = await _api.SubscriberAsync(subscriberGuid, false);
-
+            string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
+            string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
             SubscriberViewModel subscriberViewModel = new SubscriberViewModel()
             {
                 FirstName = subscriber.FirstName,
@@ -273,8 +274,7 @@ namespace UpDiddy.Controllers
                 Address = subscriber.Address,
                 City = subscriber.City,
                 State = subscriber.State?.Code,
-                Country = subscriber.State?.Country?.Code3,
-                FacebookUrl = subscriber.FacebookUrl,
+                Country = subscriber.State?.Country?.Code3, 
                 GithubUrl = subscriber.GithubUrl,
                 LinkedInUrl = subscriber.LinkedInUrl,
                 StackOverflowUrl = subscriber.StackOverflowUrl,
@@ -285,7 +285,8 @@ namespace UpDiddy.Controllers
                 Enrollments = subscriber.Enrollments,
                 ResumeFileGuid = subscriber.Files?.FirstOrDefault()?.SubscriberFileGuid,
                 ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
-                SubscriberGuid = subscriber.SubscriberGuid.Value
+                SubscriberGuid = subscriber.SubscriberGuid.Value,
+                AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster
             };
 
         
