@@ -38,7 +38,7 @@
                             </div>
                         </div>
                         <div class="row job-search-button">
-                            <button id="SearchJobs" form="SearchJobsForm" type="submit" class="btn btn-primary"> Search Jobs</button>
+                            <button id="SearchJobs" form="SearchJobsForm" type="submit" onclick="ScrubInputs()" class="btn btn-primary"> Search Jobs</button>
                         </div>
                     </div>
                     <!--Bring to center of container-->
@@ -216,8 +216,8 @@
                     <div class="row job-pagination container-align-center">
                         @Html.PagedListPager(Model.JobsSearchResult, page => Url.Action("Index", new
                    { page,
-                       keywords= ViewContext.HttpContext.Request.Query["keywords"],
-                       location= ViewContext.HttpContext.Request.Query["location"],
+                       keywords= Model.Keywords,
+                       location= Model.Location,
                        datepublished = ViewContext.HttpContext.Request.Query["datepublished"],
                        employmenttype= ViewContext.HttpContext.Request.Query["employmenttype"],
                        city= ViewContext.HttpContext.Request.Query["city"],
@@ -267,7 +267,7 @@
             {
                 if (queryParameter.Key != "page")
                 {
-                     var removeQueryParameter = queryParameter.Key + '=' + queryParameter.Value + '&';
+                     var removeQueryParameter = queryParameter.Key.ToString() + '=' + queryParameter.Value.ToString() + '&';
                 var encodedRemoveQueryParameter=Uri.EscapeUriString(removeQueryParameter);
 
                 var undoUrl = url.Replace(encodedRemoveQueryParameter, "").Trim('&');
@@ -283,6 +283,12 @@
 
 
             });
+
+        function ScrubInputs() {
+
+            $("#keywords").val($("#keywords").val().trim());  
+            $("#location").val($("#location").val().trim());   
+        }
 
         function expandMoreLinks(element) {
 
