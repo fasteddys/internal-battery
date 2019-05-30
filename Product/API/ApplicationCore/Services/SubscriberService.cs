@@ -268,9 +268,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             var subscribers = await _repository.Subscriber.GetAllSubscribersAsync();
             var jobPostingFavorites = await _repository.JobPostingFavorite.GetAllJobPostingFavoritesAsync();
             var jobPostings = await _repository.JobPosting.GetAllJobPostings();
+            jobPostings = jobPostings.Where(jp => jobGuids.Contains(jp.JobPostingGuid));
 
-            var query = from jobGuid in jobGuids
-            join jp in jobPostings on jobGuid equals jp.JobPostingGuid 
+            var query = from jp in jobPostings
             join favorites in jobPostingFavorites on jp.JobPostingId equals favorites.JobPostingId
             join sub in subscribers on favorites.SubscriberId equals sub.SubscriberId
             where (sub.SubscriberGuid == subscriberGuid && favorites.IsDeleted == 0)
