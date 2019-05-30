@@ -11,6 +11,7 @@
             <div class="container">
                 @if (Model.Items == null)
                 {
+                    <h1 class="pl-3 pt-3 pb-3"><strong>@Model.Header Jobs:</strong></h1>
                     await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);
 
                     if (Model.NumberOfPages > 1)
