@@ -120,6 +120,8 @@ namespace UpDiddyApi.Helpers.Job
             {
                 foreach (CloudTalentSolution.HistogramResult hr in searchJobsResponse.HistogramResults.SimpleHistogramResults)
                 {
+
+                    hr.Values=hr.Values.OrderByDescending(o => o.Value).ToDictionary<KeyValuePair<string,int?>,string,int?> (pair => pair.Key, pair => pair.Value); ;
                     JobQueryFacetDto facet = new JobQueryFacetDto()
                     {
                         Name = hr.SearchType
