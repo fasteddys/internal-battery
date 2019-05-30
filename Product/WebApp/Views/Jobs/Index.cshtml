@@ -265,7 +265,7 @@
             {
                  @foreach (var queryParameter in queryParameterList)
             {
-                if (queryParameter.Key != "page")
+                if (queryParameter.Key != "page" && !string.IsNullOrEmpty(queryParameter.Value))
                 {
                      var removeQueryParameter = queryParameter.Key + '=' + queryParameter.Value + '&';
                 var encodedRemoveQueryParameter=Uri.EscapeUriString(removeQueryParameter);
