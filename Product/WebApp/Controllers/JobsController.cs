@@ -60,6 +60,16 @@ namespace UpDiddy.Controllers
                 queryParametersString += "&";
             }
 
+            string Keywords = Request.Query["keywords"];
+            string Location = Request.Query["location"];
+
+            if (Keywords != null)
+                Keywords = Keywords.Trim();
+
+            if (Location != null)
+                Location = Location.Trim();
+
+
             ViewBag.QueryUrl = Request.Path + queryParametersString;
 
             int.TryParse(Request.Query["page"], out int page);
@@ -97,7 +107,9 @@ namespace UpDiddy.Controllers
                 ClientEventId = jobSearchResultDto.ClientEventId,
                 JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount),
                 FavoritesMap = favoritesMap,
-                Facets= jobSearchResultDto.Facets
+                Facets= jobSearchResultDto.Facets,
+                Keywords = Keywords,
+                Location = Location
             };
 
             return View("Index", jobSearchViewModel);

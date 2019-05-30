@@ -31,10 +31,10 @@
                         </div>
                         <div class="row">
                             <div class="col-12 col-md-6 pb-3">
-                                @Html.TextBox("keywords", null, new { PlaceHolder = "Keywords", @class = "form-control", form = "SearchJobsForm" })
+                                @Html.TextBox("keywords", Model.Keywords, new { PlaceHolder = "Keywords", @class = "form-control", form = "SearchJobsForm" })
                             </div>
                             <div class="col-12 col-md-6 pb-3">
-                                @Html.TextBox("location", null, new { PlaceHolder = "Location (optional)", @class = "form-control", form = "SearchJobsForm" })
+                                @Html.TextBox("location", Model.Location, new { PlaceHolder = "Location (optional)", @class = "form-control", form = "SearchJobsForm" })
                             </div>
                         </div>
                         <div class="row job-search-button">
@@ -131,7 +131,7 @@
                                                 {
                                                     counter++;
                                                     <div>
-                                                        <a href="@string.Format("{0}city={1}-{2}", @ViewBag.QueryUrl, @facet.UrlParam.Split(',')[0],@facet.UrlParam.Split(',')[1].Trim())" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a href="@string.Format("{0}city={1}", @ViewBag.QueryUrl.ToString().Replace("location","province"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                     @if (counter >= 15)
                                                     {
