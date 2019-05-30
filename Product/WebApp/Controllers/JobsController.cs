@@ -499,6 +499,24 @@ namespace UpDiddy.Controllers
             // User has reached the end of the browse flow, so present results.
             if (!string.IsNullOrEmpty(category) || page != 0)
             {
+                if (string.IsNullOrEmpty(state))
+                    jobSearchViewModel.Header = "United States";
+                else if (string.IsNullOrEmpty(city))
+                {
+                    string StateLabel = FindNeededFacet("admin_1", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+                    jobSearchViewModel.Header = StateLabel.Length == 2 ? UpDiddyLib.Helpers.Utils.ToTitleCase(StateCodeToFullName(StateLabel)) : UpDiddyLib.Helpers.Utils.ToTitleCase(StateLabel);
+                }
+                else if (string.IsNullOrEmpty(industry))
+                    jobSearchViewModel.Header = FindNeededFacet("city", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+                else if (string.IsNullOrEmpty(category))
+                    jobSearchViewModel.Header = FindNeededFacet("industry", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+                else if (!string.IsNullOrEmpty(category))
+                    jobSearchViewModel.Header = FindNeededFacet("jobcategory", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+                
+                
+                
+
+
                 jobSearchViewModel.BaseUrl = AssembleBaseLocationUrl(country, state, city, industry, category);
                 return View("BrowseByType", jobSearchViewModel);
             }
@@ -897,6 +915,21 @@ namespace UpDiddy.Controllers
             // User has reached the end of the browse flow, so present results.
             if (!string.IsNullOrEmpty(city) || page != 0)
             {
+                if (string.IsNullOrEmpty(industry))
+                    jobSearchViewModel.Header = "All";
+                else if (string.IsNullOrEmpty(category))
+                    jobSearchViewModel.Header = FindNeededFacet("industry", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+                else if (string.IsNullOrEmpty(state))
+                    jobSearchViewModel.Header = FindNeededFacet("jobcategory", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+
+                else if (string.IsNullOrEmpty(city))
+                {
+                    string StateLabel = FindNeededFacet("admin_1", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+                    jobSearchViewModel.Header = StateLabel.Length == 2 ? UpDiddyLib.Helpers.Utils.ToTitleCase(StateCodeToFullName(StateLabel)) : UpDiddyLib.Helpers.Utils.ToTitleCase(StateLabel);
+                }
+                else if (!string.IsNullOrEmpty(city))
+                    jobSearchViewModel.Header = FindNeededFacet("city", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+
                 jobSearchViewModel.BaseUrl = AssembleBaseIndustryUrl(country, state, city, industry, category);
                 return View("BrowseByType", jobSearchViewModel);
             }
@@ -1109,6 +1142,21 @@ namespace UpDiddy.Controllers
             // User has reached the end of the browse flow, so present results.
             if (!string.IsNullOrEmpty(city) || page != 0)
             {
+                if (string.IsNullOrEmpty(category))
+                    jobSearchViewModel.Header = "All";
+                else if (string.IsNullOrEmpty(industry))
+                    jobSearchViewModel.Header = FindNeededFacet("jobcategory", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+                else if (string.IsNullOrEmpty(state))
+                    jobSearchViewModel.Header = FindNeededFacet("industry", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+
+                else if (string.IsNullOrEmpty(city))
+                {
+                    string StateLabel = FindNeededFacet("admin_1", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+                    jobSearchViewModel.Header = StateLabel.Length == 2 ? UpDiddyLib.Helpers.Utils.ToTitleCase(StateCodeToFullName(StateLabel)) : UpDiddyLib.Helpers.Utils.ToTitleCase(StateLabel);
+                }
+                else if (!string.IsNullOrEmpty(city))
+                    jobSearchViewModel.Header = FindNeededFacet("city", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+
                 jobSearchViewModel.BaseUrl = AssembleBaseIndustryUrl(country, state, city, industry, category);
                 return View("BrowseByType", jobSearchViewModel);
             }
