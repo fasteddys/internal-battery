@@ -548,7 +548,7 @@ namespace UpDiddy.Controllers
                     Regex rgx = new Regex("[^a-zA-Z]");
                     LocationsCities.Add(new DisplayItem
                     {
-                        Label = $"{FacetItem.Label}",
+                        Label = $"{FacetItem.Label.Split(",")[0]}",
                         Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.Split(",")[0].ToLower(), "-")}",
                         Count = $"{FacetItem.Count}"
                     });
@@ -804,7 +804,7 @@ namespace UpDiddy.Controllers
         {
             foreach (JobQueryFacetItemDto Item in List)
             {
-                if (Item.Label.Split(",")[0].ToLower().Replace(" ", "-").Equals(Label.ToLower()))
+                if (Regex.Replace(Item.Label.Split(",")[0].ToLower(), @"\.| |'", "-").Equals(Label.ToLower()))
                     return true;
             }
             return false;
@@ -1033,7 +1033,7 @@ namespace UpDiddy.Controllers
                     Regex rgx = new Regex("[^a-zA-Z]");
                     LocationsCities.Add(new DisplayItem
                     {
-                        Label = $"{FacetItem.Label}",
+                        Label = $"{FacetItem.Label.Split(",")[0]}",
                         Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.Split(",")[0].ToLower(), "-")}/1",
                         Count = $"{FacetItem.Count}"
                     });
@@ -1263,7 +1263,7 @@ namespace UpDiddy.Controllers
                     Regex rgx = new Regex("[^a-zA-Z]");
                     LocationsCities.Add(new DisplayItem
                     {
-                        Label = $"{FacetItem.Label}",
+                        Label = $"{FacetItem.Label.Split(",")[0]}",
                         Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.Split(",")[0].ToLower(), "-")}/1",
                         Count = $"{FacetItem.Count}"
                     });
