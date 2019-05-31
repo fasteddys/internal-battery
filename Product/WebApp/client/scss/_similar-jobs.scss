@@ -1,0 +1,43 @@
+﻿@import '_variables';
+
+@media (min-width: 0px){
+    .similar-jobs-container {
+        .similar-jobs {
+            .similar-jobs-list {
+                > div {
+                    padding: 1rem 0;
+                    border-bottom: 1px solid $color-tertiary-mid-gray;
+
+                    @media (min-width: 1200px) {
+                        padding: 1rem 0;
+                        border-bottom: 1px solid $color-tertiary-mid-gray;
+                    }
+
+                    &:last-child {
+                        border-bottom: 0;
+                    }
+                }
+
+                .similar-jobs-location {
+                    padding-top: .5rem;
+                    font-size: .75rem;
+                    color: $color-primary;
+                }
+            }
+
+            .all-similar-jobs {
+
+
+
+                a {
+                    color: $color-secondary;
+
+                    &:hover {
+                        color: $color-tertiary;
+                    }
+                }
+            }
+        }
+    }
+
+}
