@@ -484,8 +484,26 @@ namespace UpDiddyApi.Workflow
                     // retrieve all current job pages that are visible on the job site
                     List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages);
 
-                    // convert job pages to job postings and perform the necessary CRUD operations
-                    jobDataMiningStats = await ProcessJobPages(jobDataMining, jobPagesToProcess, jobDataMiningStats);
+                    // perform safety check to ensure we don't erase all jobs if there is an intermittent problem with a job site
+                    bool isExceedsSafetyThreshold = false;
+                    if (existingJobPages != null && existingJobPages.Count > 0)
+                    {
+                        decimal percentageShift = (decimal)jobPagesToProcess.Count / (decimal)existingJobPages.Count;
+                        if (percentageShift < 0.75M)
+                            isExceedsSafetyThreshold = true;
+                    }
+
+                    if (isExceedsSafetyThreshold)
+                    {
+                        // save the number of discovered jobs as the number of processed jobs
+                        jobDataMiningStats.NumJobsProcessed = jobPagesToProcess.Count;
+                        _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.JobDataMining aborted processing for job site '{jobSite.Name}' because only {jobPagesToProcess.Count.ToString()} were discovered and there are {existingJobPages.Count.ToString()} existing jobs.");
+                    }
+                    else
+                    {
+                        // convert job pages to job postings and perform the necessary CRUD operations
+                        jobDataMiningStats = await ProcessJobPages(jobDataMining, jobPagesToProcess, jobDataMiningStats);
+                    }
 
                     // store aggregate data about operations performed by job site; set scrape date at the very end of the process
                     jobDataMiningStats.ScrapeDate = DateTime.UtcNow;
@@ -605,9 +623,8 @@ namespace UpDiddyApi.Workflow
                 }
             }
 
-            // JobPageStatus = 3 / 'Error' - delete dbo.JobPosting (if one exists)
             // JobPageStatus = 4 / 'Deleted' - delete dbo.JobPosting (if one exists)
-            var deleteJobPages = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 3 || jp.JobPageStatusId == 4).ToList();
+            var deleteJobPages = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 4).ToList();
             foreach (var jobPage in deleteJobPages)
             {
                 try

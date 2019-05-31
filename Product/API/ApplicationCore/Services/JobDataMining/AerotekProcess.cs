@@ -65,6 +65,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              * i think we are being throttled by the job site? limiting this to 20; if we see SSL errors in staging/prod we may need
              * to revisit this. use maxdop = 1 for debugging.
              */
+
             var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 20 };
             int counter = 0;
             Parallel.For(counter, timesToRequestResultsPage, maxdop, i =>
@@ -118,22 +119,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                         else
                         {
                             // append additional data that is not present in search results for the page, status already marked as new
-                            var scripNodetWithJson = jobHtml.DocumentNode.SelectSingleNode("(//script[@type='application/ld+json'])[1]");
-                            if (scripNodetWithJson != null)
-                            {
-                                dynamic jobDataJson = null;
-                                try
-                                {
-                                    jobDataJson = JsonConvert.DeserializeObject<dynamic>(scripNodetWithJson.InnerHtml.ToString());
-                                    job.responsibilities = jobDataJson.responsibilities.Value;
-                                }
-                                catch (JsonException)
-                                {
-                                    // some Aerotek job postings contain malformed JSON. for these, grab the description from the html instead
-                                    var descriptionFromHtml = jobHtml.DocumentNode.SelectSingleNode("//div[@class=\"job-description\"]");
-                                    job.responsibilities = descriptionFromHtml.InnerHtml;
-                                }
-                            }
+                            var descriptionFromHtml = jobHtml.DocumentNode.SelectSingleNode("//div[@class=\"job-description\"]");
+                            job.responsibilities = descriptionFromHtml.InnerHtml.Trim();
                         }
 
                         // get the related JobPostingId (if one exists)
@@ -226,6 +213,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 jobPostingDto.JobStatus = (int)JobPostingStatus.Active;
                 jobPostingDto.Company = new CompanyDto() { CompanyGuid = _companyGuid };
                 jobPostingDto.ThirdPartyIdentifier = jobPage.UniqueIdentifier;
+                jobPostingDto.PostingExpirationDateUTC = DateTime.UtcNow.AddYears(1);
 
                 // everything else relies upon valid raw data
                 if (!string.IsNullOrWhiteSpace(jobPage.RawData))
