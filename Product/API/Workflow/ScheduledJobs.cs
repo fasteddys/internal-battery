@@ -488,11 +488,14 @@ namespace UpDiddyApi.Workflow
                     bool isExceedsSafetyThreshold = false;
                     if (existingJobPages != null && existingJobPages.Count > 0)
                     {
-                        decimal percentageShift = (decimal)jobPagesToProcess.Count / (decimal)existingJobPages.Count;
-                        if (percentageShift < 0.75M)
-                            isExceedsSafetyThreshold = true;
+                        int existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
+                        if (existingActiveJobPageCount > 0)
+                        {
+                            decimal percentageShift = (decimal)jobPagesToProcess.Count / (decimal)existingActiveJobPageCount;
+                            if (percentageShift < 0.75M)
+                                isExceedsSafetyThreshold = true;
+                        }
                     }
-
                     if (isExceedsSafetyThreshold)
                     {
                         // save the number of discovered jobs as the number of processed jobs
