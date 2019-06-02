@@ -180,17 +180,11 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                                         group jp by jp.UniqueIdentifier into g
                                         select g.OrderBy(a => a, new CompareByUri()).First()).ToList();
 
-            // identify existing active jobs that were not discovered as valid and mark them for deletion (remove associated job postings for these)
+            // identify existing active jobs that were not discovered as valid and mark them for deletion
             var existingActiveJobs = existingJobPages.Where(jp => jp.JobPageStatusId == 2);
             var discoveredActiveAndPendingJobs = uniqueDiscoveredJobs.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2);
             var unreferencedActiveJobs = existingActiveJobs.Except(discoveredActiveAndPendingJobs, new EqualityComparerByUniqueIdentifier());
-            var jobsToDelete = unreferencedActiveJobs.Select(jp =>
-            {
-                jp.JobPageStatusId = 4;
-                jp.JobPostingId = null;
-                jp.ModifyDate = DateTime.UtcNow;
-                return jp;
-            }).ToList();
+            var jobsToDelete = unreferencedActiveJobs.Select(jp => { jp.JobPageStatusId = 4; return jp; }).ToList();
 
             // combine new/modified jobs and unreferenced jobs which should be deleted
             List<JobPage> updatedJobPages = new List<JobPage>();
