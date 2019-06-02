@@ -647,6 +647,7 @@ namespace UpDiddyApi.Workflow
                         {
                             // flag job page as deleted and save the changes
                             jobPage.JobPageStatusId = 4;
+                            jobPage.JobPostingId = null;
 
                             if (jobPage.JobPageId > 0)
                                 _repositoryWrapper.JobPage.Update(jobPage);
