@@ -229,7 +229,8 @@ namespace UpDiddy.Controllers
                 CompanyBoilerplate = job.Company.JobPageBoilerplate,
                 IsThirdPartyJob = job.ThirdPartyApply,
                 MetaDescription = job.MetaDescription,
-                MetaTitle = job.MetaTitle
+                MetaTitle = job.MetaTitle,
+                MetaKeywords = job.MetaKeywords
             };
 
             // Display subscriber info if it exists

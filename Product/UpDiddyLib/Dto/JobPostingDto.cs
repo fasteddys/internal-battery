@@ -93,6 +93,7 @@ namespace UpDiddyLib.Dto
         #region metadata 
         public string MetaDescription { get; set; }
         public string MetaTitle { get; set; }
+        public string MetaKeywords { get; set; }
 
         #endregion
 

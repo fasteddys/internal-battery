@@ -13,9 +13,6 @@ namespace UpDiddyApi.Models
         public virtual Recruiter Recruiter { get; set; }
         public int CompanyId { get; set; }
         public virtual Company Company {get; set;}
-        /// <summary>
-        /// Set to 1 is the recruiter is employed by the company
-        /// </summary>
-        public int IsStaff { get; set;  }
+ 
     }
 }

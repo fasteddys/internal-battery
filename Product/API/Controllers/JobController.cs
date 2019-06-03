@@ -382,12 +382,10 @@ namespace UpDiddyApi.Controllers
             if (jobPosting == null)
                 return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "JobPosting not found" });
             JobPostingDto rVal = _mapper.Map<JobPostingDto>(jobPosting);
-   
 
-            // add meta data for seo 
-            rVal.MetaDescription = $"Search for {rVal.Title} jobs near {rVal.CityProvince} with CareerCircle and find your next great opportunity today.";
-            rVal.MetaTitle = jobPosting.Title;
-
+            // set meta data for seo
+            JobPostingFactory.SetMetaData(jobPosting, rVal);
+ 
            /* i would prefer to get the semantic url in automapper, but i ran into a blocker while trying to call the static util method
             * in "MapFrom" while guarding against null refs: an expression tree lambda may not contain a null propagating operator
             * .ForMember(jp => jp.SemanticUrl, opt => opt.MapFrom(src => Utils.GetSemanticJobUrlPath(src.Industry?.Name,"","","","","")))
