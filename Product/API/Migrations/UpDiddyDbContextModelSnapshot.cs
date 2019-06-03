@@ -2538,6 +2538,39 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("ReportEnrollmentByVendors");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.ResumeParse", b =>
+                {
+                    b.Property<int>("ResumeParseId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("ParseStatus");
+
+                    b.Property<Guid>("ResumeParseGuid");
+
+                    b.Property<int>("SubscriberFileId");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("ResumeParseId");
+
+                    b.HasIndex("SubscriberFileId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("ResumeParse");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.SecurityClearance", b =>
                 {
                     b.Property<int>("SecurityClearanceId")
@@ -3781,6 +3814,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Recruiter", "Recruiter")
                         .WithMany()
                         .HasForeignKey("RecruiterId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.ResumeParse", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.SubscriberFile", "SubscriberFile")
+                        .WithMany()
+                        .HasForeignKey("SubscriberFileId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

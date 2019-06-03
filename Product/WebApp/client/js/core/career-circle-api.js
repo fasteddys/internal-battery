@@ -94,15 +94,13 @@
         return _http.delete('/subscriber/avatar');
     }
 
-
-
     var uploadResume = function (resume, parseResume) {
         var formData = new FormData();
         formData.append("resume", resume);
 
         if (parseResume == null)
             parseResume = false;
-
+ 
         formData.append("parseResume", parseResume);
 
         return _http.post('/resume/upload', formData, {

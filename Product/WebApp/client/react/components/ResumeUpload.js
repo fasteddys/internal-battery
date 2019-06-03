@@ -36,7 +36,7 @@ class ResumeUpload extends React.Component {
             return;
 
         this.setState({processing: true}, () => {
-            CareerCircleAPI.uploadResume(this.state.selectedFile, false)
+            CareerCircleAPI.uploadResume(this.state.selectedFile, true)
                 .then((response) => {
                     ToastService.success('Resume saved successfully.');
                     this.setState({mode: this.modeType.view, fileName: response.data.simpleName, fileGuid: response.data.subscriberFileGuid});

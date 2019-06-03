@@ -165,6 +165,9 @@ namespace UpDiddyApi.Models
 
         public DbSet<JobReferral> JobReferral { get; set; }
 
+        public DbSet<ResumeParse> ResumeParse { get; set; }
+        
+
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }

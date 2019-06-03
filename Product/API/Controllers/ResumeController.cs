@@ -43,7 +43,7 @@ namespace UpDiddyApi.Controllers
         /// <returns></returns>
         [Authorize]
         [HttpPost]
-        [Route("upload")]
+        [Route("upload")]        
         public async Task<IActionResult> Upload(IFormFile resume, bool parseResume = false)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
