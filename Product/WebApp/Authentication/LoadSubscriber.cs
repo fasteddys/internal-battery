@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Routing;
 using UpDiddy.Api;
 using UpDiddy.Controllers;
 using UpDiddyLib.Helpers;
+using UpDiddyLib.Dto;
+using System.Net;
 
 namespace UpDiddy.Authentication
 {
@@ -45,8 +47,15 @@ namespace UpDiddy.Authentication
                 {
                     // retrieve the UpDiddyApi using the DependencyInjection extension method
                     var api = filterContext.HttpContext.RequestServices.GetService<IApi>();
-
-                    var subscriber = await api.SubscriberAsync(subscriberGuid, this._isHardRefresh);
+                    SubscriberDto subscriber = null;
+                    try
+                    {
+                        subscriber = await api.SubscriberAsync(subscriberGuid, this._isHardRefresh);
+                    }
+                    catch (ApiException e) when (e.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        // this scenario will be handled with the redirect below
+                    }
                     if (subscriber != null)
                     {
                         if (subscriber.CampaignOffer != null)

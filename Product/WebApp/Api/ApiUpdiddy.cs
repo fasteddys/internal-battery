@@ -24,6 +24,7 @@ using UpDiddyLib.Shared;
 using System.Threading;
 using UpDiddyLib.Dto.Reporting;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 
 namespace UpDiddy.Api
 {
@@ -36,11 +37,12 @@ namespace UpDiddy.Api
         private IHttpContextAccessor _contextAccessor { get; set; }
         public IDistributedCache _cache { get; set; }
         public HttpContext _currentContext { get; set; }
+        private readonly ILogger _syslog;
 
         #region Constructor
-        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache)
+        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog)
         {
-
+            _syslog = sysLog;
             AzureOptions = azureAdB2COptions.Value;
             _contextAccessor = contextAccessor;
             _configuration = conifguration;
@@ -104,6 +106,7 @@ namespace UpDiddy.Api
 
         private async Task<AuthenticationResult> GetBearerTokenAsync()
         {
+            AuthenticationResult result = null;
             // Retrieve the token with the specified scopes
             var scope = AzureOptions.ApiScopes.Split(' ');
             string signedInUserID = _contextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
@@ -114,8 +117,37 @@ namespace UpDiddy.Api
                 .Build();
             new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).EnablePersistence(app.UserTokenCache);
             var accounts = await app.GetAccountsAsync();
-
-            AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();
+            IAccount account = accounts.FirstOrDefault();
+            int retries = 3;
+            try
+            {
+                while (true)
+                {
+                    try
+                    {
+                        result = await app.AcquireTokenSilent(scope, account).ExecuteAsync();
+                        break;
+                    }
+                    catch (MsalUiRequiredException e)
+                    {
+                        if (retries-- == 0)
+                            throw;
+                        _syslog.LogInformation(e, $"An error occurred in GetBearerTokenAsync(). {retries.ToString()} retries left.", retries);
+                        Thread.Sleep(250);
+                    }
+                }
+            }
+            catch (MsalUiRequiredException e)
+            {
+                var serializedAccount = JsonConvert.SerializeObject(accounts);
+                var serializedScope = JsonConvert.SerializeObject(scope);
+                var serializedUserTokenCache = JsonConvert.SerializeObject(app.UserTokenCache);                
+                e.Data.Add("Account", serializedAccount);
+                e.Data.Add("SignedInUserID", signedInUserID);
+                e.Data.Add("Scope", serializedScope);
+                e.Data.Add("UserTokenCache", serializedUserTokenCache);
+                _syslog.LogInformation(e, "An error occurred in GetBearerTokenAsync().");
+            }
             return result;
         }
 
@@ -124,7 +156,7 @@ namespace UpDiddy.Api
             if (_contextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
                 AuthenticationResult authResult = await GetBearerTokenAsync();
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult.AccessToken);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult != null ? authResult.AccessToken : string.Empty);
             }
             return client;
         }
@@ -560,7 +592,7 @@ namespace UpDiddy.Api
         public async Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page)
         {
             string endpoint = "subscriber/me/jobs";
-            if(page.HasValue)
+            if (page.HasValue)
                 endpoint = QueryHelpers.AddQueryString(endpoint, "page", page.Value.ToString());
             return await GetAsync<PagingDto<UpDiddyLib.Dto.User.JobDto>>(endpoint);
         }
@@ -1166,10 +1198,10 @@ namespace UpDiddy.Api
                 if (rval == null)
                 {
                     //check if there is any referralCode
-                    var referralCode=_contextAccessor.HttpContext.Request.Cookies["referrerCode"] == null ? null : _contextAccessor.HttpContext.Request.Cookies["referrerCode"].ToString();
+                    var referralCode = _contextAccessor.HttpContext.Request.Cookies["referrerCode"] == null ? null : _contextAccessor.HttpContext.Request.Cookies["referrerCode"].ToString();
                     rval = await CreateSubscriberAsync(referralCode);
                 }
-                   
+
                 SetCachedValue<SubscriberDto>(cacheKey, rval);
             }
             return rval;
@@ -1221,7 +1253,7 @@ namespace UpDiddy.Api
         public async Task<List<JobApplicationCountDto>> GetJobApplicationCount(Guid? companyGuid = null)
         {
             string endpoint = "/api/report/job-applications";
-            if(companyGuid.HasValue)
+            if (companyGuid.HasValue)
                 endpoint += string.Format("/company/{0}", companyGuid.Value);
             return await GetAsync<List<JobApplicationCountDto>>(endpoint);
         }
@@ -1363,13 +1395,13 @@ namespace UpDiddy.Api
             {
                 return await PostAsync<GoogleCloudEventsTrackingDto>(string.Format("job/{0}/track", jobGuid), dto);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 // todo: add logger
                 return null;
             }
         }
-        
+
         public async Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid)
         {
             try
@@ -1409,7 +1441,7 @@ namespace UpDiddy.Api
         private async Task<IList<JobCategoryDto>> _GetJobCategories()
         {
             return await GetAsync<IList<JobCategoryDto>>("job/categories");
-            }
+        }
 
         public async Task ReferJobPosting(string jobPostingId, string referrerGuid, string refereeName, string refereeEmailId, string descriptionEmailBody)
         {
