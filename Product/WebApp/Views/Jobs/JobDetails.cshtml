@@ -4,6 +4,13 @@
 @model JobDetailsViewModel
 
 
+@section AdditionalMeta
+    {
+    <meta name="description" content="@Model.MetaDescription" />
+    <meta name="title" content="@Model.MetaTitle" />
+    <meta name="keywwords" content="@Model.MetaKeywords" />
+}
+
 
 @if (Model.LoggedInSubscriberGuid != null)
 {
@@ -11,7 +18,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
 
-                <form id="emailJobDetails" method="post"  asp-controller="Jobs" asp-action="ReferAJob">
+                <form id="emailJobDetails" method="post" asp-controller="Jobs" asp-action="ReferAJob">
                     <div class="modal-header">
                         <h5 class="modal-title">Refer a Friend</h5>
                         <button type="button" class="close" data-dismiss="modal">
@@ -56,7 +63,7 @@
                                 @Html.TextArea("descriptionEmailBody", "Checkout this awesome job!", new { PlaceHolder = "Description", @class = "form-control", form = "emailJobDetails", rows = "4", cols = "50" })
                             </div>
                         </div>
-                      
+
                         @Html.Hidden("referrerGuid", Model.LoggedInSubscriberGuid, new { @class = "form-control", form = "emailJobDetails" })
                         @Html.Hidden("jobPostingId", Model.PostingId, new { @class = "form-control", form = "emailJobDetails" })
                     </div>
@@ -75,21 +82,21 @@
 
 
 
-    <div class="job-details-hero-band">
-        <div class="p-5"></div>
-    </div>
-    <div class="container animated bounceInUp">
-        <div class="job-details-container shadow-5">
-            @{
-                List<string> Elements = new List<string>()
+<div class="job-details-hero-band">
+    <div class="p-5"></div>
+</div>
+<div class="container animated bounceInUp">
+    <div class="job-details-container shadow-5">
+        @{
+            List<string> Elements = new List<string>()
         {
             Html.PartialToHtmlMarkup("Partials/_JobPosting", Model).ToString()
         };
-            }
-            @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
-            {
-                Class = "skew skew-left-to-right cc-cscheme-white",
-                Elements = Elements
-            })
-        </div>
+        }
+        @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+        {
+            Class = "skew skew-left-to-right cc-cscheme-white",
+            Elements = Elements
+        })
     </div>
+</div>

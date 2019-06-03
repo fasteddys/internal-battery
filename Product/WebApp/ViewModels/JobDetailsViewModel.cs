@@ -29,5 +29,9 @@ namespace UpDiddy.ViewModels
         public Guid? JobPostingGuid { get; set; }
         public string CompanyBoilerplate { get; set; }
         public bool IsThirdPartyJob { get; set; }
+
+        public string MetaTitle { get; set; }
+        public string MetaDescription { get; set; }
+        public string MetaKeywords { get; set; }
     }
 }
