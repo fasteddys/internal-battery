@@ -700,10 +700,12 @@ namespace UpDiddyApi.Workflow
 
         #region CareerCircle Jobs 
 
+        // TODO JAB add param for subscriebr file 
         public async Task<bool> ImportSubscriberProfileDataAsync(SubscriberFile resume)
         {
             try
             {
+                // TODO JAB create resume parse object 
                 resume.Subscriber = _db.Subscriber.Where(s => s.SubscriberId == resume.SubscriberId).First();
                 string errMsg = string.Empty;
 
@@ -718,7 +720,8 @@ namespace UpDiddyApi.Workflow
                 }
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData: Finished downloading and encoding file at {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
 
-                String parsedDocument = _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
+                
+                String parsedDocument =  _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
                 SubscriberProfileStagingStoreFactory.Save(_db, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
 
                 // Get the list of profiles that need 
@@ -727,6 +730,8 @@ namespace UpDiddyApi.Workflow
                 .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == resume.Subscriber.SubscriberGuid)
                 .ToList();
 
+                // TODO JAB refactor to use only the currently parsed resume 
+                // TODO JAB create ....Parse objects for any conflicting profle data (Change in existing work history, education history, Skills etc).
                 // Import user profile data
                 _ImportSubscriberProfileData(profiles);
 

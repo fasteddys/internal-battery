@@ -52,6 +52,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _db.SaveChangesAsync();
                     transaction.Commit();
 
+                    // TODO  JAB Pass resume id into Import Subscriber data 
                     if (parseResume)
                         BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(resume));
 
