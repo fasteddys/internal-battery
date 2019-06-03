@@ -619,6 +619,18 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        public async Task<int?> GetActiveJobCountAsync()
+        {
+            string cacheKey = "job-activeJobCount";
+            int? rval = GetCachedValue<int?>(cacheKey);
+            if(!rval.HasValue)
+            {
+                rval = await _GetActiveJobCountAsync();
+                SetCachedValue<int?>(cacheKey, rval);
+            }
+            return rval;
+        }
+
         public async Task<JobSearchResultDto> GetJobsByLocation(string searchQueryParameterString)
         {
 
@@ -1472,6 +1484,10 @@ namespace UpDiddy.Api
             await PutAsync<BasicResponseDto>("job/update-job-viewed", referrerCode);
         }
 
+        public async Task<int?> _GetActiveJobCountAsync()
+        {
+            return await GetAsync<int?>("job/active-job-count");
+        }
 
         #endregion
     }

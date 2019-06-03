@@ -402,6 +402,13 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
+        [Route("api/[controller]/active-job-count")]
+        public IActionResult GetActiveJobCount()
+        {
+            return Ok(5000);
+        }
+
+        [HttpGet]
         [Route("api/sitemap/[controller]/")]
         public IActionResult GetAllJobsForSitemap()
         {
