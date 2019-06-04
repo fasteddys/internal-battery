@@ -45,6 +45,8 @@ namespace UpDiddy.Controllers
         [HttpGet("[controller]")]
         public async Task<IActionResult> Index()
         {
+            ViewBag.ActiveJobCount = _activeJobCount;
+
             //get pageCount from Configuration file
             int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
 
