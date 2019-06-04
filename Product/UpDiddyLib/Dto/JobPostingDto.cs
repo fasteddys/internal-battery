@@ -90,6 +90,8 @@ namespace UpDiddyLib.Dto
             }
         }
 
+        public JobSearchResultDto SimilarJobs { get; set; }
+
         #region metadata 
         public string MetaDescription { get; set; }
         public string MetaTitle { get; set; }

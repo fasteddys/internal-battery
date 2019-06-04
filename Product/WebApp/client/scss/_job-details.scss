@@ -40,9 +40,15 @@
             background-image: url("/images/AdobeStock_189186643.jpg");
         }
     }
-    .job-details-container {
-        margin-bottom: 6rem;
-        margin-top: -8rem;
+
+    .job-details-container{
+        margin-bottom: 3rem;
+        margin-top: -22rem;
+
+        @media (min-width: 1200px){
+            margin-bottom: 6rem;
+            margin-top: -8rem;
+        }
 
         .fit-to-text {
             display: block;
@@ -69,6 +75,57 @@
 
             .cc-content-band-content {
                 padding: 2rem 1rem;
+
+                > .row {
+                    > div {
+                        margin-bottom: 0;
+                    }
+                }
+
+                .job-description-container {
+                    padding: 2rem 0rem;
+
+                    > div {
+                        padding: 0;
+                    }
+
+                    > div:first-child {
+                        border-top: 2px solid $color-secondary;
+                    }
+                }
+            }
+        }
+    }
+
+    .similar-jobs-container {
+        margin-top: -22rem;
+        @media (min-width: 0px) {
+            margin-top: 0;
+            margin-bottom: 3rem;
+        }
+
+        @media (min-width: 1200px) {
+            margin-top: -8rem;
+        }
+
+        .fit-to-text {
+            display: block;
+
+            @media (min-width: 576px) {
+                display: inline-block;
+            }
+        }
+
+        .cc-content-band {
+            padding: 0 1rem;
+
+            .col-12 {
+                padding: 0;
+            }
+
+            .cc-content-band-content {
+                padding: 2rem 1rem;
+
                 > .row {
                     > div {
                         margin-bottom: 0;

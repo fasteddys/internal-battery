@@ -99,8 +99,7 @@ namespace UpDiddy.Controllers
             if (jobSearchResultDto == null)
                 return NotFound();
 
-
-
+            
             JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
             {
                 RequestId = jobSearchResultDto.RequestId,
@@ -219,6 +218,20 @@ namespace UpDiddy.Controllers
                     jobFavoriteGuid = favorite.First().Value;
             }
 
+
+            JobViewDto JobToBeRemoved = null;
+
+            foreach (JobViewDto result in job.SimilarJobs.Jobs)
+            {
+                if (result.JobPostingGuid == job.JobPostingGuid)
+                    JobToBeRemoved = result;
+            }
+
+            if (JobToBeRemoved != null)
+            {
+                job.SimilarJobs.Jobs.Remove(JobToBeRemoved);
+            }
+
             JobDetailsViewModel jdvm = new JobDetailsViewModel
             {
                 RequestId = job.RequestId,
@@ -237,7 +250,10 @@ namespace UpDiddy.Controllers
                 IsThirdPartyJob = job.ThirdPartyApply,
                 MetaDescription = job.MetaDescription,
                 MetaTitle = job.MetaTitle,
-                MetaKeywords = job.MetaKeywords
+                MetaKeywords = job.MetaKeywords,
+                SimilarJobsSearchResult = job.SimilarJobs,
+                City = job.City,
+                Province = job.Province
             };
 
             // Display subscriber info if it exists

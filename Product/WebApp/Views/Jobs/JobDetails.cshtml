@@ -82,21 +82,41 @@
 
 
 
-<div class="job-details-hero-band">
-    <div class="p-5"></div>
-</div>
-<div class="container animated bounceInUp">
-    <div class="job-details-container shadow-5">
-        @{
-            List<string> Elements = new List<string>()
-        {
-            Html.PartialToHtmlMarkup("Partials/_JobPosting", Model).ToString()
-        };
-        }
-        @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
-        {
-            Class = "skew skew-left-to-right cc-cscheme-white",
-            Elements = Elements
-        })
+    <div class="job-details-hero-band">
+        <div class="p-5"></div>
     </div>
-</div>
+    <div class="container animated bounceInUp">
+        <div class="row">
+            <div class="col-12 col-xl-9">
+                <div class="job-details-container shadow-5">
+                    @{
+                        List<string> Elements = new List<string>()
+                    {
+                        Html.PartialToHtmlMarkup("Partials/_JobPosting", Model).ToString()
+                    };
+                    }
+                    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+                    {
+                        Class = "cc-cscheme-white",
+                        Elements = Elements
+                    })
+                </div>
+            </div>
+            <div class="col-12 col-xl-3">
+                <div class="similar-jobs-container shadow-5">
+                    @{
+                        List<string> Elements2 = new List<string>()
+                        {
+                            Html.PartialToHtmlMarkup("Partials/_SimilarJobs", Model).ToString()
+                        };
+                    }
+                    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+                    {
+                        Class = "cc-cscheme-white",
+                        Elements = Elements2
+                    })
+                </div>
+            </div>
+        </div>
+        
+    </div>
