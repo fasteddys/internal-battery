@@ -24,7 +24,7 @@ namespace UpDiddy.Api
         Task<IList<IndustryDto>> GetIndustryAsync();
         Task<IList<JobCategoryDto>> GetJobCategoryAsync();
         Task<List<JobPostingDto>> GetAllJobsAsync();
-        Task<int?> GetActiveJobCountAsync();
+        Task<BasicResponseDto> GetActiveJobCountAsync();
         Task<IList<ExperienceLevelDto>> GetExperienceLevelAsync();
         Task<IList<EducationLevelDto>> GetEducationLevelAsync();
         Task<IList<CompensationTypeDto>> GetCompensationTypeAsync();

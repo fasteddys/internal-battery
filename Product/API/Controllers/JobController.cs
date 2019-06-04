@@ -403,9 +403,10 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("api/[controller]/active-job-count")]
-        public IActionResult GetActiveJobCount()
+        public async Task<IActionResult> GetActiveJobCount()
         {
-            return Ok(5000);
+            var allJobPostings = await _repositoryWrapper.JobPosting.GetAllAsync();
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = allJobPostings.Where(jp => jp.IsDeleted == 0).Count().ToString() });
         }
 
         [HttpGet]
