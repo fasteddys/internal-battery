@@ -10,6 +10,10 @@
     color: $color-primary !important;
 }
 
+.text-cc-secondary {
+    color: $color-secondary;
+}
+
 a {
     &.text-primary:hover {
         color: darken($color-primary, 10%) !important;
