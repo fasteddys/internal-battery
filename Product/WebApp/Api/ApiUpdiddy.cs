@@ -955,6 +955,11 @@ namespace UpDiddy.Api
             return await PostAsync<BasicResponseDto>("resume/upload", resumeDto);
         }
 
+        public async Task<RedirectDto> GetSubscriberPartnerWebRedirect()
+        {
+            return await GetAsync<RedirectDto>("subscriber/me/partner-web-redirect");
+        }
+
         #endregion
 
         #region Cache Helper Functions

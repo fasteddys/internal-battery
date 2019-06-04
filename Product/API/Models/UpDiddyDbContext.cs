@@ -140,6 +140,7 @@ namespace UpDiddyApi.Models
         public DbSet<Partner> Partner { get; set; }
         public DbSet<PartnerContact> PartnerContact { get; set; }
         public DbSet<PartnerReferrer> PartnerReferrer { get; set; }
+        public DbSet<PartnerWebRedirect> PartnerWebRedirect { get; set; }
         public DbSet<SubscriberAction> SubscriberAction { get; set; }
         public DbSet<EntityType> EntityType { get; set; }
         public DbSet<PartnerType> PartnerType { get; set; }
@@ -295,6 +296,9 @@ namespace UpDiddyApi.Models
 
             modelBuilder.Entity<Partner>()
                 .HasMany<PartnerReferrer>(e => e.Referrers);
+
+            modelBuilder.Entity<Partner>()
+                .HasOne<PartnerWebRedirect>(e => e.WebRedirect);
 
             modelBuilder.Entity<Enrollment>()
                 .HasOne<CampaignCourseVariant>(e => e.CampaignCourseVariant)
