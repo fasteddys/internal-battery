@@ -404,7 +404,7 @@ namespace UpDiddyApi.Controllers
             JobSearchResultDto jobSearchForSingleJob = _cloudTalent.Search(jobQuery);
 
             // If jobs in same city come back less than 6, broaden search to state.
-            if(jobSearchForSingleJob.JobCount < 6)
+            if(jobSearchForSingleJob.JobCount < Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]))
             {
                 jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, string.Empty, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
                 jobSearchForSingleJob = _cloudTalent.Search(jobQuery);
