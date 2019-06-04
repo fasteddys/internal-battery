@@ -17,6 +17,5 @@ namespace UpDiddy.ViewModels
         public IPagedList<JobViewDto> JobsSearchResult { get; set; }
         public Dictionary<Guid, Guid> FavoritesMap { get; set; } = new Dictionary<Guid,Guid>();
         public List<JobQueryFacetDto> Facets { get; set; }
-        public string QueryParamString { get; set; }
     }
 }
