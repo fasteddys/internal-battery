@@ -7,7 +7,15 @@
                 > div {
                     padding: 1rem 0;
                     border-bottom: 2px solid $color-tertiary-mid-gray;
+                    > div{
+                        a{
+                            color: $color-secondary;
 
+                            &:hover{
+                                color: $color-tertiary;
+                            }
+                        }
+                    }
                     &:last-child {
                         border-bottom: 0;
                     }
