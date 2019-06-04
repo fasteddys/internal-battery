@@ -57,6 +57,52 @@ namespace UpDiddyApi.Helpers.Job
             return jobQuery;
         }
 
+        static public JobQueryDto CreateJobQueryForSimilarJobs(string Province, string City, string Title, int NumSimilarJobs)
+        {
+
+
+            JobQueryDto jobQuery = new JobQueryDto();
+
+            // map parameters that may have been specified via an url component 
+            jobQuery.Country = string.Empty;
+            jobQuery.Province = Province;
+            jobQuery.City = City;
+            jobQuery.Industry = string.Empty;
+            jobQuery.JobCategory = string.Empty;
+            jobQuery.Skill = string.Empty;
+            // map parameters that can only be specied via a query string parameter 
+            jobQuery.Location = string.Empty;
+            jobQuery.PostalCode = string.Empty;
+            jobQuery.StreetAddress = string.Empty;
+            jobQuery.Keywords = Title;
+            jobQuery.DatePublished = string.Empty;
+            jobQuery.CompanyName = string.Empty;
+            jobQuery.EmploymentType = string.Empty;
+            jobQuery.ExperienceLevel = string.Empty;
+            jobQuery.EducationLevel = string.Empty;
+            jobQuery.SearchRadius = 0;
+
+            // Search options
+            jobQuery.ExcludeCustomProperties = 0;
+            jobQuery.ExcludeFacets = 0;
+            jobQuery.OrderBy = string.Empty;
+
+            // Commute search
+            jobQuery.Lat = 0;
+            jobQuery.Lng = 0;
+            jobQuery.CommuteTime = 0;
+
+            jobQuery.PreciseAddress = false;
+            jobQuery.PublicTransit = false;
+            jobQuery.RushHour = false;
+
+            // Set up pagination
+            jobQuery.PageNum = 0;
+            jobQuery.PageSize = NumSimilarJobs;
+
+            return jobQuery;
+        }
+
 
         #region Private Helper Functions
 

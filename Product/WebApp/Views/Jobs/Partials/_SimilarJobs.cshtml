@@ -8,24 +8,53 @@
 <div class="similar-jobs">
     <h4>Similar Jobs</h4>
     <div class="row similar-jobs-list">
-        <div class="col-12 no-padding">
-            <div>Tester</div>
-            <div class="similar-jobs-location"><i class="fas fa-map-marker-alt"></i> Columbia, MD</div>
-        </div>
-        <div class="col-12 no-padding">
-            <div>Programmer With A Longer Title</div>
-            <div class="similar-jobs-location"><i class="fas fa-map-marker-alt"></i> Baltimore, MD</div>
-        </div>
-        <div class="col-12 no-padding">
-            <div>Scrum Master</div>
-            <div class="similar-jobs-location"><i class="fas fa-map-marker-alt"></i> O'Fennel, MD</div>
-        </div>
-        <div class="col-12 no-padding">
-            <div>SQL DBA</div>
-            <div class="similar-jobs-location"><i class="fas fa-map-marker-alt"></i> Germantown, MD</div>
-        </div>
+        @{
+            int count = 1;
+            string OddNumberJobsSecondToLast = string.Empty;
+            if (Model.SimilarJobsSearchResult.Jobs.Count % 2 == 1 && Model.SimilarJobsSearchResult.Jobs.Count >= 3)
+            {
+                OddNumberJobsSecondToLast = "odd-n-second-to-last";
+            }
+        }
+        @if (Model.SimilarJobsSearchResult.Jobs.Count > 0)
+        {
+            @foreach (JobViewDto Job in Model.SimilarJobsSearchResult.Jobs)
+            {
+                string state = Job.Province.Length == 2 ? Job.Province : UpDiddyLib.Helpers.Utils.GetStateByName(Job.Province).ToString();
+                if (count == Model.SimilarJobsSearchResult.Jobs.Count - 1)
+                {
+                    <div class="col-12 col-md-6 col-xl-12 no-padding @OddNumberJobsSecondToLast">
+                        <div><a href="/job/@Job.JobPostingGuid">@Job.Title</a></div>
+                        <div class="similar-jobs-location"><i class="fas fa-map-marker-alt"></i> @Job.City, @state</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-12 col-md-6 col-xl-12 no-padding">
+                        <div><a href="/job/@Job.JobPostingGuid">@Job.Title</a></div>
+                        <div class="similar-jobs-location"><i class="fas fa-map-marker-alt"></i> @Job.City, @state</div>
+                    </div>
+                }
+
+                count++;
+                if (count == 7)
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            <div class="col-12 col-md-6 col-xl-12 no-padding">No similar jobs found.</div>
+
+        }
+
     </div>
-    <div class="all-similar-jobs pt-3 mt-3">
-        <a href="/">All similar jobs</a>
-    </div>
+    @if (Model.SimilarJobsSearchResult.Jobs.Count > 0)
+    {
+        <div class="all-similar-jobs pt-3 mt-3">
+            <a href="/Jobs?keywords=@Model.Name&province=@Model.Province&city=@Model.City">All similar jobs</a>
+        </div>
+    }
+
 </div>

@@ -85,6 +85,8 @@ namespace UpDiddyLib.Dto
                 return String.Join(", ", array.Where(s => !string.IsNullOrEmpty(s)));
             }
         }
+
+        public JobSearchResultDto SimilarJobs { get; set; }
     }
 
 }

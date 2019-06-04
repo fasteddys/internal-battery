@@ -99,8 +99,7 @@ namespace UpDiddy.Controllers
             if (jobSearchResultDto == null)
                 return NotFound();
 
-
-
+            
             JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
             {
                 RequestId = jobSearchResultDto.RequestId,
@@ -109,7 +108,8 @@ namespace UpDiddy.Controllers
                 FavoritesMap = favoritesMap,
                 Facets= jobSearchResultDto.Facets,
                 Keywords = Keywords,
-                Location = Location
+                Location = Location,
+                QueryParamString = queryParametersString
             };
 
             return View("Index", jobSearchViewModel);
@@ -212,6 +212,20 @@ namespace UpDiddy.Controllers
                     jobFavoriteGuid = favorite.First().Value;
             }
 
+
+            JobViewDto JobToBeRemoved = null;
+
+            foreach (JobViewDto result in job.SimilarJobs.Jobs)
+            {
+                if (result.JobPostingGuid == job.JobPostingGuid)
+                    JobToBeRemoved = result;
+            }
+
+            if (JobToBeRemoved != null)
+            {
+                job.SimilarJobs.Jobs.Remove(JobToBeRemoved);
+            }
+
             JobDetailsViewModel jdvm = new JobDetailsViewModel
             {
                 RequestId = job.RequestId,
@@ -227,7 +241,10 @@ namespace UpDiddy.Controllers
                 Summary = job.Description,
                 ThirdPartyIdentifier = job.ThirdPartyIdentifier,
                 CompanyBoilerplate = job.Company.JobPageBoilerplate,
-                IsThirdPartyJob = job.ThirdPartyApply
+                IsThirdPartyJob = job.ThirdPartyApply,
+                SimilarJobsSearchResult = job.SimilarJobs,
+                City = job.City,
+                Province = job.Province
             };
 
             // Display subscriber info if it exists
