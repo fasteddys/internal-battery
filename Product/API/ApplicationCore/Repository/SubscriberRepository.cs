@@ -42,5 +42,21 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
             return subscriberResult.Count == 0 ? null : subscriberResult[0];
         }
+
+        public async Task<Subscriber> GetSubscriberByIdAsync(int subscriberId)
+        {
+            var queryableSubscriber = await GetAllAsync();
+
+            var subscriberResult = queryableSubscriber
+                              .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
+                              .ToList();
+
+            return subscriberResult.Count == 0 ? null : subscriberResult[0];
+        }
+
+
+
+      
+
     }
 }

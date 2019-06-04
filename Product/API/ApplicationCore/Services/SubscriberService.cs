@@ -19,6 +19,7 @@ using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -52,9 +53,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _db.SaveChangesAsync();
                     transaction.Commit();
 
-                    // TODO  JAB Pass resume id into Import Subscriber data 
                     if (parseResume)
-                        BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(resume));
+                        BackgroundJob.Enqueue<ScheduledJobs>(j =>  j.ImportSubscriberProfileDataAsync(subscriber, resume));
 
                     return resume;
                 }
@@ -228,7 +228,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 SubscriberFile oldFile = subscriber.SubscriberFile.Last();
                 await _cloudStorage.DeleteFileAsync(oldFile.BlobName);
-                subscriber.SubscriberFile.Remove(oldFile);
+                // subscriber.SubscriberFile.Remove(oldFile);
+                oldFile.IsDeleted = 1;
+
             }
 
             subscriber.SubscriberFile.Add(subscriberFileResume);
@@ -259,7 +261,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             SubscriberFile resume = subscriber.SubscriberFile.OrderByDescending(e => e.CreateDate).FirstOrDefault();
 
             if(resume != null)
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(resume));
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync( subscriber, resume));
 
             return true;
         }
@@ -282,5 +284,119 @@ namespace UpDiddyApi.ApplicationCore.Services
             var map = query.ToDictionary(x => x.jobPostingGuid, x => x.jobPostingFavoriteGuid);
             return map;
         }
+
+        #region resume parsing 
+
+        public async Task<bool> ImportResume(ResumeParse resumeParse, string resume)
+        {
+            try
+            {
+                // Get the subscriber 
+                //                Subscriber subscriber = SubscriberFactory.GetSubscriberById(_db, resumeParse.SubscriberId);
+                Subscriber subscriber = await _repository.Subscriber.GetSubscriberByIdAsync(resumeParse.SubscriberId);
+                if (subscriber == null)
+                {                   
+                    return false;
+                }
+
+                // Import Contact Info 
+                _ImportResumeContactInfo(subscriber, resumeParse, resume);
+                // Import skills 
+            //    _ImportSovrenSkills(db, subscriber, resume, syslog);
+                // Import work history  
+             //   _ImportSovrenWorkHistory(db, subscriber, resume, syslog);
+                // Import education history  
+             //   _ImportSovrenEducationHistory(db, subscriber, resume, syslog);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+             
+                return false;
+            }
+        }
+
+
+
+
+
+        private  async Task<bool> _ImportResumeContactInfo(Subscriber subscriber, ResumeParse resumeParse, string resume)
+        {
+            try
+            {
+                // TODO JAB  implement 
+
+                SubscriberContactInfoDto contactInfo = Utils.ParseContactInfoFromHrXML(resume);
+                // case of existing property is empty or existing property and parsed property are equal 
+                if ( string.IsNullOrEmpty(subscriber.FirstName) || subscriber.FirstName.Trim() == string.Empty  || subscriber.FirstName.Trim() == contactInfo.FirstName.Trim())
+                {
+                    subscriber.FirstName = contactInfo.FirstName.Trim();
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, "First Name", "Subscriber", "FirstName", subscriber.FirstName, contactInfo.FirstName, (int) ResumeParseStatus.Merged, subscriber.SubscriberGuid.Value);
+                }
+                else
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, "First Name", "Subscriber", "FirstName", subscriber.FirstName, contactInfo.FirstName, (int)ResumeParseStatus.MergeNeeded, subscriber.SubscriberGuid.Value);
+
+ 
+                // case of existing property is empty or existing property and parsed property are equal 
+                if (string.IsNullOrEmpty(subscriber.LastName) || subscriber.LastName.Trim() == string.Empty || subscriber.LastName.Trim() == contactInfo.LastName.Trim())
+                {
+                    subscriber.LastName = contactInfo.LastName.Trim();
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, "Last Name", "Subscriber", "LastName", subscriber.LastName, contactInfo.LastName, (int)ResumeParseStatus.Merged, subscriber.SubscriberGuid.Value);
+                }
+                else
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, "Last Name", "Subscriber", "LastName", subscriber.LastName, contactInfo.LastName, (int)ResumeParseStatus.MergeNeeded, subscriber.SubscriberGuid.Value);
+
+
+                //TODO JAB remove test 
+                subscriber.FirstName = "Maia";
+                // save the subscriber
+                _repository.Subscriber.SaveAsync();
+                // save resume parse results 
+                _repository.ResumeParseResultRepository.SaveResumeParseResultAsync();
+
+
+
+
+
+                /*
+                subscriber.FirstName = contactInfo.FirstName;
+                subscriber.LastName = contactInfo.LastName;
+                contactInfo.PhoneNumber = contactInfo.PhoneNumber.Trim().Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+                Regex phoneRegex = new Regex(@"^([0-9]{0,3})?[2-9]{1}[0-9]{9}$");
+                if (phoneRegex.IsMatch(contactInfo.PhoneNumber))
+                    subscriber.PhoneNumber = Utils.RemoveNonNumericCharacters(contactInfo.PhoneNumber);
+                subscriber.City = contactInfo.City;
+                subscriber.Address = contactInfo.Address;
+                subscriber.PostalCode = contactInfo.PostalCode;
+                State state = StateFactory.GetStateByStateCode(db, contactInfo.State);
+                if (state != null)
+                    subscriber.StateId = state.StateId;
+                */
+
+
+
+
+
+
+
+                ////_AddSubscriberContactInfo(db, subscriber, contactInfo);
+                return true;
+            }
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, $"Subscriber:_ImportSovrenSkills threw an exception -> {e.Message} for subscriber {subscriber.SubscriberId} profile data = {resume}");
+                return false;
+            }
+        }
+
+
+        #endregion
+
+
+
     }
+
+
+
 }

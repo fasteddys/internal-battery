@@ -47,6 +47,8 @@
     <Compile Remove="Migrations\20190523161624_Task718_CreateJobReferralTable.Designer.cs" />
     <Compile Remove="Migrations\20190603203842_ResumeParse model.cs" />
     <Compile Remove="Migrations\20190603203842_ResumeParse model.Designer.cs" />
+    <Compile Remove="Migrations\20190604143505_ResumeParseResult model.cs" />
+    <Compile Remove="Migrations\20190604143505_ResumeParseResult model.Designer.cs" />
     <Compile Remove="Models\_Company.cs" />
     <Compile Remove="Models\_Country.cs" />
     <Compile Remove="Models\_EducationalDegree.cs" />

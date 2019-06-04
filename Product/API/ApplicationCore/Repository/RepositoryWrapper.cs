@@ -26,7 +26,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IJobCategoryRepository _jobCategoryRepository;
         private IJobReferralRepository _jobReferralRepository;
         private IResumeParseRepository _resumeParseRepository;
- 
+        private IResumeParseResultRepository _resumeParseResultRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -240,6 +240,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
-
+        public IResumeParseResultRepository ResumeParseResultRepository
+        {
+            get
+            {
+                if (_resumeParseResultRepository == null)
+                {
+                    _resumeParseResultRepository = new ResumeParseResultRespository(_dbContext);
+                }
+                return _resumeParseResultRepository;
+            }
+        }
     }
 }

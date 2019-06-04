@@ -240,6 +240,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         }
 
+   
         public static ProfileDataStatus ImportSovren(UpDiddyDbContext db, SubscriberProfileStagingStore info, ref string msg, ILogger syslog)
         {
             try
@@ -248,7 +249,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 Subscriber subscriber = SubscriberFactory.GetSubscriberById(db, info.SubscriberId);
                 if (subscriber == null)
                 {
-                    msg = $"SubscriberSkill:ImportSovren -> Subscriber {info.SubscriberId} was not found";
+                    msg = $"SubscriberFactory:ImportSovren -> Subscriber {info.SubscriberId} was not found";
                     return ProfileDataStatus.ProcessingError;
                 }
 
@@ -265,7 +266,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             catch (Exception ex)
             {
-                msg = $"SubscriberSkill:ImportSovren Exception for SubscriberProfileStagingStore Id = {info.SubscriberProfileStagingStoreId} Error = {ex.Message}";
+                msg = $"SubscriberFactory:ImportSovren Exception for SubscriberProfileStagingStore Id = {info.SubscriberProfileStagingStoreId} Error = {ex.Message}";
                 return ProfileDataStatus.ProcessingError;
             }
         }

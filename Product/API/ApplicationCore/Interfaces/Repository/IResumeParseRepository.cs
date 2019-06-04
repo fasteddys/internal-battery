@@ -9,5 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public interface IResumeParseRepository
     {
         Task<ResumeParse> GetResumeParseByGuid(Guid resumeParseGuid);
+        Task<ResumeParse> CreateResumeParse(int subscriberId, int subscriberFileId);
+        Task<bool> SaveResumeParse();
     }
 }

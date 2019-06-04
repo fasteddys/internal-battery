@@ -53,5 +53,14 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="jobGuids">List of Job Posting Guids</param>
         /// <returns>Dictionary<Guid, Guid></returns>
         Task<Dictionary<Guid, Guid>> GetSubscriberJobPostingFavoritesByJobGuid(Guid subscriberGuid, List<Guid> jobGuids);
+
+        /// <summary>
+        /// Imports a user resume
+        /// </summary>
+        /// <param name="resumeParse"></param>
+        /// <param name="resume"></param>
+        /// <param name="msg"></param>
+        /// <returns></returns>
+        Task<bool> ImportResume(ResumeParse resumeParse, string resume);
     }
 }

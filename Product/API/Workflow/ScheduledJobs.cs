@@ -27,7 +27,7 @@ using UpDiddyApi.Helpers.Job;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.Workflow
 {
@@ -36,6 +36,8 @@ namespace UpDiddyApi.Workflow
         ICloudStorage _cloudStorage;
         ISysEmail _sysEmail;
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly ISubscriberService _subscriberService;
+
 
         public ScheduledJobs(
             UpDiddyDbContext context,
@@ -48,7 +50,9 @@ namespace UpDiddyApi.Workflow
             IHubContext<ClientHub> hub,
             IDistributedCache distributedCache,
             ICloudStorage cloudStorage,
-            IRepositoryWrapper repositoryWrapper)
+            IRepositoryWrapper repositoryWrapper,
+            ISubscriberService subscriberService
+           )
         {
             _db = context;
             _mapper = mapper;
@@ -63,6 +67,7 @@ namespace UpDiddyApi.Workflow
             _cache = distributedCache;
             _sysEmail = sysEmail;
             _repositoryWrapper = repositoryWrapper;
+            _subscriberService = subscriberService;
         }
 
         #region Marketing
@@ -700,13 +705,15 @@ namespace UpDiddyApi.Workflow
 
         #region CareerCircle Jobs 
 
-        // TODO JAB add param for subscriebr file 
-        public async Task<bool> ImportSubscriberProfileDataAsync(SubscriberFile resume)
+ 
+        public async Task<bool> ImportSubscriberProfileDataAsync( Subscriber subscriber, SubscriberFile resume)
         {
             try
             {
-                // TODO JAB create resume parse object 
-                resume.Subscriber = _db.Subscriber.Where(s => s.SubscriberId == resume.SubscriberId).First();
+                // TODO JAB confirm passed in subscriber works in this case 
+                // resume.Subscriber = _db.Subscriber.Where(s => s.SubscriberId == resume.SubscriberId).First();
+                resume.Subscriber = subscriber;
+
                 string errMsg = string.Empty;
 
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
@@ -722,18 +729,24 @@ namespace UpDiddyApi.Workflow
 
                 
                 String parsedDocument =  _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
+                // Save profile in staging store 
                 SubscriberProfileStagingStoreFactory.Save(_db, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
 
+                /*
                 // Get the list of profiles that need 
                 List<SubscriberProfileStagingStore> profiles = _db.SubscriberProfileStagingStore
                 .Include(p => p.Subscriber)
                 .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == resume.Subscriber.SubscriberGuid)
                 .ToList();
+                */
 
                 // TODO JAB refactor to use only the currently parsed resume 
                 // TODO JAB create ....Parse objects for any conflicting profle data (Change in existing work history, education history, Skills etc).
                 // Import user profile data
-                _ImportSubscriberProfileData(profiles);
+                
+                // _ImportSubscriberProfileData(profiles);
+
+                await _ImportSubscriberResume(_subscriberService, resume, parsedDocument);
 
                 // Callback to client to let them know upload is complete
                 ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
@@ -986,10 +999,26 @@ namespace UpDiddyApi.Workflow
         #endregion
 
         #region CareerCircle  Helper Functions
+        /// <summary>
+        /// Import a subscriber resume 
+        /// </summary>
+        /// <param name="resume"></param>
+        /// <param name="subscriberFileId"></param>
+        /// <returns></returns>
+        private async Task<Boolean> _ImportSubscriberResume(ISubscriberService subscriberService, SubscriberFile resumeFile, string resume)
+        {
+            // Create resume parse object 
+            ResumeParse resumeParse = await _repositoryWrapper.ResumeParseRepository.CreateResumeParse(resumeFile.SubscriberId, resumeFile.SubscriberFileId);
+            // Modify Resume Parse 
+            await _repositoryWrapper.ResumeParseRepository.SaveResumeParse();
 
+            // Import resume 
+            bool rVal = await subscriberService.ImportResume(resumeParse, resume);    
+            return rVal;
+        }
+        
         private Boolean _ImportSubscriberProfileData(List<SubscriberProfileStagingStore> profiles)
         {
-
             try
             {
                 string errMsg = string.Empty;

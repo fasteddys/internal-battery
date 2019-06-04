@@ -5,16 +5,43 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
   
     public class ResumeParseRepository : UpDiddyRepositoryBase<ResumeParse>, IResumeParseRepository
     {
-        private readonly UpDiddyDbContext _dbContext;
+      
         public ResumeParseRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
-            _dbContext = dbContext;
+ 
+        }
+
+        public async Task<ResumeParse> CreateResumeParse(int subscriberId, int subscriberFileId)
+        {            
+            ResumeParse resumeParse =  new ResumeParse()
+            {
+                IsDeleted = 0,
+                CreateDate = DateTime.UtcNow,
+                ModifyDate = DateTime.UtcNow,
+                CreateGuid = Guid.NewGuid(),
+                ModifyGuid = Guid.NewGuid(),
+                ResumeParseGuid = Guid.NewGuid(),
+                SubscriberId = subscriberId,
+                SubscriberFileId = subscriberFileId,
+                ParseStatus = (int) ResumeParseStatus.MergeNeeded
+
+            };
+            await Create(resumeParse);
+            return resumeParse;
+        }
+
+
+        public async Task<bool> SaveResumeParse()
+        {
+            await SaveAsync();
+            return true;
         }
 
 
