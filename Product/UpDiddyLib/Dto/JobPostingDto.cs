@@ -77,6 +77,10 @@ namespace UpDiddyLib.Dto
         public string SemanticJobPath { get; set; }
         public string ThirdPartyIdentifier { get; set; }
 
+
+        
+
+
         public string CityProvince
         {
             get
@@ -87,6 +91,15 @@ namespace UpDiddyLib.Dto
         }
 
         public JobSearchResultDto SimilarJobs { get; set; }
+
+        #region metadata 
+        public string MetaDescription { get; set; }
+        public string MetaTitle { get; set; }
+        public string MetaKeywords { get; set; }
+
+        #endregion
+
+
     }
 
 }

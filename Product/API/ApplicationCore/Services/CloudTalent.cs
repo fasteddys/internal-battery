@@ -127,6 +127,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.DeletedFromIndex;
                 jobPosting.ModifyDate = DateTime.UtcNow;
+                jobPosting.PostingExpirationDateUTC = DateTime.UtcNow;
                 _db.SaveChanges();
 
                 return true;

@@ -2100,6 +2100,17 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("PartnerType");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerWebRedirect", b =>
+                {
+                    b.Property<int>("PartnerId");
+
+                    b.Property<string>("RelativePath");
+
+                    b.HasKey("PartnerId");
+
+                    b.ToTable("PartnerWebRedirect");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Payment", b =>
                 {
                     b.Property<int>("PaymentId")
@@ -2432,8 +2443,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid>("CreateGuid");
 
                     b.Property<int>("IsDeleted");
-
-                    b.Property<int>("IsStaff");
 
                     b.Property<DateTime?>("ModifyDate");
 
@@ -3713,6 +3722,14 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Partner")
                         .WithMany("Referrers")
                         .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerWebRedirect", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Partner")
+                        .WithOne("WebRedirect")
+                        .HasForeignKey("UpDiddyApi.Models.PartnerWebRedirect", "PartnerId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

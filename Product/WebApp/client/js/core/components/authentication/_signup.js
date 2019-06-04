@@ -60,7 +60,11 @@
                 url: $(this).attr("action"),
                 data: $(this).serialize()
             }).done(res => {
-                window.location.href = res.description;
+                $('.signup-modal a').attr('href', res.description);
+                $('.signup-modal').modal();
+                setTimeout(function () {
+                    window.location.href = res.description;
+                }, 3000);
             }).fail(res => {
                 var errorText = "Unfortunately, there was an error with your submission. Please try again later.";
                 if (res.responseJSON.description != null)

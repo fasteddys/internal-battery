@@ -38,16 +38,18 @@ namespace UpDiddy.Controllers
 
 
         [HttpGet]
-        public IActionResult SignIn()
+        public IActionResult SignIn([FromQuery] string redirectUri)
         {
             SetAzureAdB2CCulture();
             /** 
              * Due to iOS issues, we need to introduce a landing page so that the call to
              * our profile page is coming from the same HTTPcontext session as our site.
              * */
-            var redirectUrl = Url.Action(nameof(HomeController.LoggingIn), "Home");        
+            if(string.IsNullOrEmpty(redirectUri))
+                redirectUri = Url.Action(nameof(HomeController.LoggingIn), "Home");
+
             return Challenge(
-                new AuthenticationProperties { RedirectUri = redirectUrl},
+                new AuthenticationProperties { RedirectUri = redirectUri},
                 OpenIdConnectDefaults.AuthenticationScheme);
         }
 

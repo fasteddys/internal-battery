@@ -22,7 +22,7 @@ using System.Security.Claims;
 namespace UpDiddy.Controllers
 {
 
-    
+
     public class JobsController : BaseController
     {
 
@@ -39,12 +39,12 @@ namespace UpDiddy.Controllers
             _env = env;
             _configuration = configuration;
         }
-        
+
         [HttpGet("[controller]")]
         public async Task<IActionResult> Index()
         {
             //get pageCount from Configuration file
-            int pageCount=_configuration.GetValue<int>("Pagination:PageCount");
+            int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
 
             JobSearchResultDto jobSearchResultDto = null;
             Dictionary<Guid, Guid> favoritesMap = new Dictionary<Guid, Guid>();
@@ -81,9 +81,9 @@ namespace UpDiddy.Controllers
 
                 if (User.Identity.IsAuthenticated)
                     favoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
-                 
+
             }
-            catch(ApiException e)
+            catch (ApiException e)
             {
                 switch (e.ResponseDto.StatusCode)
                 {
@@ -106,7 +106,7 @@ namespace UpDiddy.Controllers
                 ClientEventId = jobSearchResultDto.ClientEventId,
                 JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount),
                 FavoritesMap = favoritesMap,
-                Facets= jobSearchResultDto.Facets,
+                Facets = jobSearchResultDto.Facets,
                 Keywords = Keywords,
                 Location = Location,
                 QueryParamString = queryParametersString
@@ -115,7 +115,14 @@ namespace UpDiddy.Controllers
             return View("Index", jobSearchViewModel);
         }
 
-        
+        [HttpGet]
+        [Route("jobs/{JobGuid}")]
+        [Route("jobs/{industry}/{category}/{country}/{state}/{city}/{JobGuid}")]
+        public IActionResult RedirectOldJobsUrl(Guid JobGuid)
+        {
+            return RedirectToActionPermanent("JobAsync", "Jobs", new { JobGuid = JobGuid });
+        }
+
         [HttpGet]
         [Route("job/{JobGuid}")]
         [Route("job/{industry}/{category}/{country}/{state}/{city}/{JobGuid}")]
@@ -128,12 +135,12 @@ namespace UpDiddy.Controllers
                 if (job.JobStatus == (int)JobPostingStatus.Draft)
                 {
                     BasicResponseDto ResponseDto = new BasicResponseDto() { StatusCode = 401, Description = "Draft jobs cannot be viewed" };
-                    throw new ApiException( new System.Net.Http.HttpResponseMessage(), ResponseDto);
+                    throw new ApiException(new System.Net.Http.HttpResponseMessage(), ResponseDto);
                 }
-                    
+
 
             }
-            catch(ApiException e)
+            catch (ApiException e)
             {
                 switch (e.ResponseDto.StatusCode)
                 {
@@ -150,7 +157,7 @@ namespace UpDiddy.Controllers
                         {
                             return StatusCode(ae.ResponseDto.StatusCode);
                         }
-                     
+
                         int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
                         string location = string.Empty;
                         JobSearchResultDto jobSearchResultDto;
@@ -164,9 +171,9 @@ namespace UpDiddy.Controllers
                         {
 
                             // Show representatives.
-                             location = job?.City + ", " + job?.Province;
+                            location = job?.City + ", " + job?.Province;
                             var queryParametersString = $"?{job.Title}&{location}";
-                            
+
                             jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
 
                             jobSearchResultDto = await _api.GetJobsByLocation(queryParametersString);
@@ -193,7 +200,7 @@ namespace UpDiddy.Controllers
                         return NotFound();
                 }
             }
-            
+
             if (job == null)
                 return NotFound();
 
@@ -205,10 +212,10 @@ namespace UpDiddy.Controllers
             }
 
             Guid? jobFavoriteGuid = null;
-            if(User.Identity.IsAuthenticated)
+            if (User.Identity.IsAuthenticated)
             {
-                var favorite = await _api.JobFavoritesByJobGuidAsync(new List<Guid>(){ job.JobPostingGuid.Value });
-                if(favorite.Any())
+                var favorite = await _api.JobFavoritesByJobGuidAsync(new List<Guid>() { job.JobPostingGuid.Value });
+                if (favorite.Any())
                     jobFavoriteGuid = favorite.First().Value;
             }
 
@@ -242,16 +249,19 @@ namespace UpDiddy.Controllers
                 ThirdPartyIdentifier = job.ThirdPartyIdentifier,
                 CompanyBoilerplate = job.Company.JobPageBoilerplate,
                 IsThirdPartyJob = job.ThirdPartyApply,
+                MetaDescription = job.MetaDescription,
+                MetaTitle = job.MetaTitle,
+                MetaKeywords = job.MetaKeywords,
                 SimilarJobsSearchResult = job.SimilarJobs,
                 City = job.City,
                 Province = job.Province
             };
 
             // Display subscriber info if it exists
-            if ( job.Recruiter.Subscriber != null )
+            if (job.Recruiter.Subscriber != null)
             {
                 jdvm.ContactEmail = job.Recruiter.Subscriber?.Email;
-                jdvm.ContactName = string.Join(' ', 
+                jdvm.ContactName = string.Join(' ',
                     new[] {
                         job.Recruiter.Subscriber?.FirstName,
                         job.Recruiter.Subscriber?.LastName }
@@ -272,18 +282,18 @@ namespace UpDiddy.Controllers
             }
 
             //check if user is logged in
-            if(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value!=null)
+            if (this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value != null)
             {
                 var subscriber = await _api.SubscriberAsync(Guid.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value), false);
                 jdvm.LoggedInSubscriberGuid = subscriber.SubscriberGuid;
                 jdvm.LoggedInSubscriberEmail = subscriber.Email;
-                jdvm.LoggedInSubscriberName = subscriber.FirstName + " "+ subscriber.LastName;
+                jdvm.LoggedInSubscriberName = subscriber.FirstName + " " + subscriber.LastName;
             }
 
             //update job as viewed if there is referrer code
             if (Request.Cookies["referrerCode"] != null)
                 await _Api.UpdateJobViewed(Request.Cookies["referrerCode"].ToString());
- 
+
             return View("JobDetails", jdvm);
         }
 
@@ -315,7 +325,8 @@ namespace UpDiddy.Controllers
 
 
             var trackingDto = await _api.RecordClientEventAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.Application_Start));
-            return View("Apply", new JobApplicationViewModel() {
+            return View("Apply", new JobApplicationViewModel()
+            {
                 RequestId = trackingDto?.RequestId,
                 ClientEventId = trackingDto?.ClientEventId,
                 Email = this.subscriber.Email,
@@ -379,7 +390,8 @@ namespace UpDiddy.Controllers
             {
                 Response = await _api.ApplyToJobAsync(jadto);
 
-                await _api.RecordClientEventAsync(JobApplicationViewModel.JobPostingGuid, new GoogleCloudEventsTrackingDto(){
+                await _api.RecordClientEventAsync(JobApplicationViewModel.JobPostingGuid, new GoogleCloudEventsTrackingDto()
+                {
                     RequestId = JobApplicationViewModel.RequestId,
                     ParentClientEventId = JobApplicationViewModel.ClientEventId,
                     Type = UpDiddyLib.Shared.GoogleJobs.ClientEventType.Application_Finish
@@ -387,7 +399,7 @@ namespace UpDiddy.Controllers
 
                 cjavm.JobApplicationStatus = CompletedJobApplicationViewModel.ApplicationStatus.Success;
             }
-            catch(ApiException e)
+            catch (ApiException e)
             {
                 cjavm.JobApplicationStatus = CompletedJobApplicationViewModel.ApplicationStatus.Failed;
                 cjavm.Description = e.ResponseDto.Description;
@@ -396,7 +408,7 @@ namespace UpDiddy.Controllers
 
             return View("Finish", cjavm);
         }
-   
+
         [HttpGet("Browse-Jobs")]
         public async Task<IActionResult> BrowseAsync()
         {
@@ -465,11 +477,11 @@ namespace UpDiddy.Controllers
             try
             {
                 jobSearchResultDto = await _api.GetJobsUsingRoute(
-                    country, 
-                    state, 
-                    city, 
-                    industry?.Replace("-", "+"), 
-                    category?.Replace("-", "+"), 
+                    country,
+                    state,
+                    city,
+                    industry?.Replace("-", "+"),
+                    category?.Replace("-", "+"),
                     page);
             }
             catch (ApiException e)
@@ -502,7 +514,7 @@ namespace UpDiddy.Controllers
                 NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
             };
 
-            if(User.Identity.IsAuthenticated)
+            if (User.Identity.IsAuthenticated)
             {
                 jobSearchViewModel.FavoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
             }
@@ -529,16 +541,16 @@ namespace UpDiddy.Controllers
                     jobSearchViewModel.Header = FindNeededFacet("industry", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
                 else if (!string.IsNullOrEmpty(category))
                     jobSearchViewModel.Header = FindNeededFacet("jobcategory", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
-                
-                
-                
+
+
+
 
 
                 jobSearchViewModel.BaseUrl = AssembleBaseLocationUrl(country, state, city, industry, category);
                 return View("BrowseByType", jobSearchViewModel);
             }
-                
-            
+
+
 
             // Return state view if user has only specified country
             if (string.IsNullOrEmpty(state))
@@ -553,7 +565,7 @@ namespace UpDiddy.Controllers
             {
 
                 JobQueryFacetDto jqfdto = FindNeededFacet("city", jobSearchResultDto.Facets);
-                
+
                 // City histogram wasn't found
                 if (jqfdto == null)
                     return RedirectPermanent(Request.Path + "/1");
@@ -565,7 +577,7 @@ namespace UpDiddy.Controllers
                     Regex rgx = new Regex("[^a-zA-Z]");
                     LocationsCities.Add(new DisplayItem
                     {
-                        Label = $"{FacetItem.Label}",
+                        Label = $"{FacetItem.Label.Split(",")[0]}",
                         Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.Split(",")[0].ToLower(), "-")}",
                         Count = $"{FacetItem.Count}"
                     });
@@ -595,7 +607,7 @@ namespace UpDiddy.Controllers
             {
                 string IndustryLabel = FindNeededFacet("industry", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
                 BrowseJobsByTypeViewModel bjbtvm = GetCategoryViewModel(jobSearchResultDto.Facets, Request.Path, true, IndustryLabel);
-                if(bjbtvm == null)
+                if (bjbtvm == null)
                     return RedirectPermanent(Request.Path + "/1");
                 return View("BrowseByType", bjbtvm);
 
@@ -603,8 +615,8 @@ namespace UpDiddy.Controllers
 
             return NotFound();
 
-            
-            
+
+
         }
 
         public BrowseJobsByTypeViewModel GetStateViewModel(List<JobQueryFacetDto> Facets, string Path, string Header, bool HideAllLink = false)
@@ -684,15 +696,15 @@ namespace UpDiddy.Controllers
             int NumberOfPages = Model.NumberOfPages;
 
             // Base case when there are less than 5 pages of results returned
-            if(NumberOfPages <= 3)
+            if (NumberOfPages <= 3)
             {
                 Model.PaginationRangeLow = 1;
                 Model.PaginationRangeHigh = NumberOfPages;
                 return;
             }
-            
+
             // Base case when the current page is one of first two pages
-            if(CurrentPage < 2)
+            if (CurrentPage < 2)
             {
                 Model.PaginationRangeLow = 1;
                 Model.PaginationRangeHigh = 3;
@@ -700,7 +712,7 @@ namespace UpDiddy.Controllers
             }
 
             // Base case for when current page is one of last two pages
-            if(CurrentPage > (NumberOfPages - 1))
+            if (CurrentPage > (NumberOfPages - 1))
             {
                 Model.PaginationRangeLow = NumberOfPages - 2;
                 Model.PaginationRangeHigh = NumberOfPages;
@@ -722,7 +734,7 @@ namespace UpDiddy.Controllers
             string category = null)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("/browse-jobs-location" + 
+            sb.Append("/browse-jobs-location" +
                 (country == null ? string.Empty : "/" + country) +
                 (state == null ? string.Empty : "/" + state) +
                 (city == null ? string.Empty : "/" + city) +
@@ -740,7 +752,7 @@ namespace UpDiddy.Controllers
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("/browse-jobs-industry" +
-                
+
                 (industry == null ? string.Empty : "/" + industry) +
                 (category == null ? string.Empty : "/" + category) +
                 (country == null ? string.Empty : "/" + country) +
@@ -750,7 +762,7 @@ namespace UpDiddy.Controllers
         }
 
         private bool IsValidUrl(
-            JobSearchResultDto SearchResult, 
+            JobSearchResultDto SearchResult,
             string country,
             string state,
             string city,
@@ -788,7 +800,7 @@ namespace UpDiddy.Controllers
                         return false;
                     }
                 }
-                
+
             }
 
             if (!string.IsNullOrEmpty(city))
@@ -814,14 +826,14 @@ namespace UpDiddy.Controllers
 
 
             return true;
-            
+
         }
 
         private bool FacetLabelExists(List<JobQueryFacetItemDto> List, string Label)
         {
             foreach (JobQueryFacetItemDto Item in List)
             {
-                if (Item.Label.Split(",")[0].ToLower().Replace(" ", "-").Equals(Label.ToLower()))
+                if (Regex.Replace(Item.Label.Split(",")[0].ToLower(), @"\.| |'", "-").Equals(Label.ToLower()))
                     return true;
             }
             return false;
@@ -829,7 +841,7 @@ namespace UpDiddy.Controllers
 
         private JobQueryFacetDto FindNeededFacet(string key, List<JobQueryFacetDto> List)
         {
-            foreach(JobQueryFacetDto facet in List)
+            foreach (JobQueryFacetDto facet in List)
             {
                 if (facet.Name.ToLower().Equals(key.ToLower()))
                     return facet;
@@ -918,7 +930,7 @@ namespace UpDiddy.Controllers
                 NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
             };
 
-            if(User.Identity.IsAuthenticated)
+            if (User.Identity.IsAuthenticated)
             {
                 jobSearchViewModel.FavoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
             }
@@ -1022,7 +1034,7 @@ namespace UpDiddy.Controllers
                     });
                 }
                 string CategoryLabel = FindNeededFacet("jobcategory", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
-                
+
                 BrowseJobsByTypeViewModel bjlvmState = new BrowseJobsByTypeViewModel()
                 {
                     Items = StateLocations,
@@ -1050,7 +1062,7 @@ namespace UpDiddy.Controllers
                     Regex rgx = new Regex("[^a-zA-Z]");
                     LocationsCities.Add(new DisplayItem
                     {
-                        Label = $"{FacetItem.Label}",
+                        Label = $"{FacetItem.Label.Split(",")[0]}",
                         Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.Split(",")[0].ToLower(), "-")}/1",
                         Count = $"{FacetItem.Count}"
                     });
@@ -1066,9 +1078,9 @@ namespace UpDiddy.Controllers
                 return View("BrowseByType", bjlvm);
             }
 
-            
 
-            
+
+
 
             return NotFound();
 
@@ -1145,11 +1157,11 @@ namespace UpDiddy.Controllers
                 NumberOfPages = jobSearchResultDto.TotalHits / 10 + (((jobSearchResultDto.TotalHits % 10) > 0) ? 1 : 0)
             };
 
-            if(User.Identity.IsAuthenticated)
+            if (User.Identity.IsAuthenticated)
             {
                 jobSearchViewModel.FavoritesMap = await _api.JobFavoritesByJobGuidAsync(jobSearchResultDto.Jobs.ToPagedList(page == 0 ? 1 : page, pageCount).Select(job => job.JobPostingGuid).ToList());
             }
-            
+
             // Google seems to be capping the number of results at 500, so we account for that here.
             if (jobSearchViewModel.NumberOfPages > 500)
                 jobSearchViewModel.NumberOfPages = 500;
@@ -1183,7 +1195,7 @@ namespace UpDiddy.Controllers
 
             if (string.IsNullOrEmpty(category))
             {
-                
+
 
 
                 List<DisplayItem> Categories = new List<DisplayItem>();
@@ -1228,7 +1240,7 @@ namespace UpDiddy.Controllers
                 return View("BrowseByType", new BrowseJobsByTypeViewModel() { Items = Industries, Header = JobCategoryLabel });
             }
 
-            
+
 
 
 
@@ -1280,7 +1292,7 @@ namespace UpDiddy.Controllers
                     Regex rgx = new Regex("[^a-zA-Z]");
                     LocationsCities.Add(new DisplayItem
                     {
-                        Label = $"{FacetItem.Label}",
+                        Label = $"{FacetItem.Label.Split(",")[0]}",
                         Url = $"{Request.Path}/{rgx.Replace(FacetItem.Label.Split(",")[0].ToLower(), "-")}/1",
                         Count = $"{FacetItem.Count}"
                     });
@@ -1309,7 +1321,7 @@ namespace UpDiddy.Controllers
         [Authorize]
         [HttpPost]
         [Route("[controller]/ReferAJob", Name = "ReferJobToFriend")]
-        public async Task<IActionResult> ReferAJob(string jobPostingId, string referrerGuid,string refereeName, string refereeEmailId, string descriptionEmailBody)
+        public async Task<IActionResult> ReferAJob(string jobPostingId, string referrerGuid, string refereeName, string refereeEmailId, string descriptionEmailBody)
         {
             //send email to referree for the job posting
             await _api.ReferJobPosting(jobPostingId, referrerGuid, refereeName, refereeEmailId, descriptionEmailBody);

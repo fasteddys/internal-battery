@@ -78,6 +78,8 @@ namespace UpDiddyApi.Helpers
 
 
             CreateMap<JobPosting, JobPostingDto>()
+                .ForMember(x => x.MetaDescription, opt => opt.Ignore())
+                .ForMember(x => x.MetaTitle, opt => opt.Ignore())
                 .ReverseMap();
 
 

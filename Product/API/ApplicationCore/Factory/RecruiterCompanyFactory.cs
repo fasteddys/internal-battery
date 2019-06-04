@@ -27,7 +27,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
             recruiterCompany.RecruiterId = recruiterId;
             recruiterCompany.CompanyId = companyId;
             recruiterCompany.IsDeleted = 0;
-            recruiterCompany.IsStaff = (isStaff) ? 1 : 0;
             recruiterCompany.RecruiterCompanyGuid = Guid.NewGuid();
             return recruiterCompany;
         }
