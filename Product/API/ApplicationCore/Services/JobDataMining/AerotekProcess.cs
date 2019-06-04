@@ -185,7 +185,44 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             var existingActiveJobs = existingJobPages.Where(jp => jp.JobPageStatusId == 2);
             var discoveredActiveAndPendingJobs = uniqueDiscoveredJobs.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2);
             var unreferencedActiveJobs = existingActiveJobs.Except(discoveredActiveAndPendingJobs, new EqualityComparerByUniqueIdentifier());
-            var jobsToDelete = unreferencedActiveJobs.Select(jp => { jp.JobPageStatusId = 4; return jp; }).ToList();
+            // rather than eliminating jobs on the basis that they don't exist in the job site's search results, make a request to each one.
+            // if the page returns 200 OK, leave it alone. if anything else occurs, mark it for deletion.
+            ConcurrentBag<JobPage> jobsToDelete = new ConcurrentBag<JobPage>();
+            Parallel.ForEach(unreferencedActiveJobs, maxdop, unreferencedActiveJob =>
+            {
+                bool isJobPageExists = false;
+                try
+                {
+                    string rawHtml;
+                    using (var client = new HttpClient(GetHttpClientHandler()))
+                    {
+                        // call the api to retrieve a list of results incrementing the page number each time
+                        UriBuilder builder = new UriBuilder(unreferencedActiveJob.Uri);
+                        var request = new HttpRequestMessage()
+                        {
+                            RequestUri = builder.Uri,
+                            Method = HttpMethod.Get
+                        };
+                        var result = client.SendAsync(request).Result;
+                        rawHtml = result.Content.ReadAsStringAsync().Result;
+                        HtmlDocument jobHtml = new HtmlDocument();
+                        jobHtml.LoadHtml(rawHtml);
+                        isJobPageExists = jobHtml.DocumentNode.SelectSingleNode("//results-main[@error-message=\"The job you have requested cannot be found. Please see our complete list of jobs below.\"]") == null ? true : false;
+                    }
+                }
+                catch (Exception e)
+                {
+                    _syslog.Log(LogLevel.Information, $"***** AerotekProcess.DiscoverJobPages encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                }
+                finally
+                {
+                    if (!isJobPageExists)
+                    {
+                        unreferencedActiveJob.JobPageStatusId = 4;
+                        jobsToDelete.Add(unreferencedActiveJob);
+                    }
+                }
+            });
 
             // combine new/modified jobs and unreferenced jobs which should be deleted
             List<JobPage> updatedJobPages = new List<JobPage>();
