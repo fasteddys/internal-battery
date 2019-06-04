@@ -36,6 +36,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using System.Text;
 
 namespace UpDiddyApi.Controllers
 {
@@ -381,10 +382,15 @@ namespace UpDiddyApi.Controllers
             if (jobPosting == null)
                 return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "JobPosting not found" });
             JobPostingDto rVal = _mapper.Map<JobPostingDto>(jobPosting);
-            /* i would prefer to get the semantic url in automapper, but i ran into a blocker while trying to call the static util method
-             * in "MapFrom" while guarding against null refs: an expression tree lambda may not contain a null propagating operator
-             * .ForMember(jp => jp.SemanticUrl, opt => opt.MapFrom(src => Utils.GetSemanticJobUrlPath(src.Industry?.Name,"","","","","")))
-             */
+
+            // set meta data for seo
+            JobPostingFactory.SetMetaData(jobPosting, rVal);
+ 
+           /* i would prefer to get the semantic url in automapper, but i ran into a blocker while trying to call the static util method
+            * in "MapFrom" while guarding against null refs: an expression tree lambda may not contain a null propagating operator
+            * .ForMember(jp => jp.SemanticUrl, opt => opt.MapFrom(src => Utils.GetSemanticJobUrlPath(src.Industry?.Name,"","","","","")))
+            */
+
             rVal.SemanticJobPath = Utils.CreateSemanticJobPath(
                 jobPosting.Industry?.Name,
                 jobPosting.JobCategory?.Name,

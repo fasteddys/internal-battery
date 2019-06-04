@@ -861,6 +861,29 @@ namespace UpDiddyApi.Controllers
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
         }
 
+        [HttpGet("/api/[controller]/me/partner-web-redirect")]
+        public async Task<IActionResult> GetSubscriberPartnerWebRedirectAsync()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                return BadRequest();
+
+            Subscriber subscriber = _db
+                .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid)
+                .FirstOrDefault();
+
+            if (subscriber == null)
+                return BadRequest();
+
+            var result = _db.SubscriberSignUpPartnerReferences.Where(s => s.SubscriberId == subscriber.SubscriberId).FirstOrDefault();
+
+            if (result.PartnerId == null)
+               return Ok(new RedirectDto() { RelativePath = null });
+
+            var redirect = _db.PartnerWebRedirect.Where(e => e.PartnerId == result.PartnerId).FirstOrDefault();
+            return Ok(new RedirectDto() { RelativePath = redirect?.RelativePath });
+        }
+
         [HttpGet("/api/[controller]/me/group")]
         public async Task<IActionResult> MyGroupsAsync()
         {

@@ -8,6 +8,7 @@
     string url = string.Format("/jobs/apply/{0}", Model.PostingId);
     url = GoogleCloudEventsTrackingDto.AddParametersToUrl(url, Model.RequestId, Model.ClientEventId);
 }
+
 <div class="job-details-hero">
     <div class="row">
         <div class="col-12">
@@ -17,10 +18,10 @@
                 </h1>
                 <div class="job-details mb-3">
                     <div class="mb-3">
-                        @Html.React("Favorite", 
-                            new { 
+                        @Html.React("Favorite",
+                            new {
                                 jobGuid = Model.JobPostingGuid.Value,
-                                jobPostingFavoriteGuid = Model.JobPostingFavoriteGuid.HasValue ? Model.JobPostingFavoriteGuid.Value.ToString() : null 
+                                jobPostingFavoriteGuid = Model.JobPostingFavoriteGuid.HasValue ? Model.JobPostingFavoriteGuid.Value.ToString() : null
                             }
                         )
                     </div>
@@ -31,7 +32,7 @@
 
 
 
-                @if (Model.LoggedInSubscriberGuid!=null)
+                @if (Model.LoggedInSubscriberGuid != null)
                 {
                     <div class="container-align-center">
                         <a href="" class="modal-styling-link" data-toggle="modal" data-target="#openEmailModal">Refer a Friend</a>
