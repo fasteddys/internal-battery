@@ -21,5 +21,10 @@ namespace UpDiddy.Helpers
                 return writer.ToString();
             }
         }
+
+        public static string GetNonEmptyStringOrDefault(this string s, string newValue)
+        {
+            return !string.IsNullOrEmpty(newValue) ? newValue : s;
+        }
     }
 }

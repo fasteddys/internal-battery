@@ -11,6 +11,12 @@ namespace UpDiddy.ViewModels.ButterCMS
 {
     public class ButterCMSBaseViewModel
     {
+        [JsonProperty("meta_title")]
+        public string MetaTitle { get; set; }
+        [JsonProperty("meta_description")]
+        public string MetaDescription { get; set; }
+        [JsonProperty("meta_keywords")]
+        public string MetaKeywords { get; set; }
         [JsonProperty("ogtitle")]
         public string OpenGraphTitle { get; set; }
         [JsonProperty("ogdescription")]

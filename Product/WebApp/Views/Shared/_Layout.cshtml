@@ -28,11 +28,10 @@
                     'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', 'GTM-P78FCL3');
     </script>
-    <!-- Add view specific metadata in AdditionalMeta -->
-    @RenderSection("AdditionalMeta", false)
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CareerCircle</title>
+    @await Component.InvokeAsync("MetaTags", new { PagePath = Context.Request.Path.ToString() })
     <link rel="shortcut icon" href="~/images/Icon-20.png" />
     <environment names="Development">
         <link rel="stylesheet" type="text/css" href="~/css/site.dev.css" asp-append-version="true" />
@@ -40,8 +39,6 @@
     <environment names="Staging,Production">
         <link rel="stylesheet" type="text/css" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
-    @await Component.InvokeAsync("OpenGraph", new { PagePath = Context.Request.Path.ToString() })
-
 </head>
 <body>
     <noscript>
