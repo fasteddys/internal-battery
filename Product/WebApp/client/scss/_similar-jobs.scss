@@ -7,15 +7,17 @@
                 > div {
                     padding: 1rem 0;
                     border-bottom: 2px solid $color-tertiary-mid-gray;
-                    > div{
-                        a{
+
+                    > div {
+                        a {
                             color: $color-secondary;
 
-                            &:hover{
+                            &:hover {
                                 color: $color-tertiary;
                             }
                         }
                     }
+
                     &:last-child {
                         border-bottom: 0;
                     }
@@ -26,6 +28,7 @@
                     @media (min-width: 768px) {
                         &:nth-child(odd) {
                             border-right: 2px solid $color-tertiary-mid-gray;
+                            padding-right: 1rem;
                         }
 
                         &:nth-child(even) {
@@ -44,6 +47,7 @@
                     @media (min-width: 1200px) {
                         &:nth-child(odd) {
                             border-right: 0;
+                            padding-right: 0;
                         }
 
                         &:nth-child(even) {
