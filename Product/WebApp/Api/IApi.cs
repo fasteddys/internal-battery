@@ -88,6 +88,7 @@ namespace UpDiddy.Api
         #region TalentPortal
         Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery);
         Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync();
+        Task SaveNotes(SubscriberNotesDto subscriberNotesDto);
         #endregion
 
         #region AdminPortal

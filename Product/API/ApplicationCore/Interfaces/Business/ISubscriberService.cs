@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
+using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
@@ -53,5 +54,12 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="jobGuids">List of Job Posting Guids</param>
         /// <returns>Dictionary<Guid, Guid></returns>
         Task<Dictionary<Guid, Guid>> GetSubscriberJobPostingFavoritesByJobGuid(Guid subscriberGuid, List<Guid> jobGuids);
+
+        /// <summary>
+        /// Add Subscriber Notes
+        /// </summary>
+        /// <param name="subscriberNotesDto"></param>
+        /// <returns></returns>
+        Task SaveSubscriberNotesAsync(SubscriberNotesDto subscriberNotesDto);
     }
 }

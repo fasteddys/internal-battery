@@ -286,7 +286,8 @@ namespace UpDiddy.Controllers
                 ResumeFileGuid = subscriber.Files?.FirstOrDefault()?.SubscriberFileGuid,
                 ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
                 SubscriberGuid = subscriber.SubscriberGuid.Value,
-                AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster
+                AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster,
+                Notes=new List<SubscriberNotesDto>()
             };
 
         
@@ -311,6 +312,17 @@ namespace UpDiddy.Controllers
         {
             var isSubscriberDeleted = await _api.DeleteSubscriberAsync(subscriberGuid);
             return new JsonResult(isSubscriberDeleted);
+        }
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [HttpPost]
+        [Route("Talent/Subscriber/Notes")]
+        public IActionResult SaveNotes([FromBody]SubscriberNotesDto subscriberNotes)
+        {
+            if(ModelState.IsValid)
+            {
+                _Api.SaveNotes(subscriberNotes);
+            }
+            return Ok();
         }
 
         #region private helper functions
@@ -432,7 +444,6 @@ namespace UpDiddy.Controllers
 
 
         #endregion
-
 
     }
 }

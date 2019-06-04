@@ -19,6 +19,7 @@ using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
+using AutoMapper;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -30,8 +31,15 @@ namespace UpDiddyApi.ApplicationCore.Services
         private IB2CGraph _graphClient { get; set; }
         private ILogger _logger { get; set; }
         private IRepositoryWrapper _repository { get; set; }
+        private readonly IMapper _mapper;
 
-        public SubscriberService(UpDiddyDbContext context, IConfiguration configuration, ICloudStorage cloudStorage, IB2CGraph graphClient, IRepositoryWrapper repository, ILogger<SubscriberService> logger)
+        public SubscriberService(UpDiddyDbContext context, 
+            IConfiguration configuration, 
+            ICloudStorage cloudStorage, 
+            IB2CGraph graphClient, 
+            IRepositoryWrapper repository, 
+            ILogger<SubscriberService> logger, 
+            IMapper mapper)
         {
             _db = context;
             _configuration = configuration;
@@ -39,6 +47,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _graphClient = graphClient;
             _repository = repository;
             _logger = logger;
+            _mapper = mapper;
         }
 
         public async Task<SubscriberFile> AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream, bool parseResume = false)
@@ -280,6 +289,24 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
             var map = query.ToDictionary(x => x.jobPostingGuid, x => x.jobPostingFavoriteGuid);
             return map;
+        }
+
+        public async Task SaveSubscriberNotesAsync(SubscriberNotesDto subscriberNotesDto)
+        {
+            var subscriberNotes=_mapper.Map<SubscriberNotes>(subscriberNotesDto);
+
+            //get subscriber by subscriberGuid and assign SubscriberId
+            var subscriber = await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberNotesDto.SubscriberGuid);
+            subscriberNotes.SubscriberId = subscriber.SubscriberId;
+
+            //get subscriber by subscriberGuid  map to recruited and get recruiterId
+            //recruiter is also a subscriber
+            var recruiter = await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberNotesDto.RecruiterGuid);
+            var rec=await _repository.RecruiterRepository.GetRecruiterBySubscriberId(recruiter.SubscriberId);
+            subscriberNotes.RecruiterId = rec.RecruiterId;
+
+            BaseModelFactory.SetDefaultsForAddNew(subscriberNotes);
+            await _repository.SubscriberNotesRepository.AddNotes(subscriberNotes);
         }
     }
 }

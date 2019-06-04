@@ -37,5 +37,6 @@ namespace UpDiddy.ViewModels
         }
         public Guid? ResumeFileGuid { get; set; }
         public string ResumeFileName { get; set; }
+        public List<SubscriberNotesDto> Notes { get; set; }
     }
 }

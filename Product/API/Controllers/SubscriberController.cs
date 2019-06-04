@@ -45,7 +45,7 @@ namespace UpDiddyApi.Controllers
         private readonly ILogger _syslog;
         private readonly IDistributedCache _cache;
         private IB2CGraph _graphClient;
-    private IAuthorizationService _authorizationService;
+        private IAuthorizationService _authorizationService;
         private ISubscriberService _subscriberService;
         private ICloudStorage _cloudStorage;
         private ISysEmail _sysEmail;
@@ -1039,5 +1039,37 @@ namespace UpDiddyApi.Controllers
                     null
                 ));
         }
+
+        #region SubscriberNotes
+        /// <summary>
+        /// Save Notes
+        /// </summary>
+        /// <param name="subscriberNotes"></param>
+        /// <returns></returns>
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [HttpPost("/api/[controller]/save-notes")]
+        public async Task<IActionResult> SaveSubscriberNotes([FromBody]SubscriberNotesDto subscriberNotes)
+        {
+            try
+            {
+                if(ModelState.IsValid)
+                {
+                    await _subscriberService.SaveSubscriberNotesAsync(subscriberNotes);
+                    return Ok(new BasicResponseDto { StatusCode = 200, Description = "Saved Successfully." });
+                }
+                else
+                {
+                    _syslog.Log(LogLevel.Trace, $"SubscriberController.SaveSubscriberNotes : Invalid Subscriber notes data: {JsonConvert.SerializeObject(subscriberNotes)}");
+                    return BadRequest(new BasicResponseDto { StatusCode = 400, Description = "Invalid data." });
+                }
+
+            }
+            catch(Exception ex)
+            {
+                _syslog.Log(LogLevel.Error, $"SubscriberController.SaveSubscriberNotes : Error occured when saving notes for data: {JsonConvert.SerializeObject(subscriberNotes)} with message={ex.Message}", ex);
+                return StatusCode(500, false);
+            }
+        }
+        #endregion
     }
 }

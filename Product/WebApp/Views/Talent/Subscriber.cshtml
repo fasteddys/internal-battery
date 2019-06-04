@@ -4,6 +4,7 @@
 @using UpDiddyLib.Helpers
 @using System.Collections.Generic;
 @using System;
+@using System.Security.Claims;
 @model SubscriberViewModel
 
 <div class="container-fluid bg-color-primary">
@@ -49,6 +50,11 @@
             <div class="row">
                 <div class="col-12 image">
                     <img class="w-50 rounded-circle" src="@Model.AvatarUrl" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addNoteModal">Add Note</button>
                 </div>
             </div>
             <div class="row">
@@ -192,9 +198,9 @@
                                 <div class="col-12 px-0 py-3">
                                     @foreach (var skill in Model.Skills)
                                     {
-                                    <div class="skill-pill">
-                                        @Html.DisplayFor(item => skill.SkillName)
-                                    </div>
+                                        <div class="skill-pill">
+                                            @Html.DisplayFor(item => skill.SkillName)
+                                        </div>
                                     }
                                 </div>
                             }
@@ -279,5 +285,68 @@
                 </div>
             </div>
         </div>
+
+        @*Add Notes*@
+        @await Html.PartialAsync("_SubscriberNotes", new SubscriberNotesDto()
+   {
+       SubscriberGuid= Model.SubscriberGuid,
+       SubscriberNotesGuid=Guid.NewGuid(),
+       RecruiterGuid= Guid.Parse(ViewContext.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value)
+   })
     </div>
 </div>
+
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#saveNotes').click(function (e) {
+                e.preventDefault();
+
+                var notes = $('#notesArea').val();
+                if (notes == '') {
+                    $('.message_box').html(
+                        '<span style="color:red;">Notes is empty!</span>'
+                    );
+                    $('#notesArea').focus();
+                    return false;
+                }
+                else {
+                    $('.message_box').html(
+                        '<span></span>'
+                    );
+
+
+                    var subscriberNotes = {
+                        SubscriberNotesGuid: $('#subscriberNotesGuid').val(),
+                        SubscriberGuid: $('#subscriberGuid').val(),
+                        RecruiterGuid: $('#recruiterGuid').val(),
+                        Notes: $('#notesArea').val(),
+                        isPublic: $('#IsPublic').is(":checked")
+                    };
+
+                    $.ajax({
+                        url: '/Talent/Subscriber/Notes',
+                        //url: API_URL + 'Subscriber/save-notes',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            subscriberNotesGuid: $('#subscriberNotesGuid').val(),
+                            subscriberGuid: $('#subscriberGuid').val(),
+                            recruiterGuid: $('#recruiterGuid').val(),
+                            notes: $('#notesArea').val(),
+                            isPublic: $('#IsPublic').is(":checked")
+                        }),
+                        success: function (res) {
+                            $("#form_output").html(res);
+                        },
+                        error: function (jXHR, textStatus, errorThrown) {
+                            alert(errorThrown);
+                        }
+                    });
+                }
+
+            })
+        });
+    </script>
+}
+

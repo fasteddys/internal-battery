@@ -1199,6 +1199,11 @@ namespace UpDiddy.Api
             return await GetAsync<ContactDto>($"contact/{contactGuid}");
         }
 
+        public async Task SaveNotes(SubscriberNotesDto subscriberNotesDto)
+        {
+            await PostAsync<BasicResponseDto>("subscriber/save-notes", subscriberNotesDto);
+        }
+
         #endregion
 
         #region AdminPortal
