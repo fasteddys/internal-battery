@@ -57,6 +57,8 @@
                 }
                 else
                 {
+                    @Html.React("Breadcrumb", new { breadcrumbObject = Model.Breadcrumbs});
+
                     @Html.React("BrowseJobs", new { list = Model.Items, header = Model.Header, baseUrl = Context.Request.Path });
                 }
             </div>
