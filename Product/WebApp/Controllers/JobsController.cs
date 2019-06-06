@@ -525,6 +525,11 @@ namespace UpDiddy.Controllers
 
             DeterminePaginationRange(ref jobSearchViewModel);
 
+            Uri RequestUri = new Uri(($"{Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}"));
+
+            BreadcrumbViewModel BreadcrumbViewModel = CreateBreadcrumbs(RequestUri, jobSearchResultDto);
+            jobSearchViewModel.Breadcrumbs = BreadcrumbViewModel;
+
             // User has reached the end of the browse flow, so present results.
             if (!string.IsNullOrEmpty(category) || page != 0)
             {
@@ -546,27 +551,7 @@ namespace UpDiddy.Controllers
                 return View("BrowseByType", jobSearchViewModel);
             }
 
-            Uri RequestUri = new Uri(($"{Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}"));
-
-            BreadcrumbViewModel BreadcrumbViewModel = new BreadcrumbViewModel
-            {
-                Breadcrumbs = new List<BreadcrumbItem>
-                {
-                    new BreadcrumbItem
-                    {
-                        PageName = "Browse Jobs",
-                        Url = "/browse-jobs"
-                    },
-                    new BreadcrumbItem
-                    {
-                        PageName = "Browse Jobs By Location",
-                        Url = RequestUri.Segments[0] + RequestUri.Segments[1].Split("/")[0]
-                    }
-                }
-            };
-
             // Return state view if user has only specified country
-            BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = "United States", Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/us" });
 
             if (string.IsNullOrEmpty(state))
             {
@@ -576,7 +561,6 @@ namespace UpDiddy.Controllers
 
             string StateLabel = FindNeededFacet("admin_1", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
             StateLabel = StateLabel.Length == 2 ? UpDiddyLib.Helpers.Utils.ToTitleCase(StateCodeToFullName(StateLabel)) : UpDiddyLib.Helpers.Utils.ToTitleCase(StateLabel);
-            BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = StateLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + state });
 
             if (string.IsNullOrEmpty(city))
             {
@@ -588,7 +572,6 @@ namespace UpDiddy.Controllers
             }
 
             string CityLabel = FindNeededFacet("city", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
-            BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = CityLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + city });
 
             if (string.IsNullOrEmpty(industry))
             {
@@ -598,7 +581,6 @@ namespace UpDiddy.Controllers
                 return View("BrowseByType", bjbtvm);
             }
             string IndustryLabel = FindNeededFacet("industry", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
-            BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = IndustryLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + industry });
 
             if (string.IsNullOrEmpty(category))
             {
@@ -615,6 +597,104 @@ namespace UpDiddy.Controllers
 
 
         }
+
+        private BreadcrumbViewModel CreateBreadcrumbs(
+            Uri RequestUri,
+            JobSearchResultDto jobSearchResultDto)
+        {
+            List<string> UriOrder = new List<string>();
+
+            switch(RequestUri.Segments[1].Split("/")[0]){
+                case "browse-jobs-location":
+                    UriOrder.Add("browse-jobs-location");
+                    UriOrder.Add("country");
+                    UriOrder.Add("state");
+                    UriOrder.Add("city");
+                    UriOrder.Add("industry");
+                    UriOrder.Add("jobcategory");
+                    UriOrder.Add("page");
+                    break;
+                case "browse-jobs-industry":
+                    UriOrder.Add("browse-jobs-industry");
+                    UriOrder.Add("jobcategory");
+                    UriOrder.Add("industry");
+                    UriOrder.Add("country");
+                    UriOrder.Add("state");
+                    UriOrder.Add("city");
+                    UriOrder.Add("page");
+                    break;
+                case "browse-jobs-category":
+                    UriOrder.Add("browse-jobs-category");
+                    UriOrder.Add("industry");
+                    UriOrder.Add("jobcategory");
+                    UriOrder.Add("country");
+                    UriOrder.Add("state");
+                    UriOrder.Add("city");
+                    UriOrder.Add("page");
+                    break;
+            }
+
+
+            BreadcrumbViewModel BreadcrumbViewModel = new BreadcrumbViewModel
+            {
+                Breadcrumbs = new List<BreadcrumbItem>
+                {
+                    new BreadcrumbItem
+                    {
+                        PageName = "Browse Jobs",
+                        Url = "/browse-jobs"
+                    }
+                }
+            };
+            for(int i = 1; i < RequestUri.Segments.Length; i++)
+            {
+                string Segment = RequestUri.Segments[i].Split("/")[0];
+
+                switch(UriOrder[i - 1])
+                {
+                    case "browse-jobs-location":
+                        BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = "Browse Jobs By Location", Url = "/" + Segment });
+                        break;
+                    case "browse-jobs-industry":
+                        BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = "Browse Jobs By Industry", Url = "/" + Segment });
+                        break;
+                    case "browse-jobs-category":
+                        BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = "Browse Jobs By Category", Url = "/" + Segment });
+                        break;
+                    case "country":
+                        if (Regex.IsMatch(Segment, @"^\d+$")) break;
+                        BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = "United States", Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/us" });
+                        break;
+                    case "state":
+                        if (Regex.IsMatch(Segment, @"^\d+$")) break;
+                        string StateLabel = FindNeededFacet("admin_1", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+                        StateLabel = StateLabel.Length == 2 ? UpDiddyLib.Helpers.Utils.ToTitleCase(StateCodeToFullName(StateLabel)) : UpDiddyLib.Helpers.Utils.ToTitleCase(StateLabel);
+                        BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = StateLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + Segment });
+                        break;
+                    case "city":
+                        if (Regex.IsMatch(Segment, @"^\d+$")) break;
+                        string CityLabel = FindNeededFacet("city", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+                        BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = CityLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + Segment });
+                        break;
+                    case "industry":
+                        if (Regex.IsMatch(Segment, @"^\d+$")) break;
+                        string IndustryLabel = FindNeededFacet("industry", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+                        BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = IndustryLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + Segment });
+                        break;
+                    case "jobcategory":
+                        if (Regex.IsMatch(Segment, @"^\d+$")) break;
+                        string CategorryLabel = FindNeededFacet("jobcategory", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
+                        BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = CategorryLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + Segment });
+                        break;
+
+                }
+
+            }
+
+            return BreadcrumbViewModel;
+
+        }
+
 
         #region Retrieve Section ViewModels
 
@@ -991,6 +1071,11 @@ namespace UpDiddy.Controllers
 
             DeterminePaginationRange(ref jobSearchViewModel);
 
+            Uri RequestUri = new Uri(($"{Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}"));
+
+            BreadcrumbViewModel BreadcrumbViewModel = CreateBreadcrumbs(RequestUri, jobSearchResultDto);
+            jobSearchViewModel.Breadcrumbs = BreadcrumbViewModel;
+
             // User has reached the end of the browse flow, so present results.
             if (!string.IsNullOrEmpty(city) || page != 0)
             {
@@ -1013,24 +1098,6 @@ namespace UpDiddy.Controllers
                 return View("BrowseByType", jobSearchViewModel);
             }
 
-            Uri RequestUri = new Uri(($"{Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}"));
-
-            BreadcrumbViewModel BreadcrumbViewModel = new BreadcrumbViewModel
-            {
-                Breadcrumbs = new List<BreadcrumbItem>
-                {
-                    new BreadcrumbItem
-                    {
-                        PageName = "Browse Jobs",
-                        Url = "/browse-jobs"
-                    },
-                    new BreadcrumbItem
-                    {
-                        PageName = "Browse Jobs By Industry",
-                        Url = RequestUri.Segments[0] + RequestUri.Segments[1].Split("/")[0]
-                    }
-                }
-            };
 
             JobQueryFacetDto jqfdto = FindNeededFacet("industry", jobSearchResultDto.Facets);
 
@@ -1057,7 +1124,6 @@ namespace UpDiddy.Controllers
             }
 
             string IndustryLabel = FindNeededFacet("industry", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
-            BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = IndustryLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + industry });
 
             if (string.IsNullOrEmpty(category))
             {
@@ -1084,9 +1150,7 @@ namespace UpDiddy.Controllers
             }
 
             string CategoryLabel = FindNeededFacet("jobcategory", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
-            BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = CategoryLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + category });
 
-            BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = "United States", Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/us" });
 
 
             // Return state view if user has only specified country
@@ -1124,7 +1188,6 @@ namespace UpDiddy.Controllers
 
             string StateLabel = FindNeededFacet("admin_1", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
             StateLabel = StateLabel.Length == 2 ? UpDiddyLib.Helpers.Utils.ToTitleCase(StateCodeToFullName(StateLabel)) : UpDiddyLib.Helpers.Utils.ToTitleCase(StateLabel);
-            BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = StateLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + state });
 
 
             if (string.IsNullOrEmpty(city))
@@ -1249,6 +1312,11 @@ namespace UpDiddy.Controllers
 
             DeterminePaginationRange(ref jobSearchViewModel);
 
+            Uri RequestUri = new Uri(($"{Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}"));
+
+            BreadcrumbViewModel BreadcrumbViewModel = CreateBreadcrumbs(RequestUri, jobSearchResultDto);
+            jobSearchViewModel.Breadcrumbs = BreadcrumbViewModel;
+
             // User has reached the end of the browse flow, so present results.
             if (!string.IsNullOrEmpty(city) || page != 0)
             {
@@ -1270,25 +1338,6 @@ namespace UpDiddy.Controllers
                 jobSearchViewModel.BaseUrl = AssembleBaseIndustryUrl(country, state, city, industry, category);
                 return View("BrowseByType", jobSearchViewModel);
             }
-
-            Uri RequestUri = new Uri(($"{Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}"));
-
-            BreadcrumbViewModel BreadcrumbViewModel = new BreadcrumbViewModel
-            {
-                Breadcrumbs = new List<BreadcrumbItem>
-                {
-                    new BreadcrumbItem
-                    {
-                        PageName = "Browse Jobs",
-                        Url = "/browse-jobs"
-                    },
-                    new BreadcrumbItem
-                    {
-                        PageName = "Browse Jobs By Category",
-                        Url = RequestUri.Segments[0] + RequestUri.Segments[1].Split("/")[0]
-                    }
-                }
-            };
 
             JobQueryFacetDto jqfdto = FindNeededFacet("jobcategory", jobSearchResultDto.Facets);
 
@@ -1317,7 +1366,6 @@ namespace UpDiddy.Controllers
             }
 
             string CategoryLabel = FindNeededFacet("jobcategory", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
-            BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = CategoryLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + category });
 
             if (string.IsNullOrEmpty(industry))
             {
@@ -1343,10 +1391,6 @@ namespace UpDiddy.Controllers
             }
 
             string IndustryLabel = FindNeededFacet("industry", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
-            BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = IndustryLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + industry });
-
-            BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = "United States", Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/us" });
-
 
 
             // Return state view if user has only specified country
@@ -1381,7 +1425,6 @@ namespace UpDiddy.Controllers
 
             string StateLabel = FindNeededFacet("admin_1", jobSearchResultDto.Facets).Facets.FirstOrDefault().Label;
             StateLabel = StateLabel.Length == 2 ? UpDiddyLib.Helpers.Utils.ToTitleCase(StateCodeToFullName(StateLabel)) : UpDiddyLib.Helpers.Utils.ToTitleCase(StateLabel);
-            BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = StateLabel, Url = BreadcrumbViewModel.Breadcrumbs.Last().Url + "/" + state });
 
 
             // If flow reaches this point, user has specified country and state, but 

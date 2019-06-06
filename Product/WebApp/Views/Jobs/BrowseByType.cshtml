@@ -9,6 +9,8 @@
     <div class="job-search-container">
         <div class="job-search-results">
             <div class="container">
+                @Html.React("Breadcrumb", new { breadcrumbObject = Model.Breadcrumbs })
+
                 @if (Model.Items == null)
                 {
                     <h1 class="pl-3 pt-3 pb-3"><strong>@Model.Header Jobs:</strong></h1>
@@ -57,7 +59,6 @@
                 }
                 else
                 {
-                    @Html.React("Breadcrumb", new { breadcrumbObject = Model.Breadcrumbs});
 
                     @Html.React("BrowseJobs", new { list = Model.Items, header = Model.Header, baseUrl = Context.Request.Path });
                 }
