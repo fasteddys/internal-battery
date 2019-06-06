@@ -37,6 +37,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddyApi.Controllers
 {
@@ -398,7 +399,30 @@ namespace UpDiddyApi.Controllers
                 jobPosting.Province,
                 jobPosting.City,
                 jobPostingGuid.ToString());
+
+            JobQueryDto jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, jobPosting.City, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
+            JobSearchResultDto jobSearchForSingleJob = _cloudTalent.Search(jobQuery);
+
+            // If jobs in same city come back less than 6, broaden search to state.
+            if(jobSearchForSingleJob.JobCount < Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]))
+            {
+                jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, string.Empty, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
+                jobSearchForSingleJob = _cloudTalent.Search(jobQuery);
+            }
+
+            
+
+            rVal.SimilarJobs = jobSearchForSingleJob;
+
             return Ok(rVal);
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/active-job-count")]
+        public async Task<IActionResult> GetActiveJobCount()
+        {
+            var allJobPostings = await _repositoryWrapper.JobPosting.GetAllAsync();
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = allJobPostings.Where(jp => jp.IsDeleted == 0).Count().ToString() });
         }
 
         [HttpGet]

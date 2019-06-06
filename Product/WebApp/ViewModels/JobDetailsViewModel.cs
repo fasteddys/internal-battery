@@ -19,6 +19,8 @@ namespace UpDiddy.ViewModels
         public string Company { get; set; }
         public string PostedDate { get; set; }
         public string Location { get; set; }
+        public string City { get; set; }
+        public string Province { get; set; }
         public string PostingId { get; set; }
         public string EmployeeType { get; set; }
         public string Summary { get; set; }
@@ -33,5 +35,6 @@ namespace UpDiddy.ViewModels
         public string MetaTitle { get; set; }
         public string MetaDescription { get; set; }
         public string MetaKeywords { get; set; }
+        public JobSearchResultDto SimilarJobsSearchResult { get; set; }
     }
 }
