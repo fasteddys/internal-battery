@@ -1,16 +1,14 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
+@using UpDiddyLib.Helpers;
 @using UpDiddy.Helpers
 @model JobDetailsViewModel
 
-
-@section AdditionalMeta
-{
-    <meta name="description" content="@Model.MetaDescription" />
-    <meta name="title" content="@Model.MetaTitle" />
-    <meta name="keywords" content="@Model.MetaKeywords" />
+@{ 
+    ViewData[Constants.Seo.META_TITLE] = Model.MetaTitle;
+    ViewData[Constants.Seo.META_DESCRIPTION] = Model.MetaDescription;
+    ViewData[Constants.Seo.META_KEYWORDS] = Model.MetaKeywords;
 }
-
 
 @if (Model.LoggedInSubscriberGuid != null)
 {
