@@ -1,0 +1,41 @@
+﻿<div class="modal fade" id="addNoteModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div name="NotesForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel"><b>Notes/Activities</b></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="subscriberNotesGuid" />
+                    <input type="hidden" id="subscriberGuid" />
+                    <input type="hidden" id="recruiterGuid" />
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <i class="fas fa-pencil-alt prefix"></i>
+                                <textarea id="notesArea" class="md-textarea form-control" rows="5" required></textarea>
+                                <div class="message_box" style="margin:10px 0px;"></div>
+                                <label for="IsPublic"><b>Is Public </b>&nbsp;</label><input type="checkbox" id="IsPublic" name="IsPublic" />
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="saveNotes" type="submit" class="btn btn-primary">Save</button>
+                </div>
+                <div id="showSuccess" class="alert alert-success" style="display:none">
+                    <strong>Saved Successfully!</strong>
+                </div>
+                <div id="showError" class="alert alert-danger" style="display:none">
+                    <strong>Unable to save notes. Please try again</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

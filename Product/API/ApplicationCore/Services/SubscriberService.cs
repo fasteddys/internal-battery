@@ -293,20 +293,105 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task SaveSubscriberNotesAsync(SubscriberNotesDto subscriberNotesDto)
         {
-            var subscriberNotes=_mapper.Map<SubscriberNotes>(subscriberNotesDto);
+            //check if notes exist for subscriber
+            var subscriberNote = await _repository.SubscriberNotesRepository.GetSubscriberNotesBySubscriberNotesGuid(subscriberNotesDto.SubscriberNotesGuid);
 
-            //get subscriber by subscriberGuid and assign SubscriberId
-            var subscriber = await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberNotesDto.SubscriberGuid);
-            subscriberNotes.SubscriberId = subscriber.SubscriberId;
+            if(subscriberNote == null)
+            {
+                var subscriberNotes = _mapper.Map<SubscriberNotes>(subscriberNotesDto);
 
-            //get subscriber by subscriberGuid  map to recruited and get recruiterId
+                //get subscriber by subscriberGuid and assign SubscriberId
+                var subscriber = await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberNotesDto.SubscriberGuid);
+                subscriberNotes.SubscriberId = subscriber.SubscriberId;
+
+                //get subscriber by subscriberGuid  map to recruited and get recruiterId
+                //recruiter is also a subscriber
+                var recruiter = await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberNotesDto.RecruiterGuid);
+                var rec = await _repository.RecruiterRepository.GetRecruiterBySubscriberId(recruiter.SubscriberId);
+                subscriberNotes.RecruiterId = rec.RecruiterId;
+
+                BaseModelFactory.SetDefaultsForAddNew(subscriberNotes);
+                await _repository.SubscriberNotesRepository.AddNotes(subscriberNotes);
+            }
+            else
+            {
+                subscriberNote.Notes = subscriberNotesDto.Notes;
+                subscriberNote.IsPublic = subscriberNotesDto.IsPublic;
+                subscriberNote.ModifyDate = DateTime.Now;
+               await _repository.SubscriberNotesRepository.UpdateNotes(subscriberNote);
+            }
+           
+        }
+
+        public async Task<List<SubscriberNotesDto>> GetSubscriberNotesBySubscriberGuid(string subscriberGuid, string recruiterGuid, string searchquery)
+        {
+            List<SubscriberNotesDto> subscriberNotesDtoList = new List<SubscriberNotesDto>();
+            //subscriberGuid
+            Guid sGuid = Guid.Parse(subscriberGuid);
+            Guid rGuid = Guid.Parse(recruiterGuid);
+
+            //get subscriber record for candidate
+            var subscriberData = await _repository.SubscriberRepository.GetSubscriberByGuidAsync(sGuid);
+
+            //get recruiter record
+            //get recruiter by subscriberGuid  map to recruiter and get recruiterId
             //recruiter is also a subscriber
-            var recruiter = await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberNotesDto.RecruiterGuid);
-            var rec=await _repository.RecruiterRepository.GetRecruiterBySubscriberId(recruiter.SubscriberId);
-            subscriberNotes.RecruiterId = rec.RecruiterId;
+            var recruiterData = await _repository.Subscriber.GetSubscriberByGuidAsync(rGuid);
+            var rec = await _repository.RecruiterRepository.GetRecruiterBySubscriberId(recruiterData.SubscriberId);
 
-            BaseModelFactory.SetDefaultsForAddNew(subscriberNotes);
-            await _repository.SubscriberNotesRepository.AddNotes(subscriberNotes);
+            //get notes for subscriber that are private and visible to current logged in recruiter
+            var recruiterPrivateNotes = await (from subscriberNote in await _repository.SubscriberNotesRepository.GetAllAsync()
+                                                join recruiter in await _repository.RecruiterRepository.GetAllAsync() on subscriberNote.RecruiterId equals recruiter.RecruiterId
+                                                join subscriber in await _repository.SubscriberRepository.GetAllAsync() on recruiter.SubscriberId equals subscriber.SubscriberId
+                                                where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && subscriberNote.RecruiterId.Equals(rec.RecruiterId) && subscriberNote.IsPublic.Equals(false)
+                                               select new SubscriberNotesDto()
+                                                {
+                                                    IsPublic = subscriberNote.IsPublic,
+                                                    Notes = subscriberNote.Notes,
+                                                    SubscriberNotesGuid = subscriberNote.SubscriberNotesGuid,
+                                                    RecruiterGuid = (Guid)subscriber.SubscriberGuid,
+                                                    SubscriberGuid = (Guid)subscriberData.SubscriberGuid,
+                                                    CreateDate= subscriberNote.CreateDate,
+                                                    ModifiedDate= (DateTime)subscriberNote.ModifyDate
+                                                }).ToListAsync();
+
+            subscriberNotesDtoList.AddRange(recruiterPrivateNotes);
+
+            //get notes for subscriber that are public and visible to recruiters of current logged in recruiter company
+            var subscriberPublicNotes = await (from subscriberNote in await _repository.SubscriberNotesRepository.GetAllAsync()
+                                               join recruiter in await _repository.RecruiterRepository.GetAllAsync() on subscriberNote.RecruiterId equals recruiter.RecruiterId
+                                               join company in await _repository.Company.GetAllCompanies() on recruiter.CompanyId equals company.CompanyId
+                                               join subscriber in await _repository.SubscriberRepository.GetAllAsync() on recruiter.SubscriberId equals subscriber.SubscriberId
+                                               where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && recruiter.CompanyId.Equals(rec.CompanyId) && subscriberNote.IsPublic.Equals(true)
+                                               select new SubscriberNotesDto()
+                                               {
+                                                   IsPublic = subscriberNote.IsPublic,
+                                                   Notes = subscriberNote.Notes,
+                                                   SubscriberNotesGuid = subscriberNote.SubscriberNotesGuid,
+                                                   RecruiterGuid = (Guid)subscriber.SubscriberGuid,
+                                                   SubscriberGuid = (Guid)subscriberData.SubscriberGuid,
+                                                   CreateDate = subscriberNote.CreateDate,
+                                                   ModifiedDate = (DateTime)subscriberNote.ModifyDate
+                                               }).ToListAsync();
+
+            subscriberNotesDtoList.AddRange(subscriberPublicNotes);
+
+            return subscriberNotesDtoList.OrderByDescending(sn=>sn.CreateDate).ToList();
+        }
+
+        public async Task<bool> DeleteSubscriberNote(Guid subscriberNotesGuid)
+        {
+            bool isDeleted = false;
+            //check if notes exist for subscriber
+            var subscriberNote = await _repository.SubscriberNotesRepository.GetSubscriberNotesBySubscriberNotesGuid(subscriberNotesGuid);
+            if (subscriberNote != null)
+            {
+                subscriberNote.IsDeleted = 1;
+                await _repository.SubscriberNotesRepository.UpdateNotes(subscriberNote);
+                isDeleted = true;
+            }
+
+            return isDeleted;
         }
     }
 }

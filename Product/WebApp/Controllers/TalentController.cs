@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UpDiddy.Api;
 using UpDiddy.Authentication;
@@ -26,15 +28,18 @@ namespace UpDiddy.Controllers
         private IApi _api;
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
+        private readonly ILogger _sysLog;
 
         public TalentController(IApi api,
         IConfiguration configuration,
-        IHostingEnvironment env)
+        IHostingEnvironment env,
+        ILogger<TalentController> sysLog)
          : base(api)
         {
             _api = api;
             _env = env;
             _configuration = configuration;
+            _sysLog = sysLog;
         }
 
         #region Job Postings 
@@ -286,8 +291,7 @@ namespace UpDiddy.Controllers
                 ResumeFileGuid = subscriber.Files?.FirstOrDefault()?.SubscriberFileGuid,
                 ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
                 SubscriberGuid = subscriber.SubscriberGuid.Value,
-                AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster,
-                Notes=new List<SubscriberNotesDto>()
+                AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster
             };
 
         
@@ -313,16 +317,63 @@ namespace UpDiddy.Controllers
             var isSubscriberDeleted = await _api.DeleteSubscriberAsync(subscriberGuid);
             return new JsonResult(isSubscriberDeleted);
         }
+
         [Authorize(Policy = "IsRecruiterPolicy")]
         [HttpPost]
         [Route("Talent/Subscriber/Notes")]
-        public IActionResult SaveNotes([FromBody]SubscriberNotesDto subscriberNotes)
+        public async Task<IActionResult> SaveNotes([FromBody]SubscriberNotesDto subscriberNotes)
         {
             if(ModelState.IsValid)
             {
-                _Api.SaveNotes(subscriberNotes);
+                try
+                {
+                    var response=await _Api.SaveNotes(subscriberNotes);
+                    return Ok(response);
+                }
+                catch(Exception ex)
+                {
+                    _sysLog.Log(LogLevel.Error, $"WebApp TalentController.SaveNotes : Error occured when saving notes for data: {JsonConvert.SerializeObject(subscriberNotes)} with message={ex.Message}", ex);
+                    return StatusCode(500, new BasicResponseDto { StatusCode = 400, Description = "Internal Server Error." });
+                }
             }
-            return Ok();
+            else
+            {
+                _sysLog.Log(LogLevel.Trace, $"WebApp TalentController.SaveNotes : Invalid Subscriber notes data: {JsonConvert.SerializeObject(subscriberNotes)}");
+                return BadRequest(new BasicResponseDto { StatusCode = 400, Description = "Invalid data." });
+            }
+        }
+
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [HttpGet]
+        public async Task<PartialViewResult> SubscriberNotesGrid(string subscriberGuid, string recruiterGuid, string searchQuery)
+        {
+            var res= await _Api.SubscriberNotesSearch(subscriberGuid, recruiterGuid,searchQuery);
+            return PartialView("_SubscriberNotesGrid",res);
+        }
+
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [HttpDelete]
+        [Route("Talent/Subscriber/Notes/{subscriberNotesGuid}")]
+        public async Task<IActionResult> DeleteNote(Guid subscriberNotesGuid)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var response = await _Api.DeleteNoteAsync(subscriberNotesGuid);
+                    return Ok(response);
+                }
+                catch (Exception ex)
+                {
+                    _sysLog.Log(LogLevel.Error, $"WebApp TalentController.DeleteNote : Error occured when deleting note for data: {JsonConvert.SerializeObject(subscriberNotesGuid)} with message={ex.Message}", ex);
+                    return StatusCode(500, new BasicResponseDto { StatusCode = 400, Description = "Internal Server Error." });
+                }
+            }
+            else
+            {
+                _sysLog.Log(LogLevel.Trace, $"WebApp TalentController.DeleteNote : Invalid SubscriberNotesGuid data: {JsonConvert.SerializeObject(subscriberNotesGuid)}");
+                return BadRequest(new BasicResponseDto { StatusCode = 400, Description = "Invalid data." });
+            }
         }
 
         #region private helper functions

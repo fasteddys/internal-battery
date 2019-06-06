@@ -61,5 +61,15 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="subscriberNotesDto"></param>
         /// <returns></returns>
         Task SaveSubscriberNotesAsync(SubscriberNotesDto subscriberNotesDto);
+
+        /// <summary>
+        /// Get Subscriber Notes List
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <param name="searchquery"></param>
+        /// <returns></returns>
+        Task<List<SubscriberNotesDto>> GetSubscriberNotesBySubscriberGuid(string subscriberGuid, string recruiterGuid, string searchquery);
+
+        Task<bool> DeleteSubscriberNote(Guid subscriberNotesGuid);
     }
 }

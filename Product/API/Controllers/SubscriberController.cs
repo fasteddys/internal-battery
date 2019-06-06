@@ -1090,8 +1090,25 @@ namespace UpDiddyApi.Controllers
             catch(Exception ex)
             {
                 _syslog.Log(LogLevel.Error, $"SubscriberController.SaveSubscriberNotes : Error occured when saving notes for data: {JsonConvert.SerializeObject(subscriberNotes)} with message={ex.Message}", ex);
-                return StatusCode(500, false);
+                return StatusCode(500, new BasicResponseDto { StatusCode = 400, Description = "Internal Server Error." });
             }
+        }
+
+        [HttpGet("/api/[controller]/notes")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> SearchSubscriberNotes(string subscriberGuid, string recruiterGuid, string searchQuery = null)
+        {
+            var subscriberNotesList=await _subscriberService.GetSubscriberNotesBySubscriberGuid(subscriberGuid, recruiterGuid, searchQuery);
+            return Ok(subscriberNotesList);
+        }
+
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [HttpDelete("/api/[controller]/notes/{subscriberNotesGuid}")]
+        public async Task<IActionResult> DeleteSubscriberNote(Guid subscriberNotesGuid)
+        {
+           var isDeleted=await _subscriberService.DeleteSubscriberNote(subscriberNotesGuid);
+
+            return Ok(isDeleted);
         }
         #endregion
     }

@@ -1236,9 +1236,23 @@ namespace UpDiddy.Api
             return await GetAsync<ContactDto>($"contact/{contactGuid}");
         }
 
-        public async Task SaveNotes(SubscriberNotesDto subscriberNotesDto)
+        public async Task<BasicResponseDto> SaveNotes(SubscriberNotesDto subscriberNotesDto)
         {
-            await PostAsync<BasicResponseDto>("subscriber/save-notes", subscriberNotesDto);
+            return await PostAsync<BasicResponseDto>("subscriber/save-notes", subscriberNotesDto);
+        }
+
+        public async Task<IList<SubscriberNotesDto>> SubscriberNotesSearch(string subscriberGuid, string recruiterGuid, string searchQuery)
+        {
+            string endpoint = $"subscriber/notes?subscriberGuid={subscriberGuid}&recruiterGuid={recruiterGuid}";
+            if (searchQuery != string.Empty)
+                endpoint += $"&searchQuery={searchQuery}";
+
+            return await GetAsync<IList<SubscriberNotesDto>>(endpoint);
+        }
+
+        public async Task<bool> DeleteNoteAsync(Guid subscriberNotesGuid)
+        {
+            return await DeleteAsync<bool>($"subscriber/notes/{subscriberNotesGuid}");
         }
 
         #endregion

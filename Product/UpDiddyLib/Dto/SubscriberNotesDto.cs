@@ -11,5 +11,7 @@ namespace UpDiddyLib.Dto
         public Guid RecruiterGuid { get; set; }
         public string Notes { get; set; }
         public bool IsPublic { get; set; }
+        public DateTime CreateDate { get; set; }
+        public DateTime ModifiedDate { get; set; }
     }
 }

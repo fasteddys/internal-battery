@@ -10,5 +10,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     {
         Task AddNotes(SubscriberNotes subscriberNotes);
         Task UpdateNotes(SubscriberNotes subscriberNotes);
+        Task<IQueryable<SubscriberNotes>> GetAllSubscriberNotesQueryable();
+        Task<SubscriberNotes> GetSubscriberNotesBySubscriberNotesGuid(Guid subscrberNotesGuid);
     }
 }
