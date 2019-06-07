@@ -11,5 +11,6 @@ namespace UpDiddyLib.Dto
         public virtual SubscriberDto Subscriber { get; set; }    
         public virtual SubscriberFileDto SubscriberFile { get; set; }
         public int ParseStatus { get; set; }
+        public int RequiresMerge { get; set; }
     }
 }

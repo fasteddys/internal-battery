@@ -2556,6 +2556,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("ParseStatus");
 
+                    b.Property<int>("RequiresMerge");
+
                     b.Property<Guid>("ResumeParseGuid");
 
                     b.Property<int>("SubscriberFileId");

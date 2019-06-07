@@ -16,5 +16,7 @@ namespace UpDiddyApi.Models
         public virtual SubscriberFile SubscriberFile { get; set; }
         public int ParseStatus { get; set; }
 
+        public int RequiresMerge { get; set; }
+
     }
 }

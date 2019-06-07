@@ -30,7 +30,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 ResumeParseGuid = Guid.NewGuid(),
                 SubscriberId = subscriberId,
                 SubscriberFileId = subscriberFileId,
-                ParseStatus = (int) ResumeParseStatus.MergeNeeded
+                ParseStatus = (int) ResumeParseStatus.MergeNeeded,
+                RequiresMerge = 0
 
             };
             await Create(resumeParse);

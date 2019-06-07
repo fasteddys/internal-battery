@@ -293,6 +293,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             try
             {
+                bool requiresMerge = false;
                 // Get the subscriber 
                 //                Subscriber subscriber = SubscriberFactory.GetSubscriberById(_db, resumeParse.SubscriberId);
                 Subscriber subscriber = await _repository.Subscriber.GetSubscriberByIdAsync(resumeParse.SubscriberId);
@@ -302,15 +303,19 @@ namespace UpDiddyApi.ApplicationCore.Services
                     return false;
                 }
                 // Import Contact Info 
-                await _ImportResumeContactInfo(subscriber, resumeParse, resume);
+                if (await _ImportResumeContactInfo(subscriber, resumeParse, resume) == true)
+                    requiresMerge = true;
                 // Import skills 
-                await _ImportResumeSkills(subscriber, resumeParse, resume);
+                if (await _ImportResumeSkills(subscriber, resumeParse, resume) == true)
+                    requiresMerge = true;
                 // Import work history  
-                await _ImportResumeWorkHistory(subscriber, resumeParse, resume);
+                if (await _ImportResumeWorkHistory(subscriber, resumeParse, resume) == true)
+                    requiresMerge = true;
                 // Import education history  
-                await _ImportResumeEducationHistory(subscriber, resumeParse, resume);
+                if (await _ImportResumeEducationHistory(subscriber, resumeParse, resume) == true)
+                    requiresMerge = true;
 
-                return true;
+                return requiresMerge;
             }
             catch (Exception ex)
             {
@@ -323,7 +328,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             try
             {
- 
+                bool requiresMerge = false;
                 List<SubscriberEducationHistoryDto> parsedEducationHistory = Utils.ParseEducationHistoryFromHrXml(resume);
                 IList<SubscriberEducationHistory> educationHistory = SubscriberFactory.GetSubscriberEducationHistoryById(_db, subscriber.SubscriberId);
                 foreach (SubscriberEducationHistoryDto eh in parsedEducationHistory)
@@ -351,12 +356,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                         // well
                         var ExistingInstitutions = educationHistory.Where(s => s.EducationalInstitution.Name.ToLower() == parsedInstitutionName).ToList();
                         foreach (SubscriberEducationHistory seh in ExistingInstitutions)
-                            await MergeEducationalHistories(resumeParse, seh, eh);
+                            if (await MergeEducationalHistories(resumeParse, seh, eh) == true)
+                                requiresMerge = true;
                     }
              
                 }
                 await _repository.ResumeParseResultRepository.SaveResumeParseResultAsync();
-                return true;
+                return requiresMerge;
             }
             catch (Exception e)
             {
@@ -367,8 +373,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
         private async Task<bool> MergeEducationalHistories(ResumeParse resumeParse, SubscriberEducationHistory educationHistory, SubscriberEducationHistoryDto parsedEducationHistory)
-        {     
-
+        {
+            bool requiresMerge = false;
             if (parsedEducationHistory.StartDate != null && parsedEducationHistory.StartDate != DateTime.MinValue)
             {
                 if (educationHistory.StartDate == null || educationHistory.StartDate == DateTime.MinValue || educationHistory.StartDate == parsedEducationHistory.StartDate)
@@ -377,7 +383,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory", "StartDate", educationHistory.StartDate.Value.ToString("o"), parsedEducationHistory.StartDate.Value.ToString("o"), (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, $"When did you start studying at {educationHistory.EducationalInstitution.Name}?", "SubscriberEducationHistory", "StartDate", educationHistory.StartDate.Value.ToString("o"), parsedEducationHistory.StartDate.Value.ToString("o"), (int)ResumeParseStatus.MergeNeeded, educationHistory.SubscriberEducationHistoryGuid);
+                    requiresMerge = true;
+                }
+                    
             }
 
 
@@ -389,7 +399,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory", "EndDate", educationHistory.EndDate.Value.ToString("o"), parsedEducationHistory.EndDate.Value.ToString("o"), (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, $"When did you complete your studies at {educationHistory.EducationalInstitution.Name}?", "SubscriberEducationHistory", "EndDate", educationHistory.EndDate.Value.ToString("o"), parsedEducationHistory.EndDate.Value.ToString("o"), (int)ResumeParseStatus.MergeNeeded, educationHistory.SubscriberEducationHistoryGuid);
+                    requiresMerge = true;
+                }
+                    
             }
 
 
@@ -401,7 +415,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory", "DegreeDate", educationHistory.DegreeDate.Value.ToString("o"), parsedEducationHistory.DegreeDate.Value.ToString("o"), (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, $"When did you complete your degree at {educationHistory.EducationalInstitution.Name}?", "SubscriberWorkHistory", "DegreeDate", educationHistory.DegreeDate.Value.ToString("o"), parsedEducationHistory.DegreeDate.Value.ToString("o"), (int)ResumeParseStatus.MergeNeeded, educationHistory.SubscriberEducationHistoryGuid);
+                    requiresMerge = true;
+                }
+                    
             }
             if (string.IsNullOrWhiteSpace(parsedEducationHistory.EducationalDegreeType) == false)
             {
@@ -420,7 +438,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory", "EducationalDegreeTypeId", degreeType, parsedDegreeType, (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, $"What type of degree did you earn at {educationHistory.EducationalInstitution.Name}?", "SubscriberEducationHistory", "EducationalDegreeTypeId", degreeType, parsedDegreeType, (int)ResumeParseStatus.MergeNeeded, educationHistory.SubscriberEducationHistoryGuid);
+                    requiresMerge = true;
+                }
+                    
             }
 
             if (string.IsNullOrWhiteSpace(parsedEducationHistory.EducationalDegree) == false)
@@ -440,11 +462,15 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory", "EducationalDegreeId", degreeType, parsedDegreeType, (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, $"What was the major of your degree earned at {educationHistory.EducationalInstitution.Name}?", "SubscriberEducationHistory", "EducationalDegreeId", degreeType, parsedDegreeType, (int)ResumeParseStatus.MergeNeeded, educationHistory.SubscriberEducationHistoryGuid);
+                    requiresMerge = true;
+                }
+                    
             }
 
             await _repository.ResumeParseResultRepository.SaveResumeParseResultAsync();
-            return true;
+            return requiresMerge;
         }
 
 
@@ -461,7 +487,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         private async Task<bool> MergeWorkHistories( ResumeParse resumeParse, SubscriberWorkHistory workHistory, SubscriberWorkHistoryDto parsedWorkHistory)
         {
-            
+            bool requireMerge = false;
             if ( parsedWorkHistory.StartDate != null && parsedWorkHistory.StartDate != DateTime.MinValue)
             {
                 if ( workHistory.StartDate == null || workHistory.StartDate == DateTime.MinValue ||  workHistory.StartDate == parsedWorkHistory.StartDate)
@@ -470,7 +496,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "StartDate", workHistory.StartDate.Value.ToString("o"), parsedWorkHistory.StartDate.Value.ToString("o"), (int)ResumeParseStatus.Merged, workHistory.SubscriberWorkHistoryGuid);
                 }                
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, $"When did you start employment at {workHistory.Company.CompanyName}?", "SubscriberWorkHistory", "StartDate", workHistory.StartDate.Value.ToString("o"), parsedWorkHistory.StartDate.Value.ToString("o"), (int)ResumeParseStatus.MergeNeeded, workHistory.SubscriberWorkHistoryGuid);
+                    requireMerge = true;
+                }
+                    
             }
 
             if (parsedWorkHistory.EndDate != null && parsedWorkHistory.EndDate != DateTime.MinValue)
@@ -481,7 +511,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "EndDate", workHistory.EndDate.Value.ToString("o"), parsedWorkHistory.EndDate.Value.ToString("o"), (int)ResumeParseStatus.Merged, workHistory.SubscriberWorkHistoryGuid);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, $"When did your employment at {workHistory.Company.CompanyName} end?", "SubscriberWorkHistory", "EndDate", workHistory.EndDate.Value.ToString("o"), parsedWorkHistory.EndDate.Value.ToString("o"), (int)ResumeParseStatus.MergeNeeded, workHistory.SubscriberWorkHistoryGuid);
+                    requireMerge = true;
+                }
+                    
             }
 
             if ( string.IsNullOrWhiteSpace(parsedWorkHistory.Title) == false) 
@@ -498,7 +532,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "JobTitle", jobTitle, parsedJobTitle, (int)ResumeParseStatus.Merged, workHistory.SubscriberWorkHistoryGuid);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, $"While working at {workHistory.Company.CompanyName}, what was your job title?", "SubscriberWorkHistory", "JobTitle", jobTitle, parsedJobTitle, (int)ResumeParseStatus.MergeNeeded, workHistory.SubscriberWorkHistoryGuid);
+                    requireMerge = true;
+                }
+                    
             }
 
  
@@ -514,12 +552,16 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "JobDescription", jobDescription, parsedJobDescription, (int)ResumeParseStatus.Merged, workHistory.SubscriberWorkHistoryGuid);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, $"While working at {workHistory.Company.CompanyName}, what was your job description?", "SubscriberWorkHistory", "JobDescription", jobDescription, parsedJobDescription, (int)ResumeParseStatus.MergeNeeded, workHistory.SubscriberWorkHistoryGuid);
+                    requireMerge = true;
+                }
+                
             }
       
 
             await _repository.ResumeParseResultRepository.SaveResumeParseResultAsync();
-            return true;
+            return requireMerge;
         }
 
         /// <summary>
@@ -531,6 +573,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         private async Task<bool> _ImportResumeWorkHistory(Subscriber subscriber, ResumeParse resumeParse, string resume)
         {
+            bool requireMerge = false;
             try
             {
                 List<SubscriberWorkHistoryDto> parsedWorkHistory = Utils.ParseWorkHistoryFromHrXml(resume);
@@ -552,12 +595,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                         // todo - at some point make this more intelligent, edge cases as two stints at the same company may not be handled very
                         // well
                         var ExistingCompanies = workHistory.Where(s => s.Company.CompanyName.ToLower() == parsedCompanyName).ToList();
-                        foreach ( SubscriberWorkHistory swh in ExistingCompanies )                        
-                            await MergeWorkHistories(resumeParse, swh, wh);                                                
+                        foreach (SubscriberWorkHistory swh in ExistingCompanies)
+                            if (await MergeWorkHistories(resumeParse, swh, wh) == true)
+                                requireMerge = true;
                     } 
                 }
                 await _repository.ResumeParseResultRepository.SaveResumeParseResultAsync();
-                return true;
+                return requireMerge;
             }
             catch (Exception e)
             {
@@ -580,6 +624,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             try
             {
+                bool requireMerge = false;
                 List<string> parsedSkills = Utils.ParseSkillsFromHrXML(resume);
                 IList <SubscriberSkill> skills = SubscriberFactory.GetSubscriberSkillsById(_db, subscriber.SubscriberId);
 
@@ -594,13 +639,15 @@ namespace UpDiddyApi.ApplicationCore.Services
                     {
                         prompt = string.Empty;
                         status = (int)ResumeParseStatus.Duplicate;
-                    }                        
+                    }
+                    else
+                        requireMerge = true;
 
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.Skills, prompt, "SubscriberSkill", "SkillName", parsedSkill, parsedSkill, status, subscriber.SubscriberGuid.Value);                  
                 }
                 // save resume parse results 
                 await _repository.ResumeParseResultRepository.SaveResumeParseResultAsync();
-                return true;
+                return requireMerge;
             }
             catch (Exception e)
             {
@@ -623,6 +670,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         private  async Task<bool> _ImportResumeContactInfo(Subscriber subscriber, ResumeParse resumeParse, string resume)
         {
+            bool requireMerge = false;
             try
             {
  
@@ -635,7 +683,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, string.Empty, "Subscriber", "FirstName", subscriber.FirstName, contactInfo.FirstName, (int) ResumeParseStatus.Merged, subscriber.SubscriberGuid.Value);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, "Which first name do you prefer?", "Subscriber", "FirstName", subscriber.FirstName, contactInfo.FirstName, (int)ResumeParseStatus.MergeNeeded, subscriber.SubscriberGuid.Value);
+                    requireMerge = true;
+                }
+                    
 
  
                 // case of existing property is empty or existing property and parsed property are equal 
@@ -645,7 +697,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, string.Empty, "Subscriber", "LastName", subscriber.LastName, contactInfo.LastName, (int)ResumeParseStatus.Merged, subscriber.SubscriberGuid.Value);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, "Which last name do you prefer?", "Subscriber", "LastName", subscriber.LastName, contactInfo.LastName, (int)ResumeParseStatus.MergeNeeded, subscriber.SubscriberGuid.Value);
+                    requireMerge = true;
+                }
+                    
 
                 // case of existing property is empty or existing property and parsed property are equal 
                 if (string.IsNullOrWhiteSpace(subscriber.City) || subscriber.City.Trim() == contactInfo.City.Trim())
@@ -654,7 +710,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, string.Empty, "Subscriber", "City", subscriber.City, contactInfo.City, (int)ResumeParseStatus.Merged, subscriber.SubscriberGuid.Value);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, "What city do you currently reside in?", "Subscriber", "City", subscriber.City, contactInfo.City, (int)ResumeParseStatus.MergeNeeded, subscriber.SubscriberGuid.Value);
+                    requireMerge = true;
+                }
+                    
 
                 // case of existing property is empty or existing property and parsed property are equal 
                 if (string.IsNullOrWhiteSpace(subscriber.PostalCode) || subscriber.PostalCode.Trim() == contactInfo.PostalCode.Trim())
@@ -663,7 +723,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, string.Empty, "Subscriber", "PostalCode", subscriber.PostalCode, contactInfo.PostalCode, (int)ResumeParseStatus.Merged, subscriber.SubscriberGuid.Value);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, "What is your current postal code?", "Subscriber", "PostalCode", subscriber.PostalCode, contactInfo.PostalCode, (int)ResumeParseStatus.MergeNeeded, subscriber.SubscriberGuid.Value);
+                    requireMerge = true;
+                }
+                    
 
 
                 // case of existing property is empty or existing property and parsed property are equal 
@@ -673,7 +737,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, string.Empty, "Subscriber", "Address", subscriber.Address, contactInfo.Address, (int)ResumeParseStatus.Merged, subscriber.SubscriberGuid.Value);
                 }
                 else
+                {
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, "Which address is correct?", "Subscriber", "Address", subscriber.Address, contactInfo.Address, (int)ResumeParseStatus.MergeNeeded, subscriber.SubscriberGuid.Value);
+                    requireMerge = true;
+                }
+                    
 
 
                 State state = StateFactory.GetStateByStateCode(_db, contactInfo.State);
@@ -685,7 +753,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                         await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, string.Empty, "Subscriber", "StateCode", subscriber.State.Code, contactInfo.State, (int)ResumeParseStatus.Merged, subscriber.SubscriberGuid.Value);
                     }
                     else
-                        await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, "In which state/province do you currently reside?" , "Subscriber", "StateCode", subscriber.State.Code, contactInfo.State, (int)ResumeParseStatus.MergeNeeded, subscriber.SubscriberGuid.Value);
+                    {
+                        await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, "In which state/province do you currently reside?", "Subscriber", "StateCode", subscriber.State.Code, contactInfo.State, (int)ResumeParseStatus.MergeNeeded, subscriber.SubscriberGuid.Value);
+                        requireMerge = true;
+                    }
+                        
                 }
 
                 // remove extraneous characters from parsed phone number 
@@ -700,7 +772,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                         await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, string.Empty, "Subscriber", "PhoneNumnber", subscriber.PhoneNumber, contactInfo.PhoneNumber, (int)ResumeParseStatus.Merged, subscriber.SubscriberGuid.Value);
                     }
                     else
+                    {
                         await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.ContactInfo, "Which phone number do you prefer?", "Subscriber", "PhoneNumnber", subscriber.PhoneNumber, contactInfo.PhoneNumber, (int)ResumeParseStatus.MergeNeeded, subscriber.SubscriberGuid.Value);
+                        requireMerge = true;
+                    }
+                        
 
                 }
 
@@ -709,7 +785,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // save resume parse results 
                 await _repository.ResumeParseResultRepository.SaveResumeParseResultAsync();
  
-                return true;
+                return requireMerge;
             }
             catch (Exception e)
             {

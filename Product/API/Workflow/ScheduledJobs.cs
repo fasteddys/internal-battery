@@ -731,22 +731,8 @@ namespace UpDiddyApi.Workflow
                 String parsedDocument =  _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
                 // Save profile in staging store 
                 SubscriberProfileStagingStoreFactory.Save(_db, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
-
-                /*
-                // Get the list of profiles that need 
-                List<SubscriberProfileStagingStore> profiles = _db.SubscriberProfileStagingStore
-                .Include(p => p.Subscriber)
-                .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == resume.Subscriber.SubscriberGuid)
-                .ToList();
-                */
-
-                // TODO JAB refactor to use only the currently parsed resume 
-                // TODO JAB create ....Parse objects for any conflicting profle data (Change in existing work history, education history, Skills etc).
-                // Import user profile data
-                
-                // _ImportSubscriberProfileData(profiles);
-
-                await _ImportSubscriberResume(_subscriberService, resume, parsedDocument);
+                // Import the subscriber resume 
+                ResumeParse resumeParse = await _ImportSubscriberResume(_subscriberService, resume, parsedDocument);
 
                 // Callback to client to let them know upload is complete
                 ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
@@ -767,7 +753,7 @@ namespace UpDiddyApi.Workflow
                 hubHelper.CallClient(resume.Subscriber.SubscriberGuid,
                     Constants.SignalR.ResumeUpLoadAndParseVerb,
                     JsonConvert.SerializeObject(
-                        subscriberDto,
+                        _mapper.Map<ResumeParseDto>(resumeParse),
                         new JsonSerializerSettings
                         {
                             ContractResolver = contractResolver
@@ -1018,16 +1004,20 @@ namespace UpDiddyApi.Workflow
         /// <param name="resume"></param>
         /// <param name="subscriberFileId"></param>
         /// <returns></returns>
-        private async Task<Boolean> _ImportSubscriberResume(ISubscriberService subscriberService, SubscriberFile resumeFile, string resume)
+        private async Task<ResumeParse> _ImportSubscriberResume(ISubscriberService subscriberService, SubscriberFile resumeFile, string resume)
         {
             // Create resume parse object 
             ResumeParse resumeParse = await _repositoryWrapper.ResumeParseRepository.CreateResumeParse(resumeFile.SubscriberId, resumeFile.SubscriberFileId);
-            // Modify Resume Parse 
-            await _repositoryWrapper.ResumeParseRepository.SaveResumeParse();
+
 
             // Import resume 
-            bool rVal = await subscriberService.ImportResume(resumeParse, resume);    
-            return rVal;
+            if (await subscriberService.ImportResume(resumeParse, resume) == true)
+                resumeParse.RequiresMerge = 1;
+
+            // Save Resume Parse 
+            await _repositoryWrapper.ResumeParseRepository.SaveResumeParse();
+
+            return resumeParse;
         }
         
         private Boolean _ImportSubscriberProfileData(List<SubscriberProfileStagingStore> profiles)

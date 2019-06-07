@@ -192,8 +192,12 @@
 
         function ResumeParseComplete(message)
         {
-            alert("SignalR called back!")
 
+           var obj = JSON.parse(message);
+           var evt = new CustomEvent('onResumeMerge', { detail: obj });
+           window.dispatchEvent(evt);
+
+            //alert("SignalR called back!" + obj.resumeParseGuid);
 
         };
 
@@ -204,9 +208,10 @@
             emailVerification.init();
          //  CareerCircleSignalR.connect($("#hdnSubscriberGuid").val()).then(function (result) {
            CareerCircleSignalR.connect("71A7156E-173F-4054-83ED-AD6127BAFE87").then(function (result) {
-           CareerCircleSignalR.listen("ResumeUpLoadAndParseVerb", ResumeParseComplete);
-        });
+               CareerCircleSignalR.listen("ResumeUpLoadAndParseVerb", ResumeParseComplete);
+           });
 
+ 
 
         });
 

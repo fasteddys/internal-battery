@@ -3,7 +3,8 @@ import React from 'react';
 class ResumeUpload extends React.Component {
     modeType = {
         upload: 0,
-        view: 1
+        view: 1,
+        parseMerge : 2
     };
 
     constructor(props) {
@@ -14,8 +15,11 @@ class ResumeUpload extends React.Component {
             fileGuid: props.fileGuid,
             processing: false,
             mode: props.fileGuid ?  this.modeType.view : this.modeType.upload,
-            selectedFile: null
+            selectedFile: null,
+            resumeParseGuid: null,
+            requiresMerge: false
         };
+       this.onResumeMerge = this.onResumeMerge.bind(this);
     }
 
     onFileSelect(files) {
@@ -24,6 +28,25 @@ class ResumeUpload extends React.Component {
 
     hasResume() {
         return this.state.fileGuid ? true : false;
+    }
+
+
+    onResumeMerge(e) {  
+        
+        this.setState({ resumeParseGuid: e.detail.resumeParseGuid });
+        this.setState({ requiresMerge: e.detail.requiresMerge });
+        this.changeMode(this.modeType.parseMerge);             
+    }
+
+    doParseMerge() {
+        alert(this.state.resumeParseGuid);
+    }
+
+
+
+    componentDidMount()
+    {
+        window.addEventListener('onResumeMerge', this.onResumeMerge);
     }
 
     changeMode(mode){
@@ -83,8 +106,19 @@ class ResumeUpload extends React.Component {
                 <a className="text-primary download-link pr-1" href={`/Home/DownloadFile?fileGuid=${this.state.fileGuid}`} target="_blank"><i className="fas fa-download" title="Download"></i> { this.state.fileName }</a>
                 <button type="button" className="btn btn-text text-primary edit px-2" onClick={() => this.changeMode(this.modeType.upload)}><i className="fas fa-edit text-light-blue" title="Edit"></i></button>
                 <button type="button" className="btn btn-text text-primary delete px-2" onClick={() => this.deleteResume()}><i className="fas fa-minus-circle text-light-blue" title="Delete"></i> {this.spinner()}</button>
-                <button type="button" className="btn btn-text text-primary edit px-2" onClick={() => this.changeMode(this.modeType.upload)}><i className="fas fa-exclamation text-light-blue" title="Edit"></i></button>
+ 
+            </div>
+        );
+    }
 
+    parseMergeMode() {
+        return (
+            <div>
+                <a className="text-primary download-link pr-1" href={`/Home/DownloadFile?fileGuid=${this.state.fileGuid}`} target="_blank"><i className="fas fa-download" title="Download"></i> {this.state.fileName}</a>
+                <button type="button" className="btn btn-text text-primary edit px-2" onClick={() => this.changeMode(this.modeType.upload)}><i className="fas fa-edit text-light-blue" title="Edit"></i></button>
+                <button type="button" className="btn btn-text text-primary delete px-2" onClick={() => this.deleteResume()}><i className="fas fa-minus-circle text-light-blue" title="Delete"></i> {this.spinner()}</button>
+
+                <button type="button" className="btn btn-text text-primary edit px-2" onClick={() => this.doParseMerge()}><i className="fas fa-exclamation text-warning" title="Your profile requires merging"></i></button>
             </div>
         );
     }
@@ -121,9 +155,20 @@ class ResumeUpload extends React.Component {
         );
     }
 
-    render() {
+    render() {  
+
+        let display = null;
+        if (this.state.mode == this.modeType.upload)
+            display = this.uploadMode();
+        else if (this.state.mode == this.modeType.parseMerge && this.state.requiresMerge == 1)
+            display = this.parseMergeMode();
+        else
+            display = this.viewMode();
+
         return (<div className="resume-upload-component">
-            { this.state.mode == this.modeType.upload ? this.uploadMode() : this.viewMode()}
+            {
+               display   
+            }
         </div>);
     }
 }
