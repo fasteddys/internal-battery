@@ -2581,7 +2581,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<int>("ExistingObjectId");
+                    b.Property<Guid>("ExistingObjectGuid");
 
                     b.Property<string>("ExistingValue");
 
@@ -2594,6 +2594,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("ParseStatus");
 
                     b.Property<string>("ParsedValue");
+
+                    b.Property<int>("ProfileSectionId");
 
                     b.Property<string>("Prompt");
 

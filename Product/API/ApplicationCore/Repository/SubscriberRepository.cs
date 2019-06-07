@@ -45,13 +45,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<Subscriber> GetSubscriberByIdAsync(int subscriberId)
         {
-            var queryableSubscriber = await GetAllAsync();
-
-            var subscriberResult = queryableSubscriber
-                              .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
-                              .ToList();
-
-            return subscriberResult.Count == 0 ? null : subscriberResult[0];
+            return _dbContext.Subscriber
+              .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
+              .FirstOrDefault(); 
         }
 
 

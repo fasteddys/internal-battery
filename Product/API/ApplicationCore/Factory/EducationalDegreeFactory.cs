@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class EducationalDegreeFactory
     {
-        public static EducationalDegree CreateEducationalDegree(string degree)
+        public static async Task<EducationalDegree> CreateEducationalDegree(string degree)
         {
             EducationalDegree rVal = new EducationalDegree();
             rVal.Degree = degree;
@@ -21,7 +21,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        static public EducationalDegree GetOrAdd(UpDiddyDbContext db, string degree)
+        static public async Task<EducationalDegree> GetOrAdd(UpDiddyDbContext db, string degree)
         {
             degree = degree.Trim();
 
@@ -31,7 +31,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             if (educationalDegree == null)
             {
-                educationalDegree =  CreateEducationalDegree(degree);
+                educationalDegree =  await CreateEducationalDegree(degree);
                 db.EducationalDegree.Add(educationalDegree);
                 db.SaveChanges();
             }

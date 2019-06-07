@@ -27,7 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return result.Count == 0 ? null : result[0];
 
         }
-        public async Task<ResumeParseResult> CreateResumeParseResultAsync(int resumeParseId, string prompt, string targetTypeName, string targetProperty, string existingValue, string parsedValue, int status, Guid existingObjectGuid)
+        public async Task<ResumeParseResult> CreateResumeParseResultAsync(int resumeParseId, int profileSectionId, string prompt, string targetTypeName, string targetProperty, string existingValue, string parsedValue, int status, Guid existingObjectGuid)
         {
             ResumeParseResult resumeParseResult = new ResumeParseResult()
             {
@@ -44,7 +44,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 ExistingValue = existingValue,
                 ParsedValue = parsedValue,
                 ExistingObjectGuid = existingObjectGuid,
-                Prompt = prompt
+                Prompt = prompt,
+                ProfileSectionId = profileSectionId
             };
 
             await Create(resumeParseResult); 

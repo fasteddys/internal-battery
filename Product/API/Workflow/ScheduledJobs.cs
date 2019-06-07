@@ -763,6 +763,19 @@ namespace UpDiddyApi.Workflow
                         {
                             ContractResolver = contractResolver
                         }));
+
+                hubHelper.CallClient(resume.Subscriber.SubscriberGuid,
+                    Constants.SignalR.ResumeUpLoadAndParseVerb,
+                    JsonConvert.SerializeObject(
+                        subscriberDto,
+                        new JsonSerializerSettings
+                        {
+                            ContractResolver = contractResolver
+                        }));
+
+                
+
+
             }
             catch (Exception e)
             {

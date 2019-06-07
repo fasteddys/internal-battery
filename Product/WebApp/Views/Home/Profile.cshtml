@@ -7,6 +7,8 @@
 @model ProfileViewModel
 @section Scripts
     {
+
+    <script src="~/js/modules/career-circle-signalr.js"></script>
     <script type="text/javascript">
         // this must be present for the API call used in site.js
         var url = '@Url.Action("GetStatesByCountry", "Home")';
@@ -29,7 +31,7 @@
                                 if (errorsList[i] !== "") {
                                     ToastService.warning(errorsList[i]);
                                 }
-                                
+
                             }
                         }
                         else {
@@ -58,22 +60,22 @@
                 callback: function callback(result) {
                     if (result) {
                         var DefaultAvatar = '@Model.DefaultAvatar';
-                        // remove the image on the server 
-                        CareerCircleAPI.removeAvatar()                    
+                        // remove the image on the server
+                        CareerCircleAPI.removeAvatar()
                             .then(function (payload) {
                                 // update the local image
                                 document.getElementById('imgAvatar').src = DefaultAvatar;
                             })
                             .catch(function (err) {
                                 ToastService.error('Something unexpected happened, and we are looking into it.');
-                            })                                           
+                            })
                     }
                 }
             });
         }
 
         function avatarSelect() {
-            $("#fuAvatar").click();            
+            $("#fuAvatar").click();
         }
 
         function avatarUpload() {
@@ -84,10 +86,10 @@
                 ToastService.error("Sorry the selected avatar file is too big.  Maximum allowable size is " + maxFileSize);
                 return;
             }
-            // update the image on the server 
+            // update the image on the server
             CareerCircleAPI.uploadAvatar(myFile)
             .then(function (payload) {
-                // set the image locally 
+                // set the image locally
                 document.getElementById('imgAvatar').src = window.URL.createObjectURL(myFile);
             })
             .catch(function (err) {
@@ -187,12 +189,27 @@
             }
         }
 
+
+        function ResumeParseComplete(message)
+        {
+            alert("SignalR called back!")
+
+
+        };
+
+
+
         $(document).ready(function () {
             resumeUpload.init();
             emailVerification.init();
+         //  CareerCircleSignalR.connect($("#hdnSubscriberGuid").val()).then(function (result) {
+           CareerCircleSignalR.connect("71A7156E-173F-4054-83ED-AD6127BAFE87").then(function (result) {
+           CareerCircleSignalR.listen("ResumeUpLoadAndParseVerb", ResumeParseComplete);
+        });
+
 
         });
-        
+
     </script>
     <script src="~/js/modules/selectize-handling.js" asp-append-version="true"></script>
     <script src="~/js/modules/profile.js" asp-append-version="true"></script>
@@ -208,9 +225,9 @@
 
 
 <!-- Education History Modal    -->
-@{ Html.RenderPartial("_EducationHistoryModalPartial", Model); }  
+@{ Html.RenderPartial("_EducationHistoryModalPartial", Model); }
 
-   
+
 
 
 <!-- Work History Modal -->
@@ -250,26 +267,26 @@
                                     @if (!Model.IsVerified)
                                     {
                                         <span class="badge badge-light">Unverified <i class="fas fa-exclamation-triangle"></i></span> <button class="btn btn-link email-verification-btn">@send Verification Email</button>
-                                      
+
                                     }
                                 </div>
                             </div>
                             <div class="col-md-8">
                                 <img src="@Model.AvatarUrl" id="imgAvatar" class="career-circle-profile-avatar" onclick="avatarSelect()" />
-                                <div>  
+                                <div>
                                     <form>
-                                        <input type="file" id="fuAvatar" class="d-none" accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/* .heic .heif" onchange="avatarUpload()"/>
+                                        <input type="file" id="fuAvatar" class="d-none" accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/* .heic .heif" onchange="avatarUpload()" />
 
-                                        <button type="button" class="btn btn-text text-primary edit px-2" onclick="avatarSelect()" > <i class="fas fa-edit text-light-blue" title="Edit"></i></button>
+                                        <button type="button" class="btn btn-text text-primary edit px-2" onclick="avatarSelect()"> <i class="fas fa-edit text-light-blue" title="Edit"></i></button>
                                         <button type="button" class="btn btn-text text-primary delete px-2" onclick="avatarDelete()"><i class="fas fa-minus-circle text-light-blue" title="Delete"></i> </button>
-                          
+
                                     </form>
-                           
-                                
+
+
                                 </div>
                             </div>
                         </div>
-                    
+
 
                     </div>
                 </div>
@@ -291,101 +308,101 @@
     <div class="profile-body-container">
         <div class="row">
             <div class="col-md-12">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="courses-in-progress-container">
-                            <div class="course-in-progress-header">
-                                <h2>Courses in Progress</h2>
-                            </div>
-                            <div class="courses-in-progress-list-container">
-                                @{
-                                    if (Model.Enrollments.Count == 0)
-                                    {
-                                        <text>You are not currently enrolled in any courses.</text>
-                                    }
-                                }
-                                <ul class="courses-in-progress-list-desktop">
-                                    @foreach (EnrollmentDto enrollment in Model.Enrollments)
-                                    {
-                                    <li class="course-in-progress-li">
-                                        @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="courses-in-progress-container">
+                                <div class="course-in-progress-header">
+                                    <h2>Courses in Progress</h2>
+                                </div>
+                                <div class="courses-in-progress-list-container">
+                                    @{
+                                        if (Model.Enrollments.Count == 0)
                                         {
-                                            @Html.Raw("<a target=\"_blank\" href=\"" + enrollment.CourseUrl + "\">")
+                                            <text>You are not currently enrolled in any courses.</text>
                                         }
-
-                                        <div class="course-in-progress-anchor-container">
-                                            <div class="course-in-progress-info">
-                                                <div class="row no-padding">
-                                                    <div class="col-12 col-sm-8 no-padding">
-                                                        <h3>@enrollment.Course.Name</h3>
-
-                                                    </div>
-                                                    <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
-                                                        @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Pending)
-                                                        {
-                                                            <text>Enrollment in progress.</text>
-                                                        }
-                                                        else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
-                                                        {
-                                                            <text>Continue <i class="fas fa-arrow-right"></i></text>
-                                                        }
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            @{
+                                    }
+                                    <ul class="courses-in-progress-list-desktop">
+                                        @foreach (EnrollmentDto enrollment in Model.Enrollments)
+                                        {
+                                            <li class="course-in-progress-li">
                                                 @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
                                                 {
-                                                    double percentComplete = enrollment.PercentComplete;
-                                                    string classFormatter = "";
-                                                    if (percentComplete < 50)
-                                                    {
-                                                        classFormatter = "less-than-50";
-                                                    }
-                                                    else
-                                                    {
-                                                        classFormatter = "more-than-50";
-                                                    }
-                                                    <div class="course-in-progress">
+                                                    @Html.Raw("<a target=\"_blank\" href=\"" + enrollment.CourseUrl + "\">")
+                                                }
 
-                                                        <div class="progress @(classFormatter)">
+                                                <div class="course-in-progress-anchor-container">
+                                                    <div class="course-in-progress-info">
+                                                        <div class="row no-padding">
+                                                            <div class="col-12 col-sm-8 no-padding">
+                                                                <h3>@enrollment.Course.Name</h3>
 
-                                                            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
-                                                                <div class="course-completion-percentage">
-                                                                    @(percentComplete)%
-                                                                </div>
                                                             </div>
-
+                                                            <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
+                                                                @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Pending)
+                                                                {
+                                                                    <text>Enrollment in progress.</text>
+                                                                }
+                                                                else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                                                {
+                                                                    <text>Continue <i class="fas fa-arrow-right"></i></text>
+                                                                }
+                                                            </div>
                                                         </div>
-
                                                     </div>
-                                                }
-                                                else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Error)
+                                                    @{
+                                                        @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                                        {
+                                                            double percentComplete = enrollment.PercentComplete;
+                                                            string classFormatter = "";
+                                                            if (percentComplete < 50)
+                                                            {
+                                                                classFormatter = "less-than-50";
+                                                            }
+                                                            else
+                                                            {
+                                                                classFormatter = "more-than-50";
+                                                            }
+                                                            <div class="course-in-progress">
+
+                                                                <div class="progress @(classFormatter)">
+
+                                                                    <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
+                                                                        <div class="course-completion-percentage">
+                                                                            @(percentComplete)%
+                                                                        </div>
+                                                                    </div>
+
+                                                                </div>
+
+                                                            </div>
+                                                        }
+                                                        else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Error)
+                                                        {
+                                                            <div class="course-enrollment-failure-container">
+                                                                Unfortunately, an error occurred when attempting to process your enrollment. We have been notified and are working to resolve the issue.
+                                                            </div>
+                                                        }
+
+                                                    }
+                                                    <span class="marketing-campaign-msg"> @enrollment.CampaignCourseStatusInfo </span>
+                                                </div>
+
+                                                @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
                                                 {
-                                                    <div class="course-enrollment-failure-container">
-                                                        Unfortunately, an error occurred when attempting to process your enrollment. We have been notified and are working to resolve the issue.
-                                                    </div>
+                                                    @Html.Raw("</a>")
                                                 }
-
-                                            }
-                                            <span class="marketing-campaign-msg"> @enrollment.CampaignCourseStatusInfo </span>
-                                        </div>
-
-                                        @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
-                                        {
-                                            @Html.Raw("</a>")
+                                            </li>
                                         }
-                                    </li>
-                                    }
-                                </ul>
+                                    </ul>
+                                </div>
                             </div>
+
+
                         </div>
-
-
                     </div>
                 </div>
             </div>
-        </div>
         </div>
 
     </div>
@@ -417,8 +434,8 @@
                                         @{ Html.RenderPartial("_WorkHistoryPartial", Model); }
 
                                         <!-- Education History  -->
-                                        @{ Html.RenderPartial("_EducationHistoryPartial", Model); } 
-                                           
+                                        @{ Html.RenderPartial("_EducationHistoryPartial", Model); }
+
 
                                         <!-- Social Links -->
                                         @{ Html.RenderPartial("_SocialLinksPartial", Model); }

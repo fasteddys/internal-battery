@@ -21,7 +21,23 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        public static EducationalDegreeType GetOrAdd(UpDiddyDbContext db, string degreeType)
+        public static async Task<EducationalDegreeType> GetOrDefault(UpDiddyDbContext db, string degreeType)
+        {
+            degreeType = degreeType.Trim();
+
+            EducationalDegreeType educationalDegreeType = db.EducationalDegreeType
+                .Where(s => s.IsDeleted == 0 && s.DegreeType == degreeType)
+                .FirstOrDefault();
+
+            if (educationalDegreeType == null)
+            {
+                educationalDegreeType = await GetOrAdd(db, "Not Specified");
+            }
+            return educationalDegreeType;
+        }
+
+
+        public static async Task<EducationalDegreeType> GetOrAdd(UpDiddyDbContext db, string degreeType)
         {
             degreeType = degreeType.Trim();
 

@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
-namespace UpDiddyApi.Models
+namespace UpDiddyLib.Dto
 {
-    public class ResumeParseResult : BaseModel
+
+    public enum ResumeParseSection { ContactInfo = 0, Skills, EducationHistory, WorkHistory }
+    public class ResumeParseResultDto : BaseDto
     {
-        public int ResumeParseResultId { get; set; }
-        public Guid ResumeParseResultGuid { get; set; } 
-        public int ResumeParseId { get; set; }
-        public virtual ResumeParse ResumeParse { get; set; }
+ 
+        public Guid ResumeParseResultGuid { get; set; }
+ 
+        public virtual ResumeParseDto ResumeParse { get; set; }
         public int ParseStatus { get; set; }
         public string TargetTypeName { get; set; }
         public string TargetProperty { get; set; }
@@ -20,9 +21,8 @@ namespace UpDiddyApi.Models
 
         public Guid ExistingObjectGuid { get; set; }
 
-        public string Prompt { get; set; } 
+        public string Prompt { get; set; }
 
         public int ProfileSectionId { get; set; }
-
     }
 }

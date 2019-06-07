@@ -21,7 +21,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        static public EducationalInstitution GetOrAdd(UpDiddyDbContext db, string institutionName)
+        static public async Task<EducationalInstitution> GetOrAdd(UpDiddyDbContext db, string institutionName)
         {
 
             institutionName = institutionName.Trim();

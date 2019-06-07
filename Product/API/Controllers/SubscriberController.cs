@@ -329,7 +329,7 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
             if (subscriber == null)
                 return BadRequest();
-            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company);
+            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company).Result;
             int companyId = company != null ? company.CompanyId : -1;
             CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
             int compensationTypeId = 0;
@@ -366,7 +366,7 @@ namespace UpDiddyApi.Controllers
         [Route("/api/[controller]/{subscriberGuid}/work-history")]
         public IActionResult UpdateWorkHistory(Guid subscriberGuid, [FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
         {
-            // sanitize user inputs
+            // sanitize user inputs 
             WorkHistoryDto.Company = HttpUtility.HtmlEncode(WorkHistoryDto.Company);
             WorkHistoryDto.JobDecription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDecription);
             WorkHistoryDto.Title = HttpUtility.HtmlEncode(WorkHistoryDto.Title);
@@ -377,7 +377,7 @@ namespace UpDiddyApi.Controllers
                 return Unauthorized();
 
             Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
-            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company);
+            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company).Result;
             int companyId = company != null ? company.CompanyId : -1;
             CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
             int compensationTypeId = 0;
@@ -528,16 +528,16 @@ namespace UpDiddyApi.Controllers
             if (subscriber == null)
                 return BadRequest();
             // Find or create the institution 
-            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution);
+            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution).Result;
             int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
             // Find or create the degree major 
-            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree);
+            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree).Result;
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
             EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, EducationHistoryDto.EducationalDegreeType);
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
-                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
+                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption).Result;
             educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
 
             SubscriberEducationHistory EducationHistory = new SubscriberEducationHistory()
@@ -584,16 +584,16 @@ namespace UpDiddyApi.Controllers
             if (EducationHistory == null || EducationHistory.SubscriberId != subscriber.SubscriberId)
                 return BadRequest();
             // Find or create the institution 
-            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution);
+            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution).Result;
             int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
             // Find or create the degree major 
-            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree);
+            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree).Result;
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
             EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, EducationHistoryDto.EducationalDegreeType);
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
-                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
+                 educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption).Result;
             educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
 
             EducationHistory.ModifyDate = DateTime.UtcNow;

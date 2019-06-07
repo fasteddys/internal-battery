@@ -9,7 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public interface IResumeParseResultRepository
     {
         Task<ResumeParseResult> GetResumeParseResultByGuidAsync(Guid resumeParseGuid);
-        Task<ResumeParseResult> CreateResumeParseResultAsync(int resumeParseId,  string prompt, string targetTypeName, string targetProperty, string existingValue, string parsedValue, int status, Guid objectGuid);
+        Task<ResumeParseResult> CreateResumeParseResultAsync(int resumeParseId, int profileSectionId, string prompt, string targetTypeName, string targetProperty, string existingValue, string parsedValue, int status, Guid objectGuid);
         Task<bool> SaveResumeParseResultAsync();
     }
 }

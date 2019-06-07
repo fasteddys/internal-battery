@@ -596,6 +596,10 @@ namespace UpDiddyLib.Helpers
 
         static public DateTime ParseDateFromHrXmlDate(XmlNode hrXMLDate, ref bool isCurrent)
         {
+
+            if (hrXMLDate == null)
+                return DateTime.MinValue;
+
             isCurrent = false;
             string dateString = hrXMLDate.FirstChild.InnerText;
 
@@ -713,7 +717,8 @@ namespace UpDiddyLib.Helpers
 
         static public string RemoveNewlines(string Str)
         {
-            return Regex.Replace(Str, "\r\n", String.Empty);
+            string rVal =  Regex.Replace(Str, "\r\n", String.Empty);
+            return Regex.Replace(rVal, "\\n", String.Empty);
         }
 
         static public string RemoveRedundantSpaces(string Str)

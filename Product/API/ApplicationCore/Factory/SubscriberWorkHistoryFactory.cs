@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 
@@ -24,10 +25,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefault();
         }
 
-        public static bool AddWorkHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, SubscriberWorkHistoryDto workHistory, Company company)
+        public static async Task<SubscriberWorkHistory> AddWorkHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, SubscriberWorkHistoryDto workHistory, Company company)
         {
 
-            bool rVal = true;
+            // html encode title and job description to be consistent with api endpoints that encode to protect again script injection 
             try
             {
                 SubscriberWorkHistory wh = new SubscriberWorkHistory()
@@ -36,8 +37,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     EndDate = workHistory.EndDate,
                     CompanyId = company.CompanyId,
                     SubscriberId = subscriber.SubscriberId,
-                    Title = workHistory.Title,
-                    JobDecription = workHistory.JobDecription,
+                    Title = HttpUtility.HtmlEncode(workHistory.Title),
+                    JobDecription = HttpUtility.HtmlEncode(workHistory.JobDecription),
                     IsCurrent = workHistory.IsCurrent,
                     CreateDate = DateTime.UtcNow,
                     CreateGuid = Guid.Empty,
@@ -48,12 +49,13 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 };
                 db.SubscriberWorkHistory.Add(wh);
                 db.SaveChanges();
+                return wh;
             }
             catch
             {
-                rVal = false;
+                return null;
             }
-            return rVal;
+        
 
         }
     }
