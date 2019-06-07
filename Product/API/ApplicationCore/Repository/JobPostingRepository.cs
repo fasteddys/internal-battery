@@ -8,9 +8,10 @@ using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
-    public class JobPostingRepository :UpDiddyRepositoryBase<JobPosting>, IJobPostingRepository
+    public class JobPostingRepository : UpDiddyRepositoryBase<JobPosting>, IJobPostingRepository
     {
         private readonly UpDiddyDbContext _dbContext;
+
         public JobPostingRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
@@ -18,18 +19,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public Task<IQueryable<JobPosting>> GetAllJobPostings()
         {
-           return GetAllAsync();
+            return GetAllAsync();
         }
 
-        public  async Task<JobPosting> GetJobPostingByGuid(Guid jobPostingGuid)
+        public async Task<JobPosting> GetJobPostingByGuid(Guid jobPostingGuid)
         {
 
             var queryableJobPosting = await GetAllAsync();
-            var jobPostingResult=queryableJobPosting
+            var jobPostingResult = queryableJobPosting
                                 .Where(jp => jp.IsDeleted == 0 && jp.JobPostingGuid == jobPostingGuid)
                                 .ToList();
 
-            return jobPostingResult.Count==0 ? null : jobPostingResult[0];
+            return jobPostingResult.Count == 0 ? null : jobPostingResult[0];
         }
     }
 }

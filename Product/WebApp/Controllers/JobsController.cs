@@ -29,6 +29,7 @@ namespace UpDiddy.Controllers
         private IApi _api;
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
+        private readonly int _activeJobCount = 0;
 
         public JobsController(IApi api,
         IConfiguration configuration,
@@ -38,11 +39,14 @@ namespace UpDiddy.Controllers
             _api = api;
             _env = env;
             _configuration = configuration;
+            int.TryParse(_api.GetActiveJobCountAsync().Result.Description, out _activeJobCount);
         }
 
         [HttpGet("[controller]")]
         public async Task<IActionResult> Index()
         {
+            ViewBag.ActiveJobCount = _activeJobCount;
+
             //get pageCount from Configuration file
             int pageCount = _configuration.GetValue<int>("Pagination:PageCount");
 

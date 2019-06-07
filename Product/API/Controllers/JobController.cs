@@ -418,6 +418,14 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
+        [Route("api/[controller]/active-job-count")]
+        public async Task<IActionResult> GetActiveJobCount()
+        {
+            var allJobPostings = await _repositoryWrapper.JobPosting.GetAllAsync();
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = allJobPostings.Where(jp => jp.IsDeleted == 0).Count().ToString() });
+        }
+
+        [HttpGet]
         [Route("api/sitemap/[controller]/")]
         public IActionResult GetAllJobsForSitemap()
         {
