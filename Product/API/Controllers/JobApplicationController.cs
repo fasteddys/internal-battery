@@ -34,6 +34,7 @@ using UpDiddyLib.Helpers;
 using System.Dynamic;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using SendGrid.Helpers.Mail;
+using Microsoft.Extensions.Configuration;
 
 namespace UpDiddyApi.Controllers
 {
@@ -282,7 +283,47 @@ namespace UpDiddyApi.Controllers
                         }
                     }
                 ));
-             
+
+                var VipEmails = _configuration.GetSection("SysEmail:VIPEmails").GetChildren();
+
+                foreach(IConfigurationSection Child in VipEmails)
+                {
+                    string VipEmail = Child.Value;
+                    BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
+                    (VipEmail,
+                    _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter"],
+                    new
+                    {
+                        ApplicantName = jobApplicationDto.Subscriber.FirstName + " " + jobApplicationDto.Subscriber.LastName,
+                        ApplicantFirstName = jobApplicationDto.Subscriber.FirstName,
+                        ApplicantLastName = jobApplicationDto.Subscriber.LastName,
+                        ApplicantEmail = subscriber.Email,
+                        JobTitle = jobPosting.Title,
+                        ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration, subscriber.SubscriberGuid.Value),
+                        JobUrl = JobPostingFactory.JobPostingFullyQualifiedUrl(_configuration, jobPostingDto),
+                        Subject = (IsExternalRecruiter == true ? $"{jobPosting.Company.CompanyName} job posting via CareerCircle" : "Applicant Alert"),
+                        RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
+                        JobApplicationGuid = jobApplication.JobApplicationGuid
+                    },
+                    Constants.SendGridAccount.Transactional,
+                    null,
+                    new List<Attachment>
+                    {
+                        new Attachment
+                        {
+                            Content = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream)),
+                            Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName)
+                        },
+                        new Attachment
+                        {
+                            Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jobApplicationDto.CoverLetter)),
+                            Filename = "CoverLetter.txt"
+                        }
+                    }
+                ));
+
+                }
+
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPosting.JobPostingGuid}" });
             }
