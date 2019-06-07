@@ -620,8 +620,8 @@ namespace UpDiddy.Controllers
                     break;
                 case "browse-jobs-industry":
                     UriOrder.Add("browse-jobs-industry");
-                    UriOrder.Add("jobcategory");
                     UriOrder.Add("industry");
+                    UriOrder.Add("jobcategory");
                     UriOrder.Add("country");
                     UriOrder.Add("state");
                     UriOrder.Add("city");
@@ -629,8 +629,8 @@ namespace UpDiddy.Controllers
                     break;
                 case "browse-jobs-category":
                     UriOrder.Add("browse-jobs-category");
-                    UriOrder.Add("industry");
                     UriOrder.Add("jobcategory");
+                    UriOrder.Add("industry");
                     UriOrder.Add("country");
                     UriOrder.Add("state");
                     UriOrder.Add("city");
