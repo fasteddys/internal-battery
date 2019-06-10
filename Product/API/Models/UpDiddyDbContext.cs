@@ -163,8 +163,8 @@ namespace UpDiddyApi.Models
         public DbSet<JobPageStatus> JobPageStatus { get; set; }
         public DbSet<JobSiteScrapeStatistic> JobSiteScrapeStatistic { get; set; }
         public DbSet<ZeroBounce> ZeroBounce { get; set; }
-
         public DbSet<JobReferral> JobReferral { get; set; }
+        public DbSet<SubscriberNotes> SubscriberNotes { get; set; }
 
         #region DBQueries
 
@@ -389,6 +389,17 @@ namespace UpDiddyApi.Models
                .WithMany()
                .HasForeignKey(jr => jr.RefereeId)
                .IsRequired(false);
+
+            modelBuilder.Entity<SubscriberNotes>()
+              .HasOne<Subscriber>()
+              .WithMany()
+              .HasForeignKey(sn => sn.SubscriberId);
+
+            modelBuilder.Entity<SubscriberNotes>()
+                .HasOne<Recruiter>()
+                .WithMany()
+                .HasForeignKey(sn => sn.RecruiterId);
+               
         }
     }
 }

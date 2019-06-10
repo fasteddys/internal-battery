@@ -34,6 +34,7 @@ using UpDiddyLib.Helpers;
 using System.Dynamic;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using SendGrid.Helpers.Mail;
+using Microsoft.Extensions.Configuration;
 
 namespace UpDiddyApi.Controllers
 {
@@ -249,40 +250,57 @@ namespace UpDiddyApi.Controllers
                 // Create a jobposting dto needed for the fully qualified job posting url in the recuriter email
                 JobPostingDto jobPostingDto = _mapper.Map<JobPostingDto>(jobPosting);
                 // Send recruiter email alerting them to application
-                BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
-                    (RecruiterEmailToUse,
-                    _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter" +
-                        (IsExternalRecruiter == true ? "-External" : string.Empty)],
-                    new
-                    {
-                        ApplicantName = jobApplicationDto.Subscriber.FirstName + " " + jobApplicationDto.Subscriber.LastName,
-                        ApplicantFirstName = jobApplicationDto.Subscriber.FirstName,
-                        ApplicantLastName = jobApplicationDto.Subscriber.LastName,
-                        ApplicantEmail = subscriber.Email,
-                        JobTitle = jobPosting.Title,
-                        ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration, subscriber.SubscriberGuid.Value),
-                        JobUrl = JobPostingFactory.JobPostingFullyQualifiedUrl(_configuration, jobPostingDto),
-                        Subject = (IsExternalRecruiter == true ? $"{jobPosting.Company.CompanyName} job posting via CareerCircle" : "Applicant Alert"),
-                        RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
-                        JobApplicationGuid = jobApplication.JobApplicationGuid
-                    },
-                    Constants.SendGridAccount.Transactional,
-                    null,
-                    new List<Attachment>
-                    {
-                        new Attachment
+
+                Dictionary<string, bool> EmailAddressesToSend = new Dictionary<string, bool>();
+                EmailAddressesToSend.Add(RecruiterEmailToUse, IsExternalRecruiter);
+                var VipEmails = _configuration.GetSection("SysEmail:VIPEmails").GetChildren();
+
+                // Ensure all VIPs get the internal email template
+                foreach (IConfigurationSection Child in VipEmails)
+                {
+                    string VipEmail = Child.Value;
+                    EmailAddressesToSend.Add(VipEmail, false);
+                }
+
+                foreach (string Email in EmailAddressesToSend.Keys)
+                {
+                    BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
+                    (
+                        Email,
+                        _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter" +
+                            (EmailAddressesToSend[Email] == true ? "-External" : string.Empty)],
+                        new
                         {
-                            Content = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream)),
-                            Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName)
+                            ApplicantName = jobApplicationDto.Subscriber.FirstName + " " + jobApplicationDto.Subscriber.LastName,
+                            ApplicantFirstName = jobApplicationDto.Subscriber.FirstName,
+                            ApplicantLastName = jobApplicationDto.Subscriber.LastName,
+                            ApplicantEmail = subscriber.Email,
+                            JobTitle = jobPosting.Title,
+                            ApplicantUrl = SubscriberFactory.JobseekerUrl(_configuration, subscriber.SubscriberGuid.Value),
+                            JobUrl = JobPostingFactory.JobPostingFullyQualifiedUrl(_configuration, jobPostingDto),
+                            Subject = (IsExternalRecruiter == true ? $"{jobPosting.Company.CompanyName} job posting via CareerCircle" : "Applicant Alert"),
+                            RecruiterGuid = jobPosting.Recruiter.RecruiterGuid,
+                            JobApplicationGuid = jobApplication.JobApplicationGuid
                         },
-                        new Attachment
+                        Constants.SendGridAccount.Transactional,
+                        null,
+                        new List<Attachment>
                         {
-                            Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jobApplicationDto.CoverLetter)),
-                            Filename = "CoverLetter.txt"
+                            new Attachment
+                            {
+                                Content = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream)),
+                                Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName)
+                            },
+                            new Attachment
+                            {
+                                Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jobApplicationDto.CoverLetter)),
+                                Filename = "CoverLetter.txt"
+                            }
                         }
-                    }
-                ));
-             
+                    ));
+                }
+                
+
                 _syslog.Log(LogLevel.Information, $"***** JobApplicationController:CreateJobApplication completed at: {DateTime.UtcNow.ToLongDateString()}");
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPosting.JobPostingGuid}" });
             }
