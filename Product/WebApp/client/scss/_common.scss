@@ -121,6 +121,13 @@ a {
     border: 0;
 }
 
+.f-0_75rem {
+
+    @media (min-width: 0px) {
+        font-size: .75rem;
+    }
+}
+
 .f-1rem {
 
     @media (min-width: 0px) {

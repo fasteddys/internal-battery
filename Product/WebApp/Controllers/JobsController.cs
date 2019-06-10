@@ -66,12 +66,29 @@ namespace UpDiddy.Controllers
 
             string Keywords = Request.Query["keywords"];
             string Location = Request.Query["location"];
+            string Province = Request.Query["province"];
+            string City = Request.Query["city"];
 
             if (Keywords != null)
                 Keywords = Keywords.Trim();
 
             if (Location != null)
                 Location = Location.Trim();
+
+            if (Province != null)
+                Province = Province.Trim();
+
+            if (City != null)
+                City = City.Trim();
+
+            // If no location parameter is supplied, but city and/or state is, prefill location
+            // input box with city and/or state.
+            if(string.IsNullOrEmpty(Location) && (!string.IsNullOrEmpty(Province) || !string.IsNullOrEmpty(City)))
+            {
+                Location = (string.IsNullOrEmpty(City) ? string.Empty : City) +
+                    ((!string.IsNullOrEmpty(City) && !string.IsNullOrEmpty(Province)) ? ", " : string.Empty) +
+                    (string.IsNullOrEmpty(Province) ? string.Empty : Province);
+            }
 
 
             ViewBag.QueryUrl = Request.Path + queryParametersString;
@@ -222,6 +239,20 @@ namespace UpDiddy.Controllers
                     jobFavoriteGuid = favorite.First().Value;
             }
 
+            List<Guid> SimilarJobsFavoritesGuids = new List<Guid>();
+            foreach (JobViewDto JobViewDto in job.SimilarJobs.Jobs)
+            {
+                SimilarJobsFavoritesGuids.Add(JobViewDto.JobPostingGuid);
+            }
+
+            Dictionary<Guid, Guid> SimilarJobsFavorites = new Dictionary<Guid, Guid>();
+            if (User.Identity.IsAuthenticated)
+            {
+                SimilarJobsFavorites = await _api.JobFavoritesByJobGuidAsync(SimilarJobsFavoritesGuids);
+            }
+             
+
+
 
             JobViewDto JobToBeRemoved = null;
 
@@ -257,7 +288,8 @@ namespace UpDiddy.Controllers
                 MetaKeywords = job.MetaKeywords,
                 SimilarJobsSearchResult = job.SimilarJobs,
                 City = job.City,
-                Province = job.Province
+                Province = job.Province,
+                SimilarJobsFavorites = SimilarJobsFavorites
             };
 
             // Display subscriber info if it exists
