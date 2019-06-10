@@ -27,6 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IJobReferralRepository _jobReferralRepository;
         private ISubscriberNotesRepository _subscriberNotesRepository;
         private IRecruiterRepository _recruiterRepository;
+        private INotificationRepository _notificationRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -248,6 +249,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _recruiterRepository = new RecruiterRepository(_dbContext);
                 }
                 return _recruiterRepository;
+            }
+        }
+
+        public INotificationRepository NotificationRepository
+        {
+            get
+            {
+                if (_notificationRepository == null)
+                {
+                    _notificationRepository = new NotificationRepository(_dbContext);
+                }
+                return _notificationRepository;
             }
         }
     }
