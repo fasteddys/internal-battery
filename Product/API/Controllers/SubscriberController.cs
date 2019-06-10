@@ -1077,6 +1077,8 @@ namespace UpDiddyApi.Controllers
             {
                 if(ModelState.IsValid)
                 {
+                    //get user logged in who is by default recruiter
+                    subscriberNotes.RecruiterGuid= Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                     await _subscriberService.SaveSubscriberNotesAsync(subscriberNotes);
                     return Ok(new BasicResponseDto { StatusCode = 200, Description = "Saved Successfully." });
                 }
@@ -1096,8 +1098,11 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet("/api/[controller]/notes")]
         [Authorize(Policy = "IsRecruiterPolicy")]
-        public async Task<IActionResult> SearchSubscriberNotes(string subscriberGuid, string recruiterGuid, string searchQuery = null)
+        public async Task<IActionResult> SearchSubscriberNotes(string subscriberGuid, string searchQuery = null)
         {
+            //get user logged in who is by default recruiter
+            var recruiterGuid = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
             var subscriberNotesList=await _subscriberService.GetSubscriberNotesBySubscriberGuid(subscriberGuid, recruiterGuid, searchQuery);
             return Ok(subscriberNotesList);
         }

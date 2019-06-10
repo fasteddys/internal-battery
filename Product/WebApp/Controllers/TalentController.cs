@@ -345,10 +345,16 @@ namespace UpDiddy.Controllers
 
         [Authorize(Policy = "IsRecruiterPolicy")]
         [HttpGet]
-        public async Task<PartialViewResult> SubscriberNotesGrid(string subscriberGuid, string recruiterGuid, string searchQuery)
+        public async Task<PartialViewResult> SubscriberNotesGrid(string subscriberGuid, string searchQuery)
         {
-            var res= await _Api.SubscriberNotesSearch(subscriberGuid, recruiterGuid,searchQuery);
-            return PartialView("_SubscriberNotesGrid",res);
+            IList<SubscriberNotesDto> response;
+            if(ModelState.IsValid)
+            {
+                response = await _Api.SubscriberNotesSearch(subscriberGuid, searchQuery);
+                return PartialView("_SubscriberNotesGrid", response);
+            }
+
+            return PartialView(BadRequest(404));
         }
 
         [Authorize(Policy = "IsRecruiterPolicy")]

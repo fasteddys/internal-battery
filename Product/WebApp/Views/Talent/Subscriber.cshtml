@@ -55,8 +55,7 @@
             <div class="row">
                 <div class="col-12">
                     <button type="button" class="btn btn-primary addNote" data-toggle="modal" data-target="#addNoteModal"
-                            data-subscribernotesguid="@Guid.NewGuid()" data-subscriberguid="@Model.SubscriberGuid"
-                            data-recruiterguid="@Guid.Parse(ViewContext.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value)">
+                            data-subscribernotesguid="@Guid.NewGuid()" data-subscriberguid="@Model.SubscriberGuid">
                         Add Note
                     </button>
                 </div>
@@ -293,16 +292,24 @@
                 <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
                     <div class="container p-1">
                         <div class="container-align-right">
-                            <div class="row">
-                                <div class="col-12">
-                                    @Html.AjaxGrid(Url.Action("SubscriberNotesGrid", "Talent",
-                                   new
-                                   {
-                                       subscriberGuid = Model.SubscriberGuid,
-                                       recruiterGuid = Guid.Parse(ViewContext.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value)
-                                   }))
-                                </div>
-                            </div>
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <input type="text" class="form-control" id="txtNotesCreateDate" placeholder="Created Date" autocomplete="off">
+                                        </div>
+                                        <div class="col-3">
+                                            <button id="searchNotes" type="submit" class="btn btn-primary" data-subscriberguid="@Model.SubscriberGuid">Search</button>
+                                        </div>
+                                    </div>                                
+                                <div class="row">
+                                    <div class="col-12">
+                                        @Html.AjaxGrid(Url.Action("SubscriberNotesGrid", "Talent",
+                                       new
+                                       {
+                                           subscriberGuid = Model.SubscriberGuid,
+                                           searchQuery=""
+                                       }))
+                                    </div>
+                                </div>                            
                         </div>
                     </div>
                 </div>
@@ -341,17 +348,29 @@
                 var button = $(event.relatedTarget);
                 var subscriberNotesGuid = button.data('subscribernotesguid');
                 var subscriberGuid = button.data('subscriberguid');
-                var recruiterGuid = button.data('recruiterguid');
                 var notes = button.data('notes');
                 var isPublic = button.data('ispublic');
 
                 var modal = $(this);
                 modal.find('#subscriberNotesGuid').val(subscriberNotesGuid);
                 modal.find('#subscriberGuid').val(subscriberGuid);
-                modal.find('#recruiterGuid').val(recruiterGuid);
                 modal.find('#notesArea').val(notes);
-                modal.find('#IsPublic').prop('checked', isPublic);
+                modal.find('#IsPublic').checked= isPublic;
             });
+
+            //search Notes on selection of date
+            $('#searchNotes').click(function (e) {
+                e.preventDefault();
+
+                //refresh grid
+                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+
+                var searchQuery = $('#txtNotesCreateDate').val();
+
+                grid.query.set('searchQuery', searchQuery);
+                grid.reload();
+
+            })
 
             //save notes
             $('#saveNotes').click(function (e) {
@@ -377,7 +396,6 @@
                         data: JSON.stringify({
                             subscriberNotesGuid: $('#subscriberNotesGuid').val(),
                             subscriberGuid: $('#subscriberGuid').val(),
-                            recruiterGuid: $('#recruiterGuid').val(),
                             notes: $('#notesArea').val(),
                             isPublic: $('#IsPublic').is(":checked")
                         }),
@@ -391,13 +409,9 @@
 
                                     //refresh grid
                                     var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-                                    //var search = document.getElementById('GridSearch').value;
-                                    var searchAndFilter = {
-                                        subscriberGuid: $('#subscriberGuid').val(),
-                                        recruiterGuid: $('#recruiterGuid').val()
-                                    };
-                                    // combining the filter and search because of a limitation with the mvc grid
-                                    grid.query.set('searchAndFilter', JSON.stringify(searchAndFilter));
+                                    var searchQuery = $('#txtNotesCreateDate').val();
+
+                                    grid.query.set('searchQuery', searchQuery);
                                     grid.reload();
                                 }
                                 else {
@@ -415,12 +429,15 @@
                 }
 
             })
+
+            $('#txtNotesCreateDate').datepicker({
+                autoclose: true,
+                clearBtn: true
+            });
         });
 
         //delete notes
-        function deleteSubscriberNote(subscriberNotesGuid,subscriberGuid,recruiterGuid) {
-
-
+        function deleteSubscriberNote(subscriberNotesGuid) {
             bootbox.confirm({
                 message: "Are you sure you want to delete this Note?",
                 buttons: {
@@ -444,13 +461,9 @@
 
                                     //refresh grid
                                     var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-                                    //var search = document.getElementById('GridSearch').value;
-                                    var searchAndFilter = {
-                                        subscriberGuid: subscriberGuid,
-                                        recruiterGuid: recruiterGuid
-                                    };
-                                    // combining the filter and search because of a limitation with the mvc grid
-                                    grid.query.set('searchAndFilter', JSON.stringify(searchAndFilter));
+                                    var searchQuery = $('#txtNotesCreateDate').val();
+
+                                    grid.query.set('searchQuery', searchQuery);
                                     grid.reload();
                                 } else {
                                     ToastService.warning("The Note was not deleted successfully", "Something went wrong");
@@ -466,10 +479,4 @@
         }
     </script>
 }
-
-<style>
-    .list - grid {
-        font-size: 12px;
-    }
-</style>
 

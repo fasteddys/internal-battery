@@ -20,6 +20,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 using AutoMapper;
+using System.Security.Claims;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -339,41 +340,57 @@ namespace UpDiddyApi.ApplicationCore.Services
             var recruiterData = await _repository.Subscriber.GetSubscriberByGuidAsync(rGuid);
             var rec = await _repository.RecruiterRepository.GetRecruiterBySubscriberId(recruiterData.SubscriberId);
 
-            //get notes for subscriber that are private and visible to current logged in recruiter
-            var recruiterPrivateNotes = await (from subscriberNote in await _repository.SubscriberNotesRepository.GetAllAsync()
-                                                join recruiter in await _repository.RecruiterRepository.GetAllAsync() on subscriberNote.RecruiterId equals recruiter.RecruiterId
-                                                join subscriber in await _repository.SubscriberRepository.GetAllAsync() on recruiter.SubscriberId equals subscriber.SubscriberId
-                                                where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && subscriberNote.RecruiterId.Equals(rec.RecruiterId) && subscriberNote.IsPublic.Equals(false)
-                                               select new SubscriberNotesDto()
-                                                {
-                                                    IsPublic = subscriberNote.IsPublic,
-                                                    Notes = subscriberNote.Notes,
-                                                    SubscriberNotesGuid = subscriberNote.SubscriberNotesGuid,
-                                                    RecruiterGuid = (Guid)subscriber.SubscriberGuid,
-                                                    SubscriberGuid = (Guid)subscriberData.SubscriberGuid,
-                                                    CreateDate= subscriberNote.CreateDate,
-                                                    ModifiedDate= (DateTime)subscriberNote.ModifyDate
-                                                }).ToListAsync();
+            List<SubscriberNotesDto> recruiterPrivateNotes;
+            List<SubscriberNotesDto> subscriberPublicNotes;
 
-            subscriberNotesDtoList.AddRange(recruiterPrivateNotes);
+            //get notes for subscriber that are private and visible to current logged in recruiter
+            var recruiterPrivateNotesQueryable = from subscriberNote in await _repository.SubscriberNotesRepository.GetAllAsync()
+                                                    join recruiter in await _repository.RecruiterRepository.GetAllAsync() on subscriberNote.RecruiterId equals recruiter.RecruiterId
+                                                    join subscriber in await _repository.SubscriberRepository.GetAllAsync() on recruiter.SubscriberId equals subscriber.SubscriberId
+                                                    where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && subscriberNote.RecruiterId.Equals(rec.RecruiterId) && subscriberNote.IsPublic.Equals(false)
+                                                   select new SubscriberNotesDto()
+                                                    {
+                                                        IsPublic = subscriberNote.IsPublic,
+                                                        Notes = subscriberNote.Notes,
+                                                        SubscriberNotesGuid = subscriberNote.SubscriberNotesGuid,
+                                                        RecruiterGuid = (Guid)subscriber.SubscriberGuid,
+                                                        SubscriberGuid = (Guid)subscriberData.SubscriberGuid,
+                                                        CreateDate= subscriberNote.CreateDate,
+                                                        ModifiedDate= (DateTime)subscriberNote.ModifyDate
+                                                    };
+
+            
 
             //get notes for subscriber that are public and visible to recruiters of current logged in recruiter company
-            var subscriberPublicNotes = await (from subscriberNote in await _repository.SubscriberNotesRepository.GetAllAsync()
-                                               join recruiter in await _repository.RecruiterRepository.GetAllAsync() on subscriberNote.RecruiterId equals recruiter.RecruiterId
-                                               join company in await _repository.Company.GetAllCompanies() on recruiter.CompanyId equals company.CompanyId
-                                               join subscriber in await _repository.SubscriberRepository.GetAllAsync() on recruiter.SubscriberId equals subscriber.SubscriberId
-                                               where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && recruiter.CompanyId.Equals(rec.CompanyId) && subscriberNote.IsPublic.Equals(true)
-                                               select new SubscriberNotesDto()
-                                               {
-                                                   IsPublic = subscriberNote.IsPublic,
-                                                   Notes = subscriberNote.Notes,
-                                                   SubscriberNotesGuid = subscriberNote.SubscriberNotesGuid,
-                                                   RecruiterGuid = (Guid)subscriber.SubscriberGuid,
-                                                   SubscriberGuid = (Guid)subscriberData.SubscriberGuid,
-                                                   CreateDate = subscriberNote.CreateDate,
-                                                   ModifiedDate = (DateTime)subscriberNote.ModifyDate
-                                               }).ToListAsync();
+            var subscriberPublicNotesQueryable = from subscriberNote in await _repository.SubscriberNotesRepository.GetAllAsync()
+                                                   join recruiter in await _repository.RecruiterRepository.GetAllAsync() on subscriberNote.RecruiterId equals recruiter.RecruiterId
+                                                   join company in await _repository.Company.GetAllCompanies() on recruiter.CompanyId equals company.CompanyId
+                                                   join subscriber in await _repository.SubscriberRepository.GetAllAsync() on recruiter.SubscriberId equals subscriber.SubscriberId
+                                                   where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && recruiter.CompanyId.Equals(rec.CompanyId) && subscriberNote.IsPublic.Equals(true)
+                                                   select new SubscriberNotesDto()
+                                                   {
+                                                       IsPublic = subscriberNote.IsPublic,
+                                                       Notes = subscriberNote.Notes,
+                                                       SubscriberNotesGuid = subscriberNote.SubscriberNotesGuid,
+                                                       RecruiterGuid = (Guid)subscriber.SubscriberGuid,
+                                                       SubscriberGuid = (Guid)subscriberData.SubscriberGuid,
+                                                       CreateDate = subscriberNote.CreateDate,
+                                                       ModifiedDate = (DateTime)subscriberNote.ModifyDate
+                                                   };
 
+            if (!string.IsNullOrEmpty(searchquery))
+            {
+                recruiterPrivateNotes = await recruiterPrivateNotesQueryable.Where(pn => pn.CreateDate.Date == DateTime.Parse(searchquery).Date).ToListAsync();
+                subscriberPublicNotes = await subscriberPublicNotesQueryable.Where(pn => pn.CreateDate.Date == DateTime.Parse(searchquery).Date).ToListAsync();
+            }
+            else
+            {
+                recruiterPrivateNotes = await recruiterPrivateNotesQueryable.ToListAsync();
+                subscriberPublicNotes = await subscriberPublicNotesQueryable.ToListAsync();
+            }
+
+
+            subscriberNotesDtoList.AddRange(recruiterPrivateNotes);
             subscriberNotesDtoList.AddRange(subscriberPublicNotes);
 
             return subscriberNotesDtoList.OrderByDescending(sn=>sn.CreateDate).ToList();
