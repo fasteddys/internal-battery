@@ -165,6 +165,8 @@ namespace UpDiddyApi.Models
         public DbSet<ZeroBounce> ZeroBounce { get; set; }
         public DbSet<JobReferral> JobReferral { get; set; }
         public DbSet<SubscriberNotes> SubscriberNotes { get; set; }
+        public DbSet<Notification> Notification { get; set; }
+        public DbSet<SubscriberNotification> SubscriberNotification { get; set; }
 
         #region DBQueries
 
