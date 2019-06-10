@@ -12,10 +12,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
   
     public class ResumeParseRepository : UpDiddyRepositoryBase<ResumeParse>, IResumeParseRepository
     {
-      
+
+        UpDiddyDbContext _db = null;
         public ResumeParseRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
- 
+            _db = dbContext;
         }
 
         public async Task<ResumeParse> CreateResumeParse(int subscriberId, int subscriberFileId)
@@ -42,6 +43,36 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<bool> SaveResumeParse()
         {
             await SaveAsync();
+            return true;
+        }
+
+        public async Task <IList<ResumeParse>> GetResumeParseForSubscriber(int subscriberId)
+        {
+            var parses = _db.ResumeParse
+                .Where(rp => rp.IsDeleted == 0 && rp.SubscriberId == subscriberId)
+                .OrderByDescending(rp => rp.CreateDate)
+                .ToList();
+
+            return parses;
+        }
+
+        public async Task<ResumeParse> GetLatestResumeParseForSubscriber(int subscriberId)
+        {
+            return _db.ResumeParse
+                .Where(rp => rp.IsDeleted == 0 && rp.SubscriberId == subscriberId)
+                .OrderByDescending(rp => rp.CreateDate)
+                .FirstOrDefault();
+        }
+
+
+        public async Task<bool> DeleteAllResumeParseForSubscriber(int subscriberId)
+        {
+            var parses = await GetResumeParseForSubscriber(subscriberId);
+            foreach (ResumeParse rp in parses)
+                rp.IsDeleted = 1;
+
+            await SaveAsync();
+
             return true;
         }
 

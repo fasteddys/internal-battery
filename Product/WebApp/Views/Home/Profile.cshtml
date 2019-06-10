@@ -8,8 +8,13 @@
 @section Scripts
     {
 
-    <script src="~/js/modules/career-circle-signalr.js"></script>
-    <script type="text/javascript">
+ 
+
+
+
+
+<script src="~/js/modules/career-circle-signalr.js"></script>
+<script type="text/javascript">
         // this must be present for the API call used in site.js
         var url = '@Url.Action("GetStatesByCountry", "Home")';
         var subscriberSkills = @Json.Serialize(Model.Skills);
@@ -192,32 +197,36 @@
 
         function ResumeParseComplete(message)
         {
-
            var obj = JSON.parse(message);
-           var evt = new CustomEvent('onResumeMerge', { detail: obj });
+           var evt = new CustomEvent('onResumeMergeNeeded', { detail: obj });
            window.dispatchEvent(evt);
-
-            //alert("SignalR called back!" + obj.resumeParseGuid);
-
         };
 
+
+        function DelegateParseMerge(e)
+        {
+            var evt1 = new CustomEvent('onDoParseMerge', { detail: e.detail });
+            window.dispatchEvent(evt1)         
+        }
 
 
         $(document).ready(function () {
             resumeUpload.init();
             emailVerification.init();
-         //  CareerCircleSignalR.connect($("#hdnSubscriberGuid").val()).then(function (result) {
-           CareerCircleSignalR.connect("71A7156E-173F-4054-83ED-AD6127BAFE87").then(function (result) {
+            CareerCircleSignalR.connect("71A7156E-173F-4054-83ED-AD6127BAFE87").then(function (result) {
                CareerCircleSignalR.listen("ResumeUpLoadAndParseVerb", ResumeParseComplete);
-           });
+            });
 
- 
+
+            window.addEventListener('onDelegateParseMerge', DelegateParseMerge);
+
+
 
         });
 
-    </script>
-    <script src="~/js/modules/selectize-handling.js" asp-append-version="true"></script>
-    <script src="~/js/modules/profile.js" asp-append-version="true"></script>
+</script>
+<script src="~/js/modules/selectize-handling.js" asp-append-version="true"></script>
+<script src="~/js/modules/profile.js" asp-append-version="true"></script>
 }
 
 @* Modals for editing *@
@@ -303,7 +312,7 @@
                 <div class="row">
                     <div class="col-md">
                         <div class="mt-3">
-                            @Html.React("ResumeUpload", new { fileGuid = Model.Resume?.SubscriberFileGuid, fileName = Model.Resume?.SimpleName })
+                            @Html.React("ResumeUpload", new { fileGuid = Model.Resume?.SubscriberFileGuid, fileName = Model.Resume?.SimpleName, resumeParseGuid = Model.ResumeParseGuid == Guid.Empty ? string.Empty : Model.ResumeParseGuid.ToString() })
                         </div>
                     </div>
                 </div>
@@ -459,3 +468,7 @@
         </div>
     </div>
 </div>
+@Html.React("ResumeMerge", new { name = "jim" })
+
+
+

@@ -10,16 +10,22 @@ class ResumeUpload extends React.Component {
     constructor(props) {
         super(props)
         this.fileInput = React.createRef();
+        let mergeFlag = false;
+        if (props.resumeParseGuid != "")
+            mergeFlag = true;
+
         this.state = {
             fileName: props.fileName,
             fileGuid: props.fileGuid,
             processing: false,
             mode: props.fileGuid ?  this.modeType.view : this.modeType.upload,
             selectedFile: null,
-            resumeParseGuid: null,
-            requiresMerge: false
+            resumeParseGuid: props.resumeParseGuid,
+            requiresMerge: mergeFlag
+
         };
-       this.onResumeMerge = this.onResumeMerge.bind(this);
+        this.onResumeMergeNeeded = this.onResumeMergeNeeded.bind(this);
+
     }
 
     onFileSelect(files) {
@@ -31,22 +37,19 @@ class ResumeUpload extends React.Component {
     }
 
 
-    onResumeMerge(e) {  
-        
+    onResumeMergeNeeded(e) {          
         this.setState({ resumeParseGuid: e.detail.resumeParseGuid });
-        this.setState({ requiresMerge: e.detail.requiresMerge });
-        this.changeMode(this.modeType.parseMerge);             
+        this.setState({ requiresMerge: e.detail.requiresMerge });            
     }
 
-    doParseMerge() {
-        alert(this.state.resumeParseGuid);
+    delegateParseMerge() {    
+        var evt = new CustomEvent('onDelegateParseMerge', { detail: this.state.resumeParseGuid });
+        window.dispatchEvent(evt);
     }
-
-
 
     componentDidMount()
     {
-        window.addEventListener('onResumeMerge', this.onResumeMerge);
+        window.addEventListener('onResumeMergeNeeded', this.onResumeMergeNeeded);
     }
 
     changeMode(mode){
@@ -101,27 +104,28 @@ class ResumeUpload extends React.Component {
     }
 
     viewMode() {
+
+        if ( this.state.requiresMerge == true )
         return (
             <div>
                 <a className="text-primary download-link pr-1" href={`/Home/DownloadFile?fileGuid=${this.state.fileGuid}`} target="_blank"><i className="fas fa-download" title="Download"></i> { this.state.fileName }</a>
                 <button type="button" className="btn btn-text text-primary edit px-2" onClick={() => this.changeMode(this.modeType.upload)}><i className="fas fa-edit text-light-blue" title="Edit"></i></button>
                 <button type="button" className="btn btn-text text-primary delete px-2" onClick={() => this.deleteResume()}><i className="fas fa-minus-circle text-light-blue" title="Delete"></i> {this.spinner()}</button>
+                <button type="button" className="btn btn-text text-primary edit px-2" onClick={() => this.delegateParseMerge()}><i className="fas fa-exclamation text-warning" title="Your profile requires merging"></i></button>
+            </div>
+            )
+        else 
+            return (
+                <div>
+                    <a className="text-primary download-link pr-1" href={`/Home/DownloadFile?fileGuid=${this.state.fileGuid}`} target="_blank"><i className="fas fa-download" title="Download"></i> {this.state.fileName}</a>
+                    <button type="button" className="btn btn-text text-primary edit px-2" onClick={() => this.changeMode(this.modeType.upload)}><i className="fas fa-edit text-light-blue" title="Edit"></i></button>
+                    <button type="button" className="btn btn-text text-primary delete px-2" onClick={() => this.deleteResume()}><i className="fas fa-minus-circle text-light-blue" title="Delete"></i> {this.spinner()}</button>
+
+                </div>
+            )
+    }
+
  
-            </div>
-        );
-    }
-
-    parseMergeMode() {
-        return (
-            <div>
-                <a className="text-primary download-link pr-1" href={`/Home/DownloadFile?fileGuid=${this.state.fileGuid}`} target="_blank"><i className="fas fa-download" title="Download"></i> {this.state.fileName}</a>
-                <button type="button" className="btn btn-text text-primary edit px-2" onClick={() => this.changeMode(this.modeType.upload)}><i className="fas fa-edit text-light-blue" title="Edit"></i></button>
-                <button type="button" className="btn btn-text text-primary delete px-2" onClick={() => this.deleteResume()}><i className="fas fa-minus-circle text-light-blue" title="Delete"></i> {this.spinner()}</button>
-
-                <button type="button" className="btn btn-text text-primary edit px-2" onClick={() => this.doParseMerge()}><i className="fas fa-exclamation text-warning" title="Your profile requires merging"></i></button>
-            </div>
-        );
-    }
 
     uploadMode() {
         let cancelBtn;

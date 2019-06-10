@@ -20,6 +20,9 @@ namespace UpDiddy.Api
         Task<IList<CourseDto>> CoursesAsync();
         Task<IList<CountryDto>> GetCountriesAsync();
         Task<IList<StateDto>> GetStatesByCountryAsync(Guid? countryGuid);
+
+        Task<ResumeParseDto> GetResumeParseForSubscriber(Guid subscriberGuid);
+
         Task<IList<StateDto>> GetAllStatesAsync();
         Task<IList<IndustryDto>> GetIndustryAsync();
         Task<IList<JobCategoryDto>> GetJobCategoryAsync();

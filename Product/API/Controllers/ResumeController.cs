@@ -16,6 +16,8 @@ using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using AutoMapper;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Factory;
 
 namespace UpDiddyApi.Controllers
 {
@@ -26,13 +28,15 @@ namespace UpDiddyApi.Controllers
         private ISubscriberService _subscriberService;
         private IMapper _mapper;
         protected internal ILogger _syslog = null;
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
-        public ResumeController(UpDiddyDbContext db, ISubscriberService subscriberService, IMapper mapper, ILogger<ResumeController> sysLog)
+        public ResumeController(UpDiddyDbContext db, ISubscriberService subscriberService, IMapper mapper, ILogger<ResumeController> sysLog, IRepositoryWrapper repositoryWrapper)
         {
             this._db = db;
             this._syslog = sysLog;
             this._subscriberService = subscriberService;
             this._mapper = mapper;
+            this._repositoryWrapper = repositoryWrapper;
         }
 
         /// <summary>
@@ -43,7 +47,7 @@ namespace UpDiddyApi.Controllers
         /// <returns></returns>
         [Authorize]
         [HttpPost]
-        [Route("upload")]        
+        [Route("upload")]
         public async Task<IActionResult> Upload(IFormFile resume, bool parseResume = false)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -55,7 +59,7 @@ namespace UpDiddyApi.Controllers
                 .FirstOrDefault();
 
             if (subscriber == null)
-                return NotFound(new BasicResponseDto{ StatusCode = 404, Description = "Subscriber not found in the system." });
+                return NotFound(new BasicResponseDto { StatusCode = 404, Description = "Subscriber not found in the system." });
 
             await _subscriberService.AddResumeAsync(subscriber, resume.FileName, resume.OpenReadStream(), parseResume);
 
@@ -72,5 +76,44 @@ namespace UpDiddyApi.Controllers
             await _subscriberService.QueueScanResumeJobAsync(subscriberGuid);
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Success!" });
         }
+
+
+
+        [Authorize]
+        [HttpGet]
+        [Route("merge-info/{parseMergeGuid}")]
+        public async Task<IActionResult> MergeInfo(Guid parseMergeGuid)
+        {
+
+            return Ok("Start Here!");
+
+        }
+
+
+        [Authorize]
+        [HttpGet]
+        [Route("resume-parse/{subscriberGuid}")]
+        public async Task<IActionResult> ResumeParse(Guid guid)
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            if (subscriberGuid != subscriberGuid)
+                return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Rquester does not own resume parse" });
+
+
+            Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
+            if (subscriber == null)
+            {
+                return NotFound(new { code = 404, message = $"Subscriber {subscriberGuid} not found" });
+            }
+
+            ResumeParse resumeParse = await _repositoryWrapper.ResumeParseRepository.GetLatestResumeParseForSubscriber(subscriber.SubscriberId);
+            if ( resumeParse != null )
+                return Ok( _mapper.Map<ResumeParseDto>(resumeParse) );
+
+            return NotFound(new { code = 404, message = $"Subscriber {subscriberGuid} not found" });
+        }
+
+
     }
 }

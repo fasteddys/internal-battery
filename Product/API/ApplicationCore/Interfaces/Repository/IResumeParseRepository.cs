@@ -11,5 +11,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<ResumeParse> GetResumeParseByGuid(Guid resumeParseGuid);
         Task<ResumeParse> CreateResumeParse(int subscriberId, int subscriberFileId);
         Task<bool> SaveResumeParse();
+        Task<IList<ResumeParse>> GetResumeParseForSubscriber(int subscriberId);
+        Task <ResumeParse> GetLatestResumeParseForSubscriber(int subscriberId);
+        Task<bool> DeleteAllResumeParseForSubscriber(int subscriberId);
     }
 }

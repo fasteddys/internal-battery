@@ -223,6 +223,11 @@ namespace UpDiddy.Api
 
         }
 
+
+
+
+
+
         public async Task<IList<CountryDto>> GetCountriesAsync()
         {
             string cacheKey = $"GetCountries";
@@ -646,6 +651,23 @@ namespace UpDiddy.Api
         }
 
 
+        #region Resume Parse 
+
+        public async Task<ResumeParseDto> GetResumeParseForSubscriber(Guid subscriberGuid)
+        {
+            try
+            {
+                ResumeParseDto retVal = await GetAsync<ResumeParseDto>("resume/resume-parse/" + subscriberGuid);               
+                return retVal;
+            }
+            catch
+            {
+                return null;
+            }                        
+        }
+
+        #endregion
+
         #region jobs
         public async Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords)
         {
@@ -1040,6 +1062,9 @@ namespace UpDiddy.Api
         {
             return await GetAsync<IList<CourseDto>>("course/");
         }
+
+
+
 
         private async Task<CourseDto> _CourseAsync(string CourseSlug)
         {

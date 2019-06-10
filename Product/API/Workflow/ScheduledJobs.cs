@@ -1006,6 +1006,9 @@ namespace UpDiddyApi.Workflow
         /// <returns></returns>
         private async Task<ResumeParse> _ImportSubscriberResume(ISubscriberService subscriberService, SubscriberFile resumeFile, string resume)
         {
+
+            // Delete all existing resume parses for user
+            await _repositoryWrapper.ResumeParseRepository.DeleteAllResumeParseForSubscriber(resumeFile.SubscriberId);
             // Create resume parse object 
             ResumeParse resumeParse = await _repositoryWrapper.ResumeParseRepository.CreateResumeParse(resumeFile.SubscriberId, resumeFile.SubscriberFileId);
 

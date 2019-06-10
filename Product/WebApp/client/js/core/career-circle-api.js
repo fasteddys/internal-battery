@@ -185,6 +185,12 @@
         return await _http.delete(`/job/favorite/${jobGuid}`);
     }
 
+
+    var getResumeParseMerge = async function (guid) {
+        return await _http.get('/resume/merge-info/' + guid);
+    }
+
+     
     return {
         getProfile: getProfile,
         uploadResume: uploadResume,
@@ -201,7 +207,8 @@
         addJobFavorite: addJobFavorite,
         deleteJobFavorite: deleteJobFavorite,
         uploadAvatar: uploadAvatar,
-        removeAvatar: removeAvatar
+        removeAvatar: removeAvatar,
+        getResumeParseMerge: getResumeParseMerge
     };
     
 })(API_URL);
