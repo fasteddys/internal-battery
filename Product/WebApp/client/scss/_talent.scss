@@ -294,6 +294,15 @@
 .mvc-grid {
     .table {
         background-color: white;
+        font-size: 12px;
+
+        .isDisabled {
+            color: currentColor;
+            cursor: not-allowed;
+            opacity: 0.5;
+            text-decoration: none;
+            pointer-events:none;
+        }
 
         th {
             background-color: transparent;
