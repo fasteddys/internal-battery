@@ -1096,7 +1096,7 @@ namespace UpDiddyApi.Controllers
             }
         }
 
-        [HttpGet("/api/[controller]/notes")]
+        [HttpGet("/api/[controller]/notes/{subscriberGuid}")]
         [Authorize(Policy = "IsRecruiterPolicy")]
         public async Task<IActionResult> SearchSubscriberNotes(string subscriberGuid, string searchQuery = null)
         {

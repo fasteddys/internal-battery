@@ -1255,9 +1255,9 @@ namespace UpDiddy.Api
 
         public async Task<IList<SubscriberNotesDto>> SubscriberNotesSearch(string subscriberGuid, string searchQuery)
         {
-            string endpoint = $"subscriber/notes?subscriberGuid={subscriberGuid}";
+            string endpoint = $"subscriber/notes/{subscriberGuid}";
             if (searchQuery != string.Empty)
-                endpoint += $"&searchQuery={searchQuery}";
+                endpoint += $"?searchQuery={searchQuery}";
 
             return await GetAsync<IList<SubscriberNotesDto>>(endpoint);
         }
