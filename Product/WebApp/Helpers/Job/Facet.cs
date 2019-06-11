@@ -13,7 +13,7 @@ namespace UpDiddy.Helpers.Job
         {
             get
             { 
-                return func(_value);
+                return _value != null ? func(_value) : null;
             }
             set
             {
