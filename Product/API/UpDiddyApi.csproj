@@ -53,6 +53,8 @@
     <Compile Remove="Migrations\20190603120815_AddSubcriberNotestable.Designer.cs" />
     <Compile Remove="Migrations\20190604160816_AddSubscribeNotesTableAndUpdateRecruterTableWithCompanyId.cs" />
     <Compile Remove="Migrations\20190604160816_AddSubscribeNotesTableAndUpdateRecruterTableWithCompanyId.Designer.cs" />
+    <Compile Remove="Migrations\20190611164158_AddSubsriberNotesTableAndUpdateCompanyIdInRecruiterTable.cs" />
+    <Compile Remove="Migrations\20190611164158_AddSubsriberNotesTableAndUpdateCompanyIdInRecruiterTable.Designer.cs" />
     <Compile Remove="Models\_Company.cs" />
     <Compile Remove="Models\_Country.cs" />
     <Compile Remove="Models\_EducationalDegree.cs" />
