@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace UpDiddyApi.Migrations
 {
-    public partial class AddSubsriberNotesTableAndUpdateCompanyIdInRecruiterTable : Migration
+    public partial class AddedNotesTableAndUpdatedRecruiterTable : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -12,24 +12,6 @@ namespace UpDiddyApi.Migrations
                 name: "CompanyId",
                 table: "Recruiter",
                 nullable: true);
-
-            migrationBuilder.CreateTable(
-                name: "PartnerWebRedirect",
-                columns: table => new
-                {
-                    PartnerId = table.Column<int>(nullable: false),
-                    RelativePath = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PartnerWebRedirect", x => x.PartnerId);
-                    table.ForeignKey(
-                        name: "FK_PartnerWebRedirect_Partner_PartnerId",
-                        column: x => x.PartnerId,
-                        principalTable: "Partner",
-                        principalColumn: "PartnerId",
-                        onDelete: ReferentialAction.Cascade);
-                });
 
             migrationBuilder.CreateTable(
                 name: "SubscriberNotes",
@@ -94,9 +76,6 @@ namespace UpDiddyApi.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_Recruiter_Company_CompanyId",
                 table: "Recruiter");
-
-            migrationBuilder.DropTable(
-                name: "PartnerWebRedirect");
 
             migrationBuilder.DropTable(
                 name: "SubscriberNotes");

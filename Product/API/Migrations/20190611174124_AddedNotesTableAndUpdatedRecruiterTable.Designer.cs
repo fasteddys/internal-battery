@@ -10,8 +10,8 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    [Migration("20190611164158_AddSubsriberNotesTableAndUpdateCompanyIdInRecruiterTable")]
-    partial class AddSubsriberNotesTableAndUpdateCompanyIdInRecruiterTable
+    [Migration("20190611174124_AddedNotesTableAndUpdatedRecruiterTable")]
+    partial class AddedNotesTableAndUpdatedRecruiterTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
