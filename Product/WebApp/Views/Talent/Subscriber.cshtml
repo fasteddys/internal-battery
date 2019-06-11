@@ -349,13 +349,13 @@
                 var subscriberNotesGuid = button.data('subscribernotesguid');
                 var subscriberGuid = button.data('subscriberguid');
                 var notes = button.data('notes');
-                var isPrivate = button.data('isprivate');
+                var isPrivate = (button.data('isprivate')=='True');
 
                 var modal = $(this);
                 modal.find('#subscriberNotesGuid').val(subscriberNotesGuid);
                 modal.find('#subscriberGuid').val(subscriberGuid);
                 modal.find('#notesArea').val(notes);
-                modal.find('#IsPrivate').checked = isPrivate;
+                modal.find('#IsPrivate')[0].checked = isPrivate;
             });
 
             //search Notes on selection of date
@@ -397,7 +397,7 @@
                             subscriberNotesGuid: $('#subscriberNotesGuid').val(),
                             subscriberGuid: $('#subscriberGuid').val(),
                             notes: $('#notesArea').val(),
-                            isPublic: $('#IsPrivate').is(":checked") == false ? true : false
+                            ViewableByOthersInRecruiterCompany: $('#IsPrivate').is(":checked") == false ? true : false
                         }),
                         success: function (res) {
                             if (res) {

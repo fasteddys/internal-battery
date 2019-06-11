@@ -321,7 +321,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 var subscriberNote = await _repository.SubscriberNotesRepository.GetSubscriberNotesBySubscriberNotesGuid(subscriberNotesDto.SubscriberNotesGuid ?? Guid.Empty);
                 subscriberNote.Notes = subscriberNotesDto.Notes;
-                subscriberNote.IsPublic = subscriberNotesDto.IsPublic;
+                subscriberNote.ViewableByOthersInRecruiterCompany = subscriberNotesDto.ViewableByOthersInRecruiterCompany;
                 subscriberNote.ModifyDate = DateTime.Now;
                await _repository.SubscriberNotesRepository.UpdateNotes(subscriberNote);
             }
@@ -351,10 +351,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             var recruiterPrivateNotesQueryable = from subscriberNote in await _repository.SubscriberNotesRepository.GetAllAsync()
                                                     join recruiter in await _repository.RecruiterRepository.GetAllAsync() on subscriberNote.RecruiterId equals recruiter.RecruiterId
                                                     join subscriber in await _repository.SubscriberRepository.GetAllAsync() on recruiter.SubscriberId equals subscriber.SubscriberId
-                                                    where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && subscriberNote.RecruiterId.Equals(rec.RecruiterId) && subscriberNote.IsPublic.Equals(false)
+                                                    where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && subscriberNote.RecruiterId.Equals(rec.RecruiterId) && subscriberNote.ViewableByOthersInRecruiterCompany.Equals(false)
                                                    select new SubscriberNotesDto()
                                                     {
-                                                        IsPublic = subscriberNote.IsPublic,
+                                                        ViewableByOthersInRecruiterCompany = subscriberNote.ViewableByOthersInRecruiterCompany,
                                                         Notes = subscriberNote.Notes,
                                                         SubscriberNotesGuid = subscriberNote.SubscriberNotesGuid,
                                                         RecruiterGuid = (Guid)subscriber.SubscriberGuid,
@@ -370,10 +370,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                                                    join recruiter in await _repository.RecruiterRepository.GetAllAsync() on subscriberNote.RecruiterId equals recruiter.RecruiterId
                                                    join company in await _repository.Company.GetAllCompanies() on recruiter.CompanyId equals company.CompanyId
                                                    join subscriber in await _repository.SubscriberRepository.GetAllAsync() on recruiter.SubscriberId equals subscriber.SubscriberId
-                                                   where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && recruiter.CompanyId.Equals(rec.CompanyId) && subscriberNote.IsPublic.Equals(true)
+                                                   where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && recruiter.CompanyId.Equals(rec.CompanyId) && subscriberNote.ViewableByOthersInRecruiterCompany.Equals(true)
                                                    select new SubscriberNotesDto()
                                                    {
-                                                       IsPublic = subscriberNote.IsPublic,
+                                                       ViewableByOthersInRecruiterCompany = subscriberNote.ViewableByOthersInRecruiterCompany,
                                                        Notes = subscriberNote.Notes,
                                                        SubscriberNotesGuid = subscriberNote.SubscriberNotesGuid,
                                                        RecruiterGuid = (Guid)subscriber.SubscriberGuid,

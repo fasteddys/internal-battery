@@ -14,6 +14,24 @@ namespace UpDiddyApi.Migrations
                 nullable: true);
 
             migrationBuilder.CreateTable(
+                name: "PartnerWebRedirect",
+                columns: table => new
+                {
+                    PartnerId = table.Column<int>(nullable: false),
+                    RelativePath = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PartnerWebRedirect", x => x.PartnerId);
+                    table.ForeignKey(
+                        name: "FK_PartnerWebRedirect_Partner_PartnerId",
+                        column: x => x.PartnerId,
+                        principalTable: "Partner",
+                        principalColumn: "PartnerId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SubscriberNotes",
                 columns: table => new
                 {
@@ -28,7 +46,7 @@ namespace UpDiddyApi.Migrations
                     SubscriberId = table.Column<int>(nullable: false),
                     RecruiterId = table.Column<int>(nullable: false),
                     Notes = table.Column<string>(nullable: true),
-                    IsPublic = table.Column<bool>(nullable: false)
+                    ViewableByOthersInRecruiterCompany = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -76,6 +94,9 @@ namespace UpDiddyApi.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_Recruiter_Company_CompanyId",
                 table: "Recruiter");
+
+            migrationBuilder.DropTable(
+                name: "PartnerWebRedirect");
 
             migrationBuilder.DropTable(
                 name: "SubscriberNotes");

@@ -10,7 +10,7 @@ namespace UpDiddyLib.Dto
         public Guid SubscriberGuid { get; set; }
         public Guid RecruiterGuid { get; set; }
         public string Notes { get; set; }
-        public bool IsPublic { get; set; }
+        public bool ViewableByOthersInRecruiterCompany { get; set; }
         public DateTime CreateDate { get; set; }
         public DateTime ModifiedDate { get; set; }
     }
