@@ -295,11 +295,14 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task SaveSubscriberNotesAsync(SubscriberNotesDto subscriberNotesDto)
         {
             //check if notes exist for subscriber
-            var subscriberNote = await _repository.SubscriberNotesRepository.GetSubscriberNotesBySubscriberNotesGuid(subscriberNotesDto.SubscriberNotesGuid);
+           
 
-            if(subscriberNote == null)
+            if(subscriberNotesDto.SubscriberNotesGuid == null)
             {
                 var subscriberNotes = _mapper.Map<SubscriberNotes>(subscriberNotesDto);
+
+                //Assign new GUID for new notes
+                subscriberNotes.SubscriberNotesGuid = Guid.NewGuid();
 
                 //get subscriber by subscriberGuid and assign SubscriberId
                 var subscriber = await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberNotesDto.SubscriberGuid);
@@ -314,8 +317,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 BaseModelFactory.SetDefaultsForAddNew(subscriberNotes);
                 await _repository.SubscriberNotesRepository.AddNotes(subscriberNotes);
             }
-            else
+            else if(subscriberNotesDto.SubscriberNotesGuid!=Guid.Empty)
             {
+                var subscriberNote = await _repository.SubscriberNotesRepository.GetSubscriberNotesBySubscriberNotesGuid(subscriberNotesDto.SubscriberNotesGuid ?? Guid.Empty);
                 subscriberNote.Notes = subscriberNotesDto.Notes;
                 subscriberNote.IsPublic = subscriberNotesDto.IsPublic;
                 subscriberNote.ModifyDate = DateTime.Now;

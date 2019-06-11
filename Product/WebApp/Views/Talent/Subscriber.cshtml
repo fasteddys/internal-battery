@@ -53,9 +53,9 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-12">
+                <div class="col-12 addEditNote">
                     <button type="button" class="btn btn-primary addNote" data-toggle="modal" data-target="#addNoteModal"
-                            data-subscribernotesguid="@Guid.NewGuid()" data-subscriberguid="@Model.SubscriberGuid">
+                            data-subscriberguid="@Model.SubscriberGuid">
                         Add Note
                     </button>
                 </div>
@@ -296,12 +296,12 @@
                                         <div class="col-5">
                                             <input type="text" class="form-control" id="txtNotesCreateDate" placeholder="Created Date" autocomplete="off">
                                         </div>
-                                        <div class="col-3">
+                                        <div class="col-3 notesSearchButton">
                                             <button id="searchNotes" type="submit" class="btn btn-primary" data-subscriberguid="@Model.SubscriberGuid">Search</button>
                                         </div>
                                     </div>                                
                                 <div class="row">
-                                    <div class="col-12">
+                                    <div class="col-12 notesGrid">
                                         @Html.AjaxGrid(Url.Action("SubscriberNotesGrid", "Talent",
                                        new
                                        {
@@ -330,12 +330,12 @@
         //add Notes
         $(document).ready(function () {
             $('#notesArea').val('');
-            $('#IsPublic').checked = false;
+            $('#IsPrivate').checked = false;
 
-            //clear notes and isPublic on clicking addNote button
+            //clear notes and isPrivate on clicking addNote button
             $('.addNote').click(function (e) {
                 $('#notesArea').val('');
-                $('#IsPublic').prop('checked', false);
+                $('#IsPrivate').prop('checked', false);
                 $('#showError').css('display', 'none');
                 $('#showSuccess').css('display', 'none');
             });
@@ -349,13 +349,13 @@
                 var subscriberNotesGuid = button.data('subscribernotesguid');
                 var subscriberGuid = button.data('subscriberguid');
                 var notes = button.data('notes');
-                var isPublic = button.data('ispublic');
+                var isPrivate = button.data('isprivate');
 
                 var modal = $(this);
                 modal.find('#subscriberNotesGuid').val(subscriberNotesGuid);
                 modal.find('#subscriberGuid').val(subscriberGuid);
                 modal.find('#notesArea').val(notes);
-                modal.find('#IsPublic').checked= isPublic;
+                modal.find('#IsPrivate').checked = isPrivate;
             });
 
             //search Notes on selection of date
@@ -397,7 +397,7 @@
                             subscriberNotesGuid: $('#subscriberNotesGuid').val(),
                             subscriberGuid: $('#subscriberGuid').val(),
                             notes: $('#notesArea').val(),
-                            isPublic: $('#IsPublic').is(":checked")
+                            isPublic: $('#IsPrivate').is(":checked") == false ? true : false
                         }),
                         success: function (res) {
                             if (res) {

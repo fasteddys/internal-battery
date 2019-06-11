@@ -16,10 +16,10 @@
                         .Grid(Model)
                         .Build(columns =>
                         {
-                            columns.Add(model => model.Notes).Titled("Notes").AppendCss("text-center");
+                            columns.Add(model => model.Notes).Titled("Notes").AppendCss("text-left");
                             columns.Add(model => model.CreateDate).Sortable(true).Titled("Created Date").RenderedAs(model => model.CreateDate != DateTime.MinValue ? model.CreateDate.ToShortDateString() : string.Empty).AppendCss("text-center");
                             columns.Add(model => model.ModifiedDate).Sortable(true).Titled("Last Modified").RenderedAs(model => model.ModifiedDate != DateTime.MinValue ? model.ModifiedDate.ToShortDateString() : string.Empty).AppendCss("text-center");
-                            columns.Add(model => $"<a class='{(model.RecruiterGuid!= Guid.Parse(ViewContext.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value)?"isDisabled": string.Empty)}' href='' data-toggle='modal' data-target='#addNoteModal' data-subscribernotesguid='{model.SubscriberNotesGuid}' data-subscriberguid='{model.SubscriberGuid}' data-notes='{model.Notes}' data-ispublic='{model.IsPublic}'><i class=\'far fa-eye\'></i></a>").Titled("View").Encoded(false).AppendCss("text-center");
+                            columns.Add(model => $"<a class='{(model.RecruiterGuid!= Guid.Parse(ViewContext.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value)?"isDisabled": string.Empty)}' href='' data-toggle='modal' data-target='#addNoteModal' data-subscribernotesguid='{model.SubscriberNotesGuid}' data-subscriberguid='{model.SubscriberGuid}' data-notes='{model.Notes}' data-isprivate='{!model.IsPublic}'><i class=\'far fa-eye\'></i></a>").Titled("View").Encoded(false).AppendCss("text-center");
                             if (IsRecruiter)
                                 columns.Add(model => $"<a class='{(model.RecruiterGuid != Guid.Parse(ViewContext.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value) ? "isDisabled" : string.Empty)}' href=\"javascript:deleteSubscriberNote('{model.SubscriberNotesGuid}');\"><i class=\"fa fa-trash\"></i></a>").Titled("Delete").Encoded(false).AppendCss("text-center");
                         })
