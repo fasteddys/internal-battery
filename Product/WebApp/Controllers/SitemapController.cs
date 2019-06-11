@@ -9,6 +9,7 @@ using SimpleMvcSitemap;
 using UpDiddy.Api;
 using UpDiddy.Helpers;
 using UpDiddy.Helpers.Job;
+using UpDiddy.Services;
 using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
@@ -17,15 +18,18 @@ namespace UpDiddy.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
+        private readonly ICacheService _cacheService;
 
 
         public SitemapController(IApi api,
             IConfiguration configuration,
+            ICacheService cacheService,
             IHostingEnvironment env)
             : base(api)
         {
             _env = env;
             _configuration = configuration;
+            _cacheService = cacheService;
         }
 
         [HttpGet]
@@ -81,13 +85,16 @@ namespace UpDiddy.Controllers
                 new SitemapIndexNode(Url.Action("jobs-sitemap.xml", "sitemap")),
                 // todo: create separate node for Butter CMS sitemap (once we have published content there other than site nav and LPs) https://buttercms.com/docs/api/?csharp#feeds
             };
-
-            sitemapIndexNodes.AddRange(await BrowseJobLocation());
+            
+            // add browse jobs
+            sitemapIndexNodes.AddRange(await BrowseJobsLocation());
+            sitemapIndexNodes.AddRange(await BrowseJobsIndustry());
+            sitemapIndexNodes.AddRange(await BrowseJobsCategory());
 
             return new SitemapProvider().CreateSitemapIndex(new SitemapIndexModel(sitemapIndexNodes));
         }
 
-        public async Task<List<SitemapIndexNode>> BrowseJobLocation()
+        private async Task<List<SitemapIndexNode>> BrowseJobsLocation()
         {
             List<SitemapIndexNode> sitemapIndexNodes = new List<SitemapIndexNode>
             {
@@ -103,21 +110,60 @@ namespace UpDiddy.Controllers
                 Facet.CategoryFacet()
             };
 
-            JobQueryBuilder jobQueryBuilder = new JobQueryBuilder(_Api);
-            jobQueryBuilder.Country = "us";
-            var nodes = await BuildBrowseSitemapIndex("browse-jobs-location", facets, jobQueryBuilder);
+            var nodes = await BuildBrowseSitemapIndex("browse-jobs-location", facets);
             sitemapIndexNodes.AddRange(nodes);
-
             return sitemapIndexNodes;
         }
 
-        private async Task<List<SitemapIndexNode>> BuildBrowseSitemapIndex(string relUrl, List<Facet> facets, JobQueryBuilder jobQueryBuilder)
+        private async Task<List<SitemapIndexNode>> BrowseJobsIndustry()
         {
             List<SitemapIndexNode> sitemapIndexNodes = new List<SitemapIndexNode>();
-            sitemapIndexNodes.AddRange(await BuildBrowseSitemapIndex("/sitemap/browse-jobs-location/", facets, 0));
+
+            List<Facet> facets = new List<Facet>()
+            {
+                Facet.IndustryFacet(),
+                Facet.CategoryFacet(),
+                new Facet() { Key = "country", Value = "us" },
+                Facet.StateFacet(),
+                Facet.CityFacet(),
+            };
+
+            var nodes = await BuildBrowseSitemapIndex("browse-jobs-industry", facets);
+            sitemapIndexNodes.AddRange(nodes);
             return sitemapIndexNodes;
         }
 
+        private async Task<List<SitemapIndexNode>> BrowseJobsCategory()
+        {
+            List<SitemapIndexNode> sitemapIndexNodes = new List<SitemapIndexNode>();
+            List<Facet> facets = new List<Facet>()
+            {
+                Facet.CategoryFacet(),
+                Facet.IndustryFacet(),
+                new Facet() { Key = "country", Value = "us" },
+                Facet.StateFacet(),
+                Facet.CityFacet(),
+            };
+
+            var nodes = await BuildBrowseSitemapIndex("browse-jobs-category", facets);
+            sitemapIndexNodes.AddRange(nodes);
+            return sitemapIndexNodes;
+        }
+
+        private async Task<List<SitemapIndexNode>> BuildBrowseSitemapIndex(string baseUrl, List<Facet> facets)
+        {
+            List<SitemapIndexNode> sitemapIndexNodes = new List<SitemapIndexNode>();
+            sitemapIndexNodes.AddRange(await BuildBrowseSitemapIndex(baseUrl, facets, 0));
+            return sitemapIndexNodes;
+        }
+
+        /// <summary>
+        /// Recursively build sitemapindex references
+        /// </summary>
+        /// <param name="baseUrl">string starting url</param>
+        /// <param name="facets">Facets[] ordered</param>
+        /// <param name="index">int level in the facet</param>
+        /// <returns></returns>
         private async Task<List<SitemapIndexNode>> BuildBrowseSitemapIndex(string baseUrl, List<Facet> facets, int index)
         {
             List<SitemapIndexNode> nodes = new List<SitemapIndexNode>();
@@ -139,19 +185,22 @@ namespace UpDiddy.Controllers
             }
             var response = await jobQueryBuilder.Execute();
 
-            var nextFacet = index + 1 < facets.Count ? facets[index + 1] : null;
+            var nextFacet = index < facets.Count ? facets[index] : null;
+
+            if (nextFacet.Key == "country")
+                nodes.AddRange(await BuildBrowseSitemapIndex(baseUrl, treeFacets, index + 1));
 
             if (nextFacet == null || response.Facets.FirstOrDefault(x => x.Name == nextFacet.Key) == null)
                 return nodes;
 
             foreach(var item in response.Facets.FirstOrDefault(x => x.Name == nextFacet.Key).Facets)
             {
-                nodes.Add(new SitemapIndexNode(string.Format("{0}/{1}.xml", urlPart, nextFacet.func(item.Label))));
-                if (treeFacets.Count > index + 1)
-                    treeFacets[index + 1].Value = item.Label;
+                nodes.Add(new SitemapIndexNode(string.Format("sitemap/{0}/{1}.xml", urlPart.TrimEnd('/'), nextFacet.func(item.Label))));
+                if (treeFacets.Count > index)
+                    treeFacets[index].Value = item.Label;
 
                 // traverse only if necessary
-                if(index + 2 < facets.Count && response.Facets.FirstOrDefault(x => x.Name == facets[index + 2].Key) != null)
+                if(index + 1 < facets.Count && (facets[index + 1].Key == "country" ||response.Facets.FirstOrDefault(x => x.Name == facets[index + 1].Key) != null))
                     nodes.AddRange(await BuildBrowseSitemapIndex(baseUrl, treeFacets, index + 1));
             }
             return nodes;
@@ -189,6 +238,7 @@ namespace UpDiddy.Controllers
             return new SitemapProvider().CreateSitemap(new SitemapModel(nodes));
         }
 
+        #region Browse Job Sitemaps
         [HttpGet]
         [Route("[controller]/browse-jobs-location/country.xml")]
         [Route("[controller]/browse-jobs-location/us/{state}.xml")]
@@ -291,10 +341,10 @@ namespace UpDiddy.Controllers
 
         [HttpGet]
         [Route("[controller]/browse-jobs-category/{category}.xml")]
-        [Route("[controller]/browse-jobs-industry/{category}/{industry}.xml")]
-        [Route("[controller]/browse-jobs-industry/{industry}/{category}/us.xml")]
-        [Route("[controller]/browse-jobs-industry/{industry}/{category}/us/{state}.xml")]
-        [Route("[controller]/browse-jobs-industry/{industry}/{category}/us/{state}/{city}.xml")]
+        [Route("[controller]/browse-jobs-category/{category}/{industry}.xml")]
+        [Route("[controller]/browse-jobs-category/{industry}/{category}/us.xml")]
+        [Route("[controller]/browse-jobs-category/{industry}/{category}/us/{state}.xml")]
+        [Route("[controller]/browse-jobs-category/{industry}/{category}/us/{state}/{city}.xml")]
         public async Task<IActionResult> BrowseJobsCategory(string category, string industry, string state, string city)
         {
             List<SitemapNode> nodes = new List<SitemapNode>();
@@ -342,5 +392,6 @@ namespace UpDiddy.Controllers
 
             return await BuildBrowseSitemap("/browse-jobs-industry", facets, jobQueryBuilder, nextFacet);
         }
+        #endregion
     }
 }

@@ -22,7 +22,7 @@ namespace UpDiddy.Helpers.Job
             }
             set
             {
-                _industry = value.Replace("-", "+");
+                _industry = value == null ? "all" : value.Replace("-", "+");
             }
         }
 
@@ -35,7 +35,7 @@ namespace UpDiddy.Helpers.Job
             }
             set
             {
-                _category = value.Replace("-", "+");
+                _category = value == null ? "all" : value.Replace("-", "+");
             }
         }
 
