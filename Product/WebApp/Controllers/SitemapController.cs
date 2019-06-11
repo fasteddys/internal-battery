@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using SimpleMvcSitemap;
 using UpDiddy.Api;
 using UpDiddy.Helpers;
+using UpDiddy.Helpers.Job;
 using UpDiddyLib.Dto;
 
 namespace UpDiddy.Controllers
@@ -77,11 +78,225 @@ namespace UpDiddy.Controllers
             {
                 new SitemapIndexNode(Url.Action("static-sitemap.xml", "sitemap")),
                 new SitemapIndexNode(Url.Action("courses-sitemap.xml", "sitemap")),
-                new SitemapIndexNode(Url.Action("jobs-sitemap.xml", "sitemap"))
+                new SitemapIndexNode(Url.Action("jobs-sitemap.xml", "sitemap")),
+                new SitemapIndexNode(Url.Action("browse-jobs.xml", "sitemap"))
                 // todo: create separate node for Butter CMS sitemap (once we have published content there other than site nav and LPs) https://buttercms.com/docs/api/?csharp#feeds
             };
 
             return new SitemapProvider().CreateSitemapIndex(new SitemapIndexModel(sitemapIndexNodes));
+        }
+
+        [HttpGet]
+        [Route("[controller]/browse-jobs.xml")]
+        public async Task<IActionResult> BrowseJobs()
+        {
+            List<SitemapIndexNode> sitemapIndexNodes = new List<SitemapIndexNode>
+            {
+                new SitemapIndexNode(Url.Action("browse-jobs-location/country.xml", "sitemap")),
+            };
+
+            JobQueryBuilder jobQueryBuilder = new JobQueryBuilder(_Api);
+            jobQueryBuilder.Country = "us";
+            var response = jobQueryBuilder.Execute();
+
+
+
+            return new SitemapProvider().CreateSitemapIndex(new SitemapIndexModel(sitemapIndexNodes));
+
+        }
+
+        private async Task<ActionResult> BuildBrowseSitemap(string relUrl, List<Facet> facets, JobQueryBuilder foo, Facet nextFacet = null)
+        {
+            var response = await foo.Execute();
+            string urlPart = "";
+            foreach(Facet facet in facets)
+            {
+                var containerFacet = response.Facets.FirstOrDefault(x => x.Name == facet.Key);
+                urlPart += string.Format("/{0}", facet.Value);
+
+                if (facet.Key == "country" && facet.Value == "us")
+                    continue;
+
+                if (containerFacet == null  || containerFacet.Facets.FirstOrDefault(x => facet.func(x.Label).Equals(facet.Value, StringComparison.InvariantCultureIgnoreCase)) == null)
+                    return NotFound();
+            }
+
+            List<SitemapNode> nodes = new List<SitemapNode>();
+            // add base url
+            nodes.Add(new SitemapNode(string.Format("{0}/{1}", relUrl.TrimStart('/'), urlPart.TrimStart('/'))) { ChangeFrequency = ChangeFrequency.Hourly });
+
+            int jobCount = 0;
+            int page = 1;
+            while (jobCount < 5000 && jobCount < response.TotalHits)
+            {
+                nodes.Add(new SitemapNode(string.Format("{0}/{1}/{2}", relUrl.TrimStart('/'), urlPart.TrimStart('/'), page)) { ChangeFrequency = ChangeFrequency.Hourly });
+                jobCount += response.PageSize;
+                page++;
+            }
+
+            if(nextFacet == null || response.Facets.FirstOrDefault(x => x.Name == nextFacet.Key) == null)
+                return new SitemapProvider().CreateSitemap(new SitemapModel(nodes));
+
+            foreach (var item in response.Facets.FirstOrDefault(x => x.Name == nextFacet.Key).Facets)
+            {
+                nodes.Add(new SitemapNode(string.Format("/sitemap/{0}/{1}/{2}.xml", relUrl.TrimStart('/'), urlPart.TrimStart('/'), nextFacet.func(item.Label))) { ChangeFrequency = ChangeFrequency.Hourly });
+            }
+
+            return new SitemapProvider().CreateSitemap(new SitemapModel(nodes));
+        }
+
+        [HttpGet]
+        [Route("[controller]/browse-jobs-location/country.xml")]
+        [Route("[controller]/browse-jobs-location/us/{state}.xml")]
+        [Route("[controller]/browse-jobs-location/us/{state}/{city}.xml")]
+        [Route("[controller]/browse-jobs-location/us/{state}/{city}/{industry}.xml")]
+        [Route("[controller]/browse-jobs-location/us/{state}/{city}/{industry}/{category}.xml")]
+        public async Task<IActionResult> BrowseJobsLocation(string state, string city, string industry, string category)
+        {
+            List<SitemapNode> nodes = new List<SitemapNode>();
+
+            List<Facet> facets = new List<Facet>();
+            Facet nextFacet = Facet.StateFacet();
+            var jobQueryBuilder = new JobQueryBuilder(_Api);
+            // start tree at country
+            jobQueryBuilder.Country = "us";
+            facets.Add(new Facet() { Key = "country", Value = "us" });
+
+            if(state != null)
+            {
+                jobQueryBuilder.State = state;
+                facets.Add(Facet.StateFacet(state));
+                nextFacet = Facet.CityFacet();
+            }
+
+            if(city != null)
+            {
+                jobQueryBuilder.City = city;
+                facets.Add(Facet.CityFacet(city));
+                nextFacet = Facet.IndustryFacet();
+            }
+
+            if(industry != null)
+            {
+                jobQueryBuilder.Industry = industry;
+                facets.Add(Facet.IndustryFacet(industry));
+                nextFacet = Facet.CategoryFacet();
+            }
+
+            if(category != null)
+            {
+                jobQueryBuilder.Category = category;
+                facets.Add(Facet.CategoryFacet(category));
+            }
+
+            return await BuildBrowseSitemap("/browse-jobs-location", facets, jobQueryBuilder, nextFacet);
+        }
+
+        [HttpGet]
+        [Route("[controller]/browse-jobs-industry/{industry}.xml")]
+        [Route("[controller]/browse-jobs-industry/{industry}/{category}.xml")]
+        [Route("[controller]/browse-jobs-industry/{industry}/{category}/us.xml")]
+        [Route("[controller]/browse-jobs-industry/{industry}/{category}/us/{state}.xml")]
+        [Route("[controller]/browse-jobs-industry/{industry}/{category}/us/{state}/{city}.xml")]
+        public async Task<IActionResult> BrowseJobsIndustry(string industry, string category, string state, string city)
+        {
+            List<SitemapNode> nodes = new List<SitemapNode>();
+
+            List<Facet> facets = new List<Facet>();
+            Facet nextFacet = Facet.CategoryFacet();
+            var jobQueryBuilder = new JobQueryBuilder(_Api);
+            // start tree at country
+            jobQueryBuilder.Industry = industry;
+            if (industry != null)
+            {
+                jobQueryBuilder.Industry = industry;
+                facets.Add(Facet.IndustryFacet(industry));
+                nextFacet = Facet.CategoryFacet();
+            }
+
+            if (category != null)
+            {
+                jobQueryBuilder.Category = category;
+                facets.Add(Facet.CategoryFacet(category));
+                nextFacet = new Facet() { Key = "country", Value = "us" };
+            }
+
+            if((category != null && state == null) || state != null)
+            {
+                jobQueryBuilder.Country = "us";
+                facets.Add(new Facet() { Key = "country", Value = "us" });
+                nextFacet = Facet.StateFacet();
+            }
+
+            if (state != null)
+            {
+                jobQueryBuilder.State = state;
+                facets.Add(Facet.StateFacet(state));
+                nextFacet = Facet.CityFacet();
+            }
+
+            if (city != null)
+            {
+                jobQueryBuilder.City = city;
+                facets.Add(Facet.CityFacet(city));
+                nextFacet = null;
+            }
+
+            return await BuildBrowseSitemap("/browse-jobs-industry", facets, jobQueryBuilder, nextFacet);
+        }
+
+        [HttpGet]
+        [Route("[controller]/browse-jobs-category/{category}.xml")]
+        [Route("[controller]/browse-jobs-industry/{category}/{industry}.xml")]
+        [Route("[controller]/browse-jobs-industry/{industry}/{category}/us.xml")]
+        [Route("[controller]/browse-jobs-industry/{industry}/{category}/us/{state}.xml")]
+        [Route("[controller]/browse-jobs-industry/{industry}/{category}/us/{state}/{city}.xml")]
+        public async Task<IActionResult> BrowseJobsCategory(string category, string industry, string state, string city)
+        {
+            List<SitemapNode> nodes = new List<SitemapNode>();
+
+            List<Facet> facets = new List<Facet>();
+            Facet nextFacet = Facet.IndustryFacet();
+            var jobQueryBuilder = new JobQueryBuilder(_Api);
+            // start tree at country
+            jobQueryBuilder.Industry = industry;
+            if (category != null)
+            {
+                jobQueryBuilder.Category = category;
+                facets.Add(Facet.CategoryFacet(category));
+                nextFacet = Facet.IndustryFacet();
+            }
+
+            if (industry != null)
+            {
+                jobQueryBuilder.Industry = industry;
+                facets.Add(Facet.IndustryFacet(industry));
+                nextFacet = new Facet() { Key = "country", Value = "us" };
+            }
+
+
+            if((industry != null && state == null) || state != null)
+            {
+                jobQueryBuilder.Country = "us";
+                facets.Add(new Facet() { Key = "country", Value = "us" });
+                nextFacet = Facet.StateFacet();
+            }
+
+            if (state != null)
+            {
+                jobQueryBuilder.State = state;
+                facets.Add(Facet.StateFacet(state));
+                nextFacet = Facet.CityFacet();
+            }
+
+            if (city != null)
+            {
+                jobQueryBuilder.City = city;
+                facets.Add(Facet.CityFacet(city));
+                nextFacet = null;
+            }
+
+            return await BuildBrowseSitemap("/browse-jobs-industry", facets, jobQueryBuilder, nextFacet);
         }
     }
 }
