@@ -1401,6 +1401,81 @@ namespace UpDiddy.Api
             return await GetAsync<List<JobPostingCountReportDto>>($"report/job-post-count{query}");
         }
 
+
+        public async Task<IList<NotificationDto>> GetNotificationsAsync()
+        {
+            string cacheKey = $"Notifications";
+            IList<NotificationDto> rval = GetCachedValue<IList<NotificationDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _NotificationsAsync();
+                SetCachedValue<IList<NotificationDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public async Task<NotificationDto> GetNotificationAsync(Guid NotificationGuid)
+        {
+            IList<NotificationDto> _notifications = await GetNotificationsAsync();
+            foreach (NotificationDto notification in _notifications)
+            {
+                if (notification.NotificationGuid == NotificationGuid)
+                {
+                    return notification;
+                }
+            }
+            return null;
+        }
+
+        private async Task<IList<NotificationDto>> _NotificationsAsync()
+        {
+            return await GetAsync<IList<NotificationDto>>("notifications");
+        }
+
+        public async Task<NotificationDto> CreateNotificationAsync(NotificationDto notificationDto)
+        {
+            // Create the new partner and store it for return
+            NotificationDto newNotification = await PostAsync<NotificationDto>("notifications", notificationDto);
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Notifications";
+            RemoveCachedValue<IList<NotificationDto>>(cacheKey);
+
+            // Return the newly created partner
+            return newNotification;
+        }
+
+        public async Task<BasicResponseDto> UpdateNotificationAsync(NotificationDto notificationDto)
+        {
+            // Update partner
+            BasicResponseDto updatedNotificationResponse = await PutAsync<BasicResponseDto>("notifications", notificationDto);
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Notifications";
+            RemoveCachedValue<IList<NotificationDto>>(cacheKey);
+
+            // Return the newly created partner
+            return updatedNotificationResponse;
+
+        }
+
+
+        public async Task<BasicResponseDto> DeleteNotificationAsync(Guid notificationGuid)
+        {
+            // Update partner
+            BasicResponseDto deletedNotificationResponse = await DeleteAsync<BasicResponseDto>(string.Format("notifications/{0}", notificationGuid));
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Notifications";
+            RemoveCachedValue<IList<NotificationDto>>(cacheKey);
+
+            // Return the newly created partner
+            return deletedNotificationResponse;
+        }
+
         #endregion
 
         #region JobBoard
