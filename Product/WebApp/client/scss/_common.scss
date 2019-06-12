@@ -199,6 +199,11 @@ a {
         border-bottom: 0;
         height: initial;
 
+        .breadcrumb {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
         ol {
             background-color: transparent;
             text-transform: initial;
@@ -209,6 +214,18 @@ a {
 
                 &:hover {
                     color: $color-secondary;
+                }
+            }
+
+            li {
+                display: none;
+
+                &:nth-last-child(-n+2) {
+                    display: initial;
+                }
+
+                @media (min-width: 1024px) {
+                    display: initial;
                 }
             }
         }
