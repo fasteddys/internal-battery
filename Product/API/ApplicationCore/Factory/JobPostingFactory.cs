@@ -58,7 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
 
       
-            string jobPostingUrl = config["CareerCircle:BaseUrl"] + Utils.CreateSemanticJobPath(
+            string jobPostingUrl = config["Environment:BaseUrl"].TrimEnd('/') + Utils.CreateSemanticJobPath(
                  jobPostingDto.Industry == null ? string.Empty : jobPostingDto.Industry.Name,
                  jobPostingDto.JobCategory == null ? string.Empty : jobPostingDto.JobCategory.Name,
                  jobPostingDto.Country,

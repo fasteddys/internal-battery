@@ -36,5 +36,6 @@ namespace UpDiddy.ViewModels
         public string MetaDescription { get; set; }
         public string MetaKeywords { get; set; }
         public JobSearchResultDto SimilarJobsSearchResult { get; set; }
+        public Dictionary<Guid, Guid> SimilarJobsFavorites { get; set; }
     }
 }

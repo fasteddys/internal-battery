@@ -171,6 +171,8 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.EducationalInstitution, opt => opt.MapFrom(src => src.EducationalInstitution.Name))
                 .ForMember(x => x.EducationalDegree, opt => opt.MapFrom(src => src.EducationalDegree.Degree))
                 .ForMember(x => x.EducationalDegreeType, opt => opt.MapFrom(src => src.EducationalDegreeType.DegreeType));
+
+            CreateMap<SubscriberNotes, SubscriberNotesDto>().ReverseMap();
         }
     }
 }

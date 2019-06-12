@@ -25,6 +25,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IPartnerContactLeadStatusRepository _partnerContactLeadStatusRepository;
         private IJobCategoryRepository _jobCategoryRepository;
         private IJobReferralRepository _jobReferralRepository;
+        private ISubscriberNotesRepository _subscriberNotesRepository;
+        private IRecruiterRepository _recruiterRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -222,6 +224,30 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _jobReferralRepository = new JobReferralRepository(_dbContext);
                 }
                 return _jobReferralRepository;
+            }
+        }
+
+        public ISubscriberNotesRepository SubscriberNotesRepository
+        {
+            get
+            {
+                if (_subscriberNotesRepository == null)
+                {
+                    _subscriberNotesRepository = new SubscriberNotesRepository(_dbContext);
+                }
+                return _subscriberNotesRepository;
+            }
+        }
+
+        public IRecruiterRepository RecruiterRepository
+        {
+            get
+            {
+                if (_recruiterRepository == null)
+                {
+                    _recruiterRepository = new RecruiterRepository(_dbContext);
+                }
+                return _recruiterRepository;
             }
         }
     }

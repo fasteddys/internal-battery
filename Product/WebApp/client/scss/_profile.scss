@@ -174,6 +174,22 @@
                     max-width: 100px;
                 }
             }
+
+            .linkedin-stlying {
+                padding-left: 1.5%;
+
+                .linkedin-sync-button {
+                    padding-right: 0px;
+                }
+
+                .linkedin-sync-expiration {
+                    padding-top: 2.5%;
+
+                    .linkedin-sync-expiration-text {
+                        font-size: 0.7rem;
+                    }
+                }
+            }
         }
 
         .profile-body-container {
@@ -507,8 +523,14 @@
         h2 {
             font-size: 1.5rem;
         }
+
+        .profile-hero {
+            .linkedin-stlying {
+                padding-left: 5%;
+            }
+        }
     }
-}
+    }
 
 // Small Styles
 @media (min-width: 576px) {
@@ -559,6 +581,12 @@
     .profile-container {
         h2 {
             font-size: 2rem;
+        }
+
+        .profile-hero {
+            .linkedin-stlying {
+                padding-left: 1.5%;
+            }
         }
 
         .profile-body-container {
