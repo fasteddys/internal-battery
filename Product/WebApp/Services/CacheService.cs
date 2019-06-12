@@ -40,11 +40,16 @@ namespace UpDiddy.Services
 
         public bool SetCachedValue<T>(string CacheKey, T Value)
         {
+            int CacheTTL = int.Parse(_configuration["redis:cacheTTLInMinutes"]);
+            return SetCachedValue(CacheKey, Value, DateTimeOffset.Now.AddMinutes(CacheTTL));
+        }
+
+        public bool SetCachedValue<T>(string CacheKey, T Value, DateTimeOffset expiryTime)
+        {
             try
             {
-                int CacheTTL = int.Parse(_configuration["redis:cacheTTLInMinutes"]);
                 string newValue = JsonConvert.SerializeObject(Value);
-                _cache.SetString(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL) });
+                _cache.SetString(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = expiryTime });
                 return true;
             }
             catch (Exception ex)
@@ -64,6 +69,17 @@ namespace UpDiddy.Services
             {
                 return false;
             }
+        }
+
+        public async Task<T> GetSetCachedValueAsync<T>(string CacheKey, Func<Task<T>> func, DateTimeOffset expiryTime)
+        {
+            T Value = GetCachedValue<T>(CacheKey);
+            if(Value == null)
+            {
+                Value = await func();
+                SetCachedValue<T>(CacheKey, Value, expiryTime);
+            }
+            return Value;
         }
     }
 }
