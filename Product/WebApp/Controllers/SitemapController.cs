@@ -110,7 +110,9 @@ namespace UpDiddy.Controllers
                 Facet.CategoryFacet()
             };
 
-            var nodes = await BuildBrowseSitemapIndex("browse-jobs-location", facets);
+            var nodes = await _cacheService.GetSetCachedValueAsync("browse-jobs-location-sitemapindex",
+                async () => await BuildBrowseSitemapIndex("browse-jobs-location", facets), DateTimeOffset.Now.AddDays(1));
+
             sitemapIndexNodes.AddRange(nodes);
             return sitemapIndexNodes;
         }
@@ -128,7 +130,9 @@ namespace UpDiddy.Controllers
                 Facet.CityFacet(),
             };
 
-            var nodes = await BuildBrowseSitemapIndex("browse-jobs-industry", facets);
+            var nodes = await _cacheService.GetSetCachedValueAsync("browse-jobs-industry-sitemapindex",
+                async () => await BuildBrowseSitemapIndex("browse-jobs-industry", facets), DateTimeOffset.Now.AddDays(1));
+
             sitemapIndexNodes.AddRange(nodes);
             return sitemapIndexNodes;
         }
@@ -145,7 +149,9 @@ namespace UpDiddy.Controllers
                 Facet.CityFacet(),
             };
 
-            var nodes = await BuildBrowseSitemapIndex("browse-jobs-category", facets);
+            var nodes = await _cacheService.GetSetCachedValueAsync("browse-jobs-category-sitemapindex",
+                async () => await BuildBrowseSitemapIndex("browse-jobs-category", facets), DateTimeOffset.Now.AddDays(1));
+
             sitemapIndexNodes.AddRange(nodes);
             return sitemapIndexNodes;
         }
@@ -224,7 +230,7 @@ namespace UpDiddy.Controllers
 
             List<SitemapNode> nodes = new List<SitemapNode>();
             // add base url
-            nodes.Add(new SitemapNode(string.Format("{0}/{1}", relUrl.TrimStart('/'), urlPart.TrimStart('/'))) { ChangeFrequency = ChangeFrequency.Hourly });
+            nodes.Add(new SitemapNode(string.Format("{0}/{1}", relUrl.TrimStart('/'), urlPart.TrimStart('/'))) { ChangeFrequency = ChangeFrequency.Daily });
 
             int jobCount = 0;
             int page = 1;
