@@ -397,11 +397,6 @@ namespace UpDiddyApi.Models
               .WithMany()
               .HasForeignKey(sn => sn.SubscriberId);
 
-            modelBuilder.Entity<SubscriberNotification>()
-              .HasOne<Subscriber>()
-              .WithMany()
-              .HasForeignKey(sn => sn.Subscriber);
-
             modelBuilder.Entity<SubscriberNotes>()
                 .HasOne<Recruiter>()
                 .WithMany()
