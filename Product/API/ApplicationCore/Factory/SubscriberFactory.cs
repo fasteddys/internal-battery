@@ -64,6 +64,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegreeType)
                 .Include(s => s.SubscriberEducationHistory).ThenInclude(seh => seh.EducationalDegree)
                 .Include(s => s.SubscriberFile)
+                .Include(s => s.SubscriberNotifications).ThenInclude(sn => sn.Notification)
                 .FirstOrDefault();
 
             SubscriberDto subscriberDto = _mapper.Map<SubscriberDto>(subscriber);
