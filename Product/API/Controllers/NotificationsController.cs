@@ -29,6 +29,8 @@ using System.Web;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Shared;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using Hangfire;
+using UpDiddyApi.Workflow;
 
 namespace UpDiddyApi.Controllers
 {
@@ -93,12 +95,13 @@ namespace UpDiddyApi.Controllers
             var isAuth = await _authorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin");
             if (isAuth.Succeeded)
             {
+                Guid NewNotificationGuid = Guid.NewGuid();
                 Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 Notification notification = new Notification();
                 notification.Title = notificationDto.Title;
                 notification.Description = notificationDto.Description;
-                notification.NotificationGuid = Guid.NewGuid();
-                notification.IsGlobal = notificationDto.IsGlobal;
+                notification.NotificationGuid = NewNotificationGuid;
+                notification.IsTargeted = notificationDto.IsTargeted;
                 notification.ExpirationDate = notificationDto.ExpirationDate;
                 notification.CreateDate = DateTime.UtcNow;
                 notification.ModifyDate = DateTime.UtcNow;
@@ -107,6 +110,10 @@ namespace UpDiddyApi.Controllers
                 notification.CreateGuid = Guid.Empty;
                 _repositoryWrapper.NotificationRepository.Create(notification);
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
+
+                Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
+               
                 return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, notificationDto);
             }
             else
@@ -124,11 +131,14 @@ namespace UpDiddyApi.Controllers
             if (isAuth.Succeeded)
             {
                 Notification ExistingNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationDto.NotificationGuid).Result.FirstOrDefault();
+                if (ExistingNotification == null)
+                    return NotFound();
+
                 Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
                 ExistingNotification.Title = NewNotificationDto.Title;
                 ExistingNotification.Description = NewNotificationDto.Description;
-                ExistingNotification.IsGlobal = NewNotificationDto.IsGlobal;
+                ExistingNotification.IsTargeted = NewNotificationDto.IsTargeted;
                 ExistingNotification.ExpirationDate = NewNotificationDto.ExpirationDate;
                 ExistingNotification.ModifyDate = DateTime.UtcNow;
 
@@ -155,9 +165,7 @@ namespace UpDiddyApi.Controllers
                 Notification ExistingNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NotificationGuid).Result.FirstOrDefault();
 
                 if (ExistingNotification == null)
-                    return BadRequest();
-
-                Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                    return NotFound();
 
                 ExistingNotification.IsDeleted = 1;
                 ExistingNotification.ModifyDate = DateTime.UtcNow;
@@ -165,7 +173,9 @@ namespace UpDiddyApi.Controllers
                 _repositoryWrapper.NotificationRepository.Update(ExistingNotification);
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
-                return Ok(new BasicResponseDto { StatusCode = 200, Description = "Partner " + NotificationGuid + " successfully logically deleted." });
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.DeleteSubscriberNotificationRecords(ExistingNotification));
+
+                return Ok(new BasicResponseDto { StatusCode = 200, Description = "Notification " + NotificationGuid + " successfully logically deleted." });
             }
             else
             {

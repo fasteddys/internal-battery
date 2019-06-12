@@ -9,10 +9,10 @@ namespace UpDiddyApi.Models
     {
         public int SubscriberNotificationId { get; set; }
         public Guid SubscriberNotificationGuid { get; set; }
-        public virtual Subscriber Subscriber { get; set; }
         public int SubscriberId { get; set; }
-        public virtual Notification Notification { get; set; }
+        public virtual Subscriber Subscriber { get; set; }
         public int NotificationId { get; set; }
+        public virtual Notification Notification { get; set; }
         public bool HasRead { get; set; }
 
     }

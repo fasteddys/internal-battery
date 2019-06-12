@@ -40,9 +40,19 @@ namespace UpDiddyApi.ApplicationCore.Repository
             await this._dbContext.Set<TEntity>().AddAsync(entity);
         }
 
+        public async Task CreateRange(TEntity[] entity)
+        {
+            await this._dbContext.Set<TEntity>().AddRangeAsync(entity);
+        }
+
         public void Update(TEntity entity)
         {
              this._dbContext.Set<TEntity>().Update(entity);
+        }
+
+        public void UpdateRange(TEntity[] entity)
+        {
+            this._dbContext.Set<TEntity>().UpdateRange(entity);
         }
 
         public void Delete(TEntity entity)

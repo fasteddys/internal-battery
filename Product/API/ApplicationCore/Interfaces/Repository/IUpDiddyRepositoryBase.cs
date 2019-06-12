@@ -11,7 +11,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<IQueryable<TEntity>> GetAllAsync();
         Task<IEnumerable<TEntity>> GetByConditionAsync(Expression<Func<TEntity,bool>> expression);
         Task Create(TEntity entity);
+        Task CreateRange(TEntity[] entity);
         void Update(TEntity entity);
+        void UpdateRange(TEntity[] entity);
         void Delete(TEntity entity);
         Task SaveAsync();
     }

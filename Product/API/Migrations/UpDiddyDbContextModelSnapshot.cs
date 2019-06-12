@@ -1820,7 +1820,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<bool>("IsGlobal");
+                    b.Property<bool>("IsTargeted");
 
                     b.Property<DateTime?>("ModifyDate");
 

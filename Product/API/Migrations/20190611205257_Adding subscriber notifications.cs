@@ -8,6 +8,7 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+
             migrationBuilder.CreateTable(
                 name: "Notification",
                 columns: table => new
@@ -22,7 +23,7 @@ namespace UpDiddyApi.Migrations
                     NotificationGuid = table.Column<Guid>(nullable: false),
                     Title = table.Column<string>(nullable: true),
                     Description = table.Column<string>(nullable: true),
-                    IsGlobal = table.Column<bool>(nullable: false),
+                    IsTargeted = table.Column<bool>(nullable: false),
                     ExpirationDate = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>

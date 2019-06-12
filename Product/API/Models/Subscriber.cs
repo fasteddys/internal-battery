@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UpDiddyApi.Models
 {
@@ -40,6 +41,7 @@ namespace UpDiddyApi.Models
         public EmailVerification EmailVerification {get; set;}
         public List<SubscriberProfileStagingStore> ProfileStagingStore { get; set; } = new List<SubscriberProfileStagingStore>();
         public DateTime? LinkedInSyncDate { get; set; }
+        public List<SubscriberNotification> SubscriberNotifications { get; set; } = new List<SubscriberNotification>();
         #region Avatar Urls
         public string LinkedInAvatarUrl { get; set; }
         public string AvatarUrl { get; set; }
