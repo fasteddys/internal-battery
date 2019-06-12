@@ -37,8 +37,8 @@
                         <div class="form-group row">
                             <label for="Expiration" class="col-sm-2 col-form-label">Expiration Date:</label>
                             <div class="col-sm-10">
-                                <div class="input-group date" data-provide="datepicker">
-                                    <input type="text" class="form-control" asp-for="ExpirationDate" value="@Model.ExpirationDate">
+                                <div class="input-group date">
+                                    <input type="text" class="form-control datepicker begin-tomorrow" asp-for="ExpirationDate" value="@Model.ExpirationDate">
                                     <div class="input-group-addon">
                                         <span class="glyphicon glyphicon-th"></span>
                                     </div>
