@@ -11,21 +11,29 @@ namespace UpDiddyApi.ApplicationCore.Repository
     public class ResumeParseResultRespository : UpDiddyRepositoryBase<ResumeParseResult>, IResumeParseResultRepository    
     {
 
+        private readonly UpDiddyDbContext _db;
+
         public ResumeParseResultRespository(UpDiddyDbContext dbContext) : base(dbContext)
         {
-
+            _db = dbContext;
         }
 
 
+        public async Task<IList<ResumeParseResult>> GetResumeParseResultsForResumeParseById(int resumeParseId)
+        {
+            return _db.ResumeParseResult                 
+                    .Where(rp => rp.IsDeleted == 0 && rp.ResumeParseId == resumeParseId && rp.ParseStatus == (int) ResumeParseStatus.MergeNeeded)
+                    .ToList();
+        }
+
         public async Task<ResumeParseResult> GetResumeParseResultByGuidAsync(Guid resumeParseResultGuid)
         {
-            var queryable = await GetAllAsync();
-            var result = queryable
+
+            var result = _db.ResumeParseResult
                                 .Where(jp => jp.IsDeleted == 0 && jp.ResumeParseResultGuid == resumeParseResultGuid)
-                                .ToList();
+                                .FirstOrDefault();
 
-            return result.Count == 0 ? null : result[0];
-
+            return result;
         }
         public async Task<ResumeParseResult> CreateResumeParseResultAsync(int resumeParseId, int profileSectionId, string prompt, string targetTypeName, string targetProperty, string existingValue, string parsedValue, int status, Guid existingObjectGuid)
         {

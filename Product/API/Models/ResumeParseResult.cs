@@ -24,5 +24,8 @@ namespace UpDiddyApi.Models
 
         public int ProfileSectionId { get; set; }
 
+
+        public string ProcessingMessage { get; set; }
+
     }
 }

@@ -519,7 +519,7 @@ namespace UpDiddy.Controllers
         }
 
 
-        
+
 
         // TODO find a better home for these lookup endpoints - maybe a new lookup or data endpoint?
         [Authorize]
@@ -685,6 +685,21 @@ namespace UpDiddy.Controllers
                 Response.StatusCode = (int)ex.StatusCode;
                 return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
             }
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/resume-merge/{ResumeParseGuid}")]
+        public async Task<IActionResult> ResumeMerge(Guid resumeParseGuid)
+        {
+
+            string formInfo = string.Empty;
+            foreach (string key in Request.Form.Keys)
+                formInfo += key + ";" + Request.Form[key].ToString() + ",";
+
+            await _Api.ResolveResumeParse(resumeParseGuid, formInfo);
+
+            return RedirectToAction("Profile");
         }
     }
 }

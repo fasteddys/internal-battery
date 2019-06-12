@@ -24,5 +24,7 @@ namespace UpDiddyLib.Dto
         public string Prompt { get; set; }
 
         public int ProfileSectionId { get; set; }
+
+        public string ProcessingMessage { get; set; }
     }
 }

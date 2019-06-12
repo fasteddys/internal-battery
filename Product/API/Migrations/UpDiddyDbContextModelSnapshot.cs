@@ -2597,6 +2597,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("ParsedValue");
 
+                    b.Property<string>("ProcessingMessage");
+
                     b.Property<int>("ProfileSectionId");
 
                     b.Property<string>("Prompt");

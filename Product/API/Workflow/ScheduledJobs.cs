@@ -710,12 +710,8 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
-                // TODO JAB confirm passed in subscriber works in this case 
-                // resume.Subscriber = _db.Subscriber.Where(s => s.SubscriberId == resume.SubscriberId).First();
                 resume.Subscriber = subscriber;
-
                 string errMsg = string.Empty;
-
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
                 string base64EncodedString = null;
                 using (var ms = new MemoryStream())

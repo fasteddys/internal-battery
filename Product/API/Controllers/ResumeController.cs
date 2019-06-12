@@ -18,6 +18,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using AutoMapper;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Factory;
+using AutoMapper.QueryableExtensions;
+using System.Collections.Generic;
 
 namespace UpDiddyApi.Controllers
 {
@@ -80,26 +82,69 @@ namespace UpDiddyApi.Controllers
 
 
         [Authorize]
-        [HttpGet]
-        [Route("merge-info/{parseMergeGuid}")]
-        public async Task<IActionResult> MergeInfo(Guid parseMergeGuid)
+        [HttpPost]
+        [Route("resolve-profile-merge/{resumeParseGuid}")]
+        public async Task<IActionResult> ResolveProfileMerge([FromBody] string mergeInfo, Guid resumeParseGuid)
         {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-            return Ok("Start Here!");
+            ResumeParse resumeParse = await _repositoryWrapper.ResumeParseRepository.GetResumeParseByGuid(resumeParseGuid);
 
+            if (resumeParse == null)
+                return BadRequest(new BasicResponseDto() { StatusCode = 404, Description = $"ResumeParse {resumeParseGuid} not found!" });
+
+            // Get subscriber 
+            Subscriber subscriber = SubscriberFactory.GetSubscriberById(_db, resumeParse.SubscriberId);
+
+            if (subscriberGuid != subscriber.SubscriberGuid)
+                return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Requester does not own resume parse" });
+
+
+            await ResumeParseFactory.ResolveProfileMerge(_repositoryWrapper, _mapper, subscriber, mergeInfo);
+
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Success!" });
         }
+
 
 
         [Authorize]
         [HttpGet]
-        [Route("resume-parse/{subscriberGuid}")]
+        [Route("profile-merge-questionnaire/{parseMergeGuid}")]
+        public async Task<IActionResult> MergeInfo(Guid parseMergeGuid)
+        {
+
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            ResumeParse resumeParse = await _repositoryWrapper.ResumeParseRepository.GetResumeParseByGuid(parseMergeGuid);
+
+            if (resumeParse == null )
+                return BadRequest(new BasicResponseDto() { StatusCode = 404, Description = $"Resume parse {parseMergeGuid} does not exist" });
+
+            Subscriber subscriber = SubscriberFactory.GetSubscriberById(_db, resumeParse.SubscriberId);
+
+            if (subscriber == null)
+                return BadRequest(new BasicResponseDto() { StatusCode = 404, Description = $"Subscriber   {resumeParse.SubscriberId} does not exist" });
+
+            if (subscriberGuid != subscriber.SubscriberGuid)
+                return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Requester does not own resume parse" });
+ 
+            ResumeParseQuestionnaireDto resumeParseQuestionaireDto = await ResumeParseFactory.GetResumeParseQuestionnaire(_repositoryWrapper, _mapper, resumeParse);
+
+            return Ok(resumeParseQuestionaireDto);
+
+        }
+
+        /// <summary>
+        /// Get any existing resume parses for user 
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpGet]
+        [Route("resume-parse")]
         public async Task<IActionResult> ResumeParse(Guid guid)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-
-            if (subscriberGuid != subscriberGuid)
-                return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Rquester does not own resume parse" });
-
 
             Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
             if (subscriber == null)
@@ -107,7 +152,11 @@ namespace UpDiddyApi.Controllers
                 return NotFound(new { code = 404, message = $"Subscriber {subscriberGuid} not found" });
             }
 
+            if (subscriberGuid != subscriber.SubscriberGuid)
+                return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Requester does not own resume parse" });
+
             ResumeParse resumeParse = await _repositoryWrapper.ResumeParseRepository.GetLatestResumeParseForSubscriber(subscriber.SubscriberId);
+
             if ( resumeParse != null )
                 return Ok( _mapper.Map<ResumeParseDto>(resumeParse) );
 

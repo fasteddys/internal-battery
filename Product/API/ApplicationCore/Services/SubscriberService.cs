@@ -627,23 +627,30 @@ namespace UpDiddyApi.ApplicationCore.Services
                 bool requireMerge = false;
                 List<string> parsedSkills = Utils.ParseSkillsFromHrXML(resume);
                 IList <SubscriberSkill> skills = SubscriberFactory.GetSubscriberSkillsById(_db, subscriber.SubscriberId);
-
+                HashSet<string> foundSkills = new HashSet<string>();
                 foreach (string skillName in parsedSkills)
                 {
 
+    
                     string parsedSkill = skillName.ToLower();
-                    int status = (int)ResumeParseStatus.MergeNeeded;
-                    string prompt = "Do you have the following skill?";
-                    var existingSkill = skills.Where(s => s.Skill.SkillName.ToLower() == parsedSkill).FirstOrDefault();
-                    if (existingSkill != null)
+                    // were getting back duplicate skills from sovren, so we'll ignore the dupes
+                    if ( foundSkills.Contains(parsedSkill) == false )
                     {
-                        prompt = string.Empty;
-                        status = (int)ResumeParseStatus.Duplicate;
-                    }
-                    else
-                        requireMerge = true;
+                        foundSkills.Add(parsedSkill);
+                        int status = (int)ResumeParseStatus.MergeNeeded;
+                        string prompt = "Do you have the following skill?";
+                        var existingSkill = skills.Where(s => s.Skill.SkillName.ToLower() == parsedSkill).FirstOrDefault();
+                        if (existingSkill != null)
+                        {
+                            prompt = string.Empty;
+                            status = (int)ResumeParseStatus.Duplicate;
+                        }
+                        else
+                            requireMerge = true;
 
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.Skills, prompt, "SubscriberSkill", "SkillName", parsedSkill, parsedSkill, status, subscriber.SubscriberGuid.Value);                  
+                        await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.Skills, prompt, "SubscriberSkill", "SkillName", parsedSkill, parsedSkill, status, subscriber.SubscriberGuid.Value);
+                    }
+                              
                 }
                 // save resume parse results 
                 await _repository.ResumeParseResultRepository.SaveResumeParseResultAsync();

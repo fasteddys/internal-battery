@@ -186,8 +186,8 @@
     }
 
 
-    var getResumeParseMerge = async function (guid) {
-        return await _http.get('/resume/merge-info/' + guid);
+    var getResumeParseMergeQuestionnaire = async function (guid) {
+        return await _http.get('/resume/profile-merge-questionnaire/' + guid);
     }
 
      
@@ -208,7 +208,7 @@
         deleteJobFavorite: deleteJobFavorite,
         uploadAvatar: uploadAvatar,
         removeAvatar: removeAvatar,
-        getResumeParseMerge: getResumeParseMerge
+        getResumeParseMergeQuestionnaire: getResumeParseMergeQuestionnaire
     };
     
 })(API_URL);
