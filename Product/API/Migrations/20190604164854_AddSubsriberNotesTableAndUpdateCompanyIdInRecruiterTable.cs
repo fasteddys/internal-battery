@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace UpDiddyApi.Migrations
 {
-    public partial class AddedNotesTableAndUpdatedRecruiterTable : Migration
+    public partial class AddSubsriberNotesTableAndUpdateCompanyIdInRecruiterTable : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -28,7 +28,7 @@ namespace UpDiddyApi.Migrations
                     SubscriberId = table.Column<int>(nullable: false),
                     RecruiterId = table.Column<int>(nullable: false),
                     Notes = table.Column<string>(nullable: true),
-                    ViewableByOthersInRecruiterCompany = table.Column<bool>(nullable: false)
+                    IsPublic = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
