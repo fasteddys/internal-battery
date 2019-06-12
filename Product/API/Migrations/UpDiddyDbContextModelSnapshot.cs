@@ -2837,8 +2837,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<bool>("IsPublic");
-
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
@@ -2850,6 +2848,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("SubscriberId");
 
                     b.Property<Guid>("SubscriberNotesGuid");
+
+                    b.Property<bool>("ViewableByOthersInRecruiterCompany");
 
                     b.HasKey("SubscriberNotesId");
 

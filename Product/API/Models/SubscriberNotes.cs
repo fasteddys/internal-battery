@@ -12,6 +12,6 @@ namespace UpDiddyApi.Models
         public int SubscriberId { get; set; }
         public int RecruiterId { get; set; }
         public string Notes { get; set; }
-        public bool IsPublic { get; set; } 
+        public bool ViewableByOthersInRecruiterCompany { get; set; } 
     }
 }
