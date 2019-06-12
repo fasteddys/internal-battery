@@ -25,14 +25,32 @@
                 {
                     <div class="col-12 col-md-6 col-xl-12 no-padding @OddNumberJobsSecondToLast">
                         <div><a href="/job/@Job.JobPostingGuid">@Job.Title</a></div>
-                        <div class="similar-jobs-location"><i class="fas fa-map-marker-alt"></i> @Job.City, @state</div>
+                        <div class="similar-jobs-location"><a href="/Jobs?province=@state&city=@Job.City"><i class="fas fa-map-marker-alt"></i> @Job.City, @state</a></div>
+                        <div class="pt-4 f-0_75rem">
+                            @Html.React("Favorite",
+                                new {
+                                    jobGuid = Job.JobPostingGuid,
+                                    jobPostingFavoriteGuid = Model.SimilarJobsFavorites.ContainsKey(Job.JobPostingGuid) ? (Guid?)Model.SimilarJobsFavorites[Job.JobPostingGuid] : null
+                                }
+                            )
+                        </div>
+                        
                     </div>
                 }
                 else
                 {
                     <div class="col-12 col-md-6 col-xl-12 no-padding">
                         <div><a href="/job/@Job.JobPostingGuid">@Job.Title</a></div>
-                        <div class="similar-jobs-location"><i class="fas fa-map-marker-alt"></i> @Job.City, @state</div>
+                        <div class="similar-jobs-location"><a href="/Jobs?province=@state&city=@Job.City"><i class="fas fa-map-marker-alt"></i> @Job.City, @state</a></div>
+                        <div class="pt-4 f-0_75rem">
+                            @Html.React("Favorite",
+                                new {
+                                    jobGuid = Job.JobPostingGuid,
+                                    jobPostingFavoriteGuid = Model.SimilarJobsFavorites.ContainsKey(Job.JobPostingGuid) ? (Guid?) Model.SimilarJobsFavorites[Job.JobPostingGuid] : null
+                                }
+                            )
+                        </div>
+                        
                     </div>
                 }
 
