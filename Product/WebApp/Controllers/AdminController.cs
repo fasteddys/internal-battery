@@ -475,5 +475,108 @@ namespace UpDiddy.Controllers
             }
             return BadRequest();
         }
+
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult Notifications()
+        {
+            return View();
+        }
+
+        [Authorize]
+        [HttpGet("/admin/modifynotification/{NotificationGuid}")]
+        public async Task<IActionResult> ModifyNotificationAsync(Guid NotificationGuid)
+        {
+            NotificationDto notification = await _api.GetNotificationAsync(NotificationGuid);
+
+            if (notification == null)
+                return NotFound();
+
+            return View("ModifyNotification", notification);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> UpdateNotificationAsync(NotificationsViewModel UpdatedNotification)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    BasicResponseDto NewNotificationResponse = await _api.UpdateNotificationAsync(new NotificationDto
+                    {
+                        NotificationGuid = UpdatedNotification.NotificationGuid,
+                        Title = UpdatedNotification.Title,
+                        Description = UpdatedNotification.Description
+                    });
+                    return RedirectToAction("Notifications");
+                }
+                catch (ApiException e)
+                {
+                    // Log exception
+                }
+            }
+            return BadRequest();
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<PartialViewResult> NotificationGridAsync(String searchQuery)
+        {
+            IList<NotificationDto> notifications = await _api.GetNotificationsAsync();
+            return PartialView("Admin/_NotificationGrid", notifications);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult AddNotification()
+        {
+            return View();
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> CreateNotificationAsync(NotificationsViewModel NewNotification)
+        {
+
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    NotificationDto newNotificationFromDb = await _api.CreateNotificationAsync(new NotificationDto
+                    {
+                        NotificationGuid = NewNotification.NotificationGuid,
+                        Title = NewNotification.Title,
+                        Description = NewNotification.Description
+                    });
+                    return RedirectToAction("Notifications");
+                }
+                catch (ApiException e)
+                {
+                    // Log error
+                }
+            }
+            return BadRequest();
+        }
+
+        [Authorize]
+        [HttpGet("/admin/deletenotification/{NotificationGuid}")]
+        public async Task<IActionResult> DeleteNotificationAsync(Guid NotificationGuid)
+        {
+            try
+            {
+                BasicResponseDto response = await _api.DeleteNotificationAsync(NotificationGuid);
+                if (response.StatusCode != 200)
+                    return BadRequest();
+                return RedirectToAction("Notifications");
+            }
+            catch (ApiException e)
+            {
+                // Log error
+            }
+            return BadRequest();
+        }
     }
 }

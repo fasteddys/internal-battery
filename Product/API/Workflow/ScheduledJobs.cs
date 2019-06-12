@@ -1083,11 +1083,14 @@ namespace UpDiddyApi.Workflow
             IList<SubscriberNotification> SubscriberNotifications = new List<SubscriberNotification>(); 
             foreach(Subscriber sub in Subscribers)
             {
+                DateTime CurrentDateTime = DateTime.UtcNow;
                 SubscriberNotification subscriberNotification = new SubscriberNotification
                 {
                     SubscriberNotificationGuid = Guid.NewGuid(),
                     SubscriberId = sub.SubscriberId,
                     NotificationId = Notification.NotificationId,
+                    CreateDate = CurrentDateTime,
+                    ModifyDate = CurrentDateTime,
                     HasRead = false
                 };
                 SubscriberNotifications.Add(subscriberNotification);
