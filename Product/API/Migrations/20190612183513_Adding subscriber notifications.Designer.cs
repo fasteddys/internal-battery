@@ -10,7 +10,7 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    [Migration("20190611205257_Adding subscriber notifications")]
+    [Migration("20190612183513_Adding subscriber notifications")]
     partial class Addingsubscribernotifications
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1816,13 +1816,14 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<string>("Description");
+                    b.Property<string>("Description")
+                        .IsRequired();
 
-                    b.Property<DateTime>("ExpirationDate");
+                    b.Property<DateTime?>("ExpirationDate");
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<bool>("IsTargeted");
+                    b.Property<int>("IsTargeted");
 
                     b.Property<DateTime?>("ModifyDate");
 
@@ -1830,7 +1831,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("NotificationGuid");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Title")
+                        .IsRequired();
 
                     b.HasKey("NotificationId");
 
@@ -2903,7 +2905,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<bool>("HasRead");
+                    b.Property<int>("HasRead");
 
                     b.Property<int>("IsDeleted");
 

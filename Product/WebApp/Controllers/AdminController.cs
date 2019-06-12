@@ -508,7 +508,8 @@ namespace UpDiddy.Controllers
                     {
                         NotificationGuid = UpdatedNotification.NotificationGuid,
                         Title = UpdatedNotification.Title,
-                        Description = UpdatedNotification.Description
+                        Description = UpdatedNotification.Description,
+                        ExpirationDate = UpdatedNotification.ExpirationDate
                     });
                     return RedirectToAction("Notifications");
                 }
@@ -549,7 +550,8 @@ namespace UpDiddy.Controllers
                     {
                         NotificationGuid = NewNotification.NotificationGuid,
                         Title = NewNotification.Title,
-                        Description = NewNotification.Description
+                        Description = NewNotification.Description,
+                        ExpirationDate = NewNotification.ExpirationDate
                     });
                     return RedirectToAction("Notifications");
                 }

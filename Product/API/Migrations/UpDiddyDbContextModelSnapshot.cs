@@ -1814,13 +1814,14 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<string>("Description");
+                    b.Property<string>("Description")
+                        .IsRequired();
 
-                    b.Property<DateTime>("ExpirationDate");
+                    b.Property<DateTime?>("ExpirationDate");
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<bool>("IsTargeted");
+                    b.Property<int>("IsTargeted");
 
                     b.Property<DateTime?>("ModifyDate");
 
@@ -1828,7 +1829,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("NotificationGuid");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Title")
+                        .IsRequired();
 
                     b.HasKey("NotificationId");
 
@@ -2901,7 +2903,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<bool>("HasRead");
+                    b.Property<int>("HasRead");
 
                     b.Property<int>("IsDeleted");
 

@@ -15,6 +15,6 @@ namespace UpDiddy.ViewModels
         [Required]
         public string Description { get; set; }
         public bool IsTargeted { get; set; }
-        public DateTime ExpirationDate { get; set; }
+        public DateTime? ExpirationDate { get; set; }
     }
 }

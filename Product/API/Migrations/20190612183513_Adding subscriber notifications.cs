@@ -8,7 +8,6 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-
             migrationBuilder.CreateTable(
                 name: "Notification",
                 columns: table => new
@@ -21,15 +20,16 @@ namespace UpDiddyApi.Migrations
                     CreateGuid = table.Column<Guid>(nullable: false),
                     ModifyGuid = table.Column<Guid>(nullable: true),
                     NotificationGuid = table.Column<Guid>(nullable: false),
-                    Title = table.Column<string>(nullable: true),
-                    Description = table.Column<string>(nullable: true),
-                    IsTargeted = table.Column<bool>(nullable: false),
-                    ExpirationDate = table.Column<DateTime>(nullable: false)
+                    Title = table.Column<string>(nullable: false),
+                    Description = table.Column<string>(nullable: false),
+                    IsTargeted = table.Column<int>(nullable: false),
+                    ExpirationDate = table.Column<DateTime>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Notification", x => x.NotificationId);
                 });
+            
 
             migrationBuilder.CreateTable(
                 name: "SubscriberNotification",
@@ -45,7 +45,7 @@ namespace UpDiddyApi.Migrations
                     SubscriberNotificationGuid = table.Column<Guid>(nullable: false),
                     SubscriberId = table.Column<int>(nullable: false),
                     NotificationId = table.Column<int>(nullable: false),
-                    HasRead = table.Column<bool>(nullable: false)
+                    HasRead = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -82,6 +82,7 @@ namespace UpDiddyApi.Migrations
 
             migrationBuilder.DropTable(
                 name: "Notification");
+            
         }
     }
 }
