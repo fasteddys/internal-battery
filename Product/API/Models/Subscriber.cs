@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using UpDiddyApi.ApplicationCore.Interfaces;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UpDiddyApi.Models
 {
