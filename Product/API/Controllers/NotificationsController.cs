@@ -96,6 +96,7 @@ namespace UpDiddyApi.Controllers
             if (isAuth.Succeeded)
             {
                 Guid NewNotificationGuid = Guid.NewGuid();
+                DateTime CurrentDateTime = DateTime.UtcNow;
                 Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 Notification notification = new Notification();
                 notification.Title = notificationDto.Title;
@@ -103,18 +104,18 @@ namespace UpDiddyApi.Controllers
                 notification.NotificationGuid = NewNotificationGuid;
                 notification.IsTargeted = notificationDto.IsTargeted;
                 notification.ExpirationDate = notificationDto.ExpirationDate;
-                notification.CreateDate = DateTime.UtcNow;
-                notification.ModifyDate = DateTime.UtcNow;
+                notification.CreateDate = CurrentDateTime;
+                notification.ModifyDate = CurrentDateTime;
                 notification.IsDeleted = 0;
-                notification.ModifyGuid = Guid.Empty;
-                notification.CreateGuid = Guid.Empty;
+                notification.ModifyGuid = loggedInUserGuid;
+                notification.CreateGuid = loggedInUserGuid;
                 _repositoryWrapper.NotificationRepository.Create(notification);
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
                 Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
                 BackgroundJob.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
                
-                return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, notificationDto);
+                return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, _mapper.Map<NotificationDto>(notification));
             }
             else
                 return Unauthorized();
