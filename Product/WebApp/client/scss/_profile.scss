@@ -166,6 +166,7 @@
                 }
 
                 .career-circle-profile-email {
+                    padding-top:3%;
                     color: $color-primary;
                 }
 
@@ -183,7 +184,8 @@
                 }
 
                 .linkedin-sync-expiration {
-                    padding-top: 2.5%;
+                    padding-top: 0.5%;
+                    padding-left:0%;
 
                     .linkedin-sync-expiration-text {
                         font-size: 0.7rem;
@@ -586,6 +588,12 @@
         .profile-hero {
             .linkedin-stlying {
                 padding-left: 1.5%;
+
+
+                .linkedin-sync-expiration {
+                    padding-top: 3%;
+                    padding-left: 1%;
+                }
             }
         }
 
