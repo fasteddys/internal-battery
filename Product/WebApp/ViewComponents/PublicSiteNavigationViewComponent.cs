@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using UpDiddy.Api;
 using UpDiddy.Services.ButterCMS;
 using UpDiddy.ViewModels.Components.Layout;
+using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
 namespace UpDiddy.ViewComponents
@@ -47,8 +48,17 @@ namespace UpDiddy.ViewComponents
             _sysEmail = sysEmail;
         }
 
-        public IViewComponentResult Invoke()
+        public IViewComponentResult Invoke(Guid SubscriberGuid)
         {
+            SubscriberDto Subscriber;
+
+            if (User.Identity.IsAuthenticated)
+            {
+                Subscriber = _Api.SubscriberAsync(SubscriberGuid, false).Result;
+            }
+
+
+
             var ButterResponse =_butterService.RetrieveContentFields<PublicSiteNavigationViewModel<PublicSiteNavigationMenuItemViewModel>>(
                 "CareerCirclePublicSiteNavigation",
                 new string[1] { _configuration["ButterCMS:CareerCirclePublicSiteNavigation:Slug"] }, 

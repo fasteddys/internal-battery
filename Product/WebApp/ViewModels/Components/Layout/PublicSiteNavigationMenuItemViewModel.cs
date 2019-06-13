@@ -24,6 +24,7 @@ namespace UpDiddy.ViewModels.Components.Layout
         public string BadgeText { get; set; }
         [JsonProperty("new_section")]
         public bool IsNewSection { get; set; }
-
+        [JsonProperty("javascript_class")]
+        public string JavascriptClass { get; set; }
     }
 }

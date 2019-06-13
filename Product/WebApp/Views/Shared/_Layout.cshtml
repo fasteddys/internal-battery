@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @using System.Web
 @using React.AspNet;
+@using System.Security.Claims;
 
 @using Microsoft.AspNetCore.Http;
 @using Microsoft.AspNetCore.Mvc
@@ -45,7 +46,7 @@
         <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P78FCL3"
                 height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
-    @await Component.InvokeAsync("PublicSiteNavigation")
+    @await Component.InvokeAsync("PublicSiteNavigation", (Guid.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value)))
     @RenderBody()
     @await Html.PartialAsync("_Footer")
     <script type="text/javascript">

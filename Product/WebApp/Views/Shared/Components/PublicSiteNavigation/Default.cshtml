@@ -28,7 +28,7 @@
                             (item.Role.RolePolicy != null && (await AuthorizationService.AuthorizeAsync(User, item.Role.RolePolicy)).Succeeded)))
                         {
                             <li class="nav-item">
-                                <a class="nav-link" href="@item.Url">
+                                <a class="nav-link @item.JavascriptClass" href="@item.Url">
                                     @Html.Partial("Components/PublicSiteNavigation/_Anchor", item)
                                 </a>
                             </li>
@@ -37,7 +37,7 @@
                         {
                             int ItemHash = item.GetHashCode();
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" id="id_@ItemHash" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle @item.JavascriptClass" id="id_@ItemHash" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     @Html.Partial("Components/PublicSiteNavigation/_Anchor", item)
                                 </a>
                                 <div class="dropdown-menu" aria-labelledby="id_@ItemHash">
@@ -49,7 +49,7 @@
                                         }
                                         if (Child.Role.RolePolicy == null || (Child.Role.RolePolicy != null && (await AuthorizationService.AuthorizeAsync(User, Child.Role.RolePolicy)).Succeeded))
                                         {
-                                            <a class="dropdown-item" href="@Child.Url">
+                                            <a class="dropdown-item @item.JavascriptClass" href="@Child.Url">
                                                 @Html.Partial("Components/PublicSiteNavigation/_Anchor", Child)
                                             </a>
                                         }
