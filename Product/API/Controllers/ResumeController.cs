@@ -100,7 +100,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Requester does not own resume parse" });
 
 
-            await ResumeParseFactory.ResolveProfileMerge(_repositoryWrapper, _mapper, subscriber, mergeInfo);
+            await ResumeParseFactory.ResolveProfileMerge(_repositoryWrapper, _db, _mapper, _syslog, resumeParse, subscriber, mergeInfo);
 
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Success!" });
         }
@@ -155,7 +155,7 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid != subscriber.SubscriberGuid)
                 return BadRequest(new BasicResponseDto() { StatusCode = 401, Description = "Requester does not own resume parse" });
 
-            ResumeParse resumeParse = await _repositoryWrapper.ResumeParseRepository.GetLatestResumeParseForSubscriber(subscriber.SubscriberId);
+            ResumeParse resumeParse = await _repositoryWrapper.ResumeParseRepository.GetLatestResumeParseRequiringMergeForSubscriber(subscriber.SubscriberId);
 
             if ( resumeParse != null )
                 return Ok( _mapper.Map<ResumeParseDto>(resumeParse) );

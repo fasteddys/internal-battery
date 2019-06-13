@@ -8,9 +8,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IRepositoryWrapper
     {
+ 
 
-        UpDiddyDbContext DbContext { get; }
-  
 
         ICountryRepository Country { get; }
         IStateRepository State { get; }

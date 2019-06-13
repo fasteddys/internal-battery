@@ -5,12 +5,26 @@ class ResumeMerge extends React.Component {
 
     constructor(props) {
         super(props)
-        this.state = {            
+        this.state = { 
+            processing: false,
             questions: null,
             hasQuestions: false
         };
         this.onDoParseMerge = this.onDoParseMerge.bind(this);    
 }
+
+
+    spinner() { 
+
+        if (!this.state.processing)
+            return;
+
+        return (<div className="d-inline">
+            <span className="loading-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span className="loading-spinner sr-only">Loading...</span>
+        </div>);
+    }
+
 
     onDoParseMerge(e) {
         console.log("onDoParseMerge detail = " + e.detail);            
@@ -23,7 +37,7 @@ class ResumeMerge extends React.Component {
          
             })
             .catch((err) => {
-                ToastService.error('Unable too locate profile merge data.');
+                ToastService.error('Unable to locate profile merge data.');
             });
     }
 
@@ -63,8 +77,8 @@ class ResumeMerge extends React.Component {
                 {
                     skills.map((o, index) =>
                         (
-                            <li className="list-group-item border-0 p-0" key={o.resumeParseResultGuid}>                                
-                                <div className="ml-3">
+                            <li className="list-group-item border-0 p-0 " key={o.resumeParseResultGuid}>                                
+                                <div className="ml-3 h6">
                                     <input type="checkbox" name={"chk_" + o.resumeParseResultGuid} id={"chk_" + o.resumeParseResultGuid} value={o.parsedValue }  />  {o.existingValue}
                                 </div>                       
                             </li>
@@ -77,7 +91,10 @@ class ResumeMerge extends React.Component {
 
 
 
- 
+     
+    displayWait() {
+        this.setState({ processing: true })
+    }
 
     componentDidMount() {
         window.addEventListener('onDoParseMerge', this.onDoParseMerge);
@@ -133,7 +150,7 @@ class ResumeMerge extends React.Component {
                             <div className="modal-footer">
 
                                     <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>     
-                                    <button id="btnResumeMerge" form="ResumeMergeForm" type="submit" className="btn btn-primary" >Save</button>
+                                    <button id="btnResumeMerge" form="ResumeMergeForm" type="submit" className="btn btn-primary" onClick={() => this.displayWait()} >Save {this.spinner()} </button>
                             </div>
                         </div>
                     </div>

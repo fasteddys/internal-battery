@@ -38,7 +38,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     CompanyId = company.CompanyId,
                     SubscriberId = subscriber.SubscriberId,
                     Title = HttpUtility.HtmlEncode(workHistory.Title),
-                    JobDecription = HttpUtility.HtmlEncode(workHistory.JobDecription),
+                    JobDescription = HttpUtility.HtmlEncode(workHistory.JobDescription),
                     IsCurrent = workHistory.IsCurrent,
                     CreateDate = DateTime.UtcNow,
                     CreateGuid = Guid.Empty,

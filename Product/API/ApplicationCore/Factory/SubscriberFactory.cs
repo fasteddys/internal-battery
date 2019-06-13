@@ -311,6 +311,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return _db.SubscriberEducationHistory
                 .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
                 .Include(s => s.EducationalInstitution)
+                .Include(s => s.EducationalDegree)
+                .Include(s=>s.EducationalDegreeType)
                 .ToList();
         }
 

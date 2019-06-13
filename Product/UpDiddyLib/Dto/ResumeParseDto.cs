@@ -4,7 +4,7 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-    public enum ResumeParseStatus { Merged = 0, MergeNeeded, Declined, Duplicate, Error }
+    public enum ResumeParseStatus { Merged = 0, MergeNeeded, Declined, Duplicate, Error , MergeComplete}
     public class ResumeParseDto
     {     
         public Guid ResumeParseGuid { get; set; }  

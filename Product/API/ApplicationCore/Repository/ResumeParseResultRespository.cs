@@ -19,7 +19,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-        public async Task<IList<ResumeParseResult>> GetResumeParseResultsForResumeParseById(int resumeParseId)
+        public async Task<IList<ResumeParseResult>> GetResultsRequiringMergeById(int resumeParseId)
         {
             return _db.ResumeParseResult                 
                     .Where(rp => rp.IsDeleted == 0 && rp.ResumeParseId == resumeParseId && rp.ParseStatus == (int) ResumeParseStatus.MergeNeeded)

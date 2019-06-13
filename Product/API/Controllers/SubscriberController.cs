@@ -294,7 +294,7 @@ namespace UpDiddyApi.Controllers
                 EndDate = wh.EndDate,
                 IsCurrent = wh.IsCurrent,
                 IsDeleted = wh.IsDeleted,
-                JobDecription = HttpUtility.HtmlDecode(wh.JobDecription),
+                JobDescription = HttpUtility.HtmlDecode(wh.JobDescription),
                 ModifyDate = wh.ModifyDate,
                 ModifyGuid = wh.ModifyGuid,
                 StartDate = wh.StartDate,
@@ -318,7 +318,7 @@ namespace UpDiddyApi.Controllers
         {
             // sanitize user inputs
             WorkHistoryDto.Company = HttpUtility.HtmlEncode(WorkHistoryDto.Company);
-            WorkHistoryDto.JobDecription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDecription);
+            WorkHistoryDto.JobDescription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDescription);
             WorkHistoryDto.Title = HttpUtility.HtmlEncode(WorkHistoryDto.Title);
 
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -350,7 +350,7 @@ namespace UpDiddyApi.Controllers
                 EndDate = WorkHistoryDto.EndDate,
                 IsCurrent = WorkHistoryDto.IsCurrent,
                 Title = WorkHistoryDto.Title,
-                JobDecription = WorkHistoryDto.JobDecription,
+                JobDescription = WorkHistoryDto.JobDescription,
                 Compensation = WorkHistoryDto.Compensation,
                 CompensationTypeId = compensationTypeId,
                 CompanyId = companyId
@@ -368,7 +368,7 @@ namespace UpDiddyApi.Controllers
         {
             // sanitize user inputs 
             WorkHistoryDto.Company = HttpUtility.HtmlEncode(WorkHistoryDto.Company);
-            WorkHistoryDto.JobDecription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDecription);
+            WorkHistoryDto.JobDescription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDescription);
             WorkHistoryDto.Title = HttpUtility.HtmlEncode(WorkHistoryDto.Title);
 
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -401,7 +401,7 @@ namespace UpDiddyApi.Controllers
             WorkHistory.CompanyId = companyId;
             WorkHistory.StartDate = WorkHistoryDto.StartDate;
             WorkHistory.EndDate = WorkHistoryDto.EndDate;
-            WorkHistory.JobDecription = WorkHistoryDto.JobDecription;
+            WorkHistory.JobDescription = WorkHistoryDto.JobDescription;
             WorkHistory.Title = WorkHistoryDto.Title;
             WorkHistory.IsCurrent = WorkHistoryDto.IsCurrent;
             WorkHistory.Compensation = WorkHistoryDto.Compensation;

@@ -33,14 +33,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-        public UpDiddyDbContext DbContext
-        {
-            get
-            {
-                return _dbContext;
-            }
-        }
-
+  
 
         public ICountryRepository Country
         {

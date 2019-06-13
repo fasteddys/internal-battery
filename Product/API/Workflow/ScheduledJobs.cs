@@ -1014,7 +1014,7 @@ namespace UpDiddyApi.Workflow
                 resumeParse.RequiresMerge = 1;
 
             // Save Resume Parse 
-            await _repositoryWrapper.ResumeParseRepository.SaveResumeParse();
+            await _repositoryWrapper.ResumeParseRepository.SaveAsync();
 
             return resumeParse;
         }

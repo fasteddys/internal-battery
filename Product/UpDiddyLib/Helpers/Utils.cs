@@ -547,7 +547,7 @@ namespace UpDiddyLib.Helpers
                     EndDate = endDate,
                     IsCurrent = isCurrent ? 1 : 0,
                     Company = company,
-                    JobDecription = jobDescription,
+                    JobDescription = jobDescription,
                     Title = jobTitle
                 };
                 rVal.Add(workHistory);

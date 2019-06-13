@@ -12,7 +12,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<ResumeParseResult> CreateResumeParseResultAsync(int resumeParseId, int profileSectionId, string prompt, string targetTypeName, string targetProperty, string existingValue, string parsedValue, int status, Guid objectGuid);
         Task<bool> SaveResumeParseResultAsync();
 
-        Task<IList<ResumeParseResult>> GetResumeParseResultsForResumeParseById(int ResumeParseId);
+        Task<IList<ResumeParseResult>> GetResultsRequiringMergeById(int ResumeParseId);
 
 
 

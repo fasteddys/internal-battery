@@ -6,13 +6,18 @@ using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface IResumeParseRepository
+    public interface IResumeParseRepository : IUpDiddyRepositoryBase<ResumeParse>
     {
         Task<ResumeParse> GetResumeParseByGuid(Guid resumeParseGuid);
         Task<ResumeParse> CreateResumeParse(int subscriberId, int subscriberFileId);
-        Task<bool> SaveResumeParse();
+ 
         Task<IList<ResumeParse>> GetResumeParseForSubscriber(int subscriberId);
         Task <ResumeParse> GetLatestResumeParseForSubscriber(int subscriberId);
+
+        Task<ResumeParse> GetLatestResumeParseRequiringMergeForSubscriber(int subscriberId);
+
+
+
         Task<bool> DeleteAllResumeParseForSubscriber(int subscriberId);
     }
 }

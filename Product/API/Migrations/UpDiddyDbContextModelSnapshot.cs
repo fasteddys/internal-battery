@@ -3006,7 +3006,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<string>("JobDecription");
+                    b.Property<string>("JobDescription");
 
                     b.Property<DateTime?>("ModifyDate");
 

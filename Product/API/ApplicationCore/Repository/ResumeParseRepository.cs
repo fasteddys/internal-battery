@@ -40,11 +40,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-        public async Task<bool> SaveResumeParse()
-        {
-            await SaveAsync();
-            return true;
-        }
+ 
 
         public async Task <IList<ResumeParse>> GetResumeParseForSubscriber(int subscriberId)
         {
@@ -64,6 +60,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 .FirstOrDefault();
         }
 
+        public async Task<ResumeParse> GetLatestResumeParseRequiringMergeForSubscriber(int subscriberId)
+        {
+            return _db.ResumeParse
+                .Where(rp => rp.IsDeleted == 0 && rp.SubscriberId == subscriberId && rp.RequiresMerge == 1)
+                .OrderByDescending(rp => rp.CreateDate)
+                .FirstOrDefault();
+        }
+
+
 
         public async Task<bool> DeleteAllResumeParseForSubscriber(int subscriberId)
         {
@@ -79,12 +84,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<ResumeParse> GetResumeParseByGuid(Guid resumeParseGuid)
         {
-            var queryable = await GetAllAsync();
-            var result  = queryable
-                                .Where(jp => jp.IsDeleted == 0 && jp.ResumeParseGuid == resumeParseGuid)
-                                .ToList();
 
-            return result.Count == 0 ? null : result[0];
+            var result = _db.ResumeParse
+                          .Where(jp => jp.IsDeleted == 0 && jp.ResumeParseGuid == resumeParseGuid)
+                          .FirstOrDefault();
+
+            return result;
         }
     }
 }
