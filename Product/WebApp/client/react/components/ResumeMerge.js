@@ -2,7 +2,7 @@
  
 
 class ResumeMerge extends React.Component {
-
+ 
     constructor(props) {
         super(props)
         this.state = { 
@@ -12,6 +12,7 @@ class ResumeMerge extends React.Component {
         };
         this.onDoParseMerge = this.onDoParseMerge.bind(this);    
 }
+
 
 
     spinner() { 
@@ -68,19 +69,17 @@ class ResumeMerge extends React.Component {
     }
 
 
-
-
-    formatSkills(skills) {
+    formatSkillsGood(skills) {
         let rval = <div className="profile-edit-modal-header-container">
             <h5> Which of the following skills do you have? </h5>
             <ul className="list-group">
                 {
                     skills.map((o, index) =>
                         (
-                            <li className="list-group-item border-0 p-0 " key={o.resumeParseResultGuid}>                                
+                            <li className="list-group-item border-0 p-0 " key={o.resumeParseResultGuid}>
                                 <div className="ml-3 h6">
-                                    <input type="checkbox" name={"chk_" + o.resumeParseResultGuid} id={"chk_" + o.resumeParseResultGuid} value={o.parsedValue }  />  {o.existingValue}
-                                </div>                       
+                                    <input type="checkbox" name={"chk_" + o.resumeParseResultGuid} id={"chk_" + o.resumeParseResultGuid} value={o.parsedValue} />  {o.existingValue}
+                                </div>
                             </li>
                         ))
                 }
@@ -88,6 +87,28 @@ class ResumeMerge extends React.Component {
         </div>
         return rval;
     }
+
+    formatSkills(skills) {
+        let rval = <div className="profile-edit-modal-header-container">
+            <h5> Which of the following skills do you have? </h5>
+            <div className="">
+            
+                {
+                    skills.map((o, index) =>
+                        (
+                            <span className="ml-3 h6" style={{ }} key={o.resumeParseResultGuid}>
+                                <label>   <input type="checkbox" name={"chk_" + o.resumeParseResultGuid} id={"chk_" + o.resumeParseResultGuid} value={o.parsedValue} />  {o.existingValue}  </label>
+                                </span>                            
+                        ))
+                    }
+           
+            </div>
+        </div>
+        return rval;
+    }
+
+
+ 
 
 
 
@@ -98,6 +119,7 @@ class ResumeMerge extends React.Component {
 
     componentDidMount() {
         window.addEventListener('onDoParseMerge', this.onDoParseMerge);
+        console.log("--------------------------------- Did Mount ----------------------------------   ")
     }
 
     render() {
