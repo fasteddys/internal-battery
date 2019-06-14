@@ -2100,6 +2100,17 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("PartnerType");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerWebRedirect", b =>
+                {
+                    b.Property<int>("PartnerId");
+
+                    b.Property<string>("RelativePath");
+
+                    b.HasKey("PartnerId");
+
+                    b.ToTable("PartnerWebRedirect");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Payment", b =>
                 {
                     b.Property<int>("PaymentId")
@@ -2349,6 +2360,8 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("CompanyId");
+
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
@@ -2372,6 +2385,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<int?>("SubscriberId");
 
                     b.HasKey("RecruiterId");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("SubscriberId");
 
@@ -2432,8 +2447,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid>("CreateGuid");
 
                     b.Property<int>("IsDeleted");
-
-                    b.Property<int>("IsStaff");
 
                     b.Property<DateTime?>("ModifyDate");
 
@@ -2890,6 +2903,41 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("SubscriberId");
 
                     b.ToTable("SubscriberFile");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberNotes", b =>
+                {
+                    b.Property<int>("SubscriberNotesId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Notes");
+
+                    b.Property<int>("RecruiterId");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.Property<Guid>("SubscriberNotesGuid");
+
+                    b.Property<bool>("ViewableByOthersInRecruiterCompany");
+
+                    b.HasKey("SubscriberNotesId");
+
+                    b.HasIndex("RecruiterId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("SubscriberNotes");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberProfileStagingStore", b =>
@@ -3796,6 +3844,14 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.PartnerWebRedirect", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Partner")
+                        .WithOne("WebRedirect")
+                        .HasForeignKey("UpDiddyApi.Models.PartnerWebRedirect", "PartnerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.PromoCode", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.PromoType", "PromoType")
@@ -3829,6 +3885,10 @@ namespace UpDiddyApi.Migrations
 
             modelBuilder.Entity("UpDiddyApi.Models.Recruiter", b =>
                 {
+                    b.HasOne("UpDiddyApi.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId");
+
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany()
                         .HasForeignKey("SubscriberId");
@@ -3942,6 +4002,19 @@ namespace UpDiddyApi.Migrations
                 {
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany("SubscriberFile")
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberNotes", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Recruiter")
+                        .WithMany()
+                        .HasForeignKey("RecruiterId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber")
+                        .WithMany()
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

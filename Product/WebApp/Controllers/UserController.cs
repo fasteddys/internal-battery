@@ -1,10 +1,12 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddy.Api;
 using X.PagedList;
 
 namespace UpDiddy.Controllers
 {
+    [Authorize]
     [Route("[controller]")]
     public class UserController : BaseController
     {

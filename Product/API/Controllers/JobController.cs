@@ -36,6 +36,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using System.Text;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddyApi.Controllers
 {
@@ -381,10 +383,15 @@ namespace UpDiddyApi.Controllers
             if (jobPosting == null)
                 return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "JobPosting not found" });
             JobPostingDto rVal = _mapper.Map<JobPostingDto>(jobPosting);
-            /* i would prefer to get the semantic url in automapper, but i ran into a blocker while trying to call the static util method
-             * in "MapFrom" while guarding against null refs: an expression tree lambda may not contain a null propagating operator
-             * .ForMember(jp => jp.SemanticUrl, opt => opt.MapFrom(src => Utils.GetSemanticJobUrlPath(src.Industry?.Name,"","","","","")))
-             */
+
+            // set meta data for seo
+            JobPostingFactory.SetMetaData(jobPosting, rVal);
+ 
+           /* i would prefer to get the semantic url in automapper, but i ran into a blocker while trying to call the static util method
+            * in "MapFrom" while guarding against null refs: an expression tree lambda may not contain a null propagating operator
+            * .ForMember(jp => jp.SemanticUrl, opt => opt.MapFrom(src => Utils.GetSemanticJobUrlPath(src.Industry?.Name,"","","","","")))
+            */
+
             rVal.SemanticJobPath = Utils.CreateSemanticJobPath(
                 jobPosting.Industry?.Name,
                 jobPosting.JobCategory?.Name,
@@ -392,7 +399,30 @@ namespace UpDiddyApi.Controllers
                 jobPosting.Province,
                 jobPosting.City,
                 jobPostingGuid.ToString());
+
+            JobQueryDto jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, jobPosting.City, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
+            JobSearchResultDto jobSearchForSingleJob = _cloudTalent.Search(jobQuery);
+
+            // If jobs in same city come back less than 6, broaden search to state.
+            if(jobSearchForSingleJob.JobCount < Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]))
+            {
+                jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, string.Empty, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
+                jobSearchForSingleJob = _cloudTalent.Search(jobQuery);
+            }
+
+            
+
+            rVal.SimilarJobs = jobSearchForSingleJob;
+
             return Ok(rVal);
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/active-job-count")]
+        public async Task<IActionResult> GetActiveJobCount()
+        {
+            var allJobPostings = await _repositoryWrapper.JobPosting.GetAllAsync();
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = allJobPostings.Where(jp => jp.IsDeleted == 0).Count().ToString() });
         }
 
         [HttpGet]

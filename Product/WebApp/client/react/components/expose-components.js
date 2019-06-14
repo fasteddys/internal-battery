@@ -9,6 +9,7 @@ import Favorite from './jobs/Favorite';
 import SATable from './reports/SATable';
 import JobAppReportTable from './reports/JobAppReportTable';
 import BrowseJobs from './jobs/BrowseJobs';
+import Breadcrumb from './breadcrumbs/Breadcrumb';
 
 global.React = React;
 global.ReactDOM = ReactDOM;
@@ -20,6 +21,7 @@ global.ResumeMerge = ResumeMerge;
 global.Checkbox = Checkbox;
 global.Favorite = Favorite;
 global.BrowseJobs = BrowseJobs;
+global.Breadcrumb = Breadcrumb;
 
 // reports
 global.SATable = SATable;

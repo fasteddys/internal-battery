@@ -29,6 +29,7 @@ namespace UpDiddy.Api
         Task<IList<IndustryDto>> GetIndustryAsync();
         Task<IList<JobCategoryDto>> GetJobCategoryAsync();
         Task<List<JobPostingDto>> GetAllJobsAsync();
+        Task<BasicResponseDto> GetActiveJobCountAsync();
         Task<IList<ExperienceLevelDto>> GetExperienceLevelAsync();
         Task<IList<EducationLevelDto>> GetEducationLevelAsync();
         Task<IList<CompensationTypeDto>> GetCompensationTypeAsync();
@@ -89,10 +90,15 @@ namespace UpDiddy.Api
         Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId);
         Task<IList<OfferDto>> GetOffersAsync();
         Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page);
+        Task<RedirectDto> GetSubscriberPartnerWebRedirect();
 
         #region TalentPortal
         Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery);
         Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync();
+        Task<BasicResponseDto> SaveNotes(SubscriberNotesDto subscriberNotesDto);
+        Task<IList<SubscriberNotesDto>> SubscriberNotesSearch(string subscriberGuid, string searchQuery);
+
+        Task<bool> DeleteNoteAsync(Guid subscriberNotesGuid);
         #endregion
 
         #region AdminPortal

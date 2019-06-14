@@ -45,7 +45,7 @@ namespace UpDiddyApi.Controllers
         private readonly ILogger _syslog;
         private readonly IDistributedCache _cache;
         private IB2CGraph _graphClient;
-    private IAuthorizationService _authorizationService;
+        private IAuthorizationService _authorizationService;
         private ISubscriberService _subscriberService;
         private ICloudStorage _cloudStorage;
         private ISysEmail _sysEmail;
@@ -861,6 +861,29 @@ namespace UpDiddyApi.Controllers
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
         }
 
+        [HttpGet("/api/[controller]/me/partner-web-redirect")]
+        public async Task<IActionResult> GetSubscriberPartnerWebRedirectAsync()
+        {
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subscriberGuid == null || subscriberGuid == Guid.Empty)
+                return BadRequest();
+
+            Subscriber subscriber = _db
+                .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid)
+                .FirstOrDefault();
+
+            if (subscriber == null)
+                return BadRequest();
+
+            var result = _db.SubscriberSignUpPartnerReferences.Where(s => s.SubscriberId == subscriber.SubscriberId).FirstOrDefault();
+
+            if (result.PartnerId == null)
+               return Ok(new RedirectDto() { RelativePath = null });
+
+            var redirect = _db.PartnerWebRedirect.Where(e => e.PartnerId == result.PartnerId).FirstOrDefault();
+            return Ok(new RedirectDto() { RelativePath = redirect?.RelativePath });
+        }
+
         [HttpGet("/api/[controller]/me/group")]
         public async Task<IActionResult> MyGroupsAsync()
         {
@@ -1039,5 +1062,59 @@ namespace UpDiddyApi.Controllers
                     null
                 ));
         }
+
+        #region SubscriberNotes
+        /// <summary>
+        /// Save Notes
+        /// </summary>
+        /// <param name="subscriberNotes"></param>
+        /// <returns></returns>
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [HttpPost("/api/[controller]/save-notes")]
+        public async Task<IActionResult> SaveSubscriberNotes([FromBody]SubscriberNotesDto subscriberNotes)
+        {
+            try
+            {
+                if(ModelState.IsValid)
+                {
+                    //get user logged in who is by default recruiter
+                    subscriberNotes.RecruiterGuid= Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                    await _subscriberService.SaveSubscriberNotesAsync(subscriberNotes);
+                    return Ok(new BasicResponseDto { StatusCode = 200, Description = "Saved Successfully." });
+                }
+                else
+                {
+                    _syslog.Log(LogLevel.Trace, $"SubscriberController.SaveSubscriberNotes : Invalid Subscriber notes data: {JsonConvert.SerializeObject(subscriberNotes)}");
+                    return BadRequest(new BasicResponseDto { StatusCode = 400, Description = "Invalid data." });
+                }
+
+            }
+            catch(Exception ex)
+            {
+                _syslog.Log(LogLevel.Error, $"SubscriberController.SaveSubscriberNotes : Error occured when saving notes for data: {JsonConvert.SerializeObject(subscriberNotes)} with message={ex.Message}", ex);
+                return StatusCode(500, new BasicResponseDto { StatusCode = 400, Description = "Internal Server Error." });
+            }
+        }
+
+        [HttpGet("/api/[controller]/notes/{subscriberGuid}")]
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        public async Task<IActionResult> SearchSubscriberNotes(string subscriberGuid, string searchQuery = null)
+        {
+            //get user logged in who is by default recruiter
+            var recruiterGuid = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            var subscriberNotesList=await _subscriberService.GetSubscriberNotesBySubscriberGuid(subscriberGuid, recruiterGuid, searchQuery);
+            return Ok(subscriberNotesList);
+        }
+
+        [Authorize(Policy = "IsRecruiterPolicy")]
+        [HttpDelete("/api/[controller]/notes/{subscriberNotesGuid}")]
+        public async Task<IActionResult> DeleteSubscriberNote(Guid subscriberNotesGuid)
+        {
+           var isDeleted=await _subscriberService.DeleteSubscriberNote(subscriberNotesGuid);
+
+            return Ok(isDeleted);
+        }
+        #endregion
     }
 }

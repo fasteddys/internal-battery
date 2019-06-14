@@ -11,6 +11,13 @@
         position: relative;
         background-color: $color-secondary;
 
+        .hero-sub-image-main {
+            margin-bottom: 1rem;
+            img {
+                width: inherit;
+            }
+        }
+
         &:before {
             content: "";
             display: block;
@@ -23,11 +30,20 @@
             transition: all .3s linear;
         }
 
+        &.no-bg-tint{
+            &:before{
+                background: none;
+            }
+        }
+
         .cc-campaign-sign-up-band-left-container {
             padding: 2rem 0 0 0;
-            .flex-column{
+            position: relative;
+
+            .flex-column {
                 margin-top: 0.25rem;
             }
+
             .img-column {
 
 
@@ -36,13 +52,18 @@
                 }
             }
 
-            i{
+            i {
                 font-size: 6rem;
             }
 
             .hero-header {
-                font-size: 1.5rem;
-                line-height: 2rem;
+                font-size: 1rem;
+                line-height: 1.25rem;
+                min-height: 8rem;
+                h1 {
+                    font-size: 1rem;
+                    line-height: 1.25rem;
+                }
             }
 
             .campaign-bullet-list {
@@ -57,7 +78,19 @@
                 font-size: .75rem;
                 display: inline-block;
                 padding: .5rem 0;
-                border-top: 3px solid $color-white; 
+                border-top: 3px solid $color-white;
+            }
+
+
+
+            .hero-sub-image {
+                position: absolute;
+                bottom: 2rem;
+                width: 80%;
+
+                img {
+                    width: inherit;
+                }
             }
         }
 
@@ -111,7 +144,7 @@
                     font-size: .9rem;
                 }
 
-                .campaign-disclaimer{
+                .campaign-disclaimer {
                     padding-top: 1.25rem;
                     font-size: .75rem;
                 }
@@ -128,6 +161,21 @@
 
 // Extra Small Styles
 @media (min-width: 320px) {
+    .cc-campaign-sign-up-band {
+
+        .cc-campaign-sign-up-band-left-container {
+            
+
+            .hero-header {
+                font-size: 1.5rem;
+                line-height: 2rem;
+                h1 {
+                    font-size: 1.5rem;
+                    line-height: 2rem;
+                }
+            }
+        }
+    }
 }
 
 // Small Styles
@@ -150,11 +198,13 @@
             .hero-header {
                 font-size: 2rem;
                 line-height: 2.5rem;
+
+                h1 {
+                    font-size: 2rem;
+                    line-height: 2.5rem;
+                }
             }
         }
-
-
-        
     }
 }
 // Large Styles

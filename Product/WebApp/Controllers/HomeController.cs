@@ -374,7 +374,11 @@ namespace UpDiddy.Controllers
                     Skills = skillsDto
                 };
                 await _Api.UpdateProfileInformationAsync(Subscriber);
-                return RedirectToAction("Profile");
+                var redirect = await _Api.GetSubscriberPartnerWebRedirect();
+                if(string.IsNullOrEmpty(redirect.RelativePath))
+                    return RedirectToAction("Profile");
+
+                return Redirect(redirect.RelativePath);
             }
             else
             {

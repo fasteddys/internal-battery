@@ -4,6 +4,7 @@
 @using UpDiddyLib.Helpers
 @using System.Collections.Generic;
 @using System;
+@using System.Security.Claims;
 @model SubscriberViewModel
 
 <div class="container-fluid bg-color-primary">
@@ -49,6 +50,14 @@
             <div class="row">
                 <div class="col-12 image">
                     <img class="w-50 rounded-circle" src="@Model.AvatarUrl" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 addEditNote">
+                    <button type="button" class="btn btn-primary addNote" data-toggle="modal" data-target="#addNoteModal"
+                            data-subscriberguid="@Model.SubscriberGuid">
+                        Add Note
+                    </button>
                 </div>
             </div>
             <div class="row">
@@ -105,6 +114,9 @@
                 </li>
                 <li class="nav-item" href="#">
                     <a class="nav-link" id="upskill-tab" data-toggle="tab" href="#upskill" role="tab" aria-controls="upskill" aria-selected="false">Upskilling</a>
+                </li>
+                <li class="nav-item" href="#">
+                    <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">Notes/Activities</a>
                 </li>
             </ul>
 
@@ -192,9 +204,9 @@
                                 <div class="col-12 px-0 py-3">
                                     @foreach (var skill in Model.Skills)
                                     {
-                                    <div class="skill-pill">
-                                        @Html.DisplayFor(item => skill.SkillName)
-                                    </div>
+                                        <div class="skill-pill">
+                                            @Html.DisplayFor(item => skill.SkillName)
+                                        </div>
                                     }
                                 </div>
                             }
@@ -277,7 +289,194 @@
                         }
                     }
                 </div>
+                <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
+                    <div class="container p-1">
+                        <div class="container-align-right">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <input type="text" class="form-control" id="txtNotesCreateDate" placeholder="Created Date" autocomplete="off">
+                                        </div>
+                                        <div class="col-3 notesSearchButton">
+                                            <button id="searchNotes" type="submit" class="btn btn-primary" data-subscriberguid="@Model.SubscriberGuid">Search</button>
+                                        </div>
+                                    </div>                                
+                                <div class="row">
+                                    <div class="col-12 notesGrid">
+                                        @Html.AjaxGrid(Url.Action("SubscriberNotesGrid", "Talent",
+                                       new
+                                       {
+                                           subscriberGuid = Model.SubscriberGuid,
+                                           searchQuery=""
+                                       }))
+                                    </div>
+                                </div>                            
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        @await Html.PartialAsync("_SubscriberAddNotes")
     </div>
 </div>
+
+@section Scripts{
+    <script type="text/javascript">
+
+        window.onload = function () {
+            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+        }
+
+        //add Notes
+        $(document).ready(function () {
+            $('#notesArea').val('');
+            $('#IsPrivate').checked = false;
+
+            //clear notes and isPrivate on clicking addNote button
+            $('.addNote').click(function (e) {
+                $('#notesArea').val('');
+                $('#IsPrivate').prop('checked', false);
+                $('#showError').css('display', 'none');
+                $('#showSuccess').css('display', 'none');
+            });
+
+            //feed Modal
+            $('#addNoteModal').on('show.bs.modal', function (event) {
+                $('#showError').css('display', 'none');
+                $('#showSuccess').css('display', 'none');
+
+                var button = $(event.relatedTarget);
+                var subscriberNotesGuid = button.data('subscribernotesguid');
+                var subscriberGuid = button.data('subscriberguid');
+                var notes = button.data('notes');
+                var isPrivate = (button.data('isprivate')=='True');
+
+                var modal = $(this);
+                modal.find('#subscriberNotesGuid').val(subscriberNotesGuid);
+                modal.find('#subscriberGuid').val(subscriberGuid);
+                modal.find('#notesArea').val(notes);
+                modal.find('#IsPrivate')[0].checked = isPrivate;
+            });
+
+            //search Notes on selection of date
+            $('#searchNotes').click(function (e) {
+                e.preventDefault();
+
+                //refresh grid
+                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+
+                var searchQuery = $('#txtNotesCreateDate').val();
+
+                grid.query.set('searchQuery', searchQuery);
+                grid.reload();
+
+            })
+
+            //save notes
+            $('#saveNotes').click(function (e) {
+                e.preventDefault();
+
+                var notes = $('#notesArea').val();
+                if (notes == '') {
+                    $('.message_box').html(
+                        '<span style="color:red;">Notes is empty!</span>'
+                    );
+                    $('#notesArea').focus();
+                    return false;
+                }
+                else {
+                    $('.message_box').html(
+                        '<span></span>'
+                    );
+
+                    $.ajax({
+                        url: '/Talent/Subscriber/Notes',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            subscriberNotesGuid: $('#subscriberNotesGuid').val(),
+                            subscriberGuid: $('#subscriberGuid').val(),
+                            notes: $('#notesArea').val(),
+                            ViewableByOthersInRecruiterCompany: $('#IsPrivate').is(":checked") == false ? true : false
+                        }),
+                        success: function (res) {
+                            if (res) {
+                                if (res.statusCode == 200) {
+                                    $('#showError').css('display', 'none');
+                                    $('#showSuccess').css('display', 'block');
+                                    setTimeout(function () { $('#addNoteModal').modal('hide'); }, 1000);
+
+
+                                    //refresh grid
+                                    var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                                    var searchQuery = $('#txtNotesCreateDate').val();
+
+                                    grid.query.set('searchQuery', searchQuery);
+                                    grid.reload();
+                                }
+                                else {
+                                    $('#showError').css('display', 'block');
+                                    $('#showSuccess').cc('display', 'none');
+                                }
+
+                            }
+                        },
+                        error: function (jXHR, textStatus, errorThrown) {
+                            $('#showError').css('display', 'block');
+                            $('#showSuccess').css('display', 'none');
+                        }
+                    });
+                }
+
+            })
+
+            $('#txtNotesCreateDate').datepicker({
+                autoclose: true,
+                clearBtn: true
+            });
+        });
+
+        //delete notes
+        function deleteSubscriberNote(subscriberNotesGuid) {
+            bootbox.confirm({
+                message: "Are you sure you want to delete this Note?",
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'No',
+                        classname: 'btn-danger'
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: '/Talent/Subscriber/Notes/' + subscriberNotesGuid,
+                            method: "DELETE",
+                            success: function (data, textStatus, jqXHR) {
+                                if (textStatus === "success") {
+                                    ToastService.success("The grid is being refreshed...", "Note deleted");
+
+                                    //refresh grid
+                                    var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                                    var searchQuery = $('#txtNotesCreateDate').val();
+
+                                    grid.query.set('searchQuery', searchQuery);
+                                    grid.reload();
+                                } else {
+                                    ToastService.warning("The Note was not deleted successfully", "Something went wrong");
+                                }
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                ToastService.error(textStatus, errorThrown);
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    </script>
+}
+

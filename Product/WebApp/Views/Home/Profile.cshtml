@@ -224,9 +224,9 @@
 
         });
 
-</script>
-<script src="~/js/modules/selectize-handling.js" asp-append-version="true"></script>
-<script src="~/js/modules/profile.js" asp-append-version="true"></script>
+    </script>
+    <script src="~/js/modules/selectize-handling.js" asp-append-version="true"></script>
+    <script src="~/js/modules/profile.js" asp-append-version="true"></script>
 }
 
 @* Modals for editing *@
@@ -267,6 +267,17 @@
 
                             <div class="col-md-4 no-padding">
                                 <div class="career-circle-profile-text">My CareerCircle Profile</div>
+                                <img src="@Model.AvatarUrl" id="imgAvatar" class="career-circle-profile-avatar" onclick="avatarSelect()" />
+                                <div>
+                                    <form>
+                                        <input type="file" id="fuAvatar" class="d-none" accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/* .heic .heif" onchange="avatarUpload()" />
+
+                                        <button type="button" class="btn btn-text text-primary edit px-2" onclick="avatarSelect()"> <i class="fas fa-edit text-light-blue" title="Edit"></i></button>
+                                        <button type="button" class="btn btn-text text-primary delete px-2" onclick="avatarDelete()"><i class="fas fa-minus-circle text-light-blue" title="Delete"></i> </button>
+
+                                    </form>
+                                </div>
+                                <br/>
                                 <div id="ProfileName" class="career-circle-profile-name">
                                     <span id="ProfileFirstName">@(string.IsNullOrEmpty(Model.FirstName) ? "CareerCircle User" : Model.FirstName)</span>
                                     <span id="ProfileLastName">@(string.IsNullOrEmpty(Model.LastName) ? "" : Model.LastName)</span>
@@ -285,29 +296,11 @@
                                     }
                                 </div>
                             </div>
-                            <div class="col-md-8">
-                                <img src="@Model.AvatarUrl" id="imgAvatar" class="career-circle-profile-avatar" onclick="avatarSelect()" />
-                                <div>
-                                    <form>
-                                        <input type="file" id="fuAvatar" class="d-none" accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/* .heic .heif" onchange="avatarUpload()" />
-
-                                        <button type="button" class="btn btn-text text-primary edit px-1" onclick="avatarSelect()"> <i class="fas fa-edit text-light-blue" title="Edit"></i></button>
-                                        <button type="button" class="btn btn-text text-primary delete px-1" onclick="avatarDelete()"><i class="fas fa-minus-circle text-light-blue" title="Delete"></i> </button>
-
-                                    </form>
-
-
-                                </div>
-                            </div>
                         </div>
-
-
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md">
+                <div class="row linkedin-stlying">
                         @await Component.InvokeAsync("LinkedInSync", new { SubscriberGuid = Model.SubscriberGuid, LastSyncDate = Model.LinkedInSyncDate == null ? DateTime.MinValue : Model.LinkedInSyncDate, Model.LinkedInAvatarUrl })
-                    </div>
                 </div>
                 <div class="row">
                     <div class="col-md">

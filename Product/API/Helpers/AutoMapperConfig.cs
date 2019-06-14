@@ -80,6 +80,8 @@ namespace UpDiddyApi.Helpers
 
 
             CreateMap<JobPosting, JobPostingDto>()
+                .ForMember(x => x.MetaDescription, opt => opt.Ignore())
+                .ForMember(x => x.MetaTitle, opt => opt.Ignore())
                 .ReverseMap();
 
 
@@ -172,7 +174,7 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.EducationalDegree, opt => opt.MapFrom(src => src.EducationalDegree.Degree))
                 .ForMember(x => x.EducationalDegreeType, opt => opt.MapFrom(src => src.EducationalDegreeType.DegreeType));
 
-
+            CreateMap<SubscriberNotes, SubscriberNotesDto>().ReverseMap();
         }
     }
 }

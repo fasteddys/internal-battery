@@ -58,7 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              * and call this endpoint that many times to ensure we get all jobs 
              */
             int timesToRequestResultsPage = Convert.ToInt32(Math.Ceiling((double)jobCount / 10));
-            
+
             /* run the paged requests in parallel - tested with a variety of MAXDOP settings and 50 was the sweet spot locally 
              * when developing in the office. from home, i had to limit it to 15; anything higher and i started getting SSL errors.
              * i thought this had to do with my home network, but now i am getting SSL errors in the office too beyond 15 threads.
@@ -180,11 +180,46 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                                         group jp by jp.UniqueIdentifier into g
                                         select g.OrderBy(a => a, new CompareByUri()).First()).ToList();
 
-            // identify existing active jobs that were not discovered as valid and mark them for deletion
+            // identify existing active jobs that were not discovered as valid
             var existingActiveJobs = existingJobPages.Where(jp => jp.JobPageStatusId == 2);
             var discoveredActiveAndPendingJobs = uniqueDiscoveredJobs.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2);
             var unreferencedActiveJobs = existingActiveJobs.Except(discoveredActiveAndPendingJobs, new EqualityComparerByUniqueIdentifier());
-            var jobsToDelete = unreferencedActiveJobs.Select(jp => { jp.JobPageStatusId = 4; return jp; }).ToList();
+            // rather than eliminating jobs on the basis that they don't exist in the job site's search results, make a request to each one.
+            // if the page returns 200 OK, leave it alone. if anything else occurs, mark it for deletion.
+            ConcurrentBag<JobPage> jobsToDelete = new ConcurrentBag<JobPage>();
+            Parallel.ForEach(unreferencedActiveJobs, maxdop, unreferencedActiveJob =>
+             {
+                 bool isJobPageExists = false;
+                 try
+                 {
+                     string jobData;
+                     using (var client = new HttpClient(GetHttpClientHandler()))
+                     {
+                         // call the api to retrieve a list of results incrementing the page number each time
+                         UriBuilder builder = new UriBuilder(unreferencedActiveJob.Uri);
+                         var request = new HttpRequestMessage()
+                         {
+                             RequestUri = builder.Uri,
+                             Method = HttpMethod.Get
+                         };
+                         var result = client.SendAsync(request).Result;
+                         if (result.IsSuccessStatusCode)
+                             isJobPageExists = true;
+                     }
+                 }
+                 catch (Exception e)
+                 {
+                     _syslog.Log(LogLevel.Information, $"***** TEKsystemProcess.DiscoverJobPages encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                 }
+                 finally
+                 {
+                     if (!isJobPageExists)
+                     {
+                         unreferencedActiveJob.JobPageStatusId = 4;
+                         jobsToDelete.Add(unreferencedActiveJob);
+                     }
+                 }
+             });
 
             // combine new/modified jobs and unreferenced jobs which should be deleted
             List<JobPage> updatedJobPages = new List<JobPage>();

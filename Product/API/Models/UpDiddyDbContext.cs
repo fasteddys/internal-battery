@@ -140,6 +140,7 @@ namespace UpDiddyApi.Models
         public DbSet<Partner> Partner { get; set; }
         public DbSet<PartnerContact> PartnerContact { get; set; }
         public DbSet<PartnerReferrer> PartnerReferrer { get; set; }
+        public DbSet<PartnerWebRedirect> PartnerWebRedirect { get; set; }
         public DbSet<SubscriberAction> SubscriberAction { get; set; }
         public DbSet<EntityType> EntityType { get; set; }
         public DbSet<PartnerType> PartnerType { get; set; }
@@ -162,8 +163,8 @@ namespace UpDiddyApi.Models
         public DbSet<JobPageStatus> JobPageStatus { get; set; }
         public DbSet<JobSiteScrapeStatistic> JobSiteScrapeStatistic { get; set; }
         public DbSet<ZeroBounce> ZeroBounce { get; set; }
-
         public DbSet<JobReferral> JobReferral { get; set; }
+        public DbSet<SubscriberNotes> SubscriberNotes { get; set; }
 
         public DbSet<ResumeParse> ResumeParse { get; set; }
 
@@ -301,6 +302,9 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<Partner>()
                 .HasMany<PartnerReferrer>(e => e.Referrers);
 
+            modelBuilder.Entity<Partner>()
+                .HasOne<PartnerWebRedirect>(e => e.WebRedirect);
+
             modelBuilder.Entity<Enrollment>()
                 .HasOne<CampaignCourseVariant>(e => e.CampaignCourseVariant)
                 .WithMany();
@@ -390,6 +394,17 @@ namespace UpDiddyApi.Models
                .WithMany()
                .HasForeignKey(jr => jr.RefereeId)
                .IsRequired(false);
+
+            modelBuilder.Entity<SubscriberNotes>()
+              .HasOne<Subscriber>()
+              .WithMany()
+              .HasForeignKey(sn => sn.SubscriberId);
+
+            modelBuilder.Entity<SubscriberNotes>()
+                .HasOne<Recruiter>()
+                .WithMany()
+                .HasForeignKey(sn => sn.RecruiterId);
+               
         }
     }
 }

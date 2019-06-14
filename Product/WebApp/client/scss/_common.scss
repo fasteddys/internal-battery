@@ -10,6 +10,10 @@
     color: $color-primary !important;
 }
 
+.text-cc-secondary {
+    color: $color-secondary;
+}
+
 a {
     &.text-primary:hover {
         color: darken($color-primary, 10%) !important;
@@ -117,6 +121,13 @@ a {
     border: 0;
 }
 
+.f-0_75rem {
+
+    @media (min-width: 0px) {
+        font-size: .75rem;
+    }
+}
+
 .f-1rem {
 
     @media (min-width: 0px) {
@@ -195,6 +206,11 @@ a {
         border-bottom: 0;
         height: initial;
 
+        .breadcrumb {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
         ol {
             background-color: transparent;
             text-transform: initial;
@@ -205,6 +221,18 @@ a {
 
                 &:hover {
                     color: $color-secondary;
+                }
+            }
+
+            li {
+                display: none;
+
+                &:nth-last-child(-n+2) {
+                    display: initial;
+                }
+
+                @media (min-width: 1024px) {
+                    display: initial;
                 }
             }
         }

@@ -23,11 +23,42 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class JobPostingFactory
     {
+
+        public static void SetMetaData(JobPosting jobPosting, JobPostingDto jobPostingDto)
+        {
+            // add meta data for seo 
+            jobPostingDto.MetaDescription = $"Search for {jobPostingDto.Title} jobs near {jobPostingDto.CityProvince} with CareerCircle and find your next great opportunity today.";
+            jobPostingDto.MetaTitle = jobPosting.Title;
+            int numTerms = 3;
+            jobPostingDto.MetaKeywords = jobPostingDto.CityProvince.Replace(',', ' ') + " Employment, Work, " + jobPostingDto.Title + " Jobs ";
+            if (jobPostingDto.Industry != null)
+            {
+                jobPostingDto.MetaKeywords += ", " + jobPostingDto.Industry.Name + " Jobs ";
+
+            }
+
+            if (jobPostingDto.JobCategory != null)
+            {
+                jobPostingDto.MetaKeywords += ", " + jobPostingDto.JobCategory.Name + " Jobs ";
+                ++numTerms;
+            }
+
+            // per foley - limit to 10 terms at max
+            foreach (SkillDto s in jobPostingDto.JobPostingSkills)
+            {
+                jobPostingDto.MetaKeywords += ", " + s.SkillName + " Jobs";
+                ++numTerms;
+                // magic number ok since this is an industry standard that's not going to change 
+                if (numTerms == 10)
+                    break;
+            }
+        }
+
         public static string JobPostingFullyQualifiedUrl(IConfiguration config, JobPostingDto jobPostingDto)
         {
 
       
-            string jobPostingUrl = config["CareerCircle:BaseUrl"] + Utils.CreateSemanticJobPath(
+            string jobPostingUrl = config["Environment:BaseUrl"].TrimEnd('/') + Utils.CreateSemanticJobPath(
                  jobPostingDto.Industry == null ? string.Empty : jobPostingDto.Industry.Name,
                  jobPostingDto.JobCategory == null ? string.Empty : jobPostingDto.JobCategory.Name,
                  jobPostingDto.Country,

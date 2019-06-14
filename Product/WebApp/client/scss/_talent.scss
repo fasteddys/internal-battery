@@ -17,18 +17,28 @@
     .name {
         color: black;
         font-size: 20px;
-        text-align: center;
+        text-align: left;
+        padding-left: 0px;
     }
 
     .title {
         color: #135f79;
         font-size: 16px;
-        text-align: center;
+        text-align: left;
+        padding-left: 0px;
     }
 
     .image {
         color: #135f79;
-        text-align: center;
+        text-align: left;
+        padding-left: 0px;
+        padding-top:6%;
+    }
+
+    .addEditNote {
+        text-align: left;
+        padding-top: 10px;
+        padding-left: 3%;
     }
 
     .contact-header {
@@ -219,6 +229,15 @@
             font-size: 12px;
         }
     }
+
+    .notesSearchButton {
+        text-align:left;
+        height:100%;
+    } 
+    
+    .notesGrid {
+        padding-top: 4px;
+    }
 }
 
 .nav-talent {
@@ -294,6 +313,15 @@
 .mvc-grid {
     .table {
         background-color: white;
+        font-size: 12px;
+
+        .isDisabled {
+            color: currentColor;
+            cursor: not-allowed;
+            opacity: 0.5;
+            text-decoration: none;
+            pointer-events:none;
+        }
 
         th {
             background-color: transparent;

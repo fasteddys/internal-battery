@@ -1,0 +1,74 @@
+﻿@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using UpDiddyLib.Helpers
+@using System.Security.Claims;
+@using React.AspNet;
+@model JobDetailsViewModel
+
+<div class="similar-jobs">
+    <h4>Similar Jobs</h4>
+    <div class="row similar-jobs-list">
+        @{
+            int count = 1;
+            string OddNumberJobsSecondToLast = string.Empty;
+            if (Model.SimilarJobsSearchResult.Jobs.Count % 2 == 1 && Model.SimilarJobsSearchResult.Jobs.Count >= 3)
+            {
+                OddNumberJobsSecondToLast = "odd-n-second-to-last";
+            }
+        }
+        @if (Model.SimilarJobsSearchResult.Jobs.Count > 0)
+        {
+            @foreach (JobViewDto Job in Model.SimilarJobsSearchResult.Jobs)
+            {
+                string state = Job.Province.Length == 2 ? Job.Province : UpDiddyLib.Helpers.Utils.GetStateByName(Job.Province).ToString();
+                if (count == Model.SimilarJobsSearchResult.Jobs.Count - 1)
+                {
+                    <div class="col-12 col-md-6 col-xl-12 no-padding @OddNumberJobsSecondToLast">
+                        <div><a href="/job/@Job.JobPostingGuid">@Job.Title</a></div>
+                        <div class="similar-jobs-location"><a href="/Jobs?province=@state&city=@Job.City"><i class="fas fa-map-marker-alt"></i> @Job.City, @state</a></div>
+                        <div class="pt-4 f-0_75rem">
+                            @Html.React("Favorite",
+                                new {
+                                    jobGuid = Job.JobPostingGuid,
+                                    jobPostingFavoriteGuid = Model.SimilarJobsFavorites.ContainsKey(Job.JobPostingGuid) ? (Guid?)Model.SimilarJobsFavorites[Job.JobPostingGuid] : null
+                                }
+                            )
+                        </div>
+                        
+                    </div>
+                }
+                else
+                {
+                    <div class="col-12 col-md-6 col-xl-12 no-padding">
+                        <div><a href="/job/@Job.JobPostingGuid">@Job.Title</a></div>
+                        <div class="similar-jobs-location"><a href="/Jobs?province=@state&city=@Job.City"><i class="fas fa-map-marker-alt"></i> @Job.City, @state</a></div>
+                        <div class="pt-4 f-0_75rem">
+                            @Html.React("Favorite",
+                                new {
+                                    jobGuid = Job.JobPostingGuid,
+                                    jobPostingFavoriteGuid = Model.SimilarJobsFavorites.ContainsKey(Job.JobPostingGuid) ? (Guid?) Model.SimilarJobsFavorites[Job.JobPostingGuid] : null
+                                }
+                            )
+                        </div>
+                        
+                    </div>
+                }
+
+                count++;
+            }
+        }
+        else
+        {
+            <div class="col-12 col-md-6 col-xl-12 no-padding no-similar-jobs">No similar jobs found.</div>
+
+        }
+
+    </div>
+    @if (Model.SimilarJobsSearchResult.Jobs.Count > 0)
+    {
+        <div class="all-similar-jobs pt-3 mt-3">
+            <a href="/Jobs?keywords=@Model.Name&province=@Model.Province">All similar jobs</a>
+        </div>
+    }
+
+</div>

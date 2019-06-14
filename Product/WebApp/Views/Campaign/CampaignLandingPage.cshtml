@@ -6,7 +6,7 @@
 @using System;
 @model CampaignLandingPageViewModel;
 <div id="CampaignContainer" class="wozu-signup">
-    <div class="cc-campaign-sign-up-band row" style="background-image: url('@Model.hero_image');">
+    <div class="cc-campaign-sign-up-band row no-bg-tint" style="background-image: url('@Model.hero_image');">
         <div class="col-12">
             <div class="container">
                 <div class="row">
@@ -16,7 +16,7 @@
                                 <div class="row">
                                     <div class="col-12 no-padding">
                                         <div class="row">
-                                            
+
                                             <div class="col-12 hero-header font-bold">
                                                 <h1>@Model.hero_title</h1>
                                             </div>
@@ -25,15 +25,22 @@
                                                     @Html.Raw(Model.hero_content)
                                                 </div>
                                             </div>
+                                            
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        <div class="col-12 col-sm-9 hero-sub-image d-none d-md-block">
+                            <img src="@Model.hero_sub_image" />
+                        </div>
                     </div>
                     <div class="col-12 col-md-5 col-lg-4 cc-campaign-sign-up-band-right-container no-padding">
                         <div class="cc-campaign-sign-up-container">
                             <div class="row">
+                                <div class="col-12 container-align-center hero-sub-image-main d-block d-md-none">
+                                    <img src="@Model.hero_sub_image" />
+                                </div>
                                 <div class="col-12 no-padding sub-header font-bold">
                                     Sign Up Today!
                                 </div>
@@ -41,7 +48,7 @@
                                     Create an account to get started
                                 </div>
                                 <div class="col-12 no-padding">
-                                    @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel {IsExpressSignUp = Model.IsExpressSignUp })
+                                    @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel { IsExpressSignUp = Model.IsExpressSignUp })
                                 </div>
                             </div>
                         </div>
