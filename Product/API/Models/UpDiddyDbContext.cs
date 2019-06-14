@@ -120,13 +120,9 @@ namespace UpDiddyApi.Models
         public DbSet<CourseSkill> CourseSkill { get; set; }
         public DbSet<Campaign> Campaign { get; set; }
         public DbSet<Action> Action { get; set; }
-        [Obsolete("Remove this once all related data has been migrated to PartnerContactAction", false)]
-        public DbSet<ContactAction> ContactAction { get; set; }
         public DbSet<Contact> Contact { get; set; }
         public DbSet<CampaignCourseVariant> CampaignCourseVariant { get; set; }
         public DbSet<RebateType> RebateType { get; set; }
-        [Obsolete("Remove this once all related data has been migrated to CampaignPartnerContact", false)]
-        public DbSet<CampaignContact> CampaignContact { get; set; }
         public DbSet<CampaignPhase> CampaignPhase { get; set; }
         public DbSet<JobPosting> JobPosting { get; set; }
         public DbSet<EmploymentType> EmploymentType { get; set; }
@@ -179,19 +175,7 @@ namespace UpDiddyApi.Models
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            #region remove this
-            // todo: get rid of these after migrations are complete and the objects can be removed 
-            //       (don't want to do it yet otherwise ef will drop the tables - that would make it hard to migrate the data to the new tables!)
-            modelBuilder.Entity<ContactAction>()
-                .HasKey(ca => new { ca.ContactId, ca.CampaignId, ca.ActionId, ca.CampaignPhaseId });
-            modelBuilder.Entity<ContactAction>()
-                .Property(ca => ca.OccurredDate)
-                .HasDefaultValueSql("GETUTCDATE()");
-            modelBuilder.Entity<CampaignContact>()
-                .HasKey(cc => new { cc.CampaignId, cc.ContactId });
-            #endregion
-            
+        {   
             modelBuilder.Entity<ZeroBounce>()
                 .Property<string>("ResponseJSON")
                 .HasField("_response");
