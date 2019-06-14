@@ -48,13 +48,20 @@ namespace UpDiddy.ViewComponents
             _sysEmail = sysEmail;
         }
 
-        public IViewComponentResult Invoke(Guid SubscriberGuid)
+        public IViewComponentResult Invoke()
         {
-            SubscriberDto Subscriber;
-
-            if (User.Identity.IsAuthenticated)
+            Guid SubscriberGuid = Guid.Empty;
+            foreach(Claim claim in HttpContext.User.Claims)
             {
-                Subscriber = _Api.SubscriberAsync(SubscriberGuid, false).Result;
+                if (claim.Type.Equals(ClaimTypes.NameIdentifier))
+                    SubscriberGuid = Guid.Parse(claim.Value);
+            }
+
+            int NotificationCount = 0;
+            if (User.Identity.IsAuthenticated && SubscriberGuid != Guid.Empty)
+            {
+                SubscriberDto Subscriber = _Api.SubscriberAsync(SubscriberGuid, false).Result;
+                NotificationCount = Subscriber.Notifications.Count;
             }
 
 
@@ -71,6 +78,7 @@ namespace UpDiddy.ViewComponents
             if(ButterResponse != null)
             {
                 PublicSiteNavigationMenuItemViewModel PublicSiteNavigation = FindDesiredNavigation(ButterResponse, "CareerCirclePublicSiteNavigation");
+                PublicSiteNavigation.NotificationCount = NotificationCount;
                 return View(PublicSiteNavigation);
             }
             return View("Error");

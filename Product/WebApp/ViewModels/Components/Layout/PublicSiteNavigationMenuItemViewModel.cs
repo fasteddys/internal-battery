@@ -26,5 +26,6 @@ namespace UpDiddy.ViewModels.Components.Layout
         public bool IsNewSection { get; set; }
         [JsonProperty("javascript_class")]
         public string JavascriptClass { get; set; }
+        public int NotificationCount { get; set; }
     }
 }

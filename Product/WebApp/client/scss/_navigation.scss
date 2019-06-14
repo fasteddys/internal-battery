@@ -30,6 +30,22 @@ body {
                 }
             }
         }
+
+        .nav-notifications {
+            .notification-count {
+                background-color: $color-red;
+                border-radius: 50%;
+                display: inline-block;
+                min-width: 1rem;
+                text-align: center;
+                color: #fff;
+                font-size: 8px;
+                height: 16px;
+                line-height: 8px;
+                padding: 4px;
+                margin-left: .25rem;
+            }
+        }
     }
 }
 

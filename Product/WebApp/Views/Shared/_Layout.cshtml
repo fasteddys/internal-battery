@@ -46,7 +46,7 @@
         <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P78FCL3"
                 height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
-    @await Component.InvokeAsync("PublicSiteNavigation", (Guid.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value)))
+    @await Component.InvokeAsync("PublicSiteNavigation")
     @RenderBody()
     @await Html.PartialAsync("_Footer")
     <script type="text/javascript">

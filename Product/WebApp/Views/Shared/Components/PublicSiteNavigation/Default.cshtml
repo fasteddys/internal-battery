@@ -9,6 +9,12 @@
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 
 
+
+<script>
+    var userNotificationCount = @Model.NotificationCount;
+</script>
+
+
 <nav class="navbar cc-navbar fixed-top navbar-expand-lg navbar-light bg-white">
     <div class="container">
         <a class="navbar-brand" href="~/Home/Index">
@@ -28,7 +34,7 @@
                             (item.Role.RolePolicy != null && (await AuthorizationService.AuthorizeAsync(User, item.Role.RolePolicy)).Succeeded)))
                         {
                             <li class="nav-item">
-                                <a class="nav-link @item.JavascriptClass" href="@item.Url">
+                                <a class="nav-link @item.JavascriptClass d-flex align-items-center" href="@item.Url">
                                     @Html.Partial("Components/PublicSiteNavigation/_Anchor", item)
                                 </a>
                             </li>
@@ -49,7 +55,7 @@
                                         }
                                         if (Child.Role.RolePolicy == null || (Child.Role.RolePolicy != null && (await AuthorizationService.AuthorizeAsync(User, Child.Role.RolePolicy)).Succeeded))
                                         {
-                                            <a class="dropdown-item @item.JavascriptClass" href="@Child.Url">
+                                            <a class="dropdown-item @Child.JavascriptClass d-flex align-items-center" href="@Child.Url">
                                                 @Html.Partial("Components/PublicSiteNavigation/_Anchor", Child)
                                             </a>
                                         }
