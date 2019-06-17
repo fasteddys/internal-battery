@@ -144,6 +144,9 @@
                                                         <a onclick="expandMoreLinks(this)" class="moreLink-style">+ more >></a>
                                                     </div>
                                                 }
+                                                <div>
+                                                    <a class="facet-link" href="/browse-jobs">Browse All Locations</a>
+                                                </div>
                                             </div>
                                         }
                                     }
@@ -274,7 +277,7 @@
 
 
                <text>
-            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl'>undo</a></div>";
+            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl' data-toggle='tooltip' data-placement='bottom' title='Remove'>X</a><span></div>";
             parentElementUndoElement.innerHTML = innerHtml;
                 </text>
             }
@@ -308,7 +311,7 @@
 
     $(document).ready(function () {
         $('#toggleLink').click(function () {
-            if ($('#toggleArrow')[0].getAttribute('class') == "arrow up") {
+            if ($('#toggleArrow')[0].hasClass("arrow up")) {
                 $('#toggleArrow').removeClass("up");
                 $('#toggleArrow').addClass("down");
 
