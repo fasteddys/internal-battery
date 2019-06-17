@@ -500,7 +500,7 @@ namespace UpDiddyApi.Workflow
                     {
                         // save the number of discovered jobs as the number of processed jobs
                         jobDataMiningStats.NumJobsProcessed = jobPagesToProcess.Count;
-                        _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.JobDataMining aborted processing for job site '{jobSite.Name}' because only {jobPagesToProcess.Count.ToString()} were discovered and there are {existingJobPages.Count.ToString()} existing jobs.");
+                        _syslog.Log(LogLevel.Critical, $"**** ScheduledJobs.JobDataMining aborted processing for job site '{jobSite.Name}' because only {jobPagesToProcess.Count.ToString()} were discovered and there are {existingJobPages.Count.ToString()} existing jobs.");
                     }
                     else
                     {
@@ -517,7 +517,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception e)
             {
                 // todo: implement better logging
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.JobDataMining encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.JobDataMining encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 result = false;
             }
 
