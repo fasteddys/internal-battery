@@ -1,0 +1,82 @@
+﻿@import '_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .dashboard-container {
+        .dashboard {
+            margin: 3rem 0;
+
+            .notification-listing-container {
+                ul {
+                    list-style-type: none;
+                    padding: 0;
+                    margin: 0;
+
+                    li {
+                        padding: 1rem 3rem 1rem 1rem;
+                        cursor: pointer;
+                        border-bottom: 2px solid $color-tertiary-light-gray;
+                        position: relative;
+
+                        &:last-child {
+                            border-bottom: 0;
+                        }
+
+                        &:hover {
+                            background-color: $color-tertiary-light-gray;
+                        }
+
+                        &.selected {
+                            color: $color-primary;
+                        }
+
+                        .unread-dot {
+                            .fa-circle {
+                                color: $color-primary;
+                                font-size: .5rem;
+                            }
+
+                            position: absolute;
+                            top: .5rem;
+                            right: 1rem;
+                        }
+                    }
+                }
+            }
+
+            .notification-view-container {
+                border-left: 2px solid $color-tertiary-mid-gray;
+                > div {
+                    padding: 1rem;
+                }
+
+                div {
+                    &:first-child {
+                        background-color: $color-tertiary-mid-gray;
+                        border-bottom: 2px solid $color-tertiary-mid-gray;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+}
+
+// Large Styles
+@media (min-width: 992px) {
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+}

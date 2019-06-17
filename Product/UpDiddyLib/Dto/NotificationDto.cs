@@ -11,5 +11,6 @@ namespace UpDiddyLib.Dto
         public string Description { get; set; }
         public int IsTargeted { get; set; }
         public DateTime? ExpirationDate { get; set; }
+        public int HasRead { get; set; }
     }
 }

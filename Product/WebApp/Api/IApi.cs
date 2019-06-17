@@ -109,6 +109,7 @@ namespace UpDiddy.Api
         Task<NotificationDto> CreateNotificationAsync(NotificationDto notificationDto);
         Task<BasicResponseDto> UpdateNotificationAsync(NotificationDto notificationDto);
         Task<BasicResponseDto> DeleteNotificationAsync(Guid NotificationGuid);
+        Task<BasicResponseDto> UpdateSubscriberNotificationAsync(Guid SubscriberGuid, NotificationDto notificationDto);
         Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey);
         Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords);
 

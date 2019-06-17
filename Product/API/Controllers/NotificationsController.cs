@@ -146,7 +146,7 @@ namespace UpDiddyApi.Controllers
                 _repositoryWrapper.NotificationRepository.Update(ExistingNotification);
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
-                return Ok(new BasicResponseDto { StatusCode = 200, Description = "Partner " + NewNotificationDto.NotificationGuid + " successfully updated." });
+                return Ok(new BasicResponseDto { StatusCode = 200, Description = "Notification " + NewNotificationDto.NotificationGuid + " successfully updated." });
             }
             else
             {

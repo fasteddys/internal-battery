@@ -1116,5 +1116,41 @@ namespace UpDiddyApi.Controllers
             return Ok(isDeleted);
         }
         #endregion
+
+        [HttpPut("read-notification")]
+        public async Task<IActionResult> SubscriberReadNotification([FromBody] NotificationDto ReadNotification)
+        {
+            if (ReadNotification == null || ReadNotification.NotificationGuid == null)
+                return BadRequest();
+
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, loggedInUserGuid, _syslog, _mapper);
+            Notification ExistingNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == ReadNotification.NotificationGuid).Result.FirstOrDefault();
+
+            if (loggedInUserGuid == subscriberDto.SubscriberGuid)
+            {
+                var t = await _repositoryWrapper.SubscriberNotificationRepository.GetByConditionAsync(
+                    n => n.NotificationId == ExistingNotification.NotificationId && 
+                    n.SubscriberId == subscriberDto.SubscriberId);
+
+                SubscriberNotification SubscriberNotificationEntry = t.FirstOrDefault();
+
+                if (SubscriberNotificationEntry == null)
+                    return NotFound();
+
+
+                SubscriberNotificationEntry.HasRead = 1;
+                SubscriberNotificationEntry.ModifyDate = DateTime.UtcNow;
+
+                _repositoryWrapper.SubscriberNotificationRepository.Update(SubscriberNotificationEntry);
+                await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
+
+                return Ok(new BasicResponseDto { StatusCode = 200, Description = "SubscriberNotification " + SubscriberNotificationEntry.SubscriberNotificationGuid + " successfully updated." });
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
     }
 }

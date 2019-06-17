@@ -1476,6 +1476,20 @@ namespace UpDiddy.Api
             return deletedNotificationResponse;
         }
 
+        public async Task<BasicResponseDto> UpdateSubscriberNotificationAsync(Guid SubscriberGuid, NotificationDto notificationDto)
+        {
+            // Update partner
+            BasicResponseDto updatedSubscriberNotificationResponse = await PutAsync<BasicResponseDto>("subscriber/read-notification", notificationDto);
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Subscriber{SubscriberGuid}";
+            RemoveCachedValue<IList<SubscriberDto>>(cacheKey);
+
+            // Return the newly created partner
+            return updatedSubscriberNotificationResponse;
+
+        }
+
         #endregion
 
         #region JobBoard
