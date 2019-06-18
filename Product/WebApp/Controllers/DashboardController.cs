@@ -46,17 +46,17 @@ namespace UpDiddy.Controllers
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [HttpPost]
         [Route("/Dashboard/SubscriberHasReadNotification")]
-        public async Task<IActionResult> SubscriberHasReadNotification([FromBody] NotificationDto Notification)
+        public async Task<int> SubscriberHasReadNotification([FromBody] NotificationDto Notification)
         {
-            BasicResponseDto response = await _api.UpdateSubscriberNotificationAsync((Guid)this.subscriber.SubscriberGuid, Notification);
-
-            switch (response.StatusCode)
+            await _api.UpdateSubscriberNotificationAsync((Guid)this.subscriber.SubscriberGuid, Notification);
+            this.subscriber = await _api.SubscriberAsync((Guid)this.subscriber.SubscriberGuid, true);
+            int newNotificationCount = 0;
+            foreach(NotificationDto notification in this.subscriber.Notifications)
             {
-                case 200:
-                    return Ok();
-                default:
-                    return Ok();
+                if (notification.HasRead == 0)
+                    newNotificationCount++;
             }
+            return newNotificationCount;
 
 
         }

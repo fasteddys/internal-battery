@@ -61,7 +61,11 @@ namespace UpDiddy.ViewComponents
             if (User.Identity.IsAuthenticated && SubscriberGuid != Guid.Empty)
             {
                 SubscriberDto Subscriber = _Api.SubscriberAsync(SubscriberGuid, false).Result;
-                NotificationCount = Subscriber.Notifications.Count;
+                foreach(NotificationDto Notification in Subscriber.Notifications)
+                {
+                    if (Notification.HasRead == 0)
+                        NotificationCount++;
+                }
             }
 
 

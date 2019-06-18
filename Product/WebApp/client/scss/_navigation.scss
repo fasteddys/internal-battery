@@ -33,17 +33,22 @@ body {
 
         .nav-notifications {
             .notification-count {
-                background-color: $color-red;
-                border-radius: 50%;
-                display: inline-block;
-                min-width: 1rem;
-                text-align: center;
-                color: #fff;
-                font-size: .5rem;
-                height: 1rem;
-                line-height: .5rem;
-                padding: .25rem;
-                margin-left: .25rem;
+
+
+                &.has-notifications {
+                    background-color: $color-red;
+                    border-radius: 50%;
+                    display: inline-block;
+                    min-width: 1rem;
+                    text-align: center;
+                    color: #fff;
+                    font-size: .5rem;
+                    height: 1rem;
+                    line-height: .5rem;
+                    padding: .25rem;
+                    margin-left: .25rem;
+                    font-weight: bold;
+                }
             }
         }
     }

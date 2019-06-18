@@ -1,7 +1,12 @@
-﻿/* Notications Listing */
+﻿import React from 'react';
+
+/* Notications Listing */
 export const NotificationListing = ({ notifications, onNotificationSelect, currentNotification }) => {
     
-    const notificationsList = notifications.map((item) => {
+    const notificationsList = notifications.map((item, i) => {
+        if (i === 0) {
+            item.hasRead = 1;
+        }
         return <NotificationItem key={item.notificationGuid} notification={item} onNotificationSelect={onNotificationSelect} selected={item.notificationGuid === currentNotification.notificationGuid} />
     });
 
@@ -14,27 +19,47 @@ export const NotificationListing = ({ notifications, onNotificationSelect, curre
     );
 };
 
-export const NotificationItem = ({ onNotificationSelect, notification, selected }) => {
-    let classes = "notification-list-item";
-    if (selected) {
-        classes += " selected";
+export class NotificationItem extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            classes: this.props.selected ? "selected" : "",
+            unreadDot: this.props.notification.hasRead === 0 ? <div className="unread-dot"><i className="fas fa-circle"></i></div> : "",
+            onNotificationSelect: this.props.onNotificationSelect
+        };
+        this.onSelect = this.onSelect.bind(this);
     }
 
-    let unreadDot = "";
-    if (notification.hasRead === 0) {
-        unreadDot = <div className="unread-dot"><i className="fas fa-circle"></i></div>;
+    onSelect() {
+        this.state.onNotificationSelect(this.props.notification);
+        this.setState({ unreadDot: "" });
+        
+    };
+
+
+    render() {
+        return (<li key={this.props.notification.notificationGuid} className={this.state.classes} onClick={ this.onSelect}>
+            {this.props.notification.title}
+            {this.state.unreadDot}
+        </li>);
     }
+}
 
-    return (<li key={notification.notificationGuid} selected={selected} className={classes} onClick={() => { onNotificationSelect(notification); }}>
-        {notification.title}
-        {unreadDot}
-    </li>);
-};
-
-export const NotificationView = ({ notification}) => {
+export const NotificationView = ({ notification }) => {
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    const notificationDate = new Date(notification.createDate);
+    const curr_date = notificationDate.getDate();
+    const curr_month = notificationDate.getMonth() + 1; //Months are zero based
+    const curr_year = notificationDate.getFullYear();
+    const outputDate = monthNames[curr_month - 1] + " " + curr_date + ", " + curr_year;
     return (
         <div className="notification-view-container">
-            <div className="pt-3 pb-3"><h5>{notification.title}</h5></div>
+            <div className="pt-3 pb-3">
+                <h5>{notification.title}</h5>
+                <span className="notification-date">{outputDate.toString()}</span>
+            </div>
             <div>{notification.description}</div>  
         </div>
     );

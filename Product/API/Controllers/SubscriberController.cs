@@ -1129,7 +1129,7 @@ namespace UpDiddyApi.Controllers
 
             if (loggedInUserGuid == subscriberDto.SubscriberGuid)
             {
-                var t = await _repositoryWrapper.SubscriberNotificationRepository.GetByConditionAsync(
+                var t = await _repositoryWrapper.SubscriberNotificationRepository.GetByConditionWithTrackingAsync(
                     n => n.NotificationId == ExistingNotification.NotificationId && 
                     n.SubscriberId == subscriberDto.SubscriberId);
 

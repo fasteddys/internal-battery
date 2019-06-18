@@ -26,6 +26,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                 
         }
 
+        public async Task<IEnumerable<TEntity>> GetByConditionWithTrackingAsync(Expression<Func<TEntity, bool>> expression)
+        {
+            return await this._dbContext
+                             .Set<TEntity>()
+                             .Where(expression)
+                             .ToListAsync();
+        }
+
         public async Task<IEnumerable<TEntity>> GetByConditionAsync(Expression<Func<TEntity, bool>> expression)
         {
             return await this._dbContext

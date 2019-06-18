@@ -7,19 +7,25 @@
         }
     });
 
-    var updateSubscriberNotification = async function (notification) {
+    var subscriberReadNotification = async function (notification) {
         var formData = new FormData();
         formData.append("notification", notification);
         return _http.post('/Dashboard/SubscriberHasReadNotification', JSON.stringify(notification), {
             headers: {
                 'Content-Type': 'application/json'
             }
+        }).then(function (response) {
+            userNotificationCount = response.data;
+            setNotificationCount();
+        })
+        .catch(function (error) {
+            console.log(error);
         });
 
-    }
+    };
 
     return {
-        updateSubscriberNotification: updateSubscriberNotification
+        subscriberReadNotification: subscriberReadNotification
     };
 
 })();
