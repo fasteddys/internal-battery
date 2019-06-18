@@ -64,9 +64,10 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              * when developing in the office. from home, i had to limit it to 15; anything higher and i started getting SSL errors.
              * i thought this had to do with my home network, but now i am getting SSL errors in the office too beyond 15 threads.
              * i think we are being throttled by the job site? limiting this to 20; if we see SSL errors in staging/prod we may need
-             * to revisit this. use maxdop = 1 for debugging.
+             * to revisit this. changing to 10 because of socket exceptions that started happening once we switched to careerbuilder.
+             * use maxdop = 1 for debugging.
              */
-            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 20 };
+            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 1 };
             int counter = 0;
             Parallel.For(counter, timesToRequestResultsPage, maxdop, i =>
             {
@@ -106,7 +107,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                                 Method = HttpMethod.Get
                             };
                             var result = client.SendAsync(request).Result;
-                            if (result.StatusCode == HttpStatusCode.Forbidden || result.StatusCode == HttpStatusCode.NotFound)
+                            if (result.StatusCode != HttpStatusCode.OK)
                                 isJobExists = false;
                             rawHtml = result.Content.ReadAsStringAsync().Result;
                         }
@@ -196,10 +197,10 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             ConcurrentBag<JobPage> jobsToDelete = new ConcurrentBag<JobPage>();
             Parallel.ForEach(unreferencedActiveJobs, maxdop, unreferencedActiveJob =>
              {
-                 bool isJobPageExists = false;
+                 bool isJobPageExists = true;
                  try
                  {
-                     string jobData;
+                     string rawHtml;
                      using (var client = new HttpClient(GetHttpClientHandler()))
                      {
                          // call the api to retrieve a list of results incrementing the page number each time
@@ -210,8 +211,13 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                              Method = HttpMethod.Get
                          };
                          var result = client.SendAsync(request).Result;
-                         if (result.IsSuccessStatusCode)
-                             isJobPageExists = true;
+                         if (result.StatusCode != HttpStatusCode.OK)
+                             isJobPageExists = false;
+                         rawHtml = result.Content.ReadAsStringAsync().Result;
+                         HtmlDocument jobHtml = new HtmlDocument();
+                         jobHtml.LoadHtml(rawHtml);
+                         if (jobHtml.DocumentNode.SelectSingleNode("//results-main[@error-message=\"The job you have requested cannot be found. Please see our complete list of jobs below.\"]") != null)
+                             isJobPageExists = false;
                      }
                  }
                  catch (Exception e)
