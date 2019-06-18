@@ -144,7 +144,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
                         break;
                     case "neither":             
-                        subscriber.StateId = null; // TODO JAB test not state id 
+                        subscriber.StateId = null; 
                         resumeParseResult.ParseStatus = (int)ResumeParseStatus.Declined;
                         break;
                 }
@@ -236,7 +236,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
-
          private static async Task<bool> _resolveRadioQuestion(IRepositoryWrapper repositoryWrapper, UpDiddyDbContext db, Subscriber subscriber, ResumeParseResult resumeParseResult, string info)
         {
             try
@@ -263,8 +262,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 }
                 
                 PropertyInfo propertyInfo = type.GetProperty(resumeParseResult.TargetProperty);
-
-                // TODO JAB Deal with statecode and other indirect properties 
+ 
                 if ( obj == null )
                 {
                     resumeParseResult.ParseStatus = (int)ResumeParseStatus.Error;

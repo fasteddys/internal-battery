@@ -213,7 +213,7 @@
         $(document).ready(function () {
             resumeUpload.init();
             emailVerification.init();
-            CareerCircleSignalR.connect("71A7156E-173F-4054-83ED-AD6127BAFE87").then(function (result) {
+            CareerCircleSignalR.connect("@Model.SubscriberGuid").then(function (result) {
                CareerCircleSignalR.listen("ResumeUpLoadAndParseVerb", ResumeParseComplete);
             });
 
@@ -461,7 +461,7 @@
         </div>
     </div>
 </div>
-@Html.React("ResumeMerge", new { name = "jim" })
+@Html.React("ResumeMerge", new {})
 
 
 

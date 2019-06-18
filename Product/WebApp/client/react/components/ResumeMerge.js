@@ -119,7 +119,7 @@ class ResumeMerge extends React.Component {
             });
     }
 
- 
+
     formatQuestions(questions) {
         let rval = <div className="profile-edit-modal-header-container">
             <ul className="list-group">
@@ -145,6 +145,10 @@ class ResumeMerge extends React.Component {
         return rval;
     }
 
+
+    formatRadioQuestionHeader(hasRadioQuestions) {
+        return hasRadioQuestions == true ? <div className="profile-edit-modal-header-container"> <h5>  Please clarify the following: </h5> </div>  : null 
+    }
 
    formatSkillsScrollMessage()
    {
@@ -215,31 +219,44 @@ class ResumeMerge extends React.Component {
         let educationHistoryQuestions = null;
         let skillQuestions = null;
         let parseGuid = "";
+        let hasRadioQuestions = false;
 
         if ( this.state.hasQuestions == true )
             parseGuid = this.state.questions.data.resumeParseGuid;
 
-        if (this.state.hasQuestions == true && this.state.questions.data.contactQuestions.length > 0  )
+        if (this.state.hasQuestions == true && this.state.questions.data.contactQuestions.length > 0) {
             contactQuestions = this.formatQuestions(this.state.questions.data.contactQuestions);  
+            hasRadioQuestions = true;
+        }
+            
 
-        if (this.state.hasQuestions == true && this.state.questions.data.workHistoryQuestions.length > 0)
+        if (this.state.hasQuestions == true && this.state.questions.data.workHistoryQuestions.length > 0) {
             workHistoryQuestions = this.formatQuestions(this.state.questions.data.workHistoryQuestions);  
+            hasRadioQuestions = true;
+        }
+            
 
-        if (this.state.hasQuestions == true && this.state.questions.data.educationHistoryQuestions.length > 0)
+        if (this.state.hasQuestions == true && this.state.questions.data.educationHistoryQuestions.length > 0) {
             educationHistoryQuestions = this.formatQuestions(this.state.questions.data.educationHistoryQuestions);
+            hasRadioQuestions = true;
+        }
+            
 
-        if (this.state.hasQuestions == true && this.state.questions.data.skills.length > 0 &&  this.state.skillChecks != null)
-            skillQuestions = this.formatSkills(this.state.questions.data.skills);
+        if (this.state.hasQuestions == true && this.state.questions.data.skills.length > 0 && this.state.skillChecks != null) {
+
+            skillQuestions = this.formatSkills(this.state.questions.data.skills); 
+        }
+            
   
         return (
             <form action={"/Home/resume-merge/" + parseGuid}  method="post" id="ResumeMergeForm">   
             <div className="modal fade" id="ResumeMergeModal" tabIndex="-1" role="dialog" aria-hidden="true">
                 <div className="modal-dialog" role="document">                
                     <div className="modal-content">
-                        <div className="modal-body">
-                            <div className="profile-edit-modal-header-container">
-                                <h5> Please clarify the following: </h5>
-                            </div>            
+                         <div className="modal-body">
+                            {
+                               this.formatRadioQuestionHeader(hasRadioQuestions)
+                            }                            
                             {
                                 contactQuestions
                             }

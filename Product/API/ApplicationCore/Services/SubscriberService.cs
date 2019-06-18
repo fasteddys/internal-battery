@@ -564,7 +564,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // html encode to be consistent with api endpoints that encode to protect again script injection 
                 string parsedDegreeType = Utils.RemoveNewlines(HttpUtility.HtmlEncode(parsedEducationHistory.EducationalDegreeType.Trim()));
 
-                if (string.IsNullOrWhiteSpace(degreeType) || degreeType == parsedDegreeType)
+                if (string.IsNullOrWhiteSpace(degreeType) || degreeType.ToLower() == parsedDegreeType.ToLower())
                 {    
                     // case where current value is not specified but parsed value is 
                     if  (string.IsNullOrWhiteSpace(degreeType) == true && string.IsNullOrWhiteSpace(parsedDegreeType) == false )
@@ -591,23 +591,23 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             if (string.IsNullOrWhiteSpace(parsedEducationHistory.EducationalDegree) == false)
             {
-                string degreeType = Utils.RemoveNewlines(educationHistory.EducationalDegree.Degree.Trim());
+                string degree = Utils.RemoveNewlines(educationHistory.EducationalDegree.Degree.Trim());
                 // html encode to be consistent with api endpoints that encode to protect again script injection 
-                string parsedDegreeType = Utils.RemoveNewlines(HttpUtility.HtmlEncode(parsedEducationHistory.EducationalDegree.Trim()));
+                string parsedDegree= Utils.RemoveNewlines(HttpUtility.HtmlEncode(parsedEducationHistory.EducationalDegree.Trim()));
 
-                if (string.IsNullOrWhiteSpace(degreeType) || degreeType == parsedDegreeType)
+                if (string.IsNullOrWhiteSpace(degree) || degree.ToLower() == parsedDegree.ToLower())
                 {
                     // case where current value is not specified but parsed value is 
-                    if (string.IsNullOrWhiteSpace(degreeType) == true && string.IsNullOrWhiteSpace(parsedDegreeType) == false)
+                    if (string.IsNullOrWhiteSpace(degree) == true && string.IsNullOrWhiteSpace(parsedDegree) == false)
                     {
-                        EducationalDegree newDegreeType = await EducationalDegreeFactory.GetOrAdd(_db, parsedDegreeType);
+                        EducationalDegree newDegreeType = await EducationalDegreeFactory.GetOrAdd(_db, parsedDegree);
                         educationHistory.EducationalDegreeId = newDegreeType.EducationalDegreeId;
                     }
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory.EducationalDegreeId", "EducationalDegreeId", degreeType, parsedDegreeType, (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory.EducationalDegreeId", "EducationalDegreeId", degree, parsedDegree, (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
                 }
                 else
                 {
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, $"What was the major of your degree earned at {educationHistory.EducationalInstitution.Name}?", "SubscriberEducationHistory.EducationalDegreeId", "EducationalDegreeId", degreeType, parsedDegreeType, (int)ResumeParseStatus.MergeNeeded, educationHistory.SubscriberEducationHistoryGuid);
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, $"What was the major of your degree earned at {educationHistory.EducationalInstitution.Name}?", "SubscriberEducationHistory.EducationalDegreeId", "EducationalDegreeId", degree, parsedDegree, (int)ResumeParseStatus.MergeNeeded, educationHistory.SubscriberEducationHistoryGuid);
                     requiresMerge = true;
                 }
                     
@@ -669,7 +669,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 string parsedJobTitle = Utils.RemoveNewlines(HttpUtility.HtmlEncode(parsedWorkHistory.Title.Trim()));
 
 
-                if (string.IsNullOrWhiteSpace(jobTitle) || jobTitle == parsedJobTitle)
+                if (string.IsNullOrWhiteSpace(jobTitle) || jobTitle.ToLower() == parsedJobTitle.ToLower())
                 {
                     // html encode to be consistent with api endpoints that encode to protect again script injection 
                     workHistory.Title = parsedJobTitle;
@@ -690,7 +690,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 // html encode to be consistent with api endpoints that encode to protect again script injection 
                 string parsedJobDescription = Utils.RemoveNewlines(HttpUtility.HtmlEncode(parsedWorkHistory.JobDescription.Trim()));
 
-                if (string.IsNullOrWhiteSpace(jobDescription) || jobDescription == parsedJobDescription)
+                if (string.IsNullOrWhiteSpace(jobDescription) || jobDescription.ToLower() == parsedJobDescription.ToLower())
                 {                    
                     workHistory.JobDescription = parsedJobDescription;
                     await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "JobDescription", jobDescription, parsedJobDescription, (int)ResumeParseStatus.Merged, workHistory.SubscriberWorkHistoryGuid);
