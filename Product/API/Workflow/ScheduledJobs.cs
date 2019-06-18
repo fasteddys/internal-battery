@@ -486,13 +486,14 @@ namespace UpDiddyApi.Workflow
 
                     // perform safety check to ensure we don't erase all jobs if there is an intermittent problem with a job site
                     bool isExceedsSafetyThreshold = false;
+                    int existingActiveJobPageCount = 0;
                     if (existingJobPages != null && existingJobPages.Count > 0)
                     {
-                        int existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
+                        existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
                         if (existingActiveJobPageCount > 0)
                         {
                             decimal percentageShift = (decimal)jobPagesToProcess.Count / (decimal)existingActiveJobPageCount;
-                            if (percentageShift < 0.75M)
+                            if (percentageShift < 0.40M)
                                 isExceedsSafetyThreshold = true;
                         }
                     }
@@ -500,7 +501,7 @@ namespace UpDiddyApi.Workflow
                     {
                         // save the number of discovered jobs as the number of processed jobs
                         jobDataMiningStats.NumJobsProcessed = jobPagesToProcess.Count;
-                        _syslog.Log(LogLevel.Critical, $"**** ScheduledJobs.JobDataMining aborted processing for job site '{jobSite.Name}' because only {jobPagesToProcess.Count.ToString()} were discovered and there are {existingJobPages.Count.ToString()} existing jobs.");
+                        _syslog.Log(LogLevel.Critical, $"**** ScheduledJobs.JobDataMining aborted processing for job site '{jobSite.Name}' because only {existingActiveJobPageCount.ToString()} were discovered and there are {existingJobPages.Count.ToString()} existing jobs. The threshold is currently set at 40%.");
                     }
                     else
                     {
