@@ -68,7 +68,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              * use maxdop = 1 for debugging.
              */
 
-            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 1 };
+            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 10 };
             int counter = 0;
             Parallel.For(counter, timesToRequestResultsPage, maxdop, i =>
             {
