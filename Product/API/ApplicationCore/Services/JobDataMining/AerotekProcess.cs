@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -95,6 +96,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     Uri jobDetailUri = null;
                     try
                     {
+                        bool isJobExists = true;
                         // retrieve the latest job page data
                         jobDetailUri = new Uri(_jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url);
                         using (var client = new HttpClient(GetHttpClientHandler()))
@@ -105,13 +107,17 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                                 Method = HttpMethod.Get
                             };
                             var result = client.SendAsync(request).Result;
+                            if (result.StatusCode == HttpStatusCode.Forbidden || result.StatusCode == HttpStatusCode.NotFound)
+                                isJobExists = false;
                             rawHtml = result.Content.ReadAsStringAsync().Result;
                         }
                         HtmlDocument jobHtml = new HtmlDocument();
                         jobHtml.LoadHtml(rawHtml);
 
                         // does the html contain an error message indicating the job does not exist?
-                        bool isJobExists = jobHtml.DocumentNode.SelectSingleNode("//results-main[@error-message=\"The job you have requested cannot be found. Please see our complete list of jobs below.\"]") == null ? true : false;
+                        if (jobHtml.DocumentNode.SelectSingleNode("//results-main[@error-message=\"The job you have requested cannot be found. Please see our complete list of jobs below.\"]") != null)
+                            isJobExists = false;
+
                         if (!isJobExists)
                         {
                             jobPageStatusId = 4; // delete
@@ -120,7 +126,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                         {
                             // append additional data that is not present in search results for the page, status already marked as new
                             var descriptionFromHtml = jobHtml.DocumentNode.SelectSingleNode("//div[@class=\"job-description\"]");
-                            job.responsibilities = descriptionFromHtml.InnerHtml.Trim();
+                            if (descriptionFromHtml != null && descriptionFromHtml.InnerHtml != null)
+                                job.responsibilities = descriptionFromHtml.InnerHtml.Trim();
                         }
 
                         // get the related JobPostingId (if one exists)
