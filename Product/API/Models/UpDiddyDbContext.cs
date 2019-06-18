@@ -402,7 +402,7 @@ namespace UpDiddyApi.Models
                 .WithMany()
                 .HasForeignKey(sn => sn.RecruiterId);
 
-            modelBuilder.Entity<Notification>().HasQueryFilter(n => n.IsDeleted == 0 && n.ExpirationDate > DateTime.UtcNow);
+            modelBuilder.Entity<Notification>().HasQueryFilter(n => n.IsDeleted == 0 && (n.ExpirationDate > DateTime.UtcNow || n.ExpirationDate == null));
 
 
         }

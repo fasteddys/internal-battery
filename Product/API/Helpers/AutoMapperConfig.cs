@@ -187,6 +187,8 @@ namespace UpDiddyApi.Helpers
 
             CreateMap<SubscriberNotes, SubscriberNotesDto>().ReverseMap();
             CreateMap<SubscriberNotification, SubscriberNotificationDto>().ReverseMap();
+            CreateMap<Notification, NotificationDto>()
+                .ForMember(n => n.HasRead, opt => opt.Ignore());
         }
     }
 }

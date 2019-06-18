@@ -13,7 +13,10 @@ class Dashboard extends React.Component {
     }
 
     componentDidMount() {
-        this.onNotificationSelect(this.state.notifications[0]);
+        // If there's any notification and it's unread, mark it as read.
+        if (this.state.notifications[0]) {
+            this.onNotificationSelect(this.state.notifications[0]);
+        }
     }
 
     onNotificationSelect(notification) {
@@ -26,17 +29,16 @@ class Dashboard extends React.Component {
                 });
             }
         }
-        
-    };
+    }
 
     render() {
         return (
             <div className="dashboard shadow-2">
-                <div className="row">
-                    <div className="col-12 col-sm-3 no-padding">
+                <div className="row row-eq-height">
+                    <div className="col-12 col-sm-2 no-padding">
                         <NotificationListing notifications={this.state.notifications} onNotificationSelect={(notification) => this.onNotificationSelect(notification)} currentNotification={this.state.currentNotification} />
                     </div>
-                    <div className="col-12 col-sm-9 no-padding">
+                    <div className="col-12 col-sm-10 no-padding">
                         <NotificationView notification={this.state.currentNotification} />
                     </div>
                 </div>

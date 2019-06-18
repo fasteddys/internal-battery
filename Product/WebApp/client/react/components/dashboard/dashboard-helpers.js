@@ -10,13 +10,25 @@ export const NotificationListing = ({ notifications, onNotificationSelect, curre
         return <NotificationItem key={item.notificationGuid} notification={item} onNotificationSelect={onNotificationSelect} selected={item.notificationGuid === currentNotification.notificationGuid} />
     });
 
-    return (
-        <div className="notification-listing-container">
-            <ul>
-                {notificationsList}
-            </ul>
-        </div>
-    );
+    if (notifications.length > 0) {
+        return (
+            <div className="notification-listing-container">
+                <ul>
+                    {notificationsList}
+                </ul>
+            </div>
+        );
+    }
+    else {
+        return (
+            <div className="notification-listing-container">
+                <ul>
+                    <li>No new notifications.</li>
+                </ul>
+            </div>
+        );
+    }
+    
 };
 
 export const ReadableDateTime = (props) => {
@@ -49,6 +61,14 @@ export class NotificationItem extends React.Component {
         
     };
 
+    componentWillReceiveProps(nextProps) {
+        this.setState({
+            classes: nextProps.selected ? "selected" : "",
+            unreadDot: nextProps.notification.hasRead === 0 ? <div className="unread-dot"><i className="fas fa-circle"></i></div> : "",
+            onNotificationSelect: nextProps.onNotificationSelect
+        });
+    }
+
 
     render() {
         return (<li key={this.props.notification.notificationGuid} className={this.state.classes} onClick={ this.onSelect}>
@@ -60,13 +80,23 @@ export class NotificationItem extends React.Component {
 }
 
 export const NotificationView = ({ notification }) => {
-    return (
-        <div className="notification-view-container">
-            <div className="pt-3 pb-3">
-                <h5>{notification.title}</h5>
-                <span className="notification-date"><ReadableDateTime date={notification.createDate} /></span>
+    if (notification) {
+        return (
+            <div className="notification-view-container">
+                <div className="header-container">
+                    <h5>{notification.title}</h5>
+                    <span className="notification-date"><ReadableDateTime date={notification.createDate} /></span>
+                </div>
+                <div>{notification.description}</div>
             </div>
-            <div>{notification.description}</div>  
-        </div>
-    );
+        );
+    }
+    else {
+        return (
+            <div className="notification-view-container">
+                <div>Check back later for more CareerCircle notifications!</div>
+            </div>
+        );
+    }
+    
 }
