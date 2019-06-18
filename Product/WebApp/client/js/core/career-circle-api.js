@@ -179,12 +179,32 @@
                 },
                 subscriber: { 
                     subscriberGuid: subscriberGuid
-                } 
+                }  
             }));
     }
 
     var deleteJobFavorite = async function(jobGuid) {
         return await _http.delete(`/job/favorite/${jobGuid}`);
+    }
+
+    var addJobAlert = async function (jobQuery, description, frequency, executionHour, executionMinute, executionDayOfWeek) {
+        var subscriberGuid = SessionStorage.getJSON(_session_key) ? SessionStorage.getJSON(_session_key).uniqueId : null;
+        var jobPostingAlertDto = JSON.stringify({
+            jobQuery: jobQuery,
+            description: description,
+            frequency: frequency,
+            executionHour: parseInt(executionHour, 10),
+            executionMinute: parseInt(executionMinute, 10),
+            executionDayOfWeek: parseInt(executionDayOfWeek, 10),
+            subscriber: {
+                subscriberGuid: subscriberGuid
+            }
+        });
+        return await _http.post('/job/alert', jobPostingAlertDto);
+    }
+
+    var deleteJobAlert = async function (jobPostingAlertGuid) {
+        return await _http.delete(`/job/alert/${jobPostingAlertGuid}`);
     }
 
     return {
@@ -203,7 +223,9 @@
         addJobFavorite: addJobFavorite,
         deleteJobFavorite: deleteJobFavorite,
         uploadAvatar: uploadAvatar,
-        removeAvatar: removeAvatar
+        removeAvatar: removeAvatar,
+        addJobAlert: addJobAlert,
+        deleteJobAlert: deleteJobAlert
     };
     
 })(API_URL);

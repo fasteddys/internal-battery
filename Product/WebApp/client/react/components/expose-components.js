@@ -8,6 +8,10 @@ import Favorite from './jobs/Favorite';
 import SATable from './reports/SATable';
 import JobAppReportTable from './reports/JobAppReportTable';
 import BrowseJobs from './jobs/BrowseJobs';
+import JobPostingAlert from './jobs/JobPostingAlert';
+import Select from './Select';
+import Validate from './Validate';
+import TextArea from './TextArea';
 import Breadcrumb from './breadcrumbs/Breadcrumb';
 
 global.React = React;
@@ -19,6 +23,10 @@ global.ResumeUpload = ResumeUpload;
 global.Checkbox = Checkbox;
 global.Favorite = Favorite;
 global.BrowseJobs = BrowseJobs;
+global.JobPostingAlert = JobPostingAlert;
+global.Select = Select;
+global.Validate = Validate;
+global.TextArea = TextArea;
 global.Breadcrumb = Breadcrumb;
 
 // reports

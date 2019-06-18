@@ -597,6 +597,14 @@ namespace UpDiddy.Api
             return await GetAsync<PagingDto<UpDiddyLib.Dto.User.JobDto>>(endpoint);
         }
 
+        public async Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page)
+        {
+            string endpoint = "subscriber/me/job-alerts";
+            if (page.HasValue)
+                endpoint = QueryHelpers.AddQueryString(endpoint, "page", page.Value.ToString());
+            return await GetAsync<PagingDto<JobPostingAlertDto>>(endpoint);
+        }
+
         public async Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null)
         {
             string cacheKey = $"job-{JobPostingGuid}";

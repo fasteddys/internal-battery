@@ -184,7 +184,7 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             //updatejiobReferral if referral is not empty
-            if(!string.IsNullOrEmpty(dto.ReferralCode))
+            if (!string.IsNullOrEmpty(dto.ReferralCode))
             {
                 _jobService.UpdateJobReferral(dto.ReferralCode, subscriber.SubscriberGuid.ToString());
             }
@@ -644,7 +644,7 @@ namespace UpDiddyApi.Controllers
             if (SubscriberFactory.UpdateAvatar(_db, _configuration, avatar, subscriberGuid, ref errorMsg))
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Avatar updated." });
             else
-                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg});            
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
         }
 
 
@@ -664,7 +664,7 @@ namespace UpDiddyApi.Controllers
         }
 
 
-         
+
         [HttpPut("/api/[controller]/onboard")]
         public IActionResult Onboard()
         {
@@ -878,7 +878,7 @@ namespace UpDiddyApi.Controllers
             var result = _db.SubscriberSignUpPartnerReferences.Where(s => s.SubscriberId == subscriber.SubscriberId).FirstOrDefault();
 
             if (result.PartnerId == null)
-               return Ok(new RedirectDto() { RelativePath = null });
+                return Ok(new RedirectDto() { RelativePath = null });
 
             var redirect = _db.PartnerWebRedirect.Where(e => e.PartnerId == result.PartnerId).FirstOrDefault();
             return Ok(new RedirectDto() { RelativePath = redirect?.RelativePath });
@@ -910,10 +910,10 @@ namespace UpDiddyApi.Controllers
             searchQuery = Utils.ToSqlServerFullTextQuery(searchQuery);
             searchFilter = HttpUtility.UrlDecode(searchFilter);
 
-            var filter = new SqlParameter("@Filter", (searchFilter == null || searchFilter.ToLower() == "any" ) ? string.Empty : searchFilter);
+            var filter = new SqlParameter("@Filter", (searchFilter == null || searchFilter.ToLower() == "any") ? string.Empty : searchFilter);
             var query = new SqlParameter("@Query", searchQuery == null ? string.Empty : searchQuery);
             var spParams = new object[] { filter, query };
- 
+
             var result = _db.SubscriberSearch.FromSql("[dbo].[System_Search_Subscribers] @Filter, @Query", spParams)
                 .ProjectTo<SubscriberDto>(_mapper.ConfigurationProvider)
                 .ToList();
@@ -1004,6 +1004,33 @@ namespace UpDiddyApi.Controllers
             return Ok(map);
         }
 
+        [HttpGet("/api/[controller]/me/job-alerts")]
+        public async Task<IActionResult> GetSubscriberJobAlerts(int? page)
+        {
+            Guid userGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var jobAlerts = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(userGuid);
+            
+            var query = jobAlerts.Select(ja => new JobPostingAlertDto()
+            {
+                Description = ja.Description,
+                ExecutionDayOfWeek = ja.ExecutionDayOfWeek,
+                ExecutionHour = ja.ExecutionHour,
+                ExecutionMinute = ja.ExecutionMinute,
+                Frequency = ja.Frequency.ToString(),
+                JobPostingAlertGuid = ja.JobPostingAlertGuid
+            });
+
+            var result = new PagingDto<JobPostingAlertDto>()
+            {
+                Page = page.HasValue ? page.Value : 1,
+                PageSize = 10,
+                Count = query.Count()
+            };
+            result.Results = query.Skip((result.Page - 1) * result.PageSize).Take(result.PageSize).ToList();
+
+            return Ok(result);
+        }
+
         [HttpGet("/api/[controller]/me/jobs")]
         public async Task<IActionResult> GetSubscriberJobFavorites(int? page)
         {
@@ -1022,18 +1049,19 @@ namespace UpDiddyApi.Controllers
             jobQuery = jobQuery.Where(job => job.PostingExpirationDateUTC > DateTime.UtcNow.Date);
 
             var query = (from job in jobQuery
-            join company in companyQuery on job.CompanyId equals company.CompanyId
-            join favorite in favoriteQuery on job.JobPostingId equals favorite.JobPostingId into jobFavorite
-            from subFavorite in jobFavorite.DefaultIfEmpty() 
-            join applied in jobAppQuery on job.JobPostingId equals applied.JobPostingId into jobApplied
-            from subApplied in jobApplied.DefaultIfEmpty()
-            where subFavorite.JobPostingFavoriteGuid != null || subApplied.JobApplicationGuid != null
-            select new UpDiddyLib.Dto.User.JobDto {
-                JobPosting = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(job),
-                JobPostingFavoriteGuid = subFavorite.JobPostingFavoriteGuid,
-                JobApplication = _mapper.Map<JobApplicationDto>(subApplied),
-                Company = _mapper.Map<CompanyDto>(company)
-            });
+                         join company in companyQuery on job.CompanyId equals company.CompanyId
+                         join favorite in favoriteQuery on job.JobPostingId equals favorite.JobPostingId into jobFavorite
+                         from subFavorite in jobFavorite.DefaultIfEmpty()
+                         join applied in jobAppQuery on job.JobPostingId equals applied.JobPostingId into jobApplied
+                         from subApplied in jobApplied.DefaultIfEmpty()
+                         where subFavorite.JobPostingFavoriteGuid != null || subApplied.JobApplicationGuid != null
+                         select new UpDiddyLib.Dto.User.JobDto
+                         {
+                             JobPosting = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(job),
+                             JobPostingFavoriteGuid = subFavorite.JobPostingFavoriteGuid,
+                             JobApplication = _mapper.Map<JobApplicationDto>(subApplied),
+                             Company = _mapper.Map<CompanyDto>(company)
+                         });
 
             var result = new PagingDto<UpDiddyLib.Dto.User.JobDto>()
             {
