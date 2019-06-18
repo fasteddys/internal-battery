@@ -19,6 +19,19 @@ export const NotificationListing = ({ notifications, onNotificationSelect, curre
     );
 };
 
+export const ReadableDateTime = (props) => {
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    const notificationDate = new Date(props.date);
+    const curr_date = notificationDate.getDate();
+    const curr_month = notificationDate.getMonth() + 1; //Months are zero based
+    const curr_year = notificationDate.getFullYear();
+    const outputDate = monthNames[curr_month - 1] + " " + curr_date + ", " + curr_year;
+    return (<span>{outputDate}</span>)
+    
+};
+
 export class NotificationItem extends React.Component {
     constructor(props) {
         super(props);
@@ -41,24 +54,17 @@ export class NotificationItem extends React.Component {
         return (<li key={this.props.notification.notificationGuid} className={this.state.classes} onClick={ this.onSelect}>
             {this.props.notification.title}
             {this.state.unreadDot}
+            <div><span className="notification-date"><ReadableDateTime date={this.props.notification.createDate} /></span></div>
         </li>);
     }
 }
 
 export const NotificationView = ({ notification }) => {
-    const monthNames = ["January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-    const notificationDate = new Date(notification.createDate);
-    const curr_date = notificationDate.getDate();
-    const curr_month = notificationDate.getMonth() + 1; //Months are zero based
-    const curr_year = notificationDate.getFullYear();
-    const outputDate = monthNames[curr_month - 1] + " " + curr_date + ", " + curr_year;
     return (
         <div className="notification-view-container">
             <div className="pt-3 pb-3">
                 <h5>{notification.title}</h5>
-                <span className="notification-date">{outputDate.toString()}</span>
+                <span className="notification-date"><ReadableDateTime date={notification.createDate} /></span>
             </div>
             <div>{notification.description}</div>  
         </div>

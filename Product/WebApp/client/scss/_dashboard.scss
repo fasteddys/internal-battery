@@ -5,8 +5,15 @@
     .dashboard-container {
         .dashboard {
             min-height: 10rem;
+
+            .notification-date {
+                color: $color-tertiary-gray;
+                font-size: .75rem;
+            }
+
             .notification-listing-container {
                 min-height: 10rem;
+
                 ul {
                     list-style-type: none;
                     padding: 0;
@@ -47,6 +54,7 @@
             .notification-view-container {
                 border-left: 2px solid $color-tertiary-mid-gray;
                 min-height: 10rem;
+
                 > div {
                     padding: 1rem;
                 }
@@ -55,10 +63,6 @@
                     &:first-child {
                         background-color: $color-tertiary-mid-gray;
                         border-bottom: 2px solid $color-tertiary-mid-gray;
-                        .notification-date{
-                            color: $color-tertiary-gray;
-                            font-size: .75rem;
-                        }
                     }
                 }
             }
