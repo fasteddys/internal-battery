@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -13,6 +14,7 @@ using Wangkanai.Detection;
 
 namespace UpDiddy.Controllers
 {
+    [Authorize]
     public class DashboardController : BaseController
     {
 
@@ -35,7 +37,7 @@ namespace UpDiddy.Controllers
             _deviceResolver = deviceResolver;
         }
 
-        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [LoadSubscriber(isHardRefresh: true, isSubscriberRequired: true)]
         [HttpGet]
         public async Task<IActionResult> Index()
         {

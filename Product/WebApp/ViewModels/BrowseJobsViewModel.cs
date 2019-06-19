@@ -10,5 +10,6 @@ namespace UpDiddy.ViewModels
     public class BrowseJobsViewModel : BaseViewModel
     {
         public IList<BrowseJobsByTypeViewModel> ViewModels { get; set; }
+        public BreadcrumbViewModel Breadcrumbs { get; set; }
     }
 }

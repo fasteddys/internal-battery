@@ -78,7 +78,6 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-
         #region job statistics 
 
 
@@ -178,12 +177,12 @@ namespace UpDiddyApi.Controllers
                 else
                 {
                     JobPostingFavorite jobPostingFavorite = _db.JobPostingFavorite.Where(jpf => jpf.SubscriberId == subscriber.SubscriberId && jpf.JobPostingId == jobPosting.JobPostingId).FirstOrDefault();
-                    if(jobPostingFavorite == null)
+                    if (jobPostingFavorite == null)
                     {
                         jobPostingFavorite = JobPostingFavoriteFactory.CreateJobPostingFavorite(subscriber, jobPosting);
                         _db.JobPostingFavorite.Add(jobPostingFavorite);
                     }
-                    else 
+                    else
                     {
                         jobPostingFavorite.IsDeleted = 0;
                         jobPostingFavorite.ModifyDate = DateTime.UtcNow;
@@ -386,11 +385,11 @@ namespace UpDiddyApi.Controllers
 
             // set meta data for seo
             JobPostingFactory.SetMetaData(jobPosting, rVal);
- 
-           /* i would prefer to get the semantic url in automapper, but i ran into a blocker while trying to call the static util method
-            * in "MapFrom" while guarding against null refs: an expression tree lambda may not contain a null propagating operator
-            * .ForMember(jp => jp.SemanticUrl, opt => opt.MapFrom(src => Utils.GetSemanticJobUrlPath(src.Industry?.Name,"","","","","")))
-            */
+
+            /* i would prefer to get the semantic url in automapper, but i ran into a blocker while trying to call the static util method
+             * in "MapFrom" while guarding against null refs: an expression tree lambda may not contain a null propagating operator
+             * .ForMember(jp => jp.SemanticUrl, opt => opt.MapFrom(src => Utils.GetSemanticJobUrlPath(src.Industry?.Name,"","","","","")))
+             */
 
             rVal.SemanticJobPath = Utils.CreateSemanticJobPath(
                 jobPosting.Industry?.Name,
@@ -404,13 +403,13 @@ namespace UpDiddyApi.Controllers
             JobSearchResultDto jobSearchForSingleJob = _cloudTalent.Search(jobQuery);
 
             // If jobs in same city come back less than 6, broaden search to state.
-            if(jobSearchForSingleJob.JobCount < Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]))
+            if (jobSearchForSingleJob.JobCount < Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]))
             {
                 jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, string.Empty, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
                 jobSearchForSingleJob = _cloudTalent.Search(jobQuery);
             }
 
-            
+
 
             rVal.SimilarJobs = jobSearchForSingleJob;
 
@@ -430,19 +429,24 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetAllJobsForSitemap()
         {
             var allJobsForSitemap = JobPostingFactory.GetAllJobPostingsForSitemap(_db);
-            return Ok(_mapper.Map<List<JobPostingDto>>(allJobsForSitemap));            
+            return Ok(_mapper.Map<List<JobPostingDto>>(allJobsForSitemap));
         }
 
         [HttpGet]
         [Route("api/[controller]/browse-jobs-location/{Country?}/{Province?}/{City?}/{Industry?}/{JobCategory?}/{Skill?}/{PageNum?}")]
         public async Task<IActionResult> JobSearchByLocation(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum)
-
-
         {
-
             int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
             JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize, Request.Query);
             JobSearchResultDto rVal = _cloudTalent.Search(jobQuery);
+
+            // set common properties for an alert jobQuery and include this in the response
+            jobQuery.DatePublished = null;
+            jobQuery.ExcludeCustomProperties = 1;
+            jobQuery.ExcludeFacets = 1;
+            jobQuery.PageSize = 20;
+            jobQuery.NumPages = 1;
+            rVal.JobQueryForAlert = jobQuery;
 
             // don't let this stop job search from returning
             try
@@ -504,7 +508,8 @@ namespace UpDiddyApi.Controllers
         {
             JobPosting jp = await _db.JobPosting.Where(x => x.JobPostingGuid == jobGuid).FirstOrDefaultAsync();
             ClientEvent ce = await _cloudTalent.CreateClientEventAsync(dto.RequestId, dto.Type, new List<string>() { jp.CloudTalentUri }, dto.ParentClientEventId);
-            return Ok(new GoogleCloudEventsTrackingDto {
+            return Ok(new GoogleCloudEventsTrackingDto
+            {
                 RequestId = ce.RequestId,
                 ClientEventId = ce.EventId
             });
@@ -547,6 +552,78 @@ namespace UpDiddyApi.Controllers
             await _jobService.UpdateJobViewed(referrerCode);
             return Ok();
         }
+        #endregion
+
+        #region Job Alerts
+
+        [Authorize]
+        [HttpPost]
+        [Route("api/[controller]/alert")]
+        public IActionResult CreateJobPostingAlert([FromBody] JobPostingAlertDto jobPostingAlertDto)
+        {
+            if (jobPostingAlertDto == null)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Missing required fields." });
+            Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subsriberGuidClaim == null || subsriberGuidClaim == Guid.Empty)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "You must be logged in to create a job alert." });
+            else
+                jobPostingAlertDto.Subscriber = new SubscriberDto() { SubscriberGuid = subsriberGuidClaim };
+            var existingJobPostingAlerts = JobPostingAlertFactory.GetJobPostingAlertsBySubscriber(_repositoryWrapper, _syslog, jobPostingAlertDto.Subscriber.SubscriberGuid.Value);
+            if (existingJobPostingAlerts != null && existingJobPostingAlerts.Count() == 5)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "You may only have 5 active job alerts - please delete one in 'My Alerts' first." });
+
+            bool isSuccess = JobPostingAlertFactory.SaveJobPostingAlert(_repositoryWrapper, _syslog, jobPostingAlertDto);
+
+            if (isSuccess)
+                return Ok();
+            else
+                return UnprocessableEntity(new BasicResponseDto() { StatusCode = 422, Description = "An error occurred while trying to create the job alert." });
+        }
+
+        [Authorize]
+        [HttpPut]
+        [Route("api/[controller]/alert")]
+        public IActionResult EditJobPostingAlert([FromBody] JobPostingAlertDto jobPostingAlertDto)
+        {
+            if (jobPostingAlertDto == null)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Missing required fields." });
+            Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (subsriberGuidClaim == null || subsriberGuidClaim == Guid.Empty)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "You must be logged in to edit a job alert." });
+            else
+                jobPostingAlertDto.Subscriber = new SubscriberDto() { SubscriberGuid = subsriberGuidClaim };
+
+            bool isSuccess = JobPostingAlertFactory.SaveJobPostingAlert(_repositoryWrapper, _syslog, jobPostingAlertDto);
+
+            if (isSuccess)
+                return Ok();
+            else
+                return UnprocessableEntity(new BasicResponseDto() { StatusCode = 422, Description = "An error occurred while trying to edit the job alert." });
+        }
+
+        [Authorize]
+        [HttpDelete]
+        [Route("api/[controller]/alert/{jobPostingAlertGuid}")]
+        public IActionResult DeleteJobPostingAlert(Guid jobPostingAlertGuid)
+        {
+            if (jobPostingAlertGuid == null)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Missing required fields." });
+            Guid subsriberGuidClaim = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var jobPostingAlerts = JobPostingAlertFactory.GetJobPostingAlertsBySubscriber(_repositoryWrapper, _syslog, subsriberGuidClaim);
+            if (jobPostingAlerts == null)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job alerts can only be deleted by the owner of the job alert." });
+            var jobPostingAlertToDelete = jobPostingAlerts.Where(jpa => jpa.JobPostingAlertGuid == jobPostingAlertGuid).FirstOrDefault();
+            if (jobPostingAlertToDelete == null)
+                return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job alerts can only be deleted by the owner of the job alert." });
+
+            bool isSuccess = JobPostingAlertFactory.DeleteJobPostingAlert(_repositoryWrapper, _syslog, jobPostingAlertToDelete.JobPostingAlertGuid.Value);
+
+            if (isSuccess)
+                return Ok();
+            else
+                return UnprocessableEntity(new BasicResponseDto() { StatusCode = 422, Description = "An error occurred while trying to delete the job alert." });
+        }
+
         #endregion
     }
 }

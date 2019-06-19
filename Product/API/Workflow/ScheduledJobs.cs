@@ -28,6 +28,8 @@ using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using System.Linq.Expressions;
+using static UpDiddyLib.Helpers.Constants;
+using Newtonsoft.Json.Linq;
 
 namespace UpDiddyApi.Workflow
 {
@@ -486,13 +488,14 @@ namespace UpDiddyApi.Workflow
 
                     // perform safety check to ensure we don't erase all jobs if there is an intermittent problem with a job site
                     bool isExceedsSafetyThreshold = false;
+                    int existingActiveJobPageCount = 0;
                     if (existingJobPages != null && existingJobPages.Count > 0)
                     {
-                        int existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
+                        existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
                         if (existingActiveJobPageCount > 0)
                         {
                             decimal percentageShift = (decimal)jobPagesToProcess.Count / (decimal)existingActiveJobPageCount;
-                            if (percentageShift < 0.75M)
+                            if (percentageShift < 0.40M)
                                 isExceedsSafetyThreshold = true;
                         }
                     }
@@ -500,7 +503,7 @@ namespace UpDiddyApi.Workflow
                     {
                         // save the number of discovered jobs as the number of processed jobs
                         jobDataMiningStats.NumJobsProcessed = jobPagesToProcess.Count;
-                        _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.JobDataMining aborted processing for job site '{jobSite.Name}' because only {jobPagesToProcess.Count.ToString()} were discovered and there are {existingJobPages.Count.ToString()} existing jobs.");
+                        _syslog.Log(LogLevel.Critical, $"**** ScheduledJobs.JobDataMining aborted processing for job site '{jobSite.Name}' because only {existingActiveJobPageCount.ToString()} were discovered and there are {existingJobPages.Count.ToString()} existing jobs. The threshold is currently set at 40%.");
                     }
                     else
                     {
@@ -517,7 +520,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception e)
             {
                 // todo: implement better logging
-                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.JobDataMining encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.JobDataMining encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 result = false;
             }
 
@@ -699,6 +702,53 @@ namespace UpDiddyApi.Workflow
         #endregion
 
         #region CareerCircle Jobs 
+
+        public void ExecuteJobPostingAlert(Guid jobPostingAlertGuid)
+        {
+            try
+            {
+                JobPostingAlert jobPostingAlert = _repositoryWrapper.JobPostingAlertRepository.GetJobPostingAlert(jobPostingAlertGuid).Result;
+                CloudTalent cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+                JobQueryDto jobQueryDto = JsonConvert.DeserializeObject<JobQueryDto>(jobPostingAlert.JobQueryDto.ToString());
+                switch(jobPostingAlert.Frequency)
+                {
+                    case Frequency.Daily:
+                        jobQueryDto.LowerBound = DateTime.UtcNow.AddDays(-1);
+                        break;
+                    case Frequency.Weekly:
+                        jobQueryDto.LowerBound = DateTime.UtcNow.AddDays(-7);
+                        break;
+                }
+                jobQueryDto.UpperBound = DateTime.UtcNow;
+                JobSearchResultDto jobSearchResultDto = cloudTalent.Search(jobQueryDto, isJobPostingAlertSearch: true);
+                if (jobSearchResultDto.JobCount > 0)
+                {
+                    dynamic templateData = new JObject();
+                    templateData.firstName = jobPostingAlert.Subscriber.FirstName;
+                    templateData.jobCount = jobSearchResultDto.JobCount;
+                    templateData.frequency = jobPostingAlert.Frequency.ToString();
+                    templateData.jobs = JArray.FromObject(jobSearchResultDto.Jobs.ToList().Select(j => new
+                    {
+                        title = j.Title,
+                        summary = j.JobSummary.Length <= 250 ? j.JobSummary : j.JobSummary.Substring(0, 250) + "...",
+                        location = j.Location,
+                        posted = j.PostingDateUTC.ToShortDateString(),
+                        url = _configuration["CareerCircle:ViewJobPostingUrl"] + j.JobPostingGuid
+                    }).ToList());                    
+                    _sysEmail.SendTemplatedEmailAsync(
+                        jobPostingAlert.Subscriber.Email,
+                        _configuration["SysEmail:Transactional:TemplateIds:JobPosting-SubscriberAlert"],
+                        templateData,
+                        SendGridAccount.Transactional,
+                        null,
+                        null);
+                }
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobPostingAlert encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+        }
 
         public async Task<bool> ImportSubscriberProfileDataAsync(SubscriberFile resume)
         {

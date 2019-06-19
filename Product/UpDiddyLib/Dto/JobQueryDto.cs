@@ -6,7 +6,6 @@ namespace UpDiddyLib.Dto
 {
     public class JobQueryDto
     {
-
         #region Pagination 
 
         /// <summary>
@@ -57,8 +56,6 @@ namespace UpDiddyLib.Dto
 
         #endregion
 
-
-
         #region Commute Search
         /// <summary>
         /// lattude of commute search - if both lat and long are non zero
@@ -103,11 +100,6 @@ namespace UpDiddyLib.Dto
         #endregion
 
         #region Search Data
-
-
-
-
-
 
         /// <summary>
         /// Free format location string e.g 7312 parkway drive hanover md  OR 21204 , etc.  
@@ -159,6 +151,14 @@ namespace UpDiddyLib.Dto
         /// date published values defined by cloud talent.  Valid values are PAST_24_HOURS, PAST_3_DAYS, PAST_WEEK, PAST_MONTH, PAST_YEAR 
         /// </summary>        
         public string DatePublished { get; set; }
+        /// <summary>
+        /// An optional parameter that can be used to set the TimestampRange parameter. UpperBound must also be set.
+        /// </summary>
+        public DateTime? LowerBound { get; set; }
+        /// <summary>
+        /// An optional parameter that can be used to set the TimestampRange parameter. LowerBound must also be set.
+        /// </summary>
+        public DateTime? UpperBound { get; set; }
         ///  specific company name 
         public string CompanyName { get; set; }
         /// <summary>
@@ -177,9 +177,6 @@ namespace UpDiddyLib.Dto
         /// /education level 
         /// </summary>
         public string EducationLevel{ get; set; }
-
-
-
 
         #endregion
     }

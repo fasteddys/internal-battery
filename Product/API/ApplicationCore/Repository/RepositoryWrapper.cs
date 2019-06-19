@@ -29,6 +29,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IRecruiterRepository _recruiterRepository;
         private INotificationRepository _notificationRepository;
         private ISubscriberNotificationRepository _subscriberNotificationRepository;
+        private IJobPostingAlertRepository _jobPostingAlertRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -63,7 +64,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             get
             {
-                if(_jobSiteRepository == null)
+                if (_jobSiteRepository == null)
                 {
                     _jobSiteRepository = new JobSiteRepository(_dbContext);
                 }
@@ -75,14 +76,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             get
             {
-                if(_jobPageRepository == null)
+                if (_jobPageRepository == null)
                 {
                     _jobPageRepository = new JobPageRepository(_dbContext);
                 }
                 return _jobPageRepository;
             }
         }
- 
+
         public IJobSiteScrapeStatisticRepository JobSiteScrapeStatistic
         {
             get
@@ -111,7 +112,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             get
             {
-                if(_jobPostingFavoriteRepository == null)
+                if (_jobPostingFavoriteRepository == null)
                 {
                     _jobPostingFavoriteRepository = new JobPostingFavoriteRepository(_dbContext);
                 }
@@ -123,7 +124,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             get
             {
-                if(_jobApplicationRepository == null)
+                if (_jobApplicationRepository == null)
                 {
                     _jobApplicationRepository = new JobApplicationRepository(_dbContext);
                 }
@@ -142,13 +143,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _companyRepository;
             }
         }
-        
+
 
         public IRecruiterActionRepository RecruiterActionRepository
         {
             get
             {
-                if(_recruiterActionRepository == null)
+                if (_recruiterActionRepository == null)
                 {
                     _recruiterActionRepository = new RecruiterActionRepository(_dbContext);
                 }
@@ -160,7 +161,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             get
             {
-                if(_subscriberRepository == null)
+                if (_subscriberRepository == null)
                 {
                     _subscriberRepository = new SubscriberRepository(_dbContext);
                 }
@@ -196,7 +197,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             get
             {
-                if(_jobCategoryRepository == null)
+                if (_jobCategoryRepository == null)
                 {
                     _jobCategoryRepository = new JobCategoryRepository(_dbContext);
                 }
@@ -226,6 +227,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _jobReferralRepository = new JobReferralRepository(_dbContext);
                 }
                 return _jobReferralRepository;
+            }
+        }
+
+        public IJobPostingAlertRepository JobPostingAlertRepository
+        {
+            get
+            {
+                if (_jobPostingAlertRepository == null)
+                {
+                    _jobPostingAlertRepository = new JobPostingAlertRepository(_dbContext);
+                }
+                return _jobPostingAlertRepository;
             }
         }
 

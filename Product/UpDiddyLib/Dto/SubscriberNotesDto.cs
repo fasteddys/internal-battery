@@ -6,11 +6,11 @@ namespace UpDiddyLib.Dto
 {
     public class SubscriberNotesDto
     {
-        public Guid SubscriberNotesGuid { get; set; }
+        public Guid? SubscriberNotesGuid { get; set; }
         public Guid SubscriberGuid { get; set; }
         public Guid RecruiterGuid { get; set; }
         public string Notes { get; set; }
-        public bool IsPublic { get; set; }
+        public bool ViewableByOthersInRecruiterCompany { get; set; }
         public DateTime CreateDate { get; set; }
         public DateTime ModifiedDate { get; set; }
     }

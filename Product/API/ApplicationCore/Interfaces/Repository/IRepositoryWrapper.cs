@@ -27,5 +27,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IRecruiterRepository RecruiterRepository { get; }
         INotificationRepository NotificationRepository { get; }
         ISubscriberNotificationRepository SubscriberNotificationRepository { get; }
+        IJobPostingAlertRepository JobPostingAlertRepository { get; }
     }
 }

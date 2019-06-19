@@ -166,12 +166,30 @@
                 }
 
                 .career-circle-profile-email {
+                    padding-top:3%;
                     color: $color-primary;
                 }
 
                 .career-circle-profile-avatar {
                     border-radius: 100%;
                     max-width: 100px;
+                }
+            }
+
+            .linkedin-stlying {
+                padding-left: 1.5%;
+
+                .linkedin-sync-button {
+                    padding-right: 0px;
+                }
+
+                .linkedin-sync-expiration {
+                    padding-top: 0.5%;
+                    padding-left:0%;
+
+                    .linkedin-sync-expiration-text {
+                        font-size: 0.7rem;
+                    }
                 }
             }
         }
@@ -507,8 +525,14 @@
         h2 {
             font-size: 1.5rem;
         }
+
+        .profile-hero {
+            .linkedin-stlying {
+                padding-left: 5%;
+            }
+        }
     }
-}
+    }
 
 // Small Styles
 @media (min-width: 576px) {
@@ -559,6 +583,18 @@
     .profile-container {
         h2 {
             font-size: 2rem;
+        }
+
+        .profile-hero {
+            .linkedin-stlying {
+                padding-left: 1.5%;
+
+
+                .linkedin-sync-expiration {
+                    padding-top: 3%;
+                    padding-left: 1%;
+                }
+            }
         }
 
         .profile-body-container {

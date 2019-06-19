@@ -4,35 +4,53 @@
 @using System.Collections.Generic;
 @using System;
 @model LinkedInSyncViewModel
-<a href="@Model.SyncLink" class="linkedin btn btn-large btn-primary">
-    @{
-        if (!string.IsNullOrEmpty(Model.LinkedInAvatarUrl))
-        {
-            <div class="linkedin-profile-img">
-                <img src="@Model.LinkedInAvatarUrl" />
-                <i class="fab fa-linkedin"></i>
 
-            </div>
+@if ((Model.LastLinkedInSyncDate != DateTime.MinValue) && (DateTime.Now > Model.LastLinkedInSyncDate.AddDays(60)))
+{
+    <div class="col-md-2.5 linkedin-sync-button">
+        <a href="@Model.SyncLink" class="linkedin btn btn-large btn-primary">
+            <span class="text">Sync with LinkedIn</span> <i class="pl-2 float-right fab fa-linkedin"></i>
+        </a>
+    </div>
+    <div class="col-md-4 linkedin-sync-expiration">
+        <span class="linkedin-sync-expiration-text">Expired on @Model.LastLinkedInSyncDate.AddDays(60).ToShortDateString()</span>
+    </div>
+}
+else
+{
+    <div class="col-md-2.5 linkedin-sync-button">
+        <a href="@Model.SyncLink" class="linkedin btn btn-large btn-primary">
+            @{
+                if (!string.IsNullOrEmpty(Model.LinkedInAvatarUrl))
+                {
+                    <div class="linkedin-profile-img">
+                        <img src="@Model.LinkedInAvatarUrl" />
+                        <i class="fab fa-linkedin"></i>
 
-        }
-        else
-        {
-            <i class="fab fa-linkedin float-left mr-2"></i>
-        }
-    }
+                    </div>
 
-    @if (Model.LastLinkedInSyncDate == DateTime.MinValue)
-    { 
-        <span class="text font-bold">Not Synced</span>
-    }
-    else
-    {
-        <span class="text font-bold">Synced On</span>
-        <span class="text font-bold">@Model.LastLinkedInSyncDate.ToShortDateString()</span>
-    }
+                }
+                else
+                {
+                    <i class="fab fa-linkedin float-left mr-2"></i>
+                }
+            }
+
+            @if (Model.LastLinkedInSyncDate == DateTime.MinValue)
+            {
+                <span class="text font-bold">Not Synced</span>
+            }
+            else
+            {
+                <span class="text font-bold">Synced On</span>
+                <span class="text font-bold">@Model.LastLinkedInSyncDate.ToShortDateString()</span>
+            }
+        </a>
+    </div>
+}
 
 
 
 
 
-</a>
+

@@ -17,6 +17,7 @@ namespace UpDiddy.ViewModels
         public int PaginationRangeHigh { get; set; }
         public string Header { get; set; }
         public bool HideAllLink { get; set; }
+        public BreadcrumbViewModel Breadcrumbs { get; set; }
 
     }
 

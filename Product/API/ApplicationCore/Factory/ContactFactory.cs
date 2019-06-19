@@ -12,8 +12,6 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             Contact rVal = new Contact();
             rVal.Email = email;
-            rVal.FirstName = firstName;
-            rVal.LastName = lastName;
             if (subscriber != null && subscriber.SubscriberId > 0)
                 rVal.SubscriberId = subscriber.SubscriberId;
             rVal.CreateDate = DateTime.UtcNow;
