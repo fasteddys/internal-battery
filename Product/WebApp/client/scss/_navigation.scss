@@ -48,6 +48,14 @@ body {
                     padding: .25rem;
                     margin-left: .25rem;
                     font-weight: bold;
+                    position: absolute;
+                    left: 0rem;
+                    bottom: 0rem;
+
+                    @media (min-width: 992px) {
+                        left: 1.15rem;
+                        bottom: .5rem;
+                    }
                 }
             }
         }

@@ -9,7 +9,7 @@ export const NotificationListing = ({ notifications, deviceType, onNotificationS
         return <NotificationItem key={item.notificationGuid} notification={item} toggleMobileView={toggleMobileView} onNotificationSelect={onNotificationSelect} selected={item.notificationGuid === currentNotification.notificationGuid} />
     });
 
-    let classes = "col-12 col-sm-2 no-padding";
+    let classes = "col-12 col-sm-3 no-padding";
     if (activeScreen === "details") {
         classes += " hidden";
     }
@@ -75,7 +75,7 @@ const NotificationItem = ({ notification, selected, onNotificationSelect, toggle
 export const NotificationView = ({ isHidden, toggleView, notification, activeScreen, toggleMobileView }) => {
     
 
-    let classes = "col-12 col-sm-10 no-padding";
+    let classes = "col-12 col-sm-9 no-padding";
     if (activeScreen === "list") {
         classes += " hidden";
     }

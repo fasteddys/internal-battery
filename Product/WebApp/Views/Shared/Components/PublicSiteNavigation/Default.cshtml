@@ -43,7 +43,7 @@
                         {
                             int ItemHash = item.GetHashCode();
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle @item.JavascriptClass" id="id_@ItemHash" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle  d-flex align-items-center @item.JavascriptClass" id="id_@ItemHash" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     @Html.Partial("Components/PublicSiteNavigation/_Anchor", item)
                                 </a>
                                 <div class="dropdown-menu" aria-labelledby="id_@ItemHash">

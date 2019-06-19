@@ -40,6 +40,7 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> Index()
         {
             string DeviceType = _deviceResolver.Device.Type.ToString();
+            this.subscriber.Notifications.Reverse();
             DashboardViewModel DashboardViewModel = new DashboardViewModel
             {
                 Notifications = this.subscriber.Notifications,
