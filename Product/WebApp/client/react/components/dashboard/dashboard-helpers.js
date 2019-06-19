@@ -9,7 +9,7 @@ export const NotificationListing = ({ notifications, deviceType, onNotificationS
         return <NotificationItem key={item.notificationGuid} notification={item} toggleMobileView={toggleMobileView} onNotificationSelect={onNotificationSelect} selected={item.notificationGuid === currentNotification.notificationGuid} />
     });
 
-    let classes = "col-12 col-sm-3 no-padding";
+    let classes = "col-12 col-sm-2 no-padding";
     if (activeScreen === "details") {
         classes += " hidden";
     }
@@ -57,6 +57,7 @@ const NotificationItem = ({ notification, selected, onNotificationSelect, toggle
 
     let classes = selected ? "selected" : "";
     let unreadDot = notification.hasRead === 0 ? <div className="unread-dot"><i className="fas fa-circle"></i></div> : "";
+    let notificationHeader = notification.hasRead === 0 ? <strong>{notification.title}</strong> : notification.title;
 
     const onSelect = () => {
         onNotificationSelect(notification);
@@ -66,7 +67,7 @@ const NotificationItem = ({ notification, selected, onNotificationSelect, toggle
 
     
     return (<li key={notification.notificationGuid} className={classes} onClick={onSelect}>
-        {notification.title}
+        {notificationHeader}
         {unreadDot}
         <div><span className="notification-date"><ReadableDateTime date={notification.createDate} /></span></div>
     </li>);
@@ -75,7 +76,7 @@ const NotificationItem = ({ notification, selected, onNotificationSelect, toggle
 export const NotificationView = ({ isHidden, toggleView, notification, activeScreen, toggleMobileView }) => {
     
 
-    let classes = "col-12 col-sm-9 no-padding";
+    let classes = "col-12 col-sm-10 no-padding";
     if (activeScreen === "list") {
         classes += " hidden";
     }

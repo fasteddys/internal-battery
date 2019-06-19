@@ -14,11 +14,12 @@ body {
 
         &.navbar-light {
             .navbar-nav {
-
+                text-align: left;
                 .nav-link {
                     color: $color-secondary;
                     font-size: $rem-13;
                     font-weight: bold;
+                    text-align: center;
 
                     &.temp-profile-link {
                         cursor: default;
@@ -27,11 +28,17 @@ body {
                             color: #03264A;
                         }
                     }
+
+                    &.nav-notifications {
+                        font-size: 1.5rem;
+                    }
                 }
             }
         }
 
         .nav-notifications {
+            position: relative;
+
             .notification-count {
 
 
@@ -49,12 +56,12 @@ body {
                     margin-left: .25rem;
                     font-weight: bold;
                     position: absolute;
-                    left: 0rem;
+                    left: -.75rem;
                     bottom: 0rem;
 
                     @media (min-width: 992px) {
-                        left: 1.15rem;
-                        bottom: .5rem;
+                        left: -.25rem;
+                        bottom: 0rem;
                     }
                 }
             }
