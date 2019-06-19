@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +10,15 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public class NotificationRepository : UpDiddyRepositoryBase<Notification>, INotificationRepository
     {
-        public NotificationRepository(UpDiddyDbContext dbContext) : base(dbContext) { }
+        UpDiddyDbContext _dbContext;
+        public NotificationRepository(UpDiddyDbContext dbContext) : base(dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
+        public async Task<IQueryable<Notification>> GetAllNonDeleted()
+        {
+            return _dbContext.Set<Notification>().IgnoreQueryFilters().Where(n => n.IsDeleted == 0).AsNoTracking();
+        }
     }
 }

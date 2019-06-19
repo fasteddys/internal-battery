@@ -70,7 +70,7 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         public async Task<IList<Notification>> Get()
         {
-            return _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.IsDeleted == 0).Result.ToList();
+            return _repositoryWrapper.NotificationRepository.GetAllNonDeleted().Result.ToList();
         }
 
         [HttpGet("{NotificationGuid}")]

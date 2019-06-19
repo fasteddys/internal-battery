@@ -6,6 +6,9 @@ using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface INotificationRepository : IUpDiddyRepositoryBase<Notification> { }
+    public interface INotificationRepository : IUpDiddyRepositoryBase<Notification>
+    {
+        Task<IQueryable<Notification>> GetAllNonDeleted();
+    }
 }
 
