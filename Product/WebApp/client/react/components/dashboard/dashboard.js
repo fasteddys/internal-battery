@@ -17,7 +17,7 @@ class Dashboard extends React.Component {
 
     componentDidMount() {
         // If there's any notification that's viewed by default and it's unread, mark it as read.
-        if (this.state.notifications[0]) {
+        if (this.state.notifications[0] && this.state.deviceType !== "Mobile") {
             this.onNotificationSelect(this.state.notifications[0]);
         }
     }
@@ -50,7 +50,7 @@ class Dashboard extends React.Component {
         return (
             <div className="dashboard shadow-2">
                 <div className="row row-eq-height">
-                    <NotificationListing notifications={this.state.notifications} activeScreen={this.state.activeScreen} toggleMobileView={this.toggleMobileView} activeScreen={this.state.activeScreen} onNotificationSelect={(notification) => this.onNotificationSelect(notification)} currentNotification={this.state.currentNotification} />
+                    <NotificationListing notifications={this.state.notifications} deviceType={this.state.deviceType} activeScreen={this.state.activeScreen} toggleMobileView={this.toggleMobileView} activeScreen={this.state.activeScreen} onNotificationSelect={(notification) => this.onNotificationSelect(notification)} currentNotification={this.state.currentNotification} />
                     <NotificationView notification={this.state.currentNotification} activeScreen={this.state.activeScreen} toggleMobileView={this.toggleMobileView} activeScreen={this.state.activeScreen} />                
                 </div>
             </div>

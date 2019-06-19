@@ -1,9 +1,9 @@
 ﻿import React from 'react';
 
 /* Notications Listing */
-export const NotificationListing = ({ notifications, onNotificationSelect, currentNotification, activeScreen, toggleMobileView }) => {
+export const NotificationListing = ({ notifications, deviceType, onNotificationSelect, currentNotification, activeScreen, toggleMobileView }) => {
     let notificationsList = notifications.map((item, i) => {
-        if (i === 0) {
+        if (i === 0 && deviceType !== "Mobile") {
             item.hasRead = 1;
         }
         return <NotificationItem key={item.notificationGuid} notification={item} toggleMobileView={toggleMobileView} onNotificationSelect={onNotificationSelect} selected={item.notificationGuid === currentNotification.notificationGuid} />
