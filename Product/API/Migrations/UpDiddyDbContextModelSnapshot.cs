@@ -1451,6 +1451,51 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("JobPosting");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.JobPostingAlert", b =>
+                {
+                    b.Property<int>("JobPostingAlertId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(250);
+
+                    b.Property<string>("ExecutionDayOfWeek")
+                        .HasMaxLength(10);
+
+                    b.Property<int>("ExecutionHour");
+
+                    b.Property<int>("ExecutionMinute");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .HasMaxLength(10);
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<Guid>("JobPostingAlertGuid");
+
+                    b.Property<string>("JobQueryDtoJSON")
+                        .IsRequired();
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("JobPostingAlertId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("JobPostingAlert");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.JobPostingFavorite", b =>
                 {
                     b.Property<int>("JobPostingId");
@@ -3506,6 +3551,14 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.SecurityClearance", "SecurityClearance")
                         .WithMany()
                         .HasForeignKey("SecurityClearanceId");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.JobPostingAlert", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.JobPostingFavorite", b =>

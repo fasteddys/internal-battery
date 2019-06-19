@@ -129,7 +129,8 @@ namespace UpDiddy.Controllers
                 FavoritesMap = favoritesMap,
                 Facets = jobSearchResultDto.Facets,
                 Keywords = Keywords,
-                Location = Location
+                Location = Location,
+                JobQueryForAlert = jobSearchResultDto.JobQueryForAlert
             };
 
             return View("Index", jobSearchViewModel);

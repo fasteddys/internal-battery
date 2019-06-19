@@ -86,6 +86,10 @@ Third-Party libraries are managed via [bower](https://bower.io/) and [npm](https
 
 Visual studio also supports Bower and should be able to install the dependencies via the GUI.
 
+#### Debugging dependencies
+1. From a command window, navigate to the Product\WebApp directory of the project and execute the following command: npm run gulp
+2. Open a second command window, navigate to the Product\WebApp directory of the project and execute the following command: npm run build:dev -- --watch
+
 ## Deployment
 
 Before deployment - verify that the **Azure Key Vault** is up to date with any new secrets that was added to user secrets or app settings.
