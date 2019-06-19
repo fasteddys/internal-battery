@@ -54,7 +54,7 @@
             @if (Model.Facets != null)
             {
                 <div class="col-12 col-md-2">
-                    <div class="facet-container">
+                    <div class="facet-container shadow-0">
                         <div class="container row">
                             <div class="col-12">
                                 <button id="toggleLink" class="togglelink col-12 btn btn-primary" data-toggle="collapse" data-target="#SearchParameters">Filter <i id="toggleArrow" class="arrow down"></i></button>
@@ -210,7 +210,7 @@
                 string columnClass = Model.Facets != null ? "10" : "12";
             }
             <div class="col-12 col-md-@columnClass">
-                <div class="container" id="">
+                <div class=" " id="">
                     @{ await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);}
 
                     <div class="row job-pagination container-align-center">
