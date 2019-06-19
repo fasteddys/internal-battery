@@ -51,96 +51,6 @@ namespace UpDiddyApi.Controllers
             _distributedCache = distributedCache;
         }
 
-        [HttpGet("api/[controller]")]
-        [Authorize(Policy = "IsCareerCircleAdmin")]
-        public async Task<IActionResult> GetAllAsync(string sort, string name, string email, int? partnerId, double? startDate, double? endDate, int? page = null, int? pageSize = 10)
-        {
-            if (!page.HasValue)
-                return Ok(await _db.Contact.ToListAsync());
-
-            var contactQuery = from c in _db.Contact
-                                .Include(c => c.PartnerContacts)
-                               select c;
-
-            if (name != null)
-            {
-                var names = name.Split(" ");
-                if (names.Length == 2)
-                {
-                    contactQuery = contactQuery.Where(c => c.FirstName.Contains(names[0]) && c.LastName.Contains(names[1]));
-                }
-                else
-                {
-                    contactQuery = contactQuery.Where(c => c.FirstName.Contains(names[0]) || c.LastName.Contains(names[0]));
-                }
-            }
-
-            if (email != null)
-                contactQuery = contactQuery.Where(c => c.Email.Contains(email));
-
-            if (partnerId.HasValue)
-                contactQuery = contactQuery.Where(c => c.PartnerContacts.Any(pc => pc.PartnerId == partnerId));
-
-            if (startDate.HasValue)
-            {
-                // Example of a UNIX timestamp for 11-29-2013 4:58:30
-                double timestamp = startDate.Value;
-
-                // Format our new DateTime object to start at the UNIX Epoch
-                DateTime dateTime = new System.DateTime(1970, 1, 1, 0, 0, 0, 0);
-
-                // Add the timestamp (number of seconds since the Epoch) to be converted
-                dateTime = dateTime.AddMilliseconds(timestamp);
-                contactQuery = contactQuery.Where(c => c.CreateDate >= dateTime);
-            }
-
-            if (endDate.HasValue)
-            {
-                double timestamp = endDate.Value;
-                // Format our new DateTime object to start at the UNIX Epoch
-                DateTime dateTime = new System.DateTime(1970, 1, 1, 0, 0, 0, 0);
-                dateTime = dateTime.AddMilliseconds(timestamp);
-                contactQuery = contactQuery.Where(c => c.CreateDate <= dateTime);
-            }
-
-            switch (sort)
-            {
-                case "email asc":
-                    contactQuery = contactQuery.OrderBy(c => c.Email);
-                    break;
-                case "email desc":
-                    contactQuery = contactQuery.OrderByDescending(c => c.Email);
-                    break;
-                case "name asc":
-                    contactQuery = contactQuery
-                        .OrderBy(c => c.LastName)
-                        .ThenBy(c => c.FirstName);
-                    break;
-                case "name desc":
-                    contactQuery = contactQuery
-                        .OrderByDescending(c => c.LastName)
-                        .ThenByDescending(c => c.FirstName);
-                    break;
-                case "createDate asc":
-                    contactQuery = contactQuery.OrderBy(c => c.CreateDate);
-                    break;
-                case "createDate desc":
-                    contactQuery = contactQuery.OrderByDescending(c => c.CreateDate);
-                    break;
-            }
-
-            var contacts = await contactQuery.AsNoTracking().Skip((page.Value - 1) * pageSize.Value).Take(pageSize.Value).ToListAsync();
-            var num_contacts = await contactQuery.CountAsync();
-            var num_pages = (num_contacts + pageSize.Value - 1) / pageSize.Value;
-
-            return Ok(new PageResultDto<Contact>()
-            {
-                TotalRecords = num_contacts,
-                Pages = num_pages,
-                Data = contacts
-            });
-        }
-
         [HttpGet("api/[controller]/{partnerContactGuid}")]
         public IActionResult Get(Guid partnerContactGuid)
         {
@@ -159,15 +69,7 @@ namespace UpDiddyApi.Controllers
 
             if (rval == null)
             {
-                rval = GetLegacyContact(partnerContactGuid);
-                if (rval == null)
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    return Ok(rval);
-                }
+                return NotFound();
             }
             else
             {
@@ -227,31 +129,6 @@ namespace UpDiddyApi.Controllers
             return Ok(importActions);
         }
 
-        /// <summary>
-        /// Retrieves a contact by contact guid (rather than partner contact guid). This introduces ambiguity; which partner contact should be returned if more than one exists?
-        /// This should be removed once we no longer need to support inbound requests to landing pages with legacy contact identifiers (a good way to judge this would be to look
-        /// at dbo.ContactAction - once the 'open email' and 'visit landing page' events have tapered off for old campaigns, this can be removed).
-        /// </summary>
-        /// <param name="contactGuid"></param>
-        /// <returns></returns>
-        [Obsolete("Ambiguous method for referencing a contact; remove once old campaigns are no longer being used.", false)]
-        private ContactDto GetLegacyContact(Guid contactGuid)
-        {
-            ContactDto rval = null;
-
-            rval = _db.PartnerContact
-                .Where(pc => pc.IsDeleted == 0 && pc.Contact.ContactGuid == contactGuid && pc.Contact.IsDeleted == 0)
-                .Select(pc => new ContactDto()
-                {
-                    PartnerContactGuid = pc.PartnerContactGuid,
-                    Email = pc.Contact.Email,
-                    SourceSystemIdentifier = pc.SourceSystemIdentifier,
-                    Metadata = pc.Metadata.ToObject<Dictionary<string, string>>()
-                })
-                .FirstOrDefault();
-
-            return rval;
-        }
 
         /// <summary>
         /// Handles the import of a contact into the system. This method evaluates whether the contact already exists and handles the create and update operation

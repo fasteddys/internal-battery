@@ -308,7 +308,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuid(db, jobPostingGuid);
                 // validate we have good data 
-                if (jobPosting == null )
+                if (jobPosting == null)
                     return false;
 
                 // index the job to google 
@@ -342,8 +342,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 cloudTalentJobQuery.Query = jobQuery.Keywords;
             }
-
-
 
             if (jobQuery.Lat != 0 && jobQuery.Lng != 0)
             {
@@ -379,10 +377,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                     else
                         addressInfo = jobQuery.Location;
                 }
-                else          
+                else
                     // build address with comma placeholders to help google parse the location
                     addressInfo = BuildAddress(jobQuery, regionCode);
-               
+
                 // add location filter if any address information has been provided  
                 if (string.IsNullOrEmpty(addressInfo) == false || string.IsNullOrEmpty(jobQuery.Province) == false)
                 {
@@ -397,15 +395,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     {
                         locationFilter
                     };
-
                 }
             }
 
             // publish time range 
-            if (string.IsNullOrEmpty(jobQuery.DatePublished) == false)
-            {
-                cloudTalentJobQuery.PublishTimeRange = GetPublishTimeRange(jobQuery.DatePublished);
-            }
+            cloudTalentJobQuery.PublishTimeRange = GetPublishTimeRange(jobQuery.DatePublished, jobQuery.LowerBound, jobQuery.UpperBound);
 
             // company name 
             if (string.IsNullOrEmpty(jobQuery.CompanyName) == false)
@@ -534,8 +528,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             };
 
-
-
             return searchJobRequest;
         }
 
@@ -545,8 +537,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// Search the cloud talent solution for jobs 
         /// </summary>
         /// <param name="jobQuery"></param>
+        /// <param name="isJobPostingAlertSearch">If specified and set to TRUE, the search query is optimized for email alerts. For details, 
+        ///     refer to the documentation here: https://cloud.google.com/talent-solution/job-search/docs/email
+        /// </param>
         /// <returns></returns>
-        public JobSearchResultDto Search(JobQueryDto jobQuery)
+        public JobSearchResultDto Search(JobQueryDto jobQuery, bool isJobPostingAlertSearch = false)
         {
             // map jobquery to cloud talent search request 
             DateTime startSearch = DateTime.Now;
@@ -554,12 +549,16 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             // search the cloud talent
             CloudTalentSolution.SearchJobsResponse searchJobsResponse;
-            
-            
+
             try
             {
-                searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
-
+                if (isJobPostingAlertSearch)
+                {
+                    searchJobRequest.DiversificationLevel = "SIMPLE";
+                    searchJobsResponse = _jobServiceClient.Projects.Jobs.SearchForAlert(searchJobRequest, _projectPath).Execute();
+                }
+                else
+                    searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
             }
             catch (Exception e)
             {
@@ -573,7 +572,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             JobSearchResultDto rval = JobMappingHelper.MapSearchResults(_syslog, _mapper, _configuration, searchJobsResponse, jobQuery);
             DateTime stopMap = DateTime.Now;
 
-
             // calculate search timing metrics 
             TimeSpan intervalTotalSearch = stopMap - startSearch;
             TimeSpan intervalSearchTime = startMap - startSearch;
@@ -584,9 +582,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             rval.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
             rval.SearchMappingTimeInTicks = intervalMapTime.Ticks;
             return rval;
- 
         }
-
 
         #endregion
 
@@ -630,30 +626,42 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #region Helper functions
 
-  
 
-        static private CloudTalentSolution.TimestampRange GetPublishTimeRange( string timeRange )
+
+        static private CloudTalentSolution.TimestampRange GetPublishTimeRange(string timeRange, DateTime? lowerBound = null, DateTime? upperBound = null)
         {
             CloudTalentSolution.TimestampRange rVal = new CloudTalentSolution.TimestampRange();
             rVal.EndTime = Utils.GetTimestampAsString(DateTime.Now);
 
-            switch (timeRange.ToLower())
+            if (lowerBound.HasValue && upperBound.HasValue)
             {
-                case "past_24_hours":
-                    rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddHours(-24));
-                    break;
-                case "past_3_days":
-                    rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddHours(-72));
-                    break;
-                case "past_week":
-                    rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddDays(-7));
-                    break;
-                case "past_month":
-                    rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddDays(-30));
-                    break;
-                default:
-                    rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddDays(-365));
-                    break;
+                rVal.StartTime = Utils.GetTimestampAsString(lowerBound.Value);
+                rVal.EndTime = Utils.GetTimestampAsString(upperBound.Value);
+            }
+            else if (!string.IsNullOrWhiteSpace(timeRange))
+            {
+                switch (timeRange.ToLower())
+                {
+                    case "past_24_hours":
+                        rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddHours(-24));
+                        break;
+                    case "past_3_days":
+                        rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddHours(-72));
+                        break;
+                    case "past_week":
+                        rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddDays(-7));
+                        break;
+                    case "past_month":
+                        rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddDays(-30));
+                        break;
+                    default:
+                        rVal.StartTime = Utils.GetTimestampAsString(DateTime.Now.AddDays(-365));
+                        break;
+                }
+            }
+            else
+            {
+                rVal = null;
             }
             return rVal;
         }

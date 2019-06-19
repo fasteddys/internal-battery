@@ -90,6 +90,7 @@ namespace UpDiddy.Api
         Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId);
         Task<IList<OfferDto>> GetOffersAsync();
         Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page);
+        Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page);
         Task<RedirectDto> GetSubscriberPartnerWebRedirect();
 
         #region TalentPortal

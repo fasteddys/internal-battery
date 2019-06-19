@@ -120,13 +120,9 @@ namespace UpDiddyApi.Models
         public DbSet<CourseSkill> CourseSkill { get; set; }
         public DbSet<Campaign> Campaign { get; set; }
         public DbSet<Action> Action { get; set; }
-        [Obsolete("Remove this once all related data has been migrated to PartnerContactAction", false)]
-        public DbSet<ContactAction> ContactAction { get; set; }
         public DbSet<Contact> Contact { get; set; }
         public DbSet<CampaignCourseVariant> CampaignCourseVariant { get; set; }
         public DbSet<RebateType> RebateType { get; set; }
-        [Obsolete("Remove this once all related data has been migrated to CampaignPartnerContact", false)]
-        public DbSet<CampaignContact> CampaignContact { get; set; }
         public DbSet<CampaignPhase> CampaignPhase { get; set; }
         public DbSet<JobPosting> JobPosting { get; set; }
         public DbSet<EmploymentType> EmploymentType { get; set; }
@@ -148,7 +144,7 @@ namespace UpDiddyApi.Models
         public DbSet<PartnerContactLeadStatus> PartnerContactLeadStatus { get; set; }
         public DbSet<PartnerContactFile> PartnerContactFile { get; set; }
         public DbSet<PartnerContactFileLeadStatus> PartnerContactFileLeadStatus { get; set; }
- 
+
         public DbSet<CampaignPartnerContact> CampaignPartnerContact { get; set; }
         public DbSet<PartnerContactAction> PartnerContactAction { get; set; }
         public DbSet<JobApplication> JobApplication { get; set; }
@@ -163,6 +159,7 @@ namespace UpDiddyApi.Models
         public DbSet<JobPageStatus> JobPageStatus { get; set; }
         public DbSet<JobSiteScrapeStatistic> JobSiteScrapeStatistic { get; set; }
         public DbSet<ZeroBounce> ZeroBounce { get; set; }
+        public DbSet<JobPostingAlert> JobPostingAlert { get; set; }
         public DbSet<JobReferral> JobReferral { get; set; }
         public DbSet<SubscriberNotes> SubscriberNotes { get; set; }
 
@@ -184,19 +181,31 @@ namespace UpDiddyApi.Models
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            #region remove this
-            // todo: get rid of these after migrations are complete and the objects can be removed 
-            //       (don't want to do it yet otherwise ef will drop the tables - that would make it hard to migrate the data to the new tables!)
-            modelBuilder.Entity<ContactAction>()
-                .HasKey(ca => new { ca.ContactId, ca.CampaignId, ca.ActionId, ca.CampaignPhaseId });
-            modelBuilder.Entity<ContactAction>()
-                .Property(ca => ca.OccurredDate)
-                .HasDefaultValueSql("GETUTCDATE()");
-            modelBuilder.Entity<CampaignContact>()
-                .HasKey(cc => new { cc.CampaignId, cc.ContactId });
-            #endregion
-            
+        {   
+
+            modelBuilder.Entity<JobPostingAlert>()
+                .Property(a => a.Frequency)
+                .HasMaxLength(10)
+                .HasConversion(
+                    f => f.ToString(),
+                    f => (Frequency)Enum.Parse(typeof(Frequency), f));
+
+            modelBuilder.Entity<JobPostingAlert>()
+                .Property(a => a.ExecutionDayOfWeek)
+                .HasMaxLength(10)
+                .IsRequired(false)
+                .HasConversion(
+                    dow => dow.ToString(),
+                    dow => (DayOfWeek)Enum.Parse(typeof(DayOfWeek), dow));
+
+            modelBuilder.Entity<JobPostingAlert>()
+                .Property<string>("JobQueryDtoJSON")
+                .HasField("_jobQueryDto")
+                .IsRequired(true);
+
+            modelBuilder.Entity<JobPostingAlert>()
+                .HasQueryFilter(a => a.IsDeleted == 0);
+
             modelBuilder.Entity<ZeroBounce>()
                 .Property<string>("ResponseJSON")
                 .HasField("_response");
@@ -209,7 +218,7 @@ namespace UpDiddyApi.Models
                 .HasIndex(js => js.Name)
                 .HasName("UIX_JobSite_Name")
                 .IsUnique(true);
-                
+
             modelBuilder.Entity<JobPage>()
                 .HasIndex(jp => new { jp.UniqueIdentifier, jp.JobSiteId })
                 .HasName("UIX_JobPage_JobSite_UniqueIdentifier")
@@ -327,7 +336,7 @@ namespace UpDiddyApi.Models
 
             modelBuilder.Entity<CampaignCourseVariant>()
                 .HasKey(ccv => new { ccv.CampaignId, ccv.CourseVariantId });
-            
+
             modelBuilder.Entity<PartnerContactAction>()
                 .HasKey(pca => new { pca.PartnerContactId, pca.CampaignId, pca.ActionId, pca.CampaignPhaseId });
 
