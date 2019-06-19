@@ -111,16 +111,17 @@ namespace UpDiddyApi.Controllers
 
             if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
             {
-                SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
+                
+                    SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
 
-                if (subscriberDto == null)
-                    return Ok(subscriberDto);
+                    if (subscriberDto == null)
+                        return Ok(subscriberDto);
 
-                // track the subscriber action if performed by someone other than the user who owns the file
-                if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
-                    new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
+                    // track the subscriber action if performed by someone other than the user who owns the file
+                    if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
+                        new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
 
-                return Ok(subscriberDto);
+                    return Ok(subscriberDto);                
             }
             else
                 return Unauthorized();
