@@ -1,35 +1,44 @@
 ﻿import React from 'react';
 
 /* Notications Listing */
-export const NotificationListing = ({ notifications, onNotificationSelect, currentNotification }) => {
-    
-    const notificationsList = notifications.map((item, i) => {
+export const NotificationListing = ({ notifications, onNotificationSelect, currentNotification, activeScreen, toggleMobileView }) => {
+    let notificationsList = notifications.map((item, i) => {
         if (i === 0) {
             item.hasRead = 1;
         }
-        return <NotificationItem key={item.notificationGuid} notification={item} onNotificationSelect={onNotificationSelect} selected={item.notificationGuid === currentNotification.notificationGuid} />
+        return <NotificationItem key={item.notificationGuid} notification={item} toggleMobileView={toggleMobileView} onNotificationSelect={onNotificationSelect} selected={item.notificationGuid === currentNotification.notificationGuid} />
     });
+
+    let classes = "col-12 col-sm-2 no-padding";
+    if (activeScreen === "details") {
+        classes += " hidden";
+    }
 
     if (notifications.length > 0) {
         return (
-            <div className="notification-listing-container">
-                <ul>
-                    {notificationsList}
-                </ul>
+
+            <div className={classes}>
+                <div className="notification-listing-container">
+                    <ul>
+                        {notificationsList}
+                    </ul>
+                </div>
             </div>
         );
     }
     else {
         return (
-            <div className="notification-listing-container">
-                <ul>
-                    <li>No new notifications.</li>
-                </ul>
+            <div className={classes}>
+                <div className="notification-listing-container">
+                    <ul>
+                        <li>No new notifications.</li>
+                    </ul>
+                </div>
             </div>
+            
         );
     }
-    
-};
+}
 
 export const ReadableDateTime = (props) => {
     const monthNames = ["January", "February", "March", "April", "May", "June",
@@ -44,59 +53,58 @@ export const ReadableDateTime = (props) => {
     
 };
 
-export class NotificationItem extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            classes: this.props.selected ? "selected" : "",
-            unreadDot: this.props.notification.hasRead === 0 ? <div className="unread-dot"><i className="fas fa-circle"></i></div> : "",
-            onNotificationSelect: this.props.onNotificationSelect
-        };
-        this.onSelect = this.onSelect.bind(this);
-    }
+const NotificationItem = ({ notification, selected, onNotificationSelect, toggleMobileView }) => {
 
-    onSelect() {
-        this.state.onNotificationSelect(this.props.notification);
-        this.setState({ unreadDot: "" });
-        
+    let classes = selected ? "selected" : "";
+    let unreadDot = notification.hasRead === 0 ? <div className="unread-dot"><i className="fas fa-circle"></i></div> : "";
+
+    const onSelect = () => {
+        onNotificationSelect(notification);
+        toggleMobileView();
+        unreadDot = "";
     };
 
-    componentWillReceiveProps(nextProps) {
-        this.setState({
-            classes: nextProps.selected ? "selected" : "",
-            unreadDot: nextProps.notification.hasRead === 0 ? <div className="unread-dot"><i className="fas fa-circle"></i></div> : "",
-            onNotificationSelect: nextProps.onNotificationSelect
-        });
-    }
-
-
-    render() {
-        return (<li key={this.props.notification.notificationGuid} className={this.state.classes} onClick={ this.onSelect}>
-            {this.props.notification.title}
-            {this.state.unreadDot}
-            <div><span className="notification-date"><ReadableDateTime date={this.props.notification.createDate} /></span></div>
-        </li>);
-    }
+    
+    return (<li key={notification.notificationGuid} className={classes} onClick={onSelect}>
+        {notification.title}
+        {unreadDot}
+        <div><span className="notification-date"><ReadableDateTime date={notification.createDate} /></span></div>
+    </li>);
 }
 
-export const NotificationView = ({ notification }) => {
+export const NotificationView = ({ isHidden, toggleView, notification, activeScreen, toggleMobileView }) => {
+    
+
+    let classes = "col-12 col-sm-10 no-padding";
+    if (activeScreen === "list") {
+        classes += " hidden";
+    }
+
+    let showBackButton = activeScreen !== "both" ? <div onClick={toggleMobileView}><i className="fas fa-angle-left"></i><i className="fas fa-angle-left"></i> Back</div> : "";
+
     if (notification) {
         return (
-            <div className="notification-view-container">
-                <div className="header-container">
-                    <h5>{notification.title}</h5>
-                    <span className="notification-date"><ReadableDateTime date={notification.createDate} /></span>
+            <div className={classes}>
+                <div className="notification-view-container">
+                    {showBackButton}
+                    <div className="header-container">
+                        <h5>{notification.title}</h5>
+                        <span className="notification-date"><ReadableDateTime date={notification.createDate} /></span>
+                    </div>
+                    <div>{notification.description}</div>
                 </div>
-                <div>{notification.description}</div>
             </div>
+                
         );
     }
     else {
         return (
-            <div className="notification-view-container">
-                <div>Check back later for more CareerCircle notifications!</div>
+            <div className={classes}>
+                <div className="notification-view-container">
+                    <div>Check back later for more CareerCircle notifications!</div>
+                </div>
             </div>
+                
         );
     }
-    
 }

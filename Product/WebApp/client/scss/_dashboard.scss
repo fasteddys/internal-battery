@@ -27,13 +27,17 @@
                             border-bottom: 0;
                         }
 
-                        &:hover {
-                            background-color: $color-tertiary-light-gray;
+                        @media (min-width: 768px) {
+                            &:hover {
+                                background-color: $color-tertiary-light-gray;
+                            }
+
+                            &.selected {
+                                color: $color-primary;
+                            }
                         }
 
-                        &.selected {
-                            color: $color-primary;
-                        }
+
 
                         .unread-dot {
                             .fa-circle {
@@ -50,16 +54,23 @@
             }
 
             .notification-view-container {
-                border-left: 2px solid $color-tertiary-mid-gray;
 
                 > div {
-                    padding: 2rem 3rem;
+                    padding: 1rem;
                 }
 
                 div {
                     &.header-container {
                         background-color: $color-tertiary-mid-gray;
                         border-bottom: 2px solid $color-tertiary-mid-gray;
+                    }
+                }
+
+                @media (min-width: 768px) {
+                    border-left: 2px solid $color-tertiary-mid-gray;
+
+                    > div {
+                        padding: 2rem 3rem;
                     }
                 }
             }

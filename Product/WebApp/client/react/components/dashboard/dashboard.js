@@ -6,14 +6,17 @@ class Dashboard extends React.Component {
         super(props);
         this.state = {
             notifications: props.notifications,
-            currentNotification: props.notifications[0]
+            deviceType: props.deviceType,
+            currentNotification: props.notifications[0],
+            activeScreen: props.deviceType === "Mobile" ? "list" : "both"
         };
 
         this.onNotificationSelect = this.onNotificationSelect.bind(this);
+        this.toggleMobileView = this.toggleMobileView.bind(this);
     }
 
     componentDidMount() {
-        // If there's any notification and it's unread, mark it as read.
+        // If there's any notification that's viewed by default and it's unread, mark it as read.
         if (this.state.notifications[0]) {
             this.onNotificationSelect(this.state.notifications[0]);
         }
@@ -31,16 +34,24 @@ class Dashboard extends React.Component {
         }
     }
 
+    toggleMobileView() {
+        if (this.state.deviceType === "Mobile") {
+            if (this.state.activeScreen === "list") {
+                this.setState({ activeScreen: "details" });
+            }
+            else {
+                this.setState({ activeScreen: "list" });
+            }
+        }
+        
+    }
+
     render() {
         return (
             <div className="dashboard shadow-2">
                 <div className="row row-eq-height">
-                    <div className="col-12 col-sm-2 no-padding">
-                        <NotificationListing notifications={this.state.notifications} onNotificationSelect={(notification) => this.onNotificationSelect(notification)} currentNotification={this.state.currentNotification} />
-                    </div>
-                    <div className="col-12 col-sm-10 no-padding">
-                        <NotificationView notification={this.state.currentNotification} />
-                    </div>
+                    <NotificationListing notifications={this.state.notifications} activeScreen={this.state.activeScreen} toggleMobileView={this.toggleMobileView} activeScreen={this.state.activeScreen} onNotificationSelect={(notification) => this.onNotificationSelect(notification)} currentNotification={this.state.currentNotification} />
+                    <NotificationView notification={this.state.currentNotification} activeScreen={this.state.activeScreen} toggleMobileView={this.toggleMobileView} activeScreen={this.state.activeScreen} />                
                 </div>
             </div>
             

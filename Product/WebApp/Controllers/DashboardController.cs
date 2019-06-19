@@ -9,6 +9,7 @@ using UpDiddy.Api;
 using UpDiddy.Authentication;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
+using Wangkanai.Detection;
 
 namespace UpDiddy.Controllers
 {
@@ -18,26 +19,31 @@ namespace UpDiddy.Controllers
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly IApi _api;
+        private readonly IDeviceResolver _deviceResolver;
 
 
         public DashboardController(
             IApi api,
             IConfiguration configuration,
-            IHostingEnvironment env
+            IHostingEnvironment env,
+            IDeviceResolver deviceResolver
             ) : base(api)
         {
             _env = env;
             _configuration = configuration;
             _api = api;
+            _deviceResolver = deviceResolver;
         }
 
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            string DeviceType = _deviceResolver.Device.Type.ToString();
             DashboardViewModel DashboardViewModel = new DashboardViewModel
             {
-                Notifications = this.subscriber.Notifications
+                Notifications = this.subscriber.Notifications,
+                DeviceType = DeviceType
             };
 
             return View(DashboardViewModel);
