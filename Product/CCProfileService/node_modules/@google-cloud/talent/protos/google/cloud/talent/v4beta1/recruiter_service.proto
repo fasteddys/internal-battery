@@ -1,0 +1,219 @@
+// Copyright 2019 Google LLC.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+syntax = "proto3";
+
+package google.cloud.talent.v4beta1;
+
+import "google/api/annotations.proto";
+import "google/cloud/talent/v4beta1/common.proto";
+import "google/cloud/talent/v4beta1/recruiter.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+
+option go_package = "google.golang.org/genproto/googleapis/cloud/talent/v4beta1;talent";
+option java_multiple_files = true;
+option java_outer_classname = "RecruiterServiceProto";
+option java_package = "com.google.cloud.talent.v4beta1";
+option objc_class_prefix = "CTS";
+
+// A service that handles recruiter management.
+service RecruiterService {
+  // Lists all recruiters associated with the tenant.
+  rpc ListRecruiters(ListRecruitersRequest) returns (ListRecruitersResponse) {
+    option (google.api.http) = {
+      get: "/v4beta1/{parent=projects/*/tenants/*}/recruiters"
+    };
+  }
+
+  // Creates and returns a new recruiter.
+  rpc CreateRecruiter(CreateRecruiterRequest) returns (Recruiter) {
+    option (google.api.http) = {
+      post: "/v4beta1/{parent=projects/*/tenants/*}/recruiters"
+      body: "*"
+    };
+  }
+
+  // Gets the specified recruiter.
+  rpc GetRecruiter(GetRecruiterRequest) returns (Recruiter) {
+    option (google.api.http) = {
+      get: "/v4beta1/{name=projects/*/tenants/*/recruiters/*}"
+    };
+  }
+
+  // Updates the specified recruiter and returns the updated result.
+  rpc UpdateRecruiter(UpdateRecruiterRequest) returns (Recruiter) {
+    option (google.api.http) = {
+      patch: "/v4beta1/{recruiter.name=projects/*/tenants/*/recruiters/*}"
+      body: "*"
+    };
+  }
+
+  // Deletes the specified recruiter.
+  rpc DeleteRecruiter(DeleteRecruiterRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v4beta1/{name=projects/*/tenants/*/recruiters/*}"
+    };
+  }
+
+  // Add profile tags into a recruiter.
+  rpc AddRecruiterProfileTags(AddRecruiterProfileTagsRequest) returns (Recruiter) {
+    option (google.api.http) = {
+      post: "/v4beta1/{recruiter=projects/*/tenants/*/recruiters/*}/profileTags:add"
+      body: "*"
+    };
+  }
+
+  // Remove profile tags from a recruiter.
+  rpc RemoveRecruiterProfileTags(RemoveRecruiterProfileTagsRequest) returns (Recruiter) {
+    option (google.api.http) = {
+      post: "/v4beta1/{recruiter=projects/*/tenants/*/recruiters/*}/profileTags:remove"
+      body: "*"
+    };
+  }
+}
+
+// List recruiters request.
+message ListRecruitersRequest {
+  // Required.
+  //
+  // The resource name of the tenant under which the recruiter is created.
+  //
+  // The format is "projects/{project_id}/tenants/{tenant_id}", for example,
+  // "projects/api-test-project/tenants/test-tenant".
+  string parent = 1;
+
+  // Optional.
+  //
+  // The token that specifies the current offset (that is, starting result).
+  //
+  // Please set the value to [ListRecruitersResponse.next_page_token][google.cloud.talent.v4beta1.ListRecruitersResponse.next_page_token] to
+  // continue the list.
+  string page_token = 2;
+
+  // Optional.
+  //
+  // The maximum number of recruiters to be returned, at most 100.
+  //
+  // Default is 100 unless a positive number smaller than 100 is specified.
+  int32 page_size = 3;
+}
+
+// The List recruiters response object.
+message ListRecruitersResponse {
+  // Recruiters for the specific company.
+  repeated Recruiter recruiters = 1;
+
+  // A token to retrieve the next page of results. This is empty if there are no
+  // more results.
+  string next_page_token = 2;
+
+  // Additional information for the API invocation, such as the request
+  // tracking id.
+  ResponseMetadata metadata = 3;
+}
+
+// Create recruiter request.
+message CreateRecruiterRequest {
+  // Required.
+  //
+  // The name of the company this recruiter belongs to.
+  //
+  // The format is "projects/{project_id}", for example,
+  // "projects/api-test-project".
+  string parent = 1;
+
+  // Required.
+  //
+  // The recruiter to be created.
+  Recruiter recruiter = 2;
+}
+
+// Get recruiter request.
+message GetRecruiterRequest {
+  // Required.
+  //
+  // Resource name of the recruiter to get.
+  //
+  // The format is
+  // "projects/{project_id}/recruiters/{recruiter_id}",
+  // for example, "projects/api-test-project/recruiters/bar".
+  string name = 1;
+}
+
+// Update recruiter request
+message UpdateRecruiterRequest {
+  // Required.
+  //
+  // Recruiter to be updated.
+  Recruiter recruiter = 1;
+
+  // Optional.
+  //
+  // A field mask to specify the recruiter fields to update.
+  //
+  // A full update is performed if it is unset.
+  //
+  // Valid values are:
+  //
+  // * customAttributes
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+// Delete recruiter request.
+message DeleteRecruiterRequest {
+  // Required.
+  //
+  // Resource name of the recruiter to be deleted.
+  //
+  // The format is
+  // "projects/{project_id}/recruiters/{recruiter_id}",
+  // for example, "projects/api-test-project/recruiters/bar".
+  string name = 1;
+}
+
+// Add profile tags request.
+message AddRecruiterProfileTagsRequest {
+  // Required.
+  //
+  // Resource name assigned to a recruiter by the API.
+  //
+  // The format is
+  // "projects/{project_id}}/recruiters/{recruiter_id}",
+  // for example, "projects/api-test-project/recruiters/bar".
+  string recruiter = 1;
+
+  // Required.
+  //
+  // The profile tags added to the recruiter's list of profile tags.
+  repeated string profile_tags = 2;
+}
+
+// Remove profile tags request.
+message RemoveRecruiterProfileTagsRequest {
+  // Required.
+  //
+  // Resource name assigned to a recruiter by the API.
+  //
+  // The format is
+  // "projects/{project_id}/recruiters/{recruiter_id}",
+  // for example, "projects/api-test-project/recruiters/bar".
+  string recruiter = 1;
+
+  // Required.
+  //
+  // The profile tags removed from the recruiter's list of profile tags.
+  repeated string profile_tags = 2;
+}

@@ -1,0 +1,170 @@
+// Copyright 2019 Google LLC.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+syntax = "proto3";
+
+package google.cloud.talent.v4beta1;
+
+import "google/api/annotations.proto";
+import "google/cloud/talent/v4beta1/assignment.proto";
+import "google/cloud/talent/v4beta1/common.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+
+option go_package = "google.golang.org/genproto/googleapis/cloud/talent/v4beta1;talent";
+option java_multiple_files = true;
+option java_outer_classname = "AssignmentServiceProto";
+option java_package = "com.google.cloud.talent.v4beta1";
+option objc_class_prefix = "CTS";
+
+// A service that handles assignment management, including CRUD and enumeration.
+service AssignmentService {
+  // Creates a new assignment entity.
+  rpc CreateAssignment(CreateAssignmentRequest) returns (Assignment) {
+    option (google.api.http) = {
+      post: "/v4beta1/{parent=projects/*/tenants/*/profiles/*}/assignments"
+      body: "*"
+    };
+  }
+
+  // Retrieves specified assignment.
+  rpc GetAssignment(GetAssignmentRequest) returns (Assignment) {
+    option (google.api.http) = {
+      get: "/v4beta1/{name=projects/*/tenants/*/profiles/*/assignments/*}"
+    };
+  }
+
+  // Updates specified assignment.
+  rpc UpdateAssignment(UpdateAssignmentRequest) returns (Assignment) {
+    option (google.api.http) = {
+      patch: "/v4beta1/{assignment.name=projects/*/tenants/*/profiles/*/assignments/*}"
+      body: "*"
+    };
+  }
+
+  // Deletes specified assignment.
+  // Prerequisite: The assignment has no jobs associated with it.
+  rpc DeleteAssignment(DeleteAssignmentRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/v4beta1/{name=projects/*/tenants/*/profiles/*/assignments/*}"
+    };
+  }
+
+  // Lists all assignments associated with the profile.
+  rpc ListAssignments(ListAssignmentsRequest) returns (ListAssignmentsResponse) {
+    option (google.api.http) = {
+      get: "/v4beta1/{parent=projects/*/tenants/*/profiles/*}/assignments"
+    };
+  }
+}
+
+// The Request of the CreateAssignment method.
+message CreateAssignmentRequest {
+  // Required.
+  //
+  // Resource name of the project under which the assignment is created.
+  //
+  // The format is
+  // "projects/{project_id}/tenants/{tenant_id}/profiles/{profile_id}", for
+  // example, "projects/test-project/tenants/test-tenant/profiles/test-profile".
+  string parent = 1;
+
+  // Required.
+  //
+  // The assignment to be created.
+  Assignment assignment = 2;
+}
+
+// Request for getting a assignment by name.
+message GetAssignmentRequest {
+  // Required.
+  //
+  // The resource name of the assignment to be retrieved.
+  //
+  // The format is
+  // "projects/{project_id}/tenants/{tenant_id}/profiles/{profile_id}/assignments/{assignment_id}",
+  // for example,
+  // "projects/test-project/tenants/test-tenant/profiles/test-profile/assignments/test-assignment".
+  string name = 1;
+}
+
+// Request for updating a specified assignment.
+message UpdateAssignmentRequest {
+  // Required.
+  //
+  // The assignment resource to replace the current resource in the system.
+  Assignment assignment = 1;
+
+  // Optional but strongly recommended for the best service
+  // experience.
+  //
+  // If [update_mask][google.cloud.talent.v4beta1.UpdateAssignmentRequest.update_mask] is provided, only the specified fields in
+  // [assignment][google.cloud.talent.v4beta1.UpdateAssignmentRequest.assignment] are updated. Otherwise all the fields are updated.
+  //
+  // A field mask to specify the assignment fields to be updated. Only
+  // top level fields of [Assignment][google.cloud.talent.v4beta1.Assignment] are supported.
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+// Request to delete a assignment.
+message DeleteAssignmentRequest {
+  // Required.
+  //
+  // The resource name of the assignment to be deleted.
+  //
+  // The format is
+  // "projects/{project_id}/tenants/{tenant_id}/profiles/{profile_id}/assignments/{assignment_id}",
+  // for example,
+  // "projects/test-project/tenants/test-tenant/profiles/test-profile/assignments/test-assignment".
+  string name = 1;
+}
+
+// List assignments for which the client has ACL visibility.
+message ListAssignmentsRequest {
+  // Required.
+  //
+  // Resource name of the project under which the assignment is created.
+  //
+  // The format is
+  // "projects/{project_id}/tenants/{tenant_id}/profiles/{profile_id}", for
+  // example, "projects/test-project/tenants/test-tenant/profiles/test-profile".
+  string parent = 1;
+
+  // Optional.
+  //
+  // The starting indicator from which to return results.
+  string page_token = 2;
+
+  // Optional.
+  //
+  // The maximum number of assignments to be returned, at most 100.
+  // Default is 100 if a non-positive number is provided.
+  int32 page_size = 3;
+}
+
+// Output only.
+//
+// The List assignments response object.
+message ListAssignmentsResponse {
+  // Assignments for the current client.
+  repeated Assignment assignments = 1;
+
+  // A token to retrieve the next page of results.
+  string next_page_token = 2;
+
+  // Additional information for the API invocation, such as the request
+  // tracking id.
+  ResponseMetadata metadata = 3;
+}

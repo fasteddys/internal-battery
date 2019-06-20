@@ -1,0 +1,8 @@
+api_name: talent
+api_version: v4beta1
+artifact_type: GAPIC
+organization_name: google-cloud
+proto_deps:
+- name: google-common-protos
+proto_path: google/cloud/talent/v4beta1
+release_level: null
