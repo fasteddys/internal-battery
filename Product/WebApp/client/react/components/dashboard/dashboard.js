@@ -16,9 +16,36 @@ class Dashboard extends React.Component {
     }
 
     componentDidMount() {
+        this.updateDimensions();
+        window.addEventListener("resize", this.updateDimensions.bind(this));
         // If there's any notification that's viewed by default and it's unread, mark it as read.
         if (this.state.notifications[0] && this.state.deviceType !== "Mobile") {
             this.onNotificationSelect(this.state.notifications[0]);
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.updateDimensions.bind(this));
+    }
+
+    updateDimensions() {
+        if (window.innerWidth < 768) {
+            this.setState({
+                deviceType: "Mobile",
+                activeScreen: "list"
+            });
+        }
+        else if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+            this.setState({
+                deviceType: "Tablet",
+                activeScreen: "both"
+            });
+        }
+        else if (window.innerWidth >= 1024) {
+            this.setState({
+                deviceType: "Desktop",
+                activeScreen: "both"
+            });
         }
     }
 
