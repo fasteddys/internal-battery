@@ -481,28 +481,27 @@ namespace UpDiddyApi.Workflow
 
                     // load all existing job pages - it is important to retrieve all of them regardless of their JobPageStatus to avoid FK conflicts on insert and update operations
                     List<JobPage> existingJobPages = _repositoryWrapper.JobPage.GetAllJobPagesForJobSiteAsync(jobSite.JobSiteGuid).Result.ToList();
+                    // set the number of existing active job pages before we perform any discovery operations
+                    int existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
 
                     // retrieve all current job pages that are visible on the job site
                     List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages);
+                    // set the number of pending and active jobs discovered - this will be the future state if we continue processing this job site
+                    int futurePendingAndActiveJobPagesCount = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2).Count();
 
                     // perform safety check to ensure we don't erase all jobs if there is an intermittent problem with a job site
                     bool isExceedsSafetyThreshold = false;
-                    int existingActiveJobPageCount = 0;
-                    if (existingJobPages != null && existingJobPages.Count > 0)
+                    if (existingActiveJobPageCount > 0)
                     {
-                        existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
-                        if (existingActiveJobPageCount > 0)
-                        {
-                            decimal percentageShift = (decimal)jobPagesToProcess.Count / (decimal)existingActiveJobPageCount;
-                            if (percentageShift < 0.40M)
-                                isExceedsSafetyThreshold = true;
-                        }
+                        decimal percentageShift = (decimal)futurePendingAndActiveJobPagesCount / (decimal)existingActiveJobPageCount;
+                        if (percentageShift < 0.40M)
+                            isExceedsSafetyThreshold = true;
                     }
                     if (isExceedsSafetyThreshold)
                     {
                         // save the number of discovered jobs as the number of processed jobs
                         jobDataMiningStats.NumJobsProcessed = jobPagesToProcess.Count;
-                        _syslog.Log(LogLevel.Critical, $"**** ScheduledJobs.JobDataMining aborted processing for job site '{jobSite.Name}' because only {existingActiveJobPageCount.ToString()} were discovered and there are {existingJobPages.Count.ToString()} existing jobs. The threshold is currently set at 40%.");
+                        _syslog.Log(LogLevel.Critical, $"**** ScheduledJobs.JobDataMining aborted processing for job site '{jobSite.Name}' because only {futurePendingAndActiveJobPagesCount.ToString()} were discovered and there are {existingActiveJobPageCount.ToString()} existing jobs. The threshold is currently set at 40%.");
                     }
                     else
                     {
@@ -709,7 +708,7 @@ namespace UpDiddyApi.Workflow
                 JobPostingAlert jobPostingAlert = _repositoryWrapper.JobPostingAlertRepository.GetJobPostingAlert(jobPostingAlertGuid).Result;
                 CloudTalent cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
                 JobQueryDto jobQueryDto = JsonConvert.DeserializeObject<JobQueryDto>(jobPostingAlert.JobQueryDto.ToString());
-                switch(jobPostingAlert.Frequency)
+                switch (jobPostingAlert.Frequency)
                 {
                     case Frequency.Daily:
                         jobQueryDto.LowerBound = DateTime.UtcNow.AddDays(-1);
@@ -733,7 +732,7 @@ namespace UpDiddyApi.Workflow
                         location = j.Location,
                         posted = j.PostingDateUTC.ToShortDateString(),
                         url = _configuration["CareerCircle:ViewJobPostingUrl"] + j.JobPostingGuid
-                    }).ToList());                    
+                    }).ToList());
                     _sysEmail.SendTemplatedEmailAsync(
                         jobPostingAlert.Subscriber.Email,
                         _configuration["SysEmail:Transactional:TemplateIds:JobPosting-SubscriberAlert"],
