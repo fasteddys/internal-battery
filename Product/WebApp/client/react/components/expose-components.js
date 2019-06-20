@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import ReactDOMServer from 'react-dom/server';
 
+import ResumeMerge from './ResumeMerge';
 import ResumeUpload from './ResumeUpload';
 import Checkbox from './Checkbox';
 import Favorite from './jobs/Favorite';
@@ -20,6 +21,7 @@ global.ReactDOMServer = ReactDOMServer;
 
 // components
 global.ResumeUpload = ResumeUpload;
+global.ResumeMerge = ResumeMerge;
 global.Checkbox = Checkbox;
 global.Favorite = Favorite;
 global.BrowseJobs = BrowseJobs;

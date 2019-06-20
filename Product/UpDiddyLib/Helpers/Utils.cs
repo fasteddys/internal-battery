@@ -560,7 +560,7 @@ namespace UpDiddyLib.Helpers
                     EndDate = endDate,
                     IsCurrent = isCurrent ? 1 : 0,
                     Company = company,
-                    JobDecription = jobDescription,
+                    JobDescription = jobDescription,
                     Title = jobTitle
                 };
                 rVal.Add(workHistory);
@@ -609,6 +609,10 @@ namespace UpDiddyLib.Helpers
 
         static public DateTime ParseDateFromHrXmlDate(XmlNode hrXMLDate, ref bool isCurrent)
         {
+
+            if (hrXMLDate == null)
+                return DateTime.MinValue;
+
             isCurrent = false;
             string dateString = hrXMLDate.FirstChild.InnerText;
 
@@ -726,7 +730,8 @@ namespace UpDiddyLib.Helpers
 
         static public string RemoveNewlines(string Str)
         {
-            return Regex.Replace(Str, "\r\n", String.Empty);
+            string rVal =  Regex.Replace(Str, "\r\n", String.Empty);
+            return Regex.Replace(rVal, "\\n", String.Empty);
         }
 
         static public string RemoveRedundantSpaces(string Str)
@@ -766,6 +771,120 @@ namespace UpDiddyLib.Helpers
             DateTime PriorDay = StartTime.AddDays(-1 * DaysApart);
 
             return PriorDay;
+        }
+
+        /// <summary>
+        /// convert the given string into the specified type 
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public static dynamic ToType(Type type , string val)
+        {
+            try
+            {
+                if (type == typeof(int?) || type == typeof(int) )
+                {
+                    return int.Parse(val);
+                }
+                else if (type == typeof(string))
+                {
+                    return val;
+                }
+                else if (type == typeof(double?) || type == typeof(double))
+                {
+                    return double.Parse(val);
+                }
+                else if (type == typeof(DateTime?) || type == typeof(DateTime))
+                {
+                    return DateTime.Parse(val);
+                }
+                else if (type == typeof(Guid?) || type == typeof(Guid))
+                {
+                    return Guid.Parse(val);
+                }
+                else if (type == typeof(bool?) || type == typeof(bool))
+                {
+                    return bool.Parse(val);
+                }
+                else if (type == typeof(long?) || type == typeof(long))
+                {
+                    return long.Parse(val);
+                }
+                else if (type == typeof(float?) || type == typeof(float))
+                {
+                    return float.Parse(val);
+                }
+                else if (type == typeof(decimal?) || type == typeof(decimal))
+                {
+                    return decimal.Parse(val);
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            catch
+            {
+                return null;
+            }           
+        }
+
+        public static dynamic ToTypeNullValue(Type type)
+        {
+            try
+            {
+                if (type == typeof(int?) || type == typeof(double?) || type == typeof(DateTime?) || type == typeof(Guid?) ||
+                    type == typeof(bool?) || type == typeof(long?) || type == typeof(float?) || type == typeof(decimal?)
+                    )
+                    return null;
+
+                if ( type == typeof(int))
+                {
+                    return 0;
+                }
+                else if (type == typeof(string))
+                {
+                    return string.Empty;
+                }
+                else if (type == typeof(double))
+                {
+                    return (double) 0;
+                }
+                else if ( type == typeof(DateTime))
+                {
+                    return DateTime.MinValue;
+                }
+                else if (type == typeof(Guid))
+                {
+                    return Guid.Empty;
+                }
+                else if (type == typeof(bool))
+                {
+                    return false;
+                }
+                else if (type == typeof(long))
+                {
+                    return (long) 0;
+                }
+                else if (type == typeof(float))
+                {
+                    return (float) 0;
+                }
+                else if (type == typeof(decimal))
+                {
+                    return (decimal) 0;
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            catch
+            {
+                return null;
+            }
         }
 
 

@@ -71,5 +71,14 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<List<SubscriberNotesDto>> GetSubscriberNotesBySubscriberGuid(string subscriberGuid, string recruiterGuid, string searchquery);
 
         Task<bool> DeleteSubscriberNote(Guid subscriberNotesGuid);
+
+        /// <summary>
+        /// Imports a user resume
+        /// </summary>
+        /// <param name="resumeParse"></param>
+        /// <param name="resume"></param>
+        /// <param name="msg"></param>
+        /// <returns></returns>
+        Task<bool> ImportResume(ResumeParse resumeParse, string resume);
     }
 }

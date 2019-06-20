@@ -12,7 +12,7 @@ namespace UpDiddyLib.Dto
         public DateTime? EndDate { get; set; }
         public int IsCurrent { get; set; }
         public string Title { get; set; }
-        public string JobDecription { get; set; }
+        public string JobDescription { get; set; }
         public decimal Compensation { get; set; }
         public string CompensationType { get; set; }
         public string Company { get; set; }        

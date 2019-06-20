@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IRepositoryWrapper
     {
+ 
+
+
         ICountryRepository Country { get; }
         IStateRepository State { get; }
         IJobSiteRepository JobSite { get; }
@@ -26,5 +30,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         ISubscriberNotesRepository SubscriberNotesRepository { get; }
         IRecruiterRepository RecruiterRepository { get; }
         IJobPostingAlertRepository JobPostingAlertRepository { get; }
+        IResumeParseRepository ResumeParseRepository { get; }
+        IResumeParseResultRepository ResumeParseResultRepository { get; }
     }
 }

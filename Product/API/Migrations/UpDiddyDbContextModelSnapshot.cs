@@ -2528,6 +2528,86 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("ReportEnrollmentByVendors");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.ResumeParse", b =>
+                {
+                    b.Property<int>("ResumeParseId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("ParseStatus");
+
+                    b.Property<int>("RequiresMerge");
+
+                    b.Property<Guid>("ResumeParseGuid");
+
+                    b.Property<int>("SubscriberFileId");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("ResumeParseId");
+
+                    b.HasIndex("SubscriberFileId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("ResumeParse");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.ResumeParseResult", b =>
+                {
+                    b.Property<int>("ResumeParseResultId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<Guid>("ExistingObjectGuid");
+
+                    b.Property<string>("ExistingValue");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("ParseStatus");
+
+                    b.Property<string>("ParsedValue");
+
+                    b.Property<string>("ProcessingMessage");
+
+                    b.Property<int>("ProfileSectionId");
+
+                    b.Property<string>("Prompt");
+
+                    b.Property<int>("ResumeParseId");
+
+                    b.Property<Guid>("ResumeParseResultGuid");
+
+                    b.Property<string>("TargetProperty");
+
+                    b.Property<string>("TargetTypeName");
+
+                    b.HasKey("ResumeParseResultId");
+
+                    b.HasIndex("ResumeParseId");
+
+                    b.ToTable("ResumeParseResult");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.SecurityClearance", b =>
                 {
                     b.Property<int>("SecurityClearanceId")
@@ -2951,7 +3031,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
-                    b.Property<string>("JobDecription");
+                    b.Property<string>("JobDescription");
 
                     b.Property<DateTime?>("ModifyDate");
 
@@ -3790,6 +3870,27 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Recruiter", "Recruiter")
                         .WithMany()
                         .HasForeignKey("RecruiterId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.ResumeParse", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.SubscriberFile", "SubscriberFile")
+                        .WithMany()
+                        .HasForeignKey("SubscriberFileId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.ResumeParseResult", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.ResumeParse", "ResumeParse")
+                        .WithMany()
+                        .HasForeignKey("ResumeParseId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

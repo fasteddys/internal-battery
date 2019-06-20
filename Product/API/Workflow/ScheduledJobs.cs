@@ -29,6 +29,7 @@ using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using static UpDiddyLib.Helpers.Constants;
 using Newtonsoft.Json.Linq;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.Workflow
 {
@@ -37,6 +38,8 @@ namespace UpDiddyApi.Workflow
         ICloudStorage _cloudStorage;
         ISysEmail _sysEmail;
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly ISubscriberService _subscriberService;
+
 
         public ScheduledJobs(
             UpDiddyDbContext context,
@@ -49,7 +52,9 @@ namespace UpDiddyApi.Workflow
             IHubContext<ClientHub> hub,
             IDistributedCache distributedCache,
             ICloudStorage cloudStorage,
-            IRepositoryWrapper repositoryWrapper)
+            IRepositoryWrapper repositoryWrapper,
+            ISubscriberService subscriberService
+           )
         {
             _db = context;
             _mapper = mapper;
@@ -64,6 +69,7 @@ namespace UpDiddyApi.Workflow
             _cache = distributedCache;
             _sysEmail = sysEmail;
             _repositoryWrapper = repositoryWrapper;
+            _subscriberService = subscriberService;
         }
 
         #region Marketing
@@ -748,13 +754,12 @@ namespace UpDiddyApi.Workflow
             }
         }
 
-        public async Task<bool> ImportSubscriberProfileDataAsync(SubscriberFile resume)
+        public async Task<bool> ImportSubscriberProfileDataAsync( Subscriber subscriber, SubscriberFile resume)
         {
             try
             {
-                resume.Subscriber = _db.Subscriber.Where(s => s.SubscriberId == resume.SubscriberId).First();
+                resume.Subscriber = subscriber;
                 string errMsg = string.Empty;
-
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
                 string base64EncodedString = null;
                 using (var ms = new MemoryStream())
@@ -766,17 +771,12 @@ namespace UpDiddyApi.Workflow
                 }
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData: Finished downloading and encoding file at {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
 
-                String parsedDocument = _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
+                
+                String parsedDocument =  _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
+                // Save profile in staging store 
                 SubscriberProfileStagingStoreFactory.Save(_db, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
-
-                // Get the list of profiles that need 
-                List<SubscriberProfileStagingStore> profiles = _db.SubscriberProfileStagingStore
-                .Include(p => p.Subscriber)
-                .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == resume.Subscriber.SubscriberGuid)
-                .ToList();
-
-                // Import user profile data
-                _ImportSubscriberProfileData(profiles);
+                // Import the subscriber resume 
+                ResumeParse resumeParse = await _ImportSubscriberResume(_subscriberService, resume, parsedDocument);
 
                 // Callback to client to let them know upload is complete
                 ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
@@ -793,6 +793,19 @@ namespace UpDiddyApi.Workflow
                         {
                             ContractResolver = contractResolver
                         }));
+
+                hubHelper.CallClient(resume.Subscriber.SubscriberGuid,
+                    Constants.SignalR.ResumeUpLoadAndParseVerb,
+                    JsonConvert.SerializeObject(
+                        _mapper.Map<ResumeParseDto>(resumeParse),
+                        new JsonSerializerSettings
+                        {
+                            ContractResolver = contractResolver
+                        }));
+
+                
+
+
             }
             catch (Exception e)
             {
@@ -1029,10 +1042,33 @@ namespace UpDiddyApi.Workflow
         #endregion
 
         #region CareerCircle  Helper Functions
-
-        private Boolean _ImportSubscriberProfileData(List<SubscriberProfileStagingStore> profiles)
+        /// <summary>
+        /// Import a subscriber resume 
+        /// </summary>
+        /// <param name="resume"></param>
+        /// <param name="subscriberFileId"></param>
+        /// <returns></returns>
+        private async Task<ResumeParse> _ImportSubscriberResume(ISubscriberService subscriberService, SubscriberFile resumeFile, string resume)
         {
 
+            // Delete all existing resume parses for user
+            await _repositoryWrapper.ResumeParseRepository.DeleteAllResumeParseForSubscriber(resumeFile.SubscriberId);
+            // Create resume parse object 
+            ResumeParse resumeParse = await _repositoryWrapper.ResumeParseRepository.CreateResumeParse(resumeFile.SubscriberId, resumeFile.SubscriberFileId);
+
+
+            // Import resume 
+            if (await subscriberService.ImportResume(resumeParse, resume) == true)
+                resumeParse.RequiresMerge = 1;
+
+            // Save Resume Parse 
+            await _repositoryWrapper.ResumeParseRepository.SaveAsync();
+
+            return resumeParse;
+        }
+        
+        private Boolean _ImportSubscriberProfileData(List<SubscriberProfileStagingStore> profiles)
+        {
             try
             {
                 string errMsg = string.Empty;

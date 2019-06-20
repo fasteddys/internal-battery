@@ -8,6 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class StateFactory
     {
+ 
         public static State GetStateByStateCode(UpDiddyDbContext db, string stateCode)
         {
             return db.State

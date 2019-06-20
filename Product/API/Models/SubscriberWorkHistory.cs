@@ -16,7 +16,7 @@ namespace UpDiddyApi.Models
         public DateTime? EndDate { get; set; }
         public int IsCurrent { get; set; }
         public string Title { get; set; }
-        public string JobDecription { get; set; }
+        public string JobDescription { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public decimal Compensation { get; set; }
         public int? CompensationTypeId { get; set;}
