@@ -597,11 +597,13 @@ namespace UpDiddy.Api
             return await GetAsync<PagingDto<UpDiddyLib.Dto.User.JobDto>>(endpoint);
         }
 
-        public async Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page)
+        public async Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page, int? timeZoneOffset)
         {
             string endpoint = "subscriber/me/job-alerts";
             if (page.HasValue)
                 endpoint = QueryHelpers.AddQueryString(endpoint, "page", page.Value.ToString());
+            if (timeZoneOffset.HasValue)
+                endpoint = QueryHelpers.AddQueryString(endpoint, "timeZoneOffset", timeZoneOffset.Value.ToString());
             return await GetAsync<PagingDto<JobPostingAlertDto>>(endpoint);
         }
 

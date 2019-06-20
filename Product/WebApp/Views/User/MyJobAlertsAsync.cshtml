@@ -43,7 +43,23 @@
                                         <div class="card-text">
                                             <h6>@jobAlert.Description</h6>
                                             @{
-                                                string runTime = jobAlert.ExecutionHour.ToString("00") + ":" + jobAlert.ExecutionMinute.ToString("00") + " UTC";
+                                                string hour = jobAlert.ExecutionHour.ToString();
+                                                string meridiem = "PM";
+
+                                                if (jobAlert.ExecutionHour < 12)
+                                                {
+                                                    if (jobAlert.ExecutionHour == 0)
+                                                    {
+                                                        hour = "12";
+                                                    }
+                                                    meridiem = "AM";
+                                                }
+                                                else if (jobAlert.ExecutionHour > 12)
+                                                {
+                                                    hour = (jobAlert.ExecutionHour - 12).ToString();
+                                                }
+
+                                                string runTime = hour + ":" + jobAlert.ExecutionMinute.ToString("00") + " " + meridiem;
                                             }
                                             <p class="runtime">Run time: @runTime</p>
                                         </div>

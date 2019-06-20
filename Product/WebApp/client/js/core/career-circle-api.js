@@ -187,7 +187,7 @@
         return await _http.delete(`/job/favorite/${jobGuid}`);
     }
 
-    var addJobAlert = async function (jobQuery, description, frequency, executionHour, executionMinute, executionDayOfWeek) {
+    var addJobAlert = async function (jobQuery, description, frequency, executionHour, executionMinute, executionDayOfWeek, timeZoneOffset, localDate) {
         var subscriberGuid = SessionStorage.getJSON(_session_key) ? SessionStorage.getJSON(_session_key).uniqueId : null;
         var jobPostingAlertDto = JSON.stringify({
             jobQuery: jobQuery,
@@ -196,10 +196,12 @@
             executionHour: parseInt(executionHour, 10),
             executionMinute: parseInt(executionMinute, 10),
             executionDayOfWeek: parseInt(executionDayOfWeek, 10),
+            timeZoneOffset: parseInt(timeZoneOffset),
+            localDate: localDate,
             subscriber: {
                 subscriberGuid: subscriberGuid
             }
-        });
+        }); 
         return await _http.post('/job/alert', jobPostingAlertDto);
     }
 

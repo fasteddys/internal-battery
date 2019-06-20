@@ -1006,11 +1006,34 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet("/api/[controller]/me/job-alerts")]
-        public async Task<IActionResult> GetSubscriberJobAlerts(int? page)
+        public async Task<IActionResult> GetSubscriberJobAlerts(int? page, int? timeZoneOffset)
         {
             Guid userGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var jobAlerts = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(userGuid);
-            
+
+            if (timeZoneOffset.HasValue)
+            {
+                foreach (var jobAlert in jobAlerts)
+                {
+                    // construct a datetime object that represents the next utc execution time for the job alert
+                    DateTime utcExecutionDate = new DateTime(
+                        DateTime.UtcNow.Year,
+                        DateTime.UtcNow.Month,
+                        jobAlert.Frequency == Frequency.Weekly ? DateTime.UtcNow.Next(jobAlert.ExecutionDayOfWeek.Value).Day : DateTime.UtcNow.Day,
+                        jobAlert.ExecutionHour,
+                        jobAlert.ExecutionMinute,
+                        0);
+                    // adjust day, hour, and minute based on time zone offset for local time
+                    var timespanTimeZoneOffset = new TimeSpan(0, timeZoneOffset.Value, 0);
+                    // calculate the local execution date
+                    DateTime localExecutionDate = utcExecutionDate.Subtract(timespanTimeZoneOffset);
+                    // update the job alert properties
+                    jobAlert.ExecutionDayOfWeek = localExecutionDate.DayOfWeek;
+                    jobAlert.ExecutionHour = localExecutionDate.Hour;
+                    jobAlert.ExecutionMinute = localExecutionDate.Minute;
+                }
+            }
+
             var query = jobAlerts.Select(ja => new JobPostingAlertDto()
             {
                 Description = ja.Description,
@@ -1104,10 +1127,10 @@ namespace UpDiddyApi.Controllers
         {
             try
             {
-                if(ModelState.IsValid)
+                if (ModelState.IsValid)
                 {
                     //get user logged in who is by default recruiter
-                    subscriberNotes.RecruiterGuid= Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                    subscriberNotes.RecruiterGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                     await _subscriberService.SaveSubscriberNotesAsync(subscriberNotes);
                     return Ok(new BasicResponseDto { StatusCode = 200, Description = "Saved Successfully." });
                 }
@@ -1118,7 +1141,7 @@ namespace UpDiddyApi.Controllers
                 }
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _syslog.Log(LogLevel.Error, $"SubscriberController.SaveSubscriberNotes : Error occured when saving notes for data: {JsonConvert.SerializeObject(subscriberNotes)} with message={ex.Message}", ex);
                 return StatusCode(500, new BasicResponseDto { StatusCode = 400, Description = "Internal Server Error." });
@@ -1132,7 +1155,7 @@ namespace UpDiddyApi.Controllers
             //get user logged in who is by default recruiter
             var recruiterGuid = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            var subscriberNotesList=await _subscriberService.GetSubscriberNotesBySubscriberGuid(subscriberGuid, recruiterGuid, searchQuery);
+            var subscriberNotesList = await _subscriberService.GetSubscriberNotesBySubscriberGuid(subscriberGuid, recruiterGuid, searchQuery);
             return Ok(subscriberNotesList);
         }
 
@@ -1140,7 +1163,7 @@ namespace UpDiddyApi.Controllers
         [HttpDelete("/api/[controller]/notes/{subscriberNotesGuid}")]
         public async Task<IActionResult> DeleteSubscriberNote(Guid subscriberNotesGuid)
         {
-           var isDeleted=await _subscriberService.DeleteSubscriberNote(subscriberNotesGuid);
+            var isDeleted = await _subscriberService.DeleteSubscriberNote(subscriberNotesGuid);
 
             return Ok(isDeleted);
         }
