@@ -165,6 +165,11 @@ namespace UpDiddyApi.Models
         public DbSet<Notification> Notification { get; set; }
         public DbSet<SubscriberNotification> SubscriberNotification { get; set; }
 
+        public DbSet<ResumeParse> ResumeParse { get; set; }
+
+        public DbSet<ResumeParseResult> ResumeParseResult { get; set; }
+
+
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }

@@ -241,6 +241,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         }
 
+   
         public static ProfileDataStatus ImportSovren(UpDiddyDbContext db, SubscriberProfileStagingStore info, ref string msg, ILogger syslog)
         {
             try
@@ -249,7 +250,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 Subscriber subscriber = SubscriberFactory.GetSubscriberById(db, info.SubscriberId);
                 if (subscriber == null)
                 {
-                    msg = $"SubscriberSkill:ImportSovren -> Subscriber {info.SubscriberId} was not found";
+                    msg = $"SubscriberFactory:ImportSovren -> Subscriber {info.SubscriberId} was not found";
                     return ProfileDataStatus.ProcessingError;
                 }
 
@@ -266,7 +267,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
             catch (Exception ex)
             {
-                msg = $"SubscriberSkill:ImportSovren Exception for SubscriberProfileStagingStore Id = {info.SubscriberProfileStagingStoreId} Error = {ex.Message}";
+                msg = $"SubscriberFactory:ImportSovren Exception for SubscriberProfileStagingStore Id = {info.SubscriberProfileStagingStoreId} Error = {ex.Message}";
                 return ProfileDataStatus.ProcessingError;
             }
         }
@@ -278,6 +279,45 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 return false;
             return Identity.IsAuthenticated && subscriber.IsVerified && subscriber.Files.Count > 0;
         }
+
+        #region Skills
+
+        public static IList<SubscriberSkill> GetSubscriberSkillsById(UpDiddyDbContext _db, int subscriberId)
+        {
+            return _db.SubscriberSkill
+                .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
+                .Include( s => s.Skill)
+                .ToList();
+        }
+
+        #endregion
+
+        #region Work History
+
+        public static IList<SubscriberWorkHistory> GetSubscriberWorkHistoryById(UpDiddyDbContext _db, int subscriberId)
+        {
+            return _db.SubscriberWorkHistory
+                .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
+                .Include(s => s.Company)
+                .ToList();
+        }
+
+        #endregion
+
+
+        #region Education History
+
+        public static IList<SubscriberEducationHistory> GetSubscriberEducationHistoryById(UpDiddyDbContext _db, int subscriberId)
+        {
+            return _db.SubscriberEducationHistory
+                .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
+                .Include(s => s.EducationalInstitution)
+                .Include(s => s.EducationalDegree)
+                .Include(s=>s.EducationalDegreeType)
+                .ToList();
+        }
+
+        #endregion
 
 
 
@@ -392,7 +432,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             foreach (SubscriberWorkHistoryDto wh in workHistoryList)
             {
 
-                Company company = CompanyFactory.GetOrAdd(db, wh.Company);
+                Company company = CompanyFactory.GetOrAdd(db, wh.Company).Result;
                 SubscriberWorkHistory workHistory = SubscriberWorkHistoryFactory.GetWorkHistoryForSubscriber(db, subscriber, company, wh.StartDate, wh.EndDate);
                 if (workHistory == null)
                     SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(db, subscriber, wh, company);
@@ -423,14 +463,15 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             foreach (SubscriberEducationHistoryDto eh in educationHistoryList)
             {
-                EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(db, eh.EducationalInstitution);
-                EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(db, eh.EducationalDegree);
-                EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(db, eh.EducationalDegreeType);
+                EducationalInstitution educationalInstitution =   EducationalInstitutionFactory.GetOrAdd(db, eh.EducationalInstitution).Result;
+                EducationalDegree educationalDegree =   EducationalDegreeFactory.GetOrAdd(db, eh.EducationalDegree).Result;
+                EducationalDegreeType educationalDegreeType =   EducationalDegreeTypeFactory.GetOrAdd(db, eh.EducationalDegreeType).Result;
 
                 SubscriberEducationHistory educationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryForSubscriber(db, subscriber, educationalInstitution, educationalDegree, eh.StartDate, eh.EndDate, eh.DegreeDate);
                 if (educationHistory == null)
                     SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree, educationalDegreeType);
             }
+         
         }
 
         #endregion

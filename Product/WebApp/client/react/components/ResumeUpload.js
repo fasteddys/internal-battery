@@ -3,19 +3,29 @@ import React from 'react';
 class ResumeUpload extends React.Component {
     modeType = {
         upload: 0,
-        view: 1
+        view: 1,
+        parseMerge : 2
     };
 
     constructor(props) {
         super(props)
         this.fileInput = React.createRef();
+        let mergeFlag = false;
+        if (props.resumeParseGuid != "")
+            mergeFlag = true;
+
         this.state = {
             fileName: props.fileName,
             fileGuid: props.fileGuid,
             processing: false,
             mode: props.fileGuid ?  this.modeType.view : this.modeType.upload,
-            selectedFile: null
+            selectedFile: null,
+            resumeParseGuid: props.resumeParseGuid,
+            requiresMerge: mergeFlag
+
         };
+        this.onResumeMergeNeeded = this.onResumeMergeNeeded.bind(this);
+
     }
 
     onFileSelect(files) {
@@ -24,6 +34,22 @@ class ResumeUpload extends React.Component {
 
     hasResume() {
         return this.state.fileGuid ? true : false;
+    }
+
+
+    onResumeMergeNeeded(e) {          
+        this.setState({ resumeParseGuid: e.detail.resumeParseGuid });
+        this.setState({ requiresMerge: e.detail.requiresMerge });            
+    }
+
+    delegateParseMerge() {    
+        var evt = new CustomEvent('onDelegateParseMerge', { detail: this.state.resumeParseGuid });
+        window.dispatchEvent(evt);
+    }
+
+    componentDidMount()
+    {
+        window.addEventListener('onResumeMergeNeeded', this.onResumeMergeNeeded);
     }
 
     changeMode(mode){
@@ -36,7 +62,7 @@ class ResumeUpload extends React.Component {
             return;
 
         this.setState({processing: true}, () => {
-            CareerCircleAPI.uploadResume(this.state.selectedFile, false)
+            CareerCircleAPI.uploadResume(this.state.selectedFile, true)
                 .then((response) => {
                     ToastService.success('Resume saved successfully.');
                     this.setState({mode: this.modeType.view, fileName: response.data.simpleName, fileGuid: response.data.subscriberFileGuid});
@@ -78,14 +104,28 @@ class ResumeUpload extends React.Component {
     }
 
     viewMode() {
+
+        if ( this.state.requiresMerge == true )
         return (
             <div>
                 <a className="text-primary download-link pr-1" href={`/Home/DownloadFile?fileGuid=${this.state.fileGuid}`} target="_blank"><i className="fas fa-download" title="Download"></i> { this.state.fileName }</a>
-                <button type="button" className="btn btn-text text-primary edit px-2" onClick={() => this.changeMode(this.modeType.upload)}><i className="fas fa-edit text-light-blue" title="Edit"></i></button>
-                <button type="button" className="btn btn-text text-primary delete px-2" onClick={() => this.deleteResume()}><i className="fas fa-minus-circle text-light-blue" title="Delete"></i> { this.spinner() }</button>
+                <button type="button" className="btn btn-text text-primary edit px-1" onClick={() => this.changeMode(this.modeType.upload)}><i className="fas fa-edit text-light-blue" title="Edit"></i></button>
+                <button type="button" className="btn btn-text text-primary delete px-1" onClick={() => this.deleteResume()}><i className="fas fa-minus-circle text-light-blue" title="Delete"></i> {this.spinner()}</button>
+                <button type="button" className="btn btn-text text-primary edit px-1" onClick={() => this.delegateParseMerge()}><i className="fas fa-question-circle text-warning" title="Your profile requires merging"></i></button>
             </div>
-        );
+            )
+        else 
+            return (
+                <div>
+                    <a className="text-primary download-link pr-1" href={`/Home/DownloadFile?fileGuid=${this.state.fileGuid}`} target="_blank"><i className="fas fa-download" title="Download"></i> {this.state.fileName}</a>
+                    <button type="button" className="btn btn-text text-primary edit px-1" onClick={() => this.changeMode(this.modeType.upload)}><i className="fas fa-edit text-light-blue" title="Edit"></i></button>
+                    <button type="button" className="btn btn-text text-primary delete px-1" onClick={() => this.deleteResume()}><i className="fas fa-minus-circle text-light-blue" title="Delete"></i> {this.spinner()}</button>
+
+                </div>
+            )
     }
+
+ 
 
     uploadMode() {
         let cancelBtn;
@@ -119,9 +159,20 @@ class ResumeUpload extends React.Component {
         );
     }
 
-    render() {
+    render() {  
+
+        let display = null;
+        if (this.state.mode == this.modeType.upload)
+            display = this.uploadMode();
+        else if (this.state.mode == this.modeType.parseMerge && this.state.requiresMerge == 1)
+            display = this.parseMergeMode();
+        else
+            display = this.viewMode();
+
         return (<div className="resume-upload-component">
-            { this.state.mode == this.modeType.upload ? this.uploadMode() : this.viewMode()}
+            {
+               display   
+            }
         </div>);
     }
 }

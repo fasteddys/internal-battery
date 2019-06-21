@@ -30,6 +30,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using System.Linq.Expressions;
 using static UpDiddyLib.Helpers.Constants;
 using Newtonsoft.Json.Linq;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.Workflow
 {
@@ -38,6 +39,8 @@ namespace UpDiddyApi.Workflow
         ICloudStorage _cloudStorage;
         ISysEmail _sysEmail;
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly ISubscriberService _subscriberService;
+
 
         public ScheduledJobs(
             UpDiddyDbContext context,
@@ -50,7 +53,9 @@ namespace UpDiddyApi.Workflow
             IHubContext<ClientHub> hub,
             IDistributedCache distributedCache,
             ICloudStorage cloudStorage,
-            IRepositoryWrapper repositoryWrapper)
+            IRepositoryWrapper repositoryWrapper,
+            ISubscriberService subscriberService
+           )
         {
             _db = context;
             _mapper = mapper;
@@ -65,6 +70,7 @@ namespace UpDiddyApi.Workflow
             _cache = distributedCache;
             _sysEmail = sysEmail;
             _repositoryWrapper = repositoryWrapper;
+            _subscriberService = subscriberService;
         }
 
         #region Marketing
@@ -482,28 +488,27 @@ namespace UpDiddyApi.Workflow
 
                     // load all existing job pages - it is important to retrieve all of them regardless of their JobPageStatus to avoid FK conflicts on insert and update operations
                     List<JobPage> existingJobPages = _repositoryWrapper.JobPage.GetAllJobPagesForJobSiteAsync(jobSite.JobSiteGuid).Result.ToList();
+                    // set the number of existing active job pages before we perform any discovery operations
+                    int existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
 
                     // retrieve all current job pages that are visible on the job site
                     List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages);
+                    // set the number of pending and active jobs discovered - this will be the future state if we continue processing this job site
+                    int futurePendingAndActiveJobPagesCount = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2).Count();
 
                     // perform safety check to ensure we don't erase all jobs if there is an intermittent problem with a job site
                     bool isExceedsSafetyThreshold = false;
-                    int existingActiveJobPageCount = 0;
-                    if (existingJobPages != null && existingJobPages.Count > 0)
+                    if (existingActiveJobPageCount > 0)
                     {
-                        existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
-                        if (existingActiveJobPageCount > 0)
-                        {
-                            decimal percentageShift = (decimal)jobPagesToProcess.Count / (decimal)existingActiveJobPageCount;
-                            if (percentageShift < 0.40M)
-                                isExceedsSafetyThreshold = true;
-                        }
+                        decimal percentageShift = (decimal)futurePendingAndActiveJobPagesCount / (decimal)existingActiveJobPageCount;
+                        if (percentageShift < 0.40M)
+                            isExceedsSafetyThreshold = true;
                     }
                     if (isExceedsSafetyThreshold)
                     {
                         // save the number of discovered jobs as the number of processed jobs
                         jobDataMiningStats.NumJobsProcessed = jobPagesToProcess.Count;
-                        _syslog.Log(LogLevel.Critical, $"**** ScheduledJobs.JobDataMining aborted processing for job site '{jobSite.Name}' because only {existingActiveJobPageCount.ToString()} were discovered and there are {existingJobPages.Count.ToString()} existing jobs. The threshold is currently set at 40%.");
+                        _syslog.Log(LogLevel.Critical, $"**** ScheduledJobs.JobDataMining aborted processing for job site '{jobSite.Name}' because only {futurePendingAndActiveJobPagesCount.ToString()} were discovered and there are {existingActiveJobPageCount.ToString()} existing jobs. The threshold is currently set at 40%.");
                     }
                     else
                     {
@@ -710,7 +715,7 @@ namespace UpDiddyApi.Workflow
                 JobPostingAlert jobPostingAlert = _repositoryWrapper.JobPostingAlertRepository.GetJobPostingAlert(jobPostingAlertGuid).Result;
                 CloudTalent cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
                 JobQueryDto jobQueryDto = JsonConvert.DeserializeObject<JobQueryDto>(jobPostingAlert.JobQueryDto.ToString());
-                switch(jobPostingAlert.Frequency)
+                switch (jobPostingAlert.Frequency)
                 {
                     case Frequency.Daily:
                         jobQueryDto.LowerBound = DateTime.UtcNow.AddDays(-1);
@@ -734,7 +739,7 @@ namespace UpDiddyApi.Workflow
                         location = j.Location,
                         posted = j.PostingDateUTC.ToShortDateString(),
                         url = _configuration["CareerCircle:ViewJobPostingUrl"] + j.JobPostingGuid
-                    }).ToList());                    
+                    }).ToList());
                     _sysEmail.SendTemplatedEmailAsync(
                         jobPostingAlert.Subscriber.Email,
                         _configuration["SysEmail:Transactional:TemplateIds:JobPosting-SubscriberAlert"],
@@ -750,13 +755,12 @@ namespace UpDiddyApi.Workflow
             }
         }
 
-        public async Task<bool> ImportSubscriberProfileDataAsync(SubscriberFile resume)
+        public async Task<bool> ImportSubscriberProfileDataAsync( Subscriber subscriber, SubscriberFile resume)
         {
             try
             {
-                resume.Subscriber = _db.Subscriber.Where(s => s.SubscriberId == resume.SubscriberId).First();
+                resume.Subscriber = subscriber;
                 string errMsg = string.Empty;
-
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData started at: {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
                 string base64EncodedString = null;
                 using (var ms = new MemoryStream())
@@ -768,17 +772,12 @@ namespace UpDiddyApi.Workflow
                 }
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData: Finished downloading and encoding file at {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
 
-                String parsedDocument = _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
+                
+                String parsedDocument =  _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
+                // Save profile in staging store 
                 SubscriberProfileStagingStoreFactory.Save(_db, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
-
-                // Get the list of profiles that need 
-                List<SubscriberProfileStagingStore> profiles = _db.SubscriberProfileStagingStore
-                .Include(p => p.Subscriber)
-                .Where(p => p.IsDeleted == 0 && p.Status == (int)ProfileDataStatus.Acquired && p.Subscriber.SubscriberGuid == resume.Subscriber.SubscriberGuid)
-                .ToList();
-
-                // Import user profile data
-                _ImportSubscriberProfileData(profiles);
+                // Import the subscriber resume 
+                ResumeParse resumeParse = await _ImportSubscriberResume(_subscriberService, resume, parsedDocument);
 
                 // Callback to client to let them know upload is complete
                 ClientHubHelper hubHelper = new ClientHubHelper(_hub, _cache);
@@ -795,6 +794,19 @@ namespace UpDiddyApi.Workflow
                         {
                             ContractResolver = contractResolver
                         }));
+
+                hubHelper.CallClient(resume.Subscriber.SubscriberGuid,
+                    Constants.SignalR.ResumeUpLoadAndParseVerb,
+                    JsonConvert.SerializeObject(
+                        _mapper.Map<ResumeParseDto>(resumeParse),
+                        new JsonSerializerSettings
+                        {
+                            ContractResolver = contractResolver
+                        }));
+
+                
+
+
             }
             catch (Exception e)
             {
@@ -1031,10 +1043,33 @@ namespace UpDiddyApi.Workflow
         #endregion
 
         #region CareerCircle  Helper Functions
-
-        private Boolean _ImportSubscriberProfileData(List<SubscriberProfileStagingStore> profiles)
+        /// <summary>
+        /// Import a subscriber resume 
+        /// </summary>
+        /// <param name="resume"></param>
+        /// <param name="subscriberFileId"></param>
+        /// <returns></returns>
+        private async Task<ResumeParse> _ImportSubscriberResume(ISubscriberService subscriberService, SubscriberFile resumeFile, string resume)
         {
 
+            // Delete all existing resume parses for user
+            await _repositoryWrapper.ResumeParseRepository.DeleteAllResumeParseForSubscriber(resumeFile.SubscriberId);
+            // Create resume parse object 
+            ResumeParse resumeParse = await _repositoryWrapper.ResumeParseRepository.CreateResumeParse(resumeFile.SubscriberId, resumeFile.SubscriberFileId);
+
+
+            // Import resume 
+            if (await subscriberService.ImportResume(resumeParse, resume) == true)
+                resumeParse.RequiresMerge = 1;
+
+            // Save Resume Parse 
+            await _repositoryWrapper.ResumeParseRepository.SaveAsync();
+
+            return resumeParse;
+        }
+        
+        private Boolean _ImportSubscriberProfileData(List<SubscriberProfileStagingStore> profiles)
+        {
             try
             {
                 string errMsg = string.Empty;

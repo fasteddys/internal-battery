@@ -22,7 +22,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        static public Company GetOrAdd(UpDiddyDbContext db, string companyName)
+        static public async Task<Company> GetOrAdd(UpDiddyDbContext db, string companyName)
         {            
             companyName = companyName.Trim();
             Company company = db.Company
@@ -46,6 +46,16 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefault();    
             return company;
         }
+
+        static public Company GetCompanyByCompanyName(UpDiddyDbContext db, string  CompanyName)
+        {
+
+            Company company = db.Company
+                .Where(c => c.IsDeleted == 0 && c.CompanyName == CompanyName)
+                .FirstOrDefault();
+            return company;
+        }
+
 
 
 

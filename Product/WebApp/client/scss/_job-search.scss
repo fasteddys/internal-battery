@@ -169,7 +169,7 @@
                         padding: .5rem;
                     }
                 }
-
+                
 
                 .col-3 {
                     background-color: $color-primary;
@@ -251,13 +251,23 @@
             .facet-container {
                 background-color: $color-white;
 
+
+                a {
+                    color: $color-secondary-light;
+                    font-size: 20px;
+                }
+
+                a:hover {
+                    color: $color-anchor-hover;
+                }
+
                 .moreLink {
                     display: none;
                 }
 
                 .facets-style {
                     box-sizing: border-box;
-                    padding: 35px 0px 35px 0px;
+                    padding: 10px 0px 10px 0px;
                 }
 
                 .facet-header {
@@ -265,7 +275,7 @@
                     font-weight: bold;
                 }
 
-                .facet-link {
+                .facet-link, .facet-link a {
                     font-size: 12px;
                 }
 
@@ -316,57 +326,79 @@
                     margin: $rem-13;
                     padding: $rem-13;
 
-                    .job-title {
-                        font-size: $rem-24;
-                        font-weight: $opensans-bold;
+                    .job-tile-more-info {
+                        font-size: $rem-14;
+                        color: $color-anchor-hover;
                     }
 
-                    .job-location {
-                        font-size: $rem-16;
-                        color: $color-tertiary;
+                    .job-tile-more-info:hover {
+                        text-decoration: underline;
                     }
 
-                    .job-post-date {
-                        font-size: $rem-16;
-                        color: $color-silver-chalice;
+                    a {
+                        color: $color-secondary-light;
+                        font-size: 20px;
                     }
 
-                    .job-description {
-                        font-size: $rem-20;
-                        color: $color-emperor;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
+                    a:hover {
+                        color: $color-anchor-hover;
                     }
+
+                    span.favorites-label:hover {
+                        color: $color-anchor-hover;
+                    
+                    } 
+
+                .job-location {
+                    font-size: $rem-14;
+                    color: $color-tertiary;
                 }
 
-                .no-job-text {
+                .job-post-date {
+                    font-size: $rem-14;
+                    color: $color-silver-chalice;
+                }
+
+                .job-description {
                     font-size: $rem-16;
-                    margin: $rem-16;
+                    color: $color-emperor;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .favorite-job-checkbox {
+                    font-size: $rem-14;
                 }
             }
 
-            .job-pagination {
-                display: block;
+            .no-job-text {
+                font-size: $rem-16;
+                margin: $rem-16;
+            }
+        }
 
-                .pagination-container {
-                    display: inline-block;
+        .job-pagination {
+            display: block;
 
-                    .page-link {
-                        color: $color-secondary;
-                    }
+            .pagination-container {
+                display: inline-block;
 
-                    .page-item {
-                        &.active {
-                            .page-link {
-                                border-color: $color-secondary;
-                                background-color: $color-secondary;
-                                color: $color-white;
-                            }
+                .page-link {
+                    color: $color-secondary;
+                }
+
+                .page-item {
+                    &.active {
+                        .page-link {
+                            border-color: $color-secondary;
+                            background-color: $color-secondary;
+                            color: $color-white;
                         }
                     }
                 }
             }
         }
+    }
     }
 }
 

@@ -49,6 +49,7 @@ namespace UpDiddyLib.Helpers
         {
             public static readonly string CookieKey = "ccsignalr_connection_id";
             public static readonly string ResumeUpLoadVerb = "UploadResume";
+            public static readonly string ResumeUpLoadAndParseVerb = "ResumeUpLoadAndParseVerb";
         }
 
         public static class CampaignRebate

@@ -30,11 +30,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private INotificationRepository _notificationRepository;
         private ISubscriberNotificationRepository _subscriberNotificationRepository;
         private IJobPostingAlertRepository _jobPostingAlertRepository;
+        private IResumeParseRepository _resumeParseRepository;
+        private IResumeParseResultRepository _resumeParseResultRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
             _dbContext = dbContext;
         }
+
+  
 
         public ICountryRepository Country
         {
@@ -287,6 +291,31 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _subscriberNotificationRepository = new SubscriberNotificationRepository(_dbContext);
                 }
                 return _subscriberNotificationRepository;
+            }
+        }
+
+
+        public IResumeParseRepository ResumeParseRepository
+        {
+            get
+            {
+                if (_resumeParseRepository == null)
+                {
+                    _resumeParseRepository = new ResumeParseRepository(_dbContext);
+                }
+                return _resumeParseRepository;
+            }
+        }
+
+        public IResumeParseResultRepository ResumeParseResultRepository
+        {
+            get
+            {
+                if (_resumeParseResultRepository == null)
+                {
+                    _resumeParseResultRepository = new ResumeParseResultRespository(_dbContext);
+                }
+                return _resumeParseResultRepository;
             }
         }
     }

@@ -13,17 +13,22 @@ namespace UpDiddyApi.ApplicationCore.Factory
             bool rVal = true;
             try
             {
-                // check for a matching skill for this subscriber which was logically deleted
-                var deletedSubscriberSkill = db.SubscriberSkill
-                    .Where(ss => ss.IsDeleted == 1 && ss.SubscriberId == subscriber.SubscriberId && ss.SkillId == skill.SkillId)
+                // check for a matching skill (either deleted or active )for this subscriber  
+                var existingSkill = db.SubscriberSkill
+                    .Where(ss => ss.SubscriberId == subscriber.SubscriberId && ss.SkillId == skill.SkillId)
                     .FirstOrDefault();
 
-                if (deletedSubscriberSkill != null)
+
+                if (existingSkill != null)
                 {
+                    // if its and active existing skill just return true
+                    if (existingSkill.IsDeleted == 0)
+                        return true;
+
                     // if the skill was logically deleted, remove that flag and mark it as modified
-                    deletedSubscriberSkill.IsDeleted = 0;
-                    deletedSubscriberSkill.ModifyDate = DateTime.UtcNow;
-                    db.SubscriberSkill.Update(deletedSubscriberSkill);
+                    existingSkill.IsDeleted = 0;
+                    existingSkill.ModifyDate = DateTime.UtcNow;
+                    db.SubscriberSkill.Update(existingSkill);
                 }
                 else
                 {

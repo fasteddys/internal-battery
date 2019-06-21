@@ -37,6 +37,8 @@ namespace UpDiddy.ViewModels
         public string AvatarUrl { get; set; }
         public int MaxAvatarFileSize { get; set; }
         public string DefaultAvatar { get; set; }
+        public Guid ResumeParseGuid { get; set; }
+
         private string _FormattedPhone;
 
 

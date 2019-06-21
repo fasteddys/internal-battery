@@ -94,15 +94,13 @@
         return _http.delete('/subscriber/avatar');
     }
 
-
-
     var uploadResume = function (resume, parseResume) {
         var formData = new FormData();
         formData.append("resume", resume);
 
         if (parseResume == null)
             parseResume = false;
-
+ 
         formData.append("parseResume", parseResume);
 
         return _http.post('/resume/upload', formData, {
@@ -187,7 +185,12 @@
         return await _http.delete(`/job/favorite/${jobGuid}`);
     }
 
-    var addJobAlert = async function (jobQuery, description, frequency, executionHour, executionMinute, executionDayOfWeek) {
+
+    var getResumeParseMergeQuestionnaire = async function (guid) {
+        return await _http.get('/resume/profile-merge-questionnaire/' + guid);
+    }
+
+    var addJobAlert = async function (jobQuery, description, frequency, executionHour, executionMinute, executionDayOfWeek, timeZoneOffset, localDate) {
         var subscriberGuid = SessionStorage.getJSON(_session_key) ? SessionStorage.getJSON(_session_key).uniqueId : null;
         var jobPostingAlertDto = JSON.stringify({
             jobQuery: jobQuery,
@@ -196,10 +199,12 @@
             executionHour: parseInt(executionHour, 10),
             executionMinute: parseInt(executionMinute, 10),
             executionDayOfWeek: parseInt(executionDayOfWeek, 10),
+            timeZoneOffset: parseInt(timeZoneOffset),
+            localDate: localDate,
             subscriber: {
                 subscriberGuid: subscriberGuid
             }
-        });
+        }); 
         return await _http.post('/job/alert', jobPostingAlertDto);
     }
 
@@ -207,6 +212,7 @@
         return await _http.delete(`/job/alert/${jobPostingAlertGuid}`);
     }
 
+     
     return {
         getProfile: getProfile,
         uploadResume: uploadResume,
@@ -224,6 +230,7 @@
         deleteJobFavorite: deleteJobFavorite,
         uploadAvatar: uploadAvatar,
         removeAvatar: removeAvatar,
+        getResumeParseMergeQuestionnaire: getResumeParseMergeQuestionnaire,
         addJobAlert: addJobAlert,
         deleteJobAlert: deleteJobAlert
     };
