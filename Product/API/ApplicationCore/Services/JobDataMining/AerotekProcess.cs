@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -19,7 +20,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 {
     public class AerotekProcess : BaseProcess, IJobDataMining
     {
-        public AerotekProcess(JobSite jobSite, ILogger logger, Guid companyGuid) : base(jobSite, logger, companyGuid) { }
+        public AerotekProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config) : base(jobSite, logger, companyGuid, config) { }
 
         private HttpClientHandler GetHttpClientHandler()
         {
