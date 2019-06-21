@@ -1606,6 +1606,9 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("Name")
                         .IsRequired();
 
+                    b.Property<decimal?>("PercentageReductionThreshold")
+                        .HasColumnType("decimal(3,2)");
+
                     b.Property<string>("Uri")
                         .IsRequired();
 
