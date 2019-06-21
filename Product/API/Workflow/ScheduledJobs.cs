@@ -495,19 +495,22 @@ namespace UpDiddyApi.Workflow
                     // set the number of pending and active jobs discovered - this will be the future state if we continue processing this job site
                     int futurePendingAndActiveJobPagesCount = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2).Count();
 
-                    // perform safety check to ensure we don't erase all jobs if there is an intermittent problem with a job site
                     bool isExceedsSafetyThreshold = false;
-                    if (existingActiveJobPageCount > 0)
+                    if (jobSite.PercentageReductionThreshold.HasValue)
                     {
-                        decimal percentageShift = (decimal)futurePendingAndActiveJobPagesCount / (decimal)existingActiveJobPageCount;
-                        if (percentageShift < 0.40M)
-                            isExceedsSafetyThreshold = true;
+                        // perform safety check to ensure we don't erase all jobs if there is an intermittent problem with a job site
+                        if (existingActiveJobPageCount > 0)
+                        {
+                            decimal percentageShift = (decimal)futurePendingAndActiveJobPagesCount / (decimal)existingActiveJobPageCount;
+                            if (percentageShift < jobSite.PercentageReductionThreshold.Value)
+                                isExceedsSafetyThreshold = true;
+                        }
                     }
                     if (isExceedsSafetyThreshold)
                     {
                         // save the number of discovered jobs as the number of processed jobs
                         jobDataMiningStats.NumJobsProcessed = jobPagesToProcess.Count;
-                        _syslog.Log(LogLevel.Critical, $"**** ScheduledJobs.JobDataMining aborted processing for job site '{jobSite.Name}' because only {futurePendingAndActiveJobPagesCount.ToString()} were discovered and there are {existingActiveJobPageCount.ToString()} existing jobs. The threshold is currently set at 40%.");
+                        _syslog.Log(LogLevel.Critical, $"**** ScheduledJobs.JobDataMining aborted processing for {jobSite.Name} because the number of future active jobs ({futurePendingAndActiveJobPagesCount.ToString()}) fell too far below the number of existing active jobs ({existingActiveJobPageCount.ToString()}). The safety threshold is {jobSite.PercentageReductionThreshold.Value.ToString("P2")}.");
                     }
                     else
                     {
