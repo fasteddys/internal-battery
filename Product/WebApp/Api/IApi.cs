@@ -20,6 +20,11 @@ namespace UpDiddy.Api
         Task<IList<CourseDto>> CoursesAsync();
         Task<IList<CountryDto>> GetCountriesAsync();
         Task<IList<StateDto>> GetStatesByCountryAsync(Guid? countryGuid);
+
+        Task<ResumeParseDto> GetResumeParseForSubscriber(Guid subscriberGuid);
+        Task<ResumeParseQuestionnaireDto> GetResumeParseQuestionnaireForSubscriber(Guid subscriberGuid);
+        Task<BasicResponseDto> ResolveResumeParse(Guid resumeParseGuid, string mergeInfo);
+
         Task<IList<StateDto>> GetAllStatesAsync();
         Task<IList<IndustryDto>> GetIndustryAsync();
         Task<IList<JobCategoryDto>> GetJobCategoryAsync();
@@ -85,6 +90,7 @@ namespace UpDiddy.Api
         Task<CampaignPartnerContactDto> GetCampaignPartnerContactAsync(string tinyId);
         Task<IList<OfferDto>> GetOffersAsync();
         Task<PagingDto<UpDiddyLib.Dto.User.JobDto>> GetUserJobsOfInterest(int? page);
+        Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page, int? timeZoneOffset);
         Task<RedirectDto> GetSubscriberPartnerWebRedirect();
 
         #region TalentPortal
@@ -104,6 +110,12 @@ namespace UpDiddy.Api
         Task<PartnerDto> CreatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> UpdatePartnerAsync(PartnerDto partnerDto);
         Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);
+        Task<IList<NotificationDto>> GetNotificationsAsync();
+        Task<NotificationDto> GetNotificationAsync(Guid notificationGuid);
+        Task<NotificationDto> CreateNotificationAsync(NotificationDto notificationDto);
+        Task<BasicResponseDto> UpdateNotificationAsync(NotificationDto notificationDto);
+        Task<BasicResponseDto> DeleteNotificationAsync(Guid NotificationGuid);
+        Task<BasicResponseDto> UpdateSubscriberNotificationAsync(Guid SubscriberGuid, NotificationDto notificationDto);
         Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey);
         Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords);
 

@@ -1,0 +1,7 @@
+﻿@using React.AspNet;
+@using UpDiddy.ViewModels
+@model DashboardViewModel
+
+<div class="dashboard-container">
+    @Html.React("Dashboard", new { notifications = Model.Notifications, deviceType = Model.DeviceType })
+</div>

@@ -129,7 +129,8 @@ namespace UpDiddy.Controllers
                 FavoritesMap = favoritesMap,
                 Facets = jobSearchResultDto.Facets,
                 Keywords = Keywords,
-                Location = Location
+                Location = Location,
+                JobQueryForAlert = jobSearchResultDto.JobQueryForAlert
             };
 
             return View("Index", jobSearchViewModel);
@@ -202,11 +203,14 @@ namespace UpDiddy.Controllers
                         if (jobSearchResultDto == null)
                             return NotFound();
 
+                        jobSearchResultDto.JobQueryForAlert.Keywords = job?.Title ?? string.Empty;
+                        jobSearchResultDto.JobQueryForAlert.Location = location;
                         var jobSearchViewModel = new JobSearchViewModel()
                         {
                             Keywords = job?.Title ?? string.Empty,
                             Location = location,
-                            JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, pageCount)
+                            JobsSearchResult = jobSearchResultDto.Jobs.ToPagedList(1, pageCount),
+                            JobQueryForAlert = jobSearchResultDto.JobQueryForAlert
                         };
 
                         // Remove the expired job link from the search provider's index.

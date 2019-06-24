@@ -255,6 +255,11 @@ namespace UpDiddy.Api
 
         }
 
+
+
+
+
+
         public async Task<IList<CountryDto>> GetCountriesAsync()
         {
             string cacheKey = $"GetCountries";
@@ -597,6 +602,16 @@ namespace UpDiddy.Api
             return await GetAsync<PagingDto<UpDiddyLib.Dto.User.JobDto>>(endpoint);
         }
 
+        public async Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page, int? timeZoneOffset)
+        {
+            string endpoint = "subscriber/me/job-alerts";
+            if (page.HasValue)
+                endpoint = QueryHelpers.AddQueryString(endpoint, "page", page.Value.ToString());
+            if (timeZoneOffset.HasValue)
+                endpoint = QueryHelpers.AddQueryString(endpoint, "timeZoneOffset", timeZoneOffset.Value.ToString());
+            return await GetAsync<PagingDto<JobPostingAlertDto>>(endpoint);
+        }
+
         public async Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null)
         {
             string cacheKey = $"job-{JobPostingGuid}";
@@ -689,6 +704,53 @@ namespace UpDiddy.Api
             return await PutAsync<List<ImportActionDto>>("contact/import/" + partnerGuid + "/" + HttpUtility.UrlEncode(cacheKey));
         }
 
+
+        #region Resume Parse 
+
+        public async Task<ResumeParseQuestionnaireDto> GetResumeParseQuestionnaireForSubscriber(Guid subscriberGuid)
+        {
+            try
+            {
+                ResumeParseQuestionnaireDto retVal = await GetAsync<ResumeParseQuestionnaireDto>("resume/profile-merge-questionnaire");
+                return retVal;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+
+        public async Task<ResumeParseDto> GetResumeParseForSubscriber(Guid subscriberGuid)
+        {
+            try
+            {
+                ResumeParseDto retVal = await GetAsync<ResumeParseDto>("resume/resume-parse");               
+                return retVal;
+            }
+            catch
+            {
+                return null;
+            }                        
+        }
+
+
+        public async Task<BasicResponseDto> ResolveResumeParse(Guid resumeParseGuid, string mergeInfo)
+        {
+            try
+            {
+                BasicResponseDto retVal = await PostAsync<BasicResponseDto>($"resume/resolve-profile-merge/{resumeParseGuid}",mergeInfo);
+                return retVal;
+            }
+            catch ( Exception e)
+            {
+                string temp = e.Message;
+                return null;
+            }
+        }
+
+    
+        #endregion
 
         #region jobs
         public async Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords)
@@ -1090,6 +1152,9 @@ namespace UpDiddy.Api
             return await GetAsync<IList<CourseDto>>("course/");
         }
 
+
+
+
         private async Task<CourseDto> _CourseAsync(string CourseSlug)
         {
             CourseDto retVal = await GetAsync<CourseDto>("course/slug/" + CourseSlug);
@@ -1399,6 +1464,95 @@ namespace UpDiddy.Api
             }
 
             return await GetAsync<List<JobPostingCountReportDto>>($"report/job-post-count{query}");
+        }
+
+
+        public async Task<IList<NotificationDto>> GetNotificationsAsync()
+        {
+            string cacheKey = $"Notifications";
+            IList<NotificationDto> rval = GetCachedValue<IList<NotificationDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _NotificationsAsync();
+                SetCachedValue<IList<NotificationDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public async Task<NotificationDto> GetNotificationAsync(Guid NotificationGuid)
+        {
+            IList<NotificationDto> _notifications = await GetNotificationsAsync();
+            foreach (NotificationDto notification in _notifications)
+            {
+                if (notification.NotificationGuid == NotificationGuid)
+                {
+                    return notification;
+                }
+            }
+            return null;
+        }
+
+        private async Task<IList<NotificationDto>> _NotificationsAsync()
+        {
+            return await GetAsync<IList<NotificationDto>>("notifications");
+        }
+
+        public async Task<NotificationDto> CreateNotificationAsync(NotificationDto notificationDto)
+        {
+            // Create the new partner and store it for return
+            NotificationDto newNotification = await PostAsync<NotificationDto>("notifications", notificationDto);
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Notifications";
+            RemoveCachedValue<IList<NotificationDto>>(cacheKey);
+
+            // Return the newly created partner
+            return newNotification;
+        }
+
+        public async Task<BasicResponseDto> UpdateNotificationAsync(NotificationDto notificationDto)
+        {
+            // Update partner
+            BasicResponseDto updatedNotificationResponse = await PutAsync<BasicResponseDto>("notifications", notificationDto);
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Notifications";
+            RemoveCachedValue<IList<NotificationDto>>(cacheKey);
+
+            // Return the newly created partner
+            return updatedNotificationResponse;
+
+        }
+
+
+        public async Task<BasicResponseDto> DeleteNotificationAsync(Guid notificationGuid)
+        {
+            // Update partner
+            BasicResponseDto deletedNotificationResponse = await DeleteAsync<BasicResponseDto>(string.Format("notifications/{0}", notificationGuid));
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Notifications";
+            RemoveCachedValue<IList<NotificationDto>>(cacheKey);
+
+            // Return the newly created partner
+            return deletedNotificationResponse;
+        }
+
+        public async Task<BasicResponseDto> UpdateSubscriberNotificationAsync(Guid SubscriberGuid, NotificationDto notificationDto)
+        {
+            // Update partner
+            BasicResponseDto updatedSubscriberNotificationResponse = await PutAsync<BasicResponseDto>("subscriber/read-notification", notificationDto);
+
+            // Reset the cached partners list to contain the new partner
+            string cacheKey = $"Subscriber{SubscriberGuid}";
+            RemoveCachedValue<IList<SubscriberDto>>(cacheKey);
+
+            // Return the newly created partner
+            return updatedSubscriberNotificationResponse;
+
         }
 
         #endregion

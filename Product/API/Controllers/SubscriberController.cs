@@ -111,16 +111,17 @@ namespace UpDiddyApi.Controllers
 
             if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
             {
-                SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
+                
+                    SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
 
-                if (subscriberDto == null)
-                    return Ok(subscriberDto);
+                    if (subscriberDto == null)
+                        return Ok(subscriberDto);
 
-                // track the subscriber action if performed by someone other than the user who owns the file
-                if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
-                    new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
+                    // track the subscriber action if performed by someone other than the user who owns the file
+                    if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
+                        new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
 
-                return Ok(subscriberDto);
+                    return Ok(subscriberDto);                
             }
             else
                 return Unauthorized();
@@ -184,7 +185,7 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             //updatejiobReferral if referral is not empty
-            if(!string.IsNullOrEmpty(dto.ReferralCode))
+            if (!string.IsNullOrEmpty(dto.ReferralCode))
             {
                 _jobService.UpdateJobReferral(dto.ReferralCode, subscriber.SubscriberGuid.ToString());
             }
@@ -294,7 +295,7 @@ namespace UpDiddyApi.Controllers
                 EndDate = wh.EndDate,
                 IsCurrent = wh.IsCurrent,
                 IsDeleted = wh.IsDeleted,
-                JobDecription = HttpUtility.HtmlDecode(wh.JobDecription),
+                JobDescription = HttpUtility.HtmlDecode(wh.JobDescription),
                 ModifyDate = wh.ModifyDate,
                 ModifyGuid = wh.ModifyGuid,
                 StartDate = wh.StartDate,
@@ -318,7 +319,7 @@ namespace UpDiddyApi.Controllers
         {
             // sanitize user inputs
             WorkHistoryDto.Company = HttpUtility.HtmlEncode(WorkHistoryDto.Company);
-            WorkHistoryDto.JobDecription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDecription);
+            WorkHistoryDto.JobDescription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDescription);
             WorkHistoryDto.Title = HttpUtility.HtmlEncode(WorkHistoryDto.Title);
 
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -329,7 +330,7 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
             if (subscriber == null)
                 return BadRequest();
-            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company);
+            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company).Result;
             int companyId = company != null ? company.CompanyId : -1;
             CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
             int compensationTypeId = 0;
@@ -350,7 +351,7 @@ namespace UpDiddyApi.Controllers
                 EndDate = WorkHistoryDto.EndDate,
                 IsCurrent = WorkHistoryDto.IsCurrent,
                 Title = WorkHistoryDto.Title,
-                JobDecription = WorkHistoryDto.JobDecription,
+                JobDescription = WorkHistoryDto.JobDescription,
                 Compensation = WorkHistoryDto.Compensation,
                 CompensationTypeId = compensationTypeId,
                 CompanyId = companyId
@@ -366,9 +367,9 @@ namespace UpDiddyApi.Controllers
         [Route("/api/[controller]/{subscriberGuid}/work-history")]
         public IActionResult UpdateWorkHistory(Guid subscriberGuid, [FromBody] SubscriberWorkHistoryDto WorkHistoryDto)
         {
-            // sanitize user inputs
+            // sanitize user inputs 
             WorkHistoryDto.Company = HttpUtility.HtmlEncode(WorkHistoryDto.Company);
-            WorkHistoryDto.JobDecription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDecription);
+            WorkHistoryDto.JobDescription = HttpUtility.HtmlEncode(WorkHistoryDto.JobDescription);
             WorkHistoryDto.Title = HttpUtility.HtmlEncode(WorkHistoryDto.Title);
 
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -377,7 +378,7 @@ namespace UpDiddyApi.Controllers
                 return Unauthorized();
 
             Subscriber subscriber = SubscriberFactory.GetSubscriberByGuid(_db, subscriberGuid);
-            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company);
+            Company company = CompanyFactory.GetOrAdd(_db, WorkHistoryDto.Company).Result;
             int companyId = company != null ? company.CompanyId : -1;
             CompensationType compensationType = CompensationTypeFactory.GetCompensationTypeByName(_db, WorkHistoryDto.CompensationType);
             int compensationTypeId = 0;
@@ -401,7 +402,7 @@ namespace UpDiddyApi.Controllers
             WorkHistory.CompanyId = companyId;
             WorkHistory.StartDate = WorkHistoryDto.StartDate;
             WorkHistory.EndDate = WorkHistoryDto.EndDate;
-            WorkHistory.JobDecription = WorkHistoryDto.JobDecription;
+            WorkHistory.JobDescription = WorkHistoryDto.JobDescription;
             WorkHistory.Title = WorkHistoryDto.Title;
             WorkHistory.IsCurrent = WorkHistoryDto.IsCurrent;
             WorkHistory.Compensation = WorkHistoryDto.Compensation;
@@ -528,16 +529,16 @@ namespace UpDiddyApi.Controllers
             if (subscriber == null)
                 return BadRequest();
             // Find or create the institution 
-            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution);
+            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution).Result;
             int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
             // Find or create the degree major 
-            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree);
+            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree).Result;
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
             EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, EducationHistoryDto.EducationalDegreeType);
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
-                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
+                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption).Result;
             educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
 
             SubscriberEducationHistory EducationHistory = new SubscriberEducationHistory()
@@ -584,16 +585,16 @@ namespace UpDiddyApi.Controllers
             if (EducationHistory == null || EducationHistory.SubscriberId != subscriber.SubscriberId)
                 return BadRequest();
             // Find or create the institution 
-            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution);
+            EducationalInstitution educationalInstitution = EducationalInstitutionFactory.GetOrAdd(_db, EducationHistoryDto.EducationalInstitution).Result;
             int educationalInstitutionId = educationalInstitution.EducationalInstitutionId;
             // Find or create the degree major 
-            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree);
+            EducationalDegree educationalDegree = EducationalDegreeFactory.GetOrAdd(_db, EducationHistoryDto.EducationalDegree).Result;
             int educationalDegreeId = educationalDegree.EducationalDegreeId;
             // Find or create the degree type 
             EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, EducationHistoryDto.EducationalDegreeType);
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
-                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption);
+                 educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption).Result;
             educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
 
             EducationHistory.ModifyDate = DateTime.UtcNow;
@@ -644,7 +645,7 @@ namespace UpDiddyApi.Controllers
             if (SubscriberFactory.UpdateAvatar(_db, _configuration, avatar, subscriberGuid, ref errorMsg))
                 return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Avatar updated." });
             else
-                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg});            
+                return Ok(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
         }
 
 
@@ -664,7 +665,7 @@ namespace UpDiddyApi.Controllers
         }
 
 
-         
+
         [HttpPut("/api/[controller]/onboard")]
         public IActionResult Onboard()
         {
@@ -878,7 +879,7 @@ namespace UpDiddyApi.Controllers
             var result = _db.SubscriberSignUpPartnerReferences.Where(s => s.SubscriberId == subscriber.SubscriberId).FirstOrDefault();
 
             if (result.PartnerId == null)
-               return Ok(new RedirectDto() { RelativePath = null });
+                return Ok(new RedirectDto() { RelativePath = null });
 
             var redirect = _db.PartnerWebRedirect.Where(e => e.PartnerId == result.PartnerId).FirstOrDefault();
             return Ok(new RedirectDto() { RelativePath = redirect?.RelativePath });
@@ -910,10 +911,10 @@ namespace UpDiddyApi.Controllers
             searchQuery = Utils.ToSqlServerFullTextQuery(searchQuery);
             searchFilter = HttpUtility.UrlDecode(searchFilter);
 
-            var filter = new SqlParameter("@Filter", (searchFilter == null || searchFilter.ToLower() == "any" ) ? string.Empty : searchFilter);
+            var filter = new SqlParameter("@Filter", (searchFilter == null || searchFilter.ToLower() == "any") ? string.Empty : searchFilter);
             var query = new SqlParameter("@Query", searchQuery == null ? string.Empty : searchQuery);
             var spParams = new object[] { filter, query };
- 
+
             var result = _db.SubscriberSearch.FromSql("[dbo].[System_Search_Subscribers] @Filter, @Query", spParams)
                 .ProjectTo<SubscriberDto>(_mapper.ConfigurationProvider)
                 .ToList();
@@ -1004,6 +1005,56 @@ namespace UpDiddyApi.Controllers
             return Ok(map);
         }
 
+        [HttpGet("/api/[controller]/me/job-alerts")]
+        public async Task<IActionResult> GetSubscriberJobAlerts(int? page, int? timeZoneOffset)
+        {
+            Guid userGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var jobAlerts = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(userGuid);
+
+            if (timeZoneOffset.HasValue)
+            {
+                foreach (var jobAlert in jobAlerts)
+                {
+                    // construct a datetime object that represents the next utc execution time for the job alert
+                    DateTime utcExecutionDate = new DateTime(
+                        DateTime.UtcNow.Year,
+                        DateTime.UtcNow.Month,
+                        jobAlert.Frequency == Frequency.Weekly ? DateTime.UtcNow.Next(jobAlert.ExecutionDayOfWeek.Value).Day : DateTime.UtcNow.Day,
+                        jobAlert.ExecutionHour,
+                        jobAlert.ExecutionMinute,
+                        0);
+                    // adjust day, hour, and minute based on time zone offset for local time
+                    var timespanTimeZoneOffset = new TimeSpan(0, timeZoneOffset.Value, 0);
+                    // calculate the local execution date
+                    DateTime localExecutionDate = utcExecutionDate.Subtract(timespanTimeZoneOffset);
+                    // update the job alert properties
+                    jobAlert.ExecutionDayOfWeek = localExecutionDate.DayOfWeek;
+                    jobAlert.ExecutionHour = localExecutionDate.Hour;
+                    jobAlert.ExecutionMinute = localExecutionDate.Minute;
+                }
+            }
+
+            var query = jobAlerts.Select(ja => new JobPostingAlertDto()
+            {
+                Description = ja.Description,
+                ExecutionDayOfWeek = ja.ExecutionDayOfWeek,
+                ExecutionHour = ja.ExecutionHour,
+                ExecutionMinute = ja.ExecutionMinute,
+                Frequency = ja.Frequency.ToString(),
+                JobPostingAlertGuid = ja.JobPostingAlertGuid
+            });
+
+            var result = new PagingDto<JobPostingAlertDto>()
+            {
+                Page = page.HasValue ? page.Value : 1,
+                PageSize = 10,
+                Count = query.Count()
+            };
+            result.Results = query.Skip((result.Page - 1) * result.PageSize).Take(result.PageSize).ToList();
+
+            return Ok(result);
+        }
+
         [HttpGet("/api/[controller]/me/jobs")]
         public async Task<IActionResult> GetSubscriberJobFavorites(int? page)
         {
@@ -1022,18 +1073,19 @@ namespace UpDiddyApi.Controllers
             jobQuery = jobQuery.Where(job => job.PostingExpirationDateUTC > DateTime.UtcNow.Date);
 
             var query = (from job in jobQuery
-            join company in companyQuery on job.CompanyId equals company.CompanyId
-            join favorite in favoriteQuery on job.JobPostingId equals favorite.JobPostingId into jobFavorite
-            from subFavorite in jobFavorite.DefaultIfEmpty() 
-            join applied in jobAppQuery on job.JobPostingId equals applied.JobPostingId into jobApplied
-            from subApplied in jobApplied.DefaultIfEmpty()
-            where subFavorite.JobPostingFavoriteGuid != null || subApplied.JobApplicationGuid != null
-            select new UpDiddyLib.Dto.User.JobDto {
-                JobPosting = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(job),
-                JobPostingFavoriteGuid = subFavorite.JobPostingFavoriteGuid,
-                JobApplication = _mapper.Map<JobApplicationDto>(subApplied),
-                Company = _mapper.Map<CompanyDto>(company)
-            });
+                         join company in companyQuery on job.CompanyId equals company.CompanyId
+                         join favorite in favoriteQuery on job.JobPostingId equals favorite.JobPostingId into jobFavorite
+                         from subFavorite in jobFavorite.DefaultIfEmpty()
+                         join applied in jobAppQuery on job.JobPostingId equals applied.JobPostingId into jobApplied
+                         from subApplied in jobApplied.DefaultIfEmpty()
+                         where subFavorite.JobPostingFavoriteGuid != null || subApplied.JobApplicationGuid != null
+                         select new UpDiddyLib.Dto.User.JobDto
+                         {
+                             JobPosting = _mapper.Map<UpDiddyLib.Dto.JobPostingDto>(job),
+                             JobPostingFavoriteGuid = subFavorite.JobPostingFavoriteGuid,
+                             JobApplication = _mapper.Map<JobApplicationDto>(subApplied),
+                             Company = _mapper.Map<CompanyDto>(company)
+                         });
 
             var result = new PagingDto<UpDiddyLib.Dto.User.JobDto>()
             {
@@ -1075,10 +1127,10 @@ namespace UpDiddyApi.Controllers
         {
             try
             {
-                if(ModelState.IsValid)
+                if (ModelState.IsValid)
                 {
                     //get user logged in who is by default recruiter
-                    subscriberNotes.RecruiterGuid= Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                    subscriberNotes.RecruiterGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                     await _subscriberService.SaveSubscriberNotesAsync(subscriberNotes);
                     return Ok(new BasicResponseDto { StatusCode = 200, Description = "Saved Successfully." });
                 }
@@ -1089,7 +1141,7 @@ namespace UpDiddyApi.Controllers
                 }
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _syslog.Log(LogLevel.Error, $"SubscriberController.SaveSubscriberNotes : Error occured when saving notes for data: {JsonConvert.SerializeObject(subscriberNotes)} with message={ex.Message}", ex);
                 return StatusCode(500, new BasicResponseDto { StatusCode = 400, Description = "Internal Server Error." });
@@ -1103,7 +1155,7 @@ namespace UpDiddyApi.Controllers
             //get user logged in who is by default recruiter
             var recruiterGuid = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            var subscriberNotesList=await _subscriberService.GetSubscriberNotesBySubscriberGuid(subscriberGuid, recruiterGuid, searchQuery);
+            var subscriberNotesList = await _subscriberService.GetSubscriberNotesBySubscriberGuid(subscriberGuid, recruiterGuid, searchQuery);
             return Ok(subscriberNotesList);
         }
 
@@ -1111,10 +1163,46 @@ namespace UpDiddyApi.Controllers
         [HttpDelete("/api/[controller]/notes/{subscriberNotesGuid}")]
         public async Task<IActionResult> DeleteSubscriberNote(Guid subscriberNotesGuid)
         {
-           var isDeleted=await _subscriberService.DeleteSubscriberNote(subscriberNotesGuid);
+            var isDeleted = await _subscriberService.DeleteSubscriberNote(subscriberNotesGuid);
 
             return Ok(isDeleted);
         }
         #endregion
+
+        [HttpPut("read-notification")]
+        public async Task<IActionResult> SubscriberReadNotification([FromBody] NotificationDto ReadNotification)
+        {
+            if (ReadNotification == null || ReadNotification.NotificationGuid == null)
+                return BadRequest();
+
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, loggedInUserGuid, _syslog, _mapper);
+            Notification ExistingNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == ReadNotification.NotificationGuid).Result.FirstOrDefault();
+
+            if (loggedInUserGuid == subscriberDto.SubscriberGuid)
+            {
+                var t = await _repositoryWrapper.SubscriberNotificationRepository.GetByConditionWithTrackingAsync(
+                    n => n.NotificationId == ExistingNotification.NotificationId && 
+                    n.SubscriberId == subscriberDto.SubscriberId);
+
+                SubscriberNotification SubscriberNotificationEntry = t.FirstOrDefault();
+
+                if (SubscriberNotificationEntry == null)
+                    return NotFound();
+
+
+                SubscriberNotificationEntry.HasRead = 1;
+                SubscriberNotificationEntry.ModifyDate = DateTime.UtcNow;
+
+                _repositoryWrapper.SubscriberNotificationRepository.Update(SubscriberNotificationEntry);
+                await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
+
+                return Ok(new BasicResponseDto { StatusCode = 200, Description = "SubscriberNotification " + SubscriberNotificationEntry.SubscriberNotificationGuid + " successfully updated." });
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
     }
 }

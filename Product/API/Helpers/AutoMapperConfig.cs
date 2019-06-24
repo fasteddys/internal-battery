@@ -65,6 +65,8 @@ namespace UpDiddyApi.Helpers
             CreateMap<Recruiter, RecruiterDto>().ReverseMap();
             CreateMap<JobSite, JobSiteDto>().ReverseMap();
             CreateMap<JobSiteScrapeStatistic, JobSiteScrapeStatisticDto>().ReverseMap();
+            CreateMap<ResumeParse, ResumeParseDto>().ReverseMap();
+            CreateMap<ResumeParseResult, ResumeParseResultDto>().ReverseMap();
 
             CreateMap<JobPostingSkill, SkillDto>()
             .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
@@ -75,7 +77,7 @@ namespace UpDiddyApi.Helpers
                .ForPath(c => c.Skill.SkillGuid, opt => opt.MapFrom(src => src.SkillGuid))
                .ForPath(c => c.Skill.SkillName, opt => opt.MapFrom(src => src.SkillName))
                .ForAllOtherMembers(opts => opts.Ignore());
-
+            
 
             CreateMap<JobPosting, JobPostingDto>()
                 .ForMember(x => x.MetaDescription, opt => opt.Ignore())
@@ -152,6 +154,19 @@ namespace UpDiddyApi.Helpers
                 .ForMember(s => s.WorkHistory, opt => opt.MapFrom(src => src.SubscriberWorkHistory))
                 .ForMember(s => s.EducationHistory, opt => opt.MapFrom(src => src.SubscriberEducationHistory))
                 .ForMember(s => s.Files, opt => opt.MapFrom(src => src.SubscriberFile))
+                .ForMember(s => s.Notifications, opt => opt.MapFrom(src => src.SubscriberNotifications.Select(sn => new {
+                    sn.Notification.CreateDate,
+                    sn.Notification.CreateGuid,
+                    sn.Notification.ModifyDate,
+                    sn.Notification.ModifyGuid,
+                    sn.Notification.IsDeleted,
+                    sn.Notification.NotificationGuid,
+                    sn.Notification.Title,
+                    sn.Notification.Description,
+                    sn.Notification.IsTargeted,
+                    sn.Notification.ExpirationDate,
+                    sn.HasRead
+                })))
                 .ReverseMap();
             CreateMap<SubscriberFile, SubscriberFileDto>()
                 .ForMember(s => s.SimpleName, opt => opt.MapFrom(src => src.SimpleName))
@@ -173,6 +188,9 @@ namespace UpDiddyApi.Helpers
                 .ForMember(x => x.EducationalDegreeType, opt => opt.MapFrom(src => src.EducationalDegreeType.DegreeType));
 
             CreateMap<SubscriberNotes, SubscriberNotesDto>().ReverseMap();
+            CreateMap<SubscriberNotification, SubscriberNotificationDto>().ReverseMap();
+            CreateMap<Notification, NotificationDto>()
+                .ForMember(n => n.HasRead, opt => opt.Ignore());
         }
     }
 }

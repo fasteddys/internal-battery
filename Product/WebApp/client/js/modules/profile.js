@@ -227,7 +227,7 @@ function CreateWorkHistoryDto(includeGuid) {
         EndDate: $("#txtWorkHistoryEndDate").val(),
         IsCurrent: isChecked,
         Title: $("#txtWorkHistoryJobTitle").val(),
-        JobDecription: $("#txtWorkHistoryJobDescription").val(),
+        JobDescription: $("#txtWorkHistoryJobDescription").val(),
         Compensation: compensation,
         CompensationType: $('#ddlWorkHistoryCompensationType').find(":selected").text(),
         Company: $('#ddlWorkHistoryCompany')[0].selectize.getValue()
@@ -426,8 +426,8 @@ function CreateWorkHistoryDiv(WorkHistoryInfo) {
     divHtml += "</div>";
     divHtml += "<div id=\"ProfileWorkHistory_Compensation_@wh.SubscriberWorkHistoryGuid\" class=\"col-11 work-history-compensation\" data-compensation=\"@wh.Compensation\" data-compensationtype=\"@wh.CompensationType\">";
     divHtml += "</div>";
-    divHtml += "<div id=\"ProfileWorkHistory_Description_@wh.SubscriberWorkHistoryGuid\" class=\"col-11 work-history-description more\" data-description=\"@wh.JobDecription\">";
-    divHtml += "@wh.JobDecription";
+    divHtml += "<div id=\"ProfileWorkHistory_Description_@wh.SubscriberWorkHistoryGuid\" class=\"col-11 work-history-description more\" data-description=\"@wh.JobDescription\">";
+    divHtml += "@wh.JobDescription";
     divHtml += "</div>";
     divHtml += "</div>";
     // Replace razor items with values from new work history 
@@ -443,8 +443,8 @@ function CreateWorkHistoryDiv(WorkHistoryInfo) {
     regex = /@wh.CompensationType/gi;
     divHtml = divHtml.replace(regex, WorkHistoryInfo.compensationType);
 
-    regex = /@wh.JobDecription/gi;
-    divHtml = divHtml.replace(regex, WorkHistoryInfo.jobDecription.sanitize());
+    regex = /@wh.JobDescription/gi;
+    divHtml = divHtml.replace(regex, WorkHistoryInfo.jobDescription.sanitize());
 
     regex = /@wh.Compensation/gi;
     divHtml = divHtml.replace(regex, WorkHistoryInfo.compensation);

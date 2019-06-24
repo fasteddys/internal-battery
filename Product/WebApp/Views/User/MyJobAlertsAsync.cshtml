@@ -1,0 +1,135 @@
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@using React.AspNet;
+
+<section class="container-fluid bg-color-secondary text-white py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md">
+                <h1>My Job Alerts</h1>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="my-job-alerts-section">
+    <div class="container py-5">
+        <div class="row no-gutters">
+            <div class="col-md">
+                <div class="jobs-list-wrapper row d-flex align-items-stretch">
+                    @if (ViewBag.JobAlerts.TotalItemCount <= 0)
+                    {
+                        <div class="col-md-12">
+                            <h3>You currently have no active job alerts.</h3>
+                            <p>Please visit our <a href="/jobs">Career Opportunities</a> section to create job alerts based on search results!</p>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var jobAlert in ViewBag.JobAlerts)
+                        {
+                            <div class="col-md-5 col-lg-4 col-sm-12 mb-3 card-container">
+                                <div class="jobAlert card">
+                                    <div class="card-body">
+                                        <div class="card-title">
+                                            @{
+                                                var title = jobAlert.Frequency + " ";
+                                                if (jobAlert.ExecutionDayOfWeek != null)
+                                                {
+                                                    title += "(" + jobAlert.ExecutionDayOfWeek.ToString() + ")";
+                                                }
+                                            }
+                                            <h5><i class="far fa-bell"></i> @title</h5>
+                                        </div>
+                                        <div class="card-text">
+                                            <h6>@jobAlert.Description</h6>
+                                            @{
+                                                string hour = jobAlert.ExecutionHour.ToString();
+                                                string meridiem = "PM";
+
+                                                if (jobAlert.ExecutionHour < 12)
+                                                {
+                                                    if (jobAlert.ExecutionHour == 0)
+                                                    {
+                                                        hour = "12";
+                                                    }
+                                                    meridiem = "AM";
+                                                }
+                                                else if (jobAlert.ExecutionHour > 12)
+                                                {
+                                                    hour = (jobAlert.ExecutionHour - 12).ToString();
+                                                }
+
+                                                string runTime = hour + ":" + jobAlert.ExecutionMinute.ToString("00") + " " + meridiem;
+                                            }
+                                            <p class="runtime">Run time: @runTime</p>
+                                        </div>
+                                        <div class="actions-wrapper">
+                                            <div class="actions">
+                                                <span class="float-left delete">
+                                                    <a data-id="@jobAlert.JobPostingAlertGuid" class="deleteAction">Delete <i class="far fa-trash-alt"></i></a>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="full-width text-center">
+                            @Html.PagedListPager((IPagedList) ViewBag.JobAlerts, page => Url.Action("my-job-alerts", new { page }),
+                                new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                                    LiElementClasses = new string[] { "page-item" },
+                                    PageClasses = new string[] { "page-link" },
+                                    MaximumPageNumbersToDisplay=5,
+                                    DisplayLinkToFirstPage = X.PagedList.Mvc.Common.PagedListDisplayMode.Never,
+                                    DisplayLinkToLastPage = X.PagedList.Mvc.Common.PagedListDisplayMode.Never,
+                                    DisplayLinkToPreviousPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                                    DisplayLinkToNextPage = X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
+                                    LinkToFirstPageFormat = "««",
+                                    LinkToPreviousPageFormat = "«",
+                                    LinkToNextPageFormat = "»",
+                                    LinkToLastPageFormat = "»»",
+                                    DisplayEllipsesWhenNotShowingAllPageNumbers = true,
+                                    ContainerDivClasses = new[] { "pagination-container d-inline-block mt-3" },
+                                    UlElementClasses = new[] { "pagination" }
+                                })
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function (event) {
+            $(".deleteAction").click(function () {
+                var jobPostingAlertGuid = $(this).attr("data-id");
+                var jobAlertCard = $(this).closest(".card-container");
+                bootbox.confirm({
+                    message: "Are you sure you want to delete this job alert?",
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-success'
+                        },
+                        cancel: {
+                            label: 'No',
+                            classname: 'btn-danger'
+                        }
+                    },
+                    callback: function (result) {
+                        if (result) {
+                            CareerCircleAPI.deleteJobAlert(jobPostingAlertGuid)
+                                .then(function (response) {
+                                    ToastService.success("You can create new alerts by visiting 'Career Opportunities'.", "Job alert deleted successfully!");
+                                    jobAlertCard.remove();
+                                })
+                                .catch((error) => {
+                                    ToastService.error('Unable to delete jbo alert.', 'Oops, Something went wrong.');
+                                });
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</section>
