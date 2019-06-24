@@ -162,6 +162,8 @@ namespace UpDiddyApi.Models
         public DbSet<JobPostingAlert> JobPostingAlert { get; set; }
         public DbSet<JobReferral> JobReferral { get; set; }
         public DbSet<SubscriberNotes> SubscriberNotes { get; set; }
+        public DbSet<Notification> Notification { get; set; }
+        public DbSet<SubscriberNotification> SubscriberNotification { get; set; }
 
         public DbSet<ResumeParse> ResumeParse { get; set; }
 
@@ -413,7 +415,10 @@ namespace UpDiddyApi.Models
                 .HasOne<Recruiter>()
                 .WithMany()
                 .HasForeignKey(sn => sn.RecruiterId);
-               
+
+            modelBuilder.Entity<Notification>().HasQueryFilter(n => n.IsDeleted == 0 && (n.ExpirationDate > DateTime.UtcNow || n.ExpirationDate == null));
+
+
         }
     }
 }

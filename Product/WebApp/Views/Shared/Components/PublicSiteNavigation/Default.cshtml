@@ -9,6 +9,12 @@
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 
 
+
+<script>
+    var userNotificationCount = @Model.NotificationCount;
+</script>
+
+
 <nav class="navbar cc-navbar fixed-top navbar-expand-lg navbar-light bg-white">
     <div class="container">
         <a class="navbar-brand" href="~/Home/Index">
@@ -18,7 +24,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="NavigationItems">
-            <ul class="navbar-nav ml-auto">
+            <ul class="navbar-nav ml-auto d-flex align-items-center">
                 @foreach (PublicSiteNavigationMenuItemViewModel item in Model.ChildPages)
                 {
                     if (!item.NeedsAuthentication || (item.NeedsAuthentication && User.Identity.IsAuthenticated))
@@ -28,7 +34,7 @@
                             (item.Role.RolePolicy != null && (await AuthorizationService.AuthorizeAsync(User, item.Role.RolePolicy)).Succeeded)))
                         {
                             <li class="nav-item">
-                                <a class="nav-link" href="@item.Url">
+                                <a class="nav-link @item.JavascriptClass" href="@item.Url">
                                     @Html.Partial("Components/PublicSiteNavigation/_Anchor", item)
                                 </a>
                             </li>
@@ -37,7 +43,7 @@
                         {
                             int ItemHash = item.GetHashCode();
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" id="id_@ItemHash" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle @item.JavascriptClass" id="id_@ItemHash" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     @Html.Partial("Components/PublicSiteNavigation/_Anchor", item)
                                 </a>
                                 <div class="dropdown-menu" aria-labelledby="id_@ItemHash">
@@ -49,7 +55,7 @@
                                         }
                                         if (Child.Role.RolePolicy == null || (Child.Role.RolePolicy != null && (await AuthorizationService.AuthorizeAsync(User, Child.Role.RolePolicy)).Succeeded))
                                         {
-                                            <a class="dropdown-item" href="@Child.Url">
+                                            <a class="dropdown-item @Child.JavascriptClass" href="@Child.Url">
                                                 @Html.Partial("Components/PublicSiteNavigation/_Anchor", Child)
                                             </a>
                                         }
@@ -62,6 +68,13 @@
                 @if (!User.Identity.IsAuthenticated)
                 {
                     <li class="nav-item brand-button-light"><a class="nav-link" asp-area="" asp-controller="Session" asp-action="SignIn">Login/Sign Up</a></li>
+                }
+                else{
+                    <li class="nav-item">
+                        <a class="nav-link nav-notifications d-flex align-items-center" href="/Dashboard">
+                            <i class="fas fa-bell"></i>
+                        </a>
+                    </li>
                 }
             </ul>
         </div>

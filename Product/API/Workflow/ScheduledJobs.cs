@@ -27,6 +27,7 @@ using UpDiddyApi.Helpers.Job;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using System.Linq.Expressions;
 using static UpDiddyLib.Helpers.Constants;
 using Newtonsoft.Json.Linq;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
@@ -1141,6 +1142,84 @@ namespace UpDiddyApi.Workflow
 
 
 
+
+        #endregion
+
+        #region Admin Portal
+
+        /// <summary>
+        /// This function creates entries in the SubscriberNotification table for each
+        /// subscriber.
+        /// 
+        /// This function assumes the Notification is valid, and that the subscribers
+        /// being sent in have not been deleted.
+        /// </summary>
+        /// <param name="Notification"></param>
+        /// <param name="Subscribers"></param>
+        public async Task<bool> CreateSubscriberNotificationRecords(Notification Notification, int IsTargeted, IList<Subscriber> Subscribers = null)
+        {
+
+            if(IsTargeted == 0)
+                Subscribers = _repositoryWrapper.SubscriberRepository.GetByConditionAsync(s => s.IsDeleted == 0).Result.ToList();
+            else
+            {
+                if (Subscribers == null || Subscribers.Count <= 0)
+                    return false;
+            }
+
+
+            IList<SubscriberNotification> SubscriberNotifications = new List<SubscriberNotification>(); 
+            foreach(Subscriber sub in Subscribers)
+            {
+                DateTime CurrentDateTime = DateTime.UtcNow;
+                SubscriberNotification subscriberNotification = new SubscriberNotification
+                {
+                    SubscriberNotificationGuid = Guid.NewGuid(),
+                    SubscriberId = sub.SubscriberId,
+                    NotificationId = Notification.NotificationId,
+                    CreateDate = CurrentDateTime,
+                    ModifyDate = CurrentDateTime,
+                    HasRead = 0
+                };
+                SubscriberNotifications.Add(subscriberNotification);
+            }
+            _repositoryWrapper.SubscriberNotificationRepository.CreateRange(SubscriberNotifications.ToArray());
+            await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
+
+            return true;
+        }
+
+        /// <summary>
+        /// Mark each entry within the SubscriberNotification table as deleted for
+        /// the Notification being passed in.
+        /// </summary>
+        /// <param name="Notification"></param>
+        public async Task<bool> DeleteSubscriberNotificationRecords(Notification Notification)
+        {
+            if (Notification == null)
+                return false;
+
+            IList<SubscriberNotification> subscriberNotifications = _repositoryWrapper.SubscriberNotificationRepository.GetByConditionAsync(
+                n => n.NotificationId == Notification.NotificationId && n.IsDeleted == 0).Result.ToList();
+
+            if (subscriberNotifications.Count <= 0)
+                return false;
+
+            IList<SubscriberNotification> SubscriberNotifications = new List<SubscriberNotification>();
+
+            foreach (SubscriberNotification subscriberNotification in subscriberNotifications)
+            {
+                subscriberNotification.IsDeleted = 1;
+                subscriberNotification.ModifyDate = DateTime.UtcNow;
+
+                SubscriberNotifications.Add(subscriberNotification);
+            }
+
+            _repositoryWrapper.SubscriberNotificationRepository.UpdateRange(SubscriberNotifications.ToArray());
+            await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
+
+            return true;
+        }
 
         #endregion
     }
