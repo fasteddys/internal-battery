@@ -10,78 +10,107 @@ var port = process.env.PORT;
 
 const app = express() 
 
+// Parse URL-encoded bodies (as sent by HTML forms)
+app.use(express.urlencoded());
 
-/**
- * Create a Tenant.
- */
-const createTenant = async (
-    tenantServiceClient,
-    parent,
-    tenantToBeCreated
-) => {
-    try {
+// Parse JSON bodies (as sent by API clients)
+app.use(express.json());
 
-        const request = {
-            parent: parent,
-            tenant: tenantToBeCreated,
-        };
-
-        const tenantCreated = await tenantServiceClient.createTenant(request)
-            .then((x) => {
-
-                console.log(`Tenant created: ${JSON.stringify(tenantCreated[0])}`);
-            });
-
-      
-        return tenantCreated[0];
-    } catch (e) {
-        console.error(`Got exception while creating tenant!`);
-        throw e;
-    }
-};
-
-
-function test() {
-
-    throw ("test exception ");
-
-}
-
-
-
-app.get('/', (req, res) => res.send('Hello World!'))
+//app.get('/', (req, res) => res.send('Hello World!'))
 // app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 app.listen(port)
 
-app.get('/', function (req, res) {
+app.get('/', function (req, res) { 
     res.send('hello world');
 })
 
-
-app.get('/:name', function (req, res) {
-    res.send( 'hello ' + req.params.name )
-})
+ 
 
 
-app.get('/create-tenant/:tenantName', function (req, res) {
+//  Existing Test tenants:
+ 
+//  Name: projects/jobboardpilot/tenants/d927831d-16f8-492b-bb04-700d949b0633 External Id : tenant2
+//  Name: projects/jobboardpilot/tenants/616966ef-f93e-47dd-81dd-63b01c47f195 External Id : tenant3
+//  Name: projects/jobboardpilot/tenants/3d27fc68-8151-40de-96f7-cb11d8b7b252  External Id: cc-profiles-dev
+app.get('/create-tenant/:tenantName', async (req, res) => {
 
     let tenantServiceClient = new talentAPI.TenantServiceClient({
         projectId: process.env.ProjectId,
         keyFilename: process.env.KeyFilePath,
     });
+ 
+    try {  
+        
+        let  tenantToCreate = {
+            externalId: req.params.tenantName,
+            usageType: 'ISOLATED'
+      
+        }
 
+        let  request = {
+            parent: process.env.ProjectId,
+            tenant: tenantToCreate,
+        };
 
-    try {   
-        test();
-        createTenant(talentAPI.tenantServiceClient, process.env.ProjectName, 'CareerCircleProfiles-Dev')
-        res.send('Tenant ' + req.params.tenantName + ' has been created for ' + process.env.projectId);
+        let tenantCreated = await tenantServiceClient.createTenant(request);        
+
+        res.send(JSON.stringify(tenantCreated[0])) ;
     }
     catch (ex) {
-        res.send('Error creating tenant:' + ex);
+        res.send('Error creating tenant:' + ex.message);
     }
-
   
 })
+
+
+app.post('/create-profile', async (req, res) => {
+
+    try {
+
+        console.log('create-profile 1');
+        let profileServiceClient = new talentAPI.ProfileServiceClient({
+            projectId: process.env.ProjectId,
+            keyFilename: process.env.KeyFilePath,
+        });
+        
+     //   let profileToBeCreated = { 
+      //          "externalId": "TestId"
+      //  }
+
+        let profileToBeCreated = req.body;
+        
+        let request = {
+            parent: "projects/jobboardpilot/tenants/3d27fc68-8151-40de-96f7-cb11d8b7b252",
+            profile: profileToBeCreated,
+        };
+
+        let profileCreated = await profileServiceClient.createProfile(request);
+
+        res.send(JSON.stringify(profileCreated[0]));
+    } catch (e) {
+        console.error(`Got exception while creating profile!`);
+        res.send('Got exception while creating profile! ');
+    }
+
+})
+
+
+app.post('/testpost', function (req, res) {
+     res.send(req.body);    
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

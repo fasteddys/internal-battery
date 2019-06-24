@@ -115,6 +115,18 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefault();
         }
 
+        public static Subscriber GetSubscriberProfileByGuid(UpDiddyDbContext db, Guid subscriberGuid)
+        {
+            Subscriber subscriber  = db.Subscriber
+                .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                .Include( s => s.SubscriberWorkHistory)
+                .Include( s => s.SubscriberEducationHistory)
+                .FirstOrDefault();
+ 
+
+            return subscriber;
+        }
+
         public static Subscriber GetSubscriberWithSubscriberFiles(UpDiddyDbContext db, Guid subscriberGuid)
         {
             return db.Subscriber

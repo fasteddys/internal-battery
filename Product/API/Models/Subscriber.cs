@@ -43,6 +43,21 @@ namespace UpDiddyApi.Models
         #region Avatar Urls
         public string LinkedInAvatarUrl { get; set; }
         public string AvatarUrl { get; set; }
+
+        /****************  google talent cloud information   ****************************/
+        /// <summary>
+        /// The uri returned from google talent cloud for identifying the posting in the
+        /// talent cloud
+        /// </summary>
+        public string CloudTalentUri { get; set; }
+        /// <summary>
+        ///  The postings google cloud indexing status, see enum JobPostingIndexStatus
+        /// </summary>
+        public int CloudTalentIndexStatus { get; set; }
+        /// <summary>
+        /// Additional information such as error received from cloud talent
+        /// </summary>
+        public string CloudTalentIndexInfo { get; set; }
         #endregion
     }
 }

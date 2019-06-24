@@ -1113,7 +1113,27 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
-        #region Cloud Talent
+        #region Cloud Talent Profiles 
+        // TODO JAB build out cloud services for profiles 
+
+
+        public bool CloudTalentAddProfile(Guid subscriberGuid)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);            
+        }
+
+        public bool CloudTalentDeleteProfile(Guid subscriberGuid)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            ct.DeleteJobFromCloudTalent(_db, subscriberGuid);
+            return true;
+        }
+
+
+        #endregion
+
+        #region Cloud Talent Jobs 
 
         public bool CloudTalentAddJob(Guid jobPostingGuid)
         {
@@ -1135,9 +1155,6 @@ namespace UpDiddyApi.Workflow
             ct.DeleteJobFromCloudTalent(_db, jobPostingGuid);
             return true;
         }
-
-
-
 
         #endregion
     }

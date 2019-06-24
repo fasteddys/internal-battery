@@ -39,6 +39,8 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
         }
 
+
+        #region Profile look-up data 
         [HttpGet]
         [Route("api/skill/{userQuery}")]
         public IActionResult GetSkills(string userQuery)
@@ -150,5 +152,13 @@ namespace UpDiddyApi.Controllers
 
             return Ok(compensationTypes);
         }
+
+        #endregion
+
+      
+
+
+
+
     }
 }
