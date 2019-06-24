@@ -41,7 +41,7 @@
                             <div>
                                 <button id="SearchJobs" form="SearchJobsForm" type="submit" onclick="ScrubInputs()" class="btn btn-primary"><i class="fas fa-search"></i> Search Jobs</button>
                             </div>
-                                @if (!string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Keywords) || !string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Location))
+                                @if (Model.JobQueryForAlert != null && (!string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Keywords) || !string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Location)))
                                 {
                                     @Html.React("JobPostingAlert", new { jobQuery = Model.JobQueryForAlert });
                                 }
