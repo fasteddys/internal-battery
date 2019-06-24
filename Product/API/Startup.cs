@@ -200,6 +200,9 @@ namespace UpDiddyApi
             // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
+            // Metered welcome email delivery
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.MeteredWelcomeEmailDelivery(), Cron.Hourly(5));
+
             // Add Polly 
             // Create Policies  
             int PollyRetries = int.Parse(Configuration["Polly:Retries"]);

@@ -267,6 +267,53 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("CampaignCourseVariant");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.CampaignPartner", b =>
+                {
+                    b.Property<int>("CampaignPartnerId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CampaignId");
+
+                    b.Property<Guid?>("CampaignPartnerGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int?>("EmailDeliveryCap");
+
+                    b.Property<int?>("EmailDeliveryLookbackInHours");
+
+                    b.Property<string>("EmailSubAccountId")
+                        .IsRequired()
+                        .HasMaxLength(50);
+
+                    b.Property<string>("EmailTemplateId")
+                        .IsRequired()
+                        .HasMaxLength(50);
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<bool>("IsUseSeedEmails")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("0");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("PartnerId");
+
+                    b.HasKey("CampaignPartnerId");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("PartnerId");
+
+                    b.ToTable("CampaignPartner");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.CampaignPartnerContact", b =>
                 {
                     b.Property<int>("CampaignId");
@@ -279,7 +326,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
+                    b.Property<DateTime?>("EmailDeliveryDate");
+
                     b.Property<int>("IsDeleted");
+
+                    b.Property<bool?>("IsEmailSent");
 
                     b.Property<DateTime?>("ModifyDate");
 
@@ -3473,6 +3524,19 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Refund", "Refund")
                         .WithMany()
                         .HasForeignKey("RefundId");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CampaignPartner", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Campaign", "Campaign")
+                        .WithMany()
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Partner", "Partner")
+                        .WithMany()
+                        .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CampaignPartnerContact", b =>

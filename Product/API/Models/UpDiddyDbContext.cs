@@ -167,6 +167,7 @@ namespace UpDiddyApi.Models
 
         public DbSet<ResumeParseResult> ResumeParseResult { get; set; }
 
+        public DbSet<CampaignPartner> CampaignPartner { get; set; }
 
         #region DBQueries
 
@@ -181,7 +182,20 @@ namespace UpDiddyApi.Models
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {   
+        {
+            modelBuilder.Entity<CampaignPartner>()
+                .Property(cp => cp.EmailSubAccountId)
+                .HasMaxLength(100)
+                .IsRequired(true);
+
+            modelBuilder.Entity<CampaignPartner>()
+                .Property(cp => cp.EmailTemplateId)
+                .HasMaxLength(50)
+                .IsRequired(true);
+
+            modelBuilder.Entity<CampaignPartner>()
+                .Property(cp => cp.IsUseSeedEmails)
+                .HasDefaultValueSql("0");
 
             modelBuilder.Entity<JobPostingAlert>()
                 .Property(a => a.Frequency)

@@ -74,6 +74,51 @@ namespace UpDiddyApi.Workflow
 
         #region Marketing
 
+        public async Task<bool> MeteredWelcomeEmailDelivery()
+        {
+            /*
+
+assign lead to a campaign dynamically ... currently, they are all hard-coded to be "PPL Lead Gen"
+	- add table 'CampaignPartners'... logic:
+		get the most recent campaign where the current date falls within the start/end date of 
+			a campaign and the partner is associated with the campaign. if there is more than one campaign, pick the one which has the most recent start date
+		consider partner type...? no
+		multiple partners can be a part of one campaign - yes
+		stored procedure to handle match - yes
+
+
+could we use PartnerContacts?? have a flag for "IsSeedEmail"?
+
+new partner called "SeedEmails" with a partner type of "Internal"
+need to keep track of how many times each one has been used
+will it be efficient to add this property to metadata and increment it?
+
+
+new repository?
+new method to get one partner contact record. sort order is lowest "TotalUses", tiebreaker is "ModifiedDate" (ascending)
+
+
+
+new logic...
+
+during lead intake, assign lead to a campaign dynamically
+ - dbo.CampaignPartner
+ - get config values 
+ - new hangfire job which runs every 5 minutes
+   - new flag for IsEmailSent? what about leads where we want to send more than 1 email? maybe we don't need to worry about this yet...
+   - looks up all emails which have been scheduled for delivery, evaluates campaign caps, determines which mails can be sent at which times
+
+   campaignid partnercontactid isemailsent deliverydate
+
+
+   hangfire job monitors dbo.CampaignPartnerContact table... uses this in conjunction with dbo.CampaignPartner to determine which emails can be delivered
+   which leads need to have leads delivered...
+
+
+             */
+            throw new NotImplementedException();
+        }
+
         public async Task<bool> SendWelcomeEmail(Guid partnerContactGuid, string firstName, string lastName, string email, int verificationFailureLeadStatusId)
         {
             bool isWelcomeEmailSent = false;

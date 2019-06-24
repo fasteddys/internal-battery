@@ -129,6 +129,21 @@ namespace UpDiddyApi.Controllers
             return Ok(importActions);
         }
 
+        /// <summary>
+        /// This method will be used to retrieve the oldest and least frequently used fake contact for the purposes of seeding emails
+        /// </summary>
+        [HttpGet]
+        [Route("api/[controller]/get-seed-email")]
+        public ContactDto GetSeedContactInfo()
+        {
+            var partnerContact = _db.PartnerContact.FromSql<PartnerContact>("[dbo].[System_Get_ContactForSeedEmail]").FirstOrDefault();
+
+            return new ContactDto()
+            {
+                Email = partnerContact.Metadata["Email"].ToString(),
+                Metadata = partnerContact.Metadata.ToObject<Dictionary<string, string>>()
+            };
+        }
 
         /// <summary>
         /// Handles the import of a contact into the system. This method evaluates whether the contact already exists and handles the create and update operation
