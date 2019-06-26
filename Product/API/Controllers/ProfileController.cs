@@ -16,6 +16,8 @@ using System.Security.Claims;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyLib.Helpers;
 using System.Web;
+using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Services;
 
 namespace UpDiddyApi.Controllers
 {
@@ -30,6 +32,7 @@ namespace UpDiddyApi.Controllers
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly string _queueConnection = string.Empty;
         protected internal ILogger _syslog = null;
+        private readonly CloudTalent _cloudTalent = null;
 
         public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory)
         {
@@ -37,6 +40,7 @@ namespace UpDiddyApi.Controllers
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory);
         }
 
 
@@ -155,10 +159,30 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-      
+        // TODO JAB 
+        // ADD AUTH
+        #region Profile Queries
+        [HttpGet]
+        [Route("api/[controller]/{PageNum?}")]
+        public async Task<IActionResult> ProfileSearch([FromBody] ProfileQueryDto profileQueryDto)
+        {
+
+            //todo jab implenet 
+            int PageSize = int.Parse(_configuration["CloudTalent:ProfilePageSize"]);
+            ProfileSearchResultDto rVal = _cloudTalent.ProfileSearch(profileQueryDto);
+
+            return Ok();
+        }
+
+
+
+            #endregion
 
 
 
 
-    }
+
+
+
+        }
 }

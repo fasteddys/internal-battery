@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace UpDiddyApi.Helpers.GoogleProfile
@@ -15,7 +16,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
         #region CC subscriber -> cloud talent profile  mapping helpers
         static public GoogleCloudProfile CreateGoogleProfile(UpDiddyDbContext db, Subscriber subscriber, IList<SubscriberSkill> skills)
         {
-
+            // TODO jab map candidate source 
             GoogleCloudProfile gcp = new GoogleCloudProfile()
             {
                 name = subscriber.CloudTalentUri,
@@ -36,13 +37,31 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                 skills = MapSkill(skills),
                 employmentRecords = MapWorkHistory(subscriber),
                 educationRecords = MapEducationHistory(subscriber),
+                emailAddresses = MapEmailAddress(subscriber),
+                phoneNumbers = MapPhoneNumber(subscriber)
             };
 
+            // mark the profile with the name of the partner who is resposnible for the 
+            // subscriber joining careercircle 
+            var partnerInfo = db.SubscriberSignUpPartnerReferences
+                .Where(p => p.SubscriberId == subscriber.SubscriberId)
+                .FirstOrDefault();
 
-   
-
-
-
+            if ( partnerInfo != null )
+            {
+                Partner partner = db.Partner
+                    .Where(p => p.PartnerId == partnerInfo.PartnerId)
+                    .FirstOrDefault();
+                if (partner != null)
+                {
+                    gcp.customAttributes = new Dictionary<string, CustomAttribute>();
+                    gcp.customAttributes["SourcePartner"] = new CustomAttribute
+                    {
+                        stringValues = new[] { partner.Name },
+                        filterable = true
+                    };
+                }
+            }                
             return gcp;
         }
 
@@ -102,6 +121,23 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                 EducationRecord educationRecord = new EducationRecord(seh);
                 rVal.Add(educationRecord);
             }
+            return rVal;
+        }
+
+
+        static private List<EmailAddress> MapEmailAddress(Subscriber subscriber)
+        {
+            List<EmailAddress> rVal = new List<EmailAddress>();
+            EmailAddress email = new EmailAddress(subscriber);
+            rVal.Add(email);
+            return rVal;
+        }
+
+        static private List<PhoneNumber> MapPhoneNumber(Subscriber subscriber)
+        {
+            List<PhoneNumber> rVal = new List<PhoneNumber>();
+            PhoneNumber phoneNumber = new PhoneNumber(subscriber);
+            rVal.Add(phoneNumber);
             return rVal;
         }
 

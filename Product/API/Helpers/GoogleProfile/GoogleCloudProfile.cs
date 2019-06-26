@@ -18,8 +18,15 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 
         public IList<Skill> skills { get; set; }
 
+        public IList<EmailAddress> emailAddresses { get; set; }
+
+        public IList<PhoneNumber> phoneNumbers { get; set; }
+
+
         public IList<EmploymentRecord> employmentRecords { get; set; }
 
-        public IList<EducationRecord> educationRecords { get; set; }        
+        public IList<EducationRecord> educationRecords { get; set; }      
+        
+        public Dictionary<string, CustomAttribute> customAttributes { get; set; }
     }
 }

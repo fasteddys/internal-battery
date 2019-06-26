@@ -1,39 +1,32 @@
 
+'use strict';
 
-require('dotenv').config()
+const dotenv = require('dotenv').config()
 const express = require('express');
 const talentAPI = require('@google-cloud/talent');
 const basicResponse = require('basicresponse');
- 
-'use strict';
-var http = require('http');
-var port = process.env.PORT;
+const http = require('http');
 
+const port = process.env.PORT;
 const app = express() 
 
 // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.urlencoded());
-
 // Parse JSON bodies (as sent by API clients)
 app.use(express.json());
-
-//app.get('/', (req, res) => res.send('Hello World!'))
-// app.listen(port, () => console.log(`Example app listening on port ${port}!`))
 app.listen(port)
 
+
+// default 
 app.get('/', function (req, res) { 
-    res.send('hello world');
+    res.send('CareerCircle Profile API (version:' + process.env.version + ')');
 })
 
  
 
 
-//  Existing Test tenants:
- // TODO jab comment out this code 
-//  Name: projects/jobboardpilot/tenants/d927831d-16f8-492b-bb04-700d949b0633 External Id : tenant2
-//  Name: projects/jobboardpilot/tenants/616966ef-f93e-47dd-81dd-63b01c47f195 External Id : tenant3
-//  Name: projects/jobboardpilot/tenants/3d27fc68-8151-40de-96f7-cb11d8b7b252  External Id: cc-profiles-dev
-app.get('/create-tenant/:tenantName', async (req, res) => {
+ 
+app.post('/tenant/:tenantName', async (req, res) => {
 
     let tenantServiceClient = new talentAPI.TenantServiceClient({
         projectId: process.env.ProjectId,
@@ -53,15 +46,60 @@ app.get('/create-tenant/:tenantName', async (req, res) => {
             tenant: tenantToCreate,
         };
 
-        let tenantCreated = await tenantServiceClient.createTenant(request);        
-
-        res.send(JSON.stringify(tenantCreated[0])) ;
+        let tenantCreated = await tenantServiceClient.createTenant(request);     
+        let r = new basicResponse(200, "ok", tenantCreated[0]);
+        res.send(r);
     }
-    catch (ex) {
-        res.send('Error creating tenant:' + ex.message);
+    catch (e)
+    {
+        let r = new basicResponse(400, e.details);
+        res.send(r);
     }
   
 })
+
+
+app.get('/tenant', async (req, res) => {
+
+    let tenantServiceClient = new talentAPI.TenantServiceClient({
+        projectId: process.env.ProjectId,
+        keyFilename: process.env.KeyFilePath,
+    });
+
+    var tenants = [];
+    try {
+
+        await tenantServiceClient.listTenants({ parent: process.env.ProjectId })
+              .then(responses  =>
+              {
+                 const resources = responses[0];
+                  for (const resource of resources) {
+                      tenants.push(resource);
+            
+                 }
+              })
+              .catch(err =>
+              {
+                 console.error(err);
+              });
+        
+        let r = new basicResponse(200, "ok",tenants);
+        res.send(r);
+    }
+    catch (e) {
+        let r = new basicResponse(400, e.details);
+        res.send(r);
+    }
+
+})
+
+
+
+ 
+
+
+
+
 
 
 
@@ -116,7 +154,7 @@ app.put('/profile', async (req, res) => {
     }
 })
 
- 
+
 app.delete('/profile/:profileName', async (req, res) => {
 
     try {
@@ -160,7 +198,7 @@ app.get('/profile/:profileName', async (req, res) =>  {
         res.send(r);
     } catch (e)
     {
-        let r = new basicResponse(404, e.details);
+        let r = new basicResponse(400, e.details);
         res.send(r);               
     } 
 })

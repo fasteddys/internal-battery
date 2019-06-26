@@ -724,7 +724,7 @@ namespace UpDiddyApi.Workflow
                         break;
                 }
                 jobQueryDto.UpperBound = DateTime.UtcNow;
-                JobSearchResultDto jobSearchResultDto = cloudTalent.Search(jobQueryDto, isJobPostingAlertSearch: true);
+                JobSearchResultDto jobSearchResultDto = cloudTalent.JobSearch(jobQueryDto, isJobPostingAlertSearch: true);
                 if (jobSearchResultDto.JobCount > 0)
                 {
                     dynamic templateData = new JObject();
