@@ -138,6 +138,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                     _db.Subscriber.Add(newSubscriber);
                     await _db.SaveChangesAsync();
 
+                    // update google profile 
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(newSubscriber.SubscriberGuid.Value));
+
+
                     partnerContact.Contact.SubscriberId = newSubscriber.SubscriberId;
                     CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaign.CampaignId, signUpDto.campaignPhase);
                     _db.PartnerContactAction.Add(new PartnerContactAction()

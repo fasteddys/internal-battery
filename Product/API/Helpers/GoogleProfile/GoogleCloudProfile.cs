@@ -2,27 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Google.Protobuf.WellKnownTypes;
 
 namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class GoogleCloudProfile
     {
-
         public string name { get; set; }
-        public string external_id { get; set; }
-        public DateTime create_time { get; set; } 
-        public DateTime update_time { get; set; }
+        public string externalId { get; set; }
+        public Timestamp createTime { get; set; } 
+        public Timestamp updateTime { get; set; }
  
-        public IList<PersonName> person_names { get; set; } 
+        public IList<PersonName> personNames { get; set; } 
         public IList<Address> addresses { get; set; }
 
         public IList<Skill> skills { get; set; }
 
+        public IList<EmploymentRecord> employmentRecords { get; set; }
 
-        // TODO JAB add skills
-        //todo jab add work history 
-        // todo jab add education history
-
-
+        public IList<EducationRecord> educationRecords { get; set; }        
     }
 }

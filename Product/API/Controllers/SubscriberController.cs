@@ -32,6 +32,7 @@ using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
 using X.PagedList;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.Workflow;
 
 namespace UpDiddyApi.Controllers
 {
@@ -149,6 +150,9 @@ namespace UpDiddyApi.Controllers
                 // disable the AD account associated with the subscriber
                 _graphClient.DisableUser(subscriberGuid);
 
+
+                //TODO JAB Delete profile here 
+
             }
             catch (Exception e)
             {
@@ -188,6 +192,10 @@ namespace UpDiddyApi.Controllers
             {
                 _jobService.UpdateJobReferral(dto.ReferralCode, subscriber.SubscriberGuid.ToString());
             }
+
+
+            // update google profile 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
         }
@@ -248,6 +256,11 @@ namespace UpDiddyApi.Controllers
 	                @StackOverflowUrl,
 	                @GithubUrl,
 	                @SkillGuids", spParams);
+
+
+            // update google profile 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(Subscriber.SubscriberGuid.Value));
+
 
             return Ok();
         }
@@ -358,6 +371,11 @@ namespace UpDiddyApi.Controllers
 
             _db.SubscriberWorkHistory.Add(WorkHistory);
             _db.SaveChanges();
+
+            // update google profile 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+
+
             return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
         }
 
@@ -407,6 +425,10 @@ namespace UpDiddyApi.Controllers
             WorkHistory.Compensation = WorkHistoryDto.Compensation;
             WorkHistory.CompensationTypeId = compensationTypeId;
             _db.SaveChanges();
+
+            // update google profile 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+
             return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
         }
 
@@ -559,6 +581,10 @@ namespace UpDiddyApi.Controllers
 
             _db.SubscriberEducationHistory.Add(EducationHistory);
             _db.SaveChanges();
+
+            // update google profile 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+
             return Ok(_mapper.Map<SubscriberEducationHistoryDto>(EducationHistory));
         }
 
@@ -604,6 +630,10 @@ namespace UpDiddyApi.Controllers
             EducationHistory.EducationalDegreeTypeId = educationalDegreeTypeId;
             EducationHistory.EducationalInstitutionId = educationalInstitutionId;
             _db.SaveChanges();
+
+            // update google profile 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+
             return Ok(_mapper.Map<SubscriberEducationHistoryDto>(EducationHistory));
         }
 

@@ -26,6 +26,8 @@ using Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyLib.Shared.GoogleJobs;
 using Enum = System.Enum;
 using MiniGuids;
+using UpDiddyApi.Helpers.GoogleProfile;
+using UpDiddyApi.ApplicationCore.Services.GoogleProfile;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -35,6 +37,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private string _projectPath = string.Empty;
         private CloudTalentSolutionService _jobServiceClient = null;
         private GoogleCredential _credential = null;
+        private GoogleProfileInterface _profileApi = null;
 
         #region Constructor
         public CloudTalent(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory)
@@ -47,12 +50,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
 
+
             // cloud talent configuration
             _projectId = configuration["CloudTalent:Project"];
             _projectPath = configuration["CloudTalent:ProjectPath"];
             // must have path to service account json file created on the cloud.google.com defined 
             // in GOOGLE_APPLICATION_CREDENTIALS environmental variable
             _credential = GoogleCredential.GetApplicationDefaultAsync().Result;
+            _profileApi = new GoogleProfileInterface(context, mapper, configuration, sysLog, httpClientFactory);
 
             // Specify the Service scope.
             if (_credential.IsCreateScopedRequired)
@@ -122,25 +127,28 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
+        // TODO JAB refactor to catch fal on AddProfile
         public bool IndexProfile(Subscriber subscriber, IList<SubscriberSkill> skills)
         {
             try
-            {
-                //TODO Jab implement 
-                /*
-                CloudTalentSolution.Job TalentCloudJob = JobMappingHelper.CreateGoogleJob(_db, jobPosting);
-                CloudTalentSolution.CreateJobRequest CreateJobRequest = new CloudTalentSolution.CreateJobRequest();
-                CreateJobRequest.Job = TalentCloudJob;
-                // "Google.Apis.Requests.RequestError\r\nInvalid value at 'job.posting_expire_time' (type.googleapis.com/google.protobuf.Timestamp), Field 'postingExpireTime', Illegal timestamp format; timestamps must end with 'Z' or have a valid timezone offset. [400]\r\nErrors [\r\n\tMessage[Invalid value at 'job.posting_expire_time' (type.googleapis.com/google.protobuf.Timestamp), Field 'postingExpireTime', Illegal timestamp format; timestamps must end with 'Z' or have a valid timezone offset.] Location[ - ] Reason[badRequest] Domain[global]\r\n]\r\n"
-                CloudTalentSolution.Job jobCreated = _jobServiceClient.Projects.Jobs.Create(CreateJobRequest, _projectPath).Execute();
-               */
-                // Update job posting with index error
-              // TODO Jab get cloud name for subscriber   subscriber.CloudTalentUri = jobCreated.Name;
-                subscriber.CloudTalentIndexInfo = "Indexed on " + Utils.ISO8601DateString(DateTime.Now);
-                subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
-                _db.SaveChanges();
+            {                
+                // create googleCloud Profile 
+                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_db, subscriber, skills);
+                string errorMsg = string.Empty;
+                BasicResponseDto basicResponseDto =  _profileApi.AddProfile(googleCloudProfile, ref errorMsg);
 
-                return true;
+                if (basicResponseDto.StatusCode == 200)
+                {
+                    subscriber.CloudTalentUri = basicResponseDto.Data.name;
+                    subscriber.CloudTalentIndexInfo = "Indexed on " + Utils.ISO8601DateString(DateTime.Now);
+                    subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
+                    _db.SaveChanges();
+
+                    return true;
+                }
+                else
+                    throw new Exception(errorMsg);              
+                
             }
             catch (Exception e)
             {
@@ -157,19 +165,18 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             try
             {
-                // TODO JAB Implement 
-                /*
-                CloudTalentSolution.Job TalentCloudJob = JobMappingHelper.CreateGoogleJob(_db, jobPosting);
-                CloudTalentSolution.UpdateJobRequest UpdateJobRequest = new CloudTalentSolution.UpdateJobRequest();
-                UpdateJobRequest.Job = TalentCloudJob;
-                CloudTalentSolution.Job jobCreated = _jobServiceClient.Projects.Jobs.Patch(UpdateJobRequest, TalentCloudJob.Name).Execute();
-                */
-                // Update job posting with index error
-               
-                subscriber.CloudTalentIndexInfo = "ReIndexed on " + Utils.ISO8601DateString(DateTime.Now);
-                // TODO jab rename enum to GoogleCloudIndexStatus 
-                subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
-                _db.SaveChanges();
+                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_db, subscriber, skills);
+                string errorMsg = string.Empty;
+
+                if (_profileApi.UpdateProfile(googleCloudProfile, ref errorMsg))
+                {
+                    subscriber.CloudTalentIndexInfo = "ReIndexed on " + Utils.ISO8601DateString(DateTime.Now);
+                    // TODO jab rename enum to GoogleCloudIndexStatus 
+                    subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
+                    _db.SaveChanges();
+                }
+                else
+                    throw new Exception(errorMsg);
 
                 return true;
             }

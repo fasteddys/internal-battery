@@ -3,6 +3,7 @@
 require('dotenv').config()
 const express = require('express');
 const talentAPI = require('@google-cloud/talent');
+const basicResponse = require('basicresponse');
  
 'use strict';
 var http = require('http');
@@ -28,7 +29,7 @@ app.get('/', function (req, res) {
 
 
 //  Existing Test tenants:
- 
+ // TODO jab comment out this code 
 //  Name: projects/jobboardpilot/tenants/d927831d-16f8-492b-bb04-700d949b0633 External Id : tenant2
 //  Name: projects/jobboardpilot/tenants/616966ef-f93e-47dd-81dd-63b01c47f195 External Id : tenant3
 //  Name: projects/jobboardpilot/tenants/3d27fc68-8151-40de-96f7-cb11d8b7b252  External Id: cc-profiles-dev
@@ -63,36 +64,107 @@ app.get('/create-tenant/:tenantName', async (req, res) => {
 })
 
 
-app.post('/create-profile', async (req, res) => {
 
-    try {
+app.post('/profile', async (req, res) => {
 
-        console.log('create-profile 1');
+    try { 
         let profileServiceClient = new talentAPI.ProfileServiceClient({
             projectId: process.env.ProjectId,
             keyFilename: process.env.KeyFilePath,
         });
-        
-     //   let profileToBeCreated = { 
-      //          "externalId": "TestId"
-      //  }
-
-        let profileToBeCreated = req.body;
-        
+ 
+        let profileToBeCreated = req.body; 
         let request = {
-            parent: "projects/jobboardpilot/tenants/3d27fc68-8151-40de-96f7-cb11d8b7b252",
+            parent: process.env.tenantName,
             profile: profileToBeCreated,
         };
 
         let profileCreated = await profileServiceClient.createProfile(request);
-
-        res.send(JSON.stringify(profileCreated[0]));
-    } catch (e) {
-        console.error(`Got exception while creating profile!`);
-        res.send('Got exception while creating profile! ');
+        let r = new basicResponse(200, "ok", profileCreated[0]);        
+        res.send(r);
+    } catch (e)
+    {
+        let r = new basicResponse(400, e.details);
+        res.send(r);
     }
-
 })
+
+
+app.put('/profile', async (req, res) => {
+
+    try
+    {
+        let profileServiceClient = new talentAPI.ProfileServiceClient({
+            projectId: process.env.ProjectId,
+            keyFilename: process.env.KeyFilePath,
+        });
+ 
+        let profileToBeUpdated = req.body;
+ 
+        let request = {
+            parent: process.env.tenantName,
+            profile: profileToBeUpdated,
+        };
+
+        let profileUpdated = await profileServiceClient.updateProfile(request);
+        let r = new basicResponse(200, "ok", profileUpdated[0]);        
+        res.send(r);
+    } catch (e)
+    {     
+        let r = new basicResponse(400, e.details);
+        res.send(r);
+    }
+})
+
+ 
+app.delete('/profile/:profileName', async (req, res) => {
+
+    try {
+        let profileServiceClient = new talentAPI.ProfileServiceClient({
+            projectId: process.env.ProjectId,
+            keyFilename: process.env.KeyFilePath,
+        });
+
+        let request = {
+            name: req.params.profileName
+        };
+
+        await profileServiceClient.deleteProfile(request);
+        let r = new basicResponse(200, "ok" );
+        res.send(r);
+    }
+    catch (e)
+    {
+        let r = new basicResponse(400, e.details);
+        res.send(r);
+    }
+})
+
+
+app.get('/profile/:profileName', async (req, res) =>  {
+
+    try {    
+ 
+        let request = {
+            name: req.params.profileName
+        };
+
+        let profileServiceClient = new talentAPI.ProfileServiceClient({
+            projectId: process.env.ProjectId,
+            keyFilename: process.env.KeyFilePath,
+        });
+
+        let profileExisted = await profileServiceClient.getProfile(request);
+
+        let r = new basicResponse(200, "ok", profileExisted[0]);   
+        res.send(r);
+    } catch (e)
+    {
+        let r = new basicResponse(404, e.details);
+        res.send(r);               
+    } 
+})
+
 
 
 app.post('/testpost', function (req, res) {

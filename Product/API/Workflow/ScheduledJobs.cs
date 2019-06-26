@@ -1114,10 +1114,8 @@ namespace UpDiddyApi.Workflow
         #endregion
 
         #region Cloud Talent Profiles 
-        // TODO JAB build out cloud services for profiles 
 
-
-        public bool CloudTalentAddProfile(Guid subscriberGuid)
+        public bool CloudTalentAddOrUpdateProfile(Guid subscriberGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
             return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);            

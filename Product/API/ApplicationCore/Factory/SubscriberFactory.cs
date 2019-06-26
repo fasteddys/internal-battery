@@ -121,6 +121,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
                 .Include( s => s.SubscriberWorkHistory)
                 .Include( s => s.SubscriberEducationHistory)
+                .Include( s => s.State)
                 .FirstOrDefault();
  
 

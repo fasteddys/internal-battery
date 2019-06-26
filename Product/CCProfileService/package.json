@@ -9,6 +9,7 @@
   "dependencies": {
     "@google-cloud/common": "^2.0.1",
     "@google-cloud/talent": "file:talent-v4beta1",
+    "basicresponse": "file:modules/basicresponse",
     "dotenv": "^8.0.0",
     "express": "^4.17.1"
   }
