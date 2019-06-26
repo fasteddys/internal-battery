@@ -15,7 +15,8 @@ namespace UpDiddyLib.Helpers
             dynamic templateData,
             Constants.SendGridAccount SendGridAccount, 
             string subject = null, 
-            List<Attachment> attachments = null);
+            List<Attachment> attachments = null,
+            DateTime? sendAt = null);
 
         void SendPurchaseReceiptEmail(
             string sendgridTemplateId,

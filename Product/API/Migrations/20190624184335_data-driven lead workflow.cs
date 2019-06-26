@@ -36,7 +36,7 @@ namespace UpDiddyApi.Migrations
                     EmailDeliveryLookbackInHours = table.Column<int>(nullable: true),
                     IsUseSeedEmails = table.Column<bool>(nullable: false, defaultValueSql: "0"),
                     EmailTemplateId = table.Column<string>(maxLength: 50, nullable: false),
-                    EmailSubAccountId = table.Column<string>(maxLength: 50, nullable: false)
+                    EmailSubAccountId = table.Column<string>(maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {

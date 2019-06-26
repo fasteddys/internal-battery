@@ -178,11 +178,16 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberSearch> SubscriberSearch { get; set; }
         public DbQuery<v_RecruiterSubscriberActions> RecruiterSubscriberActions { get; set; }
         public DbQuery<v_SubscriberOfferActions> SubscriberOfferActions { get; set; }
+        public DbQuery<v_ThrottledLeadEmailDelivery> ThrottledLeadEmailDelivery { get; set; }
 
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder
+                .Query<v_ThrottledLeadEmailDelivery>()
+                .ToView("v_ThrottledLeadEmailDelivery");
+
             modelBuilder.Entity<CampaignPartner>()
                 .Property(cp => cp.EmailSubAccountId)
                 .HasMaxLength(100)

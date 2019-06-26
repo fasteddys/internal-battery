@@ -287,7 +287,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("EmailSubAccountId")
                         .IsRequired()
-                        .HasMaxLength(50);
+                        .HasMaxLength(100);
 
                     b.Property<string>("EmailTemplateId")
                         .IsRequired()

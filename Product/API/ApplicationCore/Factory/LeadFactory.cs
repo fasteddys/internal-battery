@@ -338,9 +338,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
                 // TODO: identify any business rule failures that would prevent us from sending a welcome email (dupe, missing fields, etc?)
                 int verificationFailureLeadStatusId = _allLeadStatuses.Where(ls => ls.Name == "Verification Failure").FirstOrDefault().LeadStatusId;
-
-                // TODO: push the data-driven params that are currently hard-coded down to SendWelcomeEmail (email template, email account) along with the email throttling params (delivery cap, lookback, and use seed)
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.SendWelcomeEmail(_leadResponse.LeadIdentifier.Value, leadRequest.FirstName, leadRequest.LastName, leadRequest.EmailAddress, verificationFailureLeadStatusId));
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.ValidateEmailAddress(_partnerContact.PartnerContactGuid.Value, leadRequest.EmailAddress, verificationFailureLeadStatusId));
             }
             catch (Exception e)
             {

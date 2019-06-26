@@ -296,7 +296,8 @@ namespace UpDiddyApi.Controllers
                                 Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jobApplicationDto.CoverLetter)),
                                 Filename = "CoverLetter.txt"
                             }
-                        }
+                        }, 
+                        null
                     ));
                 }
                 
