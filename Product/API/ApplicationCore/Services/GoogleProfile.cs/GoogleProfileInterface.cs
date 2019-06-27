@@ -47,7 +47,35 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
         #endregion
 
 
+        #region Profile Search
 
+
+        //TODO JAB change return value to searchProfile class like Jobs 
+        public BasicResponseDto Search(SearchProfilesRequest searchRequest, ref string errorMsg)
+        {
+            BasicResponseDto Rval = null;
+            try
+            {
+                string Json = Newtonsoft.Json.JsonConvert.SerializeObject(searchRequest);
+                string ResponseJson = string.Empty;
+                ExecuteProfileApiGet("profile-search", Json, ref ResponseJson);
+                Rval = Newtonsoft.Json.JsonConvert.DeserializeObject<BasicResponseDto>(ResponseJson);
+                if (Rval.StatusCode != 200)
+                    throw new Exception(Rval.Description);
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Error, $"GoogleProfileInterface:Search error searching profiles", searchRequest);
+                errorMsg = e.Message;
+            }
+            return Rval;
+        }
+
+        #endregion
+
+
+
+        #region Profile Crud 
         public BasicResponseDto AddProfile(GoogleCloudProfile googleCloudProfile, ref string errorMsg)
         {
             BasicResponseDto Rval = null;
@@ -130,7 +158,7 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
             return Rval;
         }
 
-
+        #endregion
 
 
 
@@ -166,6 +194,20 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
             ResponseJson = AsyncHelper.RunSync<string>(() => ProfileApiResponse.Content.ReadAsStringAsync());
             return ProfileApiResponse;
         }
+
+        private HttpResponseMessage ExecuteProfileApiGet(string ApiAction, string Content, ref string ResponseJson)
+        {
+
+            HttpClient client = CreateProfileApiGetClient();
+            HttpRequestMessage ProfileApiRequest = CreateProfileApiGetRequest(ApiAction);
+            ProfileApiRequest.Content = new StringContent(Content);
+            ProfileApiRequest.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            HttpResponseMessage ProfileApiResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(ProfileApiRequest));
+            ResponseJson = AsyncHelper.RunSync<string>(() => ProfileApiResponse.Content.ReadAsStringAsync());
+            return ProfileApiResponse;
+        }
+
 
 
         private HttpResponseMessage ExecuteProfileApiDelete(string ApiAction, ref string ResponseJson)

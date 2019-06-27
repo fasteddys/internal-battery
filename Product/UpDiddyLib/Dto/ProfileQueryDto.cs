@@ -77,6 +77,7 @@ namespace UpDiddyLib.Dto
 
         public int SearchRadius { get; set; }
 
+    
 
         #endregion
 
@@ -90,7 +91,7 @@ namespace UpDiddyLib.Dto
         /// <summary>
         /// List of skill to search for 
         /// </summary>
-        public List<string> Skill { get; set; }
+        public List<string> Skills { get; set; }
         /// <summary>
         /// specific country 
         /// </summary>

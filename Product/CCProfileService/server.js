@@ -204,6 +204,39 @@ app.get('/profile/:profileName', async (req, res) =>  {
 })
 
 
+app.get('/profile-search', async (req, res) => {
+
+   
+
+    try {
+
+        let profileServiceClient = new talentAPI.ProfileServiceClient({
+            projectId: process.env.ProjectId,
+            keyFilename: process.env.KeyFilePath,
+        });
+
+
+        let request = {
+            name: req.params.profileName
+        };
+
+        let searchResults = await profileServiceClient.searchProfiles(req.body);
+
+        let r = new basicResponse(200, "ok", req.body);
+        res.send(r);
+    }
+    catch (e)
+    {
+        let r = new basicResponse(400, e.details);
+        res.send(r);
+    } 
+
+
+
+ 
+})
+
+
 
 app.post('/testpost', function (req, res) {
      res.send(req.body);    
