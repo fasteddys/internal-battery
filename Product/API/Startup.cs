@@ -201,7 +201,7 @@ namespace UpDiddyApi
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
             // kick off the metered welcome email delivery process at five minutes past the hour every hour
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly(5));
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
 
             // Add Polly 
             // Create Policies  

@@ -48,7 +48,7 @@ namespace UpDiddy.Controllers
 
         [HttpGet]
         [Route("/lp")]
-        public IActionResult ShowMeThePotato()
+        public IActionResult Inspirobot()
         {
             /* the call to action from seed emails will land here. doing this because of the following statement in user story 827:
              *      "The message in the seed emails can be similar but not exact- we should have the button labeled similarly but 
@@ -56,9 +56,9 @@ namespace UpDiddy.Controllers
              *      sending in a similarly formed url to encourage the data science to treat lead emails like the seed list emails 
              *      if that makes sense."
              *      
-             * we can make this whatever we want, but right now it's a potato              
+             * we can make this whatever we want, but right now it's the mindfulness inspirobot         
              */
-            return View("Potato");
+            return View("Inspirobot");
         }
 
 

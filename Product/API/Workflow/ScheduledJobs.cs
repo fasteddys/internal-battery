@@ -30,6 +30,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using static UpDiddyLib.Helpers.Constants;
 using Newtonsoft.Json.Linq;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using System.Data.SqlClient;
 
 namespace UpDiddyApi.Workflow
 {
@@ -101,8 +102,10 @@ namespace UpDiddyApi.Workflow
                     {
                         if (leadEmail.IsUseSeedEmails)
                         {
+                            var deliveryDate = new SqlParameter("@DeliveryDate", executionTime);
+                            var spParams = new object[] { deliveryDate };
                             // retrieve the oldest and least frequently used seed email 
-                            var partnerContact = _db.PartnerContact.FromSql<PartnerContact>("[dbo].[System_Get_ContactForSeedEmail]").FirstOrDefault();
+                            var partnerContact = _db.PartnerContact.FromSql<PartnerContact>("[dbo].[System_Get_ContactForSeedEmail] @DeliveryDate", spParams).FirstOrDefault();
 
                             if (
                                 // send the seed email using the lead email's account and template
