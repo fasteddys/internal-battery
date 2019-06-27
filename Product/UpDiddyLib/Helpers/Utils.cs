@@ -551,9 +551,6 @@ namespace UpDiddyLib.Helpers
                 foreach (XElement position in positionHistory)
                 {
                     doc.LoadXml(position.ToString());
-                    //defaultXlms = doc.DocumentElement.NamespaceURI;
-                    //namespaceManager = new XmlNamespaceManager(doc.NameTable);
-                    //namespaceManager.AddNamespace("hrxml", defaultXlms);
                     bool isCurrent = false;
                     // Parse position start date  
                     DateTime startDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:StartDate", namespaceManager), ref isCurrent);
