@@ -529,43 +529,53 @@ namespace UpDiddyLib.Helpers
 
             XElement theXML = XElement.Parse(xml);
             // Get list of skill found by Sovren
-            var employmentHistory = theXML.Descendants()
+            List<XElement> employmentHistory = theXML.Descendants()
                  .Where(e => e.Name.LocalName == "EmployerOrg")
                  .ToList();
 
             // Iterate over their emplyment history  
             foreach (XElement node in employmentHistory)
             {
+
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(node.ToString());
-                string defaultXlms = doc.DocumentElement.NamespaceURI;
                 XmlNamespaceManager namespaceManager = new XmlNamespaceManager(doc.NameTable);
+                string defaultXlms = doc.DocumentElement.NamespaceURI;
                 namespaceManager.AddNamespace("hrxml", defaultXlms);
-                bool isCurrent = false;
-                // Parse position start date  
-                DateTime startDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:PositionHistory/hrxml:StartDate", namespaceManager), ref isCurrent);
-                // Parse position end date 
-                DateTime endDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:PositionHistory/hrxml:EndDate", namespaceManager), ref isCurrent);
-                string jobTitle = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:PositionHistory/hrxml:Title", namespaceManager));
-                string jobDescription = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:PositionHistory/hrxml:Description", namespaceManager));
                 string company = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:EmployerOrgName", namespaceManager));
-                SubscriberWorkHistoryDto workHistory = new SubscriberWorkHistoryDto()
+
+                var positionHistory = node.Descendants()
+                   .Where(e => e.Name.LocalName == "PositionHistory")
+                   .ToList();
+
+                foreach (XElement position in positionHistory)
                 {
-                    CreateDate = DateTime.UtcNow,
-                    ModifyDate = DateTime.UtcNow,
-                    CreateGuid = Guid.Empty,
-                    ModifyGuid = Guid.Empty,
-                    IsDeleted = 0,
-                    StartDate = startDate,
-                    EndDate = endDate,
-                    IsCurrent = isCurrent ? 1 : 0,
-                    Company = company,
-                    JobDescription = jobDescription,
-                    Title = jobTitle
-                };
-                rVal.Add(workHistory);
+                    doc.LoadXml(position.ToString());
+                    bool isCurrent = false;
+                    // Parse position start date  
+                    DateTime startDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:StartDate", namespaceManager), ref isCurrent);
+                    // Parse position end date 
+                    DateTime endDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:EndDate", namespaceManager), ref isCurrent);
+                    string jobTitle = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:Title", namespaceManager));
+                    string jobDescription = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:Description", namespaceManager));
+                    SubscriberWorkHistoryDto workHistory = new SubscriberWorkHistoryDto()
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        ModifyDate = DateTime.UtcNow,
+                        CreateGuid = Guid.Empty,
+                        ModifyGuid = Guid.Empty,
+                        IsDeleted = 0,
+                        StartDate = startDate,
+                        EndDate = endDate,
+                        IsCurrent = isCurrent ? 1 : 0,
+                        Company = company,
+                        JobDescription = jobDescription,
+                        Title = jobTitle
+                    };
+                    rVal.Add(workHistory);
+                }
             }
-            return rVal;
+            return rVal;        
         }
 
 
@@ -610,23 +620,31 @@ namespace UpDiddyLib.Helpers
         static public DateTime ParseDateFromHrXmlDate(XmlNode hrXMLDate, ref bool isCurrent)
         {
 
+            DateTime date = DateTime.MinValue;
             if (hrXMLDate == null)
-                return DateTime.MinValue;
+                return date;
 
             isCurrent = false;
             string dateString = hrXMLDate.FirstChild.InnerText;
+            switch(hrXMLDate.FirstChild.Name)
+            {
+                case "YearMonth":
+                    date = ParseDateFromHrXmlYearMonthTag(dateString);
+                    break;
+                case "AnyDate":
+                    date = ParseDateFromHrXmlYearMonthTag(dateString);
+                    break;
+                case "StringDate":
+                    date = ParseDateFromHrXmlStringDateTag(dateString, ref isCurrent);
+                    break;
+                case "Year":
+                    date = ParseDateFromHrXmlYearTag(dateString);
+                    break;
+                default:
+                    break;
 
-            if (hrXMLDate.FirstChild.Name == "YearMonth")
-                return ParseDateFromHrXmlYearMonthTag(dateString);
-
-            if (hrXMLDate.FirstChild.Name == "StringDate")
-                ParseDateFromHrXmlStringDateTag(dateString, ref isCurrent);
-
-            if (hrXMLDate.FirstChild.Name == "Year")
-                ParseDateFromHrXmlYearTag(dateString);
-
-
-            return DateTime.MinValue;
+            }
+            return date;
         }
 
 
