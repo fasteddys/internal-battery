@@ -1,6 +1,7 @@
 ﻿using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -68,7 +69,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              * use maxdop = 1 for debugging.
              */
 
-            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 10 };
+            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 1 };
             int counter = 0;
             Parallel.For(counter, timesToRequestResultsPage, maxdop, i =>
             {
@@ -114,6 +115,10 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                         }
                         HtmlDocument jobHtml = new HtmlDocument();
                         jobHtml.LoadHtml(rawHtml);
+
+                        // remove the 'application' field from our raw data to prevent it from triggering an update operation
+                        if (job.applications != null)
+                            ((JObject)job).Remove("applications");
 
                         // does the html contain an error message indicating the job does not exist?
                         if (jobHtml.DocumentNode.SelectSingleNode("//results-main[@error-message=\"The job you have requested cannot be found. Please see our complete list of jobs below.\"]") != null)
