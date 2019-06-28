@@ -332,10 +332,6 @@ function FormattedDateRange(startDate, endDate, isCurrent) {
     var formattedDateRange = '';
     var effectiveStartDate;
 
-    if (isCurrent) {
-        return "Current"
-    }
-
     if (!moment(startDate).isValid()) {
         return 'No date range specified';
     }
@@ -345,7 +341,7 @@ function FormattedDateRange(startDate, endDate, isCurrent) {
     }
     var effectiveEndDate;
 
-    if (!moment(endDate).isValid()) {
+    if (isCurrent) {
         effectiveEndDate = moment();
         formattedDateRange += "Present";
     } else {
