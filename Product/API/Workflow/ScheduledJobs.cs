@@ -816,6 +816,7 @@ namespace UpDiddyApi.Workflow
                 if (jobSearchResultDto.JobCount > 0)
                 {
                     dynamic templateData = new JObject();
+                    templateData.description = jobPostingAlert.Description;
                     templateData.firstName = jobPostingAlert.Subscriber.FirstName;
                     templateData.jobCount = jobSearchResultDto.JobCount;
                     templateData.frequency = jobPostingAlert.Frequency.ToString();
