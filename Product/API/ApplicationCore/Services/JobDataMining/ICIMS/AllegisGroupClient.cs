@@ -58,7 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
             {
                 RequestUri = uri,
                 Method = HttpMethod.Get
-            }; ;
+            };
             var result = await _client.SendAsync(request);
 
             if (!result.IsSuccessStatusCode)
