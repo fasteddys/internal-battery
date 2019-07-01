@@ -6,7 +6,7 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"UPDATE dbo.JobPage SET ModifyDate = GETUTCDATE(), RawData = JSON_MODIFY(RawData, '$.applications', NULL)");
+            // migrationBuilder.Sql(@"UPDATE dbo.JobPage SET ModifyDate = GETUTCDATE(), RawData = JSON_MODIFY(RawData, '$.applications', NULL)");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
