@@ -580,5 +580,25 @@ namespace UpDiddy.Controllers
             }
             return BadRequest();
         }
+
+        #region Company
+        [Authorize]
+        [HttpGet("/[controller]/companies")]
+        public async Task<IActionResult> GetCompaniesAsync()
+        {
+           var companies=await _api.GetAllCompaniesAsync();
+
+            CompaniesViewModel companiesViewModel = new CompaniesViewModel()
+            {
+                Companies = companies
+            };
+            return View("Companies", companiesViewModel);
+        }
+        public async Task<IActionResult> AddCompany()
+        {
+
+            return Ok();
+        }
+        #endregion
     }
 }
