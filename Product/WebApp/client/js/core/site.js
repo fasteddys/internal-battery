@@ -1,4 +1,8 @@
 ﻿$(document).ready(function () {
+    // init tooltips
+    $("body").tooltip({
+        selector: '[data-toggle="tooltip"]'
+    });
 
     $('#SelectedCountry').change(function () {
         var selectedCountry = $("#SelectedCountry").val();

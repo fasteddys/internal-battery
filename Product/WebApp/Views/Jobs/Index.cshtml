@@ -41,7 +41,7 @@
                             <div>
                                 <button id="SearchJobs" form="SearchJobsForm" type="submit" onclick="ScrubInputs()" class="btn btn-primary"><i class="fas fa-search"></i> Search Jobs</button>
                             </div>
-                                @if (!string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Keywords) || !string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Location))
+                                @if (Model.JobQueryForAlert != null && (!string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Keywords) || !string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Location)))
                                 {
                                     @Html.React("JobPostingAlert", new { jobQuery = Model.JobQueryForAlert });
                                 }
@@ -150,6 +150,9 @@
                                                         <a onclick="expandMoreLinks(this)" class="moreLink-style">+ more >></a>
                                                     </div>
                                                 }
+                                                <div>
+                                                    <a class="facet-link" href="/browse-jobs">Browse All Locations</a>
+                                                </div>
                                             </div>
                                         }
                                     }
@@ -280,7 +283,7 @@
 
 
                <text>
-            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl'>undo</a></div>";
+            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl' data-toggle='tooltip' data-placement='bottom' title='Remove'>X</a><span></div>";
             parentElementUndoElement.innerHTML = innerHtml;
                 </text>
             }
@@ -316,10 +319,10 @@
 
         $(document).ready(function () {
             $('#toggleLink').click(function () {
-                if ($('#toggleArrow')[0].getAttribute('class') == "arrow up") {
+                if ($('#toggleArrow')[0].hasClass("arrow up")) {
                     $('#toggleArrow').removeClass("up");
                     $('#toggleArrow').addClass("down");
-
+                    
                     $('#SearchParameters').removeClass("show");
                     $('#SearchParameters').addClass("hide");
                 }

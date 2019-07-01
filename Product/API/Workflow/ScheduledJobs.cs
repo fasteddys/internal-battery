@@ -27,9 +27,11 @@ using UpDiddyApi.Helpers.Job;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using System.Linq.Expressions;
 using static UpDiddyLib.Helpers.Constants;
 using Newtonsoft.Json.Linq;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using System.Data.SqlClient;
 
 namespace UpDiddyApi.Workflow
 {
@@ -74,10 +76,114 @@ namespace UpDiddyApi.Workflow
 
         #region Marketing
 
-        public async Task<bool> SendWelcomeEmail(Guid partnerContactGuid, string firstName, string lastName, string email, int verificationFailureLeadStatusId)
+        /// <summary>
+        /// This process controls lead email delivery to prevent damage to our email sender reputation. This is accomplished by:
+        ///     - capping the number of emails that can be delivered per hour
+        ///     - mixing 'seed' emails in with the emails to be delivered 
+        ///     - evenly distributes emails over the delivery window (including seed emails)
+        /// </summary>
+        /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task ExecuteLeadEmailDelivery()
         {
-            bool isWelcomeEmailSent = false;
+            DateTime executionTime = DateTime.UtcNow;
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ExecuteLeadEmailDelivery started at: {executionTime.ToLongDateString()}");
 
+                // retrieve leads to deliver using db view
+                var emailsToDeliver = _db.ThrottledLeadEmailDelivery.ToList();
+                var totalEmailsToSend = emailsToDeliver.Count() + emailsToDeliver.Where(e => e.IsUseSeedEmails).Count();
+
+                if (totalEmailsToSend > 0)
+                {
+                    // determine the interval use to evenly distribute the emails
+                    var emailInterval = TimeSpan.FromHours(1) / totalEmailsToSend;
+                    foreach (var leadEmail in emailsToDeliver)
+                    {
+                        if (leadEmail.IsUseSeedEmails)
+                        {
+                            var deliveryDate = new SqlParameter("@DeliveryDate", executionTime);
+                            var spParams = new object[] { deliveryDate };
+                            // retrieve the oldest and least frequently used seed email 
+                            var partnerContact = _db.PartnerContact.FromSql<PartnerContact>("[dbo].[System_Get_ContactForSeedEmail] @DeliveryDate", spParams).FirstOrDefault();
+
+                            if (
+                                // send the seed email using the lead email's account and template
+                                _sysEmail.SendTemplatedEmailAsync(
+                                    partnerContact.Metadata["Email"].ToString(),
+                                    leadEmail.EmailTemplateId,
+                                    new
+                                    {
+                                        firstName = partnerContact.Metadata["FirstName"].ToString(),
+                                        lastName = partnerContact.Metadata["LastName"].ToString(),
+                                        timesUsed = partnerContact.Metadata["TimesUsed"].ToString()
+                                    },
+                                    Enum.Parse<SendGridAccount>(leadEmail.EmailSubAccountId),
+                                    null,
+                                    null,
+                                    executionTime).Result)
+                            {
+                                // update the execution time if the seed email was delivered successfully
+                                executionTime = executionTime.Add(emailInterval);
+                            }
+                        }
+
+                        bool isMailSentSuccessfully =
+                        _sysEmail.SendTemplatedEmailAsync(
+                            leadEmail.Email,
+                            leadEmail.EmailTemplateId,
+                            new
+                            {
+                                firstName = leadEmail.FirstName,
+                                lastName = leadEmail.LastName,
+                                tinyId = leadEmail.TinyId
+                            },
+                            Enum.Parse<SendGridAccount>(leadEmail.EmailSubAccountId),
+                            null,
+                            null,
+                            executionTime).Result;
+
+                        if (isMailSentSuccessfully)
+                        {
+                            // retrieve the lead and campaign association record for update
+                            var campaignPartnerContact =
+                                _db.CampaignPartnerContact
+                                .Where(cpc => cpc.CampaignId == leadEmail.CampaignId && cpc.PartnerContactId == leadEmail.PartnerContactId)
+                                .FirstOrDefault();
+
+                            // mark the lead to indicate that the email has been delivered so that we do not attempt to process it again
+                            campaignPartnerContact.EmailDeliveryDate = executionTime;
+                            campaignPartnerContact.IsEmailSent = true;
+                            campaignPartnerContact.ModifyDate = DateTime.UtcNow;
+                            campaignPartnerContact.ModifyGuid = Guid.Empty;
+
+                            _db.SaveChanges();
+
+                            executionTime = executionTime.Add(emailInterval);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.ExecuteLeadEmailDelivery encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.ExecuteLeadEmailDelivery completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+        }
+
+        /// <summary>
+        /// Invokes the ZeroBounce API to verify the lead's email address. If the lead is not valid, it is updated accordingly.
+        /// </summary>
+        /// <param name="partnerContactGuid">The system identifier for the lead</param>
+        /// <param name="email">The email address to verify</param>
+        /// <param name="verificationFailureLeadStatusId">The lead status to associate with the partner contact if email validation fails</param>
+        /// <returns></returns>
+        public async Task ValidateEmailAddress(Guid partnerContactGuid, string email, int verificationFailureLeadStatusId)
+        {
             // retrieve the partner contact that will be associated with any lead statuses we store and the log of the zero bounce request
             var partnerContact = _db.PartnerContact.Where(pc => pc.PartnerContactGuid == partnerContactGuid).FirstOrDefault();
 
@@ -88,28 +194,7 @@ namespace UpDiddyApi.Workflow
             ZeroBounceApi api = new ZeroBounceApi(_configuration, _repositoryWrapper, _syslog);
             bool? isEmailValid = api.ValidatePartnerContactEmail(partnerContact.PartnerContactId, email, verificationFailureLeadStatusId);
 
-            // send the welcome email if: 
-            if ((isEmailValid.HasValue && isEmailValid.Value)   // ZeroBounce indicates that the email is valid
-                || isEmailValid == null)                        // or there was a problem communicating with ZeroBounce
-            {
-                // retrieve the unique identifier for the lead and campaign
-                var tinyId = _db.CampaignPartnerContact.Where(cpc => cpc.PartnerContact.PartnerContactGuid == partnerContactGuid && cpc.Campaign.Name == "PPL Lead Gen").FirstOrDefault()?.TinyId;
-
-                // dynamic data should include: first/last name, tinyId (which can be used to infer campaign, partner contact, and view)
-                var templateData = new
-                {
-                    firstName = firstName,
-                    lastName = lastName,
-                    tinyId = tinyId
-                };
-
-                // send templated welcome email that links to custom landing page
-                _sysEmail.SendTemplatedEmailAsync(email, _configuration["SysEmail:Leads:TemplateIds:LeadIntake-WelcomeEmail"].ToString(), templateData, Constants.SendGridAccount.Leads, null);
-
-                isWelcomeEmailSent = true;
-            }
-
-            return isWelcomeEmailSent;
+            // note that we are not doing anything with the result here. the responsibility for acting on this has been moved to throttled email delivery processing
         }
 
         #endregion
@@ -731,6 +816,7 @@ namespace UpDiddyApi.Workflow
                 if (jobSearchResultDto.JobCount > 0)
                 {
                     dynamic templateData = new JObject();
+                    templateData.description = jobPostingAlert.Description;
                     templateData.firstName = jobPostingAlert.Subscriber.FirstName;
                     templateData.jobCount = jobSearchResultDto.JobCount;
                     templateData.frequency = jobPostingAlert.Frequency.ToString();
@@ -757,7 +843,7 @@ namespace UpDiddyApi.Workflow
             }
         }
 
-        public async Task<bool> ImportSubscriberProfileDataAsync( Subscriber subscriber, SubscriberFile resume)
+        public async Task<bool> ImportSubscriberProfileDataAsync(Subscriber subscriber, SubscriberFile resume)
         {
             try
             {
@@ -774,8 +860,8 @@ namespace UpDiddyApi.Workflow
                 }
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:ImportSubscriberProfileData: Finished downloading and encoding file at {DateTime.UtcNow.ToLongDateString()} subscriberGuid = {resume.Subscriber.SubscriberGuid}");
 
-                
-                String parsedDocument =  _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
+
+                String parsedDocument = _sovrenApi.SubmitResumeAsync(base64EncodedString).Result;
                 // Save profile in staging store 
                 SubscriberProfileStagingStoreFactory.Save(_db, resume.Subscriber, Constants.DataSource.Sovren, Constants.DataFormat.Xml, parsedDocument);
                 // Import the subscriber resume 
@@ -806,7 +892,7 @@ namespace UpDiddyApi.Workflow
                             ContractResolver = contractResolver
                         }));
 
-                
+
 
 
             }
@@ -1069,7 +1155,7 @@ namespace UpDiddyApi.Workflow
 
             return resumeParse;
         }
-        
+
         private Boolean _ImportSubscriberProfileData(List<SubscriberProfileStagingStore> profiles)
         {
             try
@@ -1141,6 +1227,84 @@ namespace UpDiddyApi.Workflow
 
 
 
+
+        #endregion
+
+        #region Admin Portal
+
+        /// <summary>
+        /// This function creates entries in the SubscriberNotification table for each
+        /// subscriber.
+        /// 
+        /// This function assumes the Notification is valid, and that the subscribers
+        /// being sent in have not been deleted.
+        /// </summary>
+        /// <param name="Notification"></param>
+        /// <param name="Subscribers"></param>
+        public async Task<bool> CreateSubscriberNotificationRecords(Notification Notification, int IsTargeted, IList<Subscriber> Subscribers = null)
+        {
+
+            if(IsTargeted == 0)
+                Subscribers = _repositoryWrapper.SubscriberRepository.GetByConditionAsync(s => s.IsDeleted == 0).Result.ToList();
+            else
+            {
+                if (Subscribers == null || Subscribers.Count <= 0)
+                    return false;
+            }
+
+
+            IList<SubscriberNotification> SubscriberNotifications = new List<SubscriberNotification>(); 
+            foreach(Subscriber sub in Subscribers)
+            {
+                DateTime CurrentDateTime = DateTime.UtcNow;
+                SubscriberNotification subscriberNotification = new SubscriberNotification
+                {
+                    SubscriberNotificationGuid = Guid.NewGuid(),
+                    SubscriberId = sub.SubscriberId,
+                    NotificationId = Notification.NotificationId,
+                    CreateDate = CurrentDateTime,
+                    ModifyDate = CurrentDateTime,
+                    HasRead = 0
+                };
+                SubscriberNotifications.Add(subscriberNotification);
+            }
+            _repositoryWrapper.SubscriberNotificationRepository.CreateRange(SubscriberNotifications.ToArray());
+            await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
+
+            return true;
+        }
+
+        /// <summary>
+        /// Mark each entry within the SubscriberNotification table as deleted for
+        /// the Notification being passed in.
+        /// </summary>
+        /// <param name="Notification"></param>
+        public async Task<bool> DeleteSubscriberNotificationRecords(Notification Notification)
+        {
+            if (Notification == null)
+                return false;
+
+            IList<SubscriberNotification> subscriberNotifications = _repositoryWrapper.SubscriberNotificationRepository.GetByConditionAsync(
+                n => n.NotificationId == Notification.NotificationId && n.IsDeleted == 0).Result.ToList();
+
+            if (subscriberNotifications.Count <= 0)
+                return false;
+
+            IList<SubscriberNotification> SubscriberNotifications = new List<SubscriberNotification>();
+
+            foreach (SubscriberNotification subscriberNotification in subscriberNotifications)
+            {
+                subscriberNotification.IsDeleted = 1;
+                subscriberNotification.ModifyDate = DateTime.UtcNow;
+
+                SubscriberNotifications.Add(subscriberNotification);
+            }
+
+            _repositoryWrapper.SubscriberNotificationRepository.UpdateRange(SubscriberNotifications.ToArray());
+            await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
+
+            return true;
+        }
 
         #endregion
     }

@@ -194,6 +194,8 @@ namespace UpDiddy
             services.AddScoped<IButterCMSService, ButterCMSService>();
             services.AddScoped<ISysEmail, SysEmail>();
 
+            services.AddDetection();
+
             services.AddMvc().AddJsonOptions(options =>
             {
                 options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());

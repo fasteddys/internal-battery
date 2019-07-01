@@ -14,11 +14,12 @@ body {
 
         &.navbar-light {
             .navbar-nav {
-
+                text-align: left;
                 .nav-link {
                     color: $color-secondary;
                     font-size: $rem-13;
                     font-weight: bold;
+                    text-align: center;
 
                     &.temp-profile-link {
                         cursor: default;
@@ -26,6 +27,41 @@ body {
                         &:hover {
                             color: #03264A;
                         }
+                    }
+
+                    &.nav-notifications {
+                        font-size: 1.5rem;
+                    }
+                }
+            }
+        }
+
+        .nav-notifications {
+            position: relative;
+
+            .notification-count {
+
+
+                &.has-notifications {
+                    background-color: $color-red;
+                    border-radius: 50%;
+                    display: inline-block;
+                    min-width: 1rem;
+                    text-align: center;
+                    color: #fff;
+                    font-size: .5rem;
+                    height: 1rem;
+                    line-height: .5rem;
+                    padding: .25rem;
+                    margin-left: .25rem;
+                    font-weight: bold;
+                    position: absolute;
+                    left: -.75rem;
+                    bottom: 0rem;
+
+                    @media (min-width: 992px) {
+                        left: -.25rem;
+                        bottom: 0rem;
                     }
                 }
             }

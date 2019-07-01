@@ -2,7 +2,7 @@
 
     // encapsulate this into a method
     $('.work-history-tenure').each(function () {
-        this.innerHTML = FormattedDateRange($(this).data('startdate'), $(this).data('enddate'));
+        this.innerHTML = FormattedDateRange($(this).data('startdate'), $(this).data('enddate'), $(this).data('iscurrent'));              
     });
 
     $('.education-history-degree').each(function () {
@@ -328,9 +328,10 @@ function DeleteWorkHistory(WorkHistoryGuid) {
     });
 }
 
-function FormattedDateRange(startDate, endDate) {
+function FormattedDateRange(startDate, endDate, isCurrent) {
     var formattedDateRange = '';
     var effectiveStartDate;
+
     if (!moment(startDate).isValid()) {
         return 'No date range specified';
     }
@@ -340,7 +341,7 @@ function FormattedDateRange(startDate, endDate) {
     }
     var effectiveEndDate;
 
-    if (!moment(endDate).isValid()) {
+    if (isCurrent) {
         effectiveEndDate = moment();
         formattedDateRange += "Present";
     } else {
@@ -422,7 +423,7 @@ function CreateWorkHistoryDiv(WorkHistoryInfo) {
     divHtml += "@wh.Company";
     divHtml += "</div>";
     divHtml += "<div id=\"ProfileWorkHistory_Tenure_@wh.SubscriberWorkHistoryGuid\" class=\"col-11 work-history-tenure\" data-startdate=\"@wh.StartDate\" data-enddate=\"@wh.EndDate\" data-iscurrent=\"@wh.IsCurrent\">";
-    divHtml += FormattedDateRange(WorkHistoryInfo.startDate, WorkHistoryInfo.endDate);
+    divHtml += FormattedDateRange(WorkHistoryInfo.startDate, WorkHistoryInfo.endDate, WorkHistoryInfo.isCurrent);
     divHtml += "</div>";
     divHtml += "<div id=\"ProfileWorkHistory_Compensation_@wh.SubscriberWorkHistoryGuid\" class=\"col-11 work-history-compensation\" data-compensation=\"@wh.Compensation\" data-compensationtype=\"@wh.CompensationType\">";
     divHtml += "</div>";

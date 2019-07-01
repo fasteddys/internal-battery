@@ -45,6 +45,29 @@ namespace UpDiddy.Controllers
             });
         }
 
+
+        [HttpGet]
+        [Route("/lp")]
+        public IActionResult SeedEmails()
+        {
+            /* the call to action from seed emails will land here. doing this because of the following statement in user story 827:
+             *      "The message in the seed emails can be similar but not exact- we should have the button labeled similarly but 
+             *      it doesn't need to invoke a sign up type experience- the wording on the link and buttons is important and possibly 
+             *      sending in a similarly formed url to encourage the data science to treat lead emails like the seed list emails 
+             *      if that makes sense."
+             *      
+             * we can make this whatever we want, but for now it will cycle through random images and display some text to remind people
+             * about why we are sending these emails.
+             */
+
+            var images = _env.WebRootFileProvider.GetDirectoryContents(@"/images/random");
+            int index = new Random().Next(0, images.Count());
+            ViewBag.ImageName = images.ElementAt(index).Name;
+            return View("SeedEmails");
+        }
+
+
+
         [HttpGet]
         [Route("/lp/{tinyId}")]
         public async Task<IActionResult> TargetedCampaignLandingPageAsync(string tinyId)
