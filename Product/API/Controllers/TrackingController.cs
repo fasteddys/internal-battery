@@ -1,4 +1,5 @@
-﻿using System;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -13,6 +14,8 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
@@ -26,12 +29,16 @@ namespace UpDiddyApi.Controllers
         private readonly UpDiddyDbContext _db = null;
         private readonly ILogger _syslog;
         private readonly FileContentResult _pixelResponse;
+        private readonly ITrackingService _trackingService;
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
-        public TrackingController(UpDiddyDbContext db, ILogger<TrackingController> sysLog, FileContentResult pixelResponse)
+        public TrackingController(UpDiddyDbContext db, ILogger<TrackingController> sysLog, FileContentResult pixelResponse, ITrackingService trackingService, IRepositoryWrapper _repositoryWrapper)
         {
+            _trackingService = trackingService;
             _db = db;
             _syslog = sysLog;
             _pixelResponse = pixelResponse;
+            _repositoryWrapper = _repositoryWrapper;
         }
 
         [HttpGet]
@@ -54,6 +61,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("api/[controller]/{tinyId}/{actionGuid}")]
+
         public IActionResult GetCampaignTrackingWithTinyId(string tinyId, string actionGuid)
         {
             // construct tracking parameters
@@ -147,6 +155,18 @@ namespace UpDiddyApi.Controllers
         private void ProcessRecruiterTrackingInformation(Guid ActorGuid, Guid ActionGuid, Guid JobApplicationGuid)
         {
             BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreRecruiterTrackingInformation(ActorGuid, ActionGuid, JobApplicationGuid));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jobId"></param>
+        /// <param name="subscriberId"></param>
+        /// <returns></returns>
+        [HttpGet("api/[controller]/record-subscriber-apply-action/{jobGuid}/{subscriberGuid}")]
+        public async Task RecordSubscriberApplyAction(int jobId, int subscriberId)
+        {
+            await _trackingService.RecordSubscriberApplyAction(jobId, subscriberId);
         }
     }
 }

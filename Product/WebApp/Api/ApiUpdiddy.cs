@@ -338,12 +338,6 @@ namespace UpDiddy.Api
         }
 
 
-
-
-
-
-
-
         public async Task<IList<EmploymentTypeDto>> GetEmploymentTypeAsync()
         {
             string cacheKey = "GetEmploymentTypeAsync";
@@ -1665,6 +1659,11 @@ namespace UpDiddy.Api
         public async Task<BasicResponseDto> _GetActiveJobCountAsync()
         {
             return await GetAsync<BasicResponseDto>("job/active-job-count");
+        }
+
+        public async Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid)
+        {
+            await GetAsync<BasicResponseDto>($"tracking/record-subscriber-apply-action/{jobGuid}/{subscriberGuid}");
         }
 
         #endregion

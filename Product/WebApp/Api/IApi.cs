@@ -159,5 +159,6 @@ namespace UpDiddy.Api
         #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
+        Task RecordSubscriberApplyAction(Guid jobGuid, Guid value);
     }
 }

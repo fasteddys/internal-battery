@@ -32,6 +32,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IJobPostingAlertRepository _jobPostingAlertRepository;
         private IResumeParseRepository _resumeParseRepository;
         private IResumeParseResultRepository _resumeParseResultRepository;
+        private ISubscriberActionRepository _subscriberActionRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -316,6 +317,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _resumeParseResultRepository = new ResumeParseResultRespository(_dbContext);
                 }
                 return _resumeParseResultRepository;
+            }
+        }
+
+        public ISubscriberActionRepository SubscriberActionRepository
+        {
+            get
+            {
+                if (_subscriberActionRepository == null)
+                {
+                    _subscriberActionRepository = new SubscriberActionRepository(_dbContext);
+                }
+                return _subscriberActionRepository;
             }
         }
     }
