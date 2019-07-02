@@ -5,7 +5,17 @@ using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
 using Google.Protobuf.WellKnownTypes;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore; 
+using UpDiddyLib.Dto;
+using UpDiddyApi.ApplicationCore.Factory;
+using Microsoft.Extensions.Logging;
+using AutoMapper;
+using UpDiddyApi.ApplicationCore.Services;
+using System.Net;
+using System.Text;
+using Microsoft.Extensions.Configuration;
+using System.Globalization;
+using System.Threading;
 
 
 namespace UpDiddyApi.Helpers.GoogleProfile
@@ -16,7 +26,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
         #region CC subscriber -> cloud talent profile  mapping helpers
         static public GoogleCloudProfile CreateGoogleProfile(UpDiddyDbContext db, Subscriber subscriber, IList<SubscriberSkill> skills)
         {
-            // TODO jab map candidate source 
+ 
             GoogleCloudProfile gcp = new GoogleCloudProfile()
             {
                 name = subscriber.CloudTalentUri,
@@ -67,7 +77,118 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 
         #endregion
 
+        #region cloud talent profile -> profile view  mapping helpers 
+
+        public static ProfileSearchResultDto MapSearchResults(ILogger syslog, IMapper mapper, IConfiguration configuration, SearchProfileResponse searchProfileResponse, ProfileQueryDto profileQuery)
+        {
+
+            ProfileSearchResultDto rVal = new ProfileSearchResultDto();
+
+     
+            // handle case of no jobs found 
+            if (searchProfileResponse == null || searchProfileResponse.summarizedProfiles == null || searchProfileResponse.summarizedProfiles.Count <= 0)
+            {
+                rVal.JobCount = 0;
+                rVal.TotalHits = 0;
+                rVal.NumPages = 0;
+                return rVal;
+            }
+
+            rVal.JobCount = searchProfileResponse.summarizedProfiles.Count;
+            rVal.TotalHits = searchProfileResponse.estimatedTotalSize;
+            rVal.RequestId = searchProfileResponse.responseMetadata?.requestId;
+            rVal.PageSize = profileQuery.PageSize;
+            rVal.NumPages = rVal.PageSize != 0 ? (int)Math.Ceiling((double)rVal.TotalHits / rVal.PageSize) : 0;
+
+            rVal.Profiles = new List<ProfileViewDto>();
+
+            foreach (SummarizedProfile p in searchProfileResponse.summarizedProfiles)
+            {
+                try
+                {
+                    // Automapper is too slow so do the mapping the old fashion way                    
+                    ProfileViewDto pv = CreateProfileView(p);
+                    // Map commute properties 
+           Startup Here with exception 
+ 
+                    rVal.Profiles.Add(pv);
+                }
+                catch (Exception e)
+                {
+                    syslog.LogError(e, "JobPostingFactory.MapSearchResults Error mapping job", e, p);
+                }
+            }
+ 
+
+            return rVal;
+        }
+
+
+
+        public static ProfileViewDto CreateProfileView(SummarizedProfile summarizedProfile)
+        {
+            ProfileViewDto rVal = new ProfileViewDto()
+            {
+                SubscriberGuid = Guid.Parse(summarizedProfile.summary.externalId),
+                Email = summarizedProfile.summary.emailAddresses?.FirstOrDefault().emailAddress,
+                PhoneNumber = summarizedProfile.summary.phoneNumbers?.FirstOrDefault().number,
+                FirstName = summarizedProfile.summary.personNames?.FirstOrDefault().structuredName.givenName,
+                LastName = summarizedProfile.summary.personNames?.FirstOrDefault().structuredName.familyName,
+                Address = summarizedProfile.summary.addresses?.FirstOrDefault().structuredAddress?.addressLines.FirstOrDefault(),
+                PostalCode = summarizedProfile.summary.addresses?.FirstOrDefault().structuredAddress?.postalCode,
+                City = summarizedProfile.summary.addresses?.FirstOrDefault().structuredAddress?.locality,
+                StateCode = summarizedProfile.summary.addresses?.FirstOrDefault().structuredAddress?.administrativeArea
+            };
+            // add skills 
+            rVal.Skills = new List<SkillDto>();
+            foreach ( Skill s in summarizedProfile.summary.skills )
+            {
+                SkillDto skillDto = new SkillDto()
+                {
+                    SkillName = s.displayName
+                };
+                rVal.Skills.Add(skillDto);
+            }
+            // add work history 
+            rVal.WorkHistory = new List<SubscriberWorkHistoryDto>();
+            foreach ( EmploymentRecord er in summarizedProfile.summary.employmentRecords )
+            {
+                SubscriberWorkHistoryDto subscriberWorkHistoryDto = new SubscriberWorkHistoryDto()
+                {
+                    Company = er.employerName,
+                    StartDate = er.startDate.ToDate(),
+                    EndDate = er.endDate.ToDate(),
+                    JobDescription = er.jobDescription,
+                    Title = er.jobTitle                    
+                };
+                rVal.WorkHistory.Add(subscriberWorkHistoryDto);
+            }
+            // add education history 
+            rVal.EducationHistory = new List<SubscriberEducationHistoryDto>();
+            foreach (EducationRecord er in summarizedProfile.summary.educationRecords)
+            {
+                SubscriberEducationHistoryDto subscriberEducationHistoryDto = new SubscriberEducationHistoryDto()
+                {
+                    EducationalInstitution = er.schoolName,
+                    StartDate = er.startDate.ToDate(),
+                    EndDate = er.endDate.ToDate(),
+                     EducationalDegree = er.structuredDegree.degreeName,
+                    EducationalDegreeType = er.structuredDegree?.fieldsOfStudy.FirstOrDefault()
+                 };
+                rVal.EducationHistory.Add(subscriberEducationHistoryDto);
+            }
+
+            return rVal;
+        }
+
+
+        #endregion
+
         #region helper functions 
+
+
+
+
 
         static private List<PersonName> MapPersonName(Subscriber subscriber)
         {

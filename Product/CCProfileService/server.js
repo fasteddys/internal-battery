@@ -10,6 +10,10 @@ const http = require('http');
 const port = process.env.PORT;
 const app = express() 
 
+const profileSearchOption = { autoPaginate: false };
+
+
+
 // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.urlencoded());
 // Parse JSON bodies (as sent by API clients)
@@ -215,14 +219,19 @@ app.get('/profile-search', async (req, res) => {
             keyFilename: process.env.KeyFilePath,
         });
 
-
         let request = {
-            name: req.params.profileName
-        };
+            parent: process.env.tenantName,
+            requestMetadata: { allowMissingIds : true}
+        }
 
-        let searchResults = await profileServiceClient.searchProfiles(req.body);
 
-        let r = new basicResponse(200, "ok", req.body);
+
+
+       // requestMetadata: { domain: "www.careercircle.com", sessionId : "not applicable", userId : "jim", allowMissingIds : true }
+
+        let searchResults = await profileServiceClient.searchProfiles(req.body, profileSearchOption);
+        // let searchResults = await profileServiceClient.searchProfiles(request, profileSearchOption);
+        let r = new basicResponse(200, "ok", searchResults[2]);
         res.send(r);
     }
     catch (e)

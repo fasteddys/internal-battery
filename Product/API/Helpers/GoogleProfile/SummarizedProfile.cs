@@ -5,11 +5,9 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Helpers.GoogleProfile
 {
-    public class DeviceInfo
+    public class SummarizedProfile
     {
-
-        public string id { get; set; }
-        public int deviceType { get; set; }
-
+        public List<GoogleCloudProfile> profiles { get; set; }
+        public GoogleCloudProfile summary { get; set; }
     }
 }

@@ -7,7 +7,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class Duration
     {
-        public long Seconds { get; set; }
-        public int Nanos { get; set; }
+        public long seconds { get; set; }
+        public int nanos { get; set; }
     }
 }

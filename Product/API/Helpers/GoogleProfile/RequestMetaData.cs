@@ -8,15 +8,15 @@ namespace UpDiddyApi.Helpers.GoogleProfile
     public class RequestMetadata
     {
       
-        public virtual DeviceInfo DeviceInfo { get; set; }
+        public virtual DeviceInfo deviceInfo { get; set; }
  
-        public virtual string Domain { get; set; }
+        public virtual string domain { get; set; }
  
-        public virtual string SessionId { get; set; }
+        public virtual string sessionId { get; set; }
  
-        public virtual string UserId { get; set; }
+        public virtual string userId { get; set; }
  
-        public bool AllowMissingIds { get; set;  }
+        public bool allowMissingIds { get; set;  }
 
     }
 }

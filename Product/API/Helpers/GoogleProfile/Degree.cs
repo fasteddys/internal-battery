@@ -5,11 +5,9 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Helpers.GoogleProfile
 {
-    public class DeviceInfo
+    public class Degree
     {
-
-        public string id { get; set; }
-        public int deviceType { get; set; }
-
+        public string degreeName { get; set; }
+        public List<string> fieldsOfStudy { get; set; }
     }
 }

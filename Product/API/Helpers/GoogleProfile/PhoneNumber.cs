@@ -9,6 +9,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
     public class PhoneNumber
     {
 
+        public PhoneNumber() { }
         public string number {get; set; }
 
         public PhoneNumber(Subscriber subscriber)

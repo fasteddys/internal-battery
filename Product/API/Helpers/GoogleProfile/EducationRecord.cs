@@ -10,28 +10,43 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class EducationRecord
     {
-        public Timestamp startDate { get; set; }
-        public Timestamp endDate { get; set; }
-        string schoolName { get; set; }
-        string description { get; set; }
+
+        public EducationRecord() { }
+
+        public Date startDate { get; set; }
+        public Date endDate { get; set; }
+        public string schoolName { get; set; }
+        public string description { get; set; }
+
+        public Degree structuredDegree { get; set; }
 
 
         public EducationRecord(SubscriberEducationHistory subscriberEducationHistory)
         {
             if (subscriberEducationHistory.StartDate != null && subscriberEducationHistory.StartDate.Value != DateTime.MinValue)
-                this.startDate = new Timestamp()
+                this.startDate = new Date()
                 {
-                    Seconds = Utils.ToUnixTimeInSeconds(subscriberEducationHistory.StartDate.Value),
-                    Nanos = 0
+                    day = subscriberEducationHistory.StartDate.Value.Day,
+                    month = subscriberEducationHistory.StartDate.Value.Month,
+                    year = subscriberEducationHistory.StartDate.Value.Year
                 };
             if (subscriberEducationHistory.EndDate != null && subscriberEducationHistory.EndDate.Value != DateTime.MinValue)
-                this.endDate = new Timestamp()
+                this.endDate = new Date()
                 {
-                    Seconds = Utils.ToUnixTimeInSeconds(subscriberEducationHistory.EndDate.Value),
-                    Nanos = 0
+                    day = subscriberEducationHistory.EndDate.Value.Day,
+                    month = subscriberEducationHistory.EndDate.Value.Month,
+                    year = subscriberEducationHistory.EndDate.Value.Year
                 };
             this.schoolName = subscriberEducationHistory.EducationalInstitution?.Name;
             this.description = subscriberEducationHistory.EducationalDegree?.Degree + " " + subscriberEducationHistory.EducationalDegreeType?.DegreeType;
+        
+            this.structuredDegree = new Degree()
+            {
+                 degreeName = subscriberEducationHistory.EducationalDegreeType?.DegreeType
+            };
+            this.structuredDegree.fieldsOfStudy = new List<string>();
+            this.structuredDegree.fieldsOfStudy.Add(subscriberEducationHistory.EducationalDegree?.Degree);
+          
         }
     }
 

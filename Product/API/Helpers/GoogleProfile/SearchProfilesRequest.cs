@@ -12,18 +12,18 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 
 
 
-        public string Parent { get; set; }
-        public RequestMetadata RequestMetadata { get; set; }
+        public string parent { get; set; }
+        public RequestMetadata requestMetadata { get; set; }
  
-        public ProfileQuery ProfileQuery {get; set; }
-        public virtual int? Offset { get; set; }
-        public virtual string PageToken { get; set; }
-        public virtual bool? DisableSpellCheck { get; set; }
-        public virtual bool? CaseSensitiveSort { get; set; }
+        public ProfileQuery profileQuery {get; set; }
+        public virtual int? offset { get; set; }
+        public virtual string pageToken { get; set; }
+        public virtual bool? disableSpellCheck { get; set; }
+        public virtual bool? caseSensitiveSort { get; set; }
         // This will not work due to a class issue, see HistogramQuery class for details 
-        public HistogramQuery[] HistogramQueries { get; set; }
+        public HistogramQuery[] histogramQueries { get; set; }
 
-        public string ResultSetId { get; set; }
+        public string resultSetId { get; set; }
 
         // Allowed order by values:
         //
@@ -35,8 +35,8 @@ namespace UpDiddyApi.Helpers.GoogleProfile
         //"last_name": Sort by PersonName.PersonStructuredName.family_name in ascending order.
         //"last_name desc": Sort by PersonName.PersonStructuredName.family_name in ascending order.
 
-        public  string OrderBy { get; set; }       
-        public  int? PageSize { get; set; }
+        public  string orderBy { get; set; }       
+        public  int? pageSize { get; set; }
  
     }
 

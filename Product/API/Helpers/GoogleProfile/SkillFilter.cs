@@ -7,7 +7,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class SkillFilter
     {
-        public string Skill { get; set; }
-        public bool Negated { get; set; }
+        public string skill { get; set; }
+        public bool negated { get; set; }
     }
 }

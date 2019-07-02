@@ -7,8 +7,14 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class Date
     {
-        public int Year { get; set; }
-        public int Month { get; set; }
-        public int Day { get; set; }
+        public int year { get; set; }
+        public int month { get; set; }
+        public int day { get; set; }
+
+
+        public DateTime ToDate()
+        {
+            return new DateTime(this.year, this.month, this.day);
+        }
     }
 }

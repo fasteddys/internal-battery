@@ -8,7 +8,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class ApplicationDateFilter
     {
-        public  Date StartDate { get; set; }
-        public Date EndDate { get; set; }
+        public  Date startDate { get; set; }
+        public Date endDate { get; set; }
     }
 }

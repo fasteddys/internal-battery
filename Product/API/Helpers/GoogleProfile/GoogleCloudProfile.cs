@@ -10,10 +10,10 @@ namespace UpDiddyApi.Helpers.GoogleProfile
     {
         public string name { get; set; }
         public string externalId { get; set; }
-        public Timestamp createTime { get; set; } 
+        public Timestamp createTime { get; set; }
         public Timestamp updateTime { get; set; }
- 
-        public IList<PersonName> personNames { get; set; } 
+
+        public IList<PersonName> personNames { get; set; }
         public IList<Address> addresses { get; set; }
 
         public IList<Skill> skills { get; set; }
@@ -25,8 +25,40 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 
         public IList<EmploymentRecord> employmentRecords { get; set; }
 
-        public IList<EducationRecord> educationRecords { get; set; }      
-        
+        public IList<EducationRecord> educationRecords { get; set; }
+
         public Dictionary<string, CustomAttribute> customAttributes { get; set; }
+
+        // todo jab see if adding the following breaks profile add/update
+
+        public string uri { get; set; }
+
+        public string groupId { get; set; }
+
+        public BoolValue isHirable { get; set; }
+
+        public bool processed { get; set; }
+
+        public string keywordSnippet { get; set; }
+
+        public Resume resume { get; set; }
+
+        public List<PersonalUri> personalUris { get; set; }
+
+        public List<AdditionalContactInfo> additionalContactInfo {get; set;}
+
+        public List<Activity> activities { get; set; }
+
+        public List<Publication> publications { get; set; }
+
+        public List<Patent> patents { get; set; }
+
+        public List<Certification> certifications { get; set; } 
+
+        public List<string> applications { get; set; }
+
+        public List<string> assignments { get; set; }
+
+
     }
 }

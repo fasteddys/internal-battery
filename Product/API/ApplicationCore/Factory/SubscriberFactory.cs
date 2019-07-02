@@ -119,8 +119,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
         {
             Subscriber subscriber  = db.Subscriber
                 .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
-                .Include( s => s.SubscriberWorkHistory)
-                .Include( s => s.SubscriberEducationHistory)
+                .Include( s => s.SubscriberWorkHistory).ThenInclude ( e => e.Company )
+                .Include( s => s.SubscriberEducationHistory).ThenInclude (i => i.EducationalInstitution)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalDegree)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalDegreeType)
                 .Include( s => s.State)
                 .FirstOrDefault();
  

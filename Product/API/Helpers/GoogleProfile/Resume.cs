@@ -5,11 +5,10 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Helpers.GoogleProfile
 {
-    public class DeviceInfo
+    public class Resume
     {
 
-        public string id { get; set; }
-        public int deviceType { get; set; }
-
+        public string structuredResume { get; set; }
+        public int resumeType { get; set; } 
     }
 }

@@ -7,9 +7,9 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class ApplicationJobFilter
     {
-        public string JobRequisitionId { get; set; }
-        public string JobTitle { get; set; }
-        public bool Negated { get; set; }
+        public string jobRequisitionId { get; set; }
+        public string jobTitle { get; set; }
+        public bool negated { get; set; }
 
     }
 }

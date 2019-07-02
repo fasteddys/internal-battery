@@ -7,8 +7,8 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class EmployerFilter
     {
-        public string Employer { get; set; }
-        public int EmployerFilterMode { get; set; }
-        public bool Negated { get; set; }
+        public string employer { get; set; }
+        public int employerFilterMode { get; set; }
+        public bool negated { get; set; }
     }
 }

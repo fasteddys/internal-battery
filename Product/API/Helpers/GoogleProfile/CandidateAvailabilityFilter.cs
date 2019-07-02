@@ -7,6 +7,6 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class CandidateAvailabilityFilter
     {
-        public bool Negated { get; set; }
+        public bool negated { get; set; }
     }
 }

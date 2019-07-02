@@ -168,10 +168,11 @@ namespace UpDiddyApi.Controllers
         {
 
             //todo jab implenet 
-            int PageSize = int.Parse(_configuration["CloudTalent:ProfilePageSize"]);
+
             ProfileSearchResultDto rVal = _cloudTalent.ProfileSearch(profileQueryDto);
 
-            return Ok();
+
+            return Ok(rVal);
         }
 
 

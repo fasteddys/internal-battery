@@ -762,17 +762,21 @@ namespace UpDiddyApi.ApplicationCore.Services
             // todo add better meta data 
             UpDiddyApi.Helpers.GoogleProfile.RequestMetadata requestMetadata = new UpDiddyApi.Helpers.GoogleProfile.RequestMetadata()
             {
-                UserId = "CareerCircle.com",
-                SessionId = "n/a",
-                Domain = "www.careercircle.com"
+                userId = "CareerCircle.com",
+                sessionId = "n/a",
+                domain = "www.careercircle.com"
 
             };
+
+            
+
+
 
             ProfileQuery cloudTalentProfileQuery = new ProfileQuery();
             // add keywords 
             if (string.IsNullOrEmpty(profileQuery.Keywords) == false)
             {
-                cloudTalentProfileQuery.Query = profileQuery.Keywords;
+                cloudTalentProfileQuery.query = profileQuery.Keywords;
             }
 
             // us a country code to help google dis-ambiguate state abbreviatons, etc.   
@@ -798,12 +802,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 UpDiddyApi.Helpers.GoogleProfile.LocationFilter locationFilter = new UpDiddyApi.Helpers.GoogleProfile.LocationFilter()
                 {
-                    Address = addressInfo,
-                    DistanceInMiles = profileQuery.SearchRadius,
-                    RegionCode = regionCode
+                    address = addressInfo,
+                    distanceInMiles = profileQuery.SearchRadius,
+                    regionCode = regionCode
                 };
 
-                cloudTalentProfileQuery.LocationFilters = new List<UpDiddyApi.Helpers.GoogleProfile.LocationFilter>()
+                cloudTalentProfileQuery.locationFilters = new List<UpDiddyApi.Helpers.GoogleProfile.LocationFilter>()
                     {
                         locationFilter
                     };
@@ -826,18 +830,19 @@ namespace UpDiddyApi.ApplicationCore.Services
   
             // Add Custom Attribute Filter 
             if (attributeFilters.Length > 0)
-                cloudTalentProfileQuery.CustomAttributeFilter = attributeFilters;
+                cloudTalentProfileQuery.customAttributeFilter = attributeFilters;
 
            
             // Build search request 
             SearchProfilesRequest searchProfileRequest = new SearchProfilesRequest()
             {
-                RequestMetadata = requestMetadata,
-                ProfileQuery = cloudTalentProfileQuery,
-                PageSize = profileQuery.PageSize,
-                Offset = profileQuery.PageSize * (profileQuery.PageNum - 1),
-                OrderBy = profileQuery.OrderBy
-
+                requestMetadata = requestMetadata,
+                profileQuery = cloudTalentProfileQuery,
+                pageSize = profileQuery.PageSize,
+                offset = profileQuery.PageSize * (profileQuery.PageNum - 1),
+                orderBy = profileQuery.OrderBy,
+                // TODO JAB add to appsettings 
+                parent = "projects/jobboardpilot/tenants/3d27fc68-8151-40de-96f7-cb11d8b7b252"                
 
             };
 
@@ -857,6 +862,12 @@ namespace UpDiddyApi.ApplicationCore.Services
         public ProfileSearchResultDto ProfileSearch(ProfileQueryDto profileQuery, bool isJobPostingAlertSearch = false)
         {
 
+            if ( profileQuery.PageSize <= 0 )
+            {
+                profileQuery.PageSize = int.Parse(_configuration["CloudTalent:ProfilePageSize"]);
+            }
+            
+
             ProfileSearchResultDto rVal = new ProfileSearchResultDto(); 
             // TODO JAB implement 
 
@@ -866,32 +877,22 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             string errorMsg = string.Empty;
             BasicResponseDto rVal1 = _googleProfile.Search(searchProfileRequest, ref errorMsg);
+            string json = Newtonsoft.Json.JsonConvert.SerializeObject(rVal1.Data);
 
-
-            /*
-            // search the cloud talent
-            CloudTalentSolution.SearchJobsResponse searchJobsResponse;
-
-            try
-            {
-                if (isJobPostingAlertSearch)
-                {
-                    searchJobRequest.DiversificationLevel = "SIMPLE";
-                    searchJobsResponse = _jobServiceClient.Projects.Jobs.SearchForAlert(searchJobRequest, _projectPath).Execute();
-                }
-                else
-                    searchJobsResponse = _jobServiceClient.Projects.Jobs.Search(searchJobRequest, _projectPath).Execute();
-            }
-            catch (Exception e)
-            {
-                // We sent a query to Google that it doesn't understand (e.g. "laksdbf" as a state)
-                _syslog.LogWarning(e, "CloudTalent.Search Error: Google unable to resolve our search query.");
-                searchJobsResponse = null;
-            }
-
+            SearchProfileResponse searchProfileResponse = JsonConvert.DeserializeObject<SearchProfileResponse>(json);
             // map cloud talent results to cc search results 
             DateTime startMap = DateTime.Now;
-            JobSearchResultDto rval = JobMappingHelper.MapSearchResults(_syslog, _mapper, _configuration, searchJobsResponse, jobQuery);
+            try
+            {
+                rVal = ProfileMappingHelper.MapSearchResults(_syslog, _mapper, _configuration, searchProfileResponse, profileQuery);
+            }
+            catch (Exception ex )
+            {
+                // try and catch the deserialization since there may be issues with live data that we may not discover during testing.
+                // the logging will allow us to do a post mortem 
+                _syslog.LogError($"CloudTalent:ProfileSearch: Error deserializing profile search results: {ex.Message} ", json);
+            }
+           
             DateTime stopMap = DateTime.Now;
 
             // calculate search timing metrics 
@@ -900,13 +901,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             TimeSpan intervalMapTime = stopMap - startMap;
 
             // assign search metrics to search results 
-            rval.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
-            rval.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
-            rval.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+            rVal.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
+            rVal.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
+            rVal.SearchMappingTimeInTicks = intervalMapTime.Ticks;
 
-
-
-    */
             return rVal;
         }
 

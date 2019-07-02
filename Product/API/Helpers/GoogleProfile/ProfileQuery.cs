@@ -7,28 +7,28 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class ProfileQuery
     {
-        public string Query { get; set; }
-        public List<LocationFilter> LocationFilters { get; set; }
-        public List<JobTitleFilter> JobTitleFilters { get; set; }
-        public List<EmployerFilter> EmployerFilters { get; set; }
-        public List<EducationFilter> EducationFilters { get; set; }
-        public List<SkillFilter> SkillFilters { get; set; }
+        public string query { get; set; }
+        public List<LocationFilter> locationFilters { get; set; }
+        public List<JobTitleFilter> jobTitleFilters { get; set; }
+        public List<EmployerFilter> employerFilters { get; set; }
+        public List<EducationFilter> educationFilters { get; set; }
+        public List<SkillFilter> skillFilters { get; set; }
 
-        public List<WorkExperienceFilter> WorkExperienceFilters { get; set; }
+        public List<WorkExperienceFilter> workExperienceFilters { get; set; }
 
-        public List<TimeFilter> TimeFilters { get; set; }
+        public List<TimeFilter> timeFilters { get; set; }
 
-        public bool HirableFilter { get; set; }
+        public BoolValue hirableFilter { get; set; }
 
-        public List<ApplicationDateFilter> ApplicationDateFilters { get; set; }
+        public List<ApplicationDateFilter> applicationDateFilters { get; set; }
 
-        public List<ApplicationOutcomeNotesFilter> ApplicationOutcomeNotesFilters { get; set; }
+        public List<ApplicationOutcomeNotesFilter> applicationOutcomeNotesFilters { get; set; }
 
-        public List<ApplicationJobFilter> ApplicationJobFilters { get; set; }
+        public List<ApplicationJobFilter> applicationJobFilters { get; set; }
 
-        public string CustomAttributeFilter { get; set; }
+        public string customAttributeFilter { get; set; }
 
-        public List<CandidateAvailabilityFilter> CandidateAvailabilityFilters { get; set; }
+        public List<CandidateAvailabilityFilter> candidateAvailabilityFilters { get; set; }
 
  
 

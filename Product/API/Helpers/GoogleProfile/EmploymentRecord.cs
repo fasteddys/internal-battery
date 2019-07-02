@@ -10,8 +10,11 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class EmploymentRecord
     {
-        public Timestamp startDate { get; set; }
-        public Timestamp endDate { get; set; }
+
+        public EmploymentRecord() { }
+        // todo jab check timestamp is correct they have upper case seconds and nanos
+        public Date startDate { get; set; }
+        public Date endDate { get; set; }
         public string employerName { get; set; }
         public string jobTitle { get; set; }
         public string jobDescription { get; set; }
@@ -19,17 +22,19 @@ namespace UpDiddyApi.Helpers.GoogleProfile
         public EmploymentRecord(SubscriberWorkHistory subscriberWorkHistory)
         {
             if (subscriberWorkHistory.StartDate != null && subscriberWorkHistory.StartDate.Value != DateTime.MinValue)
-                this.startDate = new Timestamp()
+                this.startDate = new Date()
                 {
-                    Seconds = Utils.ToUnixTimeInSeconds(subscriberWorkHistory.StartDate.Value),
-                    Nanos = 0
-
+                    day = subscriberWorkHistory.StartDate.Value.Day,
+                    month =subscriberWorkHistory.StartDate.Value.Month,
+                    year = subscriberWorkHistory.StartDate.Value.Year
+                     
                 };
             if (subscriberWorkHistory.EndDate != null && subscriberWorkHistory.EndDate.Value != DateTime.MinValue)
-                this.endDate = new Timestamp()
+                this.endDate = new Date()
                 {
-                    Seconds = Utils.ToUnixTimeInSeconds(subscriberWorkHistory.EndDate.Value),
-                    Nanos = 0
+                    day = subscriberWorkHistory.EndDate.Value.Day,
+                    month = subscriberWorkHistory.EndDate.Value.Month,
+                    year = subscriberWorkHistory.EndDate.Value.Year
                 }; 
             this.employerName = subscriberWorkHistory.Company?.CompanyName;
             this.jobTitle = subscriberWorkHistory.Title;

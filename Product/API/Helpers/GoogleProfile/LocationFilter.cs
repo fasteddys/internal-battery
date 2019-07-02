@@ -7,15 +7,15 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class LocationFilter
     {
-        public string Address { get; set; }
-        public string RegionCode { get; set; }
-        public LatLng LatLng { get; set; }
+        public string address { get; set; }
+        public string regionCode { get; set; }
+        public LatLng latLng { get; set; }
 
-        public double DistanceInMiles { get; set; }
+        public double distanceInMiles { get; set; }
 
-        public int TelecommutePreference { get; set;}
+        public int telecommutePreference { get; set;}
 
-        public bool Negated { get; set; }
+        public bool negated { get; set; }
 
 
 

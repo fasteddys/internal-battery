@@ -5,11 +5,9 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Helpers.GoogleProfile
 {
-    public class DeviceInfo
+    public class BoolValue
     {
 
-        public string id { get; set; }
-        public int deviceType { get; set; }
-
+        public bool value { get; set; }
     }
 }

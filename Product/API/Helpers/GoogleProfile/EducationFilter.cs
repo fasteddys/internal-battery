@@ -7,11 +7,11 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class EducationFilter
     {
-        public string School { get; set; }
-        public string FieldOfStudy { get; set; }
-        public int DegreeType { get; set; }
+        public string school { get; set; }
+        public string fieldOfStudy { get; set; }
+        public int degreeType { get; set; }
 
-        public bool Negated { get; set; }
+        public bool negated { get; set; }
 
 
 

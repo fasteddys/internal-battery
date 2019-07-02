@@ -8,6 +8,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class Skill
     {
+        public Skill() { }
         public string displayName { get; set;  }
 
         public Skill(SubscriberSkill subscriberSkill)

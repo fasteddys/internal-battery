@@ -7,7 +7,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 {
     public class WorkExperienceFilter
     { 
-        public Duration MinExperience { get; set; }
-        public Duration MaxExperience { get; set; }
+        public Duration minExperience { get; set; }
+        public Duration maxExperience { get; set; }
     }
 }

@@ -5,11 +5,9 @@ using System.Threading.Tasks;
 
 namespace UpDiddyApi.Helpers.GoogleProfile
 {
-    public class DeviceInfo
+    public class HistogramQueryResult
     {
-
-        public string id { get; set; }
-        public int deviceType { get; set; }
-
+        public string histogramQuery { get; set; }
+        public Dictionary<string,long> histogram { get; set; }
     }
 }
