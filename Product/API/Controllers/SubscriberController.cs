@@ -990,7 +990,8 @@ namespace UpDiddyApi.Controllers
             if (!await _cloudStorage.DeleteFileAsync(file.BlobName))
                 return BadRequest();
 
-            _db.SubscriberFile.Remove(file);
+            file.IsDeleted = 1;
+            _db.SubscriberFile.Update(file);
             await _db.SaveChangesAsync();
 
             return Ok();
