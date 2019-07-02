@@ -11,6 +11,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ITrackingService
     {
-        Task RecordSubscriberApplyAction(int jobId, int subscriberId);
+        Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid);
     }
 }

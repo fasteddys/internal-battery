@@ -163,10 +163,12 @@ namespace UpDiddyApi.Controllers
         /// <param name="jobId"></param>
         /// <param name="subscriberId"></param>
         /// <returns></returns>
-        [HttpGet("api/[controller]/record-subscriber-apply-action/{jobGuid}/{subscriberGuid}")]
-        public async Task RecordSubscriberApplyAction(int jobId, int subscriberId)
+        ///        
+        [HttpGet]
+        [Route("api/[controller]/record-subscriber-apply-action/{jobGuid}/{subscriberGuid}")]
+        public async Task RecordSubscriberAction(Guid jobGuid, Guid subscriberGuid)
         {
-            await _trackingService.RecordSubscriberApplyAction(jobId, subscriberId);
+            await _trackingService.RecordSubscriberApplyAction(jobGuid, subscriberGuid);
         }
     }
 }

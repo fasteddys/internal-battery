@@ -33,6 +33,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IResumeParseRepository _resumeParseRepository;
         private IResumeParseResultRepository _resumeParseResultRepository;
         private ISubscriberActionRepository _subscriberActionRepository;
+        private IEntityTypeRepository _entityTypeRepository;
+        private IActionRepository _actionRepository;
+
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -329,6 +332,30 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _subscriberActionRepository = new SubscriberActionRepository(_dbContext);
                 }
                 return _subscriberActionRepository;
+            }
+        }
+
+        public IEntityTypeRepository EntityTypeRepository
+        {
+            get
+            {
+                if (_entityTypeRepository == null)
+                {
+                    _entityTypeRepository = new EntityTypeRepository(_dbContext);
+                }
+                return _entityTypeRepository;
+            }
+        }
+
+        public IActionRepository ActionRepository
+        {
+            get
+            {
+                if (_actionRepository == null)
+                {
+                    _actionRepository = new ActionRepository(_dbContext);
+                }
+                return _actionRepository;
             }
         }
     }

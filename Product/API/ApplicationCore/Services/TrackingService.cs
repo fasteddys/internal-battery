@@ -7,6 +7,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
+using EntityTypeConst = UpDiddyLib.Helpers.Constants.EventType;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -19,23 +20,33 @@ namespace UpDiddyApi.ApplicationCore.Services
             _repositoryWrapper = repositoryWrapper;
         }
 
-        public async Task RecordSubscriberApplyAction(int jobId, int subscriberId)
+        /// <summary>
+        /// Inserts a new record in SubscriberApply table for when subscriber clicks the Apply button in job posting
+        /// </summary>
+        /// <param name="jobGuid"></param>
+        /// <param name="subscriberGuid"></param>
+        /// <returns></returns>
+        public async Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid)
         {
-            SubscriberAction action = new SubscriberAction()
+            JobPosting jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(jobGuid);
+            Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.ApplyJob);
+            EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.JobPosting);
+            Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
+            SubscriberAction subAction = new SubscriberAction()
             {
                 IsDeleted = 0,
                 CreateDate = DateTime.Now,
                 ModifyDate = null,
+                Action = action,
                 CreateGuid = Guid.Empty,
-                SubscriberId = subscriberId,
+                Subscriber = subscriber,
                 SubscriberActionGuid = Guid.NewGuid(),
-                EntityId = jobId,
-                EntityTypeId = 1,
+                EntityType = entityType,
+                EntityId = jobPosting.JobPostingId,
                 ModifyGuid = null,
                 OccurredDate = DateTime.Now
-
             };
-            _repositoryWrapper.SubscriberActionRepository.Create(action);
+            _repositoryWrapper.SubscriberActionRepository.Create(subAction);
             await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
         }
     }
