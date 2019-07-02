@@ -32,6 +32,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IJobPostingAlertRepository _jobPostingAlertRepository;
         private IResumeParseRepository _resumeParseRepository;
         private IResumeParseResultRepository _resumeParseResultRepository;
+        private IPartnerReferrerRepository _partnerReferrerRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -316,6 +317,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _resumeParseResultRepository = new ResumeParseResultRespository(_dbContext);
                 }
                 return _resumeParseResultRepository;
+            }
+        }
+
+        public IPartnerReferrerRepository PartnerReferrerRepository
+        {
+            get
+            {
+                if (_partnerReferrerRepository == null)
+                {
+                    _partnerReferrerRepository = new PartnerReferrerRepository(_dbContext);
+                }
+                return _partnerReferrerRepository;
             }
         }
     }
