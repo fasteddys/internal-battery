@@ -10,7 +10,7 @@ namespace UpDiddyLib.Dto
         public string ClientEventId { get; set; }
         public int PageSize { get; set; }
         public int PageNum { get; set; }
-        public int JobCount { get; set; }
+        public int ProfileCount { get; set; }
         public long TotalHits { get; set; }
         public int NumPages { get; set; }
 

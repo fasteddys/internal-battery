@@ -219,18 +219,47 @@ app.get('/profile-search', async (req, res) => {
             keyFilename: process.env.KeyFilePath,
         });
 
+        /*
         let request = {
             parent: process.env.tenantName,
-            requestMetadata: { allowMissingIds : true}
+            profileQuery: {
+
+                "query": null,
+                "locationFilters": [
+                    {
+                        "address": "21204",
+                        "regionCode": "us",
+                        "latLng": null,
+                        "distanceInMiles": 0,
+                        "telecommutePreference": 0,
+                        "negated": false
+                    }
+                ],
+                "jobTitleFilters": null,
+                "employerFilters": null,
+                "educationFilters": null,
+                "skillFilters": null,
+                "workExperienceFilters": null,
+                "timeFilters": null,
+                "hirableFilter": null,
+                "applicationDateFilters": null,
+                "applicationOutcomeNotesFilters": null,
+                "applicationJobFilters": null,
+                "customAttributeFilter": null,
+                "candidateAvailabilityFilters": null
+
+            }
+            // requestMetadata: { allowMissingIds : true}
         }
 
-
+        let test = JSON.stringify(req.body);
+        */
 
 
        // requestMetadata: { domain: "www.careercircle.com", sessionId : "not applicable", userId : "jim", allowMissingIds : true }
 
         let searchResults = await profileServiceClient.searchProfiles(req.body, profileSearchOption);
-        // let searchResults = await profileServiceClient.searchProfiles(request, profileSearchOption);
+     //   let searchResults = await profileServiceClient.searchProfiles(request, profileSearchOption);
         let r = new basicResponse(200, "ok", searchResults[2]);
         res.send(r);
     }

@@ -772,7 +772,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-            ProfileQuery cloudTalentProfileQuery = new ProfileQuery();
+            ProfileQuery cloudTalentProfileQuery = new ProfileQuery();            
             // add keywords 
             if (string.IsNullOrEmpty(profileQuery.Keywords) == false)
             {

@@ -57,21 +57,22 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                 .Where(p => p.SubscriberId == subscriber.SubscriberId)
                 .FirstOrDefault();
 
+            string partnerName = Constants.NotSpecifedOption;
             if ( partnerInfo != null )
             {
                 Partner partner = db.Partner
                     .Where(p => p.PartnerId == partnerInfo.PartnerId)
                     .FirstOrDefault();
+                
                 if (partner != null)
-                {
-                    gcp.customAttributes = new Dictionary<string, CustomAttribute>();
-                    gcp.customAttributes["SourcePartner"] = new CustomAttribute
-                    {
-                        stringValues = new[] { partner.Name },
-                        filterable = true
-                    };
-                }
-            }                
+                    partnerName = partner.Name;            
+            }
+            gcp.customAttributes = new Dictionary<string, CustomAttribute>();
+            gcp.customAttributes["SourcePartner"] = new CustomAttribute
+            {
+                stringValues = new[] { partnerName },
+                filterable = true
+            };
             return gcp;
         }
 
@@ -88,13 +89,13 @@ namespace UpDiddyApi.Helpers.GoogleProfile
             // handle case of no jobs found 
             if (searchProfileResponse == null || searchProfileResponse.summarizedProfiles == null || searchProfileResponse.summarizedProfiles.Count <= 0)
             {
-                rVal.JobCount = 0;
+                rVal.ProfileCount = 0;
                 rVal.TotalHits = 0;
                 rVal.NumPages = 0;
                 return rVal;
             }
 
-            rVal.JobCount = searchProfileResponse.summarizedProfiles.Count;
+            rVal.ProfileCount = searchProfileResponse.summarizedProfiles.Count;
             rVal.TotalHits = searchProfileResponse.estimatedTotalSize;
             rVal.RequestId = searchProfileResponse.responseMetadata?.requestId;
             rVal.PageSize = profileQuery.PageSize;
@@ -109,7 +110,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                     // Automapper is too slow so do the mapping the old fashion way                    
                     ProfileViewDto pv = CreateProfileView(p);
                     // Map commute properties 
-           Startup Here with exception 
+       
  
                     rVal.Profiles.Add(pv);
                 }
@@ -118,7 +119,6 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                     syslog.LogError(e, "JobPostingFactory.MapSearchResults Error mapping job", e, p);
                 }
             }
- 
 
             return rVal;
         }
@@ -127,18 +127,48 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 
         public static ProfileViewDto CreateProfileView(SummarizedProfile summarizedProfile)
         {
-            ProfileViewDto rVal = new ProfileViewDto()
+            ProfileViewDto rVal = new ProfileViewDto();
+
+            Guid SubscriberGuid = Guid.Empty;
+            if (Guid.TryParse(summarizedProfile.summary.externalId, out SubscriberGuid))
+                 rVal.SubscriberGuid = SubscriberGuid;
+
+
+            // not using linq to make things as speedy as possible 
+            // email address 
+            if (summarizedProfile.summary.emailAddresses != null && summarizedProfile.summary.emailAddresses.Count > 0)
+                rVal.Email = summarizedProfile.summary.emailAddresses[0].emailAddress;
+
+            // phone number 
+            if (summarizedProfile.summary.phoneNumbers != null && summarizedProfile.summary.phoneNumbers.Count > 0)
+                rVal.PhoneNumber = summarizedProfile.summary.phoneNumbers[0].number;
+
+            // first and last names 
+            if (summarizedProfile.summary.personNames != null && summarizedProfile.summary.personNames.Count > 0 )
             {
-                SubscriberGuid = Guid.Parse(summarizedProfile.summary.externalId),
-                Email = summarizedProfile.summary.emailAddresses?.FirstOrDefault().emailAddress,
-                PhoneNumber = summarizedProfile.summary.phoneNumbers?.FirstOrDefault().number,
-                FirstName = summarizedProfile.summary.personNames?.FirstOrDefault().structuredName.givenName,
-                LastName = summarizedProfile.summary.personNames?.FirstOrDefault().structuredName.familyName,
-                Address = summarizedProfile.summary.addresses?.FirstOrDefault().structuredAddress?.addressLines.FirstOrDefault(),
-                PostalCode = summarizedProfile.summary.addresses?.FirstOrDefault().structuredAddress?.postalCode,
-                City = summarizedProfile.summary.addresses?.FirstOrDefault().structuredAddress?.locality,
-                StateCode = summarizedProfile.summary.addresses?.FirstOrDefault().structuredAddress?.administrativeArea
-            };
+                if (summarizedProfile.summary.personNames[0].structuredName != null )
+                {
+                    rVal.FirstName = summarizedProfile.summary.personNames[0].structuredName.givenName;
+                    rVal.LastName = summarizedProfile.summary.personNames[0].structuredName.familyName;
+                }                
+            }
+
+            if (summarizedProfile.summary.addresses != null && summarizedProfile.summary.addresses.Count > 0)
+            {
+                if (summarizedProfile.summary.addresses[0].structuredAddress != null)
+                {
+                    rVal.PostalCode = summarizedProfile.summary.addresses[0].structuredAddress.postalCode;
+                    rVal.City = summarizedProfile.summary.addresses[0].structuredAddress.locality;
+                    rVal.StateCode = summarizedProfile.summary.addresses[0].structuredAddress.administrativeArea;
+
+                    if (summarizedProfile.summary.addresses[0].structuredAddress.addressLines != null && summarizedProfile.summary.addresses[0].structuredAddress.addressLines.Count > 0 )
+                    {
+                        rVal.Address = summarizedProfile.summary.addresses[0].structuredAddress.addressLines[0];
+                    }
+                }
+            }
+
+            
             // add skills 
             rVal.Skills = new List<SkillDto>();
             foreach ( Skill s in summarizedProfile.summary.skills )
@@ -149,6 +179,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                 };
                 rVal.Skills.Add(skillDto);
             }
+      
             // add work history 
             rVal.WorkHistory = new List<SubscriberWorkHistoryDto>();
             foreach ( EmploymentRecord er in summarizedProfile.summary.employmentRecords )
@@ -156,13 +187,14 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                 SubscriberWorkHistoryDto subscriberWorkHistoryDto = new SubscriberWorkHistoryDto()
                 {
                     Company = er.employerName,
-                    StartDate = er.startDate.ToDate(),
-                    EndDate = er.endDate.ToDate(),
+                    StartDate = er.startDate?.ToDate(),
+                    EndDate = er.endDate?.ToDate(),
                     JobDescription = er.jobDescription,
                     Title = er.jobTitle                    
                 };
                 rVal.WorkHistory.Add(subscriberWorkHistoryDto);
             }
+           
             // add education history 
             rVal.EducationHistory = new List<SubscriberEducationHistoryDto>();
             foreach (EducationRecord er in summarizedProfile.summary.educationRecords)
@@ -170,13 +202,21 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                 SubscriberEducationHistoryDto subscriberEducationHistoryDto = new SubscriberEducationHistoryDto()
                 {
                     EducationalInstitution = er.schoolName,
-                    StartDate = er.startDate.ToDate(),
-                    EndDate = er.endDate.ToDate(),
-                     EducationalDegree = er.structuredDegree.degreeName,
+                    StartDate = er.startDate?.ToDate(),
+                    EndDate = er.endDate?.ToDate(),
+                    EducationalDegree = er.structuredDegree?.degreeName,
                     EducationalDegreeType = er.structuredDegree?.fieldsOfStudy.FirstOrDefault()
                  };
                 rVal.EducationHistory.Add(subscriberEducationHistoryDto);
             }
+
+            // map source partner 
+
+            rVal.SourcePartner = Constants.NotSpecifedOption;
+            if (summarizedProfile.summary.customAttributes != null && summarizedProfile.summary.customAttributes.ContainsKey("SourcePartner"))
+                rVal.SourcePartner = summarizedProfile.summary.customAttributes["SourcePartner"].stringValues[0];
+
+            
 
             return rVal;
         }
