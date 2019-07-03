@@ -32,6 +32,7 @@ using static UpDiddyLib.Helpers.Constants;
 using Newtonsoft.Json.Linq;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Data.SqlClient;
+using JobPosting = UpDiddyApi.Models.JobPosting;
 
 namespace UpDiddyApi.Workflow
 {
@@ -41,7 +42,6 @@ namespace UpDiddyApi.Workflow
         ISysEmail _sysEmail;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ISubscriberService _subscriberService;
-
 
         public ScheduledJobs(
             UpDiddyDbContext context,
@@ -1128,6 +1128,40 @@ namespace UpDiddyApi.Workflow
 
         }
 
+        /// <summary>
+        /// Sends email to subscribers who clicked Apply on job posting and did not click submit 
+        /// </summary>
+        /// <returns></returns>
+        public async Task ExecuteJobAbandonmentEmailDelivery()
+        {
+            DateTime currentDate = DateTime.UtcNow.Date;
+            IQueryable<SubscriberAction> subscriberAction = await _repositoryWrapper.SubscriberActionRepository.GetAllAsync();
+
+            //Get list of all subscriber action from today
+            List<SubscriberAction> todaysActions = await subscriberAction
+                .Where(x => x.EntityType.Name == "Job posting" && x.Action.Name == "Apply job" && x.CreateDate.Date == currentDate)
+                .ToListAsync();
+
+            if (todaysActions.Count > 0)
+            {
+                //Create a dictionary that maps each subscriber to corresponding job posting
+                Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = new Dictionary<Subscriber, List<JobPosting>>();
+                var subscribers = todaysActions.Select(x => x.SubscriberId).Distinct().ToList();
+                foreach (int sub in subscribers)
+                {
+                    List<SubscriberAction> actions = todaysActions.Where(x => x.SubscriberId == sub).ToList();
+                    Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByIdAsync(sub);
+                    List<JobPosting> jobPostingList = new List<JobPosting>();
+                    foreach (SubscriberAction action in actions)
+                    {
+                        //TODO: Check if subscriber submitted the application
+                        jobPostingList.Add(await _repositoryWrapper.JobPosting.GetJobPostingById(action.EntityId.Value));
+                    }
+                    subscribersToJobPostingMapping.Add(subscriber, jobPostingList);
+                }
+            }
+        }
+      
         #endregion
 
         #region CareerCircle  Helper Functions
@@ -1200,6 +1234,27 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
+        private async Task SendJobAbandonmentEmail(Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping)
+        {
+            foreach (KeyValuePair<Subscriber, List<JobPosting>> entry in subscribersToJobPostingMapping)
+            {
+                dynamic templateData = new JObject();
+                templateData.firstName = entry.Key.FirstName;
+                templateData.lastName = entry.Key.LastName;
+                templateData.jobTitles = entry.Value.Select(x => new { x.Title }).ToList();
+                //TODO - Populate suggested jobs
+                //templateData.suggestedJobs = entry.Value.Select(x => new { x.Title }).ToList();
+                _sysEmail.SendTemplatedEmailAsync(
+                         entry.Key.Email,
+                         _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert"],
+                         templateData,
+                         SendGridAccount.Transactional,
+                         null,
+                         null);
+            }
+        }
+
+
         #endregion
 
         #region Cloud Talent
@@ -1224,9 +1279,6 @@ namespace UpDiddyApi.Workflow
             ct.DeleteJobFromCloudTalent(_db, jobPostingGuid);
             return true;
         }
-
-
-
 
         #endregion
 

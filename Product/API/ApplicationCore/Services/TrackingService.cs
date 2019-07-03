@@ -35,7 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             SubscriberAction subAction = new SubscriberAction()
             {
                 IsDeleted = 0,
-                CreateDate = DateTime.Now,
+                CreateDate = DateTime.UtcNow,
                 ModifyDate = null,
                 Action = action,
                 CreateGuid = Guid.Empty,
@@ -44,7 +44,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 EntityType = entityType,
                 EntityId = jobPosting.JobPostingId,
                 ModifyGuid = null,
-                OccurredDate = DateTime.Now
+                OccurredDate = DateTime.UtcNow
             };
             _repositoryWrapper.SubscriberActionRepository.Create(subAction);
             await _repositoryWrapper.SubscriberActionRepository.SaveAsync();

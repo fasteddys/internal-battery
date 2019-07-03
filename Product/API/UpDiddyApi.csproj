@@ -83,6 +83,7 @@
 
   <ItemGroup>
     <Folder Include="Connected Services\" />
+    <Folder Include="Messaging\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>

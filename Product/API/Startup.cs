@@ -202,6 +202,9 @@ namespace UpDiddyApi
 
             // kick off the metered welcome email delivery process at five minutes past the hour every hour
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
+      
+            // kick off the job abandonment email delivery process
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteJobAbandonmentEmailDelivery(), Cron.Minutely);
 
             // Add Polly 
             // Create Policies  
@@ -254,6 +257,7 @@ namespace UpDiddyApi
             services.AddScoped<IReportingService, ReportingService>();
             services.AddScoped<IJobService, JobService>();
             services.AddScoped<ITrackingService, TrackingService>();
+
 
             #endregion
 
