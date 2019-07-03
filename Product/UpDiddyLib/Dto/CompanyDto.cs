@@ -10,5 +10,6 @@ namespace UpDiddyLib.Dto
         public Guid CompanyGuid { get; set; }
         public string CompanyName { get; set; }
         public string JobPageBoilerplate { get; set; }
+        public string LogoUrl { get; set; }
     }
 }
