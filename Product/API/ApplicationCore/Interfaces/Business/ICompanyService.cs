@@ -9,5 +9,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface ICompanyService
     {
         Task<List<CompanyDto>> GetCompaniesAsync();
+        Task AddCompanyAsync(CompanyDto companyDto);
+        Task EditCompanyAsync(CompanyDto companyDto);
+        Task DeleteCompanyAsync(Guid companyGuid);
     }
 }

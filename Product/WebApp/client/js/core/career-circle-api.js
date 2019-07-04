@@ -212,6 +212,22 @@
         return await _http.delete(`/job/alert/${jobPostingAlertGuid}`);
     }
 
+    var getCompanies = async function () {
+        return await _http.get('/companies');
+    }
+
+    var addCompany = async function (companyObj) {
+        return await _http.post('/company/add', JSON.stringify(companyObj));
+    }
+
+    var editCompany = async function (companyObj) {
+        return await _http.post('/company/edit', JSON.stringify(companyObj));
+    }
+
+    var deleteCompany = async function (companyGuid) {
+        return await _http.delete('/company/delete/'+companyGuid);
+    }
+
      
     return {
         getProfile: getProfile,
@@ -232,7 +248,11 @@
         removeAvatar: removeAvatar,
         getResumeParseMergeQuestionnaire: getResumeParseMergeQuestionnaire,
         addJobAlert: addJobAlert,
-        deleteJobAlert: deleteJobAlert
+        deleteJobAlert: deleteJobAlert,
+        getCompanies: getCompanies,
+        addCompany: addCompany,
+        editCompany: editCompany,
+        deleteCompany: deleteCompany
     };
     
 })(API_URL);

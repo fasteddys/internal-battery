@@ -1,10 +1,15 @@
-﻿@using UpDiddy.ViewModels;
+﻿@*@using UpDiddy.ViewModels;*@
 @using React.AspNet;
-@model CompaniesViewModel
+@*@model CompaniesViewModel*@
 
 @Html.Partial("Admin/_AdminNavigation")
-<div>
-    @Html.React("CompaniesGrid", new { data = Model.Companies })
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            @Html.React("CompaniesGrid",new { })
+        </div>   
+    </div>
 </div>
+
 
 

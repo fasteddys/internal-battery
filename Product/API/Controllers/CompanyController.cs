@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Controllers
 {
@@ -43,8 +44,44 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpPost]
         [Route("api/company/add")]
-        public async Task AddCompanyAsync()
+        public async Task<IActionResult> AddCompanyAsync([FromBody]CompanyDto company)
         {
+            await _companyService.AddCompanyAsync(company);
+            return Ok();
+        }
+
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [HttpPost]
+        [Route("api/company/edit")]
+        public async Task<IActionResult> EditCompanyAsync([FromBody]CompanyDto company)
+        {
+            if(ModelState.IsValid && company != null && company.CompanyGuid!=Guid.Empty)
+            {
+                await _companyService.EditCompanyAsync(company);
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+
+        }
+
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [HttpDelete]
+        [Route("api/company/delete/{companyGuid}")]
+        public async Task<IActionResult> DeleteCompanyAsync(Guid companyGuid)
+        {
+            //Guid guid=Guid.Parse(companyGuid);
+            if (ModelState.IsValid && companyGuid != Guid.Empty)
+            {
+                await _companyService.DeleteCompanyAsync(companyGuid);
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
 
         }
     }
