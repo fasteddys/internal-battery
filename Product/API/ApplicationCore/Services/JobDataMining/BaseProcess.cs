@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +13,14 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
         protected JobSite _jobSite;
         protected internal ILogger _syslog = null;
         protected Guid _companyGuid = Guid.Empty;
+        protected IConfiguration _configuration;
 
-        public BaseProcess(JobSite jobSite, ILogger logger, Guid companyGuid)
+        public BaseProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration configuration)
         {
             _syslog = logger;
             _jobSite = jobSite;
             _companyGuid = companyGuid;
+            _configuration = configuration;
         }
     }
 }

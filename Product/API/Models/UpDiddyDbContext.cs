@@ -169,6 +169,7 @@ namespace UpDiddyApi.Models
 
         public DbSet<ResumeParseResult> ResumeParseResult { get; set; }
 
+        public DbSet<CampaignPartner> CampaignPartner { get; set; }
 
         #region DBQueries
 
@@ -179,11 +180,29 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberSearch> SubscriberSearch { get; set; }
         public DbQuery<v_RecruiterSubscriberActions> RecruiterSubscriberActions { get; set; }
         public DbQuery<v_SubscriberOfferActions> SubscriberOfferActions { get; set; }
+        public DbQuery<v_ThrottledLeadEmailDelivery> ThrottledLeadEmailDelivery { get; set; }
 
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {   
+        {
+            modelBuilder
+                .Query<v_ThrottledLeadEmailDelivery>()
+                .ToView("v_ThrottledLeadEmailDelivery");
+
+            modelBuilder.Entity<CampaignPartner>()
+                .Property(cp => cp.EmailSubAccountId)
+                .HasMaxLength(100)
+                .IsRequired(true);
+
+            modelBuilder.Entity<CampaignPartner>()
+                .Property(cp => cp.EmailTemplateId)
+                .HasMaxLength(50)
+                .IsRequired(true);
+
+            modelBuilder.Entity<CampaignPartner>()
+                .Property(cp => cp.IsUseSeedEmails)
+                .HasDefaultValueSql("0");
 
             modelBuilder.Entity<JobPostingAlert>()
                 .Property(a => a.Frequency)
@@ -417,6 +436,7 @@ namespace UpDiddyApi.Models
                 .HasForeignKey(sn => sn.RecruiterId);
 
             modelBuilder.Entity<Notification>().HasQueryFilter(n => n.IsDeleted == 0 && (n.ExpirationDate > DateTime.UtcNow || n.ExpirationDate == null));
+            modelBuilder.Entity<SubscriberFile>().HasQueryFilter(n => n.IsDeleted == 0);
 
 
         }

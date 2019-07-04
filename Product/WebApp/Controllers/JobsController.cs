@@ -153,13 +153,12 @@ namespace UpDiddy.Controllers
             try
             {
                 job = await _api.GetJobAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.View));
+
                 if (job.JobStatus == (int)JobPostingStatus.Draft)
                 {
                     BasicResponseDto ResponseDto = new BasicResponseDto() { StatusCode = 401, Description = "Draft jobs cannot be viewed" };
                     throw new ApiException(new System.Net.Http.HttpResponseMessage(), ResponseDto);
                 }
-
-
             }
             catch (ApiException e)
             {
@@ -254,9 +253,6 @@ namespace UpDiddy.Controllers
             {
                 SimilarJobsFavorites = await _api.JobFavoritesByJobGuidAsync(SimilarJobsFavoritesGuids);
             }
-             
-
-
 
             JobViewDto JobToBeRemoved = null;
 
@@ -293,8 +289,9 @@ namespace UpDiddy.Controllers
                 SimilarJobsSearchResult = job.SimilarJobs,
                 City = job.City,
                 Province = job.Province,
-                SimilarJobsFavorites = SimilarJobsFavorites
-            };
+                SimilarJobsFavorites = SimilarJobsFavorites,
+                LogoUrl = job?.Company?.LogoUrl != null ? _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + job.Company.LogoUrl : string.Empty
+        };
 
             // Display subscriber info if it exists
             if (job.Recruiter.Subscriber != null)

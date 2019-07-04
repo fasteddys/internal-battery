@@ -13,5 +13,7 @@ namespace UpDiddyApi.Models
         public virtual PartnerContact PartnerContact { get; set; }
         public Guid? CampaignPartnerContactGuid { get; set; }
         public string TinyId { get; set; }
+        public bool? IsEmailSent { get; set; }
+        public DateTime? EmailDeliveryDate { get; set; }
     }
 }

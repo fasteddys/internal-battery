@@ -87,13 +87,15 @@ namespace UpDiddyLib.Helpers
             public static readonly string SendGrid_Transactional_ApiKey = "SysEmail:Transactional:ApiKey";
             public static readonly string SendGrid_Leads_ApiKey = "SysEmail:Leads:ApiKey";
             public static readonly string SendGrid_Marketing_ApiKey = "SysEmail:Marketing:ApiKey";
+            public static readonly string SendGrid_InternalLeads_ApiKey = "SysEmail:InternalLeads:ApiKey";
         }
 
         public enum SendGridAccount
         {
             Transactional,
             Marketing,
-            Leads
+            Leads,
+            InternalLeads
         }
 
         public static class CMS
