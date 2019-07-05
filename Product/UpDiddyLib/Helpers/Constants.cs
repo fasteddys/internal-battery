@@ -110,5 +110,13 @@ namespace UpDiddyLib.Helpers
             public static readonly string META_DESCRIPTION = "meta_description";
             public static readonly string META_KEYWORDS = "meta_keywords";
         }
+
+        public static class CrossReference
+        {
+            public static class Group
+            {
+                public static readonly string WOZ_STUDENT = "Woz Student";
+            }
+        }
     }
 }

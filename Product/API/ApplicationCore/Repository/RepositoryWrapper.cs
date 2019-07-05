@@ -33,6 +33,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IResumeParseRepository _resumeParseRepository;
         private IResumeParseResultRepository _resumeParseResultRepository;
         private IPartnerReferrerRepository _partnerReferrerRepository;
+        private IGroupPartnerRepository _groupPartnerRepository;
+        private ISubscriberGroupRepository _subscriberGroupRepository;
+        private IGroupRepository _groupRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -329,6 +332,42 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _partnerReferrerRepository = new PartnerReferrerRepository(_dbContext);
                 }
                 return _partnerReferrerRepository;
+            }
+        }
+
+        public IGroupPartnerRepository GroupPartnerRepository
+        {
+            get
+            {
+                if (_groupPartnerRepository == null)
+                {
+                    _groupPartnerRepository = new GroupPartnerRepository(_dbContext);
+                }
+                return _groupPartnerRepository;
+            }
+        }
+
+        public ISubscriberGroupRepository SubscriberGroupRepository
+        {
+            get
+            {
+                if (_subscriberGroupRepository == null)
+                {
+                    _subscriberGroupRepository = new SubscriberGroupRepository(_dbContext);
+                }
+                return _subscriberGroupRepository;
+            }
+        }
+
+        public IGroupRepository GroupRepository
+        {
+            get
+            {
+                if (_groupRepository == null)
+                {
+                    _groupRepository = new GroupRepository(_dbContext);
+                }
+                return _groupRepository;
             }
         }
     }

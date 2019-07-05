@@ -817,6 +817,9 @@ namespace UpDiddyApi.Controllers
 
             var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
 
+            
+            
+
             // use transaction to verify that both changes 
             using (var transaction = _db.Database.BeginTransaction())
             {
@@ -824,6 +827,35 @@ namespace UpDiddyApi.Controllers
                 {
                     _db.Add(subscriber);
                     await _db.SaveChangesAsync();
+
+
+                    IList<PartnerReferrer> partnerReferrers = _repositoryWrapper.PartnerReferrerRepository
+                        .GetByConditionAsync(pr => pr.Path.Equals(referer)).Result.ToList();
+
+
+                    foreach (PartnerReferrer partnerReferrer in partnerReferrers)
+                    {
+                        IList<GroupPartner> groupPartners = _repositoryWrapper.GroupPartnerRepository
+                            .GetByConditionAsync(gp => gp.PartnerId == partnerReferrer.PartnerId).Result.ToList();
+
+                        foreach (GroupPartner groupPartner in groupPartners)
+                        {
+                            DateTime currentDateTime = DateTime.UtcNow;
+                            SubscriberGroup subscriberGroup = new SubscriberGroup
+                            {
+                                CreateDate = currentDateTime,
+                                GroupId = groupPartner.GroupId,
+                                SubscriberId = subscriber.SubscriberId,
+                                ModifyDate = currentDateTime,
+                                SubscriberGroupGuid = Guid.NewGuid()
+                            };
+                            _repositoryWrapper.SubscriberGroupRepository.Create(subscriberGroup);
+                            await _repositoryWrapper.SubscriberGroupRepository.SaveAsync();
+                        }
+                    }
+
+
+
                     SubscriberProfileStagingStore store = new SubscriberProfileStagingStore()
                     {
                         CreateDate = DateTime.UtcNow,

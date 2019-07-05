@@ -35,5 +35,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IResumeParseRepository ResumeParseRepository { get; }
         IResumeParseResultRepository ResumeParseResultRepository { get; }
         IPartnerReferrerRepository PartnerReferrerRepository { get; }
+        IGroupPartnerRepository GroupPartnerRepository { get; }
+        IGroupRepository GroupRepository { get; }
+        ISubscriberGroupRepository SubscriberGroupRepository { get; }
     }
 }
