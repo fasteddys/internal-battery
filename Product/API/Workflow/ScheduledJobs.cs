@@ -33,6 +33,7 @@ using Newtonsoft.Json.Linq;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Data.SqlClient;
 using JobPosting = UpDiddyApi.Models.JobPosting;
+using UpDiddyApi.Helpers;
 
 namespace UpDiddyApi.Workflow
 {
@@ -42,7 +43,8 @@ namespace UpDiddyApi.Workflow
         ISysEmail _sysEmail;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ISubscriberService _subscriberService;
-
+        private readonly IJobPostingService _jobPostingService;
+        private readonly ITrackingService _trackingService;
         public ScheduledJobs(
             UpDiddyDbContext context,
             IMapper mapper,
@@ -55,7 +57,9 @@ namespace UpDiddyApi.Workflow
             IDistributedCache distributedCache,
             ICloudStorage cloudStorage,
             IRepositoryWrapper repositoryWrapper,
-            ISubscriberService subscriberService
+            ISubscriberService subscriberService,
+            IJobPostingService jobPostingService,
+            ITrackingService trackingService           
            )
         {
             _db = context;
@@ -70,8 +74,10 @@ namespace UpDiddyApi.Workflow
             _hub = hub;
             _cache = distributedCache;
             _sysEmail = sysEmail;
+            _trackingService = trackingService;
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = subscriberService;
+            _jobPostingService = jobPostingService;
         }
 
         #region Marketing
@@ -1134,34 +1140,28 @@ namespace UpDiddyApi.Workflow
         /// <returns></returns>
         public async Task ExecuteJobAbandonmentEmailDelivery()
         {
-            DateTime currentDate = DateTime.UtcNow.Date;
-            IQueryable<SubscriberAction> subscriberAction = await _repositoryWrapper.SubscriberActionRepository.GetAllAsync();
-
-            //Get list of all subscriber action from today
-            List<SubscriberAction> todaysActions = await subscriberAction
-                .Where(x => x.EntityType.Name == "Job posting" && x.Action.Name == "Apply job" && x.CreateDate.Date == currentDate)
-                .ToListAsync();
-
-            if (todaysActions.Count > 0)
+            try
             {
-                //Create a dictionary that maps each subscriber to corresponding job posting
-                Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = new Dictionary<Subscriber, List<JobPosting>>();
-                var subscribers = todaysActions.Select(x => x.SubscriberId).Distinct().ToList();
-                foreach (int sub in subscribers)
+                Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = await _trackingService.GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime.UtcNow);
+                foreach (KeyValuePair<Subscriber, List<JobPosting>> entry in subscribersToJobPostingMapping)
                 {
-                    List<SubscriberAction> actions = todaysActions.Where(x => x.SubscriberId == sub).ToList();
-                    Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByIdAsync(sub);
-                    List<JobPosting> jobPostingList = new List<JobPosting>();
-                    foreach (SubscriberAction action in actions)
-                    {
-                        //TODO: Check if subscriber submitted the application
-                        jobPostingList.Add(await _repositoryWrapper.JobPosting.GetJobPostingById(action.EntityId.Value));
-                    }
-                    subscribersToJobPostingMapping.Add(subscriber, jobPostingList);
+                    List<JobPosting> similarJobs = await _jobPostingService.GetSimilarJobPostingsAsync(entry.Value[0]);
+                    dynamic template = SendGridHelper.GenerateJobAbandonementEmailTemplate(entry, similarJobs, _configuration["CareerCircle:ViewJobPostingUrl"]);   
+                    bool result = await _sysEmail.SendTemplatedEmailAsync(
+                              entry.Key.Email,
+                              _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert"],
+                              template,
+                              SendGridAccount.Transactional,
+                              null,
+                              null);
                 }
             }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobAbandonmentEmailDelivery encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
         }
-      
+
         #endregion
 
         #region CareerCircle  Helper Functions
@@ -1236,22 +1236,7 @@ namespace UpDiddyApi.Workflow
 
         private async Task SendJobAbandonmentEmail(Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping)
         {
-            foreach (KeyValuePair<Subscriber, List<JobPosting>> entry in subscribersToJobPostingMapping)
-            {
-                dynamic templateData = new JObject();
-                templateData.firstName = entry.Key.FirstName;
-                templateData.lastName = entry.Key.LastName;
-                templateData.jobTitles = entry.Value.Select(x => new { x.Title }).ToList();
-                //TODO - Populate suggested jobs
-                //templateData.suggestedJobs = entry.Value.Select(x => new { x.Title }).ToList();
-                _sysEmail.SendTemplatedEmailAsync(
-                         entry.Key.Email,
-                         _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert"],
-                         templateData,
-                         SendGridAccount.Transactional,
-                         null,
-                         null);
-            }
+           
         }
 
 

@@ -1,4 +1,5 @@
 ﻿using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +15,49 @@ namespace UpDiddyApi.ApplicationCore.Services
     public class TrackingService : ITrackingService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly IJobApplicationService _jobApplicationService;
 
-        public TrackingService(IRepositoryWrapper repositoryWrapper)
+        public TrackingService(IRepositoryWrapper repositoryWrapper, IJobApplicationService jobApplicationService)
         {
             _repositoryWrapper = repositoryWrapper;
+            _jobApplicationService = jobApplicationService;
+        }
+
+
+        /// <summary>
+        /// Gets a mapping of subscribers and list of jobs the subscriber clicked apply to but not submitted at a given date and time
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        public async Task<Dictionary<Subscriber, List<JobPosting>>> GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime date)
+        {
+            IQueryable<SubscriberAction> subscriberAction = await _repositoryWrapper.SubscriberActionRepository.GetAllAsync();           
+            List<SubscriberAction> todaysActions = await subscriberAction
+                .Where(x => x.EntityType.Name == UpDiddyLib.Helpers.Constants.EventType.JobPosting && x.Action.Name == UpDiddyLib.Helpers.Constants.Action.ApplyJob && x.CreateDate.Date == date.Date)
+                .ToListAsync();
+            Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = new Dictionary<Subscriber, List<JobPosting>>();
+            if (todaysActions.Count > 0)
+            {
+                var subscribers = todaysActions.Select(x => x.SubscriberId).Distinct().ToList();
+                foreach (int sub in subscribers)
+                {
+                    List<SubscriberAction> actions = todaysActions.Where(x => x.SubscriberId == sub).ToList();
+                    Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByIdAsync(sub);
+                    List<JobPosting> jobPostingList = new List<JobPosting>();
+                    foreach (SubscriberAction action in actions)
+                    {
+                        //Check if subscriber has not submitted the application
+                        bool isSubmitted = await _jobApplicationService.IsSubscriberAppliedToJobPosting(subscriber.SubscriberId, action.EntityId.Value);
+                        if (!isSubmitted)
+                        {
+                            JobPosting jobPost = await _repositoryWrapper.JobPosting.GetJobPostingById(action.EntityId.Value);
+                            jobPostingList.Add(jobPost);
+                        }
+                    }
+                    subscribersToJobPostingMapping.Add(subscriber, jobPostingList);
+                }
+            }
+            return subscribersToJobPostingMapping;
         }
 
         /// <summary>
@@ -26,7 +66,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <param name="jobGuid"></param>
         /// <param name="subscriberGuid"></param>
         /// <returns></returns>
-        public async Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid)
+        public async Task RecordSubscriberApplyActionAsync(Guid jobGuid, Guid subscriberGuid)
         {
             JobPosting jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(jobGuid);
             Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.ApplyJob);

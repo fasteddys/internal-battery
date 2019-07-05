@@ -9,8 +9,8 @@ using Microsoft.AspNet.OData.Query;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
-    public interface IJobPostingService
+    public interface IJobApplicationService
     {
-        Task<List<JobPosting>> GetSimilarJobPostingsAsync(JobPosting jobPosting);
+        Task<bool> IsSubscriberAppliedToJobPosting(int subscriberId, int jobPostingId);
     }
 }

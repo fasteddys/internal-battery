@@ -168,7 +168,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/record-subscriber-apply-action/{jobGuid}/{subscriberGuid}")]
         public async Task RecordSubscriberAction(Guid jobGuid, Guid subscriberGuid)
         {
-            await _trackingService.RecordSubscriberApplyAction(jobGuid, subscriberGuid);
+            await _trackingService.RecordSubscriberApplyActionAsync(jobGuid, subscriberGuid);
         }
     }
 }

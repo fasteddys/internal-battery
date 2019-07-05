@@ -257,6 +257,8 @@ namespace UpDiddyApi
             services.AddScoped<IReportingService, ReportingService>();
             services.AddScoped<IJobService, JobService>();
             services.AddScoped<ITrackingService, TrackingService>();
+            services.AddScoped<IJobPostingService, JobPostingService>();
+            services.AddScoped<IJobApplicationService, JobApplicationService>();
 
 
             #endregion
