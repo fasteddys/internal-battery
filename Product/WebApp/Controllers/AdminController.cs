@@ -1,4 +1,11 @@
-﻿using System;
+﻿using CsvHelper;
+using CsvHelper.Configuration;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,13 +13,6 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using CsvHelper;
-using CsvHelper.Configuration;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
@@ -586,20 +586,8 @@ namespace UpDiddy.Controllers
         [HttpGet("/[controller]/companies")]
         public IActionResult GetCompanies()
         {
-            //var companies=await _api.GetAllCompaniesAsync();
-
-            // CompaniesViewModel companiesViewModel = new CompaniesViewModel()
-            // {
-            //     Companies = companies
-            // };
-            // return View("Companies", companiesViewModel);
             return View("Companies");
         }
-        //public async Task<IActionResult> AddCompany()
-        //{
-
-        //    return Ok();
-        //}
         #endregion
     }
 }

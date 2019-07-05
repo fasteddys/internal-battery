@@ -1667,29 +1667,5 @@ namespace UpDiddy.Api
             return await GetAsync<BasicResponseDto>("job/active-job-count");
         }
         #endregion
-
-        #region Company
-        public async Task<IList<CompanyDto>> GetAllCompaniesAsync()
-        {
-            //string cacheKey = $"GetAllCompanies";
-            //IList<CompanyDto> rval = GetCachedValue<IList<CompanyDto>>(cacheKey);
-            //if (rval != null)
-            //    return rval;
-            //else
-            //{
-            //    rval = await _GetAllCompaniesAsync();
-            //    SetCachedValue<IList<CompanyDto>>(cacheKey, rval);
-            //}
-
-            //return rval;
-
-            return await GetAsync<IList<CompanyDto>>("companies");
-        }
-
-        private async Task<IList<CompanyDto>> _GetAllCompaniesAsync()
-        {
-            return await GetAsync<IList<CompanyDto>>("companies");
-        }
-        #endregion
     }
 }

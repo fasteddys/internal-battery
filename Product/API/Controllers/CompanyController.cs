@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Controllers
 {
-    
-    //[ApiController]
     public class CompanyController : ControllerBase
     {
         private readonly ILogger _logger;
@@ -32,13 +30,14 @@ namespace UpDiddyApi.Controllers
             try
             {
                 var companies=await _companyService.GetCompaniesAsync();
+
                 return Ok(companies);
             }
             catch (Exception ex)
             {
-                
+                _logger.Log(LogLevel.Error, $"CompanyController.CompaniesAsync : Error occured when retrieving companies with message={ex.Message}", ex);
+                return StatusCode(500);
             }
-            return BadRequest();
         }
 
         [Authorize(Policy = "IsCareerCircleAdmin")]
@@ -46,23 +45,39 @@ namespace UpDiddyApi.Controllers
         [Route("api/company/add")]
         public async Task<IActionResult> AddCompanyAsync([FromBody]CompanyDto company)
         {
-            await _companyService.AddCompanyAsync(company);
-            return Ok();
+            try
+            {
+                await _companyService.AddCompanyAsync(company);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"CompanyController.AddCompanyAsync : Error occured when adding company with message={ex.Message}", ex);
+                return StatusCode(500);
+            }
         }
 
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpPost]
-        [Route("api/company/edit")]
-        public async Task<IActionResult> EditCompanyAsync([FromBody]CompanyDto company)
+        [Route("api/company/update")]
+        public async Task<IActionResult> UpdateCompanyAsync([FromBody]CompanyDto company)
         {
-            if(ModelState.IsValid && company != null && company.CompanyGuid!=Guid.Empty)
+            try
             {
-                await _companyService.EditCompanyAsync(company);
-                return Ok();
+                if (ModelState.IsValid && company != null && company.CompanyGuid != Guid.Empty)
+                {
+                    await _companyService.EditCompanyAsync(company);
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest();
+                _logger.Log(LogLevel.Error, $"CompanyController.UpdateCompanyAsync : Error occured when updating company with message={ex.Message}", ex);
+                return StatusCode(500);
             }
 
         }
@@ -72,15 +87,22 @@ namespace UpDiddyApi.Controllers
         [Route("api/company/delete/{companyGuid}")]
         public async Task<IActionResult> DeleteCompanyAsync(Guid companyGuid)
         {
-            //Guid guid=Guid.Parse(companyGuid);
-            if (ModelState.IsValid && companyGuid != Guid.Empty)
+            try
             {
-                await _companyService.DeleteCompanyAsync(companyGuid);
-                return Ok();
+                if (ModelState.IsValid && companyGuid != Guid.Empty)
+                {
+                    await _companyService.DeleteCompanyAsync(companyGuid);
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest();
+                _logger.Log(LogLevel.Error, $"CompanyController.DeleteCompanyAsync : Error occured when deleting company with message={ex.Message}", ex);
+                return StatusCode(500);
             }
 
         }

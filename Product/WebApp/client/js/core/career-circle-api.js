@@ -221,7 +221,7 @@
     }
 
     var editCompany = async function (companyObj) {
-        return await _http.post('/company/edit', JSON.stringify(companyObj));
+        return await _http.post('/company/update', JSON.stringify(companyObj));
     }
 
     var deleteCompany = async function (companyGuid) {

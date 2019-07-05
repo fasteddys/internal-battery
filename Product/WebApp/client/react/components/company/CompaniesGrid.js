@@ -221,7 +221,14 @@ class CompaniesGrid extends React.PureComponent {
     }
 
     validateAddChanges(data) {
-        if (data != undefined && data != null && data.CompanyName != undefined && data.CompanyName !=null && data.CompanyName !='') {
+        const { rows } = this.state;
+        if (data != undefined && data != null && data.CompanyName != undefined && data.CompanyName != null && data.CompanyName != '') {
+            var existingCompanies = rows.filter(x => x.CompanyName.toLowerCase() == data.CompanyName.toLowerCase());
+            if (existingCompanies.length > 0) {
+                this.invalidAddedRows = this.invalidAddedRows.concat(data); 
+                ToastService.error('Company already exist.');
+                return false;
+            }
             return true;         
         }
         else {
@@ -230,8 +237,26 @@ class CompaniesGrid extends React.PureComponent {
         }
     }
 
-    validateEditChanges(rowChanged,editedCompany) {
-        if (editedCompany != undefined && editedCompany != null && editedCompany.CompanyName != undefined && editedCompany.CompanyName != null && editedCompany.CompanyName != '') {
+    validateEditChanges(rowChanged, editedCompany) {
+        const { rows } = this.state;
+        if (editedCompany != undefined && editedCompany != null) {
+
+            if (editedCompany.CompanyName == undefined && editedCompany.CompanyName == null) {
+                return true;
+            } else if (editedCompany.CompanyName != '') {
+                var existingCompanies = rows.filter(x => x.CompanyName.toLowerCase() == editedCompany.CompanyName.toLowerCase());
+                if (existingCompanies.length > 0) {
+                    this.invalidEditedRowIds = this.invalidEditedRowIds.concat(parseInt(rowChanged));
+                    ToastService.error('Company already exist.');
+                    return false;
+                }
+                return true;
+            }
+            
+            else {
+                    this.invalidEditedRowIds = this.invalidEditedRowIds.concat(parseInt(rowChanged));
+                    return false;
+            }
             return true;
         }
         else {
@@ -263,6 +288,7 @@ class CompaniesGrid extends React.PureComponent {
                 CareerCircleAPI.addCompany(newCompany)
                     .then((res) => {
                         this.setState({ loading: true, rows: [] });
+                        ToastService.success('Company added successfully.');
                         this.getCompanies();
                     })
                     .catch(() => ToastService.error('An error occured while adding a new company.'))
@@ -278,15 +304,14 @@ class CompaniesGrid extends React.PureComponent {
                     IsHiringAgency: changed[changedRowId].IsHiringAgency == undefined ? unchangedRowData.IsHiringAgency : changed[changedRowId].IsHiringAgency,
                     IsJobPoster: changed[changedRowId].IsJobPoster == undefined ? unchangedRowData.IsJobPoster : changed[changedRowId].IsJobPoster
                 }
-                //if (this.validateEditChanges(changedRowId, company)) {
                     CareerCircleAPI.editCompany(company)
                         .then((res) => {
                             this.setState({ loading: true, rows: [] });
+                            ToastService.success('Company updated successfully.');
                             this.getCompanies();
                         })
                         .catch(() => ToastService.error('An error occured while updating the company.'))
 
-                //}
             }
                 
         }
@@ -299,6 +324,7 @@ class CompaniesGrid extends React.PureComponent {
             CareerCircleAPI.deleteCompany(companyGuid)
                 .then((res) => {
                     this.setState({ loading: true, rows: [] });
+                    ToastService.success('Company deleted successfully.');
                     this.getCompanies();
                 })
                 .catch(() => ToastService.error('An error occured while deleting the company.'))

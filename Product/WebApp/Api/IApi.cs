@@ -159,8 +159,5 @@ namespace UpDiddy.Api
         #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
-        #region Company
-        Task<IList<CompanyDto>> GetAllCompaniesAsync();
-        #endregion
     }
 }
