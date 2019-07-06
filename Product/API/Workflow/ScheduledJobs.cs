@@ -1143,17 +1143,40 @@ namespace UpDiddyApi.Workflow
             try
             {
                 Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = await _trackingService.GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime.UtcNow);
+                string jobPostingUrl = _configuration["CareerCircle:ViewJobPostingUrl"];
+                dynamic recruiterTemplate = new JObject();
                 foreach (KeyValuePair<Subscriber, List<JobPosting>> entry in subscribersToJobPostingMapping)
                 {
-                    List<JobPosting> similarJobs = await _jobPostingService.GetSimilarJobPostingsAsync(entry.Value[0]);
-                    dynamic template = SendGridHelper.GenerateJobAbandonementEmailTemplate(entry, similarJobs, _configuration["CareerCircle:ViewJobPostingUrl"]);   
+                    List< JobPosting> similarJobs = await _jobPostingService.GetSimilarJobPostingsAsync(entry.Value[0]);
+                        
+                    //Remove duplicates from similar job
+                    foreach (var job in entry.Value)
+                    {
+                        similarJobs.RemoveAll(x => x.JobPostingId == job.JobPostingId);
+                    }
+
+                    //Send email to subscriber
                     bool result = await _sysEmail.SendTemplatedEmailAsync(
                               entry.Key.Email,
                               _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert"],
-                              template,
+                              SendGridHelper.GenerateJobAbandonementEmailTemplate(entry, similarJobs, jobPostingUrl),
                               SendGridAccount.Transactional,
                               null,
                               null);
+                }
+                //Send emails out to recruiters
+                var VipEmails = _configuration.GetSection("SysEmail:VIPEmails").GetChildren();
+                List<string> recruiterEmails = VipEmails.Select(x => x.Value).ToList();
+                recruiterTemplate = SendGridHelper.GenerateJobAbandonmentRecruiterTemplate(subscribersToJobPostingMapping, jobPostingUrl);
+                foreach (string email in recruiterEmails)
+                {
+                    await _sysEmail.SendTemplatedEmailAsync(
+                          email,
+                          _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert-Recruiter"],
+                          SendGridHelper.GenerateJobAbandonmentRecruiterTemplate(subscribersToJobPostingMapping, jobPostingUrl),
+                          SendGridAccount.Transactional,
+                          null,
+                          null);
                 }
             }
             catch (Exception e)

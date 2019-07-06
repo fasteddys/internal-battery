@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
@@ -15,19 +16,56 @@ namespace UpDiddyApi.Helpers
             dynamic templateData = new JObject();
             templateData.firstName = pair.Key.FirstName;
             templateData.lastName = pair.Key.LastName;
-            templateData.jobTitles = JArray.FromObject(pair.Value.Select(x => x.Title).ToList());
+            templateData.abandonedJobs = JArray.FromObject(pair.Value.Select(j => new
+            {
+                title = j.Title,
+                location = $"{j.City}, {j.Province}, {j.Country}",
+                posted = j.PostingDateUTC.ToShortDateString(),
+                url = ViewJobPostingUrl + j.JobPostingGuid
+            }).ToList());
             if (similarJobs.Count > 0)
             {
                 templateData.showSimilarJobs = true;
+                templateData.SimilarJobCount = similarJobs.Count;
                 templateData.jobs = JArray.FromObject(similarJobs.Select(j => new
                 {
                     title = j.Title,
-                    summary = j.Description.Length <= 250 ? j.Description : j.Description.Substring(0, 250) + "...",
                     location = $"{j.City}, {j.Province}, {j.Country}",
                     posted = j.PostingDateUTC.ToShortDateString(),
                     url = ViewJobPostingUrl + j.JobPostingGuid
                 }).ToList());
             }
+            return templateData;
+        }
+
+        public static dynamic GenerateJobAbandonmentRecruiterTemplate(Dictionary<Subscriber, List<JobPosting>> pair, string jobPostingUrl)
+        {
+            dynamic templateData = new JObject();
+            templateData.abandonedJob = JArray.FromObject(pair.Select(j => new
+            {
+                subscriber = new
+                {
+                    firstName = j.Key.FirstName,
+                    lastName =j.Key.LastName,
+                    subscriberid = j.Key.SubscriberId,
+                    email = j.Key.Email,
+                    state = j.Key.State.Name,
+                    city = j.Key.City,
+                    phoneNumber = j.Key.PhoneNumber
+                },
+                jobAbandoned = JArray.FromObject(j.Value
+                .Select(x => new
+                {
+                    title = x.Title,
+                    postingDate = x.PostingDateUTC.ToShortDateString(),
+                    jobUrl = jobPostingUrl + x.JobPostingGuid,
+                    city = x.City,
+                    province = x.Province,
+                    country = x.Country,
+
+                }))
+                 .ToArray()
+            }).ToList());
             return templateData;
         }
     }

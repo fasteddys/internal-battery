@@ -27,9 +27,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             IQueryable<JobPosting> allJobPostings = await _repositoryWrapper.JobPosting.GetAllAsync();
             return await allJobPostings
                 .Where(x => x.Title.ToLower()
-                .Contains(jobPost.Title) && x.Province == jobPost.Province && x.IsDeleted == 0)
+                .Contains(jobPost.Title)
+                && x.Province == jobPost.Province
+                && x.IsDeleted == 0
+                && x.JobPostingId != jobPost.JobPostingId)
                 .OrderBy(y => y.PostingDateUTC)
-                .ToListAsync();
+                .Take(5).ToListAsync();
         }
     }
 }
