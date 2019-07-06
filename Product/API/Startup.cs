@@ -204,7 +204,7 @@ namespace UpDiddyApi
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
 
             // kick off the job abandonment email delivery process
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteJobAbandonmentEmailDelivery(), Cron.MinuteInterval(5));
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteJobAbandonmentEmailDelivery(), Cron.Daily());
 
             // Add Polly 
             // Create Policies  
