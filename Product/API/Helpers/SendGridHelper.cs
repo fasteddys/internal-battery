@@ -11,7 +11,7 @@ namespace UpDiddyApi.Helpers
 {
     public static class SendGridHelper
     {
-        public static dynamic GenerateJobAbandonementEmailTemplate(KeyValuePair<Subscriber, List<JobPosting>> pair, List<JobPosting> similarJobs, string ViewJobPostingUrl)
+        public static dynamic GenerateJobAbandonmentEmailTemplate(KeyValuePair<Subscriber, List<JobPosting>> pair, List<JobPosting> similarJobs, string ViewJobPostingUrl)
         {
             dynamic templateData = new JObject();
             templateData.firstName = pair.Key.FirstName;

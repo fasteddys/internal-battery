@@ -1159,7 +1159,7 @@ namespace UpDiddyApi.Workflow
                     bool result = await _sysEmail.SendTemplatedEmailAsync(
                               entry.Key.Email,
                               _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert"],
-                              SendGridHelper.GenerateJobAbandonementEmailTemplate(entry, similarJobs, jobPostingUrl),
+                              SendGridHelper.GenerateJobAbandonmentEmailTemplate(entry, similarJobs, jobPostingUrl),
                               SendGridAccount.Transactional,
                               null,
                               null);
