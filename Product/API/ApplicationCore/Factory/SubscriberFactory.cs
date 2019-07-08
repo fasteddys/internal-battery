@@ -130,6 +130,21 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return subscriber;
         }
 
+        public static Subscriber GetDeletedSubscriberProfileByGuid(UpDiddyDbContext db, Guid subscriberGuid)
+        {
+            Subscriber subscriber = db.Subscriber
+                .Where(s => s.SubscriberGuid == subscriberGuid)
+                .Include(s => s.SubscriberWorkHistory).ThenInclude(e => e.Company)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalInstitution)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalDegree)
+                .Include(s => s.SubscriberEducationHistory).ThenInclude(i => i.EducationalDegreeType)
+                .Include(s => s.State)
+                .FirstOrDefault();
+
+
+            return subscriber;
+        }
+
         public static Subscriber GetSubscriberWithSubscriberFiles(UpDiddyDbContext db, Guid subscriberGuid)
         {
             return db.Subscriber

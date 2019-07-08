@@ -1124,7 +1124,7 @@ namespace UpDiddyApi.Workflow
         public bool CloudTalentDeleteProfile(Guid subscriberGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
-            ct.DeleteJobFromCloudTalent(_db, subscriberGuid);
+            ct.DeleteProfileFromCloudTalent(_db, subscriberGuid);
             return true;
         }
 

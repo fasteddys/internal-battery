@@ -149,9 +149,8 @@ namespace UpDiddyApi.Controllers
 
                 // disable the AD account associated with the subscriber
                 _graphClient.DisableUser(subscriberGuid);
-
-
-                //TODO JAB Delete profile here 
+                // delete subscriber from cloud talent 
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriber.SubscriberGuid.Value));
 
             }
             catch (Exception e)

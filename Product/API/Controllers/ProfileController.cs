@@ -18,6 +18,8 @@ using UpDiddyLib.Helpers;
 using System.Web;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Services;
+using UpDiddyApi.Workflow;
+using Hangfire;
 
 namespace UpDiddyApi.Controllers
 {
@@ -45,6 +47,7 @@ namespace UpDiddyApi.Controllers
 
 
         #region Profile look-up data 
+
         [HttpGet]
         [Route("api/skill/{userQuery}")]
         public IActionResult GetSkills(string userQuery)
@@ -159,31 +162,73 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-        // TODO JAB 
-        // ADD AUTH
+
         #region Profile Queries
+
+
+        // TODO JAB Add auth 
         [HttpGet]
         [Route("api/[controller]/{PageNum?}")]
         public async Task<IActionResult> ProfileSearch([FromBody] ProfileQueryDto profileQueryDto)
         {
-
-            //todo jab implenet 
-
+            // search profiles 
             ProfileSearchResultDto rVal = _cloudTalent.ProfileSearch(profileQueryDto);
-
-
             return Ok(rVal);
         }
 
 
-
-            #endregion
-
-
-
-
-
-
-
+        // TODO JAB add auth
+        [HttpPost]
+        [Route("api/[controller]/{SubscriberGuid}")]
+        public async Task<IActionResult> ProfileSearch(Guid SubscriberGuid)
+        {
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(SubscriberGuid));
+            return Ok( );
         }
+
+        // TODO JAB add auth
+        /// <summary>
+        /// Delete the user's profile from the google cloude 
+        /// </summary>
+        /// <param name="SubscriberGuid"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        [Route("api/[controller]/{SubscriberGuid}")]
+        public async Task<IActionResult> DeleteProfile(Guid SubscriberGuid)
+        {
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(SubscriberGuid));
+            return Ok();
+        }
+
+
+        // TODO JAB add auth
+        /// <summary>
+        /// Delete the user's profile from the google cloude 
+        /// </summary>
+        /// <param name="SubscriberGuid"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        [Route("api/[controller]/delete-by-uri")]
+        public async Task<IActionResult> DeleteProfileByGoogleName([FromBody] string TalentCloudUri)
+        {
+            _cloudTalent.DeleteProfileFromCloudTalentByUri(_db, TalentCloudUri);
+            return Ok();
+        }
+
+
+
+
+
+
+
+
+        #endregion
+
+
+
+
+
+
+
+    }
 }

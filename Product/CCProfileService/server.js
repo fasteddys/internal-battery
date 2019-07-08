@@ -29,7 +29,7 @@ app.get('/', function (req, res) {
  
 
 
- 
+// get info on the specified profile tenant  
 app.post('/tenant/:tenantName', async (req, res) => {
 
     let tenantServiceClient = new talentAPI.TenantServiceClient({
@@ -62,7 +62,7 @@ app.post('/tenant/:tenantName', async (req, res) => {
   
 })
 
-
+// get a list of all tenants 
 app.get('/tenant', async (req, res) => {
 
     let tenantServiceClient = new talentAPI.TenantServiceClient({
@@ -99,14 +99,7 @@ app.get('/tenant', async (req, res) => {
 
 
 
- 
-
-
-
-
-
-
-
+// add a profile to the google cloud 
 app.post('/profile', async (req, res) => {
 
     try { 
@@ -132,6 +125,7 @@ app.post('/profile', async (req, res) => {
 })
 
 
+// update and existing profile 
 app.put('/profile', async (req, res) => {
 
     try
@@ -159,6 +153,7 @@ app.put('/profile', async (req, res) => {
 })
 
 
+// delete a profile 
 app.delete('/profile/:profileName', async (req, res) => {
 
     try {
@@ -182,7 +177,7 @@ app.delete('/profile/:profileName', async (req, res) => {
     }
 })
 
-
+// retreive a specific profile 
 app.get('/profile/:profileName', async (req, res) =>  {
 
     try {    
@@ -207,57 +202,16 @@ app.get('/profile/:profileName', async (req, res) =>  {
     } 
 })
 
-
+// search profiles 
 app.get('/profile-search', async (req, res) => {
-
-   
-
+ 
     try {
 
         let profileServiceClient = new talentAPI.ProfileServiceClient({
             projectId: process.env.ProjectId,
             keyFilename: process.env.KeyFilePath,
         });
-
-        /*
-        let request = {
-            parent: process.env.tenantName,
-            profileQuery: {
-
-                "query": null,
-                "locationFilters": [
-                    {
-                        "address": "21204",
-                        "regionCode": "us",
-                        "latLng": null,
-                        "distanceInMiles": 0,
-                        "telecommutePreference": 0,
-                        "negated": false
-                    }
-                ],
-                "jobTitleFilters": null,
-                "employerFilters": null,
-                "educationFilters": null,
-                "skillFilters": null,
-                "workExperienceFilters": null,
-                "timeFilters": null,
-                "hirableFilter": null,
-                "applicationDateFilters": null,
-                "applicationOutcomeNotesFilters": null,
-                "applicationJobFilters": null,
-                "customAttributeFilter": null,
-                "candidateAvailabilityFilters": null
-
-            }
-            // requestMetadata: { allowMissingIds : true}
-        }
-
-        let test = JSON.stringify(req.body);
-        */
-
-
-       // requestMetadata: { domain: "www.careercircle.com", sessionId : "not applicable", userId : "jim", allowMissingIds : true }
-
+ 
         let searchResults = await profileServiceClient.searchProfiles(req.body, profileSearchOption);
      //   let searchResults = await profileServiceClient.searchProfiles(request, profileSearchOption);
         let r = new basicResponse(200, "ok", searchResults[2]);
@@ -268,51 +222,7 @@ app.get('/profile-search', async (req, res) => {
         let r = new basicResponse(400, e.details);
         res.send(r);
     } 
-
-
-
  
 })
 
 
-
-app.post('/testpost', function (req, res) {
-     res.send(req.body);    
-})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-var app = express();
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(bodyParser.json())
-
-const port = process.env.SomePort || process.env.SomePORT_Other;
-app.listen(port);
-*/
-
-/* 
-http.createServer(function (req, res) {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Hello World\n' + process.env.DB_HOST);
-}).listen(port);
-*/
- 

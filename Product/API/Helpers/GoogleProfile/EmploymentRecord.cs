@@ -12,7 +12,6 @@ namespace UpDiddyApi.Helpers.GoogleProfile
     {
 
         public EmploymentRecord() { }
-        // todo jab check timestamp is correct they have upper case seconds and nanos
         public Date startDate { get; set; }
         public Date endDate { get; set; }
         public string employerName { get; set; }

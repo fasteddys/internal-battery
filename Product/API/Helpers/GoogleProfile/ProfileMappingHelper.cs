@@ -68,11 +68,38 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                     partnerName = partner.Name;            
             }
             gcp.customAttributes = new Dictionary<string, CustomAttribute>();
+            // index source partner as custom attribute 
             gcp.customAttributes["SourcePartner"] = new CustomAttribute
             {
                 stringValues = new[] { partnerName },
                 filterable = true
             };
+            // index email address as custom attribute
+            gcp.customAttributes["EmailAddress"] = new CustomAttribute
+            {
+                stringValues = new[] { subscriber.Email.Trim() },
+                filterable = true
+            };
+
+            if ( ! string.IsNullOrEmpty(subscriber.FirstName ))
+            {
+                gcp.customAttributes["FirstName"] = new CustomAttribute
+                {
+                    stringValues = new[] { subscriber.FirstName.Trim() },
+                    filterable = true
+                };
+            }
+
+            if (!string.IsNullOrEmpty(subscriber.LastName))
+            {
+                gcp.customAttributes["LastName"] = new CustomAttribute
+                {
+                    stringValues = new[] { subscriber.LastName.Trim() },
+                    filterable = true
+                };
+            }
+
+
             return gcp;
         }
 
@@ -128,6 +155,10 @@ namespace UpDiddyApi.Helpers.GoogleProfile
         public static ProfileViewDto CreateProfileView(SummarizedProfile summarizedProfile)
         {
             ProfileViewDto rVal = new ProfileViewDto();
+
+
+            rVal.CloudTalentUri = summarizedProfile.profiles[0]?.name;
+
 
             Guid SubscriberGuid = Guid.Empty;
             if (Guid.TryParse(summarizedProfile.summary.externalId, out SubscriberGuid))

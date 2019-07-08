@@ -27,21 +27,16 @@ namespace UpDiddyLib.Dto
 
         #region Search Options
  
-
-        //TODO JAB Find doc on profile order by 
         /// <summary>
-        /// Order of search results. Valid values are:
-        /// 
-        /// "relevance desc":                       By relevance descending, as determined by the API algorithms. Relevance thresholding of query results is only available with this ordering.
-        ////"posting_publish_time desc":            By Job.posting_publish_time descending.
-        ////"posting_update_time desc":             By Job.posting_update_time descending.
-        ////"title":                                By Job.title ascending.
-        ////"title desc":                           By Job.title descending.
-        ////"annualized_base_compensation":         By job's CompensationInfo.annualized_base_compensation_range ascending. Jobs whose annualized base compensation is unspecified are put at the end of search results.
-        ////"annualized_base_compensation desc":    By job's CompensationInfo.annualized_base_compensation_range descending. Jobs whose annualized base compensation is unspecified are put at the end of search results.
-        ////"annualized_total_compensation":        By job's CompensationInfo.annualized_total_compensation_range ascending. Jobs whose annualized base compensation is unspecified are put at the end of search results.
-        ////"annualized_total_compensation desc":   By job's CompensationInfo.annualized_total_compensation_range descending. Jobs whose annualized base compensation is unspecified are put at the end of search results.
+        /// order by clause for profile search 
         /// </summary>
+        //  "relevance desc": By descending relevance, as determined by the API algorithms.
+        //  "update_time desc": Sort by Profile.update_time in descending order(recently updated profiles first).
+        //  "create_time desc": Sort by Profile.create_time in descending order(recently created profiles first).
+        //  "first_name": Sort by PersonName.PersonStructuredName.given_name in ascending order.
+        //  "first_name desc": Sort by PersonName.PersonStructuredName.given_name in descending order.
+        //  "last_name": Sort by PersonName.PersonStructuredName.family_name in ascending order.
+        //  "last_name desc": Sort by PersonName.PersonStructuredName.family_name in ascending order.  /// </summary>
         public string OrderBy { get; set; }
 
 
@@ -50,6 +45,7 @@ namespace UpDiddyLib.Dto
         #region location data 
 
 
+        public string Country { get; set; }
         /// <summary>
         /// Free format location string e.g 7312 parkway drive hanover md  OR 21204 , etc.  
         /// </summary>
@@ -95,11 +91,20 @@ namespace UpDiddyLib.Dto
         /// <summary>
         /// specific country 
         /// </summary>
-        public string Country { get; set; }
 
-         
- 
-   
+
+
+        public string EmailAddress { get; set; }
+
+        public string SourcePartner { get; set; }
+
+        public string FirstName { get; set; }
+
+        public string LastName { get; set; }
+
+        public string Employer { get; set; }
+
+
 
         #endregion
     }

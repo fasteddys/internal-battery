@@ -29,8 +29,6 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 
         public Dictionary<string, CustomAttribute> customAttributes { get; set; }
 
-        // todo jab see if adding the following breaks profile add/update
-
         public string uri { get; set; }
 
         public string groupId { get; set; }

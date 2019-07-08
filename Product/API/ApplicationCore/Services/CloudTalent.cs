@@ -37,8 +37,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private string _projectPath = string.Empty;
         private CloudTalentSolutionService _jobServiceClient = null;
         private GoogleCredential _credential = null;
-        private GoogleProfileInterface _profileApi = null;
-        private GoogleProfileInterface _googleProfile = null;
+        private GoogleProfileService _profileApi = null;
+        private GoogleProfileService _googleProfile = null;
 
         #region Constructor
         public CloudTalent(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory)
@@ -58,7 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             // must have path to service account json file created on the cloud.google.com defined 
             // in GOOGLE_APPLICATION_CREDENTIALS environmental variable
             _credential = GoogleCredential.GetApplicationDefaultAsync().Result;
-            _profileApi = new GoogleProfileInterface(context, mapper, configuration, sysLog, httpClientFactory);
+            _profileApi = new GoogleProfileService(context, mapper, configuration, sysLog, httpClientFactory);
 
             // Specify the Service scope.
             if (_credential.IsCreateScopedRequired)
@@ -76,27 +76,40 @@ namespace UpDiddyApi.ApplicationCore.Services
             });
 
 
-            _googleProfile = new GoogleProfileInterface(context, mapper, configuration, sysLog, httpClientFactory);
+            _googleProfile = new GoogleProfileService(context, mapper, configuration, sysLog, httpClientFactory);
 
     }
-    #endregion
+        #endregion
 
-    #region Profile indexing 
-
-
+        #region Profile indexing 
 
 
+        public BasicResponseDto DeleteProfileFromCloudTalentByUri(UpDiddyDbContext db, string talentCloudUri)
+        {
+            try
+            {
+                string errorMsg = string.Empty;
+                return _profileApi.DeleteProfile(talentCloudUri, ref errorMsg);
 
-    public bool DeleteProfileFromCloudTalent(UpDiddyDbContext db, Guid subscriberGuid)
+            }
+            catch 
+            {
+                return new BasicResponseDto()
+                {
+                    StatusCode = 400                     
+                };
+            }
+        }
+
+
+        public bool DeleteProfileFromCloudTalent(UpDiddyDbContext db, Guid subscriberGuid)
     {
         try
         {
-
-            Subscriber subscriber = SubscriberFactory.GetSubscriberProfileByGuid(db, subscriberGuid);
+            Subscriber subscriber = SubscriberFactory.GetDeletedSubscriberProfileByGuid(db, subscriberGuid);
             // validate we have good data 
             if (subscriber == null)
                 return false;
-
             // index the job to google 
             return RemoveProfileFromIndex(subscriber);
         }
@@ -131,7 +144,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             }
         }
 
-        // TODO JAB refactor to catch fal on AddProfile
+ 
         public bool IndexProfile(Subscriber subscriber, IList<SubscriberSkill> skills)
         {
             try
@@ -175,7 +188,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (_profileApi.UpdateProfile(googleCloudProfile, ref errorMsg))
                 {
                     subscriber.CloudTalentIndexInfo = "ReIndexed on " + Utils.ISO8601DateString(DateTime.Now);
-                    // TODO jab rename enum to GoogleCloudIndexStatus 
                     subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
                     _db.SaveChanges();
                 }
@@ -201,23 +213,29 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 bool isIndexed = false;
+                string errorMsg = string.Empty;
+                BasicResponseDto deleteStatus = null;
                 if (subscriber.CloudTalentUri != null && string.IsNullOrEmpty(subscriber.CloudTalentUri.Trim()) == false)
                 {
-                    isIndexed = true;
-                    // TODO jab implement delete _jobServiceClient.Projects.Jobs.Delete(jobPosting.CloudTalentUri).Execute();
+                   isIndexed = true;
+                   // TODO JAB test profile delete 
+                   deleteStatus =  _profileApi.DeleteProfile(subscriber.CloudTalentUri.Trim(), ref errorMsg);
                 }
 
                 // Update job posting with index error
-                subscriber.IsDeleted = 1;
-                if (isIndexed)
-                    subscriber.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now);
+                if (deleteStatus.StatusCode == 200)
+                {
+                    if (isIndexed)
+                        subscriber.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now);
+                    else
+                        subscriber.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now) + " (not google indexed)";
+                }
                 else
-                    subscriber.CloudTalentIndexInfo = "Deleted on " + Utils.ISO8601DateString(DateTime.Now) + " (not google indexed)";
+                    subscriber.CloudTalentIndexInfo = "Error: " + errorMsg + " deleting profile on " + Utils.ISO8601DateString(DateTime.Now);
 
                 subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.DeletedFromIndex;
                 subscriber.ModifyDate = DateTime.UtcNow; 
                 _db.SaveChanges();
-
                 return true;
             }
             catch (Exception e)
@@ -235,6 +253,214 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         #endregion
 
+        #region Profile Search
+
+
+        public SearchProfilesRequest CreateProfileSearchRequest(ProfileQueryDto profileQuery)
+        {
+            // todo add better meta data 
+            UpDiddyApi.Helpers.GoogleProfile.RequestMetadata requestMetadata = new UpDiddyApi.Helpers.GoogleProfile.RequestMetadata()
+            {
+                userId = "CareerCircle.com",
+                sessionId = "n/a",
+                domain = "www.careercircle.com"
+
+            };
+ 
+            ProfileQuery cloudTalentProfileQuery = new ProfileQuery();
+            // add keywords 
+            if (string.IsNullOrEmpty(profileQuery.Keywords) == false)
+            {
+                cloudTalentProfileQuery.query = profileQuery.Keywords;
+            }
+
+            // us a country code to help google dis-ambiguate state abbreviatons, etc.   
+            string regionCode = string.IsNullOrEmpty(profileQuery.Country) ? "us" : profileQuery.Country;
+            // add locations filters.  give preference to the free format location field if it's 
+            // defined, if not use city state parameters if they have been defined 
+            string addressInfo = string.Empty;
+            if (string.IsNullOrEmpty(profileQuery.Location) == false)
+            {
+                // work around a google bug where they don't recognize md and ny as administrative areas (although they do recognize pa and in 
+                // as administrative areas)
+                if (profileQuery.Location.Trim().Length == 2)
+                    addressInfo = profileQuery.Location + "," + regionCode;
+                else
+                    addressInfo = profileQuery.Location;
+            }
+            else
+                // build address with comma placeholders to help google parse the location
+                addressInfo = BuildAddress(profileQuery, regionCode);
+
+            // add location filter if any address information has been provided  
+            if (string.IsNullOrEmpty(addressInfo) == false || string.IsNullOrEmpty(profileQuery.Province) == false)
+            {
+                UpDiddyApi.Helpers.GoogleProfile.LocationFilter locationFilter = new UpDiddyApi.Helpers.GoogleProfile.LocationFilter()
+                {
+                    address = addressInfo,
+                    distanceInMiles = profileQuery.SearchRadius,
+                    regionCode = regionCode
+                };
+
+                cloudTalentProfileQuery.locationFilters = new List<UpDiddyApi.Helpers.GoogleProfile.LocationFilter>()
+                    {
+                        locationFilter
+                    };
+            }
+            // add employer filter 
+            if ( ! string.IsNullOrEmpty(profileQuery.Employer) )
+            {
+                cloudTalentProfileQuery.employerFilters = new List<EmployerFilter>();
+                EmployerFilter employerFilter = new EmployerFilter()
+                {
+                    employer = profileQuery.Employer.Trim().ToLower(),
+                    negated = false
+                };
+
+                cloudTalentProfileQuery.employerFilters.Add(employerFilter);
+
+            }
+
+
+            // add skill filters 
+            if (profileQuery.Skills != null && profileQuery.Skills.Count > 0)
+            {
+                cloudTalentProfileQuery.skillFilters = new List<SkillFilter>();
+                foreach (string skill in profileQuery.Skills)
+                {
+                    SkillFilter sf = new SkillFilter()
+                    {
+                        skill = skill,
+                        negated = false
+
+                    };
+
+                    cloudTalentProfileQuery.skillFilters.Add(sf);
+                }
+
+            }
+
+
+
+            // custom attribute filters        
+            string attributeFilters = string.Empty;
+            // search for a specific email address 
+            if ( string.IsNullOrEmpty(profileQuery.EmailAddress) == false )
+            {
+                if (attributeFilters.Length > 0)
+                    attributeFilters += " AND ";
+
+                attributeFilters += "LOWER(EmailAddress) = \"" + profileQuery.EmailAddress.Trim().ToLower() + "\"";
+            }
+            // search for a specific subscriber source 
+            if (string.IsNullOrEmpty(profileQuery.SourcePartner) == false)
+            {
+                if (attributeFilters.Length > 0)
+                    attributeFilters += " AND ";
+
+                attributeFilters += "LOWER(SourcePartner) = \"" + profileQuery.SourcePartner.Trim().ToLower() + "\"";
+            }
+
+            // search for a specific first name  
+            if (string.IsNullOrEmpty(profileQuery.FirstName) == false)
+            {
+                if (attributeFilters.Length > 0)
+                    attributeFilters += " AND ";
+
+                attributeFilters += "LOWER(FirstName) = \"" + profileQuery.FirstName.Trim().ToLower() + "\"";
+            }
+
+            // search for a specific first name  
+            if (string.IsNullOrEmpty(profileQuery.LastName) == false)
+            {
+                if (attributeFilters.Length > 0)
+                    attributeFilters += " AND ";
+
+                attributeFilters += "LOWER(LastName) = \"" + profileQuery.LastName.Trim().ToLower() + "\"";
+            }
+ 
+            // Add Custom Attribute Filter 
+            if (attributeFilters.Length > 0)
+                cloudTalentProfileQuery.customAttributeFilter = attributeFilters;
+
+            // Build search request 
+            SearchProfilesRequest searchProfileRequest = new SearchProfilesRequest()
+            {
+                requestMetadata = requestMetadata,
+                profileQuery = cloudTalentProfileQuery,
+                pageSize = profileQuery.PageSize,
+                offset = profileQuery.PageSize * (profileQuery.PageNum - 1),
+                orderBy = profileQuery.OrderBy,
+                parent = _configuration["CloudTalent:ProfileTenant"]
+
+            };
+
+            return searchProfileRequest;
+        }
+
+
+
+        /// <summary>
+        /// Search the cloud talent solution for jobs 
+        /// </summary>
+        /// <param name="jobQuery"></param>
+        /// <param name="isJobPostingAlertSearch">If specified and set to TRUE, the search query is optimized for email alerts. For details, 
+        ///     refer to the documentation here: https://cloud.google.com/talent-solution/job-search/docs/email
+        /// </param>
+        /// <returns></returns>
+        public ProfileSearchResultDto ProfileSearch(ProfileQueryDto profileQuery, bool isJobPostingAlertSearch = false)
+        {
+
+            if (profileQuery.PageSize <= 0)
+            {
+                profileQuery.PageSize = int.Parse(_configuration["CloudTalent:ProfilePageSize"]);
+            }
+
+
+            ProfileSearchResultDto rVal = new ProfileSearchResultDto();
+ 
+            // map profile query to cloud talent search request 
+            DateTime startSearch = DateTime.Now;
+            SearchProfilesRequest searchProfileRequest = CreateProfileSearchRequest(profileQuery);
+
+            string errorMsg = string.Empty;
+            // search the google talent cloud
+            BasicResponseDto searchResults = _googleProfile.Search(searchProfileRequest, ref errorMsg);
+            string json = Newtonsoft.Json.JsonConvert.SerializeObject(searchResults.Data);
+
+            SearchProfileResponse searchProfileResponse = JsonConvert.DeserializeObject<SearchProfileResponse>(json);
+            // map cloud talent results to cc search results 
+            DateTime startMap = DateTime.Now;
+            try
+            {
+                rVal = ProfileMappingHelper.MapSearchResults(_syslog, _mapper, _configuration, searchProfileResponse, profileQuery);
+            }
+            catch (Exception ex)
+            {
+                // try and catch the deserialization since there may be issues with live data that we may not discover during testing.
+                // the logging will allow us to do a post mortem 
+                _syslog.LogError($"CloudTalent:ProfileSearch: Error deserializing profile search results: {ex.Message} ", json);
+            }
+
+            DateTime stopMap = DateTime.Now;
+
+            // calculate search timing metrics 
+            TimeSpan intervalTotalSearch = stopMap - startSearch;
+            TimeSpan intervalSearchTime = startMap - startSearch;
+            TimeSpan intervalMapTime = stopMap - startMap;
+
+            // assign search metrics to search results 
+            rVal.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
+            rVal.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
+            rVal.SearchMappingTimeInTicks = intervalMapTime.Ticks;
+
+            return rVal;
+        }
+
+
+
+
+        #endregion
 
         #region Job Indexing
         /// <summary>
@@ -752,166 +978,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-        #region Profile Search
-
-
-        public SearchProfilesRequest CreateProfileSearchRequest(ProfileQueryDto profileQuery)
-        {
-
-
-            // todo add better meta data 
-            UpDiddyApi.Helpers.GoogleProfile.RequestMetadata requestMetadata = new UpDiddyApi.Helpers.GoogleProfile.RequestMetadata()
-            {
-                userId = "CareerCircle.com",
-                sessionId = "n/a",
-                domain = "www.careercircle.com"
-
-            };
-
-            
-
-
-
-            ProfileQuery cloudTalentProfileQuery = new ProfileQuery();            
-            // add keywords 
-            if (string.IsNullOrEmpty(profileQuery.Keywords) == false)
-            {
-                cloudTalentProfileQuery.query = profileQuery.Keywords;
-            }
-
-            // us a country code to help google dis-ambiguate state abbreviatons, etc.   
-            string regionCode = string.IsNullOrEmpty(profileQuery.Country) ? "us" : profileQuery.Country;
-            // add locations filters.  give preference to the free format location field if it's 
-            // defined, if not use city state parameters if they have been defined 
-            string addressInfo = string.Empty;
-            if (string.IsNullOrEmpty(profileQuery.Location) == false)
-            {
-                // work around a google bug where they don't recognize md and ny as administrative areas (although they do recognize pa and in 
-                // as administrative areas)
-                if (profileQuery.Location.Trim().Length == 2)
-                    addressInfo = profileQuery.Location + "," + regionCode;
-                else
-                    addressInfo = profileQuery.Location;
-            }
-            else
-                // build address with comma placeholders to help google parse the location
-                addressInfo = BuildAddress(profileQuery, regionCode);
-
-            // add location filter if any address information has been provided  
-            if (string.IsNullOrEmpty(addressInfo) == false || string.IsNullOrEmpty(profileQuery.Province) == false)
-            {
-                UpDiddyApi.Helpers.GoogleProfile.LocationFilter locationFilter = new UpDiddyApi.Helpers.GoogleProfile.LocationFilter()
-                {
-                    address = addressInfo,
-                    distanceInMiles = profileQuery.SearchRadius,
-                    regionCode = regionCode
-                };
-
-                cloudTalentProfileQuery.locationFilters = new List<UpDiddyApi.Helpers.GoogleProfile.LocationFilter>()
-                    {
-                        locationFilter
-                    };
-            }
-
-            // custom attribute filters 
-            // todo add more custom filter capabilities as necessary 
-
-            // add skills TODO JAB work with list 
-            string attributeFilters = string.Empty;
-            if (profileQuery.Skills != null && profileQuery.Skills.Count > 0 )
-                foreach ( string skill in profileQuery.Skills)
-                {
-                    if (attributeFilters.Length > 0)
-                        attributeFilters += " AND ";
-
-                     attributeFilters = "LOWER(Skills) = \"" + skill.Trim().ToLower() + "\"";
-
-                }
-  
-            // Add Custom Attribute Filter 
-            if (attributeFilters.Length > 0)
-                cloudTalentProfileQuery.customAttributeFilter = attributeFilters;
-
-           
-            // Build search request 
-            SearchProfilesRequest searchProfileRequest = new SearchProfilesRequest()
-            {
-                requestMetadata = requestMetadata,
-                profileQuery = cloudTalentProfileQuery,
-                pageSize = profileQuery.PageSize,
-                offset = profileQuery.PageSize * (profileQuery.PageNum - 1),
-                orderBy = profileQuery.OrderBy,
-                // TODO JAB add to appsettings 
-                parent = "projects/jobboardpilot/tenants/3d27fc68-8151-40de-96f7-cb11d8b7b252"                
-
-            };
-
-            return searchProfileRequest;
-        }
-
-
-
-        /// <summary>
-        /// Search the cloud talent solution for jobs 
-        /// </summary>
-        /// <param name="jobQuery"></param>
-        /// <param name="isJobPostingAlertSearch">If specified and set to TRUE, the search query is optimized for email alerts. For details, 
-        ///     refer to the documentation here: https://cloud.google.com/talent-solution/job-search/docs/email
-        /// </param>
-        /// <returns></returns>
-        public ProfileSearchResultDto ProfileSearch(ProfileQueryDto profileQuery, bool isJobPostingAlertSearch = false)
-        {
-
-            if ( profileQuery.PageSize <= 0 )
-            {
-                profileQuery.PageSize = int.Parse(_configuration["CloudTalent:ProfilePageSize"]);
-            }
-            
-
-            ProfileSearchResultDto rVal = new ProfileSearchResultDto(); 
-            // TODO JAB implement 
-
-            // map jobquery to cloud talent search request 
-            DateTime startSearch = DateTime.Now;
-            SearchProfilesRequest searchProfileRequest = CreateProfileSearchRequest(profileQuery);
-
-            string errorMsg = string.Empty;
-            BasicResponseDto rVal1 = _googleProfile.Search(searchProfileRequest, ref errorMsg);
-            string json = Newtonsoft.Json.JsonConvert.SerializeObject(rVal1.Data);
-
-            SearchProfileResponse searchProfileResponse = JsonConvert.DeserializeObject<SearchProfileResponse>(json);
-            // map cloud talent results to cc search results 
-            DateTime startMap = DateTime.Now;
-            try
-            {
-                rVal = ProfileMappingHelper.MapSearchResults(_syslog, _mapper, _configuration, searchProfileResponse, profileQuery);
-            }
-            catch (Exception ex )
-            {
-                // try and catch the deserialization since there may be issues with live data that we may not discover during testing.
-                // the logging will allow us to do a post mortem 
-                _syslog.LogError($"CloudTalent:ProfileSearch: Error deserializing profile search results: {ex.Message} ", json);
-            }
-           
-            DateTime stopMap = DateTime.Now;
-
-            // calculate search timing metrics 
-            TimeSpan intervalTotalSearch = stopMap - startSearch;
-            TimeSpan intervalSearchTime = startMap - startSearch;
-            TimeSpan intervalMapTime = stopMap - startMap;
-
-            // assign search metrics to search results 
-            rVal.SearchTimeInMilliseconds = intervalTotalSearch.TotalMilliseconds;
-            rVal.SearchQueryTimeInTicks = intervalSearchTime.Ticks;
-            rVal.SearchMappingTimeInTicks = intervalMapTime.Ticks;
-
-            return rVal;
-        }
-
-
-
-
-        #endregion
+   
 
         #region ClientEvents
         /// <summary>

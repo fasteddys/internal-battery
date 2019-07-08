@@ -25,16 +25,14 @@ using System.Net;
 
 namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
 {
-    public class GoogleProfileInterface : BusinessVendorBase
+    public class GoogleProfileService : BusinessVendorBase, IGoogleProfileService
     {
-
-
-
+        //todo jab implement interface
 
         #region Class
 
 
-        public GoogleProfileInterface(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory)
+        public GoogleProfileService(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory)
         {
             _db = context;
             _mapper = mapper;
@@ -46,11 +44,7 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
 
         #endregion
 
-
         #region Profile Search
-
-
-        //TODO JAB change return value to searchProfile class like Jobs 
         public BasicResponseDto Search(SearchProfilesRequest searchRequest, ref string errorMsg)
         {
             BasicResponseDto Rval = null;
@@ -72,8 +66,6 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
         }
 
         #endregion
-
-
 
         #region Profile Crud 
         public BasicResponseDto AddProfile(GoogleCloudProfile googleCloudProfile, ref string errorMsg)
@@ -160,8 +152,6 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
 
         #endregion
 
-
-
         #region Utility Functions
 
         private HttpResponseMessage ExecuteProfileApiPut(string ApiAction, string Content, ref string ResponseJson)
@@ -214,7 +204,7 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
         {
 
             HttpClient client = CreateProfileApiDeleteClient();
-            HttpRequestMessage ProfileApiRequest = CreateProfileApiGetRequest(ApiAction);
+            HttpRequestMessage ProfileApiRequest = CreateProfileApiDeleteRequest(ApiAction);
             HttpResponseMessage ProfileApiResponse = AsyncHelper.RunSync<HttpResponseMessage>(() => client.SendAsync(ProfileApiRequest));
             ResponseJson = AsyncHelper.RunSync<string>(() => ProfileApiResponse.Content.ReadAsStringAsync());
             return ProfileApiResponse;
@@ -294,8 +284,6 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
     }
 
     #endregion
-
-
 
 
 }

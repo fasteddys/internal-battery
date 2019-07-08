@@ -15,7 +15,9 @@ namespace UpDiddyLib.Dto
         public string Address { get; set; } 
         public string City { get; set; }
         public string StateCode { get; set; }
-        public string PostalCode { get; set; }  
+        public string PostalCode { get; set; } 
+        public string CloudTalentUri { get; set; }
+
         /// <summary>
         /// name of partner who is responsible for subscriber joining carreer circle
         /// </summary>
