@@ -500,6 +500,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsJobPoster");
 
+                    b.Property<string>("LogoUrl");
+
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
@@ -4109,7 +4111,7 @@ namespace UpDiddyApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
+                        .WithMany("SubscriberNotifications")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
