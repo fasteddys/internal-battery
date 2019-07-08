@@ -20,7 +20,7 @@ namespace UpDiddyApi.Helpers
             templateData.abandonedJobs = JArray.FromObject(pair.Value.Select(j => new
             {
                 title = j.Title,
-                summary = Utils.RemoveHTML(j.Description).Length <= 250 ? Utils.RemoveHTML(j.Description) : Utils.RemoveHTML(j.Description).Substring(0, 250) + "...",
+                summary = FormatJobSummary(j.Description),
                 location = $"{j.City}, {j.Province}, {j.Country}",
                 posted = j.PostingDateUTC.ToShortDateString(),
                 url = ViewJobPostingUrl + j.JobPostingGuid
@@ -32,7 +32,7 @@ namespace UpDiddyApi.Helpers
                 templateData.jobs = JArray.FromObject(similarJobs.Select(j => new
                 {
                     title = j.Title,
-                    summary = Utils.RemoveHTML(j.Description).Length <= 250 ? Utils.RemoveHTML(j.Description) : Utils.RemoveHTML(j.Description).Substring(0, 250) + "...",
+                    summary = FormatJobSummary(j.Description),
                     location = $"{j.City}, {j.Province}, {j.Country}",
                     posted = j.PostingDateUTC.ToShortDateString(),
                     url = ViewJobPostingUrl + j.JobPostingGuid
@@ -60,7 +60,7 @@ namespace UpDiddyApi.Helpers
                 .Select(x => new
                 {
                     title = x.Title,
-                    summary = Utils.RemoveHTML(x.Description).Length <= 250 ? Utils.RemoveHTML(x.Description) : Utils.RemoveHTML(x.Description).Substring(0, 250) + "...",
+                    summary = FormatJobSummary(x.Description),
                     postingDate = x.PostingDateUTC.ToShortDateString(),
                     jobUrl = jobPostingUrl + x.JobPostingGuid,
                     city = x.City,
@@ -70,6 +70,12 @@ namespace UpDiddyApi.Helpers
                 })).ToArray()
             }).ToList());
             return templateData;
+        }
+
+        private static string FormatJobSummary(string summary)
+        {
+            summary = Utils.RemoveHTML(summary);
+            return summary.Length <= 250 ? summary : summary.Substring(0, 250) + "...";
         }
     }
 }
