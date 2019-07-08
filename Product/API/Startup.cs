@@ -261,6 +261,7 @@ namespace UpDiddyApi
             services.AddScoped<IJobApplicationService, JobApplicationService>();
 
 
+            services.AddScoped<ICompanyService, CompanyService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

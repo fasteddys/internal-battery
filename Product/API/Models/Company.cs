@@ -10,12 +10,9 @@ namespace UpDiddyApi.Models
         public int CompanyId { get; set; }
         public Guid CompanyGuid { get; set; }
         public string CompanyName { get; set; }
- 
-
         public int IsJobPoster { get; set; }
-
         public int IsHiringAgency { get; set; }
-
+        public string LogoUrl { get; set; }
         /// <summary>
         /// The uri returned from google talent cloud for identifying the company in the
         /// talent cloud
@@ -29,6 +26,5 @@ namespace UpDiddyApi.Models
         /// Additional information such as error received from cloud talent
         /// </summary>
         public string CloudTalentIndexInfo { get; set; }
-
     }
 }

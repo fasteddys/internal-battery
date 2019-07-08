@@ -65,7 +65,8 @@ namespace UpDiddyApi.Controllers
 
             await _subscriberService.AddResumeAsync(subscriber, resume.FileName, resume.OpenReadStream(), parseResume);
 
-            SubscriberFileDto dto = _mapper.Map<SubscriberFileDto>(subscriber.SubscriberFile[0]);
+            int FileCount = subscriber.SubscriberFile.Count;
+            SubscriberFileDto dto = _mapper.Map<SubscriberFileDto>(subscriber.SubscriberFile[FileCount > 0 ? FileCount - 1 : 0]);
             return Ok(dto);
         }
 

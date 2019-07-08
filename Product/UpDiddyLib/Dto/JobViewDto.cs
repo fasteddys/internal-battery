@@ -48,6 +48,7 @@ namespace UpDiddyLib.Dto
         /// </summary>
         public string CloudTalentUri { get; set; }
 
+        public string CompanyLogoUrl { get; set; }
         public string  CompanyName { get; set; }
         /// <summary>
         /// Guid of industry associated with the job 

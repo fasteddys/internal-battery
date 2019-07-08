@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -20,7 +21,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 {
     public class TEKsystemsProcess : BaseProcess, IJobDataMining
     {
-        public TEKsystemsProcess(JobSite jobSite, ILogger logger, Guid companyGuid) : base(jobSite, logger, companyGuid) { }
+        public TEKsystemsProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config) : base(jobSite, logger, companyGuid, config) { }
 
         private HttpClientHandler GetHttpClientHandler()
         {
@@ -88,90 +89,100 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     var result = client.SendAsync(request).Result;
                     jobData = result.Content.ReadAsStringAsync().Result;
                 }
-                dynamic jsonResults = JsonConvert.DeserializeObject<dynamic>(jobData);
-
-                // keeping this loop serial rather than parallel intentionally (nesting parallel loops can quickly cause performance issues)
-                foreach (var job in jsonResults.results)
+                dynamic jsonResults = null;
+                try
                 {
-                    int jobPageStatusId = 1; // pending
-                    string rawHtml;
-                    Uri jobDetailUri = null;
-                    try
+                    jsonResults = JsonConvert.DeserializeObject<dynamic>(jobData);
+                }
+                catch (JsonReaderException jre)
+                {
+                    _syslog.Log(LogLevel.Information, $"***** TEKsystemsProcess.DiscoverJobPages encountered an exception; message: {jre.Message}, stack trace: {jre.StackTrace}, source: {jre.Source}", jobData);
+                }
+                if (jsonResults != null)
+                {
+                    // keeping this loop serial rather than parallel intentionally (nesting parallel loops can quickly cause performance issues)
+                    foreach (var job in jsonResults.results)
                     {
-                        bool isJobExists = true;
-                        // retrieve the latest job page data
-                        jobDetailUri = new Uri(_jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url);
-                        using (var client = new HttpClient(GetHttpClientHandler()))
+                        int jobPageStatusId = 1; // pending
+                        string rawHtml;
+                        Uri jobDetailUri = null;
+                        try
                         {
-                            var request = new HttpRequestMessage()
+                            bool isJobExists = true;
+                            // retrieve the latest job page data
+                            jobDetailUri = new Uri(_jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url);
+                            using (var client = new HttpClient(GetHttpClientHandler()))
                             {
-                                RequestUri = jobDetailUri,
-                                Method = HttpMethod.Get
-                            };
-                            var result = client.SendAsync(request).Result;
-                            if (result.StatusCode != HttpStatusCode.OK)
+                                var request = new HttpRequestMessage()
+                                {
+                                    RequestUri = jobDetailUri,
+                                    Method = HttpMethod.Get
+                                };
+                                var result = client.SendAsync(request).Result;
+                                if (result.StatusCode != HttpStatusCode.OK)
+                                    isJobExists = false;
+                                rawHtml = result.Content.ReadAsStringAsync().Result;
+                            }
+                            HtmlDocument jobHtml = new HtmlDocument();
+                            jobHtml.LoadHtml(rawHtml);
+
+                            // remove the 'application' field from our raw data to prevent it from triggering an update operation
+                            if (job.applications != null)
+                                ((JObject)job).Remove("applications");
+
+                            // does the html contain an error message indicating the job does not exist?
+                            if (jobHtml.DocumentNode.SelectSingleNode("//results-main[@error-message=\"The job you have requested cannot be found. Please see our complete list of jobs below.\"]") != null)
                                 isJobExists = false;
-                            rawHtml = result.Content.ReadAsStringAsync().Result;
-                        }
-                        HtmlDocument jobHtml = new HtmlDocument();
-                        jobHtml.LoadHtml(rawHtml);
 
-                        // remove the 'application' field from our raw data to prevent it from triggering an update operation
-                        if (job.applications != null)
-                            ((JObject)job).Remove("applications");
-
-                        // does the html contain an error message indicating the job does not exist?
-                        if (jobHtml.DocumentNode.SelectSingleNode("//results-main[@error-message=\"The job you have requested cannot be found. Please see our complete list of jobs below.\"]") != null)
-                            isJobExists = false;
-
-                        if (!isJobExists)
-                        {
-                            jobPageStatusId = 4; // delete
-                        }
-                        else
-                        {
-                            // append additional data that is not present in search results for the page, status already marked as new
-                            var descriptionFromHtml = jobHtml.DocumentNode.SelectSingleNode("//div[@class=\"job-description\"]");
-                            if (descriptionFromHtml != null && descriptionFromHtml.InnerHtml != null)
-                                job.responsibilities = descriptionFromHtml.InnerHtml.Trim();
-                        }
-
-                        // get the related JobPostingId (if one exists)
-                        string jobId = job.display_job_id;
-                        var existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == jobId).FirstOrDefault();
-                        if (existingJobPage != null)
-                        {
-                            // check to see if the page content has changed since we last ran this process
-                            if (existingJobPage.RawData == job.ToString())
-                                jobPageStatusId = 2; // active (no action required)
-
-                            existingJobPage.JobPageStatusId = jobPageStatusId;
-                            existingJobPage.RawData = job.ToString();
-                            existingJobPage.ModifyDate = DateTime.UtcNow;
-                            existingJobPage.ModifyGuid = Guid.Empty;
-                            discoveredJobPages.Add(existingJobPage);
-                        }
-                        else
-                        {
-                            // add the new job page to the collection
-                            discoveredJobPages.Add(new JobPage()
+                            if (!isJobExists)
                             {
-                                CreateDate = DateTime.UtcNow,
-                                CreateGuid = Guid.Empty,
-                                IsDeleted = 0,
-                                JobPageGuid = Guid.NewGuid(),
-                                JobPageStatusId = jobPageStatusId,
-                                RawData = job.ToString(),
-                                UniqueIdentifier = jobId,
-                                Uri = jobDetailUri,
-                                JobSiteId = _jobSite.JobSiteId
-                            });
+                                jobPageStatusId = 4; // delete
+                            }
+                            else
+                            {
+                                // append additional data that is not present in search results for the page, status already marked as new
+                                var descriptionFromHtml = jobHtml.DocumentNode.SelectSingleNode("//div[@class=\"job-description\"]");
+                                if (descriptionFromHtml != null && descriptionFromHtml.InnerHtml != null)
+                                    job.responsibilities = descriptionFromHtml.InnerHtml.Trim();
+                            }
+
+                            // get the related JobPostingId (if one exists)
+                            string jobId = job.display_job_id;
+                            var existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == jobId).FirstOrDefault();
+                            if (existingJobPage != null)
+                            {
+                                // check to see if the page content has changed since we last ran this process
+                                if (existingJobPage.RawData == job.ToString())
+                                    jobPageStatusId = 2; // active (no action required)
+
+                                existingJobPage.JobPageStatusId = jobPageStatusId;
+                                existingJobPage.RawData = job.ToString();
+                                existingJobPage.ModifyDate = DateTime.UtcNow;
+                                existingJobPage.ModifyGuid = Guid.Empty;
+                                discoveredJobPages.Add(existingJobPage);
+                            }
+                            else
+                            {
+                                // add the new job page to the collection
+                                discoveredJobPages.Add(new JobPage()
+                                {
+                                    CreateDate = DateTime.UtcNow,
+                                    CreateGuid = Guid.Empty,
+                                    IsDeleted = 0,
+                                    JobPageGuid = Guid.NewGuid(),
+                                    JobPageStatusId = jobPageStatusId,
+                                    RawData = job.ToString(),
+                                    UniqueIdentifier = jobId,
+                                    Uri = jobDetailUri,
+                                    JobSiteId = _jobSite.JobSiteId
+                                });
+                            }
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        jobPageStatusId = 3; // record that an error occurred while processing this job page
-                        _syslog.Log(LogLevel.Information, $"***** TEKsystemProcess.DiscoverJobPages encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                        catch (Exception e)
+                        {
+                            jobPageStatusId = 3; // record that an error occurred while processing this job page
+                            _syslog.Log(LogLevel.Information, $"***** TEKsystemProcess.DiscoverJobPages encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                        }
                     }
                 }
             });

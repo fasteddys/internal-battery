@@ -11,44 +11,45 @@
 
 <div class="job-details-hero">
     <div class="row">
-        <div class="col-12">
-            <div class="hero-content-box">
-                <h1 class="job-name pb-3">
-                    @Model.Name
-                </h1>
-                <div class="job-details mb-3">
-                    <div class="mb-3">
-                        @Html.React("Favorite",
-                            new {
-                                jobGuid = Model.JobPostingGuid.Value,
-                                jobPostingFavoriteGuid = Model.JobPostingFavoriteGuid.HasValue ? Model.JobPostingFavoriteGuid.Value.ToString() : null
-                            }
-                        )
-                    </div>
-                    <div class="job-company"><i class="far fa-building mr-2"></i> @Model.Company</div>
-                    <div class="job-posted-date"><i class="fas fa-clock mr-2"></i> Posted: @Model.PostedDate</div>
-                </div>
-
-
-
-
-                @if (Model.LoggedInSubscriberGuid != null)
+        <div class="col-md-12 mb-3">
+            <h1 class="job-name">
+                @Model.Name
+            </h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="job-details col-md-6">
+            <div class="job-company">
+                @if (string.IsNullOrWhiteSpace(Model.LogoUrl))
                 {
-                    <div class="container-align-center">
-                        <a href="" class="modal-styling-link" data-toggle="modal" data-target="#openEmailModal">Refer a Friend</a>
-                    </div>
+                    <i class="far fa-building mr-2"></i> @Model.Company
                 }
-
-                <div class="apply-button container-align-right">
-                    @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                            Text = "Apply <i class=\"fas fa-arrow-right\"></i>",
-                            Hyperlink = url,
-                            FitToText = true,
-                            ChosenColorScheme = "cc-cscheme-secondary",
-                            ButtonAction = ActionButtonViewModel.Action.CTA
-                        })
-                </div>
+                else
+                {
+                    <img src="@Model.LogoUrl" />
+                }
             </div>
+            <div class="job-posted-date"><i class="fas fa-clock mr-2"></i> Posted: @Model.PostedDate</div>
+            <div class="mt-1">
+                @Html.React("Favorite",
+                  new {
+                      jobGuid = Model.JobPostingGuid.Value,
+                      jobPostingFavoriteGuid = Model.JobPostingFavoriteGuid.HasValue ? Model.JobPostingFavoriteGuid.Value.ToString() : null
+                  })
+            </div>
+        </div>
+        <div class="col-md-6 pl-5">
+            @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                    Text = "Apply <i class=\"fas fa-arrow-right\"></i>",
+                    Hyperlink = url,
+                    FitToText = false,
+                    ChosenColorScheme = "cc-cscheme-secondary",
+                    ButtonAction = ActionButtonViewModel.Action.CTA
+                })
+            @if (Model.LoggedInSubscriberGuid != null)
+            {
+                <button class="button-container cc-cscheme-secondary font-bold mt-4" data-toggle="modal" data-target="#openEmailModal">Refer a friend <i class="fas fa-user-friends"></i></button>
+            }
         </div>
     </div>
 </div>
