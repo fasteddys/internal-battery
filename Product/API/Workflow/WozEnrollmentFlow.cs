@@ -208,13 +208,7 @@ namespace UpDiddyApi.Workflow
             else
             {
                 Group WozStudentGroup = _repositoryWrapper.GroupRepository.GetGroupByName(UpDiddyLib.Helpers.Constants.CrossReference.Group.WOZ_STUDENT);
-                SubscriberGroup subscriberGroup = _repositoryWrapper.SubscriberGroupRepository
-                    .GetByConditionAsync(sg => sg.SubscriberId == SubscriberId && sg.GroupId == WozStudentGroup.GroupId).Result.FirstOrDefault();
-                
-                if(subscriberGroup == null)
-                {
-                    _taggingService.AddSubscriberToGroupAsync(WozStudentGroup.GroupId, SubscriberId);
-                }
+                _taggingService.AddSubscriberToGroupAsync(WozStudentGroup.GroupId, SubscriberId);
 
                 // Use a different flow for instructor led courses versus self-paced 
                 if (Enrollment.EnrollmentStatusId == (int)EnrollmentStatus.FutureRegisterStudentRequested)

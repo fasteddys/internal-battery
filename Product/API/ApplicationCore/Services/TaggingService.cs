@@ -32,10 +32,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             _mapper = mapper;
         }
 
-        public async Task<SubscriberGroup> AddSubscriberToGroupAsync(int GroupId, int SubscriberId)
+        public async void AddSubscriberToGroupAsync(int GroupId, int SubscriberId)
         {
+            SubscriberGroup subscriberGroup = GetExistingSubscriberGroup(GroupId, SubscriberId);
+            if (subscriberGroup != null)
+                return;
+
             DateTime currentDateTime = DateTime.UtcNow;
-            SubscriberGroup subscriberGroup = new SubscriberGroup
+            subscriberGroup = new SubscriberGroup
             {
                 CreateDate = currentDateTime,
                 GroupId = GroupId,
@@ -45,7 +49,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
             _repositoryWrapper.SubscriberGroupRepository.Create(subscriberGroup);
             await _repositoryWrapper.SubscriberGroupRepository.SaveAsync();
-            return subscriberGroup;
         }
 
         public async void AddSubscriberToGroupBasedOnReferrerUrlAsync(int SubscriberId, string ReferrerUrl)
@@ -67,6 +70,40 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
             }
         }
+
+        public async void AddConvertedContactToGroupBasedOnPartnerAsync(int SubscriberId)
+        {
+            IList<Partner> Partners = await _repositoryWrapper.PartnerContactRepository.GetPartnersAssociatedWithSubscriber(SubscriberId);
+
+            if (Partners == null)
+                return;
+
+            IList<GroupPartner> GroupPartners = new List<GroupPartner>();
+            foreach(Partner partner in Partners)
+            {
+                GroupPartners.Add(_repositoryWrapper.GroupPartnerRepository.GetByConditionAsync(gp => gp.PartnerId == partner.PartnerId).Result.FirstOrDefault());
+            }
+
+            foreach(GroupPartner groupPartner in GroupPartners)
+            {
+                AddSubscriberToGroupAsync(groupPartner.GroupId, SubscriberId);
+            }
+        }
+
+        #region Helpers
+
+        private SubscriberGroup GetExistingSubscriberGroup(int GroupId, int SubscriberId)
+        {
+            SubscriberGroup subscriberGroup = _repositoryWrapper.SubscriberGroupRepository.GetByConditionAsync(sg => 
+                sg.GroupId == GroupId && 
+                sg.SubscriberId == SubscriberId && 
+                sg.IsDeleted == 0).Result.FirstOrDefault();
+
+            return subscriberGroup;
+
+        }
+
+        #endregion
 
     }
 }

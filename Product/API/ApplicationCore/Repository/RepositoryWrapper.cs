@@ -36,6 +36,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IGroupPartnerRepository _groupPartnerRepository;
         private ISubscriberGroupRepository _subscriberGroupRepository;
         private IGroupRepository _groupRepository;
+        private IPartnerContactRepository _partnerContactRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -368,6 +369,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _groupRepository = new GroupRepository(_dbContext);
                 }
                 return _groupRepository;
+            }
+        }
+
+        public IPartnerContactRepository PartnerContactRepository
+        {
+            get
+            {
+                if (_partnerContactRepository == null)
+                {
+                    _partnerContactRepository = new PartnerContactRepository(_dbContext);
+                }
+                return _partnerContactRepository;
             }
         }
     }

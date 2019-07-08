@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
 
@@ -13,8 +14,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// </summary>
         /// <param name="GroupId"></param>
         /// <param name="SubscriberId"></param>
-        /// <returns></returns>
-        Task<SubscriberGroup> AddSubscriberToGroupAsync(int GroupId, int SubscriberId);
+        void AddSubscriberToGroupAsync(int GroupId, int SubscriberId);
         
         /// <summary>
         /// Adds a subscriber to any group associated with the refering url they signed
@@ -25,5 +25,12 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="SubscriberId"></param>
         /// <param name="RefererUrl"></param>
         void AddSubscriberToGroupBasedOnReferrerUrlAsync(int SubscriberId, string RefererUrl);
+
+        /// <summary>
+        /// Adds subscriber to group associated with the partners that the subscriber's
+        /// corresponding contact entry was associated with.
+        /// </summary>
+        /// <param name="SubscriberId"></param>
+        void AddConvertedContactToGroupBasedOnPartnerAsync(int SubscriberId);
     }
 }
