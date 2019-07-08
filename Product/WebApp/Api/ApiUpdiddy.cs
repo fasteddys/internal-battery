@@ -1666,7 +1666,6 @@ namespace UpDiddy.Api
         {
             return await GetAsync<BasicResponseDto>("job/active-job-count");
         }
-
         #endregion
     }
 }
