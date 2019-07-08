@@ -228,6 +228,10 @@
         return await _http.delete('/company/delete/'+companyGuid);
     }
 
+    var getRecruiters = async function () {
+        return await _http.get('/recruiters');
+    }
+
      
     return {
         getProfile: getProfile,
@@ -252,7 +256,8 @@
         getCompanies: getCompanies,
         addCompany: addCompany,
         editCompany: editCompany,
-        deleteCompany: deleteCompany
+        deleteCompany: deleteCompany,
+        getRecruiters: getRecruiters
     };
     
 })(API_URL);

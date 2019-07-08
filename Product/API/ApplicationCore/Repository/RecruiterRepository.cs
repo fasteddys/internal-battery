@@ -13,6 +13,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
 
         }
+
+        public async Task<IQueryable<Recruiter>> GetAllRecruiters()
+        {
+            return await GetAllAsync();
+        }
+
         public async Task<Recruiter> GetRecruiterBySubscriberId(int subscriberId)
         {
             var queryableRecruiter = await GetAllAsync();
