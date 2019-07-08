@@ -31,7 +31,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 && x.Province == jobPost.Province
                 && x.IsDeleted == 0
                 && x.JobPostingId != jobPost.JobPostingId)
-                .OrderBy(y => y.PostingDateUTC)
+                .OrderByDescending(y => y.PostingDateUTC)
                 .Take(5).ToListAsync();
         }
     }

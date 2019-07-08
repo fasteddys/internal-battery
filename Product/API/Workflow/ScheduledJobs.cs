@@ -1147,14 +1147,12 @@ namespace UpDiddyApi.Workflow
                 dynamic recruiterTemplate = new JObject();
                 foreach (KeyValuePair<Subscriber, List<JobPosting>> entry in subscribersToJobPostingMapping)
                 {
-                    List< JobPosting> similarJobs = await _jobPostingService.GetSimilarJobPostingsAsync(entry.Value[0]);
-                        
+                    List<JobPosting> similarJobs = await _jobPostingService.GetSimilarJobPostingsAsync(entry.Value[0]);
                     //Remove duplicates from similar job
                     foreach (var job in entry.Value)
                     {
                         similarJobs.RemoveAll(x => x.JobPostingId == job.JobPostingId);
                     }
-
                     //Send email to subscriber
                     bool result = await _sysEmail.SendTemplatedEmailAsync(
                               entry.Key.Email,
@@ -1165,10 +1163,8 @@ namespace UpDiddyApi.Workflow
                               null);
                 }
                 //Send emails out to recruiters
-                var VipEmails = _configuration.GetSection("SysEmail:VIPEmails").GetChildren();
-                List<string> recruiterEmails = VipEmails.Select(x => x.Value).ToList();
-                recruiterTemplate = SendGridHelper.GenerateJobAbandonmentRecruiterTemplate(subscribersToJobPostingMapping, jobPostingUrl);
-                foreach (string email in recruiterEmails)
+                var jobAbandonmentEmails = _configuration.GetSection("SysEmail:JobAbandonmentEmails").GetChildren().Select(x => x.Value).ToList();
+                foreach (string email in jobAbandonmentEmails)
                 {
                     await _sysEmail.SendTemplatedEmailAsync(
                           email,
@@ -1184,6 +1180,7 @@ namespace UpDiddyApi.Workflow
                 _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobAbandonmentEmailDelivery encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
         }
+
 
         #endregion
 

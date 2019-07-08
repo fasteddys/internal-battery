@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Helpers
 {
@@ -19,6 +20,7 @@ namespace UpDiddyApi.Helpers
             templateData.abandonedJobs = JArray.FromObject(pair.Value.Select(j => new
             {
                 title = j.Title,
+                summary = Utils.RemoveHTML(j.Description).Length <= 250 ? Utils.RemoveHTML(j.Description) : Utils.RemoveHTML(j.Description).Substring(0, 250) + "...",
                 location = $"{j.City}, {j.Province}, {j.Country}",
                 posted = j.PostingDateUTC.ToShortDateString(),
                 url = ViewJobPostingUrl + j.JobPostingGuid
@@ -30,6 +32,7 @@ namespace UpDiddyApi.Helpers
                 templateData.jobs = JArray.FromObject(similarJobs.Select(j => new
                 {
                     title = j.Title,
+                    summary = Utils.RemoveHTML(j.Description).Length <= 250 ? Utils.RemoveHTML(j.Description) : Utils.RemoveHTML(j.Description).Substring(0, 250) + "...",
                     location = $"{j.City}, {j.Province}, {j.Country}",
                     posted = j.PostingDateUTC.ToShortDateString(),
                     url = ViewJobPostingUrl + j.JobPostingGuid
@@ -46,7 +49,7 @@ namespace UpDiddyApi.Helpers
                 subscriber = new
                 {
                     firstName = j.Key.FirstName,
-                    lastName =j.Key.LastName,
+                    lastName = j.Key.LastName,
                     subscriberid = j.Key.SubscriberId,
                     email = j.Key.Email,
                     state = j.Key.State.Name,
@@ -57,14 +60,14 @@ namespace UpDiddyApi.Helpers
                 .Select(x => new
                 {
                     title = x.Title,
+                    summary = Utils.RemoveHTML(x.Description).Length <= 250 ? Utils.RemoveHTML(x.Description) : Utils.RemoveHTML(x.Description).Substring(0, 250) + "...",
                     postingDate = x.PostingDateUTC.ToShortDateString(),
                     jobUrl = jobPostingUrl + x.JobPostingGuid,
                     city = x.City,
                     province = x.Province,
                     country = x.Country,
 
-                }))
-                 .ToArray()
+                })).ToArray()
             }).ToList());
             return templateData;
         }
