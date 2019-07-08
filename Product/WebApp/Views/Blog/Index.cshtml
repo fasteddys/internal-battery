@@ -1,0 +1,6 @@
+﻿@model UpDiddy.ViewModels.ButterCMS.BlogPageViewModel
+@using React.AspNet;
+
+<div class="blog-container">
+    @Html.React("BlogPage", new { data = Model })
+</div>
