@@ -13,6 +13,7 @@ using UpDiddyLib.MessageQueue;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.Workflow
 {
@@ -29,8 +30,17 @@ namespace UpDiddyApi.Workflow
         private int _wozVendorId = 0;
         private IHttpClientFactory _httpClientFactory = null;
         private IRepositoryWrapper _repositoryWrapper;
+        private ITaggingService _taggingService;
 
-        public WozEnrollmentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration,ISysEmail sysEmail, IServiceProvider serviceProvider, IHttpClientFactory httpClientFactory, ILogger<WozEnrollmentFlow> logger, IRepositoryWrapper repositoryWrapper)
+        public WozEnrollmentFlow(UpDiddyDbContext dbcontext, 
+            IMapper mapper, 
+            IConfiguration configuration,
+            ISysEmail sysEmail, 
+            IServiceProvider serviceProvider, 
+            IHttpClientFactory httpClientFactory, 
+            ILogger<WozEnrollmentFlow> logger, 
+            IRepositoryWrapper repositoryWrapper,
+            ITaggingService taggingService)
         {
             _retrySeconds = int.Parse(configuration["Woz:RetrySeconds"]);
             // TODO modify code to work off woz Guid not dumb key 
@@ -42,6 +52,7 @@ namespace UpDiddyApi.Workflow
             _sysLog = logger;
             _httpClientFactory = httpClientFactory;
             _repositoryWrapper = repositoryWrapper;
+            _taggingService = taggingService;
         }
         #endregion
 
@@ -202,17 +213,7 @@ namespace UpDiddyApi.Workflow
                 
                 if(subscriberGroup == null)
                 {
-                    DateTime currentDateTime = DateTime.UtcNow;
-                    subscriberGroup = new SubscriberGroup
-                    {
-                        CreateDate = currentDateTime,
-                        GroupId = WozStudentGroup.GroupId,
-                        SubscriberId = SubscriberId,
-                        ModifyDate = currentDateTime,
-                        SubscriberGroupGuid = Guid.NewGuid()
-                    };
-                    _repositoryWrapper.SubscriberGroupRepository.Create(subscriberGroup);
-                    await _repositoryWrapper.SubscriberGroupRepository.SaveAsync();
+                    _taggingService.AddSubscriberToGroupAsync(WozStudentGroup.GroupId, SubscriberId);
                 }
 
                 // Use a different flow for instructor led courses versus self-paced 
