@@ -42,6 +42,10 @@ global.NotificationView = NotificationView;
 import NotificationItem from './dashboard/dashboard-helpers';
 global.NotificationItem = NotificationItem;
 
+// blog
+import Blog from './blog/blog';
+global.Blog = Blog;
+
 // reports
 global.SATable = SATable;
 global.JobAppReportTable = JobAppReportTable;
