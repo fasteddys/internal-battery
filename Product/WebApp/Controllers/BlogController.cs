@@ -34,7 +34,32 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> IndexAsync()
         {
             var response = await _butterCMSClient.ListPostsAsync(1, 10);
-            return View();
-        }   
+            ViewBag.Posts = response.Data;
+            ViewBag.NextPage = response.Meta.NextPage;
+            ViewBag.PreviousPage = response.Meta.PreviousPage;
+            return View("Posts");
+        }
+
+        [Route("blog/{slug}")]
+        public async Task<IActionResult> ShowPost(string slug)
+        {
+            var response = await _butterCMSClient.RetrievePostAsync(slug);
+            ViewBag.Post = response.Data;
+            return View("Post");
+        }
+
+        [Route("")]
+        [Route("blog")]
+        [Route("blog/p/{page}")]
+        public async Task<IActionResult> ListAllPosts(int page = 1)
+        {
+            var response = await _butterCMSClient.ListPostsAsync(page, 10);
+            ViewBag.Posts = response.Data;
+            ViewBag.NextPage = response.Meta.NextPage;
+            ViewBag.PreviousPage = response.Meta.PreviousPage;
+            return View("Posts");
+        }
+
+       
     }
 }
