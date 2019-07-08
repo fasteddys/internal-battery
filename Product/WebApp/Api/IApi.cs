@@ -53,6 +53,7 @@ namespace UpDiddy.Api
         Task<CourseVariantDto> _GetCourseVariantAsync(Guid courseVariantGuid);
         Task<BasicResponseDto> SyncLinkedInAccountAsync(string linkedInCode, string returnUrl);
         Task<IList<SkillDto>> GetSkillsAsync(string userQuery);
+        Task<IList<CompanyDto>> GetAllCompaniesAsync();
         Task<IList<CompanyDto>> GetCompaniesAsync(string userQuery);
         Task<IList<EducationalInstitutionDto>> GetEducationalInstitutionsAsync(string userQuery);
         Task<IList<EducationalDegreeDto>> GetEducationalDegreesAsync(string userQuery);

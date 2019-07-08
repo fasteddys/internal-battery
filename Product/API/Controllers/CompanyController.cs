@@ -22,7 +22,6 @@ namespace UpDiddyApi.Controllers
             _companyService = companyService;
         }
 
-        [Authorize]
         [HttpGet]
         [Route("api/companies")]
         public async Task<IActionResult> CompaniesAsync()
