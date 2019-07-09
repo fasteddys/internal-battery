@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Controllers
 {
@@ -34,6 +35,23 @@ namespace UpDiddyApi.Controllers
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Error, $"RecruiterController.RecruitersAsync : Error occured when retrieving recruiters with message={ex.Message}", ex);
+                return StatusCode(500);
+            }
+        }
+
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [HttpPost]
+        [Route("api/[controller]/add")]
+        public async Task<IActionResult> AddRecruiterAsync([FromBody]RecruiterDto company)
+        {
+            try
+            {
+                await _recruiterService.AddRecruiterAsync(company);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"RecruiterController.AddRecruiterAsync : Error occured when adding recruiter with message={ex.Message}", ex);
                 return StatusCode(500);
             }
         }

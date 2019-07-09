@@ -232,6 +232,14 @@
         return await _http.get('/recruiters');
     }
 
+    var getRecruiterDetails = async function (query) {
+        return await _http.get(`/subscriber/subscriber-details${buildQuery(query)}`);
+    }
+
+    var addRecruiter = async function (recruiterObj) {
+        return await _http.post('/recruiter/add', JSON.stringify(recruiterObj));
+    }
+
      
     return {
         getProfile: getProfile,
@@ -257,7 +265,9 @@
         addCompany: addCompany,
         editCompany: editCompany,
         deleteCompany: deleteCompany,
-        getRecruiters: getRecruiters
+        getRecruiters: getRecruiters,
+        getRecruiterDetails: getRecruiterDetails,
+        addRecruiter: addRecruiter
     };
     
 })(API_URL);

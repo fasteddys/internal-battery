@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNet.OData.Query;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -80,5 +81,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="msg"></param>
         /// <returns></returns>
         Task<bool> ImportResume(ResumeParse resumeParse, string resume);
+
+        Task<Subscriber> GetSubscriber(ODataQueryOptions<Subscriber> options);
     }
 }

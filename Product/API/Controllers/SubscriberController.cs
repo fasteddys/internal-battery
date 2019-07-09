@@ -1206,5 +1206,13 @@ namespace UpDiddyApi.Controllers
                 return Unauthorized();
             }
         }
+
+        [HttpGet]
+        [Route("subscriber-details")]
+        public async Task<IActionResult> GetSubscriber(ODataQueryOptions<Subscriber> options)
+        {
+            var subscriber=await _subscriberService.GetSubscriber(options);
+            return Ok(_mapper.Map<SubscriberDto>(subscriber));
+        }
     }
 }
