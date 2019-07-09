@@ -22,7 +22,7 @@ namespace UpDiddyApi.Controllers
             _companyService = companyService;
         }
 
-        [Authorize]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpGet]
         [Route("api/companies")]
         public async Task<IActionResult> CompaniesAsync()
