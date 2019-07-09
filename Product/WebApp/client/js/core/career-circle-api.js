@@ -240,6 +240,14 @@
         return await _http.post('/recruiter/add', JSON.stringify(recruiterObj));
     }
 
+    var editRecruiter = async function (recruiterObj) {
+        return await _http.post('/recruiter/update', JSON.stringify(recruiterObj));
+    }
+
+    var deleteRecruiter = async function (recruiterObj) {
+        return await _http.post('/recruiter/delete/', JSON.stringify(recruiterObj));
+    }
+
      
     return {
         getProfile: getProfile,
@@ -267,7 +275,9 @@
         deleteCompany: deleteCompany,
         getRecruiters: getRecruiters,
         getRecruiterDetails: getRecruiterDetails,
-        addRecruiter: addRecruiter
+        addRecruiter: addRecruiter,
+        editRecruiter: editRecruiter,
+        deleteRecruiter: deleteRecruiter,
     };
     
 })(API_URL);

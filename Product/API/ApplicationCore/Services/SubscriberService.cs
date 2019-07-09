@@ -955,9 +955,9 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<Subscriber> GetSubscriber(ODataQueryOptions<Subscriber> options)
         {
             var queryableSubscriber = options.ApplyTo(await _repository.SubscriberRepository.GetAllSubscribersAsync());
-            var subscriberList=queryableSubscriber.Cast<Subscriber>().ToListAsync();
+            var subscriberList=await queryableSubscriber.Cast<Subscriber>().Where(s=>s.IsDeleted==0).ToListAsync();
 
-            return subscriberList.Result.Count>0 ? subscriberList.Result[0] :null;
+            return subscriberList.Count>0 ? subscriberList[0] :null;
         }
 
 

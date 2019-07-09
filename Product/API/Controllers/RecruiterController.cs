@@ -21,7 +21,7 @@ namespace UpDiddyApi.Controllers
             _recruiterService = recruiterService;
         }
 
-        [Authorize]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpGet]
         [Route("api/recruiters")]
         public async Task<IActionResult> RecruitersAsync()
@@ -42,18 +42,68 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpPost]
         [Route("api/[controller]/add")]
-        public async Task<IActionResult> AddRecruiterAsync([FromBody]RecruiterDto company)
+        public async Task<IActionResult> AddRecruiterAsync([FromBody]RecruiterDto recruiterDto)
         {
             try
             {
-                await _recruiterService.AddRecruiterAsync(company);
-                return Ok();
+                var response=await _recruiterService.AddRecruiterAsync(recruiterDto);
+                return Ok(response);
             }
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Error, $"RecruiterController.AddRecruiterAsync : Error occured when adding recruiter with message={ex.Message}", ex);
                 return StatusCode(500);
             }
+        }
+
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [HttpPost]
+        [Route("api/recruiter/update")]
+        public async Task<IActionResult> UpdateRecruiterAsync([FromBody]RecruiterDto recruiter)
+        {
+            try
+            {
+                if (ModelState.IsValid && recruiter != null && recruiter.RecruiterGuid != Guid.Empty)
+                {
+                    await _recruiterService.EditRecruiterAsync(recruiter);
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"RecruiterController.UpdateRecruiterAsync : Error occured when updating recruiter with message={ex.Message}", ex);
+                return StatusCode(500);
+            }
+
+        }
+
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [HttpPost]
+        [Route("api/recruiter/delete")]
+        public async Task<IActionResult> DeleteRecruiterAsync([FromBody]RecruiterDto recruiter)
+        {
+            try
+            {
+                if (ModelState.IsValid && recruiter != null && recruiter.RecruiterGuid != Guid.Empty)
+                {
+                    await _recruiterService.DeleteRecruiterAsync(recruiter);
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"RecruiterController.DeleteRecruiterAsync : Error occured when deleting recruiter with message={ex.Message}", ex);
+                return StatusCode(500);
+            }
+
         }
     }
 }

@@ -9,9 +9,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface IRecruiterService
     {
         Task<List<RecruiterDto>> GetRecruitersAsync();
-        Task AddRecruiterAsync(RecruiterDto company);
-        //Task AddCompanyAsync(CompanyDto companyDto);
-        //Task EditCompanyAsync(CompanyDto companyDto);
-        //Task DeleteCompanyAsync(Guid companyGuid);
+        Task<string> AddRecruiterAsync(RecruiterDto recruiterDto);
+        Task EditRecruiterAsync(RecruiterDto recruiterDto);
+        Task DeleteRecruiterAsync(RecruiterDto recruiterDto);
     }
 }

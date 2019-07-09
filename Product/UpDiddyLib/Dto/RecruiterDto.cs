@@ -13,7 +13,7 @@ namespace UpDiddyLib.Dto
         public string LastName { get; set; }
         public string Email { get; set; }
         public string  PhoneNumber { get; set; }
-        public int CompanyId { get; set; }
+        public virtual CompanyDto Company { get; set; }
         public bool isRecruiter { get; set; }
 
     }

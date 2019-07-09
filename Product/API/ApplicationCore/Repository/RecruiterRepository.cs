@@ -14,9 +14,25 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         }
 
+        public async Task AddRecruiter(Recruiter recruiter)
+        {
+            await Create(recruiter);
+            await SaveAsync();
+        }
+
         public async Task<IQueryable<Recruiter>> GetAllRecruiters()
         {
             return await GetAllAsync();
+        }
+
+        public async Task<Recruiter> GetRecruiterByRecruiterGuid(Guid recruiterGuid)
+        {
+            var queryableRecruiter = await GetAllAsync();
+            var recruiterResult = queryableRecruiter
+                                .Where(jr => jr.IsDeleted == 0 && jr.RecruiterGuid == recruiterGuid)
+                                .ToList();
+
+            return recruiterResult.Count == 0 ? null : recruiterResult[0];
         }
 
         public async Task<Recruiter> GetRecruiterBySubscriberId(int subscriberId)
@@ -27,6 +43,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                 .ToList();
 
             return recruiterResult.Count == 0 ? null : recruiterResult[0];
+        }
+
+        public async Task UpdateRecruiter(Recruiter recruiter)
+        {
+            Update(recruiter);
+            await SaveAsync();
         }
     }
 }

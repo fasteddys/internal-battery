@@ -83,6 +83,63 @@ const Command = ({ id, onExecute }) => {
     );
 };
 
+const BooleanFormatter = ({ value }) => <Chip label={value ? 'Yes' : 'No'} />;
+
+const BooleanEditor = ({ value, onValueChange }) => (
+    <Select
+        input={<Input />}
+        value={value ? 'Yes' : 'No'}
+        onChange={event => onValueChange(event.target.value === 'Yes')}
+        style={{ width: '100%' }}
+    >
+        <MenuItem value="Yes">
+            Yes
+    </MenuItem>
+        <MenuItem value="No">
+            No
+    </MenuItem>
+    </Select>
+);
+
+const BooleanTypeProvider = props => (
+    <DataTypeProvider
+        formatterComponent={BooleanFormatter}
+        editorComponent={BooleanEditor}
+        {...props}
+    />
+);
+
+const StringEditor = ({ value, onValueChange, column: { value: defaultValue, mandatory } }) => (
+    <TextField
+        error={mandatory && (!defaultValue && !value)}
+        defaultValue={value || defaultValue}
+        onChange={e => onValueChange(e.target.value)}
+        required
+        label="Required"
+    />
+);
+
+const StringTypeProvider = props => (
+    <DataTypeProvider
+        editorComponent={StringEditor}
+        {...props}
+    />
+);
+
+const LabelEditor = ({ value, onValueChange, column: { value: defaultValue, mandatory } }) => (
+    <TextField
+        defaultValue={value || defaultValue}
+        disabled
+    />
+);
+
+const LabelTypeProvider = props => (
+    <DataTypeProvider
+        editorComponent={LabelEditor}
+        {...props}
+    />
+);
+
 const LoadingState = ({ loading, columnCount }) => (
     <td colSpan={columnCount} style={{ textAlign: 'center', verticalAlign: 'middle' }}>
         <big>
@@ -102,7 +159,12 @@ class RecruitersGrid extends React.PureComponent {
                 { name: 'LastName', title: 'Last Name', dataType: 'string' },
                 { name: 'Email', title: 'Email', dataType: 'string' },
                 { name: 'Phone', title: 'Phone', dataType: 'int' },
+                { name: 'IsRecruiter', title: 'Is Recruiter' },
+                { name: 'CompanyName', title: 'Company Name', dataType: 'string' },
             ],
+            booleanColumns: ['IsRecruiter'],
+            labelColumns: ['Email', 'CompanyName'],
+            stringColumns: ['FirstName','LastName'],
             rows: [],
             pageSizes: [5, 10, 15, 0],
             searchValue: '',
@@ -152,7 +214,11 @@ class RecruitersGrid extends React.PureComponent {
                 FirstName: x.firstName,
                 LastName: x.lastName,
                 Email: x.email,
-                Phone: x.phoneNumber
+                Phone: x.phoneNumber,
+                IsRecruiter: x.isRecruiter,
+                CompanyName: x.company.companyName,
+                RecruiterGuid: x.recruiterGuid,
+                SubscriberGuid:x.subscriber.subscriberGuid
             }));
 
         return rowData;
@@ -168,10 +234,97 @@ class RecruitersGrid extends React.PureComponent {
         }
     }
 
-    commitChanges({ added, changed, deleted }) {
-        if (added) { }
-        if (changed) { }
-        if (deleted) { }
+    validateEditChanges(rowChanged, editedRecruiter) {
+        let status = true;
+        if (editedRecruiter != undefined && editedRecruiter != null) {
+
+            //validate firstName
+            if (editedRecruiter.FirstName != undefined && editedRecruiter.FirstName != null) {
+                if (editedRecruiter.FirstName != '')
+                    status = true;
+                else {
+                    this.invalidEditedRowIds = this.invalidEditedRowIds.concat(parseInt(rowChanged));
+                    status = false;
+                    return status;
+                }
+            }
+
+            //validate lastName
+            if (editedRecruiter.LastName != undefined && editedRecruiter.LastName != null) {
+                if (editedRecruiter.LastName != '')
+                    status = true;
+                else {
+                    this.invalidEditedRowIds = this.invalidEditedRowIds.concat(parseInt(rowChanged));
+                    status = false;
+                    return status;
+                }
+            }
+
+            //validate Phone Number
+            if (editedRecruiter.Phone != undefined && editedRecruiter.Phone != null) {
+                var phoneno = /^[2-9]{1}\d{9}$/;
+                if (editedRecruiter.Phone.match(phoneno)) {
+                    status = true;
+                }
+                else {
+                    this.invalidEditedRowIds = this.invalidEditedRowIds.concat(parseInt(rowChanged));
+                    ToastService.error('Invalid Phone Number.')
+                    status = false;
+                    return status;
+                }
+            }
+
+            return status;
+        }
+        else {
+            this.invalidEditedRowIds = this.invalidEditedRowIds.concat(parseInt(rowChanged));
+            status = false;
+            return status;
+        }
+    }
+
+    commitChanges({ changed, deleted }) {
+        let { rows } = this.state;
+        if (changed) {
+            var changedRowId = Object.keys(changed)[0];
+            var unchangedRowData = rows[changedRowId];
+            if (this.validateEditChanges(changedRowId, changed[changedRowId])) {
+                var recruiter = {
+                    RecruiterGuid: unchangedRowData.RecruiterGuid,
+                    FirstName: changed[changedRowId].FirstName == undefined ? unchangedRowData.FirstName : changed[changedRowId].FirstName,
+                    LastName: changed[changedRowId].LastName == undefined ? unchangedRowData.LastName : changed[changedRowId].LastName,
+                    PhoneNumber: changed[changedRowId].Phone == undefined ? unchangedRowData.Phone : changed[changedRowId].Phone,
+                    IsRecruiter: changed[changedRowId].IsRecruiter == undefined ? unchangedRowData.IsRecruiter : changed[changedRowId].IsRecruiter,
+                    SubscriberGuid: unchangedRowData.SubscriberGuid,
+                }
+                CareerCircleAPI.editRecruiter(recruiter)
+                    .then((res) => {
+                        this.setState({ loading: true, rows: [] });
+                        ToastService.success('Recruiter updated successfully.');
+                        this.getRecruiters();
+                    })
+                    .catch(() => ToastService.error('An error occured while updating the recruiter.'))
+
+            }
+
+        }
+        if (deleted) {
+            var changedRowId = deleted[0];
+            var unchangedRowData = rows[changedRowId];
+
+            var recruiter = {
+                RecruiterGuid: unchangedRowData.RecruiterGuid,
+                SubscriberGuid: unchangedRowData.SubscriberGuid,
+            }
+
+            CareerCircleAPI.deleteRecruiter(recruiter)
+                .then((res) => {
+                    this.setState({ loading: true, rows: [] });
+                    ToastService.success('Recruiter deleted successfully.');
+                    this.getRecruiters();
+                })
+                .catch(() => ToastService.error('An error occured while deleting the recruiter.'))
+        }
     }
 
     searchRecruiters(e) {
@@ -239,29 +392,10 @@ class RecruitersGrid extends React.PureComponent {
                     .catch((err) => ToastService.error('An error occured while adding the recruiter.'))
             }
         }
-        //var searchValue = this.searchRecruiter.value;
-
-        //const query = { filter: {} };
-
-        ////email pattern
-        //var emailPattern = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
-
-        //if (searchValue && searchValue.match(emailPattern)) {
-        //    query.filter.Email = searchValue;
-        //}
-
-        //CareerCircleAPI.getRecruiterDetails(query)
-        //    .then((res) => {
-        //        //this.setState({ data: res.data });
-        //    })
-        //    .catch((err) => ToastService.error(err/*'An error occured while loading the recruiter.'*/))
-        //    .finally(() => {
-        //        //this.setState({ loading: false });
-        //    })
     }
 
     render() {
-        const { rows, columns, pageSizes, searchValue, sorting, editingRowIds, loading, recruiter, isRecruiter } = this.state;
+        const { rows, columns, booleanColumns, labelColumns, stringColumns, pageSizes, searchValue, sorting, editingRowIds, loading, recruiter, isRecruiter } = this.state;
 
         return (
             <div>
@@ -360,6 +494,18 @@ class RecruitersGrid extends React.PureComponent {
                         <SearchState
                             value={searchValue}
                             onValueChange={this.changeSearchValue}
+                        />
+
+                        <BooleanTypeProvider
+                            for={booleanColumns}
+                        />
+
+                        <LabelTypeProvider
+                            for={labelColumns}
+                        />
+
+                        <StringTypeProvider
+                            for={stringColumns}
                         />
 
                         <EditingState
