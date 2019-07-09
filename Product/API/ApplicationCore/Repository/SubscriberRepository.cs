@@ -49,9 +49,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
               .FirstOrDefault(); 
         }
 
+        public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int subscriberId)
+        {
+            return _dbContext.Subscriber
+              .Where(s => s.IsDeleted == 0 && s.CloudTalentIndexStatus == 0)
+              .ToList();
+        }
+
+ 
 
 
-      
+
 
     }
 }

@@ -218,7 +218,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (subscriber.CloudTalentUri != null && string.IsNullOrEmpty(subscriber.CloudTalentUri.Trim()) == false)
                 {
                    isIndexed = true;
-                   // TODO JAB test profile delete 
                    deleteStatus =  _profileApi.DeleteProfile(subscriber.CloudTalentUri.Trim(), ref errorMsg);
                 }
 

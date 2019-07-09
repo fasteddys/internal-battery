@@ -14,5 +14,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<Subscriber> GetSubscriberByEmailAsync(string email);
 
         Task<Subscriber> GetSubscriberByIdAsync(int subscriberId);
+
+        Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers);
+
     }
 }

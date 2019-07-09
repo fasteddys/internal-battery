@@ -27,8 +27,7 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
 {
     public class GoogleProfileService : BusinessVendorBase, IGoogleProfileService
     {
-        //todo jab implement interface
-
+     
         #region Class
 
 
