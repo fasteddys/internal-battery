@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import ReactDOMServer from 'react-dom/server';
-
 import ResumeMerge from './ResumeMerge';
 import ResumeUpload from './ResumeUpload';
 import Checkbox from './Checkbox';
@@ -14,6 +13,8 @@ import Select from './Select';
 import Validate from './Validate';
 import TextArea from './TextArea';
 import Breadcrumb from './breadcrumbs/Breadcrumb';
+import BlogPost from './blog/blog-post';
+import Blog from './blog/blog';
 
 
 global.React = React;
@@ -43,10 +44,11 @@ import NotificationItem from './dashboard/dashboard-helpers';
 global.NotificationItem = NotificationItem;
 
 // blog
-import Blog from './blog/blog';
+global.BlogPost = BlogPost;
 global.Blog = Blog;
 
-// reports
+
+// reports 
 global.SATable = SATable;
 global.JobAppReportTable = JobAppReportTable;
 
