@@ -96,7 +96,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
                 //Assign permission to recruiter
-                if(recruiterDto.isRecruiter)
+                if(recruiterDto.IsInADRecruiterGroupRecruiter)
                     await AssignRecruiterPermissions(recruiterDto.SubscriberGuid);
 
                 response = "Added";
@@ -136,7 +136,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 //check if member was assigned permission previously
                 var members = await GetRecruiterGroupMembers();
-                if (recruiterDto.isRecruiter)
+                if (recruiterDto.IsInADRecruiterGroupRecruiter)
                 {                   
                     if (members.FirstOrDefault(x => x["url"].ToString().Contains(recruiterDto.SubscriberGuid.ToString())) == null)
                     {
@@ -198,9 +198,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             foreach (var recruiter in recruiters)
             {
                 if (members.FirstOrDefault(x => x["url"].ToString().Contains(recruiter.Subscriber.SubscriberGuid.ToString())) != null)
-                    recruiter.isRecruiter = true;
+                    recruiter.IsInADRecruiterGroupRecruiter = true;
                 else
-                    recruiter.isRecruiter = false;
+                    recruiter.IsInADRecruiterGroupRecruiter = false;
             }
 
         }

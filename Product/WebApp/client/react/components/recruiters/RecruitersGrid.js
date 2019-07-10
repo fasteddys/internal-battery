@@ -170,7 +170,7 @@ class RecruitersGrid extends React.PureComponent {
                 { name: 'LastName', title: 'Last Name', dataType: 'string' },
                 { name: 'Email', title: 'Email', dataType: 'string' },
                 { name: 'Phone', title: 'Phone', dataType: 'int' },
-                { name: 'IsRecruiter', title: 'Is Recruiter' },
+                { name: 'IsRecruiter', title: 'Recruiter Talent Access' },
                 { name: 'CompanyName', title: 'Company Name', dataType: 'string' },
             ],
             booleanColumns: ['IsRecruiter'],
@@ -189,7 +189,7 @@ class RecruitersGrid extends React.PureComponent {
                 lastName: '',
                 email: '',
                 phone: '',
-                isRecruiter: true,
+                isInADRecruiterGroupRecruiter: true,
                 subscriberGuid: '',
             },
         };
@@ -230,7 +230,7 @@ class RecruitersGrid extends React.PureComponent {
                 LastName: x.lastName,
                 Email: x.email,
                 Phone: x.phoneNumber,
-                IsRecruiter: x.isRecruiter,
+                IsRecruiter: x.isInADRecruiterGroupRecruiter,
                 CompanyName: x.company.companyName,
                 RecruiterGuid: x.recruiterGuid,
                 SubscriberGuid: x.subscriber.subscriberGuid
@@ -380,7 +380,7 @@ class RecruitersGrid extends React.PureComponent {
                     FirstName: changed[changedRowId].FirstName == undefined ? unchangedRowData.FirstName : changed[changedRowId].FirstName,
                     LastName: changed[changedRowId].LastName == undefined ? unchangedRowData.LastName : changed[changedRowId].LastName,
                     PhoneNumber: changed[changedRowId].Phone == undefined ? unchangedRowData.Phone : changed[changedRowId].Phone,
-                    IsRecruiter: changed[changedRowId].IsRecruiter == undefined ? unchangedRowData.IsRecruiter : changed[changedRowId].IsRecruiter,
+                    IsInADRecruiterGroupRecruiter: changed[changedRowId].IsRecruiter == undefined ? unchangedRowData.IsRecruiter : changed[changedRowId].IsRecruiter,
                     SubscriberGuid: unchangedRowData.SubscriberGuid,
                 }
                 CareerCircleAPI.editRecruiter(recruiter)
@@ -451,7 +451,7 @@ class RecruitersGrid extends React.PureComponent {
             email: data.email,
             phone: data.phoneNumber == null ? '' : data.phoneNumber,
             subscriberGuid: data.subscriberGuid,
-            isRecruiter: this.state.recruiter.isRecruiter
+            isInADRecruiterGroupRecruiter: this.state.recruiter.isInADRecruiterGroupRecruiter
         };
 
         return recruiterData;
@@ -465,7 +465,7 @@ class RecruitersGrid extends React.PureComponent {
                 email: this.state.recruiter.email,
                 phone: this.state.recruiter.phone,
                 subscriberGuid: this.state.recruiter.subscriberGuid,
-                isRecruiter: !this.state.recruiter.isRecruiter
+                isInADRecruiterGroupRecruiter: !this.state.recruiter.isInADRecruiterGroupRecruiter
             }
         })
     }
@@ -478,7 +478,7 @@ class RecruitersGrid extends React.PureComponent {
                 email: this.state.recruiter.email,
                 phone: this.state.recruiter.phone,
                 subscriberGuid: this.state.recruiter.subscriberGuid,
-                isRecruiter: this.state.recruiter.isRecruiter
+                isInADRecruiterGroupRecruiter: this.state.recruiter.isInADRecruiterGroupRecruiter
             }
         })
     }
@@ -491,7 +491,7 @@ class RecruitersGrid extends React.PureComponent {
                 email: this.state.recruiter.email,
                 phone: this.state.recruiter.phone,
                 subscriberGuid: this.state.recruiter.subscriberGuid,
-                isRecruiter: this.state.recruiter.isRecruiter
+                isInADRecruiterGroupRecruiter: this.state.recruiter.isInADRecruiterGroupRecruiter
             }
         })
     }
@@ -504,7 +504,7 @@ class RecruitersGrid extends React.PureComponent {
                 email: this.state.recruiter.email,
                 phone: value,
                 subscriberGuid: this.state.recruiter.subscriberGuid,
-                isRecruiter: this.state.recruiter.isRecruiter
+                isInADRecruiterGroupRecruiter: this.state.recruiter.isInADRecruiterGroupRecruiter
             }
         })
     }
@@ -541,7 +541,7 @@ class RecruitersGrid extends React.PureComponent {
                 email: '',
                 phone: '',
                 subscriberGuid: '',
-                isRecruiter: this.state.recruiter.isRecruiter
+                isInADRecruiterGroupRecruiter: this.state.recruiter.isInADRecruiterGroupRecruiter
             }
         })
 
@@ -615,7 +615,7 @@ class RecruitersGrid extends React.PureComponent {
                                                         <label for="isRecruiter">Is Recruiter</label>
                                                     </div>
                                                     <div class="col-4">
-                                                        <input type="checkbox" id="isRecruiter" checked={recruiter.isRecruiter} onChange={this.changePermissions} />
+                                                        <input type="checkbox" id="isRecruiter" checked={recruiter.isInADRecruiterGroupRecruiter} onChange={this.changePermissions} />
                                                     </div>
                                                 </div>
                                             </div>
