@@ -9,7 +9,9 @@ using Microsoft.AspNet.OData.Query;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
-    public interface IJobPostingService
+    public interface ITrackingService
     {
+        Task RecordSubscriberApplyActionAsync(Guid jobGuid, Guid subscriberGuid);
+        Task<Dictionary<Subscriber, List<JobPosting>>> GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime datetime);
     }
 }
