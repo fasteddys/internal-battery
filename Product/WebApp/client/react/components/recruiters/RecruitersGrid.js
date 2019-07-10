@@ -35,6 +35,16 @@ import {
     PagingPanel,
 } from '@devexpress/dx-react-grid-material-ui';
 
+const AddButton = ({ onExecute }) => (
+    <div class="row">
+        <div class="col-12">
+            <button type="button" class="btn btn-primary addNote text-right" data-toggle="modal" data-target="#addRecruiterModal" >
+                Add
+                    </button>
+        </div>
+    </div>
+);
+
 const EditButton = ({ onExecute }) => (
     <IconButton onClick={onExecute} title="Edit row">
         <EditIcon />
@@ -68,6 +78,7 @@ const CancelButton = ({ onExecute }) => (
 );
 
 const commandComponents = {
+    add: AddButton,
     edit: EditButton,
     delete: DeleteButton,
     commit: CommitButton,
@@ -288,13 +299,30 @@ class RecruitersGrid extends React.PureComponent {
     }
 
     validateAddChanges(addedRecruiter) {
-        let status = false;
+        let status = true;
         if (addedRecruiter != undefined && addedRecruiter != null) {
 
             //validate firstName
+            if (addedRecruiter.email != undefined && addedRecruiter.email != null) {
+                if (addedRecruiter.email != '') {
+
+                }
+                else {
+                    ToastService.error('Please Search by Email.');
+                    status = false;
+                    return status
+                }
+            }
+            else {
+                ToastService.error('Please Enter First Name.');
+                status = false;
+            }
+
+            //validate firstName
             if (addedRecruiter.firstName != undefined && addedRecruiter.firstName != null) {
-                if (addedRecruiter.firstName != '')
-                    status = true;
+                if (addedRecruiter.firstName != '') {
+
+                }
                 else {
                     ToastService.error('Please Enter First Name.');
                     status = false;
@@ -308,7 +336,9 @@ class RecruitersGrid extends React.PureComponent {
             //validate lastName
             if (addedRecruiter.lastName != undefined && addedRecruiter.lastName != null) {
                 if (addedRecruiter.lastName != '')
-                    status = true;
+                {
+
+                }
                 else {
                     ToastService.error('Please Enter Last Name.');
                     status = false;
@@ -323,7 +353,7 @@ class RecruitersGrid extends React.PureComponent {
             if (addedRecruiter.phone != undefined && addedRecruiter.phone != null) {
                 var phoneno = /^[2-9]{1}\d{9}$/;
                 if (addedRecruiter.phone.match(phoneno)) {
-                    status = true;
+
                 }
                 else {
                     ToastService.error('Invalid Phone Number.')
@@ -493,7 +523,7 @@ class RecruitersGrid extends React.PureComponent {
                         }
                         else {
                             this.setState({ loading: true, rows: [] });
-                            ToastService.success('Recruiter updated successfully.');
+                            ToastService.success('Recruiter added successfully.');
                             this.getRecruiters();
                         }
                     }
@@ -537,14 +567,14 @@ class RecruitersGrid extends React.PureComponent {
                                 </div>
                                 <div class="modal-body">
                                     <div class="row">
-                                        <div class="col-6">
-                                            <input id="searchRecruitersBox" type="text" placeholder="Search by Email" ref={(value) => this.searchRecruiter = value} />
+                                        <div class="col-8">
+                                            <input id="searchRecruitersBox" type="text" placeholder="   Search by Email" ref={(value) => this.searchRecruiter = value} />
                                         </div>
                                         <div class="col-4">
                                             <button id="searchRecruitersButton" type="button" onClick={this.searchRecruiters} class="btn btn-primary">Search</button>
                                         </div>
                                     </div>
-
+                                    <br/>
                                     <div class="row">
                                         <div class="col-12">
                                             <div class="form-group">
@@ -552,7 +582,7 @@ class RecruitersGrid extends React.PureComponent {
                                                     <div class="col-4">
                                                         <label for="firstName">First Name :</label>
                                                     </div>
-                                                    <div class="col-4">
+                                                    <div class="col-8">
                                                         <input type="text" id="firstName" placeholder="John" value={recruiter.firstName} onChange={e => this.changeFirstName(e.target.value)} />
                                                     </div>
                                                 </div>
@@ -560,23 +590,23 @@ class RecruitersGrid extends React.PureComponent {
                                                     <div class="col-4">
                                                         <label for="lastName">Last Name :</label>
                                                     </div>
-                                                    <div class="col-4">
+                                                    <div class="col-8">
                                                         <input type="text" id="lastName" placeholder="Smith" value={recruiter.lastName} onChange={e => this.changeLastName(e.target.value)} />
                                                     </div>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-4">
-                                                        <label for="email">Email</label>
+                                                        <label for="email">Email :</label>
                                                     </div>
-                                                    <div class="col-4">
-                                                        <input type="text" id="email" disabled value={recruiter.email} />
+                                                    <div class="col-8">
+                                                        <label>{recruiter.email}</label>
                                                     </div>
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-4">
-                                                        <label for="phone">Phone</label>
+                                                        <label for="phone">Phone :</label>
                                                     </div>
-                                                    <div class="col-4">
+                                                    <div class="col-8">
                                                         <input type="text" id="phone" placeholder="1234567890" value={recruiter.phone} onChange={e => this.changePhone(e.target.value)} />
                                                     </div>
                                                 </div>
@@ -601,14 +631,7 @@ class RecruitersGrid extends React.PureComponent {
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-12">
-                        <button type="button" class="btn btn-primary addNote text-right" data-toggle="modal" data-target="#addRecruiterModal" onClick={this.clearRecruiterDetails}>
-                            Add Recruiter
-                    </button>
-                    </div>
-                </div>
-
+              
                 {/*Recruiters Grid*/}
                 <Paper>
                     <Grid
@@ -652,6 +675,7 @@ class RecruitersGrid extends React.PureComponent {
                         <TableHeaderRow showSortingControls />
                         <TableEditRow />
                         <TableEditColumn
+                            showAddCommand
                             showEditCommand
                             showDeleteCommand
                             commandComponent={Command}
