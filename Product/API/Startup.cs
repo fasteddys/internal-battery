@@ -206,6 +206,9 @@ namespace UpDiddyApi
             // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
+            // kick off the metered welcome email delivery process at five minutes past the hour every hour
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
+
             // Add Polly 
             // Create Policies  
             int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
@@ -256,6 +259,7 @@ namespace UpDiddyApi
             services.AddScoped<ISubscriberService, SubscriberService>();
             services.AddScoped<IReportingService, ReportingService>();
             services.AddScoped<IJobService, JobService>();
+            services.AddScoped<ICompanyService, CompanyService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

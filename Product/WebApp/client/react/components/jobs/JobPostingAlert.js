@@ -13,6 +13,14 @@ const customStyles = {
         marginRight: '-50%',
         transform: 'translate(-50%, -50%)',
         border: '1px solid #03264A'
+    },
+    overlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.75)'
     }
 };
 
@@ -36,6 +44,8 @@ class JobPostingAlert extends React.Component {
             defaultDescription = defaultDescription.slice(0, -2);
 
         this.state = {
+            timeZoneOffset: new Date().getTimezoneOffset(),
+            localDate: new Date().toJSON(),
             modalIsOpen: false,
             jobQuery: props.jobQuery,
             showExecutionDayOfWeek: false,
@@ -66,7 +76,7 @@ class JobPostingAlert extends React.Component {
                     ]
                 },
                 executionDayOfWeek: {
-                    value: new Date().getUTCDay(),
+                    value: new Date().getDay(),
                     label: 'Delivery Day',
                     placeholder: 'Choose delivery day:',
                     valid: true,
@@ -85,8 +95,8 @@ class JobPostingAlert extends React.Component {
                     ]
                 },
                 executionHour: {
-                    value: new Date().getUTCHours(),
-                    label: 'Delivery hour (UTC)',
+                    value: new Date().getHours(),
+                    label: 'Delivery hour',
                     placeholder: 'Choose hour:',
                     valid: true,
                     touched: true,
@@ -94,35 +104,35 @@ class JobPostingAlert extends React.Component {
                         isRequired: true,
                     },
                     options: [
-                        { value: 0, displayValue: '00' },
-                        { value: 1, displayValue: '01' },
-                        { value: 2, displayValue: '02' },
-                        { value: 3, displayValue: '03' },
-                        { value: 4, displayValue: '04' },
-                        { value: 5, displayValue: '05' },
-                        { value: 6, displayValue: '06' },
-                        { value: 7, displayValue: '07' },
-                        { value: 8, displayValue: '08' },
-                        { value: 9, displayValue: '09' },
-                        { value: 10, displayValue: '10' },
-                        { value: 11, displayValue: '11' },
-                        { value: 12, displayValue: '12' },
-                        { value: 13, displayValue: '13' },
-                        { value: 14, displayValue: '14' },
-                        { value: 15, displayValue: '15' },
-                        { value: 16, displayValue: '16' },
-                        { value: 17, displayValue: '17' },
-                        { value: 18, displayValue: '18' },
-                        { value: 19, displayValue: '19' },
-                        { value: 20, displayValue: '20' },
-                        { value: 21, displayValue: '21' },
-                        { value: 22, displayValue: '22' },
-                        { value: 23, displayValue: '23' }
+                        { value: 0, displayValue: '12 AM' },
+                        { value: 1, displayValue: '1 AM' },
+                        { value: 2, displayValue: '2 AM' },
+                        { value: 3, displayValue: '3 AM' },
+                        { value: 4, displayValue: '4 AM' },
+                        { value: 5, displayValue: '5 AM' },
+                        { value: 6, displayValue: '6 AM' },
+                        { value: 7, displayValue: '7 AM' },
+                        { value: 8, displayValue: '8 AM' },
+                        { value: 9, displayValue: '9 AM' },
+                        { value: 10, displayValue: '10 AM' },
+                        { value: 11, displayValue: '11 AM' },
+                        { value: 12, displayValue: '12 PM' },
+                        { value: 13, displayValue: '1 PM' },
+                        { value: 14, displayValue: '2 PM' },
+                        { value: 15, displayValue: '3 PM' },
+                        { value: 16, displayValue: '4 PM' },
+                        { value: 17, displayValue: '5 PM' },
+                        { value: 18, displayValue: '6 PM' },
+                        { value: 19, displayValue: '7 PM' },
+                        { value: 20, displayValue: '8 PM' },
+                        { value: 21, displayValue: '9 PM' },
+                        { value: 22, displayValue: '10 PM' },
+                        { value: 23, displayValue: '11 PM' }
                     ]
                 },
                 executionMinute: {
-                    value: Math.min(Math.ceil(new Date().getUTCMinutes() / 5) * 5, 55),
-                    label: 'Delivery minute (UTC)',
+                    value: Math.min(Math.ceil(new Date().getMinutes() / 5) * 5, 55),
+                    label: 'Delivery minute',
                     placeholder: 'Choose minute:',
                     valid: true,
                     touched: true,
@@ -130,18 +140,18 @@ class JobPostingAlert extends React.Component {
                         isRequired: true,
                     },
                     options: [
-                        { value: 0, displayValue: '00' },
-                        { value: 5, displayValue: '05' },
-                        { value: 10, displayValue: '10' },
-                        { value: 15, displayValue: '15' },
-                        { value: 20, displayValue: '20' },
-                        { value: 25, displayValue: '25' },
-                        { value: 30, displayValue: '30' },
-                        { value: 35, displayValue: '35' },
-                        { value: 40, displayValue: '40' },
-                        { value: 45, displayValue: '45' },
-                        { value: 50, displayValue: '50' },
-                        { value: 55, displayValue: '55' }
+                        { value: 0, displayValue: ':00' },
+                        { value: 5, displayValue: ':05' },
+                        { value: 10, displayValue: ':10' },
+                        { value: 15, displayValue: ':15' },
+                        { value: 20, displayValue: ':20' },
+                        { value: 25, displayValue: ':25' },
+                        { value: 30, displayValue: ':30' },
+                        { value: 35, displayValue: ':35' },
+                        { value: 40, displayValue: ':40' },
+                        { value: 45, displayValue: ':45' },
+                        { value: 50, displayValue: ':50' },
+                        { value: 55, displayValue: ':55' }
                     ]
                 }
             }
@@ -202,8 +212,8 @@ class JobPostingAlert extends React.Component {
 
         // todo: how best to handle a user that is not authenticated? 
         var self = this;
-        CareerCircleAPI.addJobAlert(this.state.jobQuery, formData.description, formData.frequency, formData.executionHour, formData.executionMinute, formData.executionDayOfWeek)
-            .then(function (response) {
+        CareerCircleAPI.addJobAlert(this.state.jobQuery, formData.description, formData.frequency, formData.executionHour, formData.executionMinute, formData.executionDayOfWeek, this.state.timeZoneOffset, this.state.localDate)
+            .then(function (response) { 
                 ToastService.success("Manage your job alerts in 'My Job Alerts'", "Job alert created successfully!");
                 self.closeModal();
             })
@@ -216,7 +226,7 @@ class JobPostingAlert extends React.Component {
     render() {
         return (
             <div>
-                <button id="CreateAlert" className="btn btn-primary" onClick={this.openModal}><i className="far fa-bell"></i> Create Alert</button>
+                <button id="CreateAlert" className="btn btn-primary" onClick={this.openModal}><i className="far fa-bell"></i> Create Job Alert</button>
                 <Modal
                     isOpen={this.state.modalIsOpen}
                     onAfterOpen={this.afterOpenModal}

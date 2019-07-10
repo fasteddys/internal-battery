@@ -190,8 +190,7 @@
         return await _http.get('/resume/profile-merge-questionnaire/' + guid);
     }
 
-
-    var addJobAlert = async function (jobQuery, description, frequency, executionHour, executionMinute, executionDayOfWeek) {
+    var addJobAlert = async function (jobQuery, description, frequency, executionHour, executionMinute, executionDayOfWeek, timeZoneOffset, localDate) {
         var subscriberGuid = SessionStorage.getJSON(_session_key) ? SessionStorage.getJSON(_session_key).uniqueId : null;
         var jobPostingAlertDto = JSON.stringify({
             jobQuery: jobQuery,
@@ -200,15 +199,33 @@
             executionHour: parseInt(executionHour, 10),
             executionMinute: parseInt(executionMinute, 10),
             executionDayOfWeek: parseInt(executionDayOfWeek, 10),
+            timeZoneOffset: parseInt(timeZoneOffset),
+            localDate: localDate,
             subscriber: {
                 subscriberGuid: subscriberGuid
             }
-        });
+        }); 
         return await _http.post('/job/alert', jobPostingAlertDto);
     }
 
     var deleteJobAlert = async function (jobPostingAlertGuid) {
         return await _http.delete(`/job/alert/${jobPostingAlertGuid}`);
+    }
+
+    var getCompanies = async function () {
+        return await _http.get('/companies');
+    }
+
+    var addCompany = async function (companyObj) {
+        return await _http.post('/company/add', JSON.stringify(companyObj));
+    }
+
+    var editCompany = async function (companyObj) {
+        return await _http.post('/company/update', JSON.stringify(companyObj));
+    }
+
+    var deleteCompany = async function (companyGuid) {
+        return await _http.delete('/company/delete/'+companyGuid);
     }
 
      
@@ -231,7 +248,11 @@
         removeAvatar: removeAvatar,
         getResumeParseMergeQuestionnaire: getResumeParseMergeQuestionnaire,
         addJobAlert: addJobAlert,
-        deleteJobAlert: deleteJobAlert
+        deleteJobAlert: deleteJobAlert,
+        getCompanies: getCompanies,
+        addCompany: addCompany,
+        editCompany: editCompany,
+        deleteCompany: deleteCompany
     };
     
 })(API_URL);

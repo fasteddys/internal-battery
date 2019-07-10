@@ -53,6 +53,12 @@
     <Compile Remove="Migrations\20190603120815_AddSubcriberNotestable.Designer.cs" />
     <Compile Remove="Migrations\20190604160816_AddSubscribeNotesTableAndUpdateRecruterTableWithCompanyId.cs" />
     <Compile Remove="Migrations\20190604160816_AddSubscribeNotesTableAndUpdateRecruterTableWithCompanyId.Designer.cs" />
+    <Compile Remove="Migrations\20190610183413_Adding subscriber notifications.cs" />
+    <Compile Remove="Migrations\20190610183413_Adding subscriber notifications.Designer.cs" />
+    <Compile Remove="Migrations\20190611205257_Adding subscriber notifications.cs" />
+    <Compile Remove="Migrations\20190611205257_Adding subscriber notifications.Designer.cs" />
+    <Compile Remove="Migrations\20190612183230_Adding subscriber notifications.cs" />
+    <Compile Remove="Migrations\20190612183230_Adding subscriber notifications.Designer.cs" />
     <Compile Remove="Migrations\20190611164158_AddSubsriberNotesTableAndUpdateCompanyIdInRecruiterTable.cs" />
     <Compile Remove="Migrations\20190611164158_AddSubsriberNotesTableAndUpdateCompanyIdInRecruiterTable.Designer.cs" />
     <Compile Remove="Migrations\20190611174124_AddedNotesTableAndUpdatedRecruiterTable.cs" />
@@ -119,7 +125,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Microsoft.Graph" Version="1.12.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.1.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.6" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.9" />
     <PackageReference Include="MiniGuid" Version="1.1.2" />
     <PackageReference Include="Polly" Version="6.1.1" />
     <PackageReference Include="Sendgrid" Version="9.10.0" />

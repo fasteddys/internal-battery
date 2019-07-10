@@ -31,13 +31,14 @@ namespace UpDiddyLib.Helpers
             return true;
         }
 
-        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null)
+        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null, DateTime? sendAt = null)
         {
             string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
 
             var client = new SendGridClient(_configuration[$"SysEmail:{SendGridAccountType}:ApiKey"]);
             var message = new SendGridMessage();
-
+            if (sendAt.HasValue)
+                message.SendAt = Utils.ToUnixTimeInSeconds(sendAt.Value);
             message.SetFrom(new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:FromEmailAddress"], "CareerCircle"));
             message.SetReplyTo(new EmailAddress(_configuration[$"SysEmail:{SendGridAccountType}:ReplyToEmailAddress"]));
             message.AddTo(new EmailAddress(email));

@@ -15,6 +15,7 @@ import Validate from './Validate';
 import TextArea from './TextArea';
 import Breadcrumb from './breadcrumbs/Breadcrumb';
 
+
 global.React = React;
 global.ReactDOM = ReactDOM;
 global.ReactDOMServer = ReactDOMServer;
@@ -31,6 +32,16 @@ global.Validate = Validate;
 global.TextArea = TextArea;
 global.Breadcrumb = Breadcrumb;
 
+// dashboard
+import Dashboard from './dashboard/dashboard';
+global.Dashboard = Dashboard;
+import NotificationListing from './dashboard/dashboard-helpers';
+global.NotificationListing = NotificationListing;
+import NotificationView from './dashboard/dashboard-helpers';
+global.NotificationView = NotificationView;
+import NotificationItem from './dashboard/dashboard-helpers';
+global.NotificationItem = NotificationItem;
+
 // reports
 global.SATable = SATable;
 global.JobAppReportTable = JobAppReportTable;
@@ -38,3 +49,7 @@ global.JobAppReportTable = JobAppReportTable;
 // work around for require (until gulp refactor)
 import buildQuery from 'odata-query';
 global.buildQuery = buildQuery;
+
+//Companies
+import CompaniesGrid from './company/CompaniesGrid';
+global.CompaniesGrid = CompaniesGrid;

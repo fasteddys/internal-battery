@@ -14,6 +14,8 @@ namespace UpDiddyLib.Dto
         public long TotalHits { get; set; }
         public int NumPages { get; set; }
 
+        public string Info { get; set; }
+
         /// <summary>
         /// 
         /// Total time for the job search 

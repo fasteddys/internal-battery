@@ -41,7 +41,7 @@
                             <div>
                                 <button id="SearchJobs" form="SearchJobsForm" type="submit" onclick="ScrubInputs()" class="btn btn-primary"><i class="fas fa-search"></i> Search Jobs</button>
                             </div>
-                                @if (!string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Keywords) || !string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Location))
+                                @if (Model.JobQueryForAlert != null && (!string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Keywords) || !string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Location)))
                                 {
                                     @Html.React("JobPostingAlert", new { jobQuery = Model.JobQueryForAlert });
                                 }
@@ -60,7 +60,7 @@
             @if (Model.Facets != null)
                             {
                 <div class="col-12 col-md-2">
-                    <div class="facet-container">
+                    <div class="facet-container shadow-0">
                         <div class="container row">
                             <div class="col-12">
                                 <button id="toggleLink" class="togglelink col-12 btn btn-primary" data-toggle="collapse" data-target="#SearchParameters">Filter <i id="toggleArrow" class="arrow down"></i></button>
@@ -150,6 +150,9 @@
                                                         <a onclick="expandMoreLinks(this)" class="moreLink-style">+ more >></a>
                                                     </div>
                                                 }
+                                                <div>
+                                                    <a class="facet-link" href="/browse-jobs">Browse All Locations</a>
+                                                </div>
                                             </div>
                                         }
                                     }
@@ -216,7 +219,7 @@
                 string columnClass = Model.Facets != null ? "10" : "12";
             }
             <div class="col-12 col-md-@columnClass">
-                <div class="container" id="">
+                <div class=" " id="">
                     @{ await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);}
 
                     <div class="row job-pagination container-align-center">
@@ -280,7 +283,7 @@
 
 
                <text>
-            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl'>undo</a></div>";
+            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl' data-toggle='tooltip' data-placement='bottom' title='Remove'>X</a><span></div>";
             parentElementUndoElement.innerHTML = innerHtml;
                 </text>
             }
@@ -316,10 +319,10 @@
 
         $(document).ready(function () {
             $('#toggleLink').click(function () {
-                if ($('#toggleArrow')[0].getAttribute('class') == "arrow up") {
+                if ($('#toggleArrow')[0].hasClass("arrow up")) {
                     $('#toggleArrow').removeClass("up");
                     $('#toggleArrow').addClass("down");
-
+                    
                     $('#SearchParameters').removeClass("show");
                     $('#SearchParameters').addClass("hide");
                 }

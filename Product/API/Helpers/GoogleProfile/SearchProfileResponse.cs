@@ -17,6 +17,8 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 
         public string resultSetId { get; set; } 
 
+  
+
 
  
 

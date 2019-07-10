@@ -58,6 +58,11 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
             }
             catch (Exception e)
             {
+                Rval = new BasicResponseDto()
+                {
+                    StatusCode = 400,
+                    Description = e.Message
+                };
                 _syslog.Log(LogLevel.Error, $"GoogleProfileInterface:Search error searching profiles", searchRequest);
                 errorMsg = e.Message;
             }

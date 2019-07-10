@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Workflow;
 using Hangfire;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.Controllers
 {
@@ -35,16 +36,17 @@ namespace UpDiddyApi.Controllers
         private readonly string _queueConnection = string.Empty;
         protected internal ILogger _syslog = null;
         private readonly CloudTalent _cloudTalent = null;
+        private readonly ISubscriberService _subscriberService = null;
 
-        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory)
+        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory, ISubscriberService subscriberService)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory);
+            _subscriberService = subscriberService;
         }
-
 
         #region Profile look-up data 
 
@@ -162,11 +164,15 @@ namespace UpDiddyApi.Controllers
 
         #endregion
 
-
         #region Profile Queries
 
 
-        // TODO JAB Add auth 
+        /// <summary>
+        /// search profiles 
+        /// </summary>
+        /// <param name="profileQueryDto"></param>
+        /// <returns></returns>
+        [Authorize(Policy = "IsRecruiterOrAdmin")]
         [HttpGet]
         [Route("api/[controller]/{PageNum?}")]
         public async Task<IActionResult> ProfileSearch([FromBody] ProfileQueryDto profileQueryDto)
@@ -177,36 +183,44 @@ namespace UpDiddyApi.Controllers
         }
 
 
-        // TODO JAB add auth
+        /// <summary>
+        /// add a subscriber to the google cloud 
+        /// </summary>
+        /// <param name="SubscriberGuid"></param>
+        /// <returns></returns>
+        [Authorize(Policy = "IsRecruiterOrAdmin")]
         [HttpPost]
         [Route("api/[controller]/{SubscriberGuid}")]
-        public async Task<IActionResult> ProfileSearch(Guid SubscriberGuid)
+        public async Task<IActionResult> ProfileAdd(Guid SubscriberGuid)
         {
             BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(SubscriberGuid));
             return Ok( );
         }
 
-        // TODO JAB add auth
+
         /// <summary>
-        /// Delete the user's profile from the google cloude 
+        /// Delete the user's profile from the google cloud using their subscriber id 
         /// </summary>
         /// <param name="SubscriberGuid"></param>
         /// <returns></returns>
+
+        [Authorize(Policy = "IsRecruiterOrAdmin")]
         [HttpDelete]
         [Route("api/[controller]/{SubscriberGuid}")]
-        public async Task<IActionResult> DeleteProfile(Guid SubscriberGuid)
+        public async Task<IActionResult> ProfileDelete(Guid SubscriberGuid)
         {
             BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(SubscriberGuid));
             return Ok();
         }
 
 
-        // TODO JAB add auth
+    
         /// <summary>
-        /// Delete the user's profile from the google cloude 
+        /// Delete the user's profile from the google cloud using their google cloud uri 
         /// </summary>
         /// <param name="SubscriberGuid"></param>
         /// <returns></returns>
+        [Authorize(Policy = "IsRecruiterOrAdmin")]
         [HttpDelete]
         [Route("api/[controller]/delete-by-uri")]
         public async Task<IActionResult> DeleteProfileByGoogleName([FromBody] string TalentCloudUri)
@@ -214,21 +228,26 @@ namespace UpDiddyApi.Controllers
             _cloudTalent.DeleteProfileFromCloudTalentByUri(_db, TalentCloudUri);
             return Ok();
         }
+ 
 
 
-
-
-
+        /// <summary>
+        /// Delete the user's profile from the google cloud using their google cloud uri 
+        /// </summary>
+        /// <param name="SubscriberGuid"></param>
+        /// <returns></returns>
+        [Authorize(Policy = "IsCareerCircleAdmin")]
+        [HttpPut]
+        [Route("api/[controller]/force-reindex")]
+        public async Task<IActionResult> ReindexAll( )
+        {
+            _subscriberService.MarkSubscribersForReindex();
+            return Ok();
+        }
 
 
 
         #endregion
-
-
-
-
-
-
 
     }
 }

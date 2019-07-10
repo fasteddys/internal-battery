@@ -29,7 +29,7 @@ app.get('/', function (req, res) {
  
 
 
-// get info on the specified profile tenant  
+// create a new profiles tenant 
 app.post('/tenant/:tenantName', async (req, res) => {
 
     let tenantServiceClient = new talentAPI.TenantServiceClient({

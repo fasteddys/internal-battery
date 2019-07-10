@@ -9,7 +9,7 @@ namespace UpDiddyLib.Dto
         #region Pagination 
 
         /// <summary>
-        /// number of jobs to return
+        /// number of jobs to return - do not exceed 100 or talent cloud will throw an exception 
         /// </summary>
         public int PageSize { get; set; }
         /// <summary>

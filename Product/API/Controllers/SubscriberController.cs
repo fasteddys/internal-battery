@@ -112,16 +112,17 @@ namespace UpDiddyApi.Controllers
 
             if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
             {
-                SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
+                
+                    SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
 
-                if (subscriberDto == null)
-                    return Ok(subscriberDto);
+                    if (subscriberDto == null)
+                        return Ok(subscriberDto);
 
-                // track the subscriber action if performed by someone other than the user who owns the file
-                if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
-                    new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
+                    // track the subscriber action if performed by someone other than the user who owns the file
+                    if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
+                        new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
 
-                return Ok(subscriberDto);
+                    return Ok(subscriberDto);                
             }
             else
                 return Unauthorized();
@@ -1018,7 +1019,8 @@ namespace UpDiddyApi.Controllers
             if (!await _cloudStorage.DeleteFileAsync(file.BlobName))
                 return BadRequest();
 
-            _db.SubscriberFile.Remove(file);
+            file.IsDeleted = 1;
+            _db.SubscriberFile.Update(file);
             await _db.SaveChangesAsync();
 
             return Ok();
@@ -1034,11 +1036,34 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet("/api/[controller]/me/job-alerts")]
-        public async Task<IActionResult> GetSubscriberJobAlerts(int? page)
+        public async Task<IActionResult> GetSubscriberJobAlerts(int? page, int? timeZoneOffset)
         {
             Guid userGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var jobAlerts = await _repositoryWrapper.JobPostingAlertRepository.GetAllJobPostingAlertsBySubscriber(userGuid);
-            
+
+            if (timeZoneOffset.HasValue)
+            {
+                foreach (var jobAlert in jobAlerts)
+                {
+                    // construct a datetime object that represents the next utc execution time for the job alert
+                    DateTime utcExecutionDate = new DateTime(
+                        DateTime.UtcNow.Year,
+                        DateTime.UtcNow.Month,
+                        jobAlert.Frequency == Frequency.Weekly ? DateTime.UtcNow.Next(jobAlert.ExecutionDayOfWeek.Value).Day : DateTime.UtcNow.Day,
+                        jobAlert.ExecutionHour,
+                        jobAlert.ExecutionMinute,
+                        0);
+                    // adjust day, hour, and minute based on time zone offset for local time
+                    var timespanTimeZoneOffset = new TimeSpan(0, timeZoneOffset.Value, 0);
+                    // calculate the local execution date
+                    DateTime localExecutionDate = utcExecutionDate.Subtract(timespanTimeZoneOffset);
+                    // update the job alert properties
+                    jobAlert.ExecutionDayOfWeek = localExecutionDate.DayOfWeek;
+                    jobAlert.ExecutionHour = localExecutionDate.Hour;
+                    jobAlert.ExecutionMinute = localExecutionDate.Minute;
+                }
+            }
+
             var query = jobAlerts.Select(ja => new JobPostingAlertDto()
             {
                 Description = ja.Description,
@@ -1116,6 +1141,7 @@ namespace UpDiddyApi.Controllers
                     },
                     Constants.SendGridAccount.Transactional,
                     null,
+                    null,
                     null
                 ));
         }
@@ -1132,10 +1158,10 @@ namespace UpDiddyApi.Controllers
         {
             try
             {
-                if(ModelState.IsValid)
+                if (ModelState.IsValid)
                 {
                     //get user logged in who is by default recruiter
-                    subscriberNotes.RecruiterGuid= Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                    subscriberNotes.RecruiterGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                     await _subscriberService.SaveSubscriberNotesAsync(subscriberNotes);
                     return Ok(new BasicResponseDto { StatusCode = 200, Description = "Saved Successfully." });
                 }
@@ -1146,7 +1172,7 @@ namespace UpDiddyApi.Controllers
                 }
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _syslog.Log(LogLevel.Error, $"SubscriberController.SaveSubscriberNotes : Error occured when saving notes for data: {JsonConvert.SerializeObject(subscriberNotes)} with message={ex.Message}", ex);
                 return StatusCode(500, new BasicResponseDto { StatusCode = 400, Description = "Internal Server Error." });
@@ -1160,7 +1186,7 @@ namespace UpDiddyApi.Controllers
             //get user logged in who is by default recruiter
             var recruiterGuid = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            var subscriberNotesList=await _subscriberService.GetSubscriberNotesBySubscriberGuid(subscriberGuid, recruiterGuid, searchQuery);
+            var subscriberNotesList = await _subscriberService.GetSubscriberNotesBySubscriberGuid(subscriberGuid, recruiterGuid, searchQuery);
             return Ok(subscriberNotesList);
         }
 
@@ -1168,10 +1194,46 @@ namespace UpDiddyApi.Controllers
         [HttpDelete("/api/[controller]/notes/{subscriberNotesGuid}")]
         public async Task<IActionResult> DeleteSubscriberNote(Guid subscriberNotesGuid)
         {
-           var isDeleted=await _subscriberService.DeleteSubscriberNote(subscriberNotesGuid);
+            var isDeleted = await _subscriberService.DeleteSubscriberNote(subscriberNotesGuid);
 
             return Ok(isDeleted);
         }
         #endregion
+
+        [HttpPut("read-notification")]
+        public async Task<IActionResult> SubscriberReadNotification([FromBody] NotificationDto ReadNotification)
+        {
+            if (ReadNotification == null || ReadNotification.NotificationGuid == null)
+                return BadRequest();
+
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, loggedInUserGuid, _syslog, _mapper);
+            Notification ExistingNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == ReadNotification.NotificationGuid).Result.FirstOrDefault();
+
+            if (loggedInUserGuid == subscriberDto.SubscriberGuid)
+            {
+                var t = await _repositoryWrapper.SubscriberNotificationRepository.GetByConditionWithTrackingAsync(
+                    n => n.NotificationId == ExistingNotification.NotificationId && 
+                    n.SubscriberId == subscriberDto.SubscriberId);
+
+                SubscriberNotification SubscriberNotificationEntry = t.FirstOrDefault();
+
+                if (SubscriberNotificationEntry == null)
+                    return NotFound();
+
+
+                SubscriberNotificationEntry.HasRead = 1;
+                SubscriberNotificationEntry.ModifyDate = DateTime.UtcNow;
+
+                _repositoryWrapper.SubscriberNotificationRepository.Update(SubscriberNotificationEntry);
+                await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
+
+                return Ok(new BasicResponseDto { StatusCode = 200, Description = "SubscriberNotification " + SubscriberNotificationEntry.SubscriberNotificationGuid + " successfully updated." });
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
     }
 }

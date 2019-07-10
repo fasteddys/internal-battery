@@ -301,6 +301,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             return map;
         }
 
+        public async Task<bool> MarkSubscribersForReindex()
+        {
+            _repository.Subscriber.ForceProfileReindex();
+               
+            return true;
+        }
+
+
+
         #region subscriber notes
         public async Task SaveSubscriberNotesAsync(SubscriberNotesDto subscriberNotesDto)
         {
@@ -370,7 +379,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                                                      RecruiterGuid = (Guid)subscriber.SubscriberGuid,
                                                      SubscriberGuid = (Guid)subscriberData.SubscriberGuid,
                                                      CreateDate = subscriberNote.CreateDate,
-                                                     ModifiedDate = (DateTime)subscriberNote.ModifyDate
+                                                     ModifiedDate = (DateTime)subscriberNote.ModifyDate,
+                                                     RecruiterName = recruiter.FirstName + " " + recruiter.LastName
                                                  };
 
 
@@ -389,7 +399,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                                                      RecruiterGuid = (Guid)subscriber.SubscriberGuid,
                                                      SubscriberGuid = (Guid)subscriberData.SubscriberGuid,
                                                      CreateDate = subscriberNote.CreateDate,
-                                                     ModifiedDate = (DateTime)subscriberNote.ModifyDate
+                                                     ModifiedDate = (DateTime)subscriberNote.ModifyDate,
+                                                     RecruiterName= recruiter.FirstName+" "+recruiter.LastName
                                                  };
 
             if (!string.IsNullOrEmpty(searchquery))

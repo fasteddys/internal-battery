@@ -208,6 +208,9 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
+ 
+
+
         public bool RemoveProfileFromIndex(Subscriber subscriber)
         {
             try
@@ -410,7 +413,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public ProfileSearchResultDto ProfileSearch(ProfileQueryDto profileQuery, bool isJobPostingAlertSearch = false)
         {
 
-            if (profileQuery.PageSize <= 0)
+            if (profileQuery.PageSize <= 0 )
             {
                 profileQuery.PageSize = int.Parse(_configuration["CloudTalent:ProfilePageSize"]);
             }
@@ -426,13 +429,15 @@ namespace UpDiddyApi.ApplicationCore.Services
             // search the google talent cloud
             BasicResponseDto searchResults = _googleProfile.Search(searchProfileRequest, ref errorMsg);
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(searchResults.Data);
-
+    
             SearchProfileResponse searchProfileResponse = JsonConvert.DeserializeObject<SearchProfileResponse>(json);
-            // map cloud talent results to cc search results 
+                // map cloud talent results to cc search results 
             DateTime startMap = DateTime.Now;
             try
-            {
+            {               
                 rVal = ProfileMappingHelper.MapSearchResults(_syslog, _mapper, _configuration, searchProfileResponse, profileQuery);
+                // pass back any information returned from google 
+                rVal.Info = searchResults.Description;
             }
             catch (Exception ex)
             {

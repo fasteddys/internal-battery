@@ -10,6 +10,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
@@ -71,17 +72,32 @@ namespace UpDiddyApi.ApplicationCore.Factory
             bool result = true;
             Guid? jobPostingAlertGuid = null;
             try
-            {
+            {   
+                // convert localdate string to datetime
+                DateTime localDate = DateTime.Parse(jobPostingAlertDto.LocalDate);
+                // construct a datetime object that represents the next local execution time selected by user
+                DateTime localExecutionDate = new DateTime(
+                    localDate.Year, 
+                    localDate.Month, 
+                    jobPostingAlertDto.Frequency == "Weekly" ? localDate.Next(jobPostingAlertDto.ExecutionDayOfWeek.Value).Day : localDate.Day,
+                    jobPostingAlertDto.ExecutionHour, 
+                    jobPostingAlertDto.ExecutionMinute, 
+                    0);                
+                // adjust day, hour, and minute based on time zone offset for UTC
+                var timeZoneOffset = new TimeSpan(0, jobPostingAlertDto.TimeZoneOffset, 0);                
+                // calculate the utc execution date
+                DateTime utcExecutionDate = localExecutionDate.Add(timeZoneOffset);
+
                 // construct the Cron schedule for job alert
                 string cronSchedule = null;
 
                 switch (jobPostingAlertDto.Frequency)
                 {
                     case "Daily":
-                        cronSchedule = Cron.Daily(jobPostingAlertDto.ExecutionHour, jobPostingAlertDto.ExecutionMinute);
+                        cronSchedule = Cron.Daily(utcExecutionDate.Hour, utcExecutionDate.Minute);
                         break;
                     case "Weekly":
-                        cronSchedule = Cron.Weekly(jobPostingAlertDto.ExecutionDayOfWeek.Value, jobPostingAlertDto.ExecutionHour, jobPostingAlertDto.ExecutionMinute);
+                        cronSchedule = Cron.Weekly(utcExecutionDate.DayOfWeek, utcExecutionDate.Hour, utcExecutionDate.Minute);
                         break;
                     default:
                         throw new NotSupportedException($"Unrecognized value for 'Frequency' parameter: {jobPostingAlertDto.Frequency}");
@@ -96,9 +112,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     if (existingJobPostingAlert.Subscriber.SubscriberGuid != jobPostingAlertDto.Subscriber.SubscriberGuid.Value)
                         throw new ApplicationException("An attempt was made to modify a job alert that is owned by another subscriber!");
                     existingJobPostingAlert.Description = jobPostingAlertDto.Description;
-                    existingJobPostingAlert.ExecutionDayOfWeek = jobPostingAlertDto.ExecutionDayOfWeek;
-                    existingJobPostingAlert.ExecutionHour = jobPostingAlertDto.ExecutionHour;
-                    existingJobPostingAlert.ExecutionMinute = jobPostingAlertDto.ExecutionMinute;
+                    existingJobPostingAlert.ExecutionDayOfWeek = jobPostingAlertDto?.Frequency == "Weekly" ? (DayOfWeek?)utcExecutionDate.DayOfWeek : null;
+                    existingJobPostingAlert.ExecutionHour = utcExecutionDate.Hour;
+                    existingJobPostingAlert.ExecutionMinute = utcExecutionDate.Minute;
                     existingJobPostingAlert.Frequency = (Frequency)Enum.Parse(typeof(Frequency), jobPostingAlertDto.Frequency);
                     existingJobPostingAlert.ModifyDate = DateTime.UtcNow;
                     existingJobPostingAlert.ModifyGuid = Guid.Empty;
@@ -113,9 +129,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
                         CreateDate = DateTime.UtcNow,
                         CreateGuid = Guid.Empty,
                         Description = jobPostingAlertDto.Description,
-                        ExecutionDayOfWeek = jobPostingAlertDto?.Frequency == "Weekly" ? jobPostingAlertDto?.ExecutionDayOfWeek : null,
-                        ExecutionHour = jobPostingAlertDto.ExecutionHour,
-                        ExecutionMinute = jobPostingAlertDto.ExecutionMinute,
+                        ExecutionDayOfWeek = jobPostingAlertDto?.Frequency == "Weekly" ? (DayOfWeek?)utcExecutionDate.DayOfWeek : null,
+                        ExecutionHour = utcExecutionDate.Hour,
+                        ExecutionMinute = utcExecutionDate.Minute,
                         Frequency = (Frequency)Enum.Parse(typeof(Frequency), jobPostingAlertDto.Frequency),
                         IsDeleted = 0,
                         JobPostingAlertGuid = jobPostingAlertGuid.Value,

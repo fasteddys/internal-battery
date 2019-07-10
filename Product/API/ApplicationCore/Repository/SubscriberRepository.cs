@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using Microsoft.EntityFrameworkCore.Extensions;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -56,7 +57,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
               .ToList();
         }
 
- 
+        public async Task<bool> ForceProfileReindex()
+        {
+            int numUpdates = _dbContext.Database
+              .ExecuteSqlCommand("update subscriber set CloudTalentIndexStatus = 0 where isdeleted = 0");             
+
+              return true;
+        }
+
+
+
 
 
 

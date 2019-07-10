@@ -17,5 +17,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 
         Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers);
 
+        Task<bool> ForceProfileReindex();
+
     }
 }

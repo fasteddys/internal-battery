@@ -16,7 +16,7 @@ namespace UpDiddy.Controllers
         {
             _api = api;
         }
-        
+
         [HttpGet("jobs")]
         public async Task<IActionResult> MyJobsAsync(int? page)
         {
@@ -31,7 +31,11 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> MyJobAlertsAsync(int? page)
         {
             page = page.HasValue ? page.Value : 1;
-            var pagingDto = await _api.GetUserJobAlerts(page);
+            int? timeZoneOffset = null;
+            int tmp;
+            if (int.TryParse(Request.Cookies["timeZoneOffset"], out tmp))
+                timeZoneOffset = tmp;
+            var pagingDto = await _api.GetUserJobAlerts(page, timeZoneOffset);
             var list = new StaticPagedList<JobPostingAlertDto>(pagingDto.Results, page.Value, pagingDto.PageSize, pagingDto.Count);
             ViewBag.JobAlerts = list;
             return View();
