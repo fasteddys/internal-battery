@@ -164,7 +164,7 @@ class RecruitersGrid extends React.PureComponent {
             ],
             booleanColumns: ['IsRecruiter'],
             labelColumns: ['Email', 'CompanyName'],
-            stringColumns: ['FirstName','LastName'],
+            stringColumns: ['FirstName', 'LastName'],
             rows: [],
             pageSizes: [5, 10, 15, 0],
             searchValue: '',
@@ -179,7 +179,7 @@ class RecruitersGrid extends React.PureComponent {
                 email: '',
                 phone: '',
                 isRecruiter: true,
-                subscriberGuid:'',
+                subscriberGuid: '',
             },
         };
 
@@ -191,6 +191,10 @@ class RecruitersGrid extends React.PureComponent {
         this.searchRecruiters = this.searchRecruiters.bind(this);
         this.changePermissions = this.changePermissions.bind(this);
         this.addRecruiter = this.addRecruiter.bind(this);
+        this.changeFirstName = this.changeFirstName.bind(this);
+        this.changeLastName = this.changeLastName.bind(this);
+        this.changePhone = this.changePhone.bind(this);
+        this.clearRecruiterDetails = this.clearRecruiterDetails.bind(this);
     }
 
     componentDidMount() {
@@ -218,7 +222,7 @@ class RecruitersGrid extends React.PureComponent {
                 IsRecruiter: x.isRecruiter,
                 CompanyName: x.company.companyName,
                 RecruiterGuid: x.recruiterGuid,
-                SubscriberGuid:x.subscriber.subscriberGuid
+                SubscriberGuid: x.subscriber.subscriberGuid
             }));
 
         return rowData;
@@ -283,6 +287,58 @@ class RecruitersGrid extends React.PureComponent {
         }
     }
 
+    validateAddChanges(addedRecruiter) {
+        let status = false;
+        if (addedRecruiter != undefined && addedRecruiter != null) {
+
+            //validate firstName
+            if (addedRecruiter.firstName != undefined && addedRecruiter.firstName != null) {
+                if (addedRecruiter.firstName != '')
+                    status = true;
+                else {
+                    ToastService.error('Please Enter First Name.');
+                    status = false;
+                }
+            }
+            else {
+                ToastService.error('Please Enter First Name.');
+                status = false;
+            }
+
+            //validate lastName
+            if (addedRecruiter.lastName != undefined && addedRecruiter.lastName != null) {
+                if (addedRecruiter.lastName != '')
+                    status = true;
+                else {
+                    ToastService.error('Please Enter Last Name.');
+                    status = false;
+                }
+            }
+            else {
+                ToastService.error('Please Enter Last Name.');
+                status = false;
+            }
+
+            //validate Phone Number
+            if (addedRecruiter.phone != undefined && addedRecruiter.phone != null) {
+                var phoneno = /^[2-9]{1}\d{9}$/;
+                if (addedRecruiter.phone.match(phoneno)) {
+                    status = true;
+                }
+                else {
+                    ToastService.error('Invalid Phone Number.')
+                    status = false;
+                }
+            }
+
+            return status;
+        }
+        else {
+            status = false;
+            return status;
+        }
+    }
+
     commitChanges({ changed, deleted }) {
         let { rows } = this.state;
         if (changed) {
@@ -341,13 +397,18 @@ class RecruitersGrid extends React.PureComponent {
             CareerCircleAPI.getRecruiterDetails(query)
                 .then((res) => {
                     if (res.statusText == 'OK') {
-                        this.setState({ recruiter: this.buildRecruiter(res.data) })
+                        if (res.data != undefined && res.data != null && res.data != '') {
+                            this.setState({ recruiter: this.buildRecruiter(res.data) })
+                        }
+                    }
+                    else {
+                        ToastService.error('Invalid Email Address')
                     }
                 })
                 .catch(() => ToastService.error('An error occured while loading the recruiter.'))
         }
         else {
-            ToastService.error('Invalid Email id')
+            ToastService.error('Invalid Email Address')
         }
 
 
@@ -355,10 +416,10 @@ class RecruitersGrid extends React.PureComponent {
 
     buildRecruiter(data) {
         let recruiterData = {
-            firstName: data.firstName,
-            lastName: data.lastName,
+            firstName: data.firstName == null ? '' : data.firstName,
+            lastName: data.lastName == null ? '' : data.lastName,
             email: data.email,
-            phone: data.phoneNumber,
+            phone: data.phoneNumber == null ? '' : data.phoneNumber,
             subscriberGuid: data.subscriberGuid,
             isRecruiter: this.state.recruiter.isRecruiter
         };
@@ -372,26 +433,90 @@ class RecruitersGrid extends React.PureComponent {
                 firstName: this.state.recruiter.firstName,
                 lastName: this.state.recruiter.lastName,
                 email: this.state.recruiter.email,
-                phone: this.state.recruiter.phoneNumber,
+                phone: this.state.recruiter.phone,
                 subscriberGuid: this.state.recruiter.subscriberGuid,
                 isRecruiter: !this.state.recruiter.isRecruiter
             }
         })
     }
 
+    changeFirstName(value) {
+        this.setState({
+            recruiter: {
+                firstName: value,
+                lastName: this.state.recruiter.lastName,
+                email: this.state.recruiter.email,
+                phone: this.state.recruiter.phone,
+                subscriberGuid: this.state.recruiter.subscriberGuid,
+                isRecruiter: this.state.recruiter.isRecruiter
+            }
+        })
+    }
+
+    changeLastName(value) {
+        this.setState({
+            recruiter: {
+                firstName: this.state.recruiter.firstName,
+                lastName: value,
+                email: this.state.recruiter.email,
+                phone: this.state.recruiter.phone,
+                subscriberGuid: this.state.recruiter.subscriberGuid,
+                isRecruiter: this.state.recruiter.isRecruiter
+            }
+        })
+    }
+
+    changePhone(value) {
+        this.setState({
+            recruiter: {
+                firstName: this.state.recruiter.firstName,
+                lastName: this.state.recruiter.lastName,
+                email: this.state.recruiter.email,
+                phone: value,
+                subscriberGuid: this.state.recruiter.subscriberGuid,
+                isRecruiter: this.state.recruiter.isRecruiter
+            }
+        })
+    }
+
     addRecruiter(e) {
         e.preventDefault();
+        if (this.validateAddChanges(this.state.recruiter)) {
+            CareerCircleAPI.addRecruiter((this.state.recruiter))
+                .then((res) => {
+                    if (res.statusText == 'OK') {
+                        if (res.data == 'Exist') {
+                            ToastService.info('Recruiter already exit.');
+                        }
+                        else if (res.data == 'Invalid') {
+                            ToastService.error('Invalid data.');
+                        }
+                        else {
+                            this.setState({ loading: true, rows: [] });
+                            ToastService.success('Recruiter updated successfully.');
+                            this.getRecruiters();
+                        }
+                    }
 
-        if (this.state.recruiter != undefined && this.state.recruiter != null) {
-            if (this.state.recruiter.email != undefined && this.state.recruiter.email != null) {
-
-                CareerCircleAPI.addRecruiter((this.state.recruiter))
-                    .then((res) => {
-                        //this.setState({ data: res.data });
-                    })
-                    .catch((err) => ToastService.error('An error occured while adding the recruiter.'))
-            }
+                })
+                .catch((err) => ToastService.error('An error occured while adding the recruiter.'))
         }
+    }
+
+    clearRecruiterDetails() {
+        this.setState({
+            recruiter: {
+                firstName: '',
+                lastName: '',
+                email: '',
+                phone: '',
+                subscriberGuid: '',
+                isRecruiter: this.state.recruiter.isRecruiter
+            }
+        })
+
+        this.searchRecruiter.value=''
+
     }
 
     render() {
@@ -428,7 +553,7 @@ class RecruitersGrid extends React.PureComponent {
                                                         <label for="firstName">First Name :</label>
                                                     </div>
                                                     <div class="col-4">
-                                                        <input type="text" id="firstName" value={recruiter.firstName} />
+                                                        <input type="text" id="firstName" placeholder="John" value={recruiter.firstName} onChange={e => this.changeFirstName(e.target.value)} />
                                                     </div>
                                                 </div>
                                                 <div class="row">
@@ -436,7 +561,7 @@ class RecruitersGrid extends React.PureComponent {
                                                         <label for="lastName">Last Name :</label>
                                                     </div>
                                                     <div class="col-4">
-                                                        <input type="text" id="lastName" value={recruiter.lastName} />
+                                                        <input type="text" id="lastName" placeholder="Smith" value={recruiter.lastName} onChange={e => this.changeLastName(e.target.value)} />
                                                     </div>
                                                 </div>
                                                 <div class="row">
@@ -452,7 +577,7 @@ class RecruitersGrid extends React.PureComponent {
                                                         <label for="phone">Phone</label>
                                                     </div>
                                                     <div class="col-4">
-                                                        <input type="text" id="phone" value={recruiter.phone} />
+                                                        <input type="text" id="phone" placeholder="1234567890" value={recruiter.phone} onChange={e => this.changePhone(e.target.value)} />
                                                     </div>
                                                 </div>
                                                 <div class="row">
@@ -466,20 +591,19 @@ class RecruitersGrid extends React.PureComponent {
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <button id="addRecruitersButton" type="button" onClick={this.addRecruiter} class="btn btn-primary">Add</button>
-                                        </div>
-                                    </div>
                                 </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button id="addRecruitersButton" type="button" onClick={this.addRecruiter} class="btn btn-primary">Add</button>
+                                </div>
+
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <button type="button" class="btn btn-primary addNote" data-toggle="modal" data-target="#addRecruiterModal">
+                        <button type="button" class="btn btn-primary addNote text-right" data-toggle="modal" data-target="#addRecruiterModal" onClick={this.clearRecruiterDetails}>
                             Add Recruiter
                     </button>
                     </div>

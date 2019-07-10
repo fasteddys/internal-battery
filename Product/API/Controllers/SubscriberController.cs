@@ -111,17 +111,17 @@ namespace UpDiddyApi.Controllers
 
             if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
             {
-                
-                    SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
 
-                    if (subscriberDto == null)
-                        return Ok(subscriberDto);
+                SubscriberDto subscriberDto = SubscriberFactory.GetSubscriber(_db, subscriberGuid, _syslog, _mapper);
 
-                    // track the subscriber action if performed by someone other than the user who owns the file
-                    if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
-                        new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
+                if (subscriberDto == null)
+                    return Ok(subscriberDto);
 
-                    return Ok(subscriberDto);                
+                // track the subscriber action if performed by someone other than the user who owns the file
+                if (loggedInUserGuid != subscriberDto.SubscriberGuid.Value)
+                    new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "View subscriber", "Subscriber", subscriberDto.SubscriberGuid);
+
+                return Ok(subscriberDto);
             }
             else
                 return Unauthorized();
@@ -594,7 +594,7 @@ namespace UpDiddyApi.Controllers
             EducationalDegreeType educationalDegreeType = EducationalDegreeTypeFactory.GetEducationalDegreeTypeByDegreeType(_db, EducationHistoryDto.EducationalDegreeType);
             int educationalDegreeTypeId = 0;
             if (educationalDegreeType == null)
-                 educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption).Result;
+                educationalDegreeType = EducationalDegreeTypeFactory.GetOrAdd(_db, Constants.NotSpecifedOption).Result;
             educationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId;
 
             EducationHistory.ModifyDate = DateTime.UtcNow;
@@ -1184,7 +1184,7 @@ namespace UpDiddyApi.Controllers
             if (loggedInUserGuid == subscriberDto.SubscriberGuid)
             {
                 var t = await _repositoryWrapper.SubscriberNotificationRepository.GetByConditionWithTrackingAsync(
-                    n => n.NotificationId == ExistingNotification.NotificationId && 
+                    n => n.NotificationId == ExistingNotification.NotificationId &&
                     n.SubscriberId == subscriberDto.SubscriberId);
 
                 SubscriberNotification SubscriberNotificationEntry = t.FirstOrDefault();
@@ -1211,8 +1211,16 @@ namespace UpDiddyApi.Controllers
         [Route("subscriber-details")]
         public async Task<IActionResult> GetSubscriber(ODataQueryOptions<Subscriber> options)
         {
-            var subscriber=await _subscriberService.GetSubscriber(options);
-            return Ok(_mapper.Map<SubscriberDto>(subscriber));
+            try
+            {
+                var subscriber = await _subscriberService.GetSubscriber(options);
+                return Ok(_mapper.Map<SubscriberDto>(subscriber));
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(LogLevel.Error, $"SubscriberController.GetSubscriber : Error occured when retrieving recruiter with message={ex.Message}", ex);
+                return StatusCode(500);
+            }
         }
     }
 }
