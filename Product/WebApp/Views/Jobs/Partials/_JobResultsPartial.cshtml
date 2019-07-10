@@ -68,8 +68,7 @@
                             <a class="job-tile-more-info" href="@url">More</a>
                         </div>
                     </div>
-                    <div class="col-12 col-md-3">
-                        <div class="company-logo">
+                    <div class="company-logo col-12 col-md-3">
                             @{
                                 if (!string.IsNullOrWhiteSpace(jobSearchResult.CompanyLogoUrl))
                                 {
@@ -80,7 +79,6 @@
                                     <span><i class="far fa-building mr-2"></i> @jobSearchResult.CompanyName</span>
                                 }
                             }
-                        </div>
                     </div>
                 </div>
             </div>
