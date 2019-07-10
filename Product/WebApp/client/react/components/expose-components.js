@@ -15,7 +15,7 @@ import TextArea from './TextArea';
 import Breadcrumb from './breadcrumbs/Breadcrumb';
 import BlogPost from './blog/blog-post';
 import Blog from './blog/blog';
-
+import Paging from './Paging';
 
 global.React = React;
 global.ReactDOM = ReactDOM;
@@ -32,6 +32,7 @@ global.Select = Select;
 global.Validate = Validate;
 global.TextArea = TextArea;
 global.Breadcrumb = Breadcrumb;
+global.Paging = Paging;
 
 // dashboard
 import Dashboard from './dashboard/dashboard';

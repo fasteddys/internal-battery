@@ -40,7 +40,8 @@ namespace UpDiddy.Controllers
             return View("Posts");
         }
 
-        [Route("blog/{slug}")]
+        [HttpGet]
+        [Route("/blog/{slug}")]
         public async Task<IActionResult> ShowPost(string slug)
         {
             var response = await _butterCMSClient.RetrievePostAsync(slug);
