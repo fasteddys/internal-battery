@@ -111,5 +111,15 @@ namespace UpDiddyLib.Helpers
             public static readonly string META_DESCRIPTION = "meta_description";
             public static readonly string META_KEYWORDS = "meta_keywords";
         }
+
+        public static class EventType
+        {
+            public static readonly string JobPosting = "Job posting";
+        }
+
+        public static class Action
+        {
+            public static readonly string ApplyJob = "Apply job";
+        }
     }
 }

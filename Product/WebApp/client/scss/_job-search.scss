@@ -424,6 +424,12 @@
     .city {
         display: block !important;
     }
+
+    .company-logo {
+        border-left-color: lightgray;
+        border-left-style: solid;
+        border-left-width: 1px;
+    }
 }
 
 // Large Styles

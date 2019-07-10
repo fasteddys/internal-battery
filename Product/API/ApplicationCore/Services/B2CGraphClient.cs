@@ -156,14 +156,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await response.Content.ReadAsStringAsync();
         }
 
-        private async Task<string> SendGraphPostRequest(string api, string json)
+        public async Task<string> SendGraphPostRequest(string api, string json)
         {
             // NOTE: This client uses ADAL v2, not ADAL v4
             AuthenticationResult result = await authContext.AcquireTokenAsync("https://graph.windows.net", credential);
             string url = this.baseUrl + api + "?api-version=1.6";
 
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);           
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
             HttpResponseMessage response = await _http.SendAsync(request);
 
@@ -177,7 +177,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await response.Content.ReadAsStringAsync();
         }
 
-        private async Task<string> SendGraphDeleteRequest(string api)
+        public async Task<string> SendGraphDeleteRequest(string api)
         {
             // NOTE: This client uses ADAL v2, not ADAL v4
             AuthenticationResult result = await authContext.AcquireTokenAsync("https://graph.windows.net", credential);

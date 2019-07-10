@@ -32,6 +32,8 @@ using static UpDiddyLib.Helpers.Constants;
 using Newtonsoft.Json.Linq;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Data.SqlClient;
+using JobPosting = UpDiddyApi.Models.JobPosting;
+using UpDiddyApi.Helpers;
 
 namespace UpDiddyApi.Workflow
 {
@@ -41,8 +43,9 @@ namespace UpDiddyApi.Workflow
         ISysEmail _sysEmail;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly ISubscriberService _subscriberService;
-
-
+        private readonly IJobPostingService _jobPostingService;
+        private readonly ITrackingService _trackingService;
+        private readonly CloudTalent _cloudTalent;
         public ScheduledJobs(
             UpDiddyDbContext context,
             IMapper mapper,
@@ -55,7 +58,9 @@ namespace UpDiddyApi.Workflow
             IDistributedCache distributedCache,
             ICloudStorage cloudStorage,
             IRepositoryWrapper repositoryWrapper,
-            ISubscriberService subscriberService
+            ISubscriberService subscriberService,
+            IJobPostingService jobPostingService,
+            ITrackingService trackingService           
            )
         {
             _db = context;
@@ -70,8 +75,12 @@ namespace UpDiddyApi.Workflow
             _hub = hub;
             _cache = distributedCache;
             _sysEmail = sysEmail;
+            _trackingService = trackingService;
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = subscriberService;
+            _jobPostingService = jobPostingService;
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+
         }
 
         #region Marketing
@@ -1128,6 +1137,66 @@ namespace UpDiddyApi.Workflow
 
         }
 
+        /// <summary>
+        /// Sends email to subscribers who clicked Apply on job posting and did not click submit 
+        /// </summary>
+        /// <returns></returns>
+        public async Task ExecuteJobAbandonmentEmailDelivery()
+        {
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ExecuteJobAbandonmentEmailDelivery started at: {DateTime.UtcNow.ToLongDateString()}");
+                Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = await _trackingService.GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime.UtcNow);
+                if(subscribersToJobPostingMapping.Count > 0)
+                {
+                    string jobPostingUrl = _configuration["CareerCircle:ViewJobPostingUrl"];
+                    dynamic recruiterTemplate = new JObject();
+                    foreach (KeyValuePair<Subscriber, List<JobPosting>> entry in subscribersToJobPostingMapping)
+                    {
+                        //Search for similar jobs
+                        JobQueryDto jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(entry.Value.FirstOrDefault().Province
+                            , entry.Value.FirstOrDefault().City
+                            , entry.Value.FirstOrDefault().Title
+                            , Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsForJobAbandonment"]));
+                        JobSearchResultDto similarJobSearchResults = _cloudTalent.Search(jobQuery);
+                        
+                        //Remove duplicates subscriber already attempted to apply to
+                        foreach (var job in entry.Value)
+                        {
+                            similarJobSearchResults.Jobs.RemoveAll(x => x.JobPostingGuid == job.JobPostingGuid);
+                        }
+
+                        //Send email to subscriber
+                        bool result = await _sysEmail.SendTemplatedEmailAsync(
+                                  entry.Key.Email,
+                                  _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert"],
+                                  SendGridHelper.GenerateJobAbandonmentEmailTemplate(entry, similarJobSearchResults.Jobs, jobPostingUrl),
+                                  SendGridAccount.Transactional,
+                                  null,
+                                  null);
+                    }
+
+                    //Send emails out to recruiters
+                    var jobAbandonmentEmails = _configuration.GetSection("SysEmail:JobAbandonmentEmails").GetChildren().Select(x => x.Value).ToList();
+                    foreach (string email in jobAbandonmentEmails)
+                    {
+                        await _sysEmail.SendTemplatedEmailAsync(
+                              email,
+                              _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert-Recruiter"],
+                              SendGridHelper.GenerateJobAbandonmentRecruiterTemplate(subscribersToJobPostingMapping, jobPostingUrl),
+                              SendGridAccount.Transactional,
+                              null,
+                              null);
+                    }
+                }          
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.ExecuteJobAbandonmentEmailDelivery encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+        }
+
+
         #endregion
 
         #region CareerCircle  Helper Functions
@@ -1200,6 +1269,7 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
+
         #endregion
 
         #region Cloud Talent Profiles 
@@ -1259,9 +1329,6 @@ namespace UpDiddyApi.Workflow
             ct.DeleteJobFromCloudTalent(_db, jobPostingGuid);
             return true;
         }
-
-
-
 
         #endregion
 

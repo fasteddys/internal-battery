@@ -15,6 +15,8 @@ using X.PagedList;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Security.Claims;
+using static UpDiddyLib.Helpers.Constants;
+using Action = UpDiddyLib.Helpers.Constants.Action;
 
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -369,6 +371,7 @@ namespace UpDiddy.Controllers
 
 
             var trackingDto = await _api.RecordClientEventAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.Application_Start));
+            await  _api.RecordSubscriberApplyAction(JobGuid, this.subscriber.SubscriberGuid.Value);
             return View("Apply", new JobApplicationViewModel()
             {
                 RequestId = trackingDto?.RequestId,
