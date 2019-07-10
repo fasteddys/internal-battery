@@ -500,6 +500,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsJobPoster");
 
+                    b.Property<string>("LogoUrl");
+
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");

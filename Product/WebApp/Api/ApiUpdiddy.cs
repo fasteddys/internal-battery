@@ -338,12 +338,6 @@ namespace UpDiddy.Api
         }
 
 
-
-
-
-
-
-
         public async Task<IList<EmploymentTypeDto>> GetEmploymentTypeAsync()
         {
             string cacheKey = "GetEmploymentTypeAsync";
@@ -468,6 +462,21 @@ namespace UpDiddy.Api
             {
                 rval = await _GetSkillsAsync(userQuery);
                 SetCachedValue<IList<SkillDto>>(cacheKey, rval);
+            }
+            return rval;
+        }
+
+        public async Task<IList<CompanyDto>> GetAllCompaniesAsync()
+        {
+            string cacheKey = $"GetAllCompanies";
+            IList<CompanyDto> rval = GetCachedValue<IList<CompanyDto>>(cacheKey);
+
+            if (rval != null)
+                return rval;
+            else
+            {
+                rval = await _GetAllCompaniesAsync();
+                SetCachedValue<IList<CompanyDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -1166,6 +1175,12 @@ namespace UpDiddy.Api
             return await GetAsync<CourseVariantDto>("course/course-variant/" + courseVariantGuid);
         }
 
+        private async Task<IList<CompanyDto>> _GetAllCompaniesAsync()
+        {
+            return await GetAsync<IList<CompanyDto>>("companies/");
+        }
+
+
         private async Task<IList<CompanyDto>> _GetCompaniesAsync(string userQuery)
         {
             return await GetAsync<IList<CompanyDto>>("company/" + userQuery);
@@ -1665,6 +1680,11 @@ namespace UpDiddy.Api
         public async Task<BasicResponseDto> _GetActiveJobCountAsync()
         {
             return await GetAsync<BasicResponseDto>("job/active-job-count");
+        }
+
+        public async Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid)
+        {
+            await GetAsync<BasicResponseDto>($"tracking/record-subscriber-apply-action/{jobGuid}/{subscriberGuid}");
         }
 
         #endregion

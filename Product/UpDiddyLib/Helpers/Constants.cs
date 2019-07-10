@@ -119,5 +119,15 @@ namespace UpDiddyLib.Helpers
                 public static readonly string WOZ_STUDENT = "Woz Student";
             }
         }
+
+        public static class EventType
+        {
+            public static readonly string JobPosting = "Job posting";
+        }
+
+        public static class Action
+        {
+            public static readonly string ApplyJob = "Apply job";
+        }
     }
 }

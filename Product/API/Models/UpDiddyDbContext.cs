@@ -439,6 +439,7 @@ namespace UpDiddyApi.Models
                 .HasForeignKey(sn => sn.RecruiterId);
 
             modelBuilder.Entity<Notification>().HasQueryFilter(n => n.IsDeleted == 0 && (n.ExpirationDate > DateTime.UtcNow || n.ExpirationDate == null));
+            modelBuilder.Entity<SubscriberFile>().HasQueryFilter(n => n.IsDeleted == 0);
             modelBuilder.Entity<Group>().HasQueryFilter(g => g.IsDeleted == 0);
             modelBuilder.Entity<SubscriberGroup>().HasQueryFilter(sg => sg.IsDeleted == 0);
             modelBuilder.Entity<GroupPartner>().HasQueryFilter(gp => gp.IsDeleted == 0);

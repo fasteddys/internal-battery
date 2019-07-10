@@ -203,6 +203,9 @@ namespace UpDiddyApi
             // kick off the metered welcome email delivery process at five minutes past the hour every hour
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
 
+            // kick off the job abandonment email delivery process
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteJobAbandonmentEmailDelivery(), Cron.Daily());
+
             // Add Polly 
             // Create Policies  
             int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
@@ -253,6 +256,13 @@ namespace UpDiddyApi
             services.AddScoped<ISubscriberService, SubscriberService>();
             services.AddScoped<IReportingService, ReportingService>();
             services.AddScoped<IJobService, JobService>();
+            services.AddScoped<ITrackingService, TrackingService>();
+            services.AddScoped<IJobPostingService, JobPostingService>();
+            services.AddScoped<IJobApplicationService, JobApplicationService>();
+
+
+            services.AddScoped<ICompanyService, CompanyService>();
+            services.AddScoped<IRecruiterService, RecruiterService>();
             services.AddScoped<ITaggingService, TaggingService>();
             #endregion
 
