@@ -50,20 +50,36 @@ namespace UpDiddyApi.ApplicationCore.Repository
               .FirstOrDefault(); 
         }
 
-        public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int subscriberId)
+        public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
-            return _dbContext.Subscriber
-              .Where(s => s.IsDeleted == 0 && s.CloudTalentIndexStatus == 0)
+ 
+            var rVal =  _dbContext.Subscriber               
+              .Where(s => s.IsDeleted == 0 && s.CloudTalentIndexVersion < indexVersion)
+              .Take(numSubscribers)
               .ToList();
+
+            if ( rVal.Count > 0 )
+            {
+                // build sql to update subscribers who will be updated 
+                string updateSql = $"update subscriber set CloudTalentIndexVersion = {indexVersion} where subscriberid in (";
+                string inList = string.Empty;
+                foreach (Subscriber s in rVal)
+                {
+                    if (string.IsNullOrEmpty(inList) == false)
+                        inList += ",";
+                    inList += s.SubscriberId.ToString();
+
+                }
+                updateSql += inList + ")"; 
+                _dbContext.Database.ExecuteSqlCommand(updateSql);
+
+            }
+
+            return rVal;
+
         }
 
-        public async Task<bool> ForceProfileReindex()
-        {
-            int numUpdates = _dbContext.Database
-              .ExecuteSqlCommand("update subscriber set CloudTalentIndexStatus = 0 where isdeleted = 0");             
-
-              return true;
-        }
+    
 
 
 

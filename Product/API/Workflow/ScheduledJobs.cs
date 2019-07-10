@@ -1220,7 +1220,8 @@ namespace UpDiddyApi.Workflow
         public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess )
         {
            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
-           List<Subscriber> subscribers = await _repositoryWrapper.SubscriberRepository.GetSubscribersToIndexIntoGoogle(numProfilesToProcess);
+            int indexVersion = int.Parse(_configuration["CloudTalent:ProfileIndexVersion"]);
+           List<Subscriber> subscribers = await _repositoryWrapper.SubscriberRepository.GetSubscribersToIndexIntoGoogle(numProfilesToProcess,indexVersion);
            foreach ( Subscriber s in subscribers)
             {
                 ct.AddOrUpdateProfileToCloudTalent(_db, s.SubscriberGuid.Value);

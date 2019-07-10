@@ -81,10 +81,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <returns></returns>
         Task<bool> ImportResume(ResumeParse resumeParse, string resume);
 
-        /// <summary>
-        /// Set a flag that will force all subscribers to be reindexed into the google cloue 
-        /// </summary>
-        /// <returns></returns>
-        Task<bool> MarkSubscribersForReindex();
+      
     }
 }

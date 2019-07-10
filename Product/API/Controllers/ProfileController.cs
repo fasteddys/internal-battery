@@ -231,21 +231,7 @@ namespace UpDiddyApi.Controllers
  
 
 
-        /// <summary>
-        /// Delete the user's profile from the google cloud using their google cloud uri 
-        /// </summary>
-        /// <param name="SubscriberGuid"></param>
-        /// <returns></returns>
-        [Authorize(Policy = "IsCareerCircleAdmin")]
-        [HttpPut]
-        [Route("api/[controller]/force-reindex")]
-        public async Task<IActionResult> ReindexAll( )
-        {
-            _subscriberService.MarkSubscribersForReindex();
-            return Ok();
-        }
-
-
+  
 
         #endregion
 

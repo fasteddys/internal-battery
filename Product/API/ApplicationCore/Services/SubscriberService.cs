@@ -300,13 +300,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             var map = query.ToDictionary(x => x.jobPostingGuid, x => x.jobPostingFavoriteGuid);
             return map;
         }
-
-        public async Task<bool> MarkSubscribersForReindex()
-        {
-            _repository.Subscriber.ForceProfileReindex();
-               
-            return true;
-        }
+ 
 
 
 
