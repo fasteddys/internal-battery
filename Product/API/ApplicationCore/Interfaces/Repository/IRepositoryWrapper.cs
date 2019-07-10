@@ -36,5 +36,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IGroupRepository GroupRepository { get; }
         ISubscriberGroupRepository SubscriberGroupRepository { get; }
         IPartnerContactRepository PartnerContactRepository { get; }
+        IPartnerRepository PartnerRepository { get; }
     }
 }

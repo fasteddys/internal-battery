@@ -831,8 +831,10 @@ namespace UpDiddyApi.Controllers
                     _db.Add(subscriber);
                     await _db.SaveChangesAsync();
 
-                    _taggingService.AddSubscriberToGroupBasedOnReferrerUrlAsync(subscriber.SubscriberId, referer);
-                    _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
+                    if(signUpDto.partnerGuid != Guid.Empty && signUpDto.partnerGuid != null)
+                        await _taggingService.EnsurePartnerReferrerEntryExistsIfPartnerSpecified(referer, signUpDto.partnerGuid);
+                    await _taggingService.AddSubscriberToGroupBasedOnReferrerUrlAsync(subscriber.SubscriberId, referer);
+                    await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
 
                     SubscriberProfileStagingStore store = new SubscriberProfileStagingStore()
                     {
