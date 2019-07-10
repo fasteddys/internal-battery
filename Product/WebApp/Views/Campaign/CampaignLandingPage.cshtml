@@ -48,7 +48,7 @@
                                     Create an account to get started
                                 </div>
                                 <div class="col-12 no-padding">
-                                    @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel { IsExpressSignUp = Model.IsExpressSignUp, PartnerGuid = Model.partner.VendorGuid != null ? Guid.Parse(Model.partner.VendorGuid) : Guid.Empty})
+                                    @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel { IsExpressSignUp = Model.IsExpressSignUp, PartnerGuid = Model.partner.PartnerGuid != null ? Model.partner.PartnerGuid : Guid.Empty})
                                 </div>
                             </div>
                         </div>
