@@ -194,6 +194,7 @@ namespace UpDiddy
             services.AddScoped<IButterCMSService, ButterCMSService>();
             services.AddScoped<ISysEmail, SysEmail>();
 
+
             services.AddDetection();
 
             services.AddMvc().AddJsonOptions(options =>
