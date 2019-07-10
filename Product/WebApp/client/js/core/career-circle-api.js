@@ -228,6 +228,26 @@
         return await _http.delete('/company/delete/'+companyGuid);
     }
 
+    var getRecruiters = async function () {
+        return await _http.get('/recruiters');
+    }
+
+    var getRecruiterDetails = async function (query) {
+        return await _http.get(`/subscriber/subscriber-details${buildQuery(query)}`);
+    }
+
+    var addRecruiter = async function (recruiterObj) {
+        return await _http.post('/recruiter/add', JSON.stringify(recruiterObj));
+    }
+
+    var editRecruiter = async function (recruiterObj) {
+        return await _http.post('/recruiter/update', JSON.stringify(recruiterObj));
+    }
+
+    var deleteRecruiter = async function (recruiterObj) {
+        return await _http.post('/recruiter/delete/', JSON.stringify(recruiterObj));
+    }
+
      
     return {
         getProfile: getProfile,
@@ -252,7 +272,12 @@
         getCompanies: getCompanies,
         addCompany: addCompany,
         editCompany: editCompany,
-        deleteCompany: deleteCompany
+        deleteCompany: deleteCompany,
+        getRecruiters: getRecruiters,
+        getRecruiterDetails: getRecruiterDetails,
+        addRecruiter: addRecruiter,
+        editRecruiter: editRecruiter,
+        deleteRecruiter: deleteRecruiter,
     };
     
 })(API_URL);
