@@ -33,10 +33,6 @@ class BlogPost extends React.Component {
                 <div className="p-2">
                     <div className="d-flex flex-column">
                         <div className="p-2" style={{ fontSize: '2rem' }}>
-                            <Route path='/privacy-policy' component={() => {
-                                window.location.href = 'http://localhost:5000/blog/2';
-                                return null;
-                            }} />
                             <a href="http://localhost:5000/blog/2">{post.title}</a>
                         </div>
                         <div className="p-2">
