@@ -54,7 +54,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                             jobPostingList.Add(jobPost);
                         }
                     }
-                    subscribersToJobPostingMapping.Add(subscriber, jobPostingList);
+                    //Add to mapping collection only if there is atleast one job the subscriber applied to without submitting
+                    if(jobPostingList.Count > 0)
+                    {
+                        subscribersToJobPostingMapping.Add(subscriber, jobPostingList);
+                    }
                 }
             }
             return subscribersToJobPostingMapping;

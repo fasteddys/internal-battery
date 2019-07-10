@@ -45,6 +45,7 @@ namespace UpDiddyApi.Workflow
         private readonly ISubscriberService _subscriberService;
         private readonly IJobPostingService _jobPostingService;
         private readonly ITrackingService _trackingService;
+        private readonly CloudTalent _cloudTalent;
         public ScheduledJobs(
             UpDiddyDbContext context,
             IMapper mapper,
@@ -78,6 +79,8 @@ namespace UpDiddyApi.Workflow
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = subscriberService;
             _jobPostingService = jobPostingService;
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+
         }
 
         #region Marketing
@@ -1142,38 +1145,50 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ExecuteJobAbandonmentEmailDelivery started at: {DateTime.UtcNow.ToLongDateString()}");
                 Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = await _trackingService.GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime.UtcNow);
-                string jobPostingUrl = _configuration["CareerCircle:ViewJobPostingUrl"];
-                dynamic recruiterTemplate = new JObject();
-                foreach (KeyValuePair<Subscriber, List<JobPosting>> entry in subscribersToJobPostingMapping)
+                if(subscribersToJobPostingMapping.Count > 0)
                 {
-                    List<JobPosting> similarJobs = await _jobPostingService.GetSimilarJobPostingsAsync(entry.Value[0]);
-                    //Remove duplicates from similar job
-                    foreach (var job in entry.Value)
+                    string jobPostingUrl = _configuration["CareerCircle:ViewJobPostingUrl"];
+                    dynamic recruiterTemplate = new JObject();
+                    foreach (KeyValuePair<Subscriber, List<JobPosting>> entry in subscribersToJobPostingMapping)
                     {
-                        similarJobs.RemoveAll(x => x.JobPostingId == job.JobPostingId);
+                        //Search for similar jobs
+                        JobQueryDto jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(entry.Value.FirstOrDefault().Province
+                            , entry.Value.FirstOrDefault().City
+                            , entry.Value.FirstOrDefault().Title
+                            , Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsForJobAbandonment"]));
+                        JobSearchResultDto similarJobSearchResults = _cloudTalent.Search(jobQuery);
+                        
+                        //Remove duplicates subscriber already attempted to apply to
+                        foreach (var job in entry.Value)
+                        {
+                            similarJobSearchResults.Jobs.RemoveAll(x => x.JobPostingGuid == job.JobPostingGuid);
+                        }
+
+                        //Send email to subscriber
+                        bool result = await _sysEmail.SendTemplatedEmailAsync(
+                                  entry.Key.Email,
+                                  _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert"],
+                                  SendGridHelper.GenerateJobAbandonmentEmailTemplate(entry, similarJobSearchResults.Jobs, jobPostingUrl),
+                                  SendGridAccount.Transactional,
+                                  null,
+                                  null);
                     }
-                    //Send email to subscriber
-                    bool result = await _sysEmail.SendTemplatedEmailAsync(
-                              entry.Key.Email,
-                              _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert"],
-                              SendGridHelper.GenerateJobAbandonmentEmailTemplate(entry, similarJobs, jobPostingUrl),
+
+                    //Send emails out to recruiters
+                    var jobAbandonmentEmails = _configuration.GetSection("SysEmail:JobAbandonmentEmails").GetChildren().Select(x => x.Value).ToList();
+                    foreach (string email in jobAbandonmentEmails)
+                    {
+                        await _sysEmail.SendTemplatedEmailAsync(
+                              email,
+                              _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert-Recruiter"],
+                              SendGridHelper.GenerateJobAbandonmentRecruiterTemplate(subscribersToJobPostingMapping, jobPostingUrl),
                               SendGridAccount.Transactional,
                               null,
                               null);
-                }
-                //Send emails out to recruiters
-                var jobAbandonmentEmails = _configuration.GetSection("SysEmail:JobAbandonmentEmails").GetChildren().Select(x => x.Value).ToList();
-                foreach (string email in jobAbandonmentEmails)
-                {
-                    await _sysEmail.SendTemplatedEmailAsync(
-                          email,
-                          _configuration["SysEmail:Transactional:TemplateIds:JobApplication-AbandonmentAlert-Recruiter"],
-                          SendGridHelper.GenerateJobAbandonmentRecruiterTemplate(subscribersToJobPostingMapping, jobPostingUrl),
-                          SendGridAccount.Transactional,
-                          null,
-                          null);
-                }
+                    }
+                }          
             }
             catch (Exception e)
             {
@@ -1252,11 +1267,6 @@ namespace UpDiddyApi.Workflow
             }
 
             return true;
-        }
-
-        private async Task SendJobAbandonmentEmail(Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping)
-        {
-           
         }
 
 

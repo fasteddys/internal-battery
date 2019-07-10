@@ -20,19 +20,5 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             _repositoryWrapper = repositoryWrapper;
         }
-
-        //Get similar job posting based on title and provice
-        public async Task<List<JobPosting>> GetSimilarJobPostingsAsync(JobPosting jobPost)
-        {
-            IQueryable<JobPosting> allJobPostings = await _repositoryWrapper.JobPosting.GetAllAsync();
-            return await allJobPostings
-                .Where(x => x.Title.ToLower()
-                .Contains(jobPost.Title)
-                && x.Province == jobPost.Province
-                && x.IsDeleted == 0
-                && x.JobPostingId != jobPost.JobPostingId)
-                .OrderByDescending(y => y.PostingDateUTC)
-                .Take(5).ToListAsync();
-        }
     }
 }

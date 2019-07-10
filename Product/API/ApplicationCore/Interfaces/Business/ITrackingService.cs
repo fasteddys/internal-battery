@@ -11,6 +11,5 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IJobPostingService
     {
-        Task<List<JobPosting>> GetSimilarJobPostingsAsync(JobPosting jobPosting);
     }
 }

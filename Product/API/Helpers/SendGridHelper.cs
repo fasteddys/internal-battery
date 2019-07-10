@@ -6,13 +6,14 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
+using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Helpers
 {
     public static class SendGridHelper
     {
-        public static dynamic GenerateJobAbandonmentEmailTemplate(KeyValuePair<Subscriber, List<JobPosting>> pair, List<JobPosting> similarJobs, string ViewJobPostingUrl)
+        public static dynamic GenerateJobAbandonmentEmailTemplate(KeyValuePair<Subscriber, List<JobPosting>> pair, List<JobViewDto> similarJobs, string ViewJobPostingUrl)
         {
             dynamic templateData = new JObject();
             templateData.firstName = pair.Key.FirstName;
