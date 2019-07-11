@@ -36,10 +36,6 @@ stages:
         versionSpec: '10.x'
       displayName: 'Install Node.js'
     - script: |
-        cd Product/CCProfileService
-        npm install
-      displayName: 'Running npm install'
-    - script: |
         cd Product/CCProfileService/Modules/BasicResponse
         npm install
       displayName: "Installing BasicResponse"
@@ -47,6 +43,12 @@ stages:
         cd Product/CCProfileService/Modules/talent-v4beta1
         npm install
       displayName: "Installing talent-v4beta1"
+    - script: |
+        cd Product/CCProfileService
+        npm install
+        npm install ./modules/talent-v4beta1
+        npm install ./modules/basicresponse
+      displayName: 'Running npm install'
       
     - task: ArchiveFiles@2
       displayName: 'Archive files'
