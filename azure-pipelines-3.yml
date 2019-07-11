@@ -39,15 +39,6 @@ stages:
         cd Product/CCProfileService
         npm install
       displayName: 'Running npm install'
-    - script: |
-        cd Product/CCProfileService
-        npm install ./modules/talent-v4beta1
-      displayName: "Installing talent-v4beta1"
-    - script: |
-        cd Product/CCProfileService
-        npm install ./modules/basicresponse
-      displayName: "Installing BasicResponse"
-      
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:
