@@ -6,7 +6,7 @@
 trigger:
   branches:
     include:
-      - dev
+      - task784
   paths:
     include:
       - Product/CCProfileService/*
@@ -46,7 +46,7 @@ stages:
         npm install
         npm install ./modules/talent-v4beta1
         npm install ./modules/basicresponse
-      displayName: 'npm install'
+      displayName: 'Running npm install'
       
     - task: ArchiveFiles@2
       displayName: 'Archive files'
