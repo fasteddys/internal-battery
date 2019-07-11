@@ -51,46 +51,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-        /*
-        public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
-        {
-
-
-            var queryableSubscriber = await GetAllAsync();
-            var rVal = queryableSubscriber
-              .Where(s => s.IsDeleted == 0 && s.CloudTalentIndexVersion < indexVersion)
-              .Take(numSubscribers)
-              .ToList();
-
-            if ( rVal.Count > 0 )
-            {
-                // build sql to update subscribers who will be updated 
-                string updateSql = $"update subscriber set CloudTalentIndexVersion = {indexVersion} where subscriberid in (";
-                string inList = string.Empty;
-                foreach (Subscriber s in rVal)
-                {
-                    if (string.IsNullOrEmpty(inList) == false)
-                        inList += ",";
-                    inList += s.SubscriberId.ToString();
-
-                }
-                updateSql += inList + ")"; 
-                ExecuteSQL(updateSql);
-
-            }
-
-            return rVal;
-
-        }
-        */
-
-    
-
-
-
-
-
-
 
     }
 }
