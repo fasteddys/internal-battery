@@ -40,10 +40,6 @@ stages:
         npm install
       displayName: 'Installing talent-v4beta1'
     - script: |
-        cd Product/CCProfileService/Modules/BasicResponse
-        npm install
-      displayName: 'Installing basicresponse'
-    - script: |
         cd Product/CCProfileService
         npm install
         npm install ./Modules/basicresponse
