@@ -1158,7 +1158,7 @@ namespace UpDiddyApi.Workflow
                             , entry.Value.FirstOrDefault().City
                             , entry.Value.FirstOrDefault().Title
                             , Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsForJobAbandonment"]));
-                        JobSearchResultDto similarJobSearchResults = _cloudTalent.Search(jobQuery);
+                        JobSearchResultDto similarJobSearchResults = _cloudTalent.JobSearch(jobQuery);
                         
                         //Remove duplicates subscriber already attempted to apply to
                         foreach (var job in entry.Value)
