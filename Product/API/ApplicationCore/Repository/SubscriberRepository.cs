@@ -50,10 +50,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
               .FirstOrDefault(); 
         }
 
+
+        /*
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
- 
-            var rVal =  _dbContext.Subscriber               
+
+
+            var queryableSubscriber = await GetAllAsync();
+            var rVal = queryableSubscriber
               .Where(s => s.IsDeleted == 0 && s.CloudTalentIndexVersion < indexVersion)
               .Take(numSubscribers)
               .ToList();
@@ -71,13 +75,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
                 }
                 updateSql += inList + ")"; 
-                _dbContext.Database.ExecuteSqlCommand(updateSql);
+                ExecuteSQL(updateSql);
 
             }
 
             return rVal;
 
         }
+        */
 
     
 

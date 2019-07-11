@@ -15,7 +15,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 
         Task<Subscriber> GetSubscriberByIdAsync(int subscriberId);
 
-        Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion);
+ 
  
 
     }

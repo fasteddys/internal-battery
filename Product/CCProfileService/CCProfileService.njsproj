@@ -121,6 +121,7 @@
     <Compile Include="Modules\talent-v4beta1\test\gapic-v4beta1.js" />
     <Compile Include="server.js" />
     <Content Include=".env" />
+    <Content Include=".gitignore" />
     <Content Include="Modules\BasicResponse\package.json" />
     <Content Include="Modules\talent-v4beta1\node_modules\mocha\bin\mocha" />
     <Content Include="Modules\talent-v4beta1\node_modules\mocha\bin\_mocha" />
