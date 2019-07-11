@@ -12,8 +12,6 @@ const app = express()
 
 const profileSearchOption = { autoPaginate: false };
 
-const test = process.env['Sovren:BaseUrl']
-
 // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.urlencoded());
 // Parse JSON bodies (as sent by API clients)
