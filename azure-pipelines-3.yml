@@ -2,11 +2,10 @@
 # Build a Node.js Express app and deploy it to Azure as a Linux web app.
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
   branches:
     include:
-      - task784
+      - dev
   paths:
     include:
       - Product/CCProfileService/*
@@ -14,18 +13,14 @@ trigger:
       - Product/API/*
       - Product/UpDiddyLib/*
       - Product/WebApp/*
-
 variables:
-
   # Azure Resource Manager connection created during pipeline creation
   azureSubscription: '2625fc13-bf57-4e92-b871-24c0cade5335'
   
   # Web app name
   webAppName: 'CareerCircleGoogleProfileBroker'
-
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
-
 stages:
 - stage: Build
   displayName: Build stage
@@ -40,13 +35,18 @@ stages:
       inputs:
         versionSpec: '10.x'
       displayName: 'Install Node.js'
-
     - script: |
         cd Product/CCProfileService
         npm install
-        npm install ./modules/talent-v4beta1
-        npm install ./modules/basicresponse
       displayName: 'Running npm install'
+    - script: |
+        cd Product/CCProfileService/Modules/BasicResponse
+        npm install
+      displayName: "Installing BasicResponse"
+    - script: |
+        cd Product/CCProfileService/Modules/talent-v4beta1
+        npm install
+      displayName: "Installing talent-v4beta1"
       
     - task: ArchiveFiles@2
       displayName: 'Archive files'
@@ -56,6 +56,5 @@ stages:
         archiveType: zip
         archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
         replaceExistingArchive: true
-
     - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
       artifact: drop
