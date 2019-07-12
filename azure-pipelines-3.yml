@@ -39,22 +39,13 @@ stages:
         cd Product/CCProfileService
         npm install
       displayName: 'Running npm install'
-    - script: |
-        cd Product/CCProfileService/Modules/BasicResponse
-        npm install
-      displayName: "Installing BasicResponse"
-    - script: |
-        cd Product/CCProfileService/Modules/talent-v4beta1
-        npm install
-      displayName: "Installing talent-v4beta1"
-      
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:
-        rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)/Product/CCProfileService'
         includeRootFolder: false
         archiveType: zip
-        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/careercirclegoogleprofilebroker.zip
         replaceExistingArchive: true
-    - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+    - upload: $(Build.ArtifactStagingDirectory)/careercirclegoogleprofilebroker.zip
       artifact: drop

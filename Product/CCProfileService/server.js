@@ -5,6 +5,7 @@ const dotenv = require('dotenv').config()
 const express = require('express');
  
 // const talentAPI = require('@google-cloud/talent');
+// test
 const talentAPI = require('./Modules/talent-v4beta1');
 const basicResponse = require('./Modules/basicresponse');
 const http = require('http');
