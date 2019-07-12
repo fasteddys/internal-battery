@@ -36,7 +36,9 @@ stages:
         versionSpec: '10.x'
       displayName: 'Install Node.js'
     - script: |
-        cd Product/CCProfileService
+        cd Product/CCProfileService/Modules/talent-v4beta1
+        npm Install
+        cd ../..
         npm install
       displayName: 'Running npm install'
     - task: ArchiveFiles@2
