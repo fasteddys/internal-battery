@@ -69,16 +69,20 @@
                         </div>
                     </div>
                     <div class="company-logo col-12 col-md-3">
-                            @{
-                                if (!string.IsNullOrWhiteSpace(jobSearchResult.CompanyLogoUrl))
-                                {
-                                    <img src="@jobSearchResult.CompanyLogoUrl" />
-                                }
-                                else
-                                {
-                                    <span><i class="far fa-building mr-2"></i> @jobSearchResult.CompanyName</span>
-                                }
+                        @{
+                            if (!string.IsNullOrWhiteSpace(jobSearchResult.CompanyLogoUrl))
+                            {
+                                <div class="container d-flex h-100">
+                                    <div class="row justify-content-center align-self-center">
+                                        <img src="@jobSearchResult.CompanyLogoUrl" />
+                                    </div>
+                                </div>
                             }
+                            else
+                            {
+                                <span><i class="far fa-building mr-2"></i> @jobSearchResult.CompanyName</span>
+                            }
+                        }
                     </div>
                 </div>
             </div>
