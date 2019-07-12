@@ -37,8 +37,10 @@ stages:
       displayName: 'Install Node.js'
     - script: |
         cd Product/CCProfileService
-        npm install
-      displayName: 'Runnning npm install'
+        npm install 
+        npm install ./modules/talent-v4beta1
+        npm install ./modules/BasicResponse
+      displayName: 'Installing dependencies'
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:
