@@ -1,4 +1,18 @@
-﻿@using React.AspNet;
+﻿@model ButterCMS.Models.PostsResponse
+<script type="text/javascript">
+    function openPost(post) {
+        window.location.href = "http://localhost:5000/blog/" + post.id;
+    }
+</script>
 <div class="blog-container">
-    @Html.React("Blog", new { data = ViewBag.Posts })
+    @foreach (var post in Model.Data)
+    {
+        <div style="margin:15px;border-style:ridge;">
+            @Html.Partial("Partials/_PostItem", post)
+        </div>
+    }
+    <div class="d-flex flex-row">
+        <i class="fas fa-arrow-left"></i>
+        <i class="col fas fa-arrow-right"></i>
+    </div>
 </div>

@@ -1,0 +1,59 @@
+﻿@model ButterCMS.Models.PostResponse
+<meta name="description" content="@Model.Data.MetaDescription" />
+<meta name="keywords" content="@Model.Data.SeoTitle" />
+<style type="text/css">
+    img {
+        max-width: 100%;
+        height: auto;
+        width: auto\9; /* ie8 */
+    }
+</style>
+<div class="d-flex justify-content-center p-5">
+    <div class="d-flex flex-column" style="border-style:ridge;">
+        <div class="d-flex flex-row">
+            <div class="p-2">
+                <a style="font-size:3rem;"><b>@Model.Data.Title</b></a>
+            </div>
+        </div>
+        <div class="d-flex flex-row">
+            <div class="p-2">
+                Published @Model.Data.Published.Value.ToString("d/M/yyyy") by
+                <b>
+                    @Model.Data.Author.FirstName @Model.Data.Author.LastName
+                </b>
+            </div>
+            <div class="p-2">
+                <h2>
+                    @if (Model.Data.Categories.ToList().Count > 0)
+                    {
+                        @Html.Raw("Categories: ")
+                    }
+                    @foreach (var category in Model.Data.Categories)
+                    {
+                        <a href="/category/@Uri.EscapeDataString(category.Slug)">@category.Name</a>
+                    }
+                </h2>
+            </div>
+            <div class="p2">
+                <h2>
+                    @if (Model.Data.Categories.ToList().Count > 0)
+                    {
+                        @Html.Raw("Tags: ")
+                    }
+                    @foreach (var tag in Model.Data.Tags)
+                    {
+                        <a href="/tag/@Uri.EscapeDataString(tag.Slug)">@tag.Name</a>
+                    }
+                </h2>
+            </div>
+
+        </div>
+        <div class="d-flex flex-row">
+            <div class="p-2">
+                <div>
+                    @Html.Raw(Model.Data.Body)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

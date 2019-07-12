@@ -8,6 +8,6 @@ namespace UpDiddy.ViewModels.ButterCMS
 { 
     public class BlogPageViewModel
     {
-       IEnumerable<BlogPostViewModel> BlogPosts { get; set; }
+      public IEnumerable<BlogPostViewModel> BlogPosts { get; set; }
     }    
 }

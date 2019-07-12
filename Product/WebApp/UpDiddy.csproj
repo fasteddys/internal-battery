@@ -177,6 +177,12 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Update="Views\Blog\Partials\_Search.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Blog\Post.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Blog\Posts.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

@@ -31,13 +31,16 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> IndexAsync()
+        [Route("")]
+        [Route("blog")]
+        [Route("blog/p/{page}")]
+        public async Task<IActionResult> IndexAsync(int page = 1)
         {
-            var response = await _butterCMSClient.ListPostsAsync(1, 10);
-            ViewBag.Posts = response.Data;
+            var response = await _butterCMSClient.ListPostsAsync(page, 10);
+
             ViewBag.NextPage = response.Meta.NextPage;
             ViewBag.PreviousPage = response.Meta.PreviousPage;
-            return View("Posts");
+            return View("Posts", response);
         }
 
         [HttpGet]
@@ -45,22 +48,15 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> ShowPost(string slug)
         {
             var response = await _butterCMSClient.RetrievePostAsync(slug);
-            ViewBag.Post = response.Data;
-            return View("Post");
+            return View("Post", response);
         }
 
-        [Route("")]
-        [Route("blog")]
-        [Route("blog/p/{page}")]
-        public async Task<IActionResult> ListAllPosts(int page = 1)
-        {
-            var response = await _butterCMSClient.ListPostsAsync(page, 10);
-            ViewBag.Posts = response.Data;
-            ViewBag.NextPage = response.Meta.NextPage;
-            ViewBag.PreviousPage = response.Meta.PreviousPage;
-            return View("Posts");
-        }
-
-       
+        //[HttpGet]
+        //[Route("/blog/tags/{slug}")]
+        //public async Task<IActionResult> SarchbyTag(string tag)
+        //{
+        //    var response = await _butterCMSClient.RetrievePageAsync();
+        //    return View("Post", response);
+        //}
     }
 }

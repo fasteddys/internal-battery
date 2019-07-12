@@ -1,0 +1,30 @@
+﻿@model ButterCMS.Models.Post
+
+
+
+<div id="@Model.Slug" onclick="openPost(this);" class="d-flex flex-row">
+    <div class="p-2">
+        <img style="width:187.5px;height:112.5px;" src="@Model.FeaturedImage" />
+    </div>
+    <div class="p-2">
+        <div class="d-flex flex-column">
+            <div class="p-2" style="font-size: 20px;">
+                <b>@Model.Title</b>
+            </div>
+            <div class="p-2">
+                <div class="d-flex">
+                    <div class="p-2">
+                        @Model.Author.FirstName @Model.Author.LastName
+                    </div>
+                    <span>|</span>
+                    <div class="p-2">
+                        <label>Published: </label>
+                        <a>
+                            @Model.Published.Value.ToShortDateString()
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
