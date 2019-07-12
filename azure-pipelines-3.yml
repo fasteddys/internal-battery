@@ -39,10 +39,6 @@ stages:
         cd Product/CCProfileService
         npm install
       displayName: 'Running npm install'
-    - script: |
-        cd Product/CCProfileService
-        npm rebuild
-      displayName: 'Running npm rebuild'
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:
