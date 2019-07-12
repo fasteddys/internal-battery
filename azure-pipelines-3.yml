@@ -18,9 +18,9 @@ variables:
   azureSubscription: '2625fc13-bf57-4e92-b871-24c0cade5335'
   
   # Web app name
-  webAppName: 'CareerCircleGoogleProfileBroker'
+  webAppName: 'CareerCircleGoogleProfileBroker2'
   # Agent VM image name
-  vmImageName: 'ubuntu-latest'
+  vmImageName: 'vs2017-win2016'
 stages:
 - stage: Build
   displayName: Build stage
