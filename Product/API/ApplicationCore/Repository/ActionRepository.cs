@@ -28,5 +28,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           where a.Name == name
                           select a).FirstOrDefaultAsync();
         }
+
+        public async Task<Action> GetActionByActionGuid(Guid actionGuid)
+        {
+            var actionResult = await GetByConditionAsync(s => s.IsDeleted == 0 && s.ActionGuid == actionGuid);
+            return actionResult.FirstOrDefault();
+        }
     }
 }
