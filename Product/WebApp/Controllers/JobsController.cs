@@ -15,6 +15,8 @@ using X.PagedList;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Security.Claims;
+using static UpDiddyLib.Helpers.Constants;
+using Action = UpDiddyLib.Helpers.Constants.Action;
 
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -83,7 +85,7 @@ namespace UpDiddy.Controllers
 
             // If no location parameter is supplied, but city and/or state is, prefill location
             // input box with city and/or state.
-            if(string.IsNullOrEmpty(Location) && (!string.IsNullOrEmpty(Province) || !string.IsNullOrEmpty(City)))
+            if (string.IsNullOrEmpty(Location) && (!string.IsNullOrEmpty(Province) || !string.IsNullOrEmpty(City)))
             {
                 Location = (string.IsNullOrEmpty(City) ? string.Empty : City) +
                     ((!string.IsNullOrEmpty(City) && !string.IsNullOrEmpty(Province)) ? ", " : string.Empty) +
@@ -120,7 +122,15 @@ namespace UpDiddy.Controllers
             if (jobSearchResultDto == null)
                 return NotFound();
 
-            
+            var companies = await _api.GetAllCompaniesAsync();
+            foreach (var job in jobSearchResultDto.Jobs)
+            {
+                var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
+
+                if (!string.IsNullOrWhiteSpace(company.LogoUrl))
+                    job.CompanyLogoUrl = _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + company.LogoUrl;
+            }
+
             JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
             {
                 RequestId = jobSearchResultDto.RequestId,
@@ -153,13 +163,12 @@ namespace UpDiddy.Controllers
             try
             {
                 job = await _api.GetJobAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.View));
+
                 if (job.JobStatus == (int)JobPostingStatus.Draft)
                 {
                     BasicResponseDto ResponseDto = new BasicResponseDto() { StatusCode = 401, Description = "Draft jobs cannot be viewed" };
                     throw new ApiException(new System.Net.Http.HttpResponseMessage(), ResponseDto);
                 }
-
-
             }
             catch (ApiException e)
             {
@@ -254,9 +263,6 @@ namespace UpDiddy.Controllers
             {
                 SimilarJobsFavorites = await _api.JobFavoritesByJobGuidAsync(SimilarJobsFavoritesGuids);
             }
-             
-
-
 
             JobViewDto JobToBeRemoved = null;
 
@@ -293,7 +299,8 @@ namespace UpDiddy.Controllers
                 SimilarJobsSearchResult = job.SimilarJobs,
                 City = job.City,
                 Province = job.Province,
-                SimilarJobsFavorites = SimilarJobsFavorites
+                SimilarJobsFavorites = SimilarJobsFavorites,
+                LogoUrl = job?.Company?.LogoUrl != null ? _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + job.Company.LogoUrl : string.Empty
             };
 
             // Display subscriber info if it exists
@@ -364,6 +371,7 @@ namespace UpDiddy.Controllers
 
 
             var trackingDto = await _api.RecordClientEventAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.Application_Start));
+            await  _api.RecordSubscriberApplyAction(JobGuid, this.subscriber.SubscriberGuid.Value);
             return View("Apply", new JobApplicationViewModel()
             {
                 RequestId = trackingDto?.RequestId,
@@ -644,7 +652,8 @@ namespace UpDiddy.Controllers
         {
             List<string> UriOrder = new List<string>();
 
-            switch(RequestUri.Segments[1].Split("/")[0]){
+            switch (RequestUri.Segments[1].Split("/")[0])
+            {
                 case "browse-jobs-location":
                     UriOrder.Add("browse-jobs-location");
                     UriOrder.Add("country");
@@ -686,11 +695,11 @@ namespace UpDiddy.Controllers
                     }
                 }
             };
-            for(int i = 1; i < RequestUri.Segments.Length; i++)
+            for (int i = 1; i < RequestUri.Segments.Length; i++)
             {
                 string Segment = RequestUri.Segments[i].Split("/")[0];
 
-                switch(UriOrder[i - 1])
+                switch (UriOrder[i - 1])
                 {
                     case "browse-jobs-location":
                         BreadcrumbViewModel.Breadcrumbs.Add(new BreadcrumbItem { PageName = "Browse Jobs By Location", Url = "/" + Segment });
@@ -740,8 +749,8 @@ namespace UpDiddy.Controllers
 
         public BrowseJobsByTypeViewModel GetStateViewModel(
             List<JobQueryFacetDto> Facets,
-            string Path, string Header, 
-            bool HideAllLink = false, 
+            string Path, string Header,
+            bool HideAllLink = false,
             BreadcrumbViewModel BreadcrumbViewModel = null)
         {
             JobQueryFacetDto jqfdto = FindNeededFacet("admin_1", Facets);
@@ -771,11 +780,11 @@ namespace UpDiddy.Controllers
         }
 
         public BrowseJobsByTypeViewModel GetCityViewModel(
-            List<JobQueryFacetDto> Facets, 
-            string Path, 
-            string Header, 
-            bool ShowResults = false, 
-            bool HideAllLink = false, 
+            List<JobQueryFacetDto> Facets,
+            string Path,
+            string Header,
+            bool ShowResults = false,
+            bool HideAllLink = false,
             BreadcrumbViewModel BreadcrumbViewModel = null)
         {
             JobQueryFacetDto jqfdto = FindNeededFacet("city", Facets);
@@ -793,7 +802,7 @@ namespace UpDiddy.Controllers
                     Count = $"{FacetItem.Count}"
                 });
             }
-            
+
 
             BrowseJobsByTypeViewModel bjbtvm = new BrowseJobsByTypeViewModel()
             {
@@ -805,10 +814,10 @@ namespace UpDiddy.Controllers
         }
 
         public BrowseJobsByTypeViewModel GetIndustryViewModel(
-            List<JobQueryFacetDto> Facets, 
-            string Path, 
-            string Header, 
-            bool HideAllLink = false, 
+            List<JobQueryFacetDto> Facets,
+            string Path,
+            string Header,
+            bool HideAllLink = false,
             BreadcrumbViewModel BreadcrumbViewModel = null)
         {
             JobQueryFacetDto jqfdto = FindNeededFacet("industry", Facets);
@@ -832,11 +841,11 @@ namespace UpDiddy.Controllers
         }
 
         public BrowseJobsByTypeViewModel GetCategoryViewModel(
-            List<JobQueryFacetDto> Facets, 
-            string Path,  
-            string Header, 
+            List<JobQueryFacetDto> Facets,
+            string Path,
+            string Header,
             bool ShowResults = false,
-            bool HideAllLink = false, 
+            bool HideAllLink = false,
             BreadcrumbViewModel BreadcrumbViewModel = null)
         {
             JobQueryFacetDto jqfdto = FindNeededFacet("jobcategory", Facets);

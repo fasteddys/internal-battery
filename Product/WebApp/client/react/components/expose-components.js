@@ -49,3 +49,11 @@ global.JobAppReportTable = JobAppReportTable;
 // work around for require (until gulp refactor)
 import buildQuery from 'odata-query';
 global.buildQuery = buildQuery;
+
+//Companies
+import CompaniesGrid from './company/CompaniesGrid';
+global.CompaniesGrid = CompaniesGrid;
+
+//Recruiters
+import RecruitersGrid from './recruiters/RecruitersGrid';
+global.RecruitersGrid = RecruitersGrid;

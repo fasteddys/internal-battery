@@ -12,5 +12,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
         Task<User> CreateUser(string name, string email, string password);
         Task<string> DisableUser(Guid subscriberGuid);
         Task<User> GetUserBySignInEmail(string email);
+        Task<string> SendGraphPostRequest(string api, string json);
+        Task<string> SendGraphGetRequest(string api, string query);
+        Task<string> SendGraphDeleteRequest(string api);
     }
 }

@@ -8,9 +8,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IRepositoryWrapper
     {
- 
-
-
         ICountryRepository Country { get; }
         IStateRepository State { get; }
         IJobSiteRepository JobSite { get; }
@@ -34,5 +31,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IJobPostingAlertRepository JobPostingAlertRepository { get; }
         IResumeParseRepository ResumeParseRepository { get; }
         IResumeParseResultRepository ResumeParseResultRepository { get; }
+        ISubscriberActionRepository SubscriberActionRepository { get; }
+        IEntityTypeRepository EntityTypeRepository { get; }
+        IActionRepository ActionRepository { get; }
     }
 }
