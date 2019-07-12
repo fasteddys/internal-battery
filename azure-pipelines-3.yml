@@ -33,7 +33,7 @@ stages:
     steps:
     - task: NodeTool@0
       inputs:
-        versionSpec: '10.0'
+        versionSpec: '10.14'
       displayName: 'Install Node.js'
     - script: |
         cd Product/CCProfileService
