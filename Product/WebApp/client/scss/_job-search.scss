@@ -15,6 +15,11 @@
     .company-logo {
         text-align: center;
         font-size: 20px;
+
+        img {
+            max-height: 60px;
+            max-width: 135px;
+        }
     }
 
     .job-alert-modal {
@@ -174,7 +179,7 @@
                         padding: .5rem;
                     }
                 }
-                
+
 
                 .col-3 {
                     background-color: $color-primary;
@@ -351,59 +356,58 @@
 
                     span.favorites-label:hover {
                         color: $color-anchor-hover;
-                    
-                    } 
+                    }
 
-                .job-location {
-                    font-size: $rem-14;
-                    color: $color-tertiary;
+                    .job-location {
+                        font-size: $rem-14;
+                        color: $color-tertiary;
+                    }
+
+                    .job-post-date {
+                        font-size: $rem-14;
+                        color: $color-silver-chalice;
+                    }
+
+                    .job-description {
+                        font-size: $rem-16;
+                        color: $color-emperor;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .favorite-job-checkbox {
+                        font-size: $rem-14;
+                    }
                 }
 
-                .job-post-date {
-                    font-size: $rem-14;
-                    color: $color-silver-chalice;
-                }
-
-                .job-description {
+                .no-job-text {
                     font-size: $rem-16;
-                    color: $color-emperor;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-
-                .favorite-job-checkbox {
-                    font-size: $rem-14;
+                    margin: $rem-16;
                 }
             }
 
-            .no-job-text {
-                font-size: $rem-16;
-                margin: $rem-16;
-            }
-        }
+            .job-pagination {
+                display: block;
 
-        .job-pagination {
-            display: block;
+                .pagination-container {
+                    display: inline-block;
 
-            .pagination-container {
-                display: inline-block;
+                    .page-link {
+                        color: $color-secondary;
+                    }
 
-                .page-link {
-                    color: $color-secondary;
-                }
-
-                .page-item {
-                    &.active {
-                        .page-link {
-                            border-color: $color-secondary;
-                            background-color: $color-secondary;
-                            color: $color-white;
+                    .page-item {
+                        &.active {
+                            .page-link {
+                                border-color: $color-secondary;
+                                background-color: $color-secondary;
+                                color: $color-white;
+                            }
                         }
                     }
                 }
             }
         }
-    }
     }
 }
 
