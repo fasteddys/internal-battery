@@ -35,6 +35,10 @@ stages:
       inputs:
         versionSpec: '10.x'
       displayName: 'Install Node.js'
+    - script: |
+        cd Product/CCProfileService
+        npm install
+      displayName: 'Running npm install'
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:
