@@ -38,9 +38,11 @@ stages:
     - script: |
         cd Product/CCProfileService
         npm install
-        cd Modules/talent-v4beta1
-        npm install
       displayName: 'Running npm install'
+    - script: |
+        cd Product/CCProfileService/Modules/talent-v4beta1
+        npm install
+      displayName: 'Running npm install - talent'
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:
