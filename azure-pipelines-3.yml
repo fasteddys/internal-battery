@@ -37,7 +37,7 @@ stages:
       displayName: 'Install Node.js'
     - script: |
         cd Product/CCProfileService/Modules/talent-v4beta1
-        npm install
+        npm install --production
         cd ../..
         npm install
       displayName: 'Running npm install'
