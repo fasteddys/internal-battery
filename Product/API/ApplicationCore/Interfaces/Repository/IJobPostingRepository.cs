@@ -10,5 +10,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     {
         Task<IQueryable<JobPosting>> GetAllJobPostings();
         Task<JobPosting> GetJobPostingByGuid(Guid jobPostingGuid);
+        Task<JobPosting> GetJobPostingById(int Id);
     }
 }
