@@ -78,7 +78,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             // lookup Partner by the ApiToken provided
             var partner = _db.Partner
                 .Include(p => p.PartnerType)
-                .Where(p => p.ApiToken == apiToken && p.PartnerType.Name == "Pay Per Lead" && p.IsDeleted == 0)
+                .Where(p => p.ApiToken == apiToken && p.IsDeleted == 0)
                 .FirstOrDefault();
 
             // abort if we do not recognize the Partner

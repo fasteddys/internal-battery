@@ -9,5 +9,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public interface ICompanyRepository : IUpDiddyRepositoryBase<Company>
     {
         Task<IQueryable<Company>> GetAllCompanies();
+        Task AddCompany(Company company);
+        Task<Company> GetCompanyByCompanyGuid(Guid companyGuid);
+        Task UpdateCompany(Company company);
     }
 }

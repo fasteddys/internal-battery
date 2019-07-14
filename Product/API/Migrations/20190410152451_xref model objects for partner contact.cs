@@ -103,7 +103,7 @@ namespace UpDiddyApi.Migrations
                 table: "PartnerContactAction",
                 column: "CampaignPhaseId");
 
-
+            /* FirstName and LastName no longer exist in the dbo.Contact table - this is preventing migrations from running, so omitting this from future sql migrations
             migrationBuilder.Sql(@"
 -- create partner contact records for all contacts that don't already have one (use allegis group)
 declare @PartnerId int = (select top 1 PartnerId from Partner where name = 'Allegis Group')
@@ -131,7 +131,7 @@ from ContactAction ca
 inner join PartnerContact pc on ca.ContactId = pc.ContactId
 group by ca.ActionId, ca.CampaignId, ca.CampaignId, ca.CampaignPhaseId, ca.IsDeleted, ca.CreateDate, ca.OccurredDate, ca.Headers
             ");
-
+            */
             migrationBuilder.Sql(@"EXEC('
 /*
 <remarks>

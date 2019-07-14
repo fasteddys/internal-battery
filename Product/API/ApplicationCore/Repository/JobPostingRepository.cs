@@ -22,6 +22,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return GetAllAsync();
         }
 
+        public async Task<JobPosting> GetJobPostingById(int id)
+        {
+            return await (from a in _dbContext.JobPosting
+                          where a.JobPostingId == id
+                          select a).FirstOrDefaultAsync();
+        }
+
         public async Task<JobPosting> GetJobPostingByGuid(Guid jobPostingGuid)
         {
 

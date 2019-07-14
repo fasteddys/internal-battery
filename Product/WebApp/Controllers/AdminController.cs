@@ -1,4 +1,11 @@
-﻿using System;
+﻿using CsvHelper;
+using CsvHelper.Configuration;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,13 +13,6 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using CsvHelper;
-using CsvHelper.Configuration;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
@@ -580,5 +580,23 @@ namespace UpDiddy.Controllers
             }
             return BadRequest();
         }
+
+        #region Company
+        [Authorize]
+        [HttpGet("/[controller]/companies")]
+        public IActionResult GetCompanies()
+        {
+            return View("Companies");
+        }
+        #endregion
+
+        #region Recruiters
+        [Authorize]
+        [HttpGet("/[controller]/recruiters")]
+        public IActionResult GetRecruiters()
+        {
+            return View("Recruiters");
+        }
+        #endregion
     }
 }
