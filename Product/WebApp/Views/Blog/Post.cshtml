@@ -2,82 +2,82 @@
 <meta name="description" content="@Model.Data.MetaDescription" />
 <meta name="keywords" content="@Model.Data.SeoTitle" />
 <style>
-     img {
-            max-width: 100%;
-            height: auto;
-            width: auto\9; /* ie8 */
-        }
+    img {
+        max-width: 100%;
+        height: auto;
+        width: auto\9; /* ie8 */
+    }
 
-        .blog-body{
-            margin-top:50px;
-        }
+    .blog-body {
+        margin-top: 50px;
+    }
 
 
-        hr {
-           display: block;
-           position: relative;
-           padding: 0;
-           margin: 8px auto;
-           height: 0;
-           width: 100%;
-           max-height: 0;
-           font-size: 1px;
-           line-height: 0;
-           clear: both;
-           border: none;
-           border-top: 1px solid #aaaaaa;
-           border-bottom: 1px solid #ffffff;
-        }
+    hr {
+        display: block;
+        position: relative;
+        padding: 0;
+        margin: 8px auto;
+        height: 0;
+        width: 100%;
+        max-height: 0;
+        font-size: 1px;
+        line-height: 0;
+        clear: both;
+        border: none;
+        border-top: 1px solid #aaaaaa;
+        border-bottom: 1px solid #ffffff;
+    }
 </style>
 <div class="d-flex justify-content-center p-5">
     <div class="d-flex flex-column">
         <div class="d-flex flex-row">
             <h2 class="p-2">
-                 @Model.Data.Title
+                @Model.Data.Title
             </h2>
         </div>
         <div class="d-flex flex-row">
             <h4 class="p-2">
-                 By   
-                <a asp-controller="blog" 
-                     asp-action="author" 
-                     asp-route-id="@Model.Data.Author.Slug">
-                     @Model.Data.Author.FirstName @Model.Data.Author.LastName 
+                By
+                <a asp-controller="blog"
+                   asp-action="author"
+                   asp-route-id="@Model.Data.Author.Slug">
+                    @Model.Data.Author.FirstName @Model.Data.Author.LastName
                 </a>
             </h4>
         </div>
         <hr>
         <div class="d-flex flex-row">
             <div class="p-2">
-                 <i class="far fa-clock"></i>
-                 @Model.Data.Published.Value.ToString("d/M/yyyy")
+                <i class="far fa-clock"></i>
+                @Model.Data.Published.Value.ToString("d/M/yyyy")
             </div>
             <div class="p-2">
-                 <i class="fas fa-folder-open"></i>
-                 @foreach (var category in Model.Data.Categories)
-                 {
-                     <a asp-controller="blog" 
-                         asp-action="category" 
-                         asp-route-id="@category.Slug">
-                         @category.Name
-                     </a> 
-                 }
+                <i class="fas fa-folder-open"></i>
+                @foreach (var category in Model.Data.Categories)
+                {
+                    <a asp-controller="blog"
+                       asp-action="category"
+                       asp-route-id="@category.Slug">
+                        @category.Name
+                    </a>
+                }
             </div>
-            <div class="p-2">       
-                 <i class="fas fa-tags"></i>     
-                 @foreach (var tag in Model.Data.Tags)
-                 {
-                     <a asp-controller="blog" 
-                         asp-action="tag" 
-                         asp-route-id="@tag.Slug">
-                         @tag.Name
-                     </a>
-                 }              
+            <div class="p-2">
+                <i class="fas fa-tags"></i>
+                @foreach (var tag in Model.Data.Tags)
+                {
+                    <a asp-controller="blog"
+                       asp-action="tag"
+                       asp-route-id="@tag.Slug">
+                        @tag.Name
+                    </a>
+                }
             </div>
         </div>
         <div class="d-flex flex-row">
             <div class="blog-body">
-                 @Html.Raw(Model.Data.Body)
+                @Html.Raw(Model.Data.Body)
             </div>
         </div>
     </div>
