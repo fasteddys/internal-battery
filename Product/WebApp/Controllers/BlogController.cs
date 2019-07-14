@@ -33,11 +33,10 @@ namespace UpDiddy.Controllers
         [HttpGet]
         [Route("")]
         [Route("blog")]
-        [Route("blog/p/{page}")]
+        [Route("blog/{page?}")]
         public async Task<IActionResult> IndexAsync(int page = 1)
         {
-            var response = await _butterCMSClient.ListPostsAsync(page, 10);
-
+            var response = await _butterCMSClient.ListPostsAsync(page, 2);
             ViewBag.NextPage = response.Meta.NextPage;
             ViewBag.PreviousPage = response.Meta.PreviousPage;
             return View("Posts", response);
@@ -51,12 +50,36 @@ namespace UpDiddy.Controllers
             return View("Post", response);
         }
 
-        //[HttpGet]
-        //[Route("/blog/tags/{slug}")]
-        //public async Task<IActionResult> SarchbyTag(string tag)
-        //{
-        //    var response = await _butterCMSClient.RetrievePageAsync();
-        //    return View("Post", response);
-        //}
+        [HttpGet]
+        [Route("/blog/search")]
+        public async Task<IActionResult> SearchPostsAsync(string query)
+        {
+           PostsResponse response = await _butterCMSClient.SearchPostsAsync(query: query);               
+            return View("Posts", response);
+        }
+
+        [HttpGet]
+        [Route("/blog/tag/{tag}")]
+        public async Task<IActionResult> GetPostsByTagAsync(string tag)
+        {
+           PostsResponse response = await _butterCMSClient.ListPostsAsync(tagSlug: tag);           
+            return View("Posts", response);
+        }
+
+        [HttpGet]
+        [Route("/blog/category/{category}")]
+        public async Task<IActionResult> GetPostsByCategoryAsync(string category)
+        {
+           PostsResponse response = await _butterCMSClient.ListPostsAsync(categorySlug: category);           
+            return View("Posts", response); 
+        }
+
+        [HttpGet]
+        [Route("/blog/author/{author}")]
+        public async Task<IActionResult> GetPostsByAuthor(string author)
+        {
+           PostsResponse response = await _butterCMSClient.ListPostsAsync(authorSlug: author);           
+            return View("Posts", response); 
+        }
     }
 }

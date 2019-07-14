@@ -4,15 +4,28 @@
         window.location.href = "http://localhost:5000/blog/" + post.id;
     }
 </script>
+<div class="d-flex justify-content-center p-5">
+    <form method="get" asp-area="" asp-controller="blog" asp-action="search">
+         <input name="query" type="text" placeholder="Search..">
+         <button type="submit">Submit</button>
+    </form>
+</div>
 <div class="blog-container">
-    @foreach (var post in Model.Data)
+    @if(Model != null)
     {
-        <div style="margin:15px;border-style:ridge;">
-            @Html.Partial("Partials/_PostItem", post)
+        @foreach (var post in Model.Data)
+        {
+            <div style="margin:15px;border-style:ridge;">
+                @Html.Partial("Partials/_PostItem", post)
+            </div>
+        } 
+        <div class="d-flex justify-content-center">
+            <div class="p-2">
+                <a asp-controller="blog" asp-route-page="@ViewBag.PreviousPage"> Previous</a>
+            </div>
+            <div class="p-2">
+                <a asp-controller="blog" asp-route-page="@ViewBag.NextPage">Next</a>
+            </div>
         </div>
-    }
-    <div class="d-flex flex-row">
-        <i class="fas fa-arrow-left"></i>
-        <i class="col fas fa-arrow-right"></i>
-    </div>
+   } 
 </div>

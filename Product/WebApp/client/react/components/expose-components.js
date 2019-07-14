@@ -13,8 +13,6 @@ import Select from './Select';
 import Validate from './Validate';
 import TextArea from './TextArea';
 import Breadcrumb from './breadcrumbs/Breadcrumb';
-import BlogPost from './blog/blog-post';
-import Blog from './blog/blog';
 import Paging from './Paging';
 
 global.React = React;
@@ -43,11 +41,6 @@ import NotificationView from './dashboard/dashboard-helpers';
 global.NotificationView = NotificationView;
 import NotificationItem from './dashboard/dashboard-helpers';
 global.NotificationItem = NotificationItem;
-
-// blog
-global.BlogPost = BlogPost;
-global.Blog = Blog;
-
 
 // reports 
 global.SATable = SATable;
