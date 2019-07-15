@@ -1,33 +1,39 @@
 ﻿@model ButterCMS.Models.Post
-
-
-
-<div id="@Model.Slug" onclick="openPost(this);" class="d-flex flex-row">
-    <div class="p-2">
-        <img style="width:187.5px;height:112.5px;" src="@Model.FeaturedImage" />
+<div class="d-flex flex-row">
+    <div class="d-flex flex-column">
+        <div class="p-2">
+            <a asp-controller="blog"
+               asp-action="post"
+               asp-route-id="@Model.Slug">
+                <img class="blog-post-image"  src="@Model.FeaturedImage" />
+            </a>
+        </div>
     </div>
-    <div class="p-2">
-        <div class="d-flex flex-column">
-            <div class="p-2" style="font-size: 20px;">
-                <b>@Model.Title</b>
-            </div>
-            <div class="p-2">
-                <div class="d-flex">
-                    <div class="p-2">
-                        @Model.Author.FirstName @Model.Author.LastName
-                    </div>
-                    <span>|</span>
-                    <div class="p-2">
-                        <label>Published: </label>
-                        <a>
-                            @Model.Published.Value.ToShortDateString()
-                        </a>
-                    </div>
-                </div>
-            </div>
+    <div class="d-flex flex-column">
+        <div class="blog-post-title">
+            <b>@Model.Title</b>
+        </div>
+        <div class="blog-post-info">
+            By
+            <a asp-controller="blog"
+               asp-action="author"
+               asp-route-id="@Model.Author.Slug">
+                @Model.Author.FirstName @Model.Author.LastName
+            </a>
+            <b>|</b>
+            <a>
+                @Model.Published.Value.ToString("MMMM dd, yyyy")
+            </a>
+        </div>
+        <div class="blog-post-summary">
+            @Model.Summary
+        </div>
+        <div>
+            <a asp-controller="blog"
+               asp-action="post"
+               asp-route-id="@Model.Slug">Read More</a>
         </div>
     </div>
 </div>
 
 
-<div></div>
