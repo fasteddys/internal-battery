@@ -1,107 +1,61 @@
 ﻿@model ButterCMS.Models.PostsResponse
-<style>
-    .blog-post-container {
-    }
-
-    .blog-post-info {
-        font-size: 0.875rem;
-        color: #B2B2B2;
-    }
-
-    .blog-post-summary {
-        font-size: 1rem;
-        color: #505050;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .blog-post-title {
-        font-size: 1.5rem;
-    }
-
-   
-
-    .blog-body {
-        margin-top: 50px;
-    }
-
-    hr {
-        display: block;
-        position: relative;
-        padding: 0;
-        margin: 8px auto;
-        height: 0;
-        width: 100%;
-        max-height: 0;
-        font-size: 1px;
-        line-height: 0;
-        clear: both;
-        border: none;
-        border-top: 1px solid #aaaaaa;
-        border-bottom: 1px solid #ffffff;
-    }
-
-    .blog-search {
-        background-color: #03264A
-    }
-
-    .blog-post-image {
-        width: 250px;
-        height: 150px;
-    }
-</style>
-<div class="blog-search d-flex justify-content-center p-2">
-    <form method="get" asp-area="" asp-controller="blog" asp-action="search">
-        <div class="d-flex flex-row">
-            <div class="p-2">
-                <input class="form-control" name="query" type="text" placeholder="Keyword">
-            </div>
-            <div class="p-2 green">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search"></i>
-                    Search Blog
-                </button>
-            </div>
-        </div>
-    </form>
-</div>
-<div class="d-flex justify-content-center">
-    <div class="col-9">
-        @if (Model != null)
-        {
-            @foreach (var post in Model.Data)
-            {
-                <div class="p-2">
-                    @Html.Partial("Partials/_PostItem", post)
+<div class="blog-post-list-container">
+    <div class="blog-search d-flex justify-content-center">
+        <div class="p-2">
+            <form method="get"  asp-controller="blog" asp-action="search">
+                <div class="d-flex flex-row">
+                    <div class="p-2">
+                        <input class="form-control" name="query" type="text" placeholder="Keyword">
+                    </div>
+                    <div class="blog-search-button p-2">
+                        <button type="submit" id="BtnBlogSearch" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            Search Blog
+                        </button>
+                    </div>
                 </div>
-                <hr />
+            </form>
+        </div>
+    </div> 
+    <div class="d-flex justify-content-center">
+        <div class="col-9">
+            @if (Model != null)
+            {
+                @foreach (var post in Model.Data)
+                {
+                    <div class="p-2">
+                        @Html.Partial("Partials/_PostItem", post)
+                    </div>
+                    <hr />
+                }
+                <div class="d-flex justify-content-center">
+                    @if (ViewBag.PreviousPage != null)
+                    {
+                        <div class="p-2">
+                            <a asp-controller="blog"
+                               asp-route-page="@ViewBag.PreviousPage">
+                                <b>Previous</b>
+                            </a>
+                        </div>
+                    }
+                    @if (ViewBag.NextPage != null)
+                    {
+                        <div class="p-2">
+                            <a asp-controller="blog"
+                               asp-route-page="@ViewBag.NextPage">
+                                <b>Next</b>
+                            </a>
+                        </div>
+                    }
+                </div>
             }
-            <div class="d-flex justify-content-center">
-                @if (ViewBag.PreviousPage != null)
-                {
-                    <div class="p-2">
-                        <a asp-controller="blog"
-                           asp-route-page="@ViewBag.PreviousPage">
-                            <b>Previous</b>
-                        </a>
-                    </div>
-                }
-                @if (ViewBag.NextPage != null)
-                {
-                    <div class="p-2">
-                        <a asp-controller="blog"
-                           asp-route-page="@ViewBag.NextPage">
-                            <b>Next</b>
-                        </a>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <div class="d-flex justify-content-center p-5">
-                No posts found
-            </div>
-        }
+            else
+            {
+                <div class="d-flex justify-content-center p-5">
+                    No posts found
+                </div>
+            }
+        </div>
     </div>
 </div>
+

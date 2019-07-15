@@ -1,12 +1,18 @@
 ﻿@model ButterCMS.Models.Post
-
 <div class="d-flex flex-row flex-wrap flex-md-nowrap">
     <div class="d-flex flex-column">
         <div class="p-2">
             <a asp-controller="blog"
                asp-action="post"
                asp-route-id="@Model.Slug">
-                <img class="blog-post-image" src="@Model.FeaturedImage" />
+                @if (Model.FeaturedImage == null)
+                {
+                    <div class="blog-post-empty-image"></div>
+                }
+                else
+                {
+                    <img class="blog-post-image" src="@Model.FeaturedImage" alt="@Model.Title" />
+                }
             </a>
         </div>
     </div>
