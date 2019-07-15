@@ -173,6 +173,9 @@
     <Content Include="Modules\talent-v4beta1\src\v4beta1\tenant_service_client_config.json" />
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <Content Include="web.config">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Modules\" />
