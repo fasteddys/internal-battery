@@ -13,7 +13,6 @@ import Select from './Select';
 import Validate from './Validate';
 import TextArea from './TextArea';
 import Breadcrumb from './breadcrumbs/Breadcrumb';
-import Paging from './Paging';
 
 global.React = React;
 global.ReactDOM = ReactDOM;
@@ -30,7 +29,6 @@ global.Select = Select;
 global.Validate = Validate;
 global.TextArea = TextArea;
 global.Breadcrumb = Breadcrumb;
-global.Paging = Paging;
 
 // dashboard
 import Dashboard from './dashboard/dashboard';
