@@ -108,7 +108,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return true;
         }
 
-        public async Task<bool> EnsurePartnerReferrerEntryExistsIfPartnerSpecified(string ReferrerUrl, Guid PartnerGuid)
+        public async Task<bool> EnsurePartnerReferrerEntryExistsIfPartnerSpecified(string ReferrerUrl, Guid PartnerGuid, int SubscriberId)
         {
             IEnumerable<Partner> iePartner = await _repositoryWrapper.PartnerRepository.GetByConditionAsync(p => p.PartnerGuid == PartnerGuid);
             Partner Partner = iePartner.FirstOrDefault();
@@ -144,6 +144,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             _repositoryWrapper.GroupPartnerRepository.Create(GroupPartner);
             await _repositoryWrapper.GroupPartnerRepository.SaveAsync();
+
+            AddSubscriberToGroupAsync(Group.GroupId, SubscriberId);
+
             return true;
         }
 
