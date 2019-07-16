@@ -1,0 +1,66 @@
+﻿@model ButterCMS.Models.PostResponse
+<meta name="description" content="@Model.Data.MetaDescription" />
+<meta name="keywords" content="@Model.Data.SeoTitle" />
+<div class="blog-post-container d-flex justify-content-center pt-2">
+    <div class="col-8">
+        <div class="d-flex flex-column">
+            <div class="d-flex flex-row">
+                <h2 class="p-2">
+                    <b>@Model.Data.Title</b>
+                </h2>
+            </div>
+            <div class="d-flex flex-row">
+                <h4 class="p-2">
+                    By
+                    <a asp-controller="blog"
+                       asp-action="author"
+                       asp-route-id="@Model.Data.Author.Slug">
+                        @Model.Data.Author.FirstName @Model.Data.Author.LastName
+                    </a>
+                </h4>
+            </div>
+            <hr>
+            <div class="d-flex flex-row">
+                <div class="p-2">
+                    <i class="far fa-clock"></i>
+                    @Model.Data.Published.Value.ToString("MMMM dd, yyyy")
+                </div>
+                @if (Model.Data.Categories.Count() > 0)
+                {
+                    <div class="p-2">
+                        <i class="fas fa-folder-open"></i>
+                        @foreach (var category in Model.Data.Categories)
+                        {
+                            <a asp-controller="blog"
+                               asp-action="category"
+                               asp-route-id="@category.Slug">
+                                @category.Name
+                            </a>
+                        }
+                    </div>
+                }
+                @if (Model.Data.Tags.Count() > 0)
+                {
+                    <div class="p-2">
+                        <i class="fas fa-tags"></i>
+                        @foreach (var tag in Model.Data.Tags)
+                        {
+                            <a asp-controller="blog"
+                               asp-action="tag"
+                               asp-route-id="@tag.Slug">
+                                @tag.Name
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="mt-5">
+            </div>
+            <div class="blog-body d-flex flex-row">
+                <div class="p-2">
+                    @Html.Raw(Model.Data.Body)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

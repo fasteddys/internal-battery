@@ -31,8 +31,15 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IJobPostingAlertRepository JobPostingAlertRepository { get; }
         IResumeParseRepository ResumeParseRepository { get; }
         IResumeParseResultRepository ResumeParseResultRepository { get; }
+        IPartnerReferrerRepository PartnerReferrerRepository { get; }
+        IGroupPartnerRepository GroupPartnerRepository { get; }
+        IGroupRepository GroupRepository { get; }
+        ISubscriberGroupRepository SubscriberGroupRepository { get; }
+        IPartnerContactRepository PartnerContactRepository { get; }
+        IPartnerRepository PartnerRepository { get; }
         ISubscriberActionRepository SubscriberActionRepository { get; }
         IEntityTypeRepository EntityTypeRepository { get; }
         IActionRepository ActionRepository { get; }
+        IContactRepository ContactRepository { get; }
     }
 }
