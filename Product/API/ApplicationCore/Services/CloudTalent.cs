@@ -81,6 +81,19 @@ namespace UpDiddyApi.ApplicationCore.Services
     }
         #endregion
 
+
+        #region Profile Tenants
+
+        public BasicResponseDto ProfileTenantList()
+        {           
+            // search the google talent cloud
+            string errorMsg = string.Empty;
+            BasicResponseDto searchResults = _googleProfile.TenantList( ref errorMsg);          
+            return searchResults;
+        }
+
+        #endregion
+
         #region Profile indexing 
 
 

@@ -48,6 +48,26 @@ namespace UpDiddyApi.Controllers
             _subscriberService = subscriberService;
         }
 
+        #region profile tenants
+
+        /// <summary>
+        /// search profiles 
+        /// </summary>
+        /// <param name="profileQueryDto"></param>
+        /// <returns></returns>
+        [Authorize(Policy = "IsRecruiterOrAdmin")]
+        [HttpGet]
+        [Route("api/[controller]/tenants")]
+        public async Task<IActionResult> TenantList()
+        {
+            // search profiles 
+            BasicResponseDto rVal = _cloudTalent.ProfileTenantList();
+            return Ok(rVal);
+        }
+
+
+        #endregion
+
         #region Profile look-up data 
 
         [HttpGet]
