@@ -832,7 +832,7 @@ namespace UpDiddyApi.Controllers
                     await _db.SaveChangesAsync();
 
                     if(signUpDto.partnerGuid != Guid.Empty && signUpDto.partnerGuid != null)
-                        await _taggingService.EnsurePartnerReferrerEntryExistsIfPartnerSpecified(referer, signUpDto.partnerGuid);
+                        await _taggingService.EnsurePartnerReferrerEntryExistsIfPartnerSpecified(referer, signUpDto.partnerGuid, subscriber.SubscriberId);
                     await _taggingService.AddSubscriberToGroupBasedOnReferrerUrlAsync(subscriber.SubscriberId, referer);
                     await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
 

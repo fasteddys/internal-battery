@@ -40,7 +40,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// </summary>
         /// <param name="ReferrerUrl"></param>
         /// <param name="PartnerGuid"></param>
-        Task<bool> EnsurePartnerReferrerEntryExistsIfPartnerSpecified(string ReferrerUrl, Guid PartnerGuid);
+        /// <param name="SubscriberId"></param>
+        Task<bool> EnsurePartnerReferrerEntryExistsIfPartnerSpecified(string ReferrerUrl, Guid PartnerGuid, int SubscriberId);
     }
 
 
