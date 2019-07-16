@@ -237,6 +237,10 @@ namespace UpDiddy.Controllers
             if (job == null)
                 return NotFound();
 
+            if(GetSubscriberGuid() != null && GetSubscriberGuid() !=Guid.Empty)
+                  await _Api.RecordSubscriberJobViewAction(JobGuid, GetSubscriberGuid());
+
+
             // check to see if the inbound url matches the semantic url
             if (job.SemanticJobPath.ToLower() != Request.Path.Value.ToLower())
             {

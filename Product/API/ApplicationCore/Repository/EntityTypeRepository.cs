@@ -26,5 +26,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     where a.Name == entityTypeName
                     select a).FirstOrDefaultAsync();
         }
+
+        public async Task<EntityType> GetEntityTypeByEntityGuid(Guid? entityTypeGuid)
+        {
+            var entityTypeResult = await GetByConditionAsync(et => et.EntityTypeGuid == entityTypeGuid);
+            return entityTypeResult.FirstOrDefault();
+        }
     }
 }

@@ -10,6 +10,7 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Reporting;
 using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
+using static UpDiddyLib.Helpers.Constants;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -80,6 +81,45 @@ namespace UpDiddyApi.ApplicationCore.Services
             jobPostingCountReportDtos = await query.ToListAsync();
 
             return jobPostingCountReportDtos;
+        }
+
+        public async Task<List<JobViewCountDto>> GetJobViewCount(Guid jobPostingGuid)
+        {
+
+            List<UpDiddyApi.Models.JobPosting> jobPostingList = new List<UpDiddyApi.Models.JobPosting>();
+            UpDiddyApi.Models.JobPosting jobPosting = new Models.JobPosting();
+
+            if (jobPostingGuid == null)
+            {
+                var jobPostingListQuerable = await _repositoryWrapper.JobPosting.GetAllJobPostings();
+                jobPostingList.AddRange(jobPostingListQuerable.ToList());
+            }
+            else
+            {
+                jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(jobPostingGuid);
+                jobPostingList.Add(jobPosting);
+            }
+
+
+            var entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EventType.JobPosting);
+            var subscriberActionList = await _repositoryWrapper.SubscriberActionRepository.GetSubscriberActionByEntityAndEntityType(entityType.EntityTypeId, jobPostingGuid == null ? null : jobPosting?.JobPostingId);
+
+            var ActionsOnJobsList = subscriberActionList.Join(jobPostingList, sa => sa.EntityId, jp => jp.JobPostingId, (sa, jp) => new {
+                JobPostingGuid = jp.JobPostingGuid,
+                JobName = jp.Title,
+                SubscriberActionId = sa.SubscriberActionId
+            });
+
+            var jobviewCountDtoList = ActionsOnJobsList.GroupBy(aojl => aojl.JobPostingGuid)
+                                .Select(x => new JobViewCountDto
+                                {
+                                    JobPostingGuid = x.First().JobPostingGuid,
+                                    JobName = x.First().JobName,
+                                    Count = x.Count()
+                                }).ToList();
+
+
+            return jobviewCountDtoList;
         }
     }
 }

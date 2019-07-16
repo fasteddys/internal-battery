@@ -128,6 +128,7 @@ namespace UpDiddyLib.Helpers
         public static class Action
         {
             public static readonly string ApplyJob = "Apply job";
+            public static readonly string View = "View";
         }
     }
 }

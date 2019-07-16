@@ -254,5 +254,35 @@ namespace UpDiddyApi.Controllers
 
             return response;
         }
+
+        /// <summary>
+        /// Get Job View Count
+        /// </summary>
+        /// <param name="jobPostingGuid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/[controller]/job-view-count/{jobPostingGuid?}")]
+        public async Task<IActionResult> JobViewCount(Guid jobPostingGuid)
+        {
+            ActionResult response;
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var jobViewCountDtoList = await _reportingService.GetJobViewCount(jobPostingGuid);
+                    response = Ok(jobViewCountDtoList);
+
+                }
+                else
+                    response = BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _syslog.LogError(ex, $"Error in ReportController.JobViewCount method for jobPostingGuid={jobPostingGuid}");
+                response = StatusCode(500);
+            }
+
+            return response;
+        }
     }
 }

@@ -93,5 +93,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             _repositoryWrapper.SubscriberActionRepository.Create(subAction);
             await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
         }
+
+        public async Task TrackingSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid)
+        {
+            Models.Action action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.View);
+            EntityType entityType = await _repositoryWrapper.EntityTypeRepository.GetByNameAsync(EntityTypeConst.JobPosting);
+
+            if (jobGuid !=Guid.Empty && subscriberGuid!=Guid.Empty)
+            {
+                    // invoke the Hangfire job to store the tracking information
+                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.TrackSubscriberActionInformation(subscriberGuid, action.ActionGuid, entityType.EntityTypeGuid, jobGuid));
+            }
+        }
     }
 }

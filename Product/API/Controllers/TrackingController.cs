@@ -164,5 +164,21 @@ namespace UpDiddyApi.Controllers
         {
             await _trackingService.RecordSubscriberApplyActionAsync(jobGuid, subscriberGuid);
         }
+
+        [HttpGet]
+        [Route("api/[controller]/track-subscriber-job-view-action/{jobGuid}/{subscriberGuid}")]
+        public async Task TrackSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid)
+        {
+            try
+            {
+                //calling tracking service to track the subscriberAction
+                await _trackingService.TrackingSubscriberJobViewAction(jobGuid, subscriberGuid);
+            }
+            catch(Exception ex)
+            {
+                _syslog.LogError(ex, $"Error in TrackingController.TrackSubscriberJobViewAction method for jobPostingGuid={jobGuid} and subscriberGuid={subscriberGuid}");
+            }
+           
+        }
     }
 }

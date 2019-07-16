@@ -42,6 +42,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IEntityTypeRepository _entityTypeRepository;
         private IActionRepository _actionRepository;
         private IContactRepository _contactRepository;
+        private IOfferRepository _offerRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -447,6 +448,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _contactRepository = new ContactRepository(_dbContext);
                 }
                 return _contactRepository;
+            }
+        }
+
+        public IOfferRepository Offer
+        {
+            get
+            {
+                if (_offerRepository == null)
+                {
+                    _offerRepository = new OfferRepository(_dbContext);
+                }
+                return _offerRepository;
             }
         }
     }
