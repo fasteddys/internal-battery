@@ -145,7 +145,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     partnerContact.Contact.SubscriberId = newSubscriber.SubscriberId;
                     await _db.SaveChangesAsync();
 
-                    _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(newSubscriber.SubscriberId);
+                    await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(newSubscriber.SubscriberId);
 
                     CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaign.CampaignId, signUpDto.campaignPhase);
                     _db.PartnerContactAction.Add(new PartnerContactAction()

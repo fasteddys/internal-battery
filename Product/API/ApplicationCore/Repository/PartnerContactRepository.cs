@@ -11,14 +11,17 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public class PartnerContactRepository : UpDiddyRepositoryBase<PartnerContact>, IPartnerContactRepository
     {
         UpDiddyDbContext _dbContext;
-        public PartnerContactRepository(UpDiddyDbContext dbContext) : base(dbContext)
+        IContactRepository _contactRepository;
+        public PartnerContactRepository(UpDiddyDbContext dbContext, IContactRepository contactRepository) : base(dbContext)
         {
             _dbContext = dbContext;
+            _contactRepository = contactRepository;
         }
 
         public async Task<IList<Partner>> GetPartnersAssociatedWithSubscriber(int SubscriberId)
         {
-            Contact contact = _dbContext.Contact.Where(c => c.SubscriberId == SubscriberId).FirstOrDefault();
+            IEnumerable<Contact> ieContact = await _contactRepository.GetByConditionAsync(c => c.SubscriberId == SubscriberId);
+            Contact contact = ieContact.FirstOrDefault();
 
             // If user was not in contacts table prior to signing up, they're not associated with external partner
             // in our system, so return null.
@@ -26,7 +29,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
                 return null;
 
             IList<Partner> Partners = new List<Partner>();
-            foreach(PartnerContact partnerContact in _dbContext.PartnerContact.Where(pc => pc.ContactId == contact.ContactId).Include(pc => pc.Partner))
+            IQueryable<PartnerContact> partnerContacts = await GetAllAsync();
+            IQueryable<PartnerContact> iePartnerContacts = partnerContacts.Where(pc => pc.ContactId == contact.ContactId).Include<PartnerContact>("Partner");
+            IList<PartnerContact> PartnerContacts = iePartnerContacts.ToList();
+            foreach(PartnerContact partnerContact in PartnerContacts)
             {
                 Partners.Add(partnerContact.Partner);
             }

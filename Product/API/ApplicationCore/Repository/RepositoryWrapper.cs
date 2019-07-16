@@ -41,6 +41,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ISubscriberActionRepository _subscriberActionRepository;
         private IEntityTypeRepository _entityTypeRepository;
         private IActionRepository _actionRepository;
+        private IContactRepository _contactRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -383,7 +384,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 if (_partnerContactRepository == null)
                 {
-                    _partnerContactRepository = new PartnerContactRepository(_dbContext);
+                    _partnerContactRepository = new PartnerContactRepository(_dbContext, ContactRepository);
                 }
                 return _partnerContactRepository;
             }
@@ -434,6 +435,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _actionRepository = new ActionRepository(_dbContext);
                 }
                 return _actionRepository;
+            }
+        }
+
+        public IContactRepository ContactRepository
+        {
+            get
+            {
+                if (_contactRepository == null)
+                {
+                    _contactRepository = new ContactRepository(_dbContext);
+                }
+                return _contactRepository;
             }
         }
     }
