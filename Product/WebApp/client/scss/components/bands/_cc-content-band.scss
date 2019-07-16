@@ -16,6 +16,14 @@
         .cc-content-band-content {
             padding-top: 2rem;
 
+            img {
+                width: 100%;
+            }
+
+            img.job-company-image {
+                width: initial;
+            }
+
             > .row {
                 > div {
                     margin-bottom: 2rem;
