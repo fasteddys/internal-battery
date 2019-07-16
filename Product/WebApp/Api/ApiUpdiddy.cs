@@ -1687,6 +1687,11 @@ namespace UpDiddy.Api
             await GetAsync<BasicResponseDto>($"tracking/record-subscriber-apply-action/{jobGuid}/{subscriberGuid}");
         }
 
+        public async Task RecordSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid)
+        {
+            await GetAsync<BasicResponseDto>($"tracking/track-subscriber-job-view-action/{jobGuid}/{subscriberGuid}");
+        }
+
         #endregion
     }
 }

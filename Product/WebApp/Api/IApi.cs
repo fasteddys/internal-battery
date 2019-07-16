@@ -161,5 +161,6 @@ namespace UpDiddy.Api
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
         Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid);
+        Task RecordSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);
     }
 }

@@ -25,6 +25,7 @@ namespace UpDiddyLib.Helpers
         static public readonly int PollyStringCacheTimeInMinutes = 5;
         static public readonly string SysLogLogInformationTrue = "true";
         static public readonly string WozVendorName = "WozU";
+        static public readonly string RegionCodeUS = "US";
         static public readonly List<String> ValidTextFileExtensions = new List<String>
         {
             "doc", "docx", "odt", "pdf", "rtf", "tex", "txt", "wks", "wps", "wpd"
@@ -128,6 +129,7 @@ namespace UpDiddyLib.Helpers
         public static class Action
         {
             public static readonly string ApplyJob = "Apply job";
+            public static readonly string View = "View";
         }
     }
 }

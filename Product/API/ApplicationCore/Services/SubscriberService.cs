@@ -58,6 +58,37 @@ namespace UpDiddyApi.ApplicationCore.Services
             _taggingService = taggingService;
         }
 
+
+        public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
+        {
+            var querableSubscribers = await _repository.SubscriberRepository.GetAllSubscribersAsync();
+
+            List<Subscriber> rVal = await querableSubscribers.Where(s => s.IsDeleted == 0 && s.CloudTalentIndexVersion < indexVersion)
+                                                            .Take(numSubscribers)
+                                                            .ToListAsync();
+
+
+            if (rVal.Count > 0)
+            {
+                // build sql to update subscribers who will be updated 
+                string updateSql = $"update subscriber set CloudTalentIndexVersion = {indexVersion} where subscriberid in (";
+                string inList = string.Empty;
+                foreach (Subscriber s in rVal)
+                {
+                    if (string.IsNullOrEmpty(inList) == false)
+                        inList += ",";
+                    inList += s.SubscriberId.ToString();
+
+                }
+                updateSql += inList + ")";
+                await _repository.SubscriberRepository.ExecuteSQL(updateSql);
+
+            }
+
+            return rVal;
+        }
+
+
         public async Task<SubscriberFile> AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream, bool parseResume = false)
         {
 

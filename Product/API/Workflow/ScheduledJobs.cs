@@ -821,7 +821,7 @@ namespace UpDiddyApi.Workflow
                         break;
                 }
                 jobQueryDto.UpperBound = DateTime.UtcNow;
-                JobSearchResultDto jobSearchResultDto = cloudTalent.Search(jobQueryDto, isJobPostingAlertSearch: true);
+                JobSearchResultDto jobSearchResultDto = cloudTalent.JobSearch(jobQueryDto, isJobPostingAlertSearch: true);
                 if (jobSearchResultDto.JobCount > 0)
                 {
                     dynamic templateData = new JObject();
@@ -1158,7 +1158,7 @@ namespace UpDiddyApi.Workflow
                             , entry.Value.FirstOrDefault().City
                             , entry.Value.FirstOrDefault().Title
                             , Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsForJobAbandonment"]));
-                        JobSearchResultDto similarJobSearchResults = _cloudTalent.Search(jobQuery);
+                        JobSearchResultDto similarJobSearchResults = _cloudTalent.JobSearch(jobQuery);
                         
                         //Remove duplicates subscriber already attempted to apply to
                         foreach (var job in entry.Value)
@@ -1272,7 +1272,42 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
-        #region Cloud Talent
+        #region Cloud Talent Profiles 
+
+        public bool CloudTalentAddOrUpdateProfile(Guid subscriberGuid)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);            
+        }
+
+        public bool CloudTalentDeleteProfile(Guid subscriberGuid)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            ct.DeleteProfileFromCloudTalent(_db, subscriberGuid);
+            return true;
+        }
+
+        public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess )
+        {
+           CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            int indexVersion = int.Parse(_configuration["CloudTalent:ProfileIndexVersion"]);
+           List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess,indexVersion);
+           foreach ( Subscriber s in subscribers)
+            {
+                ct.AddOrUpdateProfileToCloudTalent(_db, s.SubscriberGuid.Value);
+
+            }
+            return true;
+        }
+
+
+
+
+
+
+        #endregion
+
+        #region Cloud Talent Jobs 
 
         public bool CloudTalentAddJob(Guid jobPostingGuid)
         {
@@ -1374,5 +1409,81 @@ namespace UpDiddyApi.Workflow
         }
 
         #endregion
+
+        public async Task TrackSubscriberActionInformation(Guid subscriberGuid, Guid actionGuid, Guid entityTypeGuid, Guid entityGuid)
+        {
+
+            try
+            {
+                // load the subscriber
+                Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+
+                if (subscriber == null)
+                    throw new InvalidOperationException("Subscriber not found");
+
+                // load the action
+                var action = await _repositoryWrapper.ActionRepository.GetActionByActionGuid(actionGuid);
+                if (action == null)
+                    throw new InvalidOperationException("Action not found");
+
+                // load the related entity associated with the action (only if specified)
+                EntityType entityType = null;
+                int? entityId = null;
+                if (entityGuid!=Guid.Empty)
+                {
+                    // load the entity type
+                    entityType = await _repositoryWrapper.EntityTypeRepository.GetEntityTypeByEntityGuid(entityTypeGuid);
+                    if (entityType == null)
+                        throw new InvalidOperationException("Entity type not found");
+
+                    switch (entityType.Name)
+                    {
+                        case "Subscriber":
+                            var subscriberEntity = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(entityGuid);
+                            if (subscriberEntity == null)
+                                throw new InvalidOperationException("Related subscriber entity not found");
+                            entityId = subscriberEntity.SubscriberId;
+                            break;
+                        case "Offer":
+                            var offerEntity = await _repositoryWrapper.Offer.GetOfferByOfferGuid(entityGuid);
+                            if (offerEntity == null)
+                                throw new InvalidOperationException("Related offer entity not found");
+                            entityId = offerEntity.OfferId;
+                            break;
+                        case "JobPosting":
+                            var jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(entityGuid);
+                            if (jobPosting == null)
+                                throw new InvalidOperationException("Related jobPosting entity not found");
+                            entityId = jobPosting.JobPostingId;
+                            break;
+                        default:
+                            throw new NotSupportedException("Unrecognized entity type");
+                    }
+                }
+
+                // create the subscriber action to the db
+                await _repositoryWrapper.SubscriberActionRepository.CreateSubscriberAction(
+                     new SubscriberAction()
+                     {
+                         SubscriberActionGuid = Guid.NewGuid(),
+                         CreateDate = DateTime.UtcNow,
+                         CreateGuid = Guid.Empty,
+                         ActionId = action.ActionId,
+                         EntityId = entityId,
+                         EntityTypeId = entityType == null ? null : (int?)entityType.EntityTypeId,
+                         IsDeleted = 0,
+                         OccurredDate = DateTime.UtcNow,
+                         SubscriberId = subscriber.SubscriberId
+                     });
+
+                // mark as successful if we got to this point
+                _syslog.LogTrace($"ScheduledJobs.TrackSubscriberActionInformation success for Subscriber Guid={subscriberGuid}, EntityTypeGuid={entityTypeGuid} and EntityGuid={entityGuid}");
+            }
+            catch (Exception e)
+            {
+                // write to syslog
+                _syslog.LogError(e, $"ScheduledJobs.TrackSubscriberActionInformation exception: {e.Message} for Subscriber Guid={subscriberGuid}, EntityTypeGuid={entityTypeGuid} and EntityGuid={entityGuid}");
+            }
+        }
     }
 }
