@@ -20,6 +20,7 @@ namespace UpDiddy.ViewModels
         public string CampaignPhase { get; set; }
         public bool IsExpressSignUp { get; set; }
         public string ObfuscatedEmail { get; set; }
+        public Guid PartnerGuid { get; set; }
     }
 }
 
