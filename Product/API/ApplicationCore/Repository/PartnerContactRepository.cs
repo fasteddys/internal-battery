@@ -10,11 +10,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public class PartnerContactRepository : UpDiddyRepositoryBase<PartnerContact>, IPartnerContactRepository
     {
-        UpDiddyDbContext _dbContext;
         IContactRepository _contactRepository;
         public PartnerContactRepository(UpDiddyDbContext dbContext, IContactRepository contactRepository) : base(dbContext)
         {
-            _dbContext = dbContext;
             _contactRepository = contactRepository;
         }
 
