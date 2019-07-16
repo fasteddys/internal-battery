@@ -43,6 +43,37 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
 
         #endregion
 
+
+        #region Profile Tenants
+
+        public BasicResponseDto TenantList(ref string errorMsg)
+        {
+            BasicResponseDto Rval = null;
+            try
+            {
+            
+                string ResponseJson = string.Empty;
+                ExecuteProfileApiGet("tenant", ref ResponseJson);
+                Rval = Newtonsoft.Json.JsonConvert.DeserializeObject<BasicResponseDto>(ResponseJson);
+                if (Rval.StatusCode != 200)
+                    throw new Exception(Rval.Description);
+            }
+            catch (Exception e)
+            {
+                Rval = new BasicResponseDto()
+                {
+                    StatusCode = 400,
+                    Description = e.Message
+                };
+                _syslog.Log(LogLevel.Error, $"GoogleProfileInterface: Error listing tentants ", e.Message);
+                errorMsg = e.Message;
+            }
+            return Rval;
+        }
+
+        #endregion
+
+
         #region Profile Search
         public BasicResponseDto Search(SearchProfilesRequest searchRequest, ref string errorMsg)
         {
