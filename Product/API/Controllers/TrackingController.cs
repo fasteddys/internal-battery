@@ -1,24 +1,18 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
-using AutoMapper.Configuration;
 using Hangfire;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
+
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
-using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers
@@ -32,13 +26,13 @@ namespace UpDiddyApi.Controllers
         private readonly ITrackingService _trackingService;
         private readonly IRepositoryWrapper _repositoryWrapper;
 
-        public TrackingController(UpDiddyDbContext db, ILogger<TrackingController> sysLog, FileContentResult pixelResponse, ITrackingService trackingService, IRepositoryWrapper _repositoryWrapper)
+        public TrackingController(UpDiddyDbContext db, ILogger<TrackingController> sysLog, FileContentResult pixelResponse, ITrackingService trackingService, IRepositoryWrapper repositoryWrapper)
         {
             _trackingService = trackingService;
             _db = db;
             _syslog = sysLog;
             _pixelResponse = pixelResponse;
-            _repositoryWrapper = _repositoryWrapper;
+            _repositoryWrapper = repositoryWrapper;
         }
 
         [HttpGet]

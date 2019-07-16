@@ -17,6 +17,10 @@
                 <input type="hidden" asp-for="CampaignGuid" name="CampaignGuid" value="@Model.CampaignGuid" form="SignUpForm" />
                 <input type="hidden" asp-for="CampaignPhase" name="CampaignPhase" value="@WebUtility.UrlEncode(Model.CampaignPhase)" form="SignUpForm" />
             }
+            if (Model.PartnerGuid != Guid.Empty && Model.PartnerGuid != null)
+            {
+                <input type="hidden" asp-for="PartnerGuid" name="PartnerGuid" value="@Model.PartnerGuid" form="@_form" />
+            }
         }
         <div class="row">
             <div id="SignUpEmail" class="col-12 sign-up-input no-padding">

@@ -16,5 +16,6 @@ namespace UpDiddy.ViewModels.ButterCMS
         public string hero_sub_image { get; set; }
         public string content_band_header { get; set; }
         public string content_band_text { get; set; }
+        public PartnerViewModel partner { get; set; }
     }
 }

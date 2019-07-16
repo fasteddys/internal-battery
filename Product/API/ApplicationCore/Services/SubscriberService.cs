@@ -37,14 +37,16 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ILogger _logger { get; set; }
         private IRepositoryWrapper _repository { get; set; }
         private readonly IMapper _mapper;
+        private ITaggingService _taggingService { get; set; }
 
-        public SubscriberService(UpDiddyDbContext context,
-            IConfiguration configuration,
-            ICloudStorage cloudStorage,
-            IB2CGraph graphClient,
-            IRepositoryWrapper repository,
-            ILogger<SubscriberService> logger,
-            IMapper mapper)
+        public SubscriberService(UpDiddyDbContext context, 
+            IConfiguration configuration, 
+            ICloudStorage cloudStorage, 
+            IB2CGraph graphClient, 
+            IRepositoryWrapper repository, 
+            ILogger<SubscriberService> logger, 
+            IMapper mapper,
+            ITaggingService taggingService)
         {
             _db = context;
             _configuration = configuration;
@@ -53,6 +55,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _repository = repository;
             _logger = logger;
             _mapper = mapper;
+            _taggingService = taggingService;
         }
 
         public async Task<SubscriberFile> AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream, bool parseResume = false)
@@ -140,6 +143,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _db.SaveChangesAsync();
 
                     partnerContact.Contact.SubscriberId = newSubscriber.SubscriberId;
+                    await _db.SaveChangesAsync();
+
+                    await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(newSubscriber.SubscriberId);
+
                     CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaign.CampaignId, signUpDto.campaignPhase);
                     _db.PartnerContactAction.Add(new PartnerContactAction()
                     {
