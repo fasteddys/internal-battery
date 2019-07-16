@@ -11,6 +11,7 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using UpDiddyApi.Helpers.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.ApplicationCore
 {
@@ -30,6 +31,7 @@ namespace UpDiddyApi.ApplicationCore
         protected internal ISovrenAPI _sovrenApi;
         protected internal IHubContext<ClientHub> _hub;
         protected internal IDistributedCache _cache;
+        protected internal IRepositoryWrapper _repositoryWrapper;
         #endregion
     }
 }

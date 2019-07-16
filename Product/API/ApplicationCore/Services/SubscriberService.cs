@@ -37,14 +37,16 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ILogger _logger { get; set; }
         private IRepositoryWrapper _repository { get; set; }
         private readonly IMapper _mapper;
+        private ITaggingService _taggingService { get; set; }
 
-        public SubscriberService(UpDiddyDbContext context,
-            IConfiguration configuration,
-            ICloudStorage cloudStorage,
-            IB2CGraph graphClient,
-            IRepositoryWrapper repository,
-            ILogger<SubscriberService> logger,
-            IMapper mapper)
+        public SubscriberService(UpDiddyDbContext context, 
+            IConfiguration configuration, 
+            ICloudStorage cloudStorage, 
+            IB2CGraph graphClient, 
+            IRepositoryWrapper repository, 
+            ILogger<SubscriberService> logger, 
+            IMapper mapper,
+            ITaggingService taggingService)
         {
             _db = context;
             _configuration = configuration;
@@ -53,16 +55,17 @@ namespace UpDiddyApi.ApplicationCore.Services
             _repository = repository;
             _logger = logger;
             _mapper = mapper;
+            _taggingService = taggingService;
         }
 
 
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
-            var  querableSubscribers = await _repository.SubscriberRepository.GetAllSubscribersAsync();
+            var querableSubscribers = await _repository.SubscriberRepository.GetAllSubscribersAsync();
 
-              List<Subscriber> rVal= await querableSubscribers.Where(s => s.IsDeleted == 0 && s.CloudTalentIndexVersion < indexVersion)
-                                                              .Take(numSubscribers)
-                                                              .ToListAsync();
+            List<Subscriber> rVal = await querableSubscribers.Where(s => s.IsDeleted == 0 && s.CloudTalentIndexVersion < indexVersion)
+                                                            .Take(numSubscribers)
+                                                            .ToListAsync();
 
 
             if (rVal.Count > 0)
@@ -78,12 +81,13 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 }
                 updateSql += inList + ")";
-               await  _repository.SubscriberRepository.ExecuteSQL(updateSql);
+                await _repository.SubscriberRepository.ExecuteSQL(updateSql);
 
             }
 
             return rVal;
         }
+
 
         public async Task<SubscriberFile> AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream, bool parseResume = false)
         {
@@ -169,11 +173,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                     _db.Subscriber.Add(newSubscriber);
                     await _db.SaveChangesAsync();
 
-                    // update google profile 
-                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(newSubscriber.SubscriberGuid.Value));
-
-
                     partnerContact.Contact.SubscriberId = newSubscriber.SubscriberId;
+                    await _db.SaveChangesAsync();
+
+                    await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(newSubscriber.SubscriberId);
+
                     CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaign.CampaignId, signUpDto.campaignPhase);
                     _db.PartnerContactAction.Add(new PartnerContactAction()
                     {
@@ -332,9 +336,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             var map = query.ToDictionary(x => x.jobPostingGuid, x => x.jobPostingFavoriteGuid);
             return map;
         }
- 
-
-
 
         #region subscriber notes
         public async Task SaveSubscriberNotesAsync(SubscriberNotesDto subscriberNotesDto)

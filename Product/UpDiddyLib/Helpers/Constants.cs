@@ -103,6 +103,7 @@ namespace UpDiddyLib.Helpers
         {
             public static readonly string NULL_RESPONSE = "NULL_RESPONSE";
             public static readonly string RESPONSE_RECEIVED = "RESPONSE_RECEIVED";
+            public static readonly string LEVELS = "levels";
         }
 
         public static class Seo
@@ -110,6 +111,14 @@ namespace UpDiddyLib.Helpers
             public static readonly string META_TITLE = "meta_title";
             public static readonly string META_DESCRIPTION = "meta_description";
             public static readonly string META_KEYWORDS = "meta_keywords";
+        }
+
+        public static class CrossReference
+        {
+            public static class Group
+            {
+                public static readonly string WOZ_STUDENT = "Woz Student";
+            }
         }
 
         public static class EventType
@@ -120,6 +129,7 @@ namespace UpDiddyLib.Helpers
         public static class Action
         {
             public static readonly string ApplyJob = "Apply job";
+            public static readonly string View = "View";
         }
     }
 }

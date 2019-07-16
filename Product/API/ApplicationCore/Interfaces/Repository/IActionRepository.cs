@@ -9,5 +9,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public interface IActionRepository : IUpDiddyRepositoryBase<Models.Action>
     {
         Task<Models.Action> GetByNameAsync(string action);
+        Task<Models.Action> GetActionByActionGuid(Guid actionGuid);
     }
 }

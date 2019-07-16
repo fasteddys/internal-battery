@@ -269,6 +269,7 @@ namespace UpDiddyApi
 
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IRecruiterService, RecruiterService>();
+            services.AddScoped<ITaggingService, TaggingService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

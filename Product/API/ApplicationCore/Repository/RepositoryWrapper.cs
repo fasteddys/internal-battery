@@ -32,9 +32,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IJobPostingAlertRepository _jobPostingAlertRepository;
         private IResumeParseRepository _resumeParseRepository;
         private IResumeParseResultRepository _resumeParseResultRepository;
+        private IPartnerReferrerRepository _partnerReferrerRepository;
+        private IGroupPartnerRepository _groupPartnerRepository;
+        private ISubscriberGroupRepository _subscriberGroupRepository;
+        private IGroupRepository _groupRepository;
+        private IPartnerContactRepository _partnerContactRepository;
+        private IPartnerRepository _partnerRepository;
         private ISubscriberActionRepository _subscriberActionRepository;
         private IEntityTypeRepository _entityTypeRepository;
         private IActionRepository _actionRepository;
+        private IContactRepository _contactRepository;
+        private IOfferRepository _offerRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -323,6 +331,78 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+        public IPartnerReferrerRepository PartnerReferrerRepository
+        {
+            get
+            {
+                if (_partnerReferrerRepository == null)
+                {
+                    _partnerReferrerRepository = new PartnerReferrerRepository(_dbContext);
+                }
+                return _partnerReferrerRepository;
+            }
+        }
+
+        public IGroupPartnerRepository GroupPartnerRepository
+        {
+            get
+            {
+                if (_groupPartnerRepository == null)
+                {
+                    _groupPartnerRepository = new GroupPartnerRepository(_dbContext);
+                }
+                return _groupPartnerRepository;
+            }
+        }
+
+        public ISubscriberGroupRepository SubscriberGroupRepository
+        {
+            get
+            {
+                if (_subscriberGroupRepository == null)
+                {
+                    _subscriberGroupRepository = new SubscriberGroupRepository(_dbContext);
+                }
+                return _subscriberGroupRepository;
+            }
+        }
+
+        public IGroupRepository GroupRepository
+        {
+            get
+            {
+                if (_groupRepository == null)
+                {
+                    _groupRepository = new GroupRepository(_dbContext);
+                }
+                return _groupRepository;
+            }
+        }
+
+        public IPartnerContactRepository PartnerContactRepository
+        {
+            get
+            {
+                if (_partnerContactRepository == null)
+                {
+                    _partnerContactRepository = new PartnerContactRepository(_dbContext, ContactRepository);
+                }
+                return _partnerContactRepository;
+            }
+        }
+
+        public IPartnerRepository PartnerRepository
+        {
+            get
+            {
+                if (_partnerRepository == null)
+                {
+                    _partnerRepository = new PartnerRepository(_dbContext);
+                }
+                return _partnerRepository;
+            }
+        }
+
         public ISubscriberActionRepository SubscriberActionRepository
         {
             get
@@ -356,6 +436,30 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _actionRepository = new ActionRepository(_dbContext);
                 }
                 return _actionRepository;
+            }
+        }
+
+        public IContactRepository ContactRepository
+        {
+            get
+            {
+                if (_contactRepository == null)
+                {
+                    _contactRepository = new ContactRepository(_dbContext);
+                }
+                return _contactRepository;
+            }
+        }
+
+        public IOfferRepository Offer
+        {
+            get
+            {
+                if (_offerRepository == null)
+                {
+                    _offerRepository = new OfferRepository(_dbContext);
+                }
+                return _offerRepository;
             }
         }
     }

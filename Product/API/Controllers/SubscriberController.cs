@@ -52,6 +52,7 @@ namespace UpDiddyApi.Controllers
         private ISysEmail _sysEmail;
         private IJobService _jobService;
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private ITaggingService _taggingService;
 
         public SubscriberController(UpDiddyDbContext db,
             IMapper mapper,
@@ -64,7 +65,8 @@ namespace UpDiddyApi.Controllers
             IAuthorizationService authorizationService,
             IRepositoryWrapper repositoryWrapper,
             ISubscriberService subscriberService,
-            IJobService jobService)
+            IJobService jobService,
+            ITaggingService taggingService)
         {
             _db = db;
             _mapper = mapper;
@@ -78,6 +80,7 @@ namespace UpDiddyApi.Controllers
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = subscriberService;
             _jobService = jobService;
+            _taggingService = taggingService;
         }
 
         #region Basic Subscriber Endpoints
@@ -846,6 +849,9 @@ namespace UpDiddyApi.Controllers
 
             var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
 
+            
+            
+
             // use transaction to verify that both changes 
             using (var transaction = _db.Database.BeginTransaction())
             {
@@ -853,6 +859,12 @@ namespace UpDiddyApi.Controllers
                 {
                     _db.Add(subscriber);
                     await _db.SaveChangesAsync();
+
+                    if(signUpDto.partnerGuid != Guid.Empty && signUpDto.partnerGuid != null)
+                        await _taggingService.EnsurePartnerReferrerEntryExistsIfPartnerSpecified(referer, signUpDto.partnerGuid);
+                    await _taggingService.AddSubscriberToGroupBasedOnReferrerUrlAsync(subscriber.SubscriberId, referer);
+                    await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
+
                     SubscriberProfileStagingStore store = new SubscriberProfileStagingStore()
                     {
                         CreateDate = DateTime.UtcNow,

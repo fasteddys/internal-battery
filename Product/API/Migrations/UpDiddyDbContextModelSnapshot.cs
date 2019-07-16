@@ -1209,6 +1209,69 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("Gender");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.Group", b =>
+                {
+                    b.Property<int>("GroupId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Description");
+
+                    b.Property<Guid>("GroupGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<int>("IsLeavable")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue(1);
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.HasKey("GroupId");
+
+                    b.ToTable("Group");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.GroupPartner", b =>
+                {
+                    b.Property<int>("GroupPartnerId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("GroupId");
+
+                    b.Property<Guid>("GroupPartnerGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<int>("PartnerId");
+
+                    b.HasKey("GroupPartnerId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("PartnerId");
+
+                    b.ToTable("GroupPartner");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.Industry", b =>
                 {
                     b.Property<int>("IndustryId")
@@ -2979,6 +3042,37 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("SubscriberFile");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberGroup", b =>
+                {
+                    b.Property<int>("SubscriberGroupId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("GroupId");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<Guid>("SubscriberGroupGuid");
+
+                    b.Property<int>("SubscriberId");
+
+                    b.HasKey("SubscriberGroupId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("SubscriberGroup");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.SubscriberNotes", b =>
                 {
                     b.Property<int>("SubscriberNotesId")
@@ -3702,6 +3796,19 @@ namespace UpDiddyApi.Migrations
                         .HasForeignKey("CampaignId", "CourseVariantId");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.GroupPartner", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Partner", "Partner")
+                        .WithMany()
+                        .HasForeignKey("PartnerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.JobApplication", b =>
                 {
                     b.HasOne("UpDiddyApi.Models.JobApplicationStatus", "JobApplicationStatus")
@@ -4094,6 +4201,19 @@ namespace UpDiddyApi.Migrations
                 {
                     b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
                         .WithMany("SubscriberFile")
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SubscriberGroup", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
+                        .WithMany()
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
