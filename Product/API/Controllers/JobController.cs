@@ -400,13 +400,13 @@ namespace UpDiddyApi.Controllers
                 jobPostingGuid.ToString());
 
             JobQueryDto jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, jobPosting.City, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
-            JobSearchResultDto jobSearchForSingleJob = _cloudTalent.Search(jobQuery);
+            JobSearchResultDto jobSearchForSingleJob = _cloudTalent.JobSearch(jobQuery);
 
             // If jobs in same city come back less than 6, broaden search to state.
             if (jobSearchForSingleJob.JobCount < Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]))
             {
                 jobQuery = JobQueryHelper.CreateJobQueryForSimilarJobs(jobPosting.Province, string.Empty, jobPosting.Title, Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsToBeReturned"]));
-                jobSearchForSingleJob = _cloudTalent.Search(jobQuery);
+                jobSearchForSingleJob = _cloudTalent.JobSearch(jobQuery);
             }
 
 
@@ -438,7 +438,7 @@ namespace UpDiddyApi.Controllers
         {
             int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
             JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize, Request.Query);
-            JobSearchResultDto rVal = _cloudTalent.Search(jobQuery);
+            JobSearchResultDto rVal = _cloudTalent.JobSearch(jobQuery);
 
             // set common properties for an alert jobQuery and include this in the response
             jobQuery.DatePublished = null;
@@ -469,7 +469,7 @@ namespace UpDiddyApi.Controllers
 
             int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
             JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize, Request.Query);
-            JobSearchResultDto rVal = _cloudTalent.Search(jobQuery);
+            JobSearchResultDto rVal = _cloudTalent.JobSearch(jobQuery);
             return Ok(rVal);
         }
 
@@ -479,7 +479,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult JobSearch([FromBody] JobQueryDto jobQueryDto)
         {
             int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
-            JobSearchResultDto rVal = _cloudTalent.Search(jobQueryDto);
+            JobSearchResultDto rVal = _cloudTalent.JobSearch(jobQueryDto);
             return Ok(rVal);
         }
 

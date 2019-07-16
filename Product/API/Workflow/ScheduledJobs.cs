@@ -821,7 +821,7 @@ namespace UpDiddyApi.Workflow
                         break;
                 }
                 jobQueryDto.UpperBound = DateTime.UtcNow;
-                JobSearchResultDto jobSearchResultDto = cloudTalent.Search(jobQueryDto, isJobPostingAlertSearch: true);
+                JobSearchResultDto jobSearchResultDto = cloudTalent.JobSearch(jobQueryDto, isJobPostingAlertSearch: true);
                 if (jobSearchResultDto.JobCount > 0)
                 {
                     dynamic templateData = new JObject();
@@ -1158,7 +1158,7 @@ namespace UpDiddyApi.Workflow
                             , entry.Value.FirstOrDefault().City
                             , entry.Value.FirstOrDefault().Title
                             , Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsForJobAbandonment"]));
-                        JobSearchResultDto similarJobSearchResults = _cloudTalent.Search(jobQuery);
+                        JobSearchResultDto similarJobSearchResults = _cloudTalent.JobSearch(jobQuery);
                         
                         //Remove duplicates subscriber already attempted to apply to
                         foreach (var job in entry.Value)
@@ -1272,7 +1272,42 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
-        #region Cloud Talent
+        #region Cloud Talent Profiles 
+
+        public bool CloudTalentAddOrUpdateProfile(Guid subscriberGuid)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);            
+        }
+
+        public bool CloudTalentDeleteProfile(Guid subscriberGuid)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            ct.DeleteProfileFromCloudTalent(_db, subscriberGuid);
+            return true;
+        }
+
+        public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess )
+        {
+           CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            int indexVersion = int.Parse(_configuration["CloudTalent:ProfileIndexVersion"]);
+           List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess,indexVersion);
+           foreach ( Subscriber s in subscribers)
+            {
+                ct.AddOrUpdateProfileToCloudTalent(_db, s.SubscriberGuid.Value);
+
+            }
+            return true;
+        }
+
+
+
+
+
+
+        #endregion
+
+        #region Cloud Talent Jobs 
 
         public bool CloudTalentAddJob(Guid jobPostingGuid)
         {

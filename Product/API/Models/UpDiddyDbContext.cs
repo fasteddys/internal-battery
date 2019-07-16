@@ -230,6 +230,12 @@ namespace UpDiddyApi.Models
             modelBuilder.Entity<JobPostingAlert>()
                 .HasQueryFilter(a => a.IsDeleted == 0);
 
+            modelBuilder.Entity<SubscriberEducationHistory>()
+                .HasQueryFilter(a => a.IsDeleted == 0);
+
+            modelBuilder.Entity<SubscriberWorkHistory>()
+                .HasQueryFilter(a => a.IsDeleted == 0);
+
             modelBuilder.Entity<ZeroBounce>()
                 .Property<string>("ResponseJSON")
                 .HasField("_response");

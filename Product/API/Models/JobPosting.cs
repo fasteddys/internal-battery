@@ -11,7 +11,7 @@ namespace UpDiddyApi.Models
 {
 
 
-    public enum JobPostingIndexStatus { NotIndexed = 0, Indexed, DeletedFromIndex, IndexError, IndexDeleteError, IndexUpdateError, UpdateIndexPending  };
+    public enum GoogleCloudIndexStatus { NotIndexed = 0, Indexed, DeletedFromIndex, IndexError, IndexDeleteError, IndexUpdateError, UpdateIndexPending  };
 
  
     public class JobPosting : BaseModel

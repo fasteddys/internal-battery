@@ -2861,6 +2861,14 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("City");
 
+                    b.Property<string>("CloudTalentIndexInfo");
+
+                    b.Property<int>("CloudTalentIndexStatus");
+
+                    b.Property<int>("CloudTalentIndexVersion");
+
+                    b.Property<string>("CloudTalentUri");
+
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
