@@ -216,9 +216,9 @@
                 </div>
             }
             @{
-                string columnClass = Model.Facets != null ? "10" : "12";
+                string offsetColumnClass = Model.Facets != null ? "0" : "2";
             }
-            <div class="col-12 col-md-@columnClass">
+            <div class="col-12 col-md-10 offset-md-@offsetColumnClass">
                 <div class=" " id="">
                     @{ await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);}
 
