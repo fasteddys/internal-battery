@@ -160,18 +160,24 @@ namespace UpDiddyApi.ApplicationCore.Services
  
         public bool IndexProfile(Subscriber subscriber, IList<SubscriberSkill> skills)
         {
+            int step = 0;
             try
-            {                
+            {
+                
                 // create googleCloud Profile 
                 GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_db, subscriber, skills);
+                step = 1;
                 string errorMsg = string.Empty;
                 BasicResponseDto basicResponseDto =  _profileApi.AddProfile(googleCloudProfile, ref errorMsg);
-
-                if (basicResponseDto.StatusCode == 200)
+                step = 2;
+                
+                if ( basicResponseDto != null && basicResponseDto.StatusCode == 200)
                 {
+                    step = 3;
                     subscriber.CloudTalentUri = basicResponseDto.Data.name;
                     subscriber.CloudTalentIndexInfo = "Indexed on " + Utils.ISO8601DateString(DateTime.Now);
                     subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.Indexed;
+                    step = 4;
                     _db.SaveChanges();
 
                     return true;
@@ -186,7 +192,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 subscriber.CloudTalentIndexInfo = e.Message;
                 subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
                 _db.SaveChanges();
-                _syslog.LogError(e, "CloudTalent.IndexProfile Error", e, subscriber);
+                _syslog.LogError(e, $"CloudTalent.IndexProfile Error: {e.Message} at step {step} ", e, subscriber);
                 return false;
             }
         }
