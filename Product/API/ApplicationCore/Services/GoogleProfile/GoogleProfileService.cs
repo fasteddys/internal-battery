@@ -117,7 +117,7 @@ namespace UpDiddyApi.ApplicationCore.Services.GoogleProfile
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Error, $"GoogleProfileInterface error adding google profile for {googleCloudProfile.externalId}", googleCloudProfile);
+                _syslog.Log(LogLevel.Error, $"GoogleProfileInterface error: {e.Message} while adding google profile for {googleCloudProfile.externalId}", googleCloudProfile);
                 errorMsg = e.Message; 
             }
             return Rval;
