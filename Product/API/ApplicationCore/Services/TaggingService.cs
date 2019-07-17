@@ -65,7 +65,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 // If no link is found to a partner, simply add a generated group
                 Group Group = await GenerateGroup(ReferrerUrl);
-                AddSubscriberToGroupAsync(Group.GroupId, SubscriberId);
+                await AddSubscriberToGroupAsync(Group.GroupId, SubscriberId);
             }
             else
             {
@@ -78,7 +78,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     // Iterate through all groups associated with the partner of the referer url.
                     foreach (GroupPartner groupPartner in groupPartners)
                     {
-                        AddSubscriberToGroupAsync(groupPartner.GroupId, SubscriberId);
+                        await AddSubscriberToGroupAsync(groupPartner.GroupId, SubscriberId);
                     }
                 }
             }
@@ -102,7 +102,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             foreach(GroupPartner groupPartner in GroupPartners)
             {
-                AddSubscriberToGroupAsync(groupPartner.GroupId, SubscriberId);
+                await AddSubscriberToGroupAsync(groupPartner.GroupId, SubscriberId);
             }
 
             return true;
@@ -145,7 +145,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _repositoryWrapper.GroupPartnerRepository.Create(GroupPartner);
             await _repositoryWrapper.GroupPartnerRepository.SaveAsync();
 
-            AddSubscriberToGroupAsync(Group.GroupId, SubscriberId);
+            await AddSubscriberToGroupAsync(Group.GroupId, SubscriberId);
 
             return true;
         }
