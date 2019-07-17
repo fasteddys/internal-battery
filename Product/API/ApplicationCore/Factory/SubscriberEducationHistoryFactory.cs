@@ -27,14 +27,11 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .FirstOrDefault();
         }
 
-        public static bool AddEducationHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, SubscriberEducationHistoryDto educationkHistory,
+        public static async Task<SubscriberEducationHistory> AddEducationHistoryForSubscriber(UpDiddyDbContext db, Subscriber subscriber, SubscriberEducationHistoryDto educationkHistory,
                 EducationalInstitution educationalInstitution, EducationalDegree educationalDegree, EducationalDegreeType educationalDegreeType)
-        {
-            bool rVal = true;
-            try
+        {            
+            SubscriberEducationHistory rVal = new SubscriberEducationHistory()
             {
-                SubscriberEducationHistory eh = new SubscriberEducationHistory()
-                {
                     StartDate = educationkHistory.StartDate,
                     EndDate = educationkHistory.EndDate,
                     SubscriberId = subscriber.SubscriberId,
@@ -48,14 +45,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     DegreeDate = educationkHistory.DegreeDate,
                     EducationalDegreeId = educationalDegree.EducationalDegreeId,
                     EducationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId
-                };
-                db.SubscriberEducationHistory.Add(eh);
-                db.SaveChanges();
-            }
-            catch
-            {
-                rVal = false;
-            }
+            };
+            db.SubscriberEducationHistory.Add(rVal);
+            db.SaveChanges();    
+            
             return rVal;
         }
     }

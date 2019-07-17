@@ -45,6 +45,29 @@ namespace UpDiddy.Controllers
             });
         }
 
+
+        [HttpGet]
+        [Route("/lp")]
+        public IActionResult SeedEmails()
+        {
+            /* the call to action from seed emails will land here. doing this because of the following statement in user story 827:
+             *      "The message in the seed emails can be similar but not exact- we should have the button labeled similarly but 
+             *      it doesn't need to invoke a sign up type experience- the wording on the link and buttons is important and possibly 
+             *      sending in a similarly formed url to encourage the data science to treat lead emails like the seed list emails 
+             *      if that makes sense."
+             *      
+             * we can make this whatever we want, but for now it will cycle through random images and display some text to remind people
+             * about why we are sending these emails.
+             */
+
+            var images = _env.WebRootFileProvider.GetDirectoryContents(@"/images/random");
+            int index = new Random().Next(0, images.Count());
+            ViewBag.ImageName = images.ElementAt(index).Name;
+            return View("SeedEmails");
+        }
+
+
+
         [HttpGet]
         [Route("/lp/{tinyId}")]
         public async Task<IActionResult> TargetedCampaignLandingPageAsync(string tinyId)
@@ -211,7 +234,8 @@ namespace UpDiddy.Controllers
                 email = signUpViewModel.Email,
                 password = signUpViewModel.Password,
                 campaignGuid = signUpViewModel.CampaignGuid,
-                campaignPhase = WebUtility.UrlDecode(signUpViewModel.CampaignPhase)
+                campaignPhase = WebUtility.UrlDecode(signUpViewModel.CampaignPhase),
+                partnerGuid = signUpViewModel.PartnerGuid
             };
 
             // Guard UX from any unforeseen server error.
@@ -291,7 +315,8 @@ namespace UpDiddy.Controllers
                 verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
 
                 //check for any referrerCode 
-                referralCode = Request.Cookies["referrerCode"]==null ? null : Request.Cookies["referrerCode"].ToString()
+                referralCode = Request.Cookies["referrerCode"]==null ? null : Request.Cookies["referrerCode"].ToString(),
+                partnerGuid = signUpViewModel.PartnerGuid
             };
 
             // Guard UX from any unforeseen server error.
@@ -341,6 +366,8 @@ namespace UpDiddy.Controllers
                 QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
             }
 
+            QueryParams.Add(UpDiddyLib.Helpers.Constants.CMS.LEVELS, _configuration["ButterCMS:CareerCirclePages:Levels"]);
+
             // Create ButterCMS client and call their API to get JSON response of page data values.
             var butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
             PageResponse<CampaignLandingPageViewModel> LandingPage = butterClient.RetrievePage<CampaignLandingPageViewModel>("*", LandingPageSlug, QueryParams);
@@ -358,6 +385,7 @@ namespace UpDiddy.Controllers
                 hero_sub_image = LandingPage.Data.Fields.hero_sub_image,
                 content_band_header = LandingPage.Data.Fields.content_band_header,
                 content_band_text = LandingPage.Data.Fields.content_band_text,
+                partner = LandingPage.Data.Fields.partner,
                 IsExpressSignUp = true
             };
 

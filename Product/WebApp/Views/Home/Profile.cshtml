@@ -7,7 +7,14 @@
 @model ProfileViewModel
 @section Scripts
     {
-    <script type="text/javascript">
+
+ 
+
+
+
+
+<script src="~/js/modules/career-circle-signalr.js"></script>
+<script type="text/javascript">
         // this must be present for the API call used in site.js
         var url = '@Url.Action("GetStatesByCountry", "Home")';
         var subscriberSkills = @Json.Serialize(Model.Skills);
@@ -187,9 +194,33 @@
             }
         }
 
+
+        function ResumeParseComplete(message)
+        {
+           var obj = JSON.parse(message);
+           var evt = new CustomEvent('onResumeMergeNeeded', { detail: obj });
+           window.dispatchEvent(evt);
+        };
+
+
+        function DelegateParseMerge(e)
+        {
+            var evt1 = new CustomEvent('onDoParseMerge', { detail: e.detail });
+            window.dispatchEvent(evt1)         
+        }
+
+
         $(document).ready(function () {
             resumeUpload.init();
             emailVerification.init();
+            CareerCircleSignalR.connect("@Model.SubscriberGuid").then(function (result) {
+               CareerCircleSignalR.listen("ResumeUpLoadAndParseVerb", ResumeParseComplete);
+            });
+
+
+            window.addEventListener('onDelegateParseMerge', DelegateParseMerge);
+
+
 
         });
 
@@ -274,7 +305,7 @@
                 <div class="row">
                     <div class="col-md">
                         <div class="mt-3">
-                            @Html.React("ResumeUpload", new { fileGuid = Model.Resume?.SubscriberFileGuid, fileName = Model.Resume?.SimpleName })
+                            @Html.React("ResumeUpload", new { fileGuid = Model.Resume?.SubscriberFileGuid, fileName = Model.Resume?.SimpleName, resumeParseGuid = Model.ResumeParseGuid == Guid.Empty ? string.Empty : Model.ResumeParseGuid.ToString() })
                         </div>
                     </div>
                 </div>
@@ -430,3 +461,7 @@
         </div>
     </div>
 </div>
+@Html.React("ResumeMerge", new {})
+
+
+

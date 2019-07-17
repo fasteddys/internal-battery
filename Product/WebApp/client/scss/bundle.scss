@@ -10,6 +10,7 @@
 
 @import 'components/_linkedIn';
 @import 'components/jobCard';
+@import 'components/jobAlertCard';
 @import 'components/bands/_cc-text-video-band';
 @import 'components/bands/_cc-content-band';
 @import 'components/bands/_cc-triple-container-band';
@@ -31,12 +32,14 @@
 // page styles
 @import '_about';
 @import '_admin';
+@import '_blog';
 @import '_card';
 @import '_campaign';
 @import '_coming-soon';
 @import '_common';
 @import '_contact';
 @import '_course-checkout';
+@import '_dashboard';
 @import '_enrollment-failure';
 @import '_enrollment-success';
 @import '_error';
@@ -57,6 +60,7 @@
 @import 'admin/_partners';
 @import 'admin/_contacts';
 @import 'admin/_add-partners';
+@import 'admin/_notifications';
 @import '_offers';
 @import '_create-job-posting';
 @import '_job-search';

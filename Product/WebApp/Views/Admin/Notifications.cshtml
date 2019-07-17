@@ -1,0 +1,72 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+
+<div class="modal" tabindex="-1" role="dialog" id="DeleteNotificationConfirmationModal">
+    <input type="hidden" id="NotificationToDelete" />
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete confirmation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <span id="DeleteConfirmationNotificationName"></span>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger">Delete</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("Admin/_AdminNavigation")
+
+<div id="NotificationsContainer" class="row mt-4">
+    <div class="col-12">
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex flex-row-reverse">
+                        <div id="AddNotificationAction" class="col-12 text-right no-padding">
+                            @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                                Text = "Add <i class=\"fas fa-plus\"></i>",
+                                Hyperlink = "/admin/addnotification",
+                                FitToText = true,
+                                ChosenColorScheme = "cc-cscheme-primary",
+                                ButtonAction = ActionButtonViewModel.Action.CTA
+                            })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm">
+                    @Html.AjaxGrid(Url.Action("NotificationGridAsync"))
+                </div>
+            </div>
+            @section Scripts{
+                <script type="text/javascript">
+                    $(".admin-nav-notifications").addClass("active");
+                    window.onload = function () {
+                        var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                    }
+
+                    function doSearch(isReset) {
+                        if (isReset)
+                            document.getElementById('GridSearch').value = '';
+                        var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                        var search = document.getElementById('GridSearch').value;
+                        grid.query.set('searchQuery', encodeURIComponent(search));
+                        grid.reload();
+                    }
+                </script>
+            }
+        </div>
+    </div>
+</div>

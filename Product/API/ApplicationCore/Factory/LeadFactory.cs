@@ -78,7 +78,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             // lookup Partner by the ApiToken provided
             var partner = _db.Partner
                 .Include(p => p.PartnerType)
-                .Where(p => p.ApiToken == apiToken && p.PartnerType.Name == "Pay Per Lead" && p.IsDeleted == 0)
+                .Where(p => p.ApiToken == apiToken && p.IsDeleted == 0)
                 .FirstOrDefault();
 
             // abort if we do not recognize the Partner
@@ -296,17 +296,28 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     };
                 }
 
-                int campaignId = _db.Campaign.Where(ca => ca.Name == "PPL Lead Gen" && ca.IsDeleted == 0).FirstOrDefault().CampaignId;
+                // simple campaign matching logic based on the presence of a CampaignPartner contact (this may need to be become more flexible in the future)
+                var matchingCampaign = _db.CampaignPartner.Where(cp => 
+                        cp.Partner.PartnerId == partner.PartnerId
+                        && cp.IsDeleted == 0
+                        && cp.Campaign.IsDeleted == 0
+                        && cp.Campaign.StartDate <= DateTime.UtcNow
+                        && (!cp.Campaign.EndDate.HasValue || cp.Campaign.EndDate.Value > DateTime.UtcNow))
+                    .OrderByDescending(cp => cp.Campaign.StartDate)
+                    .Select(cp => cp.Campaign)
+                    .FirstOrDefault();
+
                 // associate the lead with the PPL campaign
                 _db.CampaignPartnerContact.Add(
                     new CampaignPartnerContact()
                     {
-                        CampaignId = campaignId,
+                        CampaignId = matchingCampaign.CampaignId,
                         CampaignPartnerContactGuid = Guid.NewGuid(),
                         CreateDate = DateTime.UtcNow,
                         CreateGuid = Guid.Empty,
                         IsDeleted = 0,
-                        PartnerContact = _partnerContact
+                        PartnerContact = _partnerContact,
+                        IsEmailSent = false
                     });
 
                 // create new lead statuses to be saved on the partner contact 
@@ -325,10 +336,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 _db.PartnerContact.Add(_partnerContact);
                 _db.SaveChanges();
 
-                // entry point for welcome email... how will we handle save file trigger?
                 // TODO: identify any business rule failures that would prevent us from sending a welcome email (dupe, missing fields, etc?)
                 int verificationFailureLeadStatusId = _allLeadStatuses.Where(ls => ls.Name == "Verification Failure").FirstOrDefault().LeadStatusId;
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.SendWelcomeEmail(_leadResponse.LeadIdentifier.Value, leadRequest.FirstName, leadRequest.LastName, leadRequest.EmailAddress, verificationFailureLeadStatusId));
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.ValidateEmailAddress(_partnerContact.PartnerContactGuid.Value, leadRequest.EmailAddress, verificationFailureLeadStatusId));
             }
             catch (Exception e)
             {

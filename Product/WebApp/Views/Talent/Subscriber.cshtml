@@ -150,7 +150,7 @@
                                         </div>
                                         <div class="row">
                                             <div class="col-12 description px-2 py-2">
-                                                @Utils.FormatGenericField(workHistory.JobDecription, "job description")
+                                                @Utils.FormatGenericField(workHistory.JobDescription, "job description")
                                             </div>
                                         </div>
                                     </div>
@@ -292,14 +292,20 @@
                 <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
                     <div class="container p-1">
                         <div class="container-align-right">
-                                    <div class="row">
-                                        <div class="col-5">
-                                            <input type="text" class="form-control" id="txtNotesCreateDate" placeholder="Created Date" autocomplete="off">
-                                        </div>
-                                        <div class="col-3 notesSearchButton">
-                                            <button id="searchNotes" type="submit" class="btn btn-primary" data-subscriberguid="@Model.SubscriberGuid">Search</button>
-                                        </div>
-                                    </div>                                
+                            <div class="row">
+                                <div class="col-5">
+                                    <input type="text" class="form-control" id="txtNotesCreateDate" placeholder="Created Date" autocomplete="off">
+                                </div>
+                                <div class="col-3 notesSearchButton">
+                                    <button id="searchNotes" type="submit" class="btn btn-primary" data-subscriberguid="@Model.SubscriberGuid">Search</button>
+                                </div>
+                                <div class="col-4 addEditNote">
+                                    <button type="button" class="btn btn-primary addNote" data-toggle="modal" data-target="#addNoteModal"
+                                            data-subscriberguid="@Model.SubscriberGuid">
+                                        Add Note
+                                    </button>
+                                </div>
+                            </div>                                
                                 <div class="row">
                                     <div class="col-12 notesGrid">
                                         @Html.AjaxGrid(Url.Action("SubscriberNotesGrid", "Talent",

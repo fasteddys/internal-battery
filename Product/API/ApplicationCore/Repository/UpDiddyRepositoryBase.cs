@@ -26,6 +26,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
                                 
         }
 
+        public async Task<IEnumerable<TEntity>> GetByConditionWithTrackingAsync(Expression<Func<TEntity, bool>> expression)
+        {
+            return await this._dbContext
+                             .Set<TEntity>()
+                             .Where(expression)
+                             .ToListAsync();
+        }
+
         public async Task<IEnumerable<TEntity>> GetByConditionAsync(Expression<Func<TEntity, bool>> expression)
         {
             return await this._dbContext
@@ -35,14 +43,29 @@ namespace UpDiddyApi.ApplicationCore.Repository
                              .ToListAsync();
         }
 
+        public async Task ExecuteSQL(string sql)
+        {
+           await _dbContext.Database.ExecuteSqlCommandAsync(sql);
+        }
+
         public async Task Create(TEntity entity)
         {
             await this._dbContext.Set<TEntity>().AddAsync(entity);
         }
 
+        public async Task CreateRange(TEntity[] entity)
+        {
+            await this._dbContext.Set<TEntity>().AddRangeAsync(entity);
+        }
+
         public void Update(TEntity entity)
         {
              this._dbContext.Set<TEntity>().Update(entity);
+        }
+
+        public void UpdateRange(TEntity[] entity)
+        {
+            this._dbContext.Set<TEntity>().UpdateRange(entity);
         }
 
         public void Delete(TEntity entity)

@@ -1,6 +1,7 @@
 import React from 'react';
 import Checkbox from '../Checkbox';
 
+ 
 class Favorite extends React.Component {
     constructor(props) {
         super(props);
@@ -38,8 +39,8 @@ class Favorite extends React.Component {
         return (<label className={`pointer no-select favorite-job-checkbox ${this.state.loading ? "loading" : ""}`}>
             <Checkbox isChecked={this.state.jobPostingFavoriteGuid} onChange={(event) => this.handleCheckboxChange(event.target.checked)} />
             { !this.state.jobPostingFavoriteGuid 
-                ? <span className=""><i className="far fa-star fa-lg fave-icon"></i> Add to Favorites</span>
-                : <span className=""><i className="fas fa-star fa-lg fave-icon"></i> Favorite </span> 
+                ? <span className="favorites-label"><i className="far fa-star fa-lg fave-icon"></i>   Add to Favorites </span>  
+                : <span className="favorites-label"><i className="fas fa-star fa-lg fave-icon"></i>   Favorite </span>   
             }
         </label>);
     }

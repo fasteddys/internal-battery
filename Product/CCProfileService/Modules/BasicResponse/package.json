@@ -1,0 +1,11 @@
+{
+  "name": "basicresponse",
+  "version": "1.0.0",
+  "description": "Response object to be returned to callers of the ccProfileService",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jim Brazil",
+  "license": "ISC"
+}

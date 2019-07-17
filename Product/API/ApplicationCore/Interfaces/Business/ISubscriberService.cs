@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNet.OData.Query;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -71,5 +72,18 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<List<SubscriberNotesDto>> GetSubscriberNotesBySubscriberGuid(string subscriberGuid, string recruiterGuid, string searchquery);
 
         Task<bool> DeleteSubscriberNote(Guid subscriberNotesGuid);
+
+        /// <summary>
+        /// Imports a user resume
+        /// </summary>
+        /// <param name="resumeParse"></param>
+        /// <param name="resume"></param>
+        /// <param name="msg"></param>
+        /// <returns></returns>
+        Task<bool> ImportResume(ResumeParse resumeParse, string resume);
+
+        Task<Subscriber> GetSubscriber(ODataQueryOptions<Subscriber> options);
+
+        Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numProfilesToProcess, int ndexVersion);
     }
 }

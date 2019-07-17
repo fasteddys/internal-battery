@@ -197,7 +197,10 @@ namespace UpDiddy.Controllers
             var countries = await _Api.GetCountriesAsync();
             var states = await _Api.GetStatesByCountryAsync(this.subscriber?.State?.Country?.CountryGuid);
             string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
+            ResumeParseDto resumeParse = await _Api.GetResumeParseForSubscriber(subscriber.SubscriberGuid.Value);
+            Guid resumeParseGuid = resumeParse == null ? Guid.Empty : resumeParse.ResumeParseGuid;
             string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+
             ProfileViewModel profileViewModel = new ProfileViewModel()
             {
                 SubscriberGuid = this.subscriber?.SubscriberGuid,
@@ -241,7 +244,8 @@ namespace UpDiddy.Controllers
                 LinkedInAvatarUrl = string.IsNullOrEmpty(this.subscriber.LinkedInAvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.LinkedInAvatarUrl + CacheBuster,
                 AvatarUrl = string.IsNullOrEmpty(this.subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + this.subscriber.AvatarUrl + CacheBuster,
                 MaxAvatarFileSize = int.Parse(_configuration["CareerCircle:MaxAvatarFileSize"]),
-                DefaultAvatar = _configuration["CareerCircle:DefaultAvatar"]
+                DefaultAvatar = _configuration["CareerCircle:DefaultAvatar"],
+                ResumeParseGuid = resumeParseGuid
 
             };
 
@@ -519,7 +523,7 @@ namespace UpDiddy.Controllers
         }
 
 
-        
+
 
         // TODO find a better home for these lookup endpoints - maybe a new lookup or data endpoint?
         [Authorize]
@@ -685,6 +689,21 @@ namespace UpDiddy.Controllers
                 Response.StatusCode = (int)ex.StatusCode;
                 return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
             }
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("/Home/resume-merge/{ResumeParseGuid}")]
+        public async Task<IActionResult> ResumeMerge(Guid resumeParseGuid)
+        {
+
+            string formInfo = string.Empty;
+            foreach (string key in Request.Form.Keys)
+                formInfo += key + ";" + Request.Form[key].ToString() + ",";
+
+            await _Api.ResolveResumeParse(resumeParseGuid, formInfo);
+
+            return RedirectToAction("Profile");
         }
     }
 }

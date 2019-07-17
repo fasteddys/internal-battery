@@ -2,6 +2,93 @@
 
 //Base styles
 @media (min-width:0px) {
+
+    .job-alert-footer {
+        text-align: right;
+        margin-top: 1rem;
+
+        > button {
+            margin-left: 1rem;
+        }
+    }
+
+    .company-logo {
+        text-align: center;
+        font-size: 20px;
+
+        img {
+            max-height: 60px;
+            max-width: 135px;
+        }
+    }
+
+    .job-alert-modal {
+        min-width: 300px;
+        max-width: 500px;
+        color: $color-secondary;
+
+        .job-alert-header {
+            border-bottom: 1px solid $color-secondary;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .edit-option {
+            position: relative;
+            border: 1px solid $color-secondary;
+            border-radius: .5rem;
+            margin-top: 2rem;
+        }
+
+        .input-label {
+            position: absolute;
+            top: -8px;
+            left: 1rem;
+            background-color: #fff;
+            color: $color-secondary;
+            font-size: 0.75rem;
+            padding: 0 .5rem;
+        }
+
+        .edit-input {
+            padding-top: 2px;
+
+            select {
+                border: 0;
+                border-radius: 0.5rem;
+                overflow: visible !important;
+                text-transform: none;
+                margin: 0;
+            }
+
+            textarea {
+                color: $color-secondary;
+                resize: none;
+                width: 100%;
+                border: 0;
+                overflow: visible !important;
+                margin: 0;
+                outline: none;
+                padding: .5rem;
+                border-radius: .5rem;
+            }
+        }
+
+        .form-control {
+            border: 1px solid #ccc;
+        }
+
+        .control-error {
+            border: 3px solid red;
+        }
+
+        flex-direction: column;
+        width: 100%;
+        border: none;
+        display: flex;
+        position: relative;
+    }
+
     .browse-jobs-body-container {
         background-color: $color-tertiary-light-gray;
 
@@ -129,7 +216,6 @@
     .job-search-container {
         font-family: $opensans-regular;
 
-
         .job-search-criteria {
             background-color: $color-secondary;
             color: $color-white;
@@ -156,7 +242,11 @@
                     text-align: center;
                     display: block;
 
-                    #SearchJobs {
+                    > div {
+                        display: inline-block;
+                    }
+
+                    #SearchJobs, #CreateAlert {
                         background-color: $color-tertiary;
                     }
                 }
@@ -171,13 +261,23 @@
             .facet-container {
                 background-color: $color-white;
 
+
+                a {
+                    color: $color-secondary-light;
+                    font-size: 20px;
+                }
+
+                a:hover {
+                    color: $color-anchor-hover;
+                }
+
                 .moreLink {
                     display: none;
                 }
 
                 .facets-style {
                     box-sizing: border-box;
-                    padding: 35px 0px 35px 0px;
+                    padding: 10px 0px 10px 0px;
                 }
 
                 .facet-header {
@@ -185,7 +285,7 @@
                     font-weight: bold;
                 }
 
-                .facet-link {
+                .facet-link, .facet-link a {
                     font-size: 12px;
                 }
 
@@ -236,26 +336,47 @@
                     margin: $rem-13;
                     padding: $rem-13;
 
-                    .job-title {
-                        font-size: $rem-24;
-                        font-weight: $opensans-bold;
+                    .job-tile-more-info {
+                        font-size: $rem-14;
+                        color: $color-anchor-hover;
+                    }
+
+                    .job-tile-more-info:hover {
+                        text-decoration: underline;
+                    }
+
+                    a {
+                        color: $color-secondary-light;
+                        font-size: 20px;
+                    }
+
+                    a:hover {
+                        color: $color-anchor-hover;
+                    }
+
+                    span.favorites-label:hover {
+                        color: $color-anchor-hover;
                     }
 
                     .job-location {
-                        font-size: $rem-16;
+                        font-size: $rem-14;
                         color: $color-tertiary;
                     }
 
                     .job-post-date {
-                        font-size: $rem-16;
+                        font-size: $rem-14;
                         color: $color-silver-chalice;
                     }
 
                     .job-description {
-                        font-size: $rem-20;
+                        font-size: $rem-16;
                         color: $color-emperor;
                         overflow: hidden;
                         text-overflow: ellipsis;
+                    }
+
+                    .favorite-job-checkbox {
+                        font-size: $rem-14;
                     }
                 }
 
@@ -292,12 +413,10 @@
 
 // Extra Small Styles
 @media (min-width: 320px) {
-
 }
 
 // Small Styles
 @media (min-width: 576px) {
-
 }
 
 // Medium Styles
@@ -307,7 +426,13 @@
     }
 
     .city {
-        display: block!important;
+        display: block !important;
+    }
+
+    .company-logo {
+        border-left-color: lightgray;
+        border-left-style: solid;
+        border-left-width: 1px;
     }
 }
 
@@ -318,7 +443,7 @@
     }
 
     .city {
-        display: block!important;
+        display: block !important;
     }
 }
 
@@ -329,6 +454,6 @@
     }
 
     .city {
-        display: block!important;
+        display: block !important;
     }
 }

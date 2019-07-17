@@ -144,7 +144,7 @@ namespace UpDiddyApi.Models
         public DbSet<PartnerContactLeadStatus> PartnerContactLeadStatus { get; set; }
         public DbSet<PartnerContactFile> PartnerContactFile { get; set; }
         public DbSet<PartnerContactFileLeadStatus> PartnerContactFileLeadStatus { get; set; }
- 
+
         public DbSet<CampaignPartnerContact> CampaignPartnerContact { get; set; }
         public DbSet<PartnerContactAction> PartnerContactAction { get; set; }
         public DbSet<JobApplication> JobApplication { get; set; }
@@ -159,8 +159,20 @@ namespace UpDiddyApi.Models
         public DbSet<JobPageStatus> JobPageStatus { get; set; }
         public DbSet<JobSiteScrapeStatistic> JobSiteScrapeStatistic { get; set; }
         public DbSet<ZeroBounce> ZeroBounce { get; set; }
+        public DbSet<JobPostingAlert> JobPostingAlert { get; set; }
         public DbSet<JobReferral> JobReferral { get; set; }
         public DbSet<SubscriberNotes> SubscriberNotes { get; set; }
+        public DbSet<Notification> Notification { get; set; }
+        public DbSet<SubscriberNotification> SubscriberNotification { get; set; }
+
+        public DbSet<ResumeParse> ResumeParse { get; set; }
+
+        public DbSet<ResumeParseResult> ResumeParseResult { get; set; }
+
+        public DbSet<CampaignPartner> CampaignPartner { get; set; }
+        public DbSet<Group> Group { get; set; }
+        public DbSet<SubscriberGroup> SubscriberGroup { get; set; }
+        public DbSet<GroupPartner> GroupPartner { get; set; }
 
         #region DBQueries
 
@@ -171,11 +183,59 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberSearch> SubscriberSearch { get; set; }
         public DbQuery<v_RecruiterSubscriberActions> RecruiterSubscriberActions { get; set; }
         public DbQuery<v_SubscriberOfferActions> SubscriberOfferActions { get; set; }
+        public DbQuery<v_ThrottledLeadEmailDelivery> ThrottledLeadEmailDelivery { get; set; }
 
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {   
+        {
+            modelBuilder
+                .Query<v_ThrottledLeadEmailDelivery>()
+                .ToView("v_ThrottledLeadEmailDelivery");
+
+            modelBuilder.Entity<CampaignPartner>()
+                .Property(cp => cp.EmailSubAccountId)
+                .HasMaxLength(100)
+                .IsRequired(true);
+
+            modelBuilder.Entity<CampaignPartner>()
+                .Property(cp => cp.EmailTemplateId)
+                .HasMaxLength(50)
+                .IsRequired(true);
+
+            modelBuilder.Entity<CampaignPartner>()
+                .Property(cp => cp.IsUseSeedEmails)
+                .HasDefaultValueSql("0");
+
+            modelBuilder.Entity<JobPostingAlert>()
+                .Property(a => a.Frequency)
+                .HasMaxLength(10)
+                .HasConversion(
+                    f => f.ToString(),
+                    f => (Frequency)Enum.Parse(typeof(Frequency), f));
+
+            modelBuilder.Entity<JobPostingAlert>()
+                .Property(a => a.ExecutionDayOfWeek)
+                .HasMaxLength(10)
+                .IsRequired(false)
+                .HasConversion(
+                    dow => dow.ToString(),
+                    dow => (DayOfWeek)Enum.Parse(typeof(DayOfWeek), dow));
+
+            modelBuilder.Entity<JobPostingAlert>()
+                .Property<string>("JobQueryDtoJSON")
+                .HasField("_jobQueryDto")
+                .IsRequired(true);
+
+            modelBuilder.Entity<JobPostingAlert>()
+                .HasQueryFilter(a => a.IsDeleted == 0);
+
+            modelBuilder.Entity<SubscriberEducationHistory>()
+                .HasQueryFilter(a => a.IsDeleted == 0);
+
+            modelBuilder.Entity<SubscriberWorkHistory>()
+                .HasQueryFilter(a => a.IsDeleted == 0);
+
             modelBuilder.Entity<ZeroBounce>()
                 .Property<string>("ResponseJSON")
                 .HasField("_response");
@@ -188,7 +248,7 @@ namespace UpDiddyApi.Models
                 .HasIndex(js => js.Name)
                 .HasName("UIX_JobSite_Name")
                 .IsUnique(true);
-                
+
             modelBuilder.Entity<JobPage>()
                 .HasIndex(jp => new { jp.UniqueIdentifier, jp.JobSiteId })
                 .HasName("UIX_JobPage_JobSite_UniqueIdentifier")
@@ -306,7 +366,7 @@ namespace UpDiddyApi.Models
 
             modelBuilder.Entity<CampaignCourseVariant>()
                 .HasKey(ccv => new { ccv.CampaignId, ccv.CourseVariantId });
-            
+
             modelBuilder.Entity<PartnerContactAction>()
                 .HasKey(pca => new { pca.PartnerContactId, pca.CampaignId, pca.ActionId, pca.CampaignPhaseId });
 
@@ -383,7 +443,18 @@ namespace UpDiddyApi.Models
                 .HasOne<Recruiter>()
                 .WithMany()
                 .HasForeignKey(sn => sn.RecruiterId);
-               
+
+            modelBuilder.Entity<Notification>().HasQueryFilter(n => n.IsDeleted == 0 && (n.ExpirationDate > DateTime.UtcNow || n.ExpirationDate == null));
+            modelBuilder.Entity<SubscriberFile>().HasQueryFilter(n => n.IsDeleted == 0);
+            modelBuilder.Entity<Group>().HasQueryFilter(g => g.IsDeleted == 0);
+            modelBuilder.Entity<SubscriberGroup>().HasQueryFilter(sg => sg.IsDeleted == 0);
+            modelBuilder.Entity<GroupPartner>().HasQueryFilter(gp => gp.IsDeleted == 0);
+
+            modelBuilder.Entity<Group>()
+                .Property(g => g.IsLeavable)
+                .HasDefaultValue(1);
+
+
         }
     }
 }

@@ -2,10 +2,21 @@
 
 // Base Styles
 @media (min-width: 0px) {
+
+    .job-company {
+        height: 60px;
+        width: 135px;
+
+        img{
+            max-width:100%;
+            max-height:100%;
+        }
+    }
+
     .job-details-hero-band,
     .job-application-hero-band,
     .job-application-finish-hero-band{
-        
+      
         background-size: cover;
         padding: 10rem;
         position: relative;

@@ -40,9 +40,34 @@ namespace UpDiddyApi.Models
         public EmailVerification EmailVerification {get; set;}
         public List<SubscriberProfileStagingStore> ProfileStagingStore { get; set; } = new List<SubscriberProfileStagingStore>();
         public DateTime? LinkedInSyncDate { get; set; }
+        public List<SubscriberNotification> SubscriberNotifications { get; } = new List<SubscriberNotification>();
+
         #region Avatar Urls
         public string LinkedInAvatarUrl { get; set; }
         public string AvatarUrl { get; set; }
+
         #endregion
+
+        #region Google Profile
+
+        /****************  google talent cloud information   ****************************/
+        /// <summary>
+        /// The uri returned from google talent cloud for identifying the posting in the
+        /// talent cloud
+        /// </summary>
+        public string CloudTalentUri { get; set; }
+        /// <summary>
+        ///  The postings google cloud indexing status, see enum JobPostingIndexStatus
+        /// </summary>
+        public int CloudTalentIndexStatus { get; set; }
+        /// <summary>
+        /// Additional information such as error received from cloud talent
+        /// </summary>
+        public string CloudTalentIndexInfo { get; set; }
+
+        public int CloudTalentIndexVersion { get; set; }
+
+        #endregion
+
     }
 }

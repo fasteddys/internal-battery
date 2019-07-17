@@ -19,10 +19,23 @@ namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+        public static DateTime Next(this DateTime from, DayOfWeek dayOfWeek)
+        {
+            int start = (int)from.DayOfWeek;
+            int wanted = (int)dayOfWeek;
+            if (wanted <= start)
+                wanted += 7;
+            return from.AddDays(wanted - start);
+        }
 
-
-
-
+        public static DateTime Previous(this DateTime from, DayOfWeek dayOfWeek)
+        {
+            int end = (int)from.DayOfWeek;
+            int wanted = (int)dayOfWeek;
+            if (wanted >= end)
+                end += 7;
+            return from.AddDays(wanted - end);
+        }
 
         public static bool GetImageAsBlob(string imgUrl, int maxSize, ref byte[] imageBytes)
         {
@@ -516,43 +529,53 @@ namespace UpDiddyLib.Helpers
 
             XElement theXML = XElement.Parse(xml);
             // Get list of skill found by Sovren
-            var employmentHistory = theXML.Descendants()
+            List<XElement> employmentHistory = theXML.Descendants()
                  .Where(e => e.Name.LocalName == "EmployerOrg")
                  .ToList();
 
             // Iterate over their emplyment history  
             foreach (XElement node in employmentHistory)
             {
+
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(node.ToString());
-                string defaultXlms = doc.DocumentElement.NamespaceURI;
                 XmlNamespaceManager namespaceManager = new XmlNamespaceManager(doc.NameTable);
+                string defaultXlms = doc.DocumentElement.NamespaceURI;
                 namespaceManager.AddNamespace("hrxml", defaultXlms);
-                bool isCurrent = false;
-                // Parse position start date  
-                DateTime startDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:PositionHistory/hrxml:StartDate", namespaceManager), ref isCurrent);
-                // Parse position end date 
-                DateTime endDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:PositionHistory/hrxml:EndDate", namespaceManager), ref isCurrent);
-                string jobTitle = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:PositionHistory/hrxml:Title", namespaceManager));
-                string jobDescription = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:PositionHistory/hrxml:Description", namespaceManager));
                 string company = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:EmployerOrgName", namespaceManager));
-                SubscriberWorkHistoryDto workHistory = new SubscriberWorkHistoryDto()
+
+                var positionHistory = node.Descendants()
+                   .Where(e => e.Name.LocalName == "PositionHistory")
+                   .ToList();
+
+                foreach (XElement position in positionHistory)
                 {
-                    CreateDate = DateTime.UtcNow,
-                    ModifyDate = DateTime.UtcNow,
-                    CreateGuid = Guid.Empty,
-                    ModifyGuid = Guid.Empty,
-                    IsDeleted = 0,
-                    StartDate = startDate,
-                    EndDate = endDate,
-                    IsCurrent = isCurrent ? 1 : 0,
-                    Company = company,
-                    JobDecription = jobDescription,
-                    Title = jobTitle
-                };
-                rVal.Add(workHistory);
+                    doc.LoadXml(position.ToString());
+                    bool isCurrent = false;
+                    // Parse position start date  
+                    DateTime startDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:StartDate", namespaceManager), ref isCurrent);
+                    // Parse position end date 
+                    DateTime endDate = ParseDateFromHrXmlDate(doc.SelectSingleNode("//hrxml:EndDate", namespaceManager), ref isCurrent);
+                    string jobTitle = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:Title", namespaceManager));
+                    string jobDescription = HrXmlNodeInnerText(doc.SelectSingleNode("//hrxml:Description", namespaceManager));
+                    SubscriberWorkHistoryDto workHistory = new SubscriberWorkHistoryDto()
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        ModifyDate = DateTime.UtcNow,
+                        CreateGuid = Guid.Empty,
+                        ModifyGuid = Guid.Empty,
+                        IsDeleted = 0,
+                        StartDate = startDate,
+                        EndDate = endDate,
+                        IsCurrent = isCurrent ? 1 : 0,
+                        Company = company,
+                        JobDescription = jobDescription,
+                        Title = jobTitle
+                    };
+                    rVal.Add(workHistory);
+                }
             }
-            return rVal;
+            return rVal;        
         }
 
 
@@ -596,20 +619,32 @@ namespace UpDiddyLib.Helpers
 
         static public DateTime ParseDateFromHrXmlDate(XmlNode hrXMLDate, ref bool isCurrent)
         {
+
+            DateTime date = DateTime.MinValue;
+            if (hrXMLDate == null)
+                return date;
+
             isCurrent = false;
             string dateString = hrXMLDate.FirstChild.InnerText;
+            switch(hrXMLDate.FirstChild.Name)
+            {
+                case "YearMonth":
+                    date = ParseDateFromHrXmlYearMonthTag(dateString);
+                    break;
+                case "AnyDate":
+                    date = ParseDateFromHrXmlYearMonthTag(dateString);
+                    break;
+                case "StringDate":
+                    date = ParseDateFromHrXmlStringDateTag(dateString, ref isCurrent);
+                    break;
+                case "Year":
+                    date = ParseDateFromHrXmlYearTag(dateString);
+                    break;
+                default:
+                    break;
 
-            if (hrXMLDate.FirstChild.Name == "YearMonth")
-                return ParseDateFromHrXmlYearMonthTag(dateString);
-
-            if (hrXMLDate.FirstChild.Name == "StringDate")
-                ParseDateFromHrXmlStringDateTag(dateString, ref isCurrent);
-
-            if (hrXMLDate.FirstChild.Name == "Year")
-                ParseDateFromHrXmlYearTag(dateString);
-
-
-            return DateTime.MinValue;
+            }
+            return date;
         }
 
 
@@ -713,7 +748,8 @@ namespace UpDiddyLib.Helpers
 
         static public string RemoveNewlines(string Str)
         {
-            return Regex.Replace(Str, "\r\n", String.Empty);
+            string rVal =  Regex.Replace(Str, "\r\n", String.Empty);
+            return Regex.Replace(rVal, "\\n", String.Empty);
         }
 
         static public string RemoveRedundantSpaces(string Str)
@@ -753,6 +789,120 @@ namespace UpDiddyLib.Helpers
             DateTime PriorDay = StartTime.AddDays(-1 * DaysApart);
 
             return PriorDay;
+        }
+
+        /// <summary>
+        /// convert the given string into the specified type 
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public static dynamic ToType(Type type , string val)
+        {
+            try
+            {
+                if (type == typeof(int?) || type == typeof(int) )
+                {
+                    return int.Parse(val);
+                }
+                else if (type == typeof(string))
+                {
+                    return val;
+                }
+                else if (type == typeof(double?) || type == typeof(double))
+                {
+                    return double.Parse(val);
+                }
+                else if (type == typeof(DateTime?) || type == typeof(DateTime))
+                {
+                    return DateTime.Parse(val);
+                }
+                else if (type == typeof(Guid?) || type == typeof(Guid))
+                {
+                    return Guid.Parse(val);
+                }
+                else if (type == typeof(bool?) || type == typeof(bool))
+                {
+                    return bool.Parse(val);
+                }
+                else if (type == typeof(long?) || type == typeof(long))
+                {
+                    return long.Parse(val);
+                }
+                else if (type == typeof(float?) || type == typeof(float))
+                {
+                    return float.Parse(val);
+                }
+                else if (type == typeof(decimal?) || type == typeof(decimal))
+                {
+                    return decimal.Parse(val);
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            catch
+            {
+                return null;
+            }           
+        }
+
+        public static dynamic ToTypeNullValue(Type type)
+        {
+            try
+            {
+                if (type == typeof(int?) || type == typeof(double?) || type == typeof(DateTime?) || type == typeof(Guid?) ||
+                    type == typeof(bool?) || type == typeof(long?) || type == typeof(float?) || type == typeof(decimal?)
+                    )
+                    return null;
+
+                if ( type == typeof(int))
+                {
+                    return 0;
+                }
+                else if (type == typeof(string))
+                {
+                    return string.Empty;
+                }
+                else if (type == typeof(double))
+                {
+                    return (double) 0;
+                }
+                else if ( type == typeof(DateTime))
+                {
+                    return DateTime.MinValue;
+                }
+                else if (type == typeof(Guid))
+                {
+                    return Guid.Empty;
+                }
+                else if (type == typeof(bool))
+                {
+                    return false;
+                }
+                else if (type == typeof(long))
+                {
+                    return (long) 0;
+                }
+                else if (type == typeof(float))
+                {
+                    return (float) 0;
+                }
+                else if (type == typeof(decimal))
+                {
+                    return (decimal) 0;
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            catch
+            {
+                return null;
+            }
         }
 
 

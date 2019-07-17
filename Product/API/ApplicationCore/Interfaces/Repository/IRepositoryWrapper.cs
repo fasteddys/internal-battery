@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
@@ -25,5 +26,21 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IJobReferralRepository JobReferralRepository { get; }
         ISubscriberNotesRepository SubscriberNotesRepository { get; }
         IRecruiterRepository RecruiterRepository { get; }
+        INotificationRepository NotificationRepository { get; }
+        ISubscriberNotificationRepository SubscriberNotificationRepository { get; }
+        IJobPostingAlertRepository JobPostingAlertRepository { get; }
+        IResumeParseRepository ResumeParseRepository { get; }
+        IResumeParseResultRepository ResumeParseResultRepository { get; }
+        IPartnerReferrerRepository PartnerReferrerRepository { get; }
+        IGroupPartnerRepository GroupPartnerRepository { get; }
+        IGroupRepository GroupRepository { get; }
+        ISubscriberGroupRepository SubscriberGroupRepository { get; }
+        IPartnerContactRepository PartnerContactRepository { get; }
+        IPartnerRepository PartnerRepository { get; }
+        ISubscriberActionRepository SubscriberActionRepository { get; }
+        IEntityTypeRepository EntityTypeRepository { get; }
+        IActionRepository ActionRepository { get; }
+        IContactRepository ContactRepository { get; }
+        IOfferRepository Offer { get; }
     }
 }

@@ -1,14 +1,20 @@
 # Build dotnet core project using Azure Pipelines
 
+# This pipeline is designed for WebApp
+
 # build name format
 name: webapp.$(date:yyyyMMdd)$(rev:.r)
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#pool
 pool:
   vmImage: 'ubuntu-16.04'
 
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#variables
 variables:
   buildConfiguration: 'Release'
 
-# trigger CI build for the following branches
+# trigger CI build for the following branches, and only trigger if changes are in UpDiddyLib or WebApp
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#triggers
 trigger:
   branches:
     include:
@@ -23,58 +29,75 @@ trigger:
 # disable CI builds for pull requests for now
 pr: none
 
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema#steps
 steps:
+
+# get/install dependencies using NugGet
 - script: |
     dotnet restore Product/WebApp
   displayName: Restore NuGet Packages
 
+# install npm dependencies (see package.json)
 - script: |
     npm install
   displayName: Install Node Package Dependencies
   workingDirectory: Product/WebApp
 
+# install bower dependencies (see bower.json)
 - script: |
     npm run bower install
   displayName: Install Client Side Dependencies
   workingDirectory: Product/WebApp
 
+# run gulp compile task (see gulpfile.js compile task)
 - script: |
     npm run gulp compile
   displayName: Compile sass, javascript and copy fonts
   workingDirectory: Product/WebApp
 
+# run webpack for react (see package.json scripts.build)
 - script: |
     npm run build
   displayName: Build js bundle (react)
   workingDirectory: Product/WebApp
 
+# compile code
 - script: |
     dotnet build Product/WebApp --configuration $(buildConfiguration)
   displayName: Compile
 
+# run tests for UpDiddyLib
 - script: |
     dotnet test --logger trx --results-directory $(Agent.TempDirectory) Product/UpDiddyLib.Tests
   displayName: UpDiddyLib Unit Tests
 
+# run tests for UpDiddy WebApp
 - script: |
     dotnet test --logger trx --results-directory $(Agent.TempDirectory) Product/WebApp.Tests
   displayName: UpDiddy Unit Tests
-  
+
+# Publish test results for devops to be able to display
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/test/publish-test-results?view=azure-devops&tabs=yaml
 - task: PublishTestResults@2
   inputs: 
     testRunner: VSTest
     testResultsFiles: '**/*.trx' 
     searchFolder: '$(Agent.TempDirectory)'
-    
+
+# compile application and output to artifact staging directory (see below link for artifact staging directory variable info)
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml#build-variables
 - script: |
     dotnet publish Product/WebApp --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
   displayName: Publish Files
 
+# package up all dlls and compiled code
 - script: |
     cd $(Build.ArtifactStagingDirectory)
     zip -rm WebApp.zip *
   displayName: Packaging
 
+# publish build files for devops to be able to use later
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/publish-build-artifacts?view=azure-devops
 - task: PublishBuildArtifacts@1
   displayName: Publish Artifacts
   inputs:

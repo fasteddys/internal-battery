@@ -106,6 +106,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 },
                Constants.SendGridAccount.Transactional,
                null,
+               null,
                null
                 ));
         }

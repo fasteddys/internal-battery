@@ -56,10 +56,11 @@
     <PackageReference Include="React.Core" Version="4.1.1" />
     <PackageReference Include="Sendgrid" Version="9.10.0" />
     <PackageReference Include="SimpleMvcSitemap" Version="3.1.0" />
+    <PackageReference Include="Wangkanai.Detection" Version="2.0.0-beta11" />
     <PackageReference Include="X.PagedList.Mvc.Core" Version="7.6.0" />
     </ItemGroup>
   <ItemGroup>
-    <Folder Include="client\react\" />
+    <Folder Include="client\react\components\css\" />
     <Folder Include="Resources\" />
     <Folder Include="wwwroot\lib\font-awesome\" />
     <Folder Include="wwwroot\webfonts\" />
@@ -176,6 +177,15 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Update="Views\Blog\Partials\_Search.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Blog\Post.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Blog\Posts.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Home\Unified.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

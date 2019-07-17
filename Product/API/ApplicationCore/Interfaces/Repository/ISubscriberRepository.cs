@@ -12,5 +12,11 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 
         Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid);
         Task<Subscriber> GetSubscriberByEmailAsync(string email);
+
+        Task<Subscriber> GetSubscriberByIdAsync(int subscriberId);
+
+ 
+ 
+
     }
 }
