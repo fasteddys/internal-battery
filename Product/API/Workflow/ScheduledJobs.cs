@@ -86,6 +86,67 @@ namespace UpDiddyApi.Workflow
         #region Marketing
 
         /// <summary>
+        /// This process is responsible for delivering emails to subscribers that have unread subscriber notifications. The most
+        /// content of the most recent notification should be displayed to the user as well as the number of unread notifications.
+        /// Reminder emails will be sent to users who have unread notifications only on the following intervals:
+        ///   - 24 hours
+        ///   - 1 week
+        ///   - 1 month
+        /// </summary>
+        /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task SubscriberNotificationEmailReminder()
+        {
+            DateTime executionTime = DateTime.UtcNow;
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SubscriberNotificationEmailReminder started at: {executionTime.ToLongDateString()}");
+
+                var lastDay = await _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(1);
+                var lastSevenDays = await _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(7);
+                var lastThirtyDays = await _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(30);
+                var allReminders = lastDay.Union(lastSevenDays).Union(lastThirtyDays).ToList();
+
+                if (allReminders != null && allReminders.Count() > 0)
+                {
+                    var emailInterval = TimeSpan.FromHours(24) / allReminders.Count();
+
+                    foreach (var reminder in allReminders)
+                    {
+
+                        if (_sysEmail.SendTemplatedEmailAsync(
+                             reminder.Email,
+                             _configuration["SysEmail:Transactional:TemplateIds:SubscriberNotification-Reminder"].ToString(),
+                             new
+                             {
+                                 firstName = reminder.FirstName,
+                                 totalUnread = reminder.TotalUnread,
+                                 notificationTitle = reminder.Title,
+                                 notificationsUrl = _configuration["Environment:BaseUrl"].ToString() + "dashboard",
+                                 disableNotificationEmailReminders = _configuration["Environment:BaseUrl"].ToString() + "Subscriber/DisableEmailReminders/" + reminder.SubscriberGuid
+                             },
+                             SendGridAccount.Transactional,
+                             null,
+                             null,
+                             executionTime).Result)
+                        {
+                            // only update the execution time if the email was delivered successfully
+                            executionTime = executionTime.Add(emailInterval);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.SubscriberNotificationEmailReminder encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SubscriberNotificationEmailReminder completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+        }
+
+        /// <summary>
         /// This process controls lead email delivery to prevent damage to our email sender reputation. This is accomplished by:
         ///     - capping the number of emails that can be delivered per hour
         ///     - mixing 'seed' emails in with the emails to be delivered 
@@ -1346,7 +1407,7 @@ namespace UpDiddyApi.Workflow
         public async Task<bool> CreateSubscriberNotificationRecords(Notification Notification, int IsTargeted, IList<Subscriber> Subscribers = null)
         {
 
-            if(IsTargeted == 0)
+            if (IsTargeted == 0)
                 Subscribers = _repositoryWrapper.SubscriberRepository.GetByConditionAsync(s => s.IsDeleted == 0).Result.ToList();
             else
             {
@@ -1355,8 +1416,8 @@ namespace UpDiddyApi.Workflow
             }
 
 
-            IList<SubscriberNotification> SubscriberNotifications = new List<SubscriberNotification>(); 
-            foreach(Subscriber sub in Subscribers)
+            IList<SubscriberNotification> SubscriberNotifications = new List<SubscriberNotification>();
+            foreach (Subscriber sub in Subscribers)
             {
                 DateTime CurrentDateTime = DateTime.UtcNow;
                 SubscriberNotification subscriberNotification = new SubscriberNotification

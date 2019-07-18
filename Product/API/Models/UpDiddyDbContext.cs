@@ -184,6 +184,7 @@ namespace UpDiddyApi.Models
         public DbQuery<v_RecruiterSubscriberActions> RecruiterSubscriberActions { get; set; }
         public DbQuery<v_SubscriberOfferActions> SubscriberOfferActions { get; set; }
         public DbQuery<v_ThrottledLeadEmailDelivery> ThrottledLeadEmailDelivery { get; set; }
+        public DbQuery<v_UnreadNotifications> UnreadNotifications { get; set; }
 
         #endregion
 
@@ -454,7 +455,9 @@ namespace UpDiddyApi.Models
                 .Property(g => g.IsLeavable)
                 .HasDefaultValue(1);
 
-
+            modelBuilder.Entity<Subscriber>()
+                .Property(s => s.NotificationEmailsEnabled)
+                .HasDefaultValue(true);
         }
     }
 }

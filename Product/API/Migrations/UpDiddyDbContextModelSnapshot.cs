@@ -2908,6 +2908,10 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid?>("ModifyGuid");
 
+                    b.Property<bool>("NotificationEmailsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue(true);
+
                     b.Property<string>("PhoneNumber");
 
                     b.Property<string>("PostalCode");

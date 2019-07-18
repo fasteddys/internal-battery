@@ -16,6 +16,14 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface ISubscriberService
     {
         /// <summary>
+        /// Updates the subscriber notification email setting.
+        /// </summary>
+        /// <param name="subscriberGuid"></param>
+        /// <param name="isNotificationEmailsEnabled"></param>
+        /// <returns></returns>
+        Task<bool> ToggleSubscriberNotificationEmail(Guid subscriberGuid, bool isNotificationEmailsEnabled);
+
+        /// <summary>
         /// Adds Resume to subscriber.
         /// </summary>
         /// <param name="subscriber"></param>

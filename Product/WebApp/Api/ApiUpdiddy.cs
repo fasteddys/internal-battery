@@ -1569,6 +1569,18 @@ namespace UpDiddy.Api
             return updatedSubscriberNotificationResponse;
 
         }
+        
+        public async Task<BasicResponseDto> DeleteSubscriberNotificationAsync(Guid SubscriberGuid, NotificationDto notificationDto)
+        {
+            BasicResponseDto deletedSubscriberNotificationResponse = await DeleteAsync<BasicResponseDto>($"subscriber/delete-notification/{notificationDto.NotificationGuid}");
+            return deletedSubscriberNotificationResponse;
+        }
+
+        public async Task<BasicResponseDto> ToggleSubscriberNotificationEmailAsync(Guid subscriberGuid, bool isEnabled)
+        {
+            BasicResponseDto toggledSubscriberNotificationEmailResponse = await PutAsync<BasicResponseDto>($"subscriber/{subscriberGuid}/toggle-notification-emails/{isEnabled.ToString()}");
+            return toggledSubscriberNotificationEmailResponse;
+        }
 
         #endregion
 

@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 
 /* Notications Listing */
-export const NotificationListing = ({ notifications, deviceType, onNotificationSelect, currentNotification, activeScreen, toggleMobileView }) => {
+export const NotificationListing = ({ notifications, deviceType, onNotificationSelect, onNotificationDelete, currentNotification, activeScreen, toggleMobileView }) => {
     let notificationsList = notifications.map((item, i) => {
         if (i === 0 && deviceType !== "Mobile") {
             item.hasRead = 1;
@@ -35,7 +35,7 @@ export const NotificationListing = ({ notifications, deviceType, onNotificationS
                     </ul>
                 </div>
             </div>
-            
+
         );
     }
 }
@@ -50,7 +50,7 @@ export const ReadableDateTime = (props) => {
     const curr_year = notificationDate.getFullYear();
     const outputDate = monthNames[curr_month - 1] + " " + curr_date + ", " + curr_year;
     return (<span>{outputDate}</span>)
-    
+
 };
 
 const NotificationItem = ({ notification, selected, onNotificationSelect, toggleMobileView }) => {
@@ -65,7 +65,6 @@ const NotificationItem = ({ notification, selected, onNotificationSelect, toggle
         unreadDot = "";
     };
 
-    
     return (<li key={notification.notificationGuid} className={classes} onClick={onSelect}>
         {notificationHeader}
         {unreadDot}
@@ -73,8 +72,7 @@ const NotificationItem = ({ notification, selected, onNotificationSelect, toggle
     </li>);
 }
 
-export const NotificationView = ({ isHidden, toggleView, notification, activeScreen, toggleMobileView }) => {
-    
+export const NotificationView = ({ isHidden, toggleView, notification, activeScreen, toggleMobileView, onNotificationDelete }) => {
 
     let classes = "col-12 col-md-10 no-padding";
     if (activeScreen === "list") {
@@ -83,19 +81,43 @@ export const NotificationView = ({ isHidden, toggleView, notification, activeScr
 
     let showBackButton = activeScreen !== "both" ? <div onClick={toggleMobileView}><i className="fas fa-angle-left"></i><i className="fas fa-angle-left"></i> Back</div> : "";
 
+    const onDelete = () => {
+        bootbox.confirm({
+            message: "Are you sure you want to delete this notification?",
+            buttons: {
+                confirm: {
+                    label: 'Yes',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: 'No',
+                    classname: 'btn-danger'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    onNotificationDelete(notification);
+                }
+            }
+        });
+    };
+
     if (notification) {
         return (
             <div className={classes}>
                 <div className="notification-view-container">
                     {showBackButton}
                     <div className="header-container">
-                        <h5>{notification.title}</h5>
+                        <div>
+                            <h5>{notification.title}</h5>
+                            <i className="pointer far fa-window-close" onClick={onDelete}></i>
+                        </div>
                         <span className="notification-date"><ReadableDateTime date={notification.createDate} /></span>
                     </div>
                     <div>{notification.description}</div>
                 </div>
             </div>
-                
+
         );
     }
     else {
@@ -105,7 +127,7 @@ export const NotificationView = ({ isHidden, toggleView, notification, activeScr
                     <div>Check back later for more CareerCircle notifications!</div>
                 </div>
             </div>
-                
+
         );
     }
 }
