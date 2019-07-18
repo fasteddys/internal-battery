@@ -52,12 +52,12 @@
             {
 
                 <text>
-                var key = @Model.JobCount[i].Key;
-                var value = @Model.JobCount[i].Value;
+                var key = @Model.JobCount[i].StateId;
+                var value = @Model.JobCount[i].TotalCount;
                 var marker = new google.maps.Marker({
                 position: mapdata.states[key].cords,
                 label: value.toString(),
-                title:"Hello World!"
+                title: mapdata.states[key].name
                 });
                 markers.push(marker);
                 marker.setMap(map);

@@ -6,6 +6,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using System;
 using UpDiddyLib.Helpers;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -16,10 +17,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             _repositoryWrapper = repositoryWrapper;
         }
-        public async Task<List<KeyValuePair<int, int>>> GetJobCountPerProvinceAsync()
+        public async Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync()
         {
             var query = await _repositoryWrapper.JobPosting.GetAllAsync();
-            List<KeyValuePair<int, int>> pairList = new List<KeyValuePair<int, int>>();
+            List<JobPostingCountDto> jbCount = new List<JobPostingCountDto>();
             List<string> provinceList = await query
             .Where(x => x.IsDeleted == 0)
             .Select(x => x.Province)
@@ -27,27 +28,25 @@ namespace UpDiddyApi.ApplicationCore.Services
             .ToListAsync();
             foreach (var province in provinceList)
             {
-                var count = query
-                .Where(x => x.Province == province && x.IsDeleted == 0)
-                .Count();
                 var str = province.Trim().Replace(" ", "");
                 Enums.ProvincePrefix e;
                 if (Enum.TryParse(str.ToUpper(), out e))
                 {
-                    KeyValuePair<int, int> pair = new KeyValuePair<int, int>((int)e, count);
-                    pairList.Add(pair);
-                }
-                else
-                {
-                    Enums.ProvinceName c;
-                    if (Enum.TryParse(str.ToLower(), out c))
+                    var d = query.Where(x => x.Province == province && x.IsDeleted == 0).GroupBy(l => l.Company)
+                                        .Select(g => new JobPostingCompanyCountDto()
+                                        {
+                                            CompanyGuid = g.Key.CompanyGuid,
+                                            CompanyName = g.Key.CompanyName,
+                                            JobCount = g.Distinct().Count()
+                                        }).OrderByDescending(x => x.JobCount).Take(3).ToList();
+                    if (d.Count > 0)
                     {
-                        KeyValuePair<int, int> pair = new KeyValuePair<int, int>((int)c, count);
-                        pairList.Add(pair);
+                        var total = d.Sum(c => c.JobCount);
+                        jbCount.Add(new JobPostingCountDto((int)e, d, total));
                     }
                 }
             }
-            return pairList;
+            return jbCount;
         }
     }
 }

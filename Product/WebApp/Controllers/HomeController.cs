@@ -59,7 +59,8 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> Index()
         {
             HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
-            var jobCount = JsonConvert.DeserializeObject<List<KeyValuePair<int, int>>>(_cache.GetString("JobPostingCountPerProvince"));
+            var str = _cache.GetString("JobPostingCountByProvince");
+            var jobCount = JsonConvert.DeserializeObject<List<JobPostingCountDto>>(str);
             if(jobCount != null)
             {
                 HomeViewModel.JobCount = jobCount;
