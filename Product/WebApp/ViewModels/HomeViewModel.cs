@@ -9,6 +9,7 @@ namespace UpDiddy.ViewModels
     {
         public string TopicName { get; set; }
         public IList<TopicDto> Topics { get; set; }
+        public List<KeyValuePair<int,int>> JobCount {get;set;}
         public HomeViewModel(IConfiguration _configuration, IList<TopicDto> TopicsFromDto)
         {
             this.ImageUrl = _configuration["BaseImageUrl"];

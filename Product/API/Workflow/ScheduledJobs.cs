@@ -12,7 +12,6 @@ using UpDiddyLib.Dto;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Hangfire;
 using System.Net.Http;
-using UpDiddyLib.Helpers;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Factory;
@@ -800,6 +799,14 @@ namespace UpDiddyApi.Workflow
             return jobDataMiningStats;
         }
 
+        public async Task StoreJobCountPerProvice()
+        {
+            var jobCount = await _jobPostingService.GetJobCountPerProvinceAsync();
+            var value = Newtonsoft.Json.JsonConvert.SerializeObject(jobCount);
+            int CacheTTL = int.Parse(_configuration["redis:cacheTTLInMinutes"]);
+            string cacheKey = "JobPostingCountPerProvince";
+            _cache.SetString(cacheKey, value, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL) });
+        }
         #endregion
 
         #region CareerCircle Jobs 

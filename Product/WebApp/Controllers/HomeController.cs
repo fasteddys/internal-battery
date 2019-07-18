@@ -10,24 +10,19 @@ using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
-using SendGrid;
-using SendGrid.Helpers.Mail;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Text.Encodings.Web;
 using System.IO;
 using UpDiddyLib.Helpers;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Security.Claims;
-using UpDiddy.Helpers;
-using UpDiddyLib.Dto.Marketing;
 using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
-
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 namespace UpDiddy.Controllers
 {
     public class HomeController : BaseController
@@ -35,6 +30,7 @@ namespace UpDiddy.Controllers
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly ISysEmail _sysEmail;
+        private readonly IDistributedCache _cache;
 
         [HttpGet]
         public async Task<IActionResult> GetCountries()
@@ -45,12 +41,14 @@ namespace UpDiddy.Controllers
         public HomeController(IApi api,
             IConfiguration configuration,
             IHostingEnvironment env,
-            ISysEmail sysEmail)
+            ISysEmail sysEmail,
+            IDistributedCache cache)
             : base(api)
         {
             _env = env;
             _sysEmail = sysEmail;
             _configuration = configuration;
+            _cache = cache;
         }
         [HttpGet]
         public async Task<IActionResult> GetStatesByCountry(Guid countryGuid)
@@ -61,6 +59,11 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> Index()
         {
             HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
+            var jobCount = JsonConvert.DeserializeObject<List<KeyValuePair<int, int>>>(_cache.GetString("JobPostingCountPerProvince"));
+            if(jobCount != null)
+            {
+                HomeViewModel.JobCount = jobCount;
+            }
             return View(HomeViewModel);
         }
 

@@ -10,25 +10,72 @@
     ViewData["Title"] = L["Home Page"];
 }
 
+<script src="~/js/core/mapdata.js" type="text/javascript"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDaRck5vHO3-INNTTiU82mSnhlWNFskT2E&callback=initMap" type="text/javascript"></script>
+<script>
+    var markers = Array();
+    function generateInfoWindow(state)
+    {
+        var string =    '<h4>' + state + '</h4>' +
+                        '<div>' +
+                        '<div class="row">' +
+                                '<div class="col-6">All:</div>' +
+                                '<div class="col-6"><b>75</b></div>' +
+                        '</div>' +
+                        '<div class="row">' +
+                                '<div class="col-6">TekSystem</div>' +
+                                '<div class="col-6"><b>25</b></div>' +
+                        '</div>' +
+                        '<div class="row">' +
+                                '<div class="col-6"> AeroTek: </div>' +
+                                '<div class="col-6"><b>25</b></div>' +
+                        '</div>' + 
+                        '<div class="row">'+ 
+                                '<div class="col-5"> Allegis Group:</div>' +
+                                '<div class="col-6"><b>25</b></div>' +
+                        '</div>' +
+                        '</div>';
+         return string;
+    }
 
+    function initMap() {
+        var uscords = { lat: 37.8283, lng: -98.5795 };
+
+         map = new google.maps.Map(document.getElementById('map'), {
+          center: uscords,
+          zoom: 4.5
+        });
+
+       @if(Model.JobCount != null)
+       {
+            @for(int i = 0; i < @Model.JobCount.Count; i++)
+            {
+
+                <text>
+                var key = @Model.JobCount[i].Key;
+                var value = @Model.JobCount[i].Value;
+                var marker = new google.maps.Marker({
+                position: mapdata.states[key].cords,
+                label: value.toString(),
+                title:"Hello World!"
+                });
+                markers.push(marker);
+                marker.setMap(map);
+            </text>
+            }
+       }   
+    }   
+</script>
+<style>
+    #map {
+        height: 700px; /* The height is 400 pixels */
+        width: 100%; /* The width is the width of the web page */
+    }
+</style>
 <div class="home-container">
-    <section class="section video-section">
-        <div class="hero video-wrapper jquery-background-video-wrapper @Context.Session.GetString("Device-Type")" style="background-image: url('../images/hero/meeting_1.jpg')">
-            <video class="jquery-background-video" data-bgvideo="true" autoplay loop muted playsinline style="display: none">
-                <source src="../videos/HeroVideo.mp4" type="video/mp4">
-            </video>    
-        </div>
-        <div class="hero-content">
-            <div class="d-flex justify-content-center h-100">
-                <div class="align-self-center text-white">
-                    <h1 class="display-4">Stay Relevant.</h1>
-                    <h3>Become Empowered.</h3>
-                    <h3>Control Your Career.</h3>
-                    <a asp-controller="Home" asp-action="About" class="btn btn-light btn-lg   border-0">About Us</a>
-                </div>
-            </div>
-        </div>
-    </section>
+    <div>
+        <div id="map"></div>
+    </div>
     <div class="row home-hero-bottom">
         <div class="col-md-12">
             <div class="container">
@@ -49,7 +96,7 @@
                                 <a asp-controller="Session" asp-action="SignIn"><div class="btn brand-button-tertiary border-white">Create your <strong>FREE</strong> CareerCircle Profile</div></a>
                             </div>
                         </div>
-                        
+
                     </div>
                     <div class="col-md-6">
                         <img class="d-md-block d-none hero-my-circle" src="~/images/mentoring_careerops_upskilling.png" />
