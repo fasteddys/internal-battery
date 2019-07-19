@@ -297,6 +297,7 @@ namespace UpDiddyApi.Controllers
                                 Filename = "CoverLetter.txt"
                             }
                         }, 
+                        null,
                         null
                     ));
                 }

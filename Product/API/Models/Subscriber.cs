@@ -41,6 +41,7 @@ namespace UpDiddyApi.Models
         public List<SubscriberProfileStagingStore> ProfileStagingStore { get; set; } = new List<SubscriberProfileStagingStore>();
         public DateTime? LinkedInSyncDate { get; set; }
         public List<SubscriberNotification> SubscriberNotifications { get; } = new List<SubscriberNotification>();
+        public bool NotificationEmailsEnabled { get; set; }
 
         #region Avatar Urls
         public string LinkedInAvatarUrl { get; set; }

@@ -36,7 +36,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 Description = "Auto-generated group for page: " + Page,
                 GroupGuid = Guid.NewGuid(),
                 ModifyDate = CurrentDateTime,
-                Name = Page + " (GENERATED)"
+                Name = Page + " (GENERATED)",
+                Path = Page.ToLower()
             };
 
             Create(Group);
