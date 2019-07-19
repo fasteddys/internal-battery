@@ -16,7 +16,8 @@ namespace UpDiddyLib.Helpers
             Constants.SendGridAccount SendGridAccount, 
             string subject = null, 
             List<Attachment> attachments = null,
-            DateTime? sendAt = null);
+            DateTime? sendAt = null,
+            int? unsubscribeGroupId = null);
 
         void SendPurchaseReceiptEmail(
             string sendgridTemplateId,

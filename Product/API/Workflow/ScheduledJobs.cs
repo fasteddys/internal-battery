@@ -177,7 +177,7 @@ namespace UpDiddyApi.Workflow
                             var spParams = new object[] { deliveryDate };
                             // retrieve the oldest and least frequently used seed email 
                             var partnerContact = _db.PartnerContact.FromSql<PartnerContact>("[dbo].[System_Get_ContactForSeedEmail] @DeliveryDate", spParams).FirstOrDefault();
-
+                            
                             if (
                                 // send the seed email using the lead email's account and template
                                 _sysEmail.SendTemplatedEmailAsync(
@@ -192,7 +192,8 @@ namespace UpDiddyApi.Workflow
                                     Enum.Parse<SendGridAccount>(leadEmail.EmailSubAccountId),
                                     null,
                                     null,
-                                    executionTime).Result)
+                                    executionTime,
+                                    leadEmail.UnsubscribeGroupId).Result)
                             {
                                 // update the execution time if the seed email was delivered successfully
                                 executionTime = executionTime.Add(emailInterval);
@@ -212,7 +213,8 @@ namespace UpDiddyApi.Workflow
                             Enum.Parse<SendGridAccount>(leadEmail.EmailSubAccountId),
                             null,
                             null,
-                            executionTime).Result;
+                            executionTime,
+                            leadEmail.UnsubscribeGroupId).Result;
 
                         if (isMailSentSuccessfully)
                         {
