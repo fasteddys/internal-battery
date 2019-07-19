@@ -58,12 +58,20 @@ namespace UpDiddy.Controllers
 
         public async Task<IActionResult> Index()
         {
-            HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
-            var str = _cache.GetString("JobPostingCountByProvince");
-            var jobCount = string.IsNullOrEmpty(str) ? await _Api.GetJobCountPerProvinceAsync() 
-            : JsonConvert.DeserializeObject<List<JobPostingCountDto>>(str);
-            HomeViewModel.JobCount = jobCount;
-            return View(HomeViewModel);
+            try
+            {
+                HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
+                var str = _cache.GetString("JobPostingCountByProvince");
+                var jobCount = string.IsNullOrEmpty(str) ? await _Api.GetJobCountPerProvinceAsync()
+                : JsonConvert.DeserializeObject<List<JobPostingCountDto>>(str);
+                HomeViewModel.JobCount = jobCount;
+                return View(HomeViewModel);
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }          
         }
 
         public IActionResult TermsOfService()

@@ -20,7 +20,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync()
         {
             var query = await _repositoryWrapper.JobPosting.GetAllAsync();
-            List<JobPostingCountDto> jbCount = new List<JobPostingCountDto>();
+            List<JobPostingCountDto> jobCount = new List<JobPostingCountDto>();
             List<string> provinceList = await query
             .Where(x => x.IsDeleted == 0)
             .Select(x => x.Province)
@@ -29,24 +29,28 @@ namespace UpDiddyApi.ApplicationCore.Services
             foreach (var province in provinceList)
             {
                 var str = province.Trim().Replace(" ", "");
-                Enums.ProvincePrefix e;
-                if (Enum.TryParse(str.ToUpper(), out e))
+                Enums.ProvincePrefix stateEnum;
+                if (Enum.TryParse(str.ToUpper(), out stateEnum))
                 {
-                    var d = query.Where(x => x.Province == province && x.IsDeleted == 0).GroupBy(l => l.Company)
-                                        .Select(g => new JobPostingCompanyCountDto()
-                                        {
-                                            CompanyGuid = g.Key.CompanyGuid,
-                                            CompanyName = g.Key.CompanyName,
-                                            JobCount = g.Distinct().Count()
-                                        }).OrderByDescending(x => x.JobCount).Take(3).ToList();
-                    if (d.Count > 0)
+                    var companyQuery = query.Where(x => x.Province == province && x.IsDeleted == 0)
+                                            .GroupBy(l => l.Company)
+                                            .Select(g => new JobPostingCompanyCountDto()
+                                            {
+                                                CompanyGuid = g.Key.CompanyGuid,
+                                                CompanyName = g.Key.CompanyName,
+                                                JobCount = g.Distinct().Count()
+                                            })
+                                            .OrderByDescending(x => x.JobCount)
+                                            .Take(3)
+                                            .ToList();
+                    if (companyQuery.Count > 0)
                     {
-                        var total = d.Sum(c => c.JobCount);
-                        jbCount.Add(new JobPostingCountDto((int)e, d, total));
+                        var total = companyQuery.Sum(c => c.JobCount);
+                        jobCount.Add(new JobPostingCountDto((int)stateEnum, companyQuery, total));
                     }
                 }
             }
-            return jbCount;
+            return jobCount;
         }
     }
 }
