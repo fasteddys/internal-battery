@@ -1,58 +1,78 @@
-﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.AspNetCore.Mvc.Localization
 @using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
-@using Microsoft.AspNetCore.Http;
+@using System.Collections.Generic;
+@using System;
 @model HomeViewModel
 
-@inject IViewLocalizer L
-
-@{
-    ViewData["Title"] = L["Home Page"];
-}
-
-
-<div class="home-container">
-    <section class="section video-section">
-        <div class="hero video-wrapper jquery-background-video-wrapper @Context.Session.GetString("Device-Type")" style="background-image: url('../images/hero/meeting_1.jpg')">
-            <video class="jquery-background-video" data-bgvideo="true" autoplay loop muted playsinline style="display: none">
-                <source src="../videos/HeroVideo.mp4" type="video/mp4">
-            </video>    
-        </div>
-        <div class="hero-content">
-            <div class="d-flex justify-content-center h-100">
-                <div class="align-self-center text-white">
-                    <h1 class="display-4">Stay Relevant.</h1>
-                    <h3>Become Empowered.</h3>
-                    <h3>Control Your Career.</h3>
-                    <a asp-controller="Home" asp-action="About" class="btn btn-light btn-lg   border-0">About Us</a>
+<div id="HomeContainer">
+    <div id="HomeContainerHero" class="row">
+        <div class="col">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 signup-top-container-header">At Career Circle Our Focus is you!</div>
+                    <div class="col-12 col-sm-8 col-md-8 col-xl-4 offset-sm-2 offset-md-2 offset-xl-0">
+                            <div id="SignUpContainer">
+                                <div id="SignUpContainerHeader">
+                                    Create a free account to get started!
+                                </div>
+                                <div id="SignUpComponentContainer">
+                                    @{
+                                        SignUpViewModel suvm = new SignUpViewModel();
+                                        suvm.IsExpressSignUp = true;
+                                        suvm.SignUpButtonText = "Join Our Network";
+                                    }
+                                    @Html.Partial("Components/Authentication/_SignUp", suvm)
+                                </div>
+                            </div>
+                        </div>
                 </div>
             </div>
         </div>
-    </section>
-    <div class="row home-hero-bottom">
-        <div class="col-md-12">
-            <div class="container">
-                <div class="row home-hero-bottom-cta no-gutters">
-                    <div class="col-md-6 f-color-white hero-home-bottom-details d-flex align-items-center">
-                        <div>
-                            <div class="hero-title hero-bold">Join <span class="f-color-primary">CareerCircle<sup>TM</sup></span> Today!</div>
-                            <div class="hero-description pb-4">
-                                <p>
-                                    CareerCircle helps you navigate the digital career experience, by aligning your career goals with upskilling, mentoring, and coaching opportunities.
-                                </p>
-                                <p>
-                                    We’re in the business of helping YOU succeed. Whether you’re missing relevant skills, lack a deep work history, or just want to reskill for future opportunities, gaining newly developed and acquired skills is a powerful way to propel your career forward. And we will be there to help you all the way.
-                                </p>
-
-                            </div>
-                            <div class="brand-button-container">
-                                <a asp-controller="Session" asp-action="SignIn"><div class="btn brand-button-tertiary border-white">Create your <strong>FREE</strong> CareerCircle Profile</div></a>
+    </div>
+    <div id="TextImgContainer" class="cc-text-video-band cc-cscheme-white row">
+        <div class="col-12">
+            <div class="container no-padding">
+                <div class="row">
+                    <div class="col-12 col-md-6 cc-text-video-band-left-column no-padding order-2">
+                        <div class="cc-text-video-band-verbiage-container d-flex align-items-center">
+                            <div class="row">
+                                  <div class="col-12 cc-text-video-band-header font-bold">
+                                    Stay Relevant
+                                </div>
+                                <div class="col-12 cc-text-video-band-header font-bold">
+                                    Expand Your Skills
+                                </div>
+                                <div class="col-12 cc-text-video-band-description">
+                                    <div>We are passionate about preparing the workforce of today for the opportunities of tomorrow. Our goal is to help our members navigate the digital career experience, by aligning their career goals with upskilling, mentoring, and coaching opportunities. Through CareerCircle, you will gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance, versus limited work history or listed resume experience.</div>
+                                    <div>By joining our community, we will help guide you to the next step that’s the right fit in your career journey.</div>
+                                </div>
                             </div>
                         </div>
-                        
                     </div>
-                    <div class="col-md-6">
-                        <img class="d-md-block d-none hero-my-circle" src="~/images/mentoring_careerops_upskilling.png" />
+                    <div class="col-12 col-md-6 cc-text-video-band-right-column order-1">
+                        <div class="career-circle-video-container d-flex align-items-center">
+                            <div class="row">
+                                <div class="col-12 no-padding">
+                                    <img src="~/images/skills.png" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="HomeBottomContainer" class="row">
+        <div class="col">
+            <div class="container">
+                <div class="row d-flex align-items-center">
+                    <div class="col-12 col-md-6 signup-left-col offset-md-3">
+                        <div class="f-color-white signup-bottom-container-header">Your Advocates for Career Success</div>
+                        <span class="f-color-white">CareerCircle's mission is to provide you with the right tools that will allow you to market your
+capabilities in a powerful way. In the end, your journey of advanced education and
+guidance leads to higher pay, flexibility, and a better life.</span>
+
                     </div>
                 </div>
             </div>
