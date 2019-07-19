@@ -1,10 +1,138 @@
 @import '_variables';
 
+body{
+    position: relative;
+    color: $color-secondary;
+    padding-top: 68.42px;
+
+    @media(min-width:1200px){
+        padding-top: 89.14px;
+    }
+
+    .section-heading {
+        font-size: 1rem;
+    }
+
+
+
+    .hero-title {
+        font-size: 2rem;
+        font-family: $opensans-light;
+    }
+
+    .hero-bold {
+        font-family: $opensans-bold;
+    }
+
+    .hero-description{
+        margin-top: 1rem;
+        font-size: 1.25rem;
+    }
+
+    .home-container {
+        .btn{
+            white-space: initial;
+            margin: 1rem 0;
+        }
+        .home-hero-top{
+            background-image: url('../images/circle-of-circles.png');
+            background-position: bottom;
+            background-size: cover; 
+            padding: 5rem 0 10rem 0;
+        }
+        .home-hero-bottom{
+            padding: 5rem 0;
+            margin-top: -2px;
+            background-color: $color-secondary;
+
+            .home-hero-bottom-cta{
+                > div{
+                    > div{
+                        margin-bottom: 1.5rem;
+                        &:first-child{
+                            margin-bottom: 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        .hero-container {
+            text-align: center;
+
+            > div {
+                margin: 0 auto;
+                margin-bottom: 1.5rem;
+            }
+
+            .hero-subtext {
+                color: $color-tertiary-gray;
+                line-height: 1.8rem;
+            }
+
+            .brand-button-heavy {
+                font-size: 1.6rem;
+            }
+        }
+
+        .hero-my-circle {
+            width: inherit;
+        }
+
+        .home-hero {
+            .home-hero-bottom {
+                .hero-title-regular, .hero-description {
+                    padding-bottom: 2.1875rem;
+                }
+            }
+        }
+
+        .course-categories {
+            > div {
+                margin-bottom: 2.5rem;
+            }
+
+            .input-group {
+                input {
+                    &:focus {
+                        border: 1px solid $color-secondary-light;
+                        box-shadow: none;
+                    }
+                }
+
+                .input-group-text {
+                    background-color: $color-white;
+
+                    i {
+                        color: $color-secondary;
+                    }
+                }
+            }
+        }
+    }
+
+    .topic-hero-band {
+        background-color: $color-secondary;
+        padding: 4rem 0;
+        color: $color-white;
+
+        .hero-title {
+            font-size: 3rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+
+        .brand-button {
+            margin-top: 2rem;
+        }
+    }
+}
+
 // Base Styles
 @media (min-width: 0px) {
-    body {
-        position: relative;
-    }
+
     #HomeContainer {
         .cc-text-video-band {
             text-align: center;
@@ -25,6 +153,12 @@
             background-repeat: no-repeat;
             background-position: bottom;
             text-align: center;
+
+            .container {
+                > .row {
+                    margin-top:-3rem;
+                }
+            }
 
             .hero-header {
                 font-size: 2rem;
@@ -258,11 +392,11 @@
 @media (min-width: 1200px) {
     #HomeContainer {
         #HomeContainerHero {
-            padding: 13rem 0;
+            padding: 17rem 0;
             background-image: url('/images/hero_bannerbg_top.jpg');
             background-size: cover;
             background-position: bottom;
-            text-align: left;
+            text-align: left;          
 
             .hero-header {
                 font-size: 2.5rem;
@@ -279,6 +413,13 @@
             }
         }
 
+        #HomeContainerHero{
+            .container {
+                > .row {
+                    margin-top:-7rem;
+                }
+            }
+        } 
         #HomeBottomContainer {
             padding: 13rem 0;
             background-image: url('/images/sign_up_banner_bg.jpg');
