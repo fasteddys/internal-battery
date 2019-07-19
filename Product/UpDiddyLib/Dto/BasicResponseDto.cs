@@ -8,5 +8,8 @@ namespace UpDiddyLib.Dto
     {
         public int StatusCode { get; set; }
         public string Description { get; set; }
+
+        public dynamic Data { get; set; }
+
     }
 }

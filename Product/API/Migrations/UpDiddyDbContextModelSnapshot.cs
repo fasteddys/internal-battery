@@ -1236,6 +1236,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("Name")
                         .IsRequired();
 
+                    b.Property<string>("Path");
+
                     b.HasKey("GroupId");
 
                     b.ToTable("Group");
@@ -2861,6 +2863,14 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("City");
 
+                    b.Property<string>("CloudTalentIndexInfo");
+
+                    b.Property<int>("CloudTalentIndexStatus");
+
+                    b.Property<int>("CloudTalentIndexVersion");
+
+                    b.Property<string>("CloudTalentUri");
+
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
@@ -2897,6 +2907,10 @@ namespace UpDiddyApi.Migrations
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<bool>("NotificationEmailsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue(true);
 
                     b.Property<string>("PhoneNumber");
 

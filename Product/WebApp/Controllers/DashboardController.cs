@@ -45,11 +45,29 @@ namespace UpDiddy.Controllers
             this.subscriber.Notifications.Reverse();
             DashboardViewModel DashboardViewModel = new DashboardViewModel
             {
+                NotificationEmailsEnabled = this.subscriber.NotificationEmailsEnabled,
                 Notifications = this.subscriber.Notifications,
                 DeviceType = DeviceType
             };
 
             return View(DashboardViewModel);
+        }
+
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [HttpGet]
+        [Route("/Dashboard/ToggleSubscriberNotificationEmail/{isEnabled}")]
+        public async Task<bool> ToggleSubscriberNotificationEmail(string isEnabled)
+        {
+            bool _enabled = false;
+            if (!bool.TryParse(isEnabled, out _enabled))
+            {
+                return false;
+            }
+            else
+            {
+                var result = await _api.ToggleSubscriberNotificationEmailAsync((Guid)this.subscriber.SubscriberGuid, _enabled);
+                return result.StatusCode == 200;
+            }
         }
 
         [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
@@ -60,14 +78,30 @@ namespace UpDiddy.Controllers
             await _api.UpdateSubscriberNotificationAsync((Guid)this.subscriber.SubscriberGuid, Notification);
             this.subscriber = await _api.SubscriberAsync((Guid)this.subscriber.SubscriberGuid, true);
             int newNotificationCount = 0;
-            foreach(NotificationDto notification in this.subscriber.Notifications)
+            foreach (NotificationDto notification in this.subscriber.Notifications)
             {
                 if (notification.HasRead == 0)
                     newNotificationCount++;
             }
             return newNotificationCount;
-
-
         }
+
+        [LoadSubscriber(isHardRefresh: false, isSubscriberRequired: true)]
+        [HttpPost]
+        [Route("/Dashboard/DeleteSubscriberNotification")]
+        public async Task<int> DeleteSubscriberNotification([FromBody] NotificationDto Notification)
+        {
+            await _api.DeleteSubscriberNotificationAsync((Guid)this.subscriber.SubscriberGuid, Notification);
+            this.subscriber = await _api.SubscriberAsync((Guid)this.subscriber.SubscriberGuid, true);
+            int newNotificationCount = 0;
+            foreach (NotificationDto notification in this.subscriber.Notifications)
+            {
+                if (notification.HasRead == 0)
+                    newNotificationCount++;
+            }
+            return newNotificationCount;
+        }
+
+
     }
 }

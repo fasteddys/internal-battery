@@ -197,6 +197,12 @@ namespace UpDiddyApi
             if (_currentEnvironment.IsStaging())
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
 
+            // run job to look for un-indexed profiles and index them 
+            int profileIndexerBatchSize = int.Parse(Configuration["CloudTalent:ProfileIndexerBatchSize"]);
+            int profileIndexerIntervalInMinutes = int.Parse(Configuration["CloudTalent:ProfileIndexerIntervalInMinutes"]);
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes) );
+
+
             // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
@@ -205,6 +211,9 @@ namespace UpDiddyApi
 
             // kick off the job abandonment email delivery process
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteJobAbandonmentEmailDelivery(), Cron.Daily());
+
+            // kick off the subscriber notification email reminder process every day at 12 UTC 
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
 
             // Add Polly 
             // Create Policies  
@@ -264,6 +273,7 @@ namespace UpDiddyApi
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IRecruiterService, RecruiterService>();
             services.AddScoped<ITaggingService, TaggingService>();
+            services.AddScoped<ISubscriberNotificationService, SubscriberNotificationService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

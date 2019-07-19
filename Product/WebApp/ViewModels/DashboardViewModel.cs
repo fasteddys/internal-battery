@@ -8,6 +8,7 @@ namespace UpDiddy.ViewModels
 {
     public class DashboardViewModel : BaseViewModel
     {
+        public bool NotificationEmailsEnabled { get; set; }
         public List<NotificationDto> Notifications { get; set; }
         public string DeviceType { get; set; }
     }

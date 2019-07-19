@@ -17,16 +17,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<bool> AddSubscriberToGroupAsync(int GroupId, int SubscriberId);
 
         /// <summary>
-        /// Adds a subscriber to any group associated with the refering url they signed
-        /// up with. Allows for subscriber to be added to multiple groups if referer
-        /// url is found multiple times, or multiple groups are associated with a
-        /// single partner.
-        /// </summary>
-        /// <param name="SubscriberId"></param>
-        /// <param name="RefererUrl"></param>
-        Task<bool> AddSubscriberToGroupBasedOnReferrerUrlAsync(int SubscriberId, string RefererUrl);
-
-        /// <summary>
         /// Adds subscriber to group associated with the partners that the subscriber's
         /// corresponding contact entry was associated with.
         /// </summary>
@@ -34,13 +24,13 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<bool> AddConvertedContactToGroupBasedOnPartnerAsync(int SubscriberId);
 
         /// <summary>
-        /// For express sign-ups where campaigns are created on the fly, ensure that
-        /// a partnerreferrer entry exists so that the campaign can be mapped to a partner
-        /// for subscriber tagging purposes.
+        /// If a partner is specified, create a link in GroupPartner table, and 
+        /// add a subscriber to a new group.
         /// </summary>
         /// <param name="ReferrerUrl"></param>
         /// <param name="PartnerGuid"></param>
-        Task<bool> EnsurePartnerReferrerEntryExistsIfPartnerSpecified(string ReferrerUrl, Guid PartnerGuid);
+        /// <param name="SubscriberId"></param>
+        Task<bool> CreateGroup(string ReferrerUrl, Guid PartnerGuid, int SubscriberId);
     }
 
 

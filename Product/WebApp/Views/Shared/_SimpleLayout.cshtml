@@ -22,7 +22,7 @@
             }); var f = d.getElementsByTagName(s)[0],
                 j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
                     'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', 'GTM-P78FCL3');
+        })(window, document, 'script', 'dataLayer', '@Configuration["GoogleTagManager:Code"].ToString()');
     </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -40,8 +40,20 @@
     <meta property="og:url" content="https://@Context.Request.Host@Context.Request.Path" />
 </head>
 <body>
+ <div class="modal fade show" id="cookiePolicyModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="row">
+                        <partial name="_CookieConsentPartial" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P78FCL3"
+        <iframe src="https://www.googletagmanager.com/ns.html?id=@Configuration["GoogleTagManager:Code"].ToString()"
                 height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
     <nav class="navbar cc-navbar fixed-top navbar-expand-lg navbar-light bg-white">
@@ -92,5 +104,13 @@
     </environment>
     <script type="text/javascript" src="~/js/bundle.js" asp-append-version="true"></script>
     @RenderSection("Scripts", false)
+
+     <script type="text/javascript">
+        $(window).on('load', function () {
+            if ($.cookie('AspNet.Consent') == undefined) {
+                $('#cookiePolicyModal').modal('show');
+            }          
+        });
+    </script>
 </body>
 </html>
