@@ -148,8 +148,8 @@ var mapdata = {
             "prefix": "LA",
             "name": "Louisiana",
             "cords": {
-                lat: 34.0522,
-                lng: -118.2437
+                lat: 30.9843,
+                lng: -91.9623
             }
         },
         {
