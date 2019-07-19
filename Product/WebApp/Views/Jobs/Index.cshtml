@@ -86,13 +86,13 @@
                             {
                                 counter++;
                                                     <div>
-                                                        <a href="@string.Format("{0}datepublished={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("{0}datepublished={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                 }
                         @if (facets.Facets.Count > 5)
                         {
                                                     <div>
-                                                        <a onclick="expandMoreLinks(this)">+ more >></a>
+                                                        <a  onclick="expandMoreLinks(this)">+ more >></a>
                                                     </div>
                                                 }
                                             </div>
@@ -112,13 +112,13 @@
                     {
                         counter++;
                                                     <div>
-                                                        <a href="@string.Format("{0}employmenttype={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("{0}employmenttype={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                 }
                                                 @if (facets.Facets.Count > 5)
                     {
                                                     <div>
-                                                        <a onclick="expandMoreLinks(this)">+ more >></a>
+                                                        <a  onclick="expandMoreLinks(this)">+ more >></a>
                                                     </div>
                                                 }
                                             </div>
@@ -137,7 +137,7 @@
                     {
                         counter++;
                                                     <div>
-                                                        <a href="@string.Format("{0}city={1}", @ViewBag.QueryUrl.ToString().Replace("location","province"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("{0}city={1}", @ViewBag.QueryUrl.ToString().Replace("location","province"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                     @if (counter >= 15)
                     {
@@ -147,7 +147,7 @@
                                                 @if (facets.Facets.Count > 5)
                     {
                                                     <div>
-                                                        <a onclick="expandMoreLinks(this)" class="moreLink-style">+ more >></a>
+                                                        <a  onclick="expandMoreLinks(this)" class="moreLink-style">+ more >></a>
                                                     </div>
                                                 }
                                                 <div>
@@ -169,7 +169,7 @@
                     {
                         counter++;
                                                     <div>
-                                                        <a href="@string.Format("{0}jobcategory={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("{0}jobcategory={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                 }
                                                 @if (facets.Facets.Count > 5)
@@ -194,7 +194,7 @@
                     {
                         counter++;
                                                     <div>
-                                                        <a href="@string.Format("{0}industry={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("{0}industry={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                 }
                                                 @if (facets.Facets.Count > 5)
