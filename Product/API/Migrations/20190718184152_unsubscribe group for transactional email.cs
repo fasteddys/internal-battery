@@ -15,7 +15,7 @@ namespace UpDiddyApi.Migrations
 /*
 <remarks>
 2019-06-26 - Bill Koenig - Created
-2019-07-18 - Bill Koenig - Including unsubscribe group id for transactional emails
+2019-07-18 - Bill Koenig - Including unsubscribe group id for transactional emails and ignoring campaign partners which have been logically deleted
 </remarks>
 <description>
 Returns a list of the lead emails which may be sent for current delivery window
@@ -35,7 +35,8 @@ AS
 			, cp.UnsubscribeGroupId
 			, ISNULL(CASE WHEN cp.EmailDeliveryCap IS NOT NULL AND cp.EmailDeliveryLookbackInHours IS NOT NULL THEN cp.EmailDeliveryCap / cp.EmailDeliveryLookbackInHours ELSE NULL END, 2147483647) [HourlyDeliveryLimit]
 		FROM Campaign ca
-		INNER JOIN CampaignPartner cp ON ca.CampaignId = cp.CampaignId)
+		INNER JOIN CampaignPartner cp ON ca.CampaignId = cp.CampaignId
+		WHERE cp.IsDeleted = 0)
 	, verificationFailures AS (
 		SELECT pcls.PartnerContactId
 		FROM PartnerContactLeadStatus pcls 
