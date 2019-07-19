@@ -12,7 +12,6 @@ namespace UpDiddyLib.Dto
         }
         //This property is mapped to the enum in the library
         public int StateId { get; set; }
-
         public int TotalCount {get;set;}
         public List<JobPostingCompanyCountDto> CompanyPosting { get; set; }
     }

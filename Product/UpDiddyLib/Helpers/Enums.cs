@@ -72,7 +72,7 @@ namespace UpDiddyLib.Helpers
             hawaii,
             idaho,
             illinois,
-            ndiana,
+            indiana,
             iowa,
             kansas,
             kentucky,

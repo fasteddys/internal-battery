@@ -78,6 +78,8 @@ namespace UpDiddy.Api
         Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid);
         Task<JobPostingDto> GetJobPostingByGuid(Guid jobPostingGuid);
 
+        Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync();
+
         Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid);
 
         Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid);
@@ -119,7 +121,6 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> UpdateSubscriberNotificationAsync(Guid SubscriberGuid, NotificationDto notificationDto);
         Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey);
         Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords);
-
         Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDatesAsynch(DateTime? startPostDate, DateTime? endPostDate);
 
         #endregion

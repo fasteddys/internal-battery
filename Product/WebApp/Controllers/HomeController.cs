@@ -60,11 +60,9 @@ namespace UpDiddy.Controllers
         {
             HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
             var str = _cache.GetString("JobPostingCountByProvince");
-            var jobCount = JsonConvert.DeserializeObject<List<JobPostingCountDto>>(str);
-            if(jobCount != null)
-            {
-                HomeViewModel.JobCount = jobCount;
-            }
+            var jobCount = string.IsNullOrEmpty(str) ? await _Api.GetJobCountPerProvinceAsync() 
+            : JsonConvert.DeserializeObject<List<JobPostingCountDto>>(str);
+            HomeViewModel.JobCount = jobCount;
             return View(HomeViewModel);
         }
 
