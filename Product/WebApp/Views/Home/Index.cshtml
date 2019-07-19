@@ -12,8 +12,9 @@
 
 @section Scripts
 {
-    <script>   
-         var head = document.getElementsByTagName('head')[0];
+    <script>
+
+        var head = document.getElementsByTagName('head')[0];
         var script = document.createElement('script');
         script.type = 'text/javascript';
         script.async = true;
@@ -22,19 +23,20 @@
         head.appendChild(script);
     </script>
     <script async defer src="~/js/modules/googlemaps.js"></script>
- }
-<script>   
+}
+<script>
+
 function initMap()
 {
 	var data = @Html.Raw(Json.Serialize(@Model.JobCount));
     var baseurl = @Html.Raw(Json.Serialize(@Model.BaseUrl));
 	var m = new GMap(data, baseurl);
-} 
+}
 </script>
 <style>
     #map {
-        height: 700px; /* The height is 400 pixels */
-        width: 100%; /* The width is the width of the web page */
+        height: 700px;
+        width: 100%;
     }
 </style>
 <div class="home-container">
