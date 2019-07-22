@@ -1,24 +1,18 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
-using AutoMapper.Configuration;
 using Hangfire;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
+
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
-using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.Controllers
@@ -32,13 +26,13 @@ namespace UpDiddyApi.Controllers
         private readonly ITrackingService _trackingService;
         private readonly IRepositoryWrapper _repositoryWrapper;
 
-        public TrackingController(UpDiddyDbContext db, ILogger<TrackingController> sysLog, FileContentResult pixelResponse, ITrackingService trackingService, IRepositoryWrapper _repositoryWrapper)
+        public TrackingController(UpDiddyDbContext db, ILogger<TrackingController> sysLog, FileContentResult pixelResponse, ITrackingService trackingService, IRepositoryWrapper repositoryWrapper)
         {
             _trackingService = trackingService;
             _db = db;
             _syslog = sysLog;
             _pixelResponse = pixelResponse;
-            _repositoryWrapper = _repositoryWrapper;
+            _repositoryWrapper = repositoryWrapper;
         }
 
         [HttpGet]
@@ -169,6 +163,22 @@ namespace UpDiddyApi.Controllers
         public async Task RecordSubscriberAction(Guid jobGuid, Guid subscriberGuid)
         {
             await _trackingService.RecordSubscriberApplyActionAsync(jobGuid, subscriberGuid);
+        }
+
+        [HttpGet]
+        [Route("api/[controller]/track-subscriber-job-view-action/{jobGuid}/{subscriberGuid}")]
+        public async Task TrackSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid)
+        {
+            try
+            {
+                //calling tracking service to track the subscriberAction
+                await _trackingService.TrackingSubscriberJobViewAction(jobGuid, subscriberGuid);
+            }
+            catch(Exception ex)
+            {
+                _syslog.LogError(ex, $"Error in TrackingController.TrackSubscriberJobViewAction method for jobPostingGuid={jobGuid} and subscriberGuid={subscriberGuid}");
+            }
+           
         }
     }
 }

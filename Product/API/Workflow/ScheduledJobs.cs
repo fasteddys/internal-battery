@@ -86,6 +86,67 @@ namespace UpDiddyApi.Workflow
         #region Marketing
 
         /// <summary>
+        /// This process is responsible for delivering emails to subscribers that have unread subscriber notifications. The most
+        /// content of the most recent notification should be displayed to the user as well as the number of unread notifications.
+        /// Reminder emails will be sent to users who have unread notifications only on the following intervals:
+        ///   - 24 hours
+        ///   - 1 week
+        ///   - 1 month
+        /// </summary>
+        /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task SubscriberNotificationEmailReminder()
+        {
+            DateTime executionTime = DateTime.UtcNow;
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SubscriberNotificationEmailReminder started at: {executionTime.ToLongDateString()}");
+
+                var lastDay = await _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(1);
+                var lastSevenDays = await _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(7);
+                var lastThirtyDays = await _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(30);
+                var allReminders = lastDay.Union(lastSevenDays).Union(lastThirtyDays).ToList();
+
+                if (allReminders != null && allReminders.Count() > 0)
+                {
+                    var emailInterval = TimeSpan.FromHours(24) / allReminders.Count();
+
+                    foreach (var reminder in allReminders)
+                    {
+
+                        if (_sysEmail.SendTemplatedEmailAsync(
+                             reminder.Email,
+                             _configuration["SysEmail:Transactional:TemplateIds:SubscriberNotification-Reminder"].ToString(),
+                             new
+                             {
+                                 firstName = reminder.FirstName,
+                                 totalUnread = reminder.TotalUnread,
+                                 notificationTitle = reminder.Title,
+                                 notificationsUrl = _configuration["Environment:BaseUrl"].ToString() + "dashboard",
+                                 disableNotificationEmailReminders = _configuration["Environment:BaseUrl"].ToString() + "Subscriber/DisableEmailReminders/" + reminder.SubscriberGuid
+                             },
+                             SendGridAccount.Transactional,
+                             null,
+                             null,
+                             executionTime).Result)
+                        {
+                            // only update the execution time if the email was delivered successfully
+                            executionTime = executionTime.Add(emailInterval);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.SubscriberNotificationEmailReminder encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+            finally
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SubscriberNotificationEmailReminder completed at: {DateTime.UtcNow.ToLongDateString()}");
+            }
+        }
+
+        /// <summary>
         /// This process controls lead email delivery to prevent damage to our email sender reputation. This is accomplished by:
         ///     - capping the number of emails that can be delivered per hour
         ///     - mixing 'seed' emails in with the emails to be delivered 
@@ -116,7 +177,7 @@ namespace UpDiddyApi.Workflow
                             var spParams = new object[] { deliveryDate };
                             // retrieve the oldest and least frequently used seed email 
                             var partnerContact = _db.PartnerContact.FromSql<PartnerContact>("[dbo].[System_Get_ContactForSeedEmail] @DeliveryDate", spParams).FirstOrDefault();
-
+                            
                             if (
                                 // send the seed email using the lead email's account and template
                                 _sysEmail.SendTemplatedEmailAsync(
@@ -131,7 +192,8 @@ namespace UpDiddyApi.Workflow
                                     Enum.Parse<SendGridAccount>(leadEmail.EmailSubAccountId),
                                     null,
                                     null,
-                                    executionTime).Result)
+                                    executionTime,
+                                    leadEmail.UnsubscribeGroupId).Result)
                             {
                                 // update the execution time if the seed email was delivered successfully
                                 executionTime = executionTime.Add(emailInterval);
@@ -151,7 +213,8 @@ namespace UpDiddyApi.Workflow
                             Enum.Parse<SendGridAccount>(leadEmail.EmailSubAccountId),
                             null,
                             null,
-                            executionTime).Result;
+                            executionTime,
+                            leadEmail.UnsubscribeGroupId).Result;
 
                         if (isMailSentSuccessfully)
                         {
@@ -821,7 +884,7 @@ namespace UpDiddyApi.Workflow
                         break;
                 }
                 jobQueryDto.UpperBound = DateTime.UtcNow;
-                JobSearchResultDto jobSearchResultDto = cloudTalent.Search(jobQueryDto, isJobPostingAlertSearch: true);
+                JobSearchResultDto jobSearchResultDto = cloudTalent.JobSearch(jobQueryDto, isJobPostingAlertSearch: true);
                 if (jobSearchResultDto.JobCount > 0)
                 {
                     dynamic templateData = new JObject();
@@ -1158,7 +1221,7 @@ namespace UpDiddyApi.Workflow
                             , entry.Value.FirstOrDefault().City
                             , entry.Value.FirstOrDefault().Title
                             , Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsForJobAbandonment"]));
-                        JobSearchResultDto similarJobSearchResults = _cloudTalent.Search(jobQuery);
+                        JobSearchResultDto similarJobSearchResults = _cloudTalent.JobSearch(jobQuery);
                         
                         //Remove duplicates subscriber already attempted to apply to
                         foreach (var job in entry.Value)
@@ -1272,7 +1335,42 @@ namespace UpDiddyApi.Workflow
 
         #endregion
 
-        #region Cloud Talent
+        #region Cloud Talent Profiles 
+
+        public bool CloudTalentAddOrUpdateProfile(Guid subscriberGuid)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);            
+        }
+
+        public bool CloudTalentDeleteProfile(Guid subscriberGuid)
+        {
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            ct.DeleteProfileFromCloudTalent(_db, subscriberGuid);
+            return true;
+        }
+
+        public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess )
+        {
+           CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            int indexVersion = int.Parse(_configuration["CloudTalent:ProfileIndexVersion"]);
+           List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess,indexVersion);
+           foreach ( Subscriber s in subscribers)
+            {
+                ct.AddOrUpdateProfileToCloudTalent(_db, s.SubscriberGuid.Value);
+
+            }
+            return true;
+        }
+
+
+
+
+
+
+        #endregion
+
+        #region Cloud Talent Jobs 
 
         public bool CloudTalentAddJob(Guid jobPostingGuid)
         {
@@ -1311,7 +1409,7 @@ namespace UpDiddyApi.Workflow
         public async Task<bool> CreateSubscriberNotificationRecords(Notification Notification, int IsTargeted, IList<Subscriber> Subscribers = null)
         {
 
-            if(IsTargeted == 0)
+            if (IsTargeted == 0)
                 Subscribers = _repositoryWrapper.SubscriberRepository.GetByConditionAsync(s => s.IsDeleted == 0).Result.ToList();
             else
             {
@@ -1320,8 +1418,8 @@ namespace UpDiddyApi.Workflow
             }
 
 
-            IList<SubscriberNotification> SubscriberNotifications = new List<SubscriberNotification>(); 
-            foreach(Subscriber sub in Subscribers)
+            IList<SubscriberNotification> SubscriberNotifications = new List<SubscriberNotification>();
+            foreach (Subscriber sub in Subscribers)
             {
                 DateTime CurrentDateTime = DateTime.UtcNow;
                 SubscriberNotification subscriberNotification = new SubscriberNotification
@@ -1374,5 +1472,81 @@ namespace UpDiddyApi.Workflow
         }
 
         #endregion
+
+        public async Task TrackSubscriberActionInformation(Guid subscriberGuid, Guid actionGuid, Guid entityTypeGuid, Guid entityGuid)
+        {
+
+            try
+            {
+                // load the subscriber
+                Subscriber subscriber = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+
+                if (subscriber == null)
+                    throw new InvalidOperationException("Subscriber not found");
+
+                // load the action
+                var action = await _repositoryWrapper.ActionRepository.GetActionByActionGuid(actionGuid);
+                if (action == null)
+                    throw new InvalidOperationException("Action not found");
+
+                // load the related entity associated with the action (only if specified)
+                EntityType entityType = null;
+                int? entityId = null;
+                if (entityGuid!=Guid.Empty)
+                {
+                    // load the entity type
+                    entityType = await _repositoryWrapper.EntityTypeRepository.GetEntityTypeByEntityGuid(entityTypeGuid);
+                    if (entityType == null)
+                        throw new InvalidOperationException("Entity type not found");
+
+                    switch (entityType.Name)
+                    {
+                        case "Subscriber":
+                            var subscriberEntity = await _repositoryWrapper.SubscriberRepository.GetSubscriberByGuidAsync(entityGuid);
+                            if (subscriberEntity == null)
+                                throw new InvalidOperationException("Related subscriber entity not found");
+                            entityId = subscriberEntity.SubscriberId;
+                            break;
+                        case "Offer":
+                            var offerEntity = await _repositoryWrapper.Offer.GetOfferByOfferGuid(entityGuid);
+                            if (offerEntity == null)
+                                throw new InvalidOperationException("Related offer entity not found");
+                            entityId = offerEntity.OfferId;
+                            break;
+                        case "JobPosting":
+                            var jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(entityGuid);
+                            if (jobPosting == null)
+                                throw new InvalidOperationException("Related jobPosting entity not found");
+                            entityId = jobPosting.JobPostingId;
+                            break;
+                        default:
+                            throw new NotSupportedException("Unrecognized entity type");
+                    }
+                }
+
+                // create the subscriber action to the db
+                await _repositoryWrapper.SubscriberActionRepository.CreateSubscriberAction(
+                     new SubscriberAction()
+                     {
+                         SubscriberActionGuid = Guid.NewGuid(),
+                         CreateDate = DateTime.UtcNow,
+                         CreateGuid = Guid.Empty,
+                         ActionId = action.ActionId,
+                         EntityId = entityId,
+                         EntityTypeId = entityType == null ? null : (int?)entityType.EntityTypeId,
+                         IsDeleted = 0,
+                         OccurredDate = DateTime.UtcNow,
+                         SubscriberId = subscriber.SubscriberId
+                     });
+
+                // mark as successful if we got to this point
+                _syslog.LogTrace($"ScheduledJobs.TrackSubscriberActionInformation success for Subscriber Guid={subscriberGuid}, EntityTypeGuid={entityTypeGuid} and EntityGuid={entityGuid}");
+            }
+            catch (Exception e)
+            {
+                // write to syslog
+                _syslog.LogError(e, $"ScheduledJobs.TrackSubscriberActionInformation exception: {e.Message} for Subscriber Guid={subscriberGuid}, EntityTypeGuid={entityTypeGuid} and EntityGuid={entityGuid}");
+            }
+        }
     }
 }

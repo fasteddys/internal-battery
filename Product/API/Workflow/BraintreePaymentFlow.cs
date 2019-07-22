@@ -165,7 +165,7 @@ namespace UpDiddyApi.Workflow
                         (Guid)EnrollmentDto.EnrollmentGuid, 
                         rebateToc);
                     SetSelfPacedOrInstructorLedStatus(Helper, EnrollmentDto);
-                    BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString()));
+                    BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString(), EnrollmentDto.SubscriberId));
                     return CreateResponse(CreateResponseJson(SuccessfulMessage), SuccessfulMessage, string.Empty, TransactionState.Complete);
                 }
                 else

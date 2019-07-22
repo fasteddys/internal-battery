@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using Microsoft.EntityFrameworkCore.Extensions;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -50,8 +51,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-
-      
 
     }
 }

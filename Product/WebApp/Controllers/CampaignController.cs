@@ -234,7 +234,8 @@ namespace UpDiddy.Controllers
                 email = signUpViewModel.Email,
                 password = signUpViewModel.Password,
                 campaignGuid = signUpViewModel.CampaignGuid,
-                campaignPhase = WebUtility.UrlDecode(signUpViewModel.CampaignPhase)
+                campaignPhase = WebUtility.UrlDecode(signUpViewModel.CampaignPhase),
+                partnerGuid = signUpViewModel.PartnerGuid
             };
 
             // Guard UX from any unforeseen server error.
@@ -314,7 +315,8 @@ namespace UpDiddy.Controllers
                 verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
 
                 //check for any referrerCode 
-                referralCode = Request.Cookies["referrerCode"]==null ? null : Request.Cookies["referrerCode"].ToString()
+                referralCode = Request.Cookies["referrerCode"]==null ? null : Request.Cookies["referrerCode"].ToString(),
+                partnerGuid = signUpViewModel.PartnerGuid
             };
 
             // Guard UX from any unforeseen server error.
@@ -364,6 +366,8 @@ namespace UpDiddy.Controllers
                 QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
             }
 
+            QueryParams.Add(UpDiddyLib.Helpers.Constants.CMS.LEVELS, _configuration["ButterCMS:CareerCirclePages:Levels"]);
+
             // Create ButterCMS client and call their API to get JSON response of page data values.
             var butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
             PageResponse<CampaignLandingPageViewModel> LandingPage = butterClient.RetrievePage<CampaignLandingPageViewModel>("*", LandingPageSlug, QueryParams);
@@ -381,6 +385,7 @@ namespace UpDiddy.Controllers
                 hero_sub_image = LandingPage.Data.Fields.hero_sub_image,
                 content_band_header = LandingPage.Data.Fields.content_band_header,
                 content_band_text = LandingPage.Data.Fields.content_band_text,
+                partner = LandingPage.Data.Fields.partner,
                 IsExpressSignUp = true
             };
 

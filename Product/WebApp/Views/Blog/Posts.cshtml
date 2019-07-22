@@ -1,0 +1,61 @@
+﻿@model ButterCMS.Models.PostsResponse
+<div class="blog-post-list-container">
+    <div class="blog-search d-flex justify-content-center">
+        <div class="p-2">
+            <form method="get"  asp-controller="blog" asp-action="search">
+                <div class="d-flex flex-row">
+                    <div class="p-2">
+                        <input class="form-control" name="query" type="text" placeholder="Keyword">
+                    </div>
+                    <div class="blog-search-button p-2">
+                        <button type="submit" id="BtnBlogSearch" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            Search Blog
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div> 
+    <div class="d-flex justify-content-center">
+        <div class="col-9">
+            @if (Model != null)
+            {
+                @foreach (var post in Model.Data)
+                {
+                    <div class="p-2">
+                        @Html.Partial("Partials/_PostItem", post)
+                    </div>
+                    <hr />
+                }
+                <div class="d-flex justify-content-center">
+                    @if (ViewBag.PreviousPage != null)
+                    {
+                        <div class="p-2">
+                            <a asp-controller="blog"
+                               asp-route-page="@ViewBag.PreviousPage">
+                                <b>Previous</b>
+                            </a>
+                        </div>
+                    }
+                    @if (ViewBag.NextPage != null)
+                    {
+                        <div class="p-2">
+                            <a asp-controller="blog"
+                               asp-route-page="@ViewBag.NextPage">
+                                <b>Next</b>
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="d-flex justify-content-center p-5">
+                    No posts found
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
