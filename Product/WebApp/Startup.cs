@@ -76,21 +76,42 @@ namespace UpDiddy
 
 			services.AddReact();
 
-            services.AddAuthentication(sharedOptions =>
-            {
-                sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-            })
-            .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
-            .AddCookie(options =>
-            {
-                options.AccessDeniedPath = "/Home/Forbidden";
-                options.Cookie.Path = "/";
-                options.SlidingExpiration = false;
-                options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
-                options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
-            });
+            
 
+            if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
+            {
+                services.AddAuthentication(sharedOptions =>
+                {
+                    sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                })
+                .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C:Live", options))
+                .AddCookie(options =>
+                {
+                    options.AccessDeniedPath = "/Home/Forbidden";
+                    options.Cookie.Path = "/";
+                    options.SlidingExpiration = false;
+                    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
+                    options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
+                });
+            }
+            else
+            {
+                services.AddAuthentication(sharedOptions =>
+                {
+                    sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                })
+                .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C:Pre", options))
+                .AddCookie(options =>
+                {
+                    options.AccessDeniedPath = "/Home/Forbidden";
+                    options.Cookie.Path = "/";
+                    options.SlidingExpiration = false;
+                    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
+                    options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
+                });
+            }
 
             #region AddLocalization
             services.AddLocalization(options => options.ResourcesPath = "Resources");
