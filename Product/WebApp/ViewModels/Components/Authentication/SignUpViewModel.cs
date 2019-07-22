@@ -21,6 +21,7 @@ namespace UpDiddy.ViewModels
         public bool IsExpressSignUp { get; set; }
         public string ObfuscatedEmail { get; set; }
         public Guid PartnerGuid { get; set; }
+        public string SignUpButtonText{get;set;}
     }
 }
 

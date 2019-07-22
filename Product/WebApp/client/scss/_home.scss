@@ -1,10 +1,13 @@
 ﻿@import '_variables';
-body {
-    font-family: $opensans-regular;
+
+body{
+    position: relative;
     color: $color-secondary;
-    padding-top: 6.375em;
+    padding-top: 68.42px;
 
-
+    @media(min-width:1200px){
+        padding-top: 89.14px;
+    }
 
     .section-heading {
         font-size: 1rem;
@@ -127,214 +130,343 @@ body {
     }
 }
 
+// Base Styles
 @media (min-width: 0px) {
-    body {
-        padding-top: 68.42px;
-        .home-container { 
 
-            .home-courses {
-                margin-top: 2rem;
+    #HomeContainer {
+        .cc-text-video-band {
+            text-align: center;
 
-                .course-categories {
-                    margin-top: 2rem;
-
-                    .section-heading {
-                        font-size: 2rem;
-                    }
-
-                    .career-training-header-container {
-                        text-align: center;
-                    }
-
-                    > div {
-                        margin-bottom: .5rem;
-                    }
-
-                    .card-column {
-                        .card {
-                            img {
-                                height: auto;
-                            }
-                        }
-                    }
-
-                    .section-heading {
-                        font-size: 2rem;
-                    }
-                }
-            }
-        }
-    }
-    .navbar.cc-navbar {
-        .dropdown {
-            &.show {
-                .dropdown-toggle {
-                    &:after {
-                        transform: rotate(180deg);
-                    }
-                }
-            }
-            .dropdown-item {
-                text-transform: capitalize;
-                border-radius: 0;
-                font-size: 12px;
-            }
-        }
-    }
-}
-
-@media (min-width: 576px){
-    body {
-        .home-container {
-            .home-courses {
-                .course-categories {
-                    .card-column {
-                        .card {
-                            img {
-                                height: 9.375rem;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@media (min-width: 768px) {
-    body {
-        .section-heading {
-            font-size: 1.5rem;
-        }
-
-        .home-container {
-            .home-courses {
-                .course-categories {
-                    .section-heading {
-                        font-size: 1.5rem;
-                    }
-
-                    .career-training-header-container {
-                        
-                        margin-bottom: 2rem;
-                    }
-
-                    .card-column {
-                        .card {
-                            img {
-                                height: 8rem;
-                            }
-                        }
-                    }
-
-                    > div {
-                        margin-bottom: 0;
-                    }
-                }
-            }
-        }
-    }
-}
-
-@media (min-width: 992px) {
-    body {
-        padding-top: 6.375em;
-
-        .home-container {
-            .home-hero {
-                background-image: url('../images/skyline_background.png');
-                background-size: contain;
-                background-position: top;
-
-                .home-hero-top {
-                    padding-top: 6rem;
-                }
-
-                .home-hero-bottom {
-                    padding-top: 18rem;
-                    padding-bottom: 6rem;
-                }
-            }
-
-            .home-courses {
-                margin-top: 0;
-                margin-bottom: 7.5rem;
-
-                .course-categories {
-                    .section-heading {
-                        font-size: 2rem;
-                    }
-
-                    .card-column {
-                        .card {
-                            img {
-                                height: 12rem;
-                            }
-                        }
-                    }
-
-                    .career-training-header-container {
-                        text-align: left;
-                    }
-                }
+            .cc-text-video-band-right-column {
+                display: none;
             }
         }
 
-        .section-heading {
-            font-size: 2.625rem;
+        .acct-disclaimer{
+            font-size: .75rem;
         }
 
-        nav {
-            height: 6.375rem;
+        #HomeContainerHero {
+            padding: 4rem 0;
+            background-image: url(/images/top_mobile_banner.jpg);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: bottom;
+            text-align: center;
 
-
-            .navbar-brand {
-                margin: 0 1rem;
+            .container {
+                > .row {
+                    margin-top:-3rem;
+                }
             }
 
-            .brand-button-light {
-                background-color: #fff;
+            .hero-header {
+                font-size: 2rem;
+
+            }
+
+            .hero-subheader {
+                font-size: 1.75rem;
+            }
+
+            .signup-top-container-header{
+                padding: 1.5rem;
+                color:white;
                 border-radius: 1rem;
-                border: 1px solid $color-secondary;
-                padding: .5rem 1.75rem;
-            }
-
-            .navbar-nav {
-                li {
-                    padding: .5rem .5rem .5rem .5rem;
-                }
+                font-weight: bold;
+                font-size:1.3rem;
             }
         }
-    }
-}
 
-@media (min-width: 1200px){
-    body {
-        nav {
-            &.navbar-light {
-                .navbar-nav {
-                    li {
-                        margin-right: 1rem;
+        #HomeBottomContainer {
+            padding: 4rem 0;
+            background-image: url(/images/bottom_mobile_banner.jpg);
+            background-size: contain;
+            background-position: top;
+            background-repeat: no-repeat;
+            background-color: $color-secondary;
+
+            .signup-left-col {
+                margin-bottom: 2rem;
+                text-align: center;
+            }
+
+            .signup-bottom-container-header {
+                font-size: 1.5rem;
+                line-height: 2rem;
+                font-weight: bold;
+                margin-bottom: 1.0rem;
+            }
+
+            .signup-bottom-container-subheader {
+                font-size: 1.5rem;
+                line-height: 1.75rem;
+                margin-bottom: 1rem;
+            }
+        }
+
+
+
+        #SignUpContainer {
+            padding: 1.5rem;
+            background-color: $color-white;
+            border-radius: 1rem;
+
+            #SignUpContainerHeader {
+                border-bottom: 1px solid $color-tertiary-mid-gray;
+                font-size: 0.62rem;
+                padding-bottom: 1rem;
+                margin-bottom: 1.5rem;
+                text-align: center;
+            }
+
+            #SignUpComponentContainer {
+                #SignUpComponent {
+
+                    .sign-up-input{
+                        font-size:0.5rem;
                     }
-                }
-            }
-        }
+                    input {
+                        border: 1px solid $color-tertiary-gray;
+                    }
 
-        .home-container {
-            .home-courses {
-                .course-categories {
-                    .card-column {
-                        .card {
-                            img {
-                                height: 14rem;
-                            }
+                    .form-check-input {
+                        position: initial;
+                    }
+
+                    button {
+                        background-color: $color-tertiary;
+                        font-size:1.0rem !important;
+
+                        &:before {
+                            display: none;
                         }
                     }
                 }
             }
         }
+
+        #TextImgContainer{
+            .cc-text-video-band-header{
+                padding-bottom: 0rem !important;
+            }
+
+            .cc-text-video-band-description{
+                padding-top:1rem !important;
+            }
+        }        
     }
 }
 
+// Extra Small Styles
+@media (min-width: 320px) {
+}
 
+@media (min-width: 360px) {
+    #HomeContainer {
 
+        #HomeContainerHero {
+
+            .signup-top-container-header{
+                font-size:1.45rem !important;
+            }
+
+             #SignUpContainer {
+                #SignUpContainerHeader {
+                    font-size: 0.8rem;
+                }
+            }
+        }
+    }
+}
+
+@media (min-width: 410px) {
+    #HomeContainer {
+
+        #HomeContainerHero {
+
+            .signup-top-container-header{
+                font-size:1.6rem !important;
+            }
+        }
+    }
+}
+
+// Small Styles
+@media (min-width: 576px) {
+    #HomeContainer {
+        #SignUpContainer {
+            #SignUpContainerHeader {
+                font-size: 0.96rem !important;
+            }
+        }
+
+        #SignUpContainer {
+            #SignUpComponentContainer {
+                #SignUpComponent {
+                    .sign-up-input{
+                        font-size:0.59rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+    #HomeContainer {
+        .cc-text-video-band {
+            text-align: left;
+
+            .cc-text-video-band-right-column {
+                display: block;
+            }
+        }
+
+        #HomeBottomContainer {
+            background-size: cover;
+
+            .signup-left-col {
+                margin-bottom: 0;
+                text-align: center;
+            }
+        }
+
+        #HomeContainerHero {
+            padding: 11rem 0;
+        }
+
+        #SignUpContainer {
+
+            #SignUpContainerHeader {
+                font-size: 1.5rem !important;
+            }
+            #SignUpComponentContainer {
+                #SignUpComponent {
+                    .sign-up-input{
+                        font-size:0.9rem;
+                    }
+
+                    button {
+                        font-size:1.15rem !important;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Large Styles
+@media (min-width: 992px) {
+    #HomeContainer {
+        #HomeContainerHero {
+            .signup-top-container-header{
+                font-size:1.7rem !important;
+            }
+        }
+
+        #SignUpContainer {           
+            #SignUpContainerHeader {
+                font-size: 1.9rem !important;
+            }
+        }
+
+        #SignUpContainer {
+            #SignUpComponentContainer {
+                #SignUpComponent {
+                    .sign-up-input{
+                        font-size:1.12rem;
+                    }
+
+                    button {
+                        font-size:1.25rem !important;
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+    #HomeContainer {
+        #HomeContainerHero {
+            padding: 17rem 0;
+            background-image: url('/images/hero_bannerbg_top.jpg');
+            background-size: cover;
+            background-position: bottom;
+            text-align: left;          
+
+            .hero-header {
+                font-size: 2.5rem;
+                font-weight: bold;
+            }
+
+            .hero-subheader {
+                font-size: 1.75rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .signup-top-container-header{
+                font-size:1.3rem !important;
+            }
+        }
+
+        #HomeContainerHero{
+            .container {
+                > .row {
+                    margin-top:-7rem;
+                }
+            }
+        } 
+        #HomeBottomContainer {
+            padding: 13rem 0;
+            background-image: url('/images/sign_up_banner_bg.jpg');
+            background-size: cover;
+            background-position: top;
+
+            .signup-left-col {
+                margin-bottom: 0;
+                text-align: center;
+            }
+
+            .signup-bottom-container-header {
+                font-size: 2.0rem;
+                margin-bottom: 2rem;
+            }
+
+            .signup-bottom-container-subheader {
+                font-size: 2rem;
+                margin-bottom: 2rem;
+            }
+        }
+
+        #SignUpContainer {
+
+            #SignUpContainerHeader {
+                font-size: 1.0rem !important;
+            }
+
+            #SignUpComponentContainer {
+                #SignUpComponent {
+                    .sign-up-input{
+                        font-size:0.66rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media(max-width: 500px) {
+    #HomeContainer {
+        #HomeContainerHero {
+
+            .hero-subheader {
+                color: lighten($color-tertiary, 17.5%);
+            }
+        }
+    }
+}       
