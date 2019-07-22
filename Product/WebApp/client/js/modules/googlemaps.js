@@ -8,7 +8,8 @@ class GMap {
         this.map = new google.maps.Map(document.getElementById('map'),
             {
                 center: this.uscords,
-                zoom: 4.8
+                zoom: 4.8,
+                disableDefaultUI: true
             });
         this.initializeMap();
     }
@@ -53,19 +54,20 @@ class GMap {
         var string = '<div class="gmap-container-infowindow">' +
             '<div class="gmap-container-infowindow-title">' + stname + '</div>' +
             '<div class="gmap-container-infowindow-total"><a href="' + sturl + '"> Total : ' + total + '</a></div>' +
-            '<div class="gmap-container-infowindow-company">' + this.buildCompanyDiv(cp) + '</div>' +
+            '<div class="gmap-container-infowindow-company">' + this.buildCompanyDiv(cp, stname) + '</div>' +
             '</div>';
         return string;
     }
 
-    buildCompanyDiv(cp) {
+    buildCompanyDiv(cp, stname) {
         var str = "";
         for (var c in cp) {
+            var url = this.baseurl + "jobs?keywords=" + cp[c].companyName + "&location=" + stname;
             str += '<div>' +
-                '<a id="' + cp[c].companyGuid + '">' +
+                '<a href="' + url + '">' +
                 cp[c].companyName + ' : ' + cp[c].jobCount.toString() +
                 '</a>' +
-                '</div>'
+                '</div>';
         }
         return str;
     }

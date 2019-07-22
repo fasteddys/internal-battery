@@ -32,6 +32,8 @@ namespace UpDiddy.Controllers
         private readonly ISysEmail _sysEmail;
         private readonly IDistributedCache _cache;
 
+        private readonly IApi _api;
+
         [HttpGet]
         public async Task<IActionResult> GetCountries()
         {
@@ -49,6 +51,7 @@ namespace UpDiddy.Controllers
             _sysEmail = sysEmail;
             _configuration = configuration;
             _cache = cache;
+            _api = api;
         }
         [HttpGet]
         public async Task<IActionResult> GetStatesByCountry(Guid countryGuid)
@@ -61,9 +64,7 @@ namespace UpDiddy.Controllers
             try
             {
                 HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
-                var str = _cache.GetString("JobPostingCountByProvince");
-                var jobCount = string.IsNullOrEmpty(str) ? await _Api.GetJobCountPerProvinceAsync()
-                : JsonConvert.DeserializeObject<List<JobPostingCountDto>>(str);
+                var jobCount = await _Api.GetJobCountPerProvinceAsync();
                 HomeViewModel.JobCount = jobCount;
                 return View(HomeViewModel);
             }
