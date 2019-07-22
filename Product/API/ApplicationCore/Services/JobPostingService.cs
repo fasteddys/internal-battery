@@ -15,7 +15,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IRepositoryWrapper _repositoryWrapper;
         public JobPostingService(IRepositoryWrapper repositoryWrapper) => _repositoryWrapper = repositoryWrapper;
         /// <summary>
-        /// Gets the job count based on state (province). It utilizes two types of enums (state prefix and state name) because the jobposting's province column has data that spells out state names and data that uses abbreviations.
+        /// Gets the job count based on state (province). It utilizes two types of enums (state prefix and state name)
+        /// because the jobposting's province column has data that spells out state names and that uses abbreviations.
         /// 
         /// </summary>
         /// <returns></returns>
@@ -23,6 +24,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             var query = await _repositoryWrapper.JobPosting.GetAllAsync();
             var jobCount = new List<JobPostingCountDto>();
+            Enums.ProvincePrefix statePrefixEnum;
+            Enums.ProvinceName stateNameEnum;
             var provinceList = await query
                 .Where(x => x.IsDeleted == 0)
                 .Select(x => x.Province)
@@ -30,11 +33,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 .ToListAsync();
             foreach (var province in provinceList)
             {
-                var str = province.Trim().Replace(" ", "");
-                Enums.ProvincePrefix statePrefixEnum;
-                Enums.ProvinceName stateNameEnum;
-                string stateStr = "";
-                int stateId = 0;
+                var str = province.Trim().Replace(" ", "");        
+                int? stateId = null;
                 if (Enum.TryParse(str.ToUpper(), out statePrefixEnum))
                 {
                     stateId = (int)statePrefixEnum;
@@ -43,11 +43,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     stateId = (int)stateNameEnum;
                 }
-                var companyQuery = await GetJobsByStateQuery(stateStr);
-                if (companyQuery.Count > 0)
+                if (stateId.HasValue)
                 {
-                    var total = companyQuery.Sum(c => c.JobCount);
-                    jobCount.Add(new JobPostingCountDto(stateId, companyQuery, total));
+                    var companyQuery = await GetJobsByStateQuery(province);
+                    if (companyQuery.Count > 0)
+                    {
+                        var total = companyQuery.Sum(c => c.JobCount);
+                        jobCount.Add(new JobPostingCountDto(stateId.Value, companyQuery, total));
+                    }
                 }
             }
             return jobCount;
@@ -55,7 +58,6 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         private async Task<List<JobPostingCompanyCountDto>> GetJobsByStateQuery(string province)
         {
-
             var query = await _repositoryWrapper.JobPosting.GetAllAsync();
             return query.Where(x => x.Province == province && x.IsDeleted == 0)
                 .GroupBy(l => l.Company)

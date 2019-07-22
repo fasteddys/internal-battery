@@ -88,13 +88,53 @@ body {
         .hero-home-bottom-details {
             text-align: center;
         }
+
+        .navbar.cc-navbar {
+            .dropdown {
+                &.show {
+                    .dropdown-toggle {
+                        &:after {
+                            transform: rotate(180deg);
+                        }
+                    }
+                }
+
+                .dropdown-item {
+                    text-transform: capitalize;
+                    border-radius: 0;
+                    font-size: 12px;
+                }
+            }
+        }
     }
 }
 
 @media (min-width: 992px) {
     body {
-        .hero-home-bottom-details{
+        .hero-home-bottom-details {
             text-align: left;
+        }
+
+        nav {
+            height: 6.375rem;
+
+
+            .navbar-brand {
+                margin: 0 1rem;
+            }
+
+            .brand-button-light {
+                background-color: #fff;
+                border-radius: 1rem;
+                border: 1px solid $color-secondary;
+                padding: .5rem 1.75rem;
+            }
+
+            .navbar-nav {
+                li {
+                    padding: .5rem .5rem .5rem .5rem;
+                }
+            }
         }
     }
 }
@@ -104,6 +144,16 @@ body {
         .navbar-brand {
             img {
                 width: 9rem;
+            }
+        }
+
+        nav {
+            &.navbar-light {
+                .navbar-nav {
+                    li {
+                        margin-right: 1rem;
+                    }
+                }
             }
         }
     }
