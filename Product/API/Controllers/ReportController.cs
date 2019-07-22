@@ -225,6 +225,36 @@ namespace UpDiddyApi.Controllers
         }
 
         /// <summary>
+        /// Get read notifications by start date and end date
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/[controller]/notification-reads")]
+        public async Task<IActionResult> ReadNotificationsAsync(ODataQueryOptions<Notification> options)
+        {
+            ActionResult response;
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var notificationsCountsReportDto = await _reportingService.GetReadNotificationsAsync(options);
+                    response = Ok(notificationsCountsReportDto);
+
+                }
+                else
+                    response = BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _syslog.LogError(ex, $"Error in ReportController.ReadNotificationsAsync method");
+                response = StatusCode(500);
+            }
+
+            return response;
+        }
+
+        /// <summary>
         /// Get active/published job counts per company and posted date range.
         /// </summary>
         /// <param name="startPostDate"></param>

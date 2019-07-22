@@ -1374,6 +1374,13 @@ namespace UpDiddy.Api
             return await GetAsync<List<JobApplicationCountDto>>(endpoint);
         }
 
+
+        public async Task<List<NotificationCountsReportDto>> GetReadNotificationsCount()
+        {
+            string endpoint = "/api/report/notification-reads";
+            return await GetAsync<List<NotificationCountsReportDto>>(endpoint);
+        }
+
         public async Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync()
         {
             return await GetAsync<List<RecruiterActionSummaryDto>>($"report/recruiter-action-summary");
