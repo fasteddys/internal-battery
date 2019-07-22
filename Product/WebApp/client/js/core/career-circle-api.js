@@ -159,6 +159,9 @@
     var getSubscriberActionsReport = async function(query) {
         return await _http.get(`/report/subscriber-actions${buildQuery(query)}`);
     }
+    var getNotificationCountReport = async function (query) {
+        return await _http.get(`/report/notification-reads${buildQuery(query)}`);
+    }
 
     var getJobAppReport = async function(query) {
         return await _http.get(`/report/job-applications${buildQuery(query)}`);
@@ -278,6 +281,7 @@
         addRecruiter: addRecruiter,
         editRecruiter: editRecruiter,
         deleteRecruiter: deleteRecruiter,
+        getNotificationCountReport: getNotificationCountReport,
     };
     
 })(API_URL);
