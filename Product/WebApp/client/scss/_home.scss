@@ -256,23 +256,6 @@ body{
             }
         }        
     }
-
-    .navbar.cc-navbar {
-        .dropdown {
-            &.show {
-                .dropdown-toggle {
-                    &:after {
-                        transform: rotate(180deg);
-                    }
-                }
-            }
-            .dropdown-item {
-                text-transform: capitalize;
-                border-radius: 0;
-                font-size: 12px;
-            }
-        }
-    }
 }
 
 // Extra Small Styles
@@ -404,27 +387,6 @@ body{
         }
     }
 
-    nav {
-        height: 6.375rem;
-
-
-        .navbar-brand {
-            margin: 0 1rem;
-        }
-
-        .brand-button-light {
-            background-color: #fff;
-            border-radius: 1rem;
-            border: 1px solid $color-secondary;
-            padding: .5rem 1.75rem;
-        }
-
-        .navbar-nav {
-            li {
-                padding: .5rem .5rem .5rem .5rem;
-            }
-        }
-    }
 }
 
 // Extra Large Styles
@@ -492,16 +454,6 @@ body{
                     .sign-up-input{
                         font-size:0.66rem;
                     }
-                }
-            }
-        }
-    }
-    
-    nav {
-        &.navbar-light {
-            .navbar-nav {
-                li {
-                    margin-right: 1rem;
                 }
             }
         }
