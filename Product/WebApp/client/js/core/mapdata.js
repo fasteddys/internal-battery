@@ -65,14 +65,6 @@ var mapdata = {
             }
         },
         {
-            "prefix": "AK",
-            "name": "Alaska",
-            "cords": {
-                lat: 64.2008,
-                lng: -149.4937
-            }
-        },
-        {
             "prefix": "FL",
             "name": "Florida",
             "cords": {
