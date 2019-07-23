@@ -24,16 +24,24 @@
                         <div class="form-group row">
                             <label for="Name" class="col-sm-2 col-form-label">Title:</label>
                             <div class="col-sm-10">
-                                <input type="text" class="form-control" asp-for="Title">
+                                <input type="text" class="form-control" asp-for="Title" >
                             </div>
                         </div>
-                        <div class="form-group row">
+                   
+       
+
+                        <div class="form-group row pb-4">
                             <label for="Description" class="col-sm-2 col-form-label">Description:</label>
                             <div class="col-sm-10">
-                                <textarea class="form-control" rows="3" asp-for="Description"></textarea>
+                                <input type="hidden" class="form-control" id="hdnDescription" asp-for="Description" />
+                                <!-- Create the editor container -->
+                                <div id="editor"></div>
                             </div>
                         </div>
-                        <div class="form-group row">
+
+
+
+                        <div class="form-group row pt-5">
                             <label for="Expiration" class="col-sm-2 col-form-label">Expiration Date:</label>
                             <div class="col-sm-10">
                                 <div class="input-group date">
@@ -47,7 +55,7 @@
                                 </small>
                             </div>
                         </div>
-                        
+
                         <div class="form-group row">
                             <div class="col-12 text-right">
                                 @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
@@ -67,7 +75,75 @@
 </div>
 
 @section Scripts{
+
+
+
     <script>
-        $(".admin-nav-notifications").addClass("active");
+
+        
+        $(document).ready(function () {
+            
+            $(".admin-nav-notifications").addClass("active");
+
+
+            var toolbarOptions = [
+                ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                ['blockquote', 'code-block'],
+                ['image' ],
+                [{ 'header': 1 }, { 'header': 2 }],               // custom button values
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                [{ 'script': 'sub' }, { 'script': 'super' }],      // superscript/subscript
+                [{ 'indent': '-1' }, { 'indent': '+1' }],          // outdent/indent
+                [{ 'direction': 'rtl' }],                         // text direction
+
+                [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+                [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+                [{ 'font': [] }],
+                [{ 'align': [] }],
+
+                ['clean']                                         // remove formatting button
+            ];
+
+            var quill = new Quill('#editor', {
+                modules: {
+                    toolbar: toolbarOptions
+                },
+                placeholder: 'Enter a notification with 10 or more characters...',
+                theme: 'snow'
+            });
+
+
+
+
+ 
+
+
+
+            $("#CreateNotificationForm").on("submit", function (e) {
+
+                // get the alerts rich text and assign it to a hidden fields 
+                var value = quill.container.firstChild.innerHTML;
+                $("#hdnDescription").val(value);
+
+                var textLen = quill.getLength();
+                if (textLen < 10) {
+                    ToastService.error('Description must be 10 or more characters.', 'Oops, Something went wrong.');
+                    e.preventDefault();
+                }
+                else if (!$(this).find("#Title").val()  ) {
+                    e.preventDefault();
+                    ToastService.error('Title is required', 'Oops, Something went wrong.');
+                }
+                
+            });
+
+        });
+
+     
+
+
+
     </script>
 }

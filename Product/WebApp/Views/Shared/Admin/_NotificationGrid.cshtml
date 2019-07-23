@@ -8,7 +8,7 @@
                 .Build(columns =>
                 {
                     columns.Add(model => model.Title).Sortable(true).Titled("Title");
-                    columns.Add(model => model.Description).Sortable(true).Titled("Description");
+                    columns.Add(model => model.Description).Sortable(true).Titled("Description").Encoded(true);
                     columns.Add(model => model.ExpirationDate).Sortable(true).Titled("Expires");
                     columns.Add(model => $"<a href=\"/admin/modifynotification/" + model.NotificationGuid + "\"><i class=\"fas fa-pencil-alt\"></i></a>").Titled("Edit").Encoded(false).AppendCss("text-center");
                     columns.Add(model => $"<a class=\"notification-delete\" data-notification=\"" + model.NotificationGuid + "\" data-notification-title=\"" + model.Title + "\"><i class=\"fas fa-trash\"></i></a>").Titled("Delete").Encoded(false).AppendCss("text-center");

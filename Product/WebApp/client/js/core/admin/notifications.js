@@ -1,13 +1,6 @@
 ﻿
 
 
-$("#CreateNotificationForm").on("submit", function (e) {
-
-    if (!$(this).find("#Title").val() || !$(this).find("#Description").val()) {
-        e.preventDefault();
-        ToastService.error('Please enter information for both Title and Description.', 'Oops, Something went wrong.');
-    }
-});
 
 $("#ModifyNotificationForm").on("submit", function (e) {
 

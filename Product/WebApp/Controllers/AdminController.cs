@@ -540,7 +540,7 @@ namespace UpDiddy.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateNotificationAsync(NotificationsViewModel NewNotification)
         {
-
+ 
 
             if (ModelState.IsValid)
             {
@@ -548,7 +548,7 @@ namespace UpDiddy.Controllers
                 {
                     NotificationDto newNotificationFromDb = await _api.CreateNotificationAsync(new NotificationDto
                     {
-                        NotificationGuid = NewNotification.NotificationGuid,
+                        NotificationGuid = Guid.NewGuid(),
                         Title = NewNotification.Title,
                         Description = NewNotification.Description,
                         ExpirationDate = NewNotification.ExpirationDate

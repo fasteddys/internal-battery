@@ -13,6 +13,8 @@ import Select from './Select';
 import Validate from './Validate';
 import TextArea from './TextArea';
 import Breadcrumb from './breadcrumbs/Breadcrumb';
+import NotificationEditor from './NotificationEditor';
+ 
 
 global.React = React;
 global.ReactDOM = ReactDOM;
@@ -29,7 +31,8 @@ global.Select = Select;
 global.Validate = Validate;
 global.TextArea = TextArea;
 global.Breadcrumb = Breadcrumb;
-
+global.NotificationEditor = NotificationEditor;
+ 
 // dashboard
 import Dashboard from './dashboard/dashboard';
 global.Dashboard = Dashboard;
