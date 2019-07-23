@@ -5,12 +5,9 @@
     .dashboard-container {
         .dashboard {
             .settings {
-                padding-top: 0.5rem;
-                padding-bottom: 0.5rem;
                 background-color: $color-secondary;
 
                 label {
-                    margin-bottom: 0;
                     color: $color-tertiary-light-gray;
                 }
             }

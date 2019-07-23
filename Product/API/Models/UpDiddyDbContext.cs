@@ -190,6 +190,9 @@ namespace UpDiddyApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<SubscriberNotification>()
+                .HasQueryFilter(sn => sn.IsDeleted == 0);
+
             modelBuilder
                 .Query<v_ThrottledLeadEmailDelivery>()
                 .ToView("v_ThrottledLeadEmailDelivery");
