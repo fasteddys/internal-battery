@@ -114,6 +114,11 @@ namespace UpDiddyApi.Controllers
                 return NotFound();
 
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            _syslog.Log(LogLevel.Error, $"SubscriberController.GetSubscriber:: SubscriberGuid: {subscriberGuid}", subscriberGuid);
+
+            _syslog.Log(LogLevel.Error, $"SubscriberController.GetSubscriber:: loggedInUserGuid: {loggedInUserGuid}", loggedInUserGuid);
+
             var isAuth = await _authorizationService.AuthorizeAsync(User, "IsRecruiterPolicy");
 
             if (subscriberGuid == loggedInUserGuid || isAuth.Succeeded)
