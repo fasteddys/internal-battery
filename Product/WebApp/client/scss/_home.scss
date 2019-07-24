@@ -1,12 +1,12 @@
 ﻿@import '_variables';
 
-body{
+body {
     position: relative;
     color: $color-secondary;
-    
+    padding-top: 68.42px;
 
-    @media(min-width:1200px){
-        
+    @media(min-width:992px) {
+        padding-top: 102.14px;
     }
 
     .section-heading {
@@ -24,32 +24,35 @@ body{
         font-family: $opensans-bold;
     }
 
-    .hero-description{
+    .hero-description {
         margin-top: 1rem;
         font-size: 1.25rem;
     }
 
     .home-container {
-        .btn{
+        .btn {
             white-space: initial;
             margin: 1rem 0;
         }
-        .home-hero-top{
+
+        .home-hero-top {
             background-image: url('../images/circle-of-circles.png');
             background-position: bottom;
-            background-size: cover; 
+            background-size: cover;
             padding: 5rem 0 10rem 0;
         }
-        .home-hero-bottom{
+
+        .home-hero-bottom {
             padding: 5rem 0;
             margin-top: -2px;
             background-color: $color-secondary;
 
-            .home-hero-bottom-cta{
-                > div{
-                    > div{
+            .home-hero-bottom-cta {
+                > div {
+                    > div {
                         margin-bottom: 1.5rem;
-                        &:first-child{
+
+                        &:first-child {
                             margin-bottom: 0;
                         }
                     }

@@ -100,7 +100,7 @@ class Dashboard extends React.Component {
         return (
             <div className="dashboard shadow-2">
                 <div className="row settings">
-                    <div className="col-12 pt-2">
+                    <div className="col-12">
                         <label className="pointer no-select">
                             <Checkbox isChecked={this.state.notificationEmailsEnabled} onChange={this.toggleNotificationEmailsEnabled} />
                             {!this.state.notificationEmailsEnabled
