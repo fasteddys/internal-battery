@@ -5,6 +5,10 @@ body {
     color: $color-secondary;
     padding-top: 68.42px;
 
+    @media(min-width:992px) {
+        padding-top: 102.14px;
+    }
+
     .section-heading {
         font-size: 1rem;
     }
@@ -12,6 +16,100 @@ body {
     .hero-title {
         font-size: 2rem;
         font-family: $opensans-light;
+    }
+
+    .hero-bold {
+        font-family: $opensans-bold;
+    }
+
+    .hero-description {
+        margin-top: 1rem;
+        font-size: 1.25rem;
+    }
+
+    .home-container {
+        .btn {
+            white-space: initial;
+            margin: 1rem 0;
+        }
+
+        .home-hero-top {
+            background-image: url('../images/circle-of-circles.png');
+            background-position: bottom;
+            background-size: cover;
+            padding: 5rem 0 10rem 0;
+        }
+
+        .home-hero-bottom {
+            padding: 5rem 0;
+            margin-top: -2px;
+            background-color: $color-secondary;
+
+            .home-hero-bottom-cta {
+                > div {
+                    > div {
+                        margin-bottom: 1.5rem;
+
+                        &:first-child {
+                            margin-bottom: 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        .hero-container {
+            text-align: center;
+
+            > div {
+                margin: 0 auto;
+                margin-bottom: 1.5rem;
+            }
+
+            .hero-subtext {
+                color: $color-tertiary-gray;
+                line-height: 1.8rem;
+            }
+
+            .brand-button-heavy {
+                font-size: 1.6rem;
+            }
+        }
+
+        .hero-my-circle {
+            width: inherit;
+        }
+
+        .home-hero {
+            .home-hero-bottom {
+                .hero-title-regular, .hero-description {
+                    padding-bottom: 2.1875rem;
+                }
+            }
+        }
+
+        .course-categories {
+            > div {
+                margin-bottom: 2.5rem;
+            }
+
+            .input-group {
+                input {
+                    &:focus {
+                        border: 1px solid $color-secondary-light;
+                        box-shadow: none;
+                    }
+                }
+
+                .input-group-text {
+                    background-color: $color-white;
+
+                    i {
+                        color: $color-secondary;
+                    }
+                }
+            }
+        }
     }
 
     .topic-hero-band {
