@@ -32,6 +32,7 @@ using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
 using X.PagedList;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.Workflow;
 
 namespace UpDiddyApi.Controllers
 {
@@ -47,10 +48,12 @@ namespace UpDiddyApi.Controllers
         private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ISubscriberService _subscriberService;
+        private ISubscriberNotificationService _subscriberNotificationService;
         private ICloudStorage _cloudStorage;
         private ISysEmail _sysEmail;
         private IJobService _jobService;
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private ITaggingService _taggingService;
 
         public SubscriberController(UpDiddyDbContext db,
             IMapper mapper,
@@ -63,6 +66,8 @@ namespace UpDiddyApi.Controllers
             IAuthorizationService authorizationService,
             IRepositoryWrapper repositoryWrapper,
             ISubscriberService subscriberService,
+            ITaggingService taggingService,
+            ISubscriberNotificationService subscriberNotificationService,
             IJobService jobService)
         {
             _db = db;
@@ -76,7 +81,9 @@ namespace UpDiddyApi.Controllers
             _authorizationService = authorizationService;
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = subscriberService;
+            _subscriberNotificationService = subscriberNotificationService;
             _jobService = jobService;
+            _taggingService = taggingService;
         }
 
         #region Basic Subscriber Endpoints
@@ -149,6 +156,8 @@ namespace UpDiddyApi.Controllers
 
                 // disable the AD account associated with the subscriber
                 _graphClient.DisableUser(subscriberGuid);
+                // delete subscriber from cloud talent 
+                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriber.SubscriberGuid.Value));
 
             }
             catch (Exception e)
@@ -189,6 +198,10 @@ namespace UpDiddyApi.Controllers
             {
                 _jobService.UpdateJobReferral(dto.ReferralCode, subscriber.SubscriberGuid.ToString());
             }
+
+
+            // update google profile 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
         }
@@ -249,6 +262,11 @@ namespace UpDiddyApi.Controllers
 	                @StackOverflowUrl,
 	                @GithubUrl,
 	                @SkillGuids", spParams);
+
+
+            // update google profile 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(Subscriber.SubscriberGuid.Value));
+
 
             return Ok();
         }
@@ -359,6 +377,11 @@ namespace UpDiddyApi.Controllers
 
             _db.SubscriberWorkHistory.Add(WorkHistory);
             _db.SaveChanges();
+
+            // update google profile 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+
+
             return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
         }
 
@@ -408,6 +431,10 @@ namespace UpDiddyApi.Controllers
             WorkHistory.Compensation = WorkHistoryDto.Compensation;
             WorkHistory.CompensationTypeId = compensationTypeId;
             _db.SaveChanges();
+
+            // update google profile 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+
             return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
         }
 
@@ -560,6 +587,10 @@ namespace UpDiddyApi.Controllers
 
             _db.SubscriberEducationHistory.Add(EducationHistory);
             _db.SaveChanges();
+
+            // update google profile 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+
             return Ok(_mapper.Map<SubscriberEducationHistoryDto>(EducationHistory));
         }
 
@@ -605,6 +636,10 @@ namespace UpDiddyApi.Controllers
             EducationHistory.EducationalDegreeTypeId = educationalDegreeTypeId;
             EducationHistory.EducationalInstitutionId = educationalInstitutionId;
             _db.SaveChanges();
+
+            // update google profile 
+            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+
             return Ok(_mapper.Map<SubscriberEducationHistoryDto>(EducationHistory));
         }
 
@@ -817,6 +852,9 @@ namespace UpDiddyApi.Controllers
 
             var referer = !String.IsNullOrEmpty(signUpDto.referer) ? signUpDto.referer : Request.Headers["Referer"].ToString();
 
+            
+            
+
             // use transaction to verify that both changes 
             using (var transaction = _db.Database.BeginTransaction())
             {
@@ -824,6 +862,10 @@ namespace UpDiddyApi.Controllers
                 {
                     _db.Add(subscriber);
                     await _db.SaveChangesAsync();
+
+                    await _taggingService.CreateGroup(referer, signUpDto.partnerGuid, subscriber.SubscriberId);
+                    await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
+
                     SubscriberProfileStagingStore store = new SubscriberProfileStagingStore()
                     {
                         CreateDate = DateTime.UtcNow,
@@ -1113,6 +1155,7 @@ namespace UpDiddyApi.Controllers
                     Constants.SendGridAccount.Transactional,
                     null,
                     null,
+                    null,
                     null
                 ));
         }
@@ -1170,6 +1213,43 @@ namespace UpDiddyApi.Controllers
             return Ok(isDeleted);
         }
         #endregion
+
+        [Authorize]
+        [HttpDelete("/api/[controller]/delete-notification/{notificationGuid}")]
+        public async Task<IActionResult> DeleteSubscriberNotification(Guid notificationGuid)
+        {
+            if (notificationGuid == null || notificationGuid == Guid.Empty)
+                return BadRequest();
+
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            bool isSuccess = await _subscriberNotificationService.DeleteSubscriberNotification(loggedInUserGuid, notificationGuid);
+
+            if (!isSuccess)
+                return StatusCode(500, false);
+            else
+                return Ok(new BasicResponseDto { StatusCode = 200, Description = "Subscriber notification deleted successfully." });
+        }
+
+        [Authorize]
+        [HttpPut("/api/[controller]/{subscriberGuid}/toggle-notification-emails/{isEnabled}")]
+        public async Task<IActionResult> ToggleSubscriberNotificationEmail(Guid subscriberGuid, string isEnabled)
+        {
+            bool _isEnabled = false;
+            if (!bool.TryParse(isEnabled, out _isEnabled))
+                return BadRequest();
+
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (loggedInUserGuid != subscriberGuid)
+                return Unauthorized(); // in the future we may support admins changing subscriber properties
+
+            bool isSuccess = await _subscriberService.ToggleSubscriberNotificationEmail(subscriberGuid, _isEnabled);
+
+            if (!isSuccess)
+                return StatusCode(500, false);
+            else
+                return Ok(new BasicResponseDto { StatusCode = 200, Description = "Subscriber notification email setting updated successfully." });
+        }
+
 
         [HttpPut("read-notification")]
         public async Task<IActionResult> SubscriberReadNotification([FromBody] NotificationDto ReadNotification)

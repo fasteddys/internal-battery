@@ -17,5 +17,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         void UpdateRange(TEntity[] entity);
         void Delete(TEntity entity);
         Task SaveAsync();
+
+        Task ExecuteSQL(string sql);
     }
 }

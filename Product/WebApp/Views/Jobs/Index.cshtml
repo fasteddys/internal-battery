@@ -5,6 +5,7 @@
 @using React.AspNet;
 @using System.Globalization;
 @using System.Threading;
+@using System.Text.RegularExpressions;
 
 @{
     string url = ViewBag.QueryUrl as string;
@@ -41,10 +42,10 @@
                             <div>
                                 <button id="SearchJobs" form="SearchJobsForm" type="submit" onclick="ScrubInputs()" class="btn btn-primary"><i class="fas fa-search"></i> Search Jobs</button>
                             </div>
-                                @if (Model.JobQueryForAlert != null && (!string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Keywords) || !string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Location)))
-                                {
-                                    @Html.React("JobPostingAlert", new { jobQuery = Model.JobQueryForAlert });
-                                }
+                            @if (Model.JobQueryForAlert != null && (!string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Keywords) || !string.IsNullOrWhiteSpace(Model.JobQueryForAlert.Location)))
+                            {
+                                @Html.React("JobPostingAlert", new { jobQuery = Model.JobQueryForAlert });
+                            }
                         </div>
                     </div>
                     <!--Bring to center of container-->
@@ -58,7 +59,7 @@
     <div class="job-search-results">
         <div class="row">
             @if (Model.Facets != null)
-                            {
+            {
                 <div class="col-12 col-md-2">
                     <div class="facet-container shadow-0">
                         <div class="container row">
@@ -83,14 +84,14 @@
                                             <div class="date_published facets-style">
                                                 <div class="facet-header"> Date Posted</div>
                                                 @foreach (var facet in facets.Facets)
-                            {
-                                counter++;
+                                                {
+                                                    counter++;
                                                     <div>
-                                                        <a href="@string.Format("{0}datepublished={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("{0}datepublished={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                 }
-                        @if (facets.Facets.Count > 5)
-                        {
+                                                @if (facets.Facets.Count > 5)
+                                                {
                                                     <div>
                                                         <a onclick="expandMoreLinks(this)">+ more >></a>
                                                     </div>
@@ -109,14 +110,14 @@
                                             <div class="employment_type facets-style">
                                                 <div class="facet-header">Employment Type</div>
                                                 @foreach (var facet in facets.Facets)
-                    {
-                        counter++;
+                                                {
+                                                    counter++;
                                                     <div>
-                                                        <a href="@string.Format("{0}employmenttype={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("{0}employmenttype={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                 }
                                                 @if (facets.Facets.Count > 5)
-                    {
+                                                {
                                                     <div>
                                                         <a onclick="expandMoreLinks(this)">+ more >></a>
                                                     </div>
@@ -134,18 +135,18 @@
                                             <div class="city">
                                                 <div class="facet-header">Location</div>
                                                 @foreach (var facet in facets.Facets)
-                    {
-                        counter++;
+                                                {
+                                                    counter++;
                                                     <div>
-                                                        <a href="@string.Format("{0}city={1}", @ViewBag.QueryUrl.ToString().Replace("location","province"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("{0}city={1}", @ViewBag.QueryUrl.ToString().Replace("location","province"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                     @if (counter >= 15)
-                    {
-                        break;
-                    }
+                                                    {
+                                                        break;
+                                                    }
                                                 }
                                                 @if (facets.Facets.Count > 5)
-                    {
+                                                {
                                                     <div>
                                                         <a onclick="expandMoreLinks(this)" class="moreLink-style">+ more >></a>
                                                     </div>
@@ -166,14 +167,14 @@
                                             <div class="job_category facets-style">
                                                 <div class="facet-header">Job Category</div>
                                                 @foreach (var facet in facets.Facets)
-                    {
-                        counter++;
+                                                {
+                                                    counter++;
                                                     <div>
-                                                        <a href="@string.Format("{0}jobcategory={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("{0}jobcategory={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                 }
                                                 @if (facets.Facets.Count > 5)
-                    {
+                                                {
                                                     <div>
                                                         <a onclick="expandMoreLinks(this)">+ more >></a>
                                                     </div>
@@ -191,14 +192,14 @@
                                             <div class="industry facets-style">
                                                 <div class="facet-header">Industry</div>
                                                 @foreach (var facet in facets.Facets)
-                    {
-                        counter++;
+                                                {
+                                                    counter++;
                                                     <div>
-                                                        <a href="@string.Format("{0}industry={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("{0}industry={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                 }
                                                 @if (facets.Facets.Count > 5)
-                    {
+                                                {
                                                     <div>
                                                         <a onclick="expandMoreLinks(this)">+ more >></a>
                                                     </div>
@@ -216,9 +217,9 @@
                 </div>
             }
             @{
-                string columnClass = Model.Facets != null ? "10" : "12";
+                string offsetColumnClass = Model.Facets != null ? "0" : "2";
             }
-            <div class="col-12 col-md-@columnClass">
+            <div class="col-12 col-md-10 offset-md-@offsetColumnClass">
                 <div class=" " id="">
                     @{ await Html.RenderPartialAsync("Partials/_JobResultsPartial", Model);}
 
@@ -270,28 +271,23 @@
                 CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
                 TextInfo textInfo = cultureInfo.TextInfo;
             }
+
             @if (!string.IsNullOrEmpty(url))
             {
-                 @foreach (var queryParameter in queryParameterList)
-            {
-                if (queryParameter.Key != "page" && !string.IsNullOrEmpty(queryParameter.Value))
+                foreach (var queryParameter in queryParameterList)
                 {
-                     var removeQueryParameter = queryParameter.Key.ToString() + '=' + queryParameter.Value.ToString() + '&';
-                var encodedRemoveQueryParameter=Uri.EscapeUriString(removeQueryParameter);
-
-                var undoUrl = url.Replace(encodedRemoveQueryParameter, "").Trim('&');
-
-
-               <text>
-            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl' data-toggle='tooltip' data-placement='bottom' title='Remove'>X</a><span></div>";
-            parentElementUndoElement.innerHTML = innerHtml;
-                </text>
-            }
+                    if (queryParameter.Key != "page" && !string.IsNullOrEmpty(queryParameter.Value))
+                    {
+                        Regex queryParameterToRemove = new Regex(queryParameter.Key + @"=.+?(?=\&)");
+                        var undoUrl = queryParameterToRemove.Replace(url, string.Empty).Trim('&');
+                        <text>
+                            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl' data-toggle='tooltip' data-placement='bottom' title='Remove'>X</a><span></div>";
+                            parentElementUndoElement.innerHTML = innerHtml;
+                        </text>
+                    }
                 }
             }
-
-
-            });
+        });
 
         function ScrubInputs() {
 
@@ -322,7 +318,7 @@
                 if ($('#toggleArrow')[0].hasClass("arrow up")) {
                     $('#toggleArrow').removeClass("up");
                     $('#toggleArrow').addClass("down");
-                    
+
                     $('#SearchParameters').removeClass("show");
                     $('#SearchParameters').addClass("hide");
                 }

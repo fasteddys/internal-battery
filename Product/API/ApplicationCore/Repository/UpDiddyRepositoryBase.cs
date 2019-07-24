@@ -43,6 +43,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
                              .ToListAsync();
         }
 
+        public async Task ExecuteSQL(string sql)
+        {
+           await _dbContext.Database.ExecuteSqlCommandAsync(sql);
+        }
+
         public async Task Create(TEntity entity)
         {
             await this._dbContext.Set<TEntity>().AddAsync(entity);

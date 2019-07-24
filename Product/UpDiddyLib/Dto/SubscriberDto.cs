@@ -34,7 +34,7 @@ namespace UpDiddyLib.Dto
         public List<SubscriberFileDto> Files { get; set; }
         public List<CampaignDto> EligibleCampaigns { get; set; } = new List<CampaignDto>();
         public List<NotificationDto> Notifications { get; set; }
-
+        public bool NotificationEmailsEnabled { get; set; }
 
         // Marketing campaign offers that have not been used by subscriber
         public string CampaignOffer { get; set; }
@@ -42,6 +42,20 @@ namespace UpDiddyLib.Dto
         public DateTime? LinkedInSyncDate { get; set; }       
         public string LinkedInAvatarUrl { get; set; }
         public string AvatarUrl { get; set; }
-        
+        /****************  google talent cloud information   ****************************/
+        /// <summary>
+        /// The uri returned from google talent cloud for identifying the posting in the
+        /// talent cloud
+        /// </summary>
+        public string CloudTalentUri { get; set; }
+        /// <summary>
+        ///  The postings google cloud indexing status, see enum JobPostingIndexStatus
+        /// </summary>
+        public int CloudTalentIndexStatus { get; set; }
+        /// <summary>
+        /// Additional information such as error received from cloud talent
+        /// </summary>
+        public string CloudTalentIndexInfo { get; set; }
+
     }
 }

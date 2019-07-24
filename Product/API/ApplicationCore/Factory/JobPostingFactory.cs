@@ -155,7 +155,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 return false;
             }
 
-            jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.NotIndexed;
+            jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.NotIndexed;
             jobPosting.JobPostingGuid = Guid.NewGuid();
             // set expiration date 
             if (jobPosting.PostingDateUTC < DateTime.UtcNow)
@@ -539,7 +539,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             jobPosting.JobPostingSkills = null;
             // set google index statuses 
             jobPosting.CloudTalentIndexInfo = string.Empty;
-            jobPosting.CloudTalentIndexStatus = (int)JobPostingIndexStatus.NotIndexed;
+            jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.NotIndexed;
             jobPosting.CloudTalentUri = string.Empty;
             // set posting as draft 
             jobPosting.JobStatus = (int)JobPostingStatus.Draft;

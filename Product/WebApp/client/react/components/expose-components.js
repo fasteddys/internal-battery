@@ -1,20 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import ReactDOMServer from 'react-dom/server';
-
 import ResumeMerge from './ResumeMerge';
 import ResumeUpload from './ResumeUpload';
 import Checkbox from './Checkbox';
 import Favorite from './jobs/Favorite';
 import SATable from './reports/SATable';
 import JobAppReportTable from './reports/JobAppReportTable';
+import NotificationCountsTable from './reports/NotificationCountsTable';
 import BrowseJobs from './jobs/BrowseJobs';
 import JobPostingAlert from './jobs/JobPostingAlert';
 import Select from './Select';
 import Validate from './Validate';
 import TextArea from './TextArea';
 import Breadcrumb from './breadcrumbs/Breadcrumb';
-
 
 global.React = React;
 global.ReactDOM = ReactDOM;
@@ -42,9 +41,10 @@ global.NotificationView = NotificationView;
 import NotificationItem from './dashboard/dashboard-helpers';
 global.NotificationItem = NotificationItem;
 
-// reports
+// reports 
 global.SATable = SATable;
 global.JobAppReportTable = JobAppReportTable;
+global.NotificationCountsTable = NotificationCountsTable;
 
 // work around for require (until gulp refactor)
 import buildQuery from 'odata-query';

@@ -225,6 +225,36 @@ namespace UpDiddyApi.Controllers
         }
 
         /// <summary>
+        /// Get read notifications by start date and end date
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/[controller]/notification-reads")]
+        public async Task<IActionResult> ReadNotificationsAsync(ODataQueryOptions<Notification> options)
+        {
+            ActionResult response;
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var notificationsCountsReportDto = await _reportingService.GetReadNotificationsAsync(options);
+                    response = Ok(notificationsCountsReportDto);
+
+                }
+                else
+                    response = BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _syslog.LogError(ex, $"Error in ReportController.ReadNotificationsAsync method");
+                response = StatusCode(500);
+            }
+
+            return response;
+        }
+
+        /// <summary>
         /// Get active/published job counts per company and posted date range.
         /// </summary>
         /// <param name="startPostDate"></param>
@@ -249,6 +279,36 @@ namespace UpDiddyApi.Controllers
             catch (Exception ex)
             {
                 _syslog.LogError(ex, $"Error in ReportController.ActiveJobPostCountPerCompanyByDates method for StartPostDate={startPostDate} and EndPostDate={endPostDate}");
+                response = StatusCode(500);
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// Get Job View Count
+        /// </summary>
+        /// <param name="jobPostingGuid"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("/api/[controller]/job-view-count/{jobPostingGuid?}")]
+        public async Task<IActionResult> JobViewCount(Guid jobPostingGuid)
+        {
+            ActionResult response;
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var jobViewCountDtoList = await _reportingService.GetJobViewCount(jobPostingGuid);
+                    response = Ok(jobViewCountDtoList);
+
+                }
+                else
+                    response = BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _syslog.LogError(ex, $"Error in ReportController.JobViewCount method for jobPostingGuid={jobPostingGuid}");
                 response = StatusCode(500);
             }
 

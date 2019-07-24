@@ -1,0 +1,320 @@
+// Copyright 2019 Google LLC.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+syntax = "proto3";
+
+package google.cloud.talent.v4beta1;
+
+import "google/cloud/talent/v4beta1/common.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/type/date.proto";
+import "google/api/annotations.proto";
+
+option go_package = "google.golang.org/genproto/googleapis/cloud/talent/v4beta1;talent";
+option java_multiple_files = true;
+option java_outer_classname = "AssignmentResourceProto";
+option java_package = "com.google.cloud.talent.v4beta1";
+option objc_class_prefix = "CTS";
+
+// Resource that represents a job assignment record of a candidate.
+message Assignment {
+  // Enum that represents the assignment status.
+  enum AssignmentState {
+    // Default value.
+    ASSIGNMENT_STATE_UNSPECIFIED = 0;
+
+    // The person has not started the assignment yet.
+    NOT_STARTED = 1;
+
+    // The person is currently on assignment.
+    IN_PROGRESS = 2;
+
+    // The person has completed assignment.
+    COMPLETED = 3;
+  }
+
+  // Required during assignment update.
+  //
+  // Resource name assigned to an assignment by the API.
+  //
+  // The format is
+  // "projects/{project_id}/tenants/{tenant_id}/profiles/{profile_id}/assignments/{assignment_id}",
+  // for example,
+  // "projects/api-test-project/tenants/foo/profiles/bar/assignments/baz".
+  string name = 1;
+
+  // Required.
+  //
+  // Client side assignment identifier, used to uniquely identify the
+  // assignment.
+  //
+  // The maximum number of allowed characters is 255.
+  string external_id = 21;
+
+  // Output only. Resource name of the profile of this assignment.
+  //
+  // The format is
+  // "projects/{project_id}/tenants/{tenant_id}/profiles/{profile_id}",
+  // for example, "projects/api-test-project/tenants/foo/profiles/bar".
+  string profile = 2;
+
+  // Optional.
+  //
+  // Resource name of the application generating this assignment.
+  //
+  // The format is
+  // "projects/{project_id}/tenants/{tenant_id}/profiles/{profile_id}/applications/{application_id}",
+  // for example,
+  // "projects/api-test-project/tenants/foo/profiles/bar/applications/baz".
+  string application = 3;
+
+  // One of either a job or a company is required.
+  //
+  // The format is
+  // "projects/{project_id}/tenants/{tenant_id}/jobs/{job_id}",
+  // for example, "projects/api-test-project/tenants/foo/jobs/bar".
+  string job = 4;
+
+  // One of either a job or a company is required.
+  //
+  // The format is
+  // "projects/{project_id}/tenants/{tenant_id}/companies/{company_id}",
+  // for example, "projects/api-test-project/tenants/foo/companies/bar".
+  string company = 5;
+
+  // Optional.
+  //
+  // The resource name of the person who generated this assignment. The format
+  // is "projects/{project_id}/tenants/{tenant_id}/recruiters/{recruiter_id}",
+  // for example, "projects/api-test-project/tenants/foo/recruiters/bar".
+  string recruiter = 19;
+
+  // Optional.
+  //
+  // The expected or actual start date (inclusive) of the assignment.
+  google.type.Date start_date = 6;
+
+  // Optional.
+  //
+  // The expected or actual end date (inclusive) of the assignment.
+  google.type.Date end_date = 7;
+
+  // Optional.
+  //
+  // The current status of the assignment, identifiying whether the assignment
+  // is in progress or completed. Used for filtering on current assignment
+  // state.
+  AssignmentState state = 18;
+
+  // Optional.
+  //
+  // The language in which this assignment information is provided.
+  // This is distinct from the language of the job posting or profile.
+  string language_code = 20;
+
+  // Optional.
+  //
+  // If the assignment was extended beyond the initially planned end date, this
+  // should be set to true; false otherwise. Update the corresponding end date
+  // if setting this field to true.
+  bool extended = 8;
+
+  // Optional.
+  //
+  // The termination status of the assignment from the employer's perspective,
+  // if available and the assignment has termination. That is, an outcome of
+  // NEGATIVE means the employer would be unwilling to engage with this person
+  // on this or similar assignments again.
+  Outcome employer_outcome = 9;
+
+  // Optional.
+  //
+  // The termination status of the assignment from the assignee or candidate's
+  // perspective, if available and the assignment has termination.
+  // That is, an outcome of NEGATIVE means the candidate would be unwilling to
+  // engage with this employer or assignment again.
+  Outcome assignee_outcome = 10;
+
+  // Optional.
+  //
+  // Any notes, raw status codes, or additional context around the termination
+  // of the assignment.
+  string outcome_notes = 11;
+
+  // Optional.
+  //
+  // Any known candidate's compensation information for this assignment (salary,
+  // bonuses, and so on) where different from the associated job_id's
+  // compensation information (where available).
+  CompensationInfo compensation = 12;
+
+  // Optional.
+  //
+  // If true, the assignee has been issued the first paycheck for this
+  // assignment or not.
+  google.protobuf.BoolValue issued_first_paycheck = 22;
+
+  // Optional.
+  //
+  // The assignment's employment type (for example, PERMANENT, TEMPORARY)
+  // if different from the EmploymentType on the job.
+  EmploymentType assignment_type = 13;
+
+  // Optional.
+  //
+  // If it is a supervisor position.
+  google.protobuf.BoolValue is_supervisor = 14;
+
+  // Optional.
+  //
+  // The number of employees this person has supervised.
+  int32 supervised_employee_count = 15;
+
+  // Optional.
+  //
+  // All performance feedback received by the employee (for example, performance
+  // reviews, and so on).
+  repeated PerformanceReview performance_reviews = 16;
+
+  // Optional.
+  //
+  // Any employee satisfaction surveys (for example, how happy they are with the
+  // role, and do on).
+  repeated EmployeeSatisfactionSurvey employee_satisfaction_surveys = 17;
+}
+
+// All performance feedback received by the employee (i.e., performance reviews,
+// and so on).
+message PerformanceReview {
+  // Individual sub-components of the performance review (for example,
+  // communication skills, technical skills, and so on).
+  message PerformanceReviewTopic {
+    // Required.
+    //
+    // What area of feedback this is about (for example, overall, communication
+    // skills, technical skills, and so on).
+    string topic_type = 1;
+
+    // Unique identifier of the person providing the performance review for this
+    // topic.
+    string reviewer_id = 2;
+
+    // Role of the person providing the performance review for this topic.
+    ReviewerRole reviewer_role = 3;
+
+    // Notes about the employee's performance on this sub-area.
+    string review_notes = 4;
+
+    // The rating on this assessment.
+    Rating rating = 5;
+
+    // Required.
+    //
+    // Is the rating on this assessment area positive, negative, neutral?
+    Outcome outcome = 6;
+  }
+
+  // Required.
+  //
+  // Customer provided timestamp of when the performance review was given.
+  google.protobuf.Timestamp review_time = 1;
+
+  // Unique identifier of the person providing the performance review.
+  string reviewer_id = 2;
+
+  // Role of the person providing the performance review.
+  ReviewerRole reviewer_role = 3;
+
+  // Required.
+  //
+  // The first date (inclusive) of the period for which this performance review
+  // is for.
+  google.type.Date review_period_start_date = 4;
+
+  // Required.
+  //
+  // The last date (inclusive) of the period for which this performance review
+  // is for.
+  google.type.Date review_period_end_date = 5;
+
+  // Any free text notes on the performance review.
+  string review_notes = 6;
+
+  // The rating on this assessment.
+  Rating rating = 7;
+
+  // Required.
+  //
+  // Is the rating on this assessment area positive, negative, neutral?
+  Outcome outcome = 8;
+
+  // Optional.
+  //
+  // Individual sub-components of the performance review (for example,
+  // communication skills, technical skills, and so on).
+  repeated PerformanceReviewTopic performance_review_topics = 9;
+}
+
+// Any employee satisfaction surveys (i.e., how happy they are with the role,
+// and so on).
+message EmployeeSatisfactionSurvey {
+  // Individual sub-components of the satisfaction survey (i.e., overall, office
+  // location, manager, work / life balance, and so on).
+  message EmployeeSatisfactionSurveyTopic {
+    // Required.
+    //
+    // What area of satisfaction this is about (that is, overall, office
+    // location, manager, work / life balance, and so on).
+    string survey_topic_name = 1;
+
+    // Any free-text notes / feedback provided on this sub-component.
+    string survey_topic_notes = 2;
+
+    // The rating on this assessment.
+    Rating rating = 3;
+
+    // Is the rating on this assessment area positive, negative, neutral?
+    Outcome outcome = 4;
+  }
+
+  // Required.
+  //
+  // Customer provided timestamp of when the satisfaction survey was
+  // completed.
+  google.protobuf.Timestamp survey_time = 1;
+
+  // Required.
+  //
+  // Customer provided survey name or description.
+  string survey_name = 2;
+
+  // Any free-text notes / feedback provided on the survey.
+  string survey_notes = 3;
+
+  // The rating on this assessment.
+  Rating rating = 4;
+
+  // Required.
+  //
+  // Is the rating on this assessment area positive, negative, neutral?
+  Outcome outcome = 5;
+
+  // Optional.
+  //
+  // Individual sub-components of the satisfaction survey (that is, overall,
+  // office location, manager, work / life balance, and so on).
+  repeated EmployeeSatisfactionSurveyTopic survey_topics = 6;
+}

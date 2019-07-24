@@ -37,14 +37,16 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ILogger _logger { get; set; }
         private IRepositoryWrapper _repository { get; set; }
         private readonly IMapper _mapper;
+        private ITaggingService _taggingService { get; set; }
 
-        public SubscriberService(UpDiddyDbContext context,
-            IConfiguration configuration,
-            ICloudStorage cloudStorage,
-            IB2CGraph graphClient,
-            IRepositoryWrapper repository,
-            ILogger<SubscriberService> logger,
-            IMapper mapper)
+        public SubscriberService(UpDiddyDbContext context, 
+            IConfiguration configuration, 
+            ICloudStorage cloudStorage, 
+            IB2CGraph graphClient, 
+            IRepositoryWrapper repository, 
+            ILogger<SubscriberService> logger, 
+            IMapper mapper,
+            ITaggingService taggingService)
         {
             _db = context;
             _configuration = configuration;
@@ -53,6 +55,60 @@ namespace UpDiddyApi.ApplicationCore.Services
             _repository = repository;
             _logger = logger;
             _mapper = mapper;
+            _taggingService = taggingService;
+        }
+
+
+        public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
+        {
+            var querableSubscribers = await _repository.SubscriberRepository.GetAllSubscribersAsync();
+
+            List<Subscriber> rVal = await querableSubscribers.Where(s => s.IsDeleted == 0 && s.CloudTalentIndexVersion < indexVersion)
+                                                            .Take(numSubscribers)
+                                                            .ToListAsync();
+
+
+            if (rVal.Count > 0)
+            {
+                // build sql to update subscribers who will be updated 
+                string updateSql = $"update subscriber set CloudTalentIndexVersion = {indexVersion} where subscriberid in (";
+                string inList = string.Empty;
+                foreach (Subscriber s in rVal)
+                {
+                    if (string.IsNullOrEmpty(inList) == false)
+                        inList += ",";
+                    inList += s.SubscriberId.ToString();
+
+                }
+                updateSql += inList + ")";
+                await _repository.SubscriberRepository.ExecuteSQL(updateSql);
+
+            }
+
+            return rVal;
+        }
+
+
+        public async Task<bool> ToggleSubscriberNotificationEmail(Guid subscriberGuid, bool isNotificationEmailsEnabled)
+        {
+            bool isOperationSuccessful = false;
+            try
+            {
+                var subscriber = await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+                if (subscriber == null)
+                    throw new ApplicationException($"Unrecognized subscriber; subscriberGuid: {subscriberGuid}");
+                subscriber.NotificationEmailsEnabled = isNotificationEmailsEnabled;
+                subscriber.ModifyDate = DateTime.UtcNow;
+                subscriber.ModifyGuid = Guid.Empty;
+                _repository.SubscriberRepository.Update(subscriber);
+                await _repository.SubscriberRepository.SaveAsync();
+                isOperationSuccessful = true;
+            }
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, $"SubscriberService.ToggleSubscriberNotificationEmail: An error occured while attempting to modify the subscriber. Message: {e.Message}", e);
+            }
+            return isOperationSuccessful;
         }
 
         public async Task<SubscriberFile> AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream, bool parseResume = false)
@@ -140,6 +196,10 @@ namespace UpDiddyApi.ApplicationCore.Services
                     await _db.SaveChangesAsync();
 
                     partnerContact.Contact.SubscriberId = newSubscriber.SubscriberId;
+                    await _db.SaveChangesAsync();
+
+                    await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(newSubscriber.SubscriberId);
+
                     CampaignPhase campaignPhase = CampaignPhaseFactory.GetCampaignPhaseByNameOrInitial(_db, campaign.CampaignId, signUpDto.campaignPhase);
                     _db.PartnerContactAction.Add(new PartnerContactAction()
                     {
