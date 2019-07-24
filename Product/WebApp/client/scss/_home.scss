@@ -1,6 +1,26 @@
 ﻿@import '_variables';
 
 body{
+   
+
+    a[href^="http://maps.google.com/maps"] {
+        display: none !important
+    }
+
+    a[href^="https://maps.google.com/maps"] {
+        display: none !important
+    }
+
+    .gmnoprint a,
+    .gmnoprint span,
+    .gm-style-cc {
+        display: none;
+    }
+
+    .gmnoprint div {
+        background: none !important;
+    }
+
     position: relative;
     color: $color-secondary;
     padding-top: 68.42px;
@@ -137,11 +157,11 @@ body{
         .cc-text-video-band {
             text-align: center;
 
-            .cc-text-video-band-right-column {
+            .cc-text-video-band-right-column, #map {
                 display: none;
             }
         }
-
+        
         .acct-disclaimer{
             font-size: .75rem;
         }
@@ -319,7 +339,7 @@ body{
         .cc-text-video-band {
             text-align: left;
 
-            .cc-text-video-band-right-column {
+            .cc-text-video-band-right-column, #map {
                 display: block;
             }
         }
@@ -360,6 +380,10 @@ body{
 // Large Styles
 @media (min-width: 992px) {
     #HomeContainer {
+
+       
+
+
         #HomeContainerHero {
             .signup-top-container-header{
                 font-size:1.7rem !important;
@@ -392,6 +416,7 @@ body{
 // Extra Large Styles
 @media (min-width: 1200px) {
     #HomeContainer {
+
         #HomeContainerHero {
             padding: 17rem 0;
             background-image: url('/images/hero_bannerbg_top.jpg');
