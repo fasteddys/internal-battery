@@ -1516,7 +1516,7 @@ namespace UpDiddyApi.Workflow
                                 throw new InvalidOperationException("Related offer entity not found");
                             entityId = offerEntity.OfferId;
                             break;
-                        case "JobPosting":
+                        case "Job posting":
                             var jobPosting = await _repositoryWrapper.JobPosting.GetJobPostingByGuid(entityGuid);
                             if (jobPosting == null)
                                 throw new InvalidOperationException("Related jobPosting entity not found");
