@@ -25,6 +25,7 @@ trigger:
       - Product/WebApp/*
     exclude:
       - Product/API/*
+      - Product/CCProfileService/*
 
 # disable CI builds for pull requests for now
 pr: none
