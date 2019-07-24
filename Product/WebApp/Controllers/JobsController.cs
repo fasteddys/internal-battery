@@ -127,7 +127,7 @@ namespace UpDiddy.Controllers
             {
                 var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
 
-                if (!string.IsNullOrWhiteSpace(company.LogoUrl))
+                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
                     job.CompanyLogoUrl = _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + company.LogoUrl;
             }
 

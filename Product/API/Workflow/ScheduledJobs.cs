@@ -46,6 +46,7 @@ namespace UpDiddyApi.Workflow
         private readonly IJobPostingService _jobPostingService;
         private readonly ITrackingService _trackingService;
         private readonly CloudTalent _cloudTalent;
+        private readonly IMimeMappingService _mimeMappingService;
         public ScheduledJobs(
             UpDiddyDbContext context,
             IMapper mapper,
@@ -60,7 +61,8 @@ namespace UpDiddyApi.Workflow
             IRepositoryWrapper repositoryWrapper,
             ISubscriberService subscriberService,
             IJobPostingService jobPostingService,
-            ITrackingService trackingService           
+            ITrackingService trackingService,
+            IMimeMappingService mimeMappingService
            )
         {
             _db = context;
@@ -80,6 +82,7 @@ namespace UpDiddyApi.Workflow
             _subscriberService = subscriberService;
             _jobPostingService = jobPostingService;
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            _mimeMappingService = mimeMappingService;
 
         }
 
@@ -1548,5 +1551,27 @@ namespace UpDiddyApi.Workflow
                 _syslog.LogError(e, $"ScheduledJobs.TrackSubscriberActionInformation exception: {e.Message} for Subscriber Guid={subscriberGuid}, EntityTypeGuid={entityTypeGuid} and EntityGuid={entityGuid}");
             }
         }
+
+        #region Update MimeType For SubscriberFiles
+        /// <summary>
+        /// Job to update MimeType for all valid Subscriber Files.
+        /// </summary>
+        /// <returns></returns>
+        public async Task UpdateSubscriberFilesMimeType()
+        {
+            //get all SubscriberFiles with Empty MimeType
+            var queryableSubscriberFile = await _repositoryWrapper.SubscriberFileRepository.GetAllSubscriberFileQueryableAsync();
+            var nullMimeTypeFiles=await queryableSubscriberFile.Where(x => x.MimeType == null && x.IsDeleted==0).ToListAsync();
+
+            if (nullMimeTypeFiles.Count > 0)
+            {
+                foreach(SubscriberFile file in nullMimeTypeFiles)
+                {
+                    file.MimeType = await _mimeMappingService.MapAsync(file.BlobName);
+                    await _repositoryWrapper.SubscriberFileRepository.UpdateSubscriberFileAsync(file);
+                }
+            }
+        }
+        #endregion
     }
 }
