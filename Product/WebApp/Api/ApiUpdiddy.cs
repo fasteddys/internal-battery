@@ -153,15 +153,9 @@ namespace UpDiddy.Api
 
         private async Task<HttpClient> AddBearerTokenAsync(HttpClient client)
         {
-            _syslog.LogInformation( $"Addbearertokenasync method.");
-
             if (_contextAccessor.HttpContext.User.Identity.IsAuthenticated)
             {
-                _syslog.LogInformation($"Addbearertokenasync method: is authenticated");
-
                 AuthenticationResult authResult = await GetBearerTokenAsync();
-                _syslog.LogInformation($"Addbearertokenasync method bearer: " + authResult.AccessToken);
-
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResult != null ? authResult.AccessToken : string.Empty);
             }
             return client;
