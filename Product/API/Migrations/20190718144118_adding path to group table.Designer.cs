@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190718144118_adding path to group table")]
+    partial class addingpathtogrouptable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -304,8 +306,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid?>("ModifyGuid");
 
                     b.Property<int>("PartnerId");
-
-                    b.Property<int>("UnsubscribeGroupId");
 
                     b.HasKey("CampaignPartnerId");
 
@@ -2865,14 +2865,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("City");
 
-                    b.Property<string>("CloudTalentIndexInfo");
-
-                    b.Property<int>("CloudTalentIndexStatus");
-
-                    b.Property<int>("CloudTalentIndexVersion");
-
-                    b.Property<string>("CloudTalentUri");
-
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
@@ -2909,10 +2901,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<bool>("NotificationEmailsEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValue(true);
 
                     b.Property<string>("PhoneNumber");
 

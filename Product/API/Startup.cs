@@ -208,9 +208,12 @@ namespace UpDiddyApi
 
             // kick off the metered welcome email delivery process at five minutes past the hour every hour
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
-
+            
             // kick off the job abandonment email delivery process
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteJobAbandonmentEmailDelivery(), Cron.Daily());
+
+            // kick off the subscriber notification email reminder process every day at 12 UTC 
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
 
             // Add Polly 
             // Create Policies  
@@ -270,6 +273,7 @@ namespace UpDiddyApi
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IRecruiterService, RecruiterService>();
             services.AddScoped<ITaggingService, TaggingService>();
+            services.AddScoped<ISubscriberNotificationService, SubscriberNotificationService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

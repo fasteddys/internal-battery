@@ -176,13 +176,13 @@ namespace UpDiddy
                 options.SupportedUICultures = supportedCultures;
             });
 
-            // Add Redis session cahce
+            // Add Redis session cahce 
             services.AddDistributedRedisCache(options =>
             {
                 options.InstanceName = Configuration.GetValue<string>("redis:name");
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
-
+       
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromHours(1);

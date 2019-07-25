@@ -53,40 +53,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             return true;
         }
 
-        public async Task<bool> AddSubscriberToGroupBasedOnReferrerUrlAsync(int SubscriberId, string ReferrerUrl)
-        {
-            // Get all urls that match the given referer url. Allows for more than one.
-            IEnumerable<PartnerReferrer> iePartnerReferrers = await _repositoryWrapper.PartnerReferrerRepository
-                        .GetByConditionAsync(pr => pr.Path.Equals(ReferrerUrl));
-
-            IList<PartnerReferrer> partnerReferrers = iePartnerReferrers.ToList();
-
-            if(partnerReferrers.Count == 0)
-            {
-                // If no link is found to a partner, simply add a generated group
-                Group Group = await GenerateGroup(ReferrerUrl);
-                AddSubscriberToGroupAsync(Group.GroupId, SubscriberId);
-            }
-            else
-            {
-                // Iterate through each referer url. Will almost always just be one.
-                foreach (PartnerReferrer partnerReferrer in partnerReferrers)
-                {
-                    IList<GroupPartner> groupPartners = _repositoryWrapper.GroupPartnerRepository
-                        .GetByConditionAsync(gp => gp.PartnerId == partnerReferrer.PartnerId).Result.ToList();
-
-                    // Iterate through all groups associated with the partner of the referer url.
-                    foreach (GroupPartner groupPartner in groupPartners)
-                    {
-                        AddSubscriberToGroupAsync(groupPartner.GroupId, SubscriberId);
-                    }
-                }
-            }
-            
-
-            return true;
-        }
-
         public async Task<bool> AddConvertedContactToGroupBasedOnPartnerAsync(int SubscriberId)
         {
             IList<Partner> Partners = await _repositoryWrapper.PartnerContactRepository.GetPartnersAssociatedWithSubscriber(SubscriberId);
@@ -102,59 +68,53 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             foreach(GroupPartner groupPartner in GroupPartners)
             {
-                AddSubscriberToGroupAsync(groupPartner.GroupId, SubscriberId);
+                await AddSubscriberToGroupAsync(groupPartner.GroupId, SubscriberId);
             }
 
             return true;
         }
 
-        public async Task<bool> EnsurePartnerReferrerEntryExistsIfPartnerSpecified(string ReferrerUrl, Guid PartnerGuid, int SubscriberId)
+        public async Task<bool> CreateGroup(string ReferrerUrl, Guid PartnerGuid, int SubscriberId)
         {
-            IEnumerable<Partner> iePartner = await _repositoryWrapper.PartnerRepository.GetByConditionAsync(p => p.PartnerGuid == PartnerGuid);
-            Partner Partner = iePartner.FirstOrDefault();
-            IEnumerable<PartnerReferrer> iePartnerReferrer = await _repositoryWrapper.PartnerReferrerRepository
-                .GetByConditionAsync(pr => pr.PartnerId == Partner.PartnerId && pr.Path.Equals(ReferrerUrl));
-            PartnerReferrer PartnerReferrer = iePartnerReferrer.FirstOrDefault();
+            Group Group = await GetGroupBasedOnReferrerUrl(ReferrerUrl);
+            await AddSubscriberToGroupAsync(Group.GroupId, SubscriberId);
 
-            if (PartnerReferrer != null)
-                return false;
-
-            PartnerReferrer NewPartnerReferrer = new PartnerReferrer
+            if(PartnerGuid != null && PartnerGuid != Guid.Empty)
             {
-                PartnerId = Partner.PartnerId,
-                Path = ReferrerUrl
-            };
+                IEnumerable<Partner> iePartner = await _repositoryWrapper.PartnerRepository.GetByConditionAsync(p => p.PartnerGuid == PartnerGuid);
+                Partner Partner = iePartner.FirstOrDefault();
 
-            _repositoryWrapper.PartnerReferrerRepository.Create(NewPartnerReferrer);
-            await _repositoryWrapper.PartnerReferrerRepository.SaveAsync();
+                DateTime CurrentDateTime = DateTime.UtcNow;
 
-            DateTime CurrentDateTime = DateTime.UtcNow;
+                GroupPartner GroupPartner = new GroupPartner
+                {
+                    CreateDate = CurrentDateTime,
+                    CreateGuid = Guid.Empty,
+                    GroupId = Group.GroupId,
+                    GroupPartnerGuid = Guid.NewGuid(),
+                    ModifyDate = CurrentDateTime,
+                    PartnerId = Partner.PartnerId
+                };
 
-            Group Group = await GenerateGroup(ReferrerUrl);
-
-            GroupPartner GroupPartner = new GroupPartner
-            {
-                CreateDate = CurrentDateTime,
-                CreateGuid = Guid.Empty,
-                GroupId = Group.GroupId,
-                GroupPartnerGuid = Guid.NewGuid(),
-                ModifyDate = CurrentDateTime,
-                PartnerId = Partner.PartnerId
-            };
-
-            _repositoryWrapper.GroupPartnerRepository.Create(GroupPartner);
-            await _repositoryWrapper.GroupPartnerRepository.SaveAsync();
-
-            AddSubscriberToGroupAsync(Group.GroupId, SubscriberId);
-
+                _repositoryWrapper.GroupPartnerRepository.Create(GroupPartner);
+                await _repositoryWrapper.GroupPartnerRepository.SaveAsync();
+            }
             return true;
         }
 
+
+
         #region Helpers
 
-        private async Task<Group> GenerateGroup(string ReferrerUrl)
+        private async Task<Group> GetGroupBasedOnReferrerUrl(string ReferrerUrl)
         {
-            return await _repositoryWrapper.GroupRepository.CreateAutoGeneratedGroup(ReferrerUrl);
+            IEnumerable<Group> ieGroup = await _repositoryWrapper.GroupRepository.GetByConditionAsync(g => g.Path.Equals(ReferrerUrl));
+            Group groupBasedOnReferrerUrl = ieGroup.FirstOrDefault();
+
+            if(groupBasedOnReferrerUrl == null)
+                groupBasedOnReferrerUrl = await _repositoryWrapper.GroupRepository.CreateAutoGeneratedGroup(ReferrerUrl);
+
+            return groupBasedOnReferrerUrl;
         }
 
         private async Task<SubscriberGroup> GetExistingSubscriberGroup(int GroupId, int SubscriberId)

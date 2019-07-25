@@ -1374,6 +1374,13 @@ namespace UpDiddy.Api
             return await GetAsync<List<JobApplicationCountDto>>(endpoint);
         }
 
+
+        public async Task<List<NotificationCountsReportDto>> GetReadNotificationsCount()
+        {
+            string endpoint = "/api/report/notification-reads";
+            return await GetAsync<List<NotificationCountsReportDto>>(endpoint);
+        }
+
         public async Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync()
         {
             return await GetAsync<List<RecruiterActionSummaryDto>>($"report/recruiter-action-summary");
@@ -1568,6 +1575,18 @@ namespace UpDiddy.Api
             // Return the newly created partner
             return updatedSubscriberNotificationResponse;
 
+        }
+        
+        public async Task<BasicResponseDto> DeleteSubscriberNotificationAsync(Guid SubscriberGuid, NotificationDto notificationDto)
+        {
+            BasicResponseDto deletedSubscriberNotificationResponse = await DeleteAsync<BasicResponseDto>($"subscriber/delete-notification/{notificationDto.NotificationGuid}");
+            return deletedSubscriberNotificationResponse;
+        }
+
+        public async Task<BasicResponseDto> ToggleSubscriberNotificationEmailAsync(Guid subscriberGuid, bool isEnabled)
+        {
+            BasicResponseDto toggledSubscriberNotificationEmailResponse = await PutAsync<BasicResponseDto>($"subscriber/{subscriberGuid}/toggle-notification-emails/{isEnabled.ToString()}");
+            return toggledSubscriberNotificationEmailResponse;
         }
 
         #endregion

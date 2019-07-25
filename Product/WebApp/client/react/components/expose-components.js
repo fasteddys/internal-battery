@@ -7,6 +7,7 @@ import Checkbox from './Checkbox';
 import Favorite from './jobs/Favorite';
 import SATable from './reports/SATable';
 import JobAppReportTable from './reports/JobAppReportTable';
+import NotificationCountsTable from './reports/NotificationCountsTable';
 import BrowseJobs from './jobs/BrowseJobs';
 import JobPostingAlert from './jobs/JobPostingAlert';
 import Select from './Select';
@@ -46,6 +47,7 @@ global.NotificationItem = NotificationItem;
 // reports 
 global.SATable = SATable;
 global.JobAppReportTable = JobAppReportTable;
+global.NotificationCountsTable = NotificationCountsTable;
 
 // work around for require (until gulp refactor)
 import buildQuery from 'odata-query';

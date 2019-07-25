@@ -31,7 +31,7 @@ namespace UpDiddyLib.Helpers
             return true;
         }
 
-        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null, DateTime? sendAt = null)
+        public async Task<bool> SendTemplatedEmailAsync(string email, string templateId, dynamic templateData, Constants.SendGridAccount SendGridAccount, string subject = null, List<Attachment> attachments = null, DateTime? sendAt = null, int? unsubscribeGroupId = null)
         {
             string SendGridAccountType = Enum.GetName(typeof(Constants.SendGridAccount), SendGridAccount);
 
@@ -44,6 +44,13 @@ namespace UpDiddyLib.Helpers
             message.AddTo(new EmailAddress(email));
             message.SetTemplateId(templateId);
             message.SetTemplateData(templateData);
+
+            // include the unsubscribe group for the sub-account if one is specified. 
+            // note that it is not possible to associate unsubscribe groups from the parent account or other sub-accounts. 
+            // (attempting to do this causes the email to be dropped by SendGrid with the following error message: This email was not sent because the SMTPAPI header was invalid.)
+            if (unsubscribeGroupId.HasValue)
+                message.SetAsm(unsubscribeGroupId.Value, new List<int>() { unsubscribeGroupId.Value });
+            
             if(attachments != null)
                 message.AddAttachments(attachments);
             if (subject != null)

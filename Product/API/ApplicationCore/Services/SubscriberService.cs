@@ -89,6 +89,28 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
+        public async Task<bool> ToggleSubscriberNotificationEmail(Guid subscriberGuid, bool isNotificationEmailsEnabled)
+        {
+            bool isOperationSuccessful = false;
+            try
+            {
+                var subscriber = await _repository.SubscriberRepository.GetSubscriberByGuidAsync(subscriberGuid);
+                if (subscriber == null)
+                    throw new ApplicationException($"Unrecognized subscriber; subscriberGuid: {subscriberGuid}");
+                subscriber.NotificationEmailsEnabled = isNotificationEmailsEnabled;
+                subscriber.ModifyDate = DateTime.UtcNow;
+                subscriber.ModifyGuid = Guid.Empty;
+                _repository.SubscriberRepository.Update(subscriber);
+                await _repository.SubscriberRepository.SaveAsync();
+                isOperationSuccessful = true;
+            }
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, $"SubscriberService.ToggleSubscriberNotificationEmail: An error occured while attempting to modify the subscriber. Message: {e.Message}", e);
+            }
+            return isOperationSuccessful;
+        }
+
         public async Task<SubscriberFile> AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream, bool parseResume = false)
         {
 
