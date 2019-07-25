@@ -4,107 +4,358 @@
 @using System.Collections.Generic;
 @using System;
 @model HomeViewModel
-
-
-@section Scripts
-{
-    <script>
-        var head = document.getElementsByTagName('head')[0];
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.async = true;
-        script.defer = true;
-        script.src = 'https://maps.googleapis.com/maps/api/js?key=@Model.GoogleMapsApi&callback=initMap';
-        head.appendChild(script);
-    </script>
-    <script async defer src="~/js/modules/mapdata.js"></script>
-    <script async defer src="~/js/modules/googlemaps.js"></script>
-}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script async defer src="~/js/modules/mapdata.js"></script>
 <script>
-function initMap()
-{
-	var data = @Html.Raw(Json.Serialize(@Model.JobCount));
+    const baseUrl = @Html.Raw(Json.Serialize(@Model.BaseUrl));
+
+   $(document).ready(function(){
+   
+    var data = @Html.Raw(Json.Serialize(@Model.JobCount));
     var baseurl = @Html.Raw(Json.Serialize(@Model.BaseUrl));
-	var m = new GMap(data, baseurl);
-}
-</script>
-<style>
-    #map {
-        height: 700px;
-        width: 100%;
+    initialize(data,baseurl);
+   
+   });
+
+function initialize(model, baseurl) {
+    for (var i = 0; i < model.length; i++) {
+        var key = model[i].stateId;
+        if (mapdata.states[key].prefix == "MD" || "VA") {
+            var prefix = mapdata.states[key].prefix;
+            var stname = mapdata.states[key].name;
+            var companyPosting = model[i].companyPosting;
+            var total = model[i].totalCount;
+            var mappoint = '#' + prefix + '.map-point';
+            $(mappoint + ' a').html(total);
+            var options = {
+                placement: 'right',
+                title: stname,
+                html: true,
+                placement: "top",
+                content: buildContent(stname, prefix, companyPosting, total)
+            };
+            $(mappoint).popover(options);
+            $(mappoint).show();
+        }
     }
-</style>
+}
+   
+  
+
+   
+   function  buildContent(stname, stprefix, cp, total) {
+      var sturl =  "browse-jobs-location/us/" + stprefix + "/1";
+      var string = '<div class="gmap-container-infowindow">' +
+          '<div class="gmap-container-infowindow-total"><a rel="nofollow" href="' + sturl + '"> Total : ' + total + '</a></div>' +
+          '<div class="gmap-container-infowindow-company">' + this.buildCompanyDiv(cp, stname) + '</div>' +
+          '</div>';
+      return string;
+   }
+   
+   
+      function buildCompanyDiv(cp, stname) {
+      var str = "";
+      for (var c in cp) {
+          var url = "jobs?keywords=" + cp[c].companyName + "&location=" + stname;
+          str += '<div>' +
+              '<a rel="nofollow" href="' + url + '">' +
+              cp[c].companyName + ' : ' + cp[c].jobCount.toString() +
+              '</a>' +
+              '</div>';
+      }
+      return str;
+   
+   }
+   
+   
+</script>
+
 <div id="HomeContainer">
- 
-    <div id="HomeContainerHero" class="row">
-        <div class="col">
-            <div class="container">
-                <div class="row">
-                    <div class="col-12 signup-top-container-header">At CareerCircle Our Focus is you!</div>
-                    <div class="col-12 col-md-8 col-md-8 col-xl-4 offset-sm-2 offset-md-2 offset-xl-0">
-                            <div id="SignUpContainer">
-                                <div id="SignUpContainerHeader">
-                                    Create a free account to get started!
-                                </div>
-                                <div id="SignUpComponentContainer">
-                                    @{
-                                        SignUpViewModel suvm = new SignUpViewModel();
-                                        suvm.IsExpressSignUp = true;
-                                        suvm.SignUpButtonText = "Join Our Network";
-                                    }
-                                    @Html.Partial("Components/Authentication/_SignUp", suvm)
-                                </div>
-                            </div>
-                        </div>
-                </div>
+   <div id="HomeContainerHero" class="row">
+      <div class="col">
+         <div class="container">
+            <div class="row">
+               <div class="col-12 signup-top-container-header">At CareerCircle Our Focus is you!</div>
+               <div class="col-12 col-md-8 col-md-8 col-xl-4 offset-sm-2 offset-md-2 offset-xl-0">
+                  <div id="SignUpContainer">
+                     <div id="SignUpContainerHeader">
+                        Create a free account to get started!
+                     </div>
+                     <div id="SignUpComponentContainer">
+                        @{
+                        SignUpViewModel suvm = new SignUpViewModel();
+                        suvm.IsExpressSignUp = true;
+                        suvm.SignUpButtonText = "Join Our Network";
+                        }
+                        @Html.Partial("Components/Authentication/_SignUp", suvm)
+                     </div>
+                  </div>
+               </div>
             </div>
-        </div>
-    </div>
+         </div>
+      </div>
+   </div>
+   <div id="TextImgContainer" class="cc-text-video-band cc-cscheme-white row">
+      <div class="col-12">
+         <div class="container no-padding">
+            <div class="row">
+               <div class="col-12 col-md-12 col-lg-4 cc-text-video-band-right-column order-1 order-lg-2">
+                  <div class="cc-text-video-band-verbiage-container d-flex align-items-center">
+                     <div class="row">
+                        <div class="cc-text-video-band-header font-bold">
+                           Stay Relevant 
+                        </div>
+                        <div class="cc-text-video-band-header font-bold">
+                           Expand Your Skills 
+                        </div>
+                        <div class="cc-text-video-band-description">
+                           <div>We are passionate about preparing the workforce of today for the opportunities of tomorrow. Our goal is to help our members navigate the digital career experience, by aligning their career goals with upskilling, mentoring, and coaching opportunities. Through CareerCircle, you will gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance, versus limited work history or listed resume experience.</div>
+                           <div>By joining our community, we will help guide you to the next step that’s the right fit in your career journey.</div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-12 col-lg-8 order-1 order-lg-1">
+                  <div class="career-circle-map-container  d-flex align-items-center">
+                     <div class="row" >
+                        <div class="usmap">
+                         
+                                <div class="map-point"  id="MD">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Maryland"></i>
+                                </div>
+                                  <div class="map-point" id="VA">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Virginia"></i>
+                                </div>
+                               <div class="map-point" id="NC">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="North Carolina"></i>
+                                </div>
+                                   <div class="map-point" id="SC">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip"title="South Carolina"></i>
+                                </div>
+                              
+                                   <div class="map-point" id="NJ">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="New Jersey"></i>
+                                </div>
+                                 <div class="map-point" id="GA">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Georgia"></i>
+                                </div>
 
- <div id="TextImgContainer" class="cc-text-video-band cc-cscheme-white row">
-        <div class="col-12">
-            <div class="container no-padding">
-                <div class="row">
-                    <div class="col-12 col-md-12 col-lg-4 cc-text-video-band-right-column order-1 order-lg-2">
-                        <div class="cc-text-video-band-verbiage-container d-flex align-items-center">
-                            <div class="row">
-                                  <div class="cc-text-video-band-header font-bold">
-                                    Stay Relevant 
+                                 <div class="map-point" id="FL">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Florida"></i>
                                 </div>
-                                <div class="cc-text-video-band-header font-bold">
-                                    Expand Your Skills 
-                                </div>
-                                <div class="cc-text-video-band-description">
-                                    <div>We are passionate about preparing the workforce of today for the opportunities of tomorrow. Our goal is to help our members navigate the digital career experience, by aligning their career goals with upskilling, mentoring, and coaching opportunities. Through CareerCircle, you will gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance, versus limited work history or listed resume experience.</div>
-                                    <div>By joining our community, we will help guide you to the next step that’s the right fit in your career journey.</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-lg-8 order-1 order-lg-1">
-                        <div class="career-circle-map-container d-flex align-items-center">
-                            <div class="row" >
-                                  <div id="map"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="HomeBottomContainer" class="row">
-        <div class="col">
-            <div class="container">
-                <div class="row d-flex align-items-center">
-                    <div class="col-12 col-md-6 signup-left-col offset-md-3">
-                        <div class="f-color-white signup-bottom-container-header">Your Advocates for Career Success</div>
-                        <span class="f-color-white">CareerCircle's mission is to provide you with the right tools that will allow you to market your
-capabilities in a powerful way. In the end, your journey of advanced education and
-guidance leads to higher pay, flexibility, and a better life.</span>
 
-                    </div>
-                </div>
+                                 <div class="map-point" id="AL">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Alabama"></i>
+                                </div>
+
+                                 <div class="map-point" id="MS">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Mississippi"></i>
+                                </div>
+
+                                 <div class="map-point" id="LA">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Louisiana"></i>
+                                </div>
+
+                                 <div class="map-point" id="AR">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Arkansas"></i>
+                                </div>
+
+                                 <div class="map-point" id="MO">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Missouri"></i>
+                                </div>
+               
+                                <div class="map-point" id="TN">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Tennessee"></i>
+                                </div>
+
+                                   <div class="map-point" id="MO>
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Missouri"></i>
+                                </div>
+
+                                   <div class="map-point" id="TX">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Texas"></i>
+                                </div>
+
+                                   <div class="map-point" id="OK">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Oklahoma"></i>
+                                </div>
+
+                                   <div class="map-point" id="KS">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Kansas"></i>
+                                </div>
+
+                                   <div class="map-point" id="NE">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Nebraska"></i>
+                                </div>
+
+                                   <div class="map-point" id="SD">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="South Dakota"></i>
+                                </div>
+
+                                   <div class="map-point" id="ND">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="North Daktota"></i>
+                                </div>
+
+                                   <div class="map-point" id="MN">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Minnesota"></i>
+                                </div>
+
+                                   <div class="map-point" id="IA">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Iowa"></i>
+                                </div>
+                                   <div class="map-point" id="IL">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Iowa"></i>
+                                </div>
+                                   <div class="map-point" id="IA">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Illinois"></i>
+                                </div>
+                                   <div class="map-point" id="WI">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Wisconsin"></i>
+                                </div>
+                                   <div class="map-point" id="OH">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Ohio"></i>
+                                </div>
+                                   <div class="map-point" id="IN">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Indiana"></i>
+                                </div>
+                                   <div class="map-point" id="KY">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Kentucky"></i>
+                                </div>
+                                   <div class="map-point" id="WVA">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="West Virginia"></i>
+                                </div>
+                                   <div class="map-point" id="PA">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Pennsylvania"></i>
+                                </div>
+                                   <div class="map-point" id="DE">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Delaware"></i>
+                                </div>
+                                   <div class="map-point" id="CT">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Connecticut"></i>
+                                </div>
+                                   <div class="map-point" id="RI">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Rhode Island"></i>
+                                </div>
+                                   <div class="map-point" id="MA">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Massachusetts"></i>
+                                </div>
+                                   <div class="map-point" id="NH">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="New Hampshire"></i>
+                                </div>
+                                   <div class="map-point" id="ME">
+                                    <a class="map-point-count"></a>
+                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Maine"></i>
+                                </div>
+        
+
+                                
+
+
+                                
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        </div>
+                     </div>
+                  </div>
+               </div>
             </div>
-        </div>
-    </div>
+         </div>
+      </div>
+   </div>
+   <div id="HomeBottomContainer" class="row">
+      <div class="col">
+         <div class="container">
+            <div class="row d-flex align-items-center">
+               <div class="col-12 col-md-6 signup-left-col offset-md-3">
+                  <div class="f-color-white signup-bottom-container-header">Your Advocates for Career Success</div>
+                  <span class="f-color-white">CareerCircle's mission is to provide you with the right tools that will allow you to market your
+                  capabilities in a powerful way. In the end, your journey of advanced education and
+                  guidance leads to higher pay, flexibility, and a better life.</span>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
 </div>
