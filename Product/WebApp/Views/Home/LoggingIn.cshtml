@@ -12,7 +12,6 @@
     originate from our app, not login.microsoft.
 *@
 <script>
-    document.cookie = "timeZoneOffset=" + new Date().getTimezoneOffset() + ";path=/;max-age=86400";
     // Adding code to make page wait for "Logging In" text to be displayed to user.
     document.addEventListener("DOMContentLoaded", function (event) {
         window.location.href = "/Home/ProfileLogin";
@@ -31,3 +30,4 @@
         </div>
     </div>
 </div>
+<meta http-equiv="refresh" content="3;url=@Url.Action("Index", "Home")" />

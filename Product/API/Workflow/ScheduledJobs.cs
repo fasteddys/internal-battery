@@ -126,7 +126,7 @@ namespace UpDiddyApi.Workflow
                                  totalUnread = reminder.TotalUnread,
                                  notificationTitle = reminder.Title,
                                  notificationsUrl = _configuration["Environment:BaseUrl"].ToString() + "dashboard",
-                                 disableNotificationEmailReminders = _configuration["Environment:BaseUrl"].ToString() + "Subscriber/DisableEmailReminders/" + reminder.SubscriberGuid
+                                 disableNotificationEmailReminders = _configuration["Environment:BaseUrl"].ToString() + "Home/DisableEmailReminders/" + reminder.SubscriberGuid
                              },
                              SendGridAccount.Transactional,
                              null,
