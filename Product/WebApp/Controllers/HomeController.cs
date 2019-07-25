@@ -60,6 +60,15 @@ namespace UpDiddy.Controllers
 
         public async Task<IActionResult> Index()
         {
+            ViewBag.RedisHost = _configuration["redis:host"];
+            ViewBag.EnvironmentPrelim = _configuration["Environment:IsPreliminary"];
+            ViewBag.AzureClientIdLive = _configuration["Authentication:AzureAdB2C:Live:ClientId"];
+            ViewBag.AzureClienSecretLive = _configuration["Authentication:AzureAdB2C:Live:ClientSecret"];
+            ViewBag.AzureClientIdPre = _configuration["Authentication:AzureAdB2C:Pre:ClientId"];
+            ViewBag.AzureClienSecretPre = _configuration["Authentication:AzureAdB2C:Pre:ClientSecret"];
+            ViewBag.ApiUrl = _configuration["Api:ApiUrl"];
+            ViewBag.AzureLiveApiUrl = _configuration["Authentication:AzureAdB2C:Live:ApiUrl"];
+            ViewBag.AzurePreApiUrl = _configuration["Authentication:AzureAdB2C:Pre:ApiUrl"];
             HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
             return View(HomeViewModel);
         }

@@ -12,6 +12,17 @@
 
 
 <div class="home-container">
+    <div>
+        @ViewBag.RedisHost<br />
+        @ViewBag.EnvironmentPrelim <br />
+        @ViewBag.AzureClientIdLive <br />
+        @ViewBag.AzureClienSecretLive <br />
+        @ViewBag.AzureClientIdPre <br />
+        @ViewBag.AzureClienSecretPre <br />
+        @ViewBag.ApiUrl<br />
+        @ViewBag.AzureLiveApiUrl <br />
+        @ViewBag.AzurePreApiUrl <br />
+    </div>
     <section class="section video-section">
         <div class="hero video-wrapper jquery-background-video-wrapper @Context.Session.GetString("Device-Type")" style="background-image: url('../images/hero/meeting_1.jpg')">
             <video class="jquery-background-video" data-bgvideo="true" autoplay loop muted playsinline style="display: none">
