@@ -237,10 +237,6 @@ namespace UpDiddy.Controllers
             if (job == null)
                 return NotFound();
 
-            if(GetSubscriberGuid() != null && GetSubscriberGuid() !=Guid.Empty)
-                  await _Api.RecordSubscriberJobViewAction(JobGuid, GetSubscriberGuid());
-
-
             // check to see if the inbound url matches the semantic url
             if (job.SemanticJobPath.ToLower() != Request.Path.Value.ToLower())
             {
@@ -338,6 +334,7 @@ namespace UpDiddy.Controllers
                 jdvm.LoggedInSubscriberGuid = subscriber.SubscriberGuid;
                 jdvm.LoggedInSubscriberEmail = subscriber.Email;
                 jdvm.LoggedInSubscriberName = subscriber.FirstName + " " + subscriber.LastName;
+                _Api.RecordSubscriberJobViewAction(JobGuid, GetSubscriberGuid());
             }
 
             //update job as viewed if there is referrer code
@@ -375,7 +372,7 @@ namespace UpDiddy.Controllers
 
 
             var trackingDto = await _api.RecordClientEventAsync(JobGuid, GoogleCloudEventsTrackingDto.Build(HttpContext.Request.Query, UpDiddyLib.Shared.GoogleJobs.ClientEventType.Application_Start));
-            await  _api.RecordSubscriberApplyAction(JobGuid, this.subscriber.SubscriberGuid.Value);
+            await _api.RecordSubscriberApplyAction(JobGuid, this.subscriber.SubscriberGuid.Value);
             return View("Apply", new JobApplicationViewModel()
             {
                 RequestId = trackingDto?.RequestId,
