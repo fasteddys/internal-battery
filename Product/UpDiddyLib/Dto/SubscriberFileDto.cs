@@ -10,5 +10,6 @@ namespace UpDiddyLib.Dto
         public string BlobName { get; set; }
         public DateTime CreateDate { get; set; }
         public string SimpleName { get; set; }
+        public string MimeType { get; set; }
     }
 }

@@ -244,6 +244,8 @@ namespace UpDiddyApi.Controllers
                 _db.SaveChanges();
 
                 Stream SubscriberResumeAsStream = await _subscriberService.GetResumeAsync(subscriber);
+                SubscriberResumeAsStream.Seek(0, SeekOrigin.Begin);
+
                 bool IsExternalRecruiter = jobPosting.Recruiter.Subscriber == null;
 
                 string RecruiterEmailToUse = jobPosting.Recruiter.Subscriber?.Email ?? jobPosting.Recruiter.Email;
@@ -289,14 +291,15 @@ namespace UpDiddyApi.Controllers
                             new Attachment
                             {
                                 Content = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream)),
-                                Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName)
+                                Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName),
+                                Type=subscriber.SubscriberFile.FirstOrDefault().MimeType
                             },
                             new Attachment
                             {
                                 Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jobApplicationDto.CoverLetter)),
                                 Filename = "CoverLetter.txt"
                             }
-                        }, 
+                        },
                         null,
                         null
                     ));
