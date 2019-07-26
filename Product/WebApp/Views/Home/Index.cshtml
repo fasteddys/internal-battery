@@ -7,69 +7,79 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script async defer src="~/js/modules/mapdata.js"></script>
 <script>
-    const baseUrl = @Html.Raw(Json.Serialize(@Model.BaseUrl));
-
+   const baseUrl = @Html.Raw(Json.Serialize(@Model.BaseUrl));
+   
    $(document).ready(function(){
    
-    var data = @Html.Raw(Json.Serialize(@Model.JobCount));
-    var baseurl = @Html.Raw(Json.Serialize(@Model.BaseUrl));
-    initialize(data,baseurl);
+   var data = @Html.Raw(Json.Serialize(@Model.JobCount));
+   var baseurl = @Html.Raw(Json.Serialize(@Model.BaseUrl));
+   initialize(data,baseurl);
+   
+           
+
    
    });
-
-function initialize(model, baseurl) {
-    for (var i = 0; i < model.length; i++) {
-        var key = model[i].stateId;
-        if (mapdata.states[key].prefix == "MD" || "VA") {
-            var prefix = mapdata.states[key].prefix;
-            var stname = mapdata.states[key].name;
-            var companyPosting = model[i].companyPosting;
-            var total = model[i].totalCount;
-            var mappoint = '#' + prefix + '.map-point';
-            $(mappoint + ' a').html(total);
-            var options = {
-                placement: 'right',
-                title: stname,
-                html: true,
-                placement: "top",
-                content: buildContent(stname, prefix, companyPosting, total)
-            };
-            $(mappoint).popover(options);
-            $(mappoint).show();
-        }
-    }
-}
    
-  
-
-   
-   function  buildContent(stname, stprefix, cp, total) {
-      var sturl =  "browse-jobs-location/us/" + stprefix + "/1";
-      var string = '<div class="gmap-container-infowindow">' +
-          '<div class="gmap-container-infowindow-total"><a rel="nofollow" href="' + sturl + '"> Total : ' + total + '</a></div>' +
-          '<div class="gmap-container-infowindow-company">' + this.buildCompanyDiv(cp, stname) + '</div>' +
-          '</div>';
-      return string;
+   function initialize(model, baseurl) {
+   for (var i = 0; i < model.length; i++) {
+       var key = model[i].stateId;
+       if (mapdata.states[key].prefix == "MD" || "VA") {
+           var prefix = mapdata.states[key].prefix;
+           var stname = mapdata.states[key].name;
+           var companyPosting = model[i].companyPosting;
+           var total = model[i].totalCount;
+           var mappoint = '#' + prefix + '.map-point';
+           $(mappoint + ' a').html(total);
+           var options = {
+               placement: 'right',
+               title: stname,
+               html: true,
+               animation: true,
+               placement: "top",
+               content: buildContent(stname, prefix, companyPosting, total)
+           };
+           $(mappoint).popover(options);
+           $(mappoint).show();
+       }
+   }
    }
    
    
-      function buildCompanyDiv(cp, stname) {
-      var str = "";
-      for (var c in cp) {
-          var url = "jobs?keywords=" + cp[c].companyName + "&location=" + stname;
-          str += '<div>' +
-              '<a rel="nofollow" href="' + url + '">' +
-              cp[c].companyName + ' : ' + cp[c].jobCount.toString() +
-              '</a>' +
-              '</div>';
-      }
-      return str;
    
+   
+   function  buildContent(stname, stprefix, cp, total) {
+     var sturl =  "browse-jobs-location/us/" + stprefix + "/1";
+     var string = '<div class="gmap-container-infowindow">' +
+         '<div class="gmap-container-infowindow-total"><a rel="nofollow" href="' + sturl + '"> Total : ' + total + '</a></div>' +
+         '<div class="gmap-container-infowindow-company">' + this.buildCompanyDiv(cp, stname) + '</div>' +
+         '</div>';
+     return string;
+   }
+   
+   
+     function buildCompanyDiv(cp, stname) {
+     var str = "";
+     for (var c in cp) {
+         var url = "jobs?keywords=" + cp[c].companyName + "&location=" + stname;
+         str += '<div>' +
+             '<a rel="nofollow" href="' + url + '">' +
+             cp[c].companyName + ' : ' + cp[c].jobCount.toString() +
+             '</a>' +
+             '</div>';
+     }
+     return str;
    }
    
    
 </script>
-
+<style>
+   .map-point:hover {
+   transform:translate(0px,-15px);
+   transform:scale(1.2);
+   color:orange;
+   z-index:500;
+   }
+</style>
 <div id="HomeContainer">
    <div id="HomeContainerHero" class="row">
       <div class="col">
@@ -99,7 +109,7 @@ function initialize(model, baseurl) {
       <div class="col-12">
          <div class="container no-padding">
             <div class="row">
-               <div class="col-12 col-md-12 col-lg-4 cc-text-video-band-right-column order-1 order-lg-2">
+               <div class="col-12 cc-text-video-band-right-column order-1 order-lg-2">
                   <div class="cc-text-video-band-verbiage-container d-flex align-items-center">
                      <div class="row">
                         <div class="cc-text-video-band-header font-bold">
@@ -115,227 +125,199 @@ function initialize(model, baseurl) {
                      </div>
                   </div>
                </div>
-               <div class="col-12 col-lg-8 order-1 order-lg-1">
+               <div class="col-12  order-1 order-lg-1">
                   <div class="career-circle-map-container  d-flex align-items-center">
                      <div class="row" >
+                        <img src="~/images/usmap.svg"/>
                         <div class="usmap">
-                         
-                                <div class="map-point"  id="MD">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Maryland"></i>
-                                </div>
-                                  <div class="map-point" id="VA">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Virginia"></i>
-                                </div>
-                               <div class="map-point" id="NC">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="North Carolina"></i>
-                                </div>
-                                   <div class="map-point" id="SC">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip"title="South Carolina"></i>
-                                </div>
-                              
-                                   <div class="map-point" id="NJ">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="New Jersey"></i>
-                                </div>
-                                 <div class="map-point" id="GA">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Georgia"></i>
-                                </div>
-
-                                 <div class="map-point" id="FL">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Florida"></i>
-                                </div>
-
-                                 <div class="map-point" id="AL">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Alabama"></i>
-                                </div>
-
-                                 <div class="map-point" id="MS">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Mississippi"></i>
-                                </div>
-
-                                 <div class="map-point" id="LA">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Louisiana"></i>
-                                </div>
-
-                                 <div class="map-point" id="AR">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Arkansas"></i>
-                                </div>
-
-                                 <div class="map-point" id="MO">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Missouri"></i>
-                                </div>
-               
-                                <div class="map-point" id="TN">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Tennessee"></i>
-                                </div>
-
-                                   <div class="map-point" id="MO>
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Missouri"></i>
-                                </div>
-
-                                   <div class="map-point" id="TX">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Texas"></i>
-                                </div>
-
-                                   <div class="map-point" id="OK">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Oklahoma"></i>
-                                </div>
-
-                                   <div class="map-point" id="KS">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Kansas"></i>
-                                </div>
-
-                                   <div class="map-point" id="NE">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Nebraska"></i>
-                                </div>
-
-                                   <div class="map-point" id="SD">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="South Dakota"></i>
-                                </div>
-
-                                   <div class="map-point" id="ND">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="North Daktota"></i>
-                                </div>
-
-                                   <div class="map-point" id="MN">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Minnesota"></i>
-                                </div>
-
-                                   <div class="map-point" id="IA">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Iowa"></i>
-                                </div>
-                                   <div class="map-point" id="IL">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Iowa"></i>
-                                </div>
-                                   <div class="map-point" id="IA">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Illinois"></i>
-                                </div>
-                                   <div class="map-point" id="WI">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Wisconsin"></i>
-                                </div>
-                                   <div class="map-point" id="OH">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Ohio"></i>
-                                </div>
-                                   <div class="map-point" id="IN">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Indiana"></i>
-                                </div>
-                                   <div class="map-point" id="KY">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Kentucky"></i>
-                                </div>
-                                   <div class="map-point" id="WVA">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="West Virginia"></i>
-                                </div>
-                                   <div class="map-point" id="PA">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Pennsylvania"></i>
-                                </div>
-                                   <div class="map-point" id="DE">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Delaware"></i>
-                                </div>
-                                   <div class="map-point" id="CT">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Connecticut"></i>
-                                </div>
-                                   <div class="map-point" id="RI">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Rhode Island"></i>
-                                </div>
-                                   <div class="map-point" id="MA">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Massachusetts"></i>
-                                </div>
-                                   <div class="map-point" id="NH">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="New Hampshire"></i>
-                                </div>
-                                   <div class="map-point" id="ME">
-                                    <a class="map-point-count"></a>
-                                    <i class="fas fa-map-pin fa-2x" data-toggle="tooltip" title="Maine"></i>
-                                </div>
-        
-
-                                
-
-
-                                
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
+                           <div class="map-point"  id="MD">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Maryland"></i>
+                           </div>
+                           <div class="map-point" id="VA">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Virginia"></i>
+                           </div>
+                           <div class="map-point" id="NC">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="North Carolina"></i>
+                           </div>
+                           <div class="map-point" id="SC">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom"title="South Carolina"></i>
+                           </div>
+                           <div class="map-point" id="NJ">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="New Jersey"></i>
+                           </div>
+                           <div class="map-point" id="GA">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Georgia"></i>
+                           </div>
+                           <div class="map-point" id="FL">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Florida"></i>
+                           </div>
+                           <div class="map-point" id="AL">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Alabama"></i>
+                           </div>
+                           <div class="map-point" id="MS">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Mississippi"></i>
+                           </div>
+                           <div class="map-point" id="LA">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Louisiana"></i>
+                           </div>
+                           <div class="map-point" id="AR">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Arkansas"></i>
+                           </div>
+                           <div class="map-point" id="TN">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Tennessee"></i>
+                           </div>
+                           <div class="map-point" id="MO">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Missouri"></i>
+                           </div>
+                           <div class="map-point" id="TX">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Texas"></i>
+                           </div>
+                           <div class="map-point" id="OK">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Oklahoma"></i>
+                           </div>
+                           <div class="map-point" id="KS">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Kansas"></i>
+                           </div>
+                           <div class="map-point" id="NE">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Nebraska"></i>
+                           </div>
+                           <div class="map-point" id="SD">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="South Dakota"></i>
+                           </div>
+                           <div class="map-point" id="ND">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="North Daktota"></i>
+                           </div>
+                           <div class="map-point" id="MN">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Minnesota"></i>
+                           </div>
+                           <div class="map-point" id="IA">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Iowa"></i>
+                           </div>
+                           <div class="map-point" id="IL">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Iowa"></i>
+                           </div>
+                           <div class="map-point" id="WI">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Wisconsin"></i>
+                           </div>
+                           <div class="map-point" id="OH">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Ohio"></i>
+                           </div>
+                           <div class="map-point" id="IN">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Indiana"></i>
+                           </div>
+                           <div class="map-point" id="KY">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Kentucky"></i>
+                           </div>
+                           <div class="map-point" id="WVA">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="West Virginia"></i>
+                           </div>
+                           <div class="map-point" id="PA">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Pennsylvania"></i>
+                           </div>
+                           <div class="map-point" id="DE">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Delaware"></i>
+                           </div>
+                           <div class="map-point" id="CT">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Connecticut"></i>
+                           </div>
+                           <div class="map-point" id="RI">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Rhode Island"></i>
+                           </div>
+                           <div class="map-point" id="MA">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Massachusetts"></i>
+                           </div>
+                           <div class="map-point" id="NH">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="New Hampshire"></i>
+                           </div>
+                           <div class="map-point" id="VT">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Vermont"></i>
+                           </div>
+                           <div class="map-point" id="ME">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Maine"></i>
+                           </div>
+                           <div class="map-point" id="NM">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="New Mexico"></i>
+                           </div>
+                           <div class="map-point" id="NY">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="New York"></i>
+                           </div>
+                           <div class="map-point" id="CO">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Colorado"></i>
+                           </div>
+                           <div class="map-point" id="WY">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Wyoming"></i>
+                           </div>
+                           <div class="map-point" id="ID">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Idaho"></i>
+                           </div>
+                           <div class="map-point" id="UT">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Utah"></i>
+                           </div>
+                           <div class="map-point" id="AZ">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Arizona"></i>
+                           </div>
+                           <div class="map-point" id="NV">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Nevada"></i>
+                           </div>
+                           <div class="map-point" id="OR">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Oregon"></i>
+                           </div>
+                           <div class="map-point" id="WA">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Washington"></i>
+                           </div>
+                           <div class="map-point" id="CA">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="California"></i>
+                           </div>
+                           <div class="map-point" id="MT">
+                              <a class="map-point-count"></a>
+                              <i class="fas map-point-icon fa-map-pin " data-toggle="tooltip"  data-placement="bottom" title="Montana"></i>
+                           </div>
                         </div>
                      </div>
                   </div>

@@ -1,3 +1,5 @@
+@import '_variables';
+
 @media(min-width:0px) {
     .map-point#MD{
         right: 17%;
@@ -5,98 +7,98 @@
     }
 
     .map-point#NJ{
-        right: 13%;
-        top: 31%;
+        right: 13.5%;
+        top: 30%;
     }
 
     .map-point#VA{
         right: 19%;
-        top: 40%;
+        top: 44%;
     }
 
     .map-point#SC{
         right: 21%;
-        top: 50%;
+        top: 58%;
     }
 
     .map-point#NC{
         right: 17%;
-        top: 46%;
+        top: 53%;
     }
 
     .map-point#MD{
-        right: 17%;
-        top: 36%;
+        right: 14%;
+        top: 38%;
     }
 
     .map-point#NY{
         right: 16%;
-        top: 28%;
+        top: 32%;
     }
 
     .map-point#GA{
         right: 26%;
-        top: 55%;
+        top: 63%;
     }
 
     .map-point#FL{
-        right: 21%;
-        top: 67%;
+        right: 20%;
+        top: 81%;
     }
 
     .map-point#AL{
         right: 38%;
-        top: 56%;
+        top: 66%;
     }
 
     .map-point#MS{
         right: 32%;
-        top: 56%;
+        top: 66%;
     }
 
     .map-point#LA{
-        right: 44%;
-        top: 61%;
+        right: 42%;
+        top: 71%;
     }
 
     .map-point#AR{
         right: 44%;
-        top: 52%;
+        top: 58%;
     }
 
     .map-point#TN{
-        right: 33%;
-        top: 47%;
+        right: 31%;
+        top: 54%;
     }
 
     .map-point#MO{
         right: 44%;
-        top: 40%;
+        top: 44%;
     }
 
     .map-point#TX{
-        right: 56%;
-        top: 61%;
+        right: 55%;
+        top: 73%;
     }
 
     .map-point#OK{
         right: 52%;
-        top: 50%;
+        top: 55%;
     }
 
     .map-point#KS{
         right: 54%;
-        top: 41%;
+        top: 45%;
     }
 
     .map-point#NE{
-        right: 57%;
-        top: 32%;
+        right: 55%;
+        top: 36%;
     }
 
     .map-point#SD{
         right: 57%;
-        top: 23%;
+        top: 27%;
     }
 
     .map-point#ND{
@@ -106,7 +108,7 @@
 
     .map-point#MN{
         right: 48%;
-        top: 20%;
+        top: 17%;
     }
 
     .map-point#IN{
@@ -115,8 +117,8 @@
     }
 
     .map-point#IL{
-        right: 38%;
-        top: 35%;
+        right: 37%;
+        top: 40%;
     }
 
     .map-point#WI{
@@ -130,18 +132,18 @@
     }
 
     .map-point#OH{
-        right: 39%;
-        top: 24%;
-    }
-
-    .map-point#IA{
-        right: 33%;
+        right: 26%;
         top: 38%;
     }
 
+    .map-point#IA{
+        right: 32%;
+        top: 40%;
+    }
+
     .map-point#KY{
-        right: 30%;
-        top: 42%;
+        right: 28%;
+        top: 48%;
     }
 
     .map-point#WI{
@@ -155,70 +157,136 @@
     }
 
     .map-point#PA{
-        right: 19%;
-        top: 30%;
+        right: 17%;
+        top: 32%;
     }
 
     .map-point#DE{
-        right: 14%;
-        top: 35%;
+        right: 12%;
+        top: 33%;
     }
 
     .map-point#CT{
-        right: 13%;
-        top: 26%;
+        right: 9.5%;
+        top: 27%;
     }
 
     .map-point#RI{
-        right: 10.5%;
-        top: 25%;
+        right: 7.5%;
+        top: 26%;
     }
 
     .map-point#ME{
-        right: 7%;
-        top: 13%;
+        right: 6%;
+        top: 12%;
     }
 
     .map-point#MA{
-        right: 10%;
-        top: 23%;
+        right: 9%;
+        top: 24%;
     }
 
     .map-point#VT{
-        right: 12%;
+        right: 12.5%;
         top: 19%;
     }
 
     .map-point#NH{
-        right: 12%;
+        right: 9%;
         top: 19%;
     }
 
+
+    .map-point#NM{
+        right: 70%;
+        top: 56%;
+    }
+
+
+    .map-point#CO{
+        right: 67%;
+        top: 40%;
+    }
+
+    .map-point#WY{
+        right: 69%;
+        top: 28%;
+    }
+
+
+    .map-point#MT{
+        right: 68%;
+        top: 9%;
+    }
+    
+
+    .map-point#ID{
+        right: 81%;
+        top: 18%;
+    }
+
+    .map-point#UT{
+        right: 78%;
+        top: 39%;
+    }
+
+    .map-point#AZ{
+        right: 79%;
+        top: 54%;
+    }
+
+    .map-point#NV{
+        right: 87%;
+        top: 33%;
+    }
+
+    .map-point#WA{
+        right: 90%;
+        top: 19%;
+    }
+
+    .map-point#OR{
+        right: 90%;
+        top: 19%;
+    }
+
+    .map-point#CA{
+        right: 94%;
+        top: 44%;
+    }
+
+    .map-point#WA{
+        right: 89%;
+        top: 6%;
+    }
+
+    .map-point#NY{
+        right: 14%;
+        top: 23%;
+    }
 
 
     .map-point {
         display: none;
         position: absolute;
-        width: 5px;
-        height: 5px;
-        color: red;
+
+        color: $color-primary;
  
         .map-point-count {
-            color: orange !important;
+            font-family:$opensans-regular;
+            color:$color-tree-poppy !important;
             position: relative;
-            right: 100%;
+            right:-55%;
+            top:-32px;
+
         }
       
       
     }
 
     .usmap {
-        position: relative;
-        background-image: none, url('/images/usmap.svg');
         background-position: 50% 50%;
         background-repeat: no-repeat;
-        width: 959px;
-        height: 593px;
         background-size: contain;
     }
 }
