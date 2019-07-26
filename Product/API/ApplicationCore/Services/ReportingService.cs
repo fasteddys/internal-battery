@@ -50,25 +50,15 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<NotificationCountsReportDto>> GetReadNotificationsAsync(ODataQueryOptions<Notification> options)
         {
-            var notifications = options.ApplyTo(await _repositoryWrapper.NotificationRepository.GetAllAsync());
-            var subscriberNotifications = await _repositoryWrapper.SubscriberNotificationRepository.GetAllAsync();
-
-
-            var readNotifications = from sn in subscriberNotifications
-                                    join n in notifications.Cast<Notification>() on sn.NotificationId equals n.NotificationId
-                                    group new
-                                    {
-                                        NotificationTitle = n.Title,
-                                        PublishedDate = n.CreateDate
-                                    } by n.NotificationId into g
-                                    select new NotificationCountsReportDto
-                                    {
-                                        NotificationTitle = g.First().NotificationTitle,
-                                        PublishedDate = g.First().PublishedDate,
-                                        ReadCount = g.Count()
-                                    };
-
-            return await readNotifications.OrderByDescending(rn => rn.PublishedDate).ToListAsync();
+            var view = await _repositoryWrapper.NotificationRepository.GetNotificationReadCounts();
+            return await view.Select(v => new NotificationCountsReportDto()
+            {
+                NotificationTitle = v.NotificationTitle,
+                PublishedDate = v.PublishedDate,
+                ReadCount = v.ReadCount
+            })
+            .OrderByDescending(n => n.PublishedDate)
+            .ToListAsync();
         }
 
         /// <summary>

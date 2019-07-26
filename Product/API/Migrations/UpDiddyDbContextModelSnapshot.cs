@@ -305,7 +305,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("PartnerId");
 
-                    b.Property<int>("UnsubscribeGroupId");
+                    b.Property<int?>("UnsubscribeGroupId");
 
                     b.HasKey("CampaignPartnerId");
 
