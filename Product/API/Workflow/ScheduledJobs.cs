@@ -60,7 +60,7 @@ namespace UpDiddyApi.Workflow
             IRepositoryWrapper repositoryWrapper,
             ISubscriberService subscriberService,
             IJobPostingService jobPostingService,
-            ITrackingService trackingService           
+            ITrackingService trackingService
            )
         {
             _db = context;
@@ -177,7 +177,7 @@ namespace UpDiddyApi.Workflow
                             var spParams = new object[] { deliveryDate };
                             // retrieve the oldest and least frequently used seed email 
                             var partnerContact = _db.PartnerContact.FromSql<PartnerContact>("[dbo].[System_Get_ContactForSeedEmail] @DeliveryDate", spParams).FirstOrDefault();
-                            
+
                             if (
                                 // send the seed email using the lead email's account and template
                                 _sysEmail.SendTemplatedEmailAsync(
@@ -602,6 +602,112 @@ namespace UpDiddyApi.Workflow
         }
 
 
+
+        #endregion
+
+        #region External Courses
+
+        /// <summary>
+        /// This is the entry point for all external course data mining.
+        /// </summary>
+        /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task<bool> CourseDataMining()
+        {
+            _syslog.Log(LogLevel.Information, $"***** CourseDataMining started at: {DateTime.UtcNow.ToLongDateString()}");
+
+            var result = true;
+            try
+            {
+                List<CourseSite> courseSites = _repositoryWrapper.CourseSite.GetAllCourseSitesAsync().Result.ToList();
+
+                foreach (var courseSite in courseSites)
+                {
+                    /*
+                    // initialize stat tracking for operation
+                    JobSiteScrapeStatistic jobDataMiningStats =
+                        new JobSiteScrapeStatistic()
+                        {
+                            CreateDate = DateTime.UtcNow,
+                            CreateGuid = Guid.Empty,
+                            IsDeleted = 0,
+                            JobSiteId = jobSite.JobSiteId,
+                            JobSiteScrapeStatisticGuid = Guid.NewGuid(),
+                            NumJobsAdded = 0,
+                            NumJobsDropped = 0,
+                            NumJobsErrored = 0,
+                            NumJobsProcessed = 0,
+                            NumJobsUpdated = 0
+                        };
+
+                    */
+
+                    // load the course data mining process for the course site
+                    ICourseDataMining courseDataMining = CourseDataMiningFactory.GetCourseDataMiningProcess(courseSite, _configuration, _syslog);
+
+                    // load all existing course pages - it is important to retrieve all of them regardless of their CoursePageStatus to avoid FK conflicts on insert and update operations
+                    List<CoursePage> existingCoursePages = _repositoryWrapper.CoursePage.GetAllCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid).Result.ToList();
+
+                    // retrieve all current course pages that are visible on the course site
+                    List<CoursePage> coursePagesToProcess = courseDataMining.DiscoverCoursePages(existingCoursePages);
+
+
+
+
+
+
+
+
+
+                    /*
+                    // set the number of existing active job pages before we perform any discovery operations
+                    int existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
+
+                    // retrieve all current job pages that are visible on the job site
+                    List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages);
+                    // set the number of pending and active jobs discovered - this will be the future state if we continue processing this job site
+                    int futurePendingAndActiveJobPagesCount = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2).Count();
+
+                    bool isExceedsSafetyThreshold = false;
+                    if (jobSite.PercentageReductionThreshold.HasValue)
+                    {
+                        // perform safety check to ensure we don't erase all jobs if there is an intermittent problem with a job site
+                        if (existingActiveJobPageCount > 0)
+                        {
+                            decimal percentageShift = (decimal)futurePendingAndActiveJobPagesCount / (decimal)existingActiveJobPageCount;
+                            if (percentageShift < jobSite.PercentageReductionThreshold.Value)
+                                isExceedsSafetyThreshold = true;
+                        }
+                    }
+                    if (isExceedsSafetyThreshold)
+                    {
+                        // save the number of discovered jobs as the number of processed jobs
+                        jobDataMiningStats.NumJobsProcessed = jobPagesToProcess.Count;
+                        _syslog.Log(LogLevel.Critical, $"**** ScheduledJobs.JobDataMining aborted processing for {jobSite.Name} because the number of future active jobs ({futurePendingAndActiveJobPagesCount.ToString()}) fell too far below the number of existing active jobs ({existingActiveJobPageCount.ToString()}). The safety threshold is {jobSite.PercentageReductionThreshold.Value.ToString("P2")}.");
+                    }
+                    else
+                    {
+                        // convert job pages to job postings and perform the necessary CRUD operations
+                        jobDataMiningStats = await ProcessJobPages(jobDataMining, jobPagesToProcess, jobDataMiningStats);
+                    }
+
+                    // store aggregate data about operations performed by job site; set scrape date at the very end of the process
+                    jobDataMiningStats.ScrapeDate = DateTime.UtcNow;
+                    _repositoryWrapper.JobSiteScrapeStatistic.Create(jobDataMiningStats);
+                    await _repositoryWrapper.JobSiteScrapeStatistic.SaveAsync();
+
+    */
+                }
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.CourseDataMining encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                result = false;
+            }
+
+            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.CourseDataMining completed at: {DateTime.UtcNow.ToLongDateString()}");
+            return result;
+        }
 
         #endregion
 
@@ -1210,7 +1316,7 @@ namespace UpDiddyApi.Workflow
             {
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ExecuteJobAbandonmentEmailDelivery started at: {DateTime.UtcNow.ToLongDateString()}");
                 Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = await _trackingService.GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime.UtcNow);
-                if(subscribersToJobPostingMapping.Count > 0)
+                if (subscribersToJobPostingMapping.Count > 0)
                 {
                     string jobPostingUrl = _configuration["CareerCircle:ViewJobPostingUrl"];
                     dynamic recruiterTemplate = new JObject();
@@ -1222,7 +1328,7 @@ namespace UpDiddyApi.Workflow
                             , entry.Value.FirstOrDefault().Title
                             , Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsForJobAbandonment"]));
                         JobSearchResultDto similarJobSearchResults = _cloudTalent.JobSearch(jobQuery);
-                        
+
                         //Remove duplicates subscriber already attempted to apply to
                         foreach (var job in entry.Value)
                         {
@@ -1251,7 +1357,7 @@ namespace UpDiddyApi.Workflow
                               null,
                               null);
                     }
-                }          
+                }
             }
             catch (Exception e)
             {
@@ -1340,7 +1446,7 @@ namespace UpDiddyApi.Workflow
         public bool CloudTalentAddOrUpdateProfile(Guid subscriberGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
-            return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);            
+            return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);
         }
 
         public bool CloudTalentDeleteProfile(Guid subscriberGuid)
@@ -1350,12 +1456,12 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
-        public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess )
+        public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess)
         {
-           CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
             int indexVersion = int.Parse(_configuration["CloudTalent:ProfileIndexVersion"]);
-           List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess,indexVersion);
-           foreach ( Subscriber s in subscribers)
+            List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess, indexVersion);
+            foreach (Subscriber s in subscribers)
             {
                 ct.AddOrUpdateProfileToCloudTalent(_db, s.SubscriberGuid.Value);
 
@@ -1492,7 +1598,7 @@ namespace UpDiddyApi.Workflow
                 // load the related entity associated with the action (only if specified)
                 EntityType entityType = null;
                 int? entityId = null;
-                if (entityGuid!=Guid.Empty)
+                if (entityGuid != Guid.Empty)
                 {
                     // load the entity type
                     entityType = await _repositoryWrapper.EntityTypeRepository.GetEntityTypeByEntityGuid(entityTypeGuid);

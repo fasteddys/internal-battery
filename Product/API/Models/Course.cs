@@ -31,5 +31,6 @@ namespace UpDiddyApi.Models
         public string VideoUrl { get; set; }
         public List<CourseVariant> CourseVariants { get; set; }
         public List<CourseSkill> CourseSkills { get; set; } 
+        public bool IsExternal { get; set; }
     }
 }

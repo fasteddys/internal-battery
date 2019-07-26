@@ -43,7 +43,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IActionRepository _actionRepository;
         private IContactRepository _contactRepository;
         private IOfferRepository _offerRepository;
-
+        private ICourseSiteRepository _courseSiteRepository;
+        private ICoursePageRepository _coursePageRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -460,6 +461,30 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _offerRepository = new OfferRepository(_dbContext);
                 }
                 return _offerRepository;
+            }
+        }
+
+        public ICourseSiteRepository CourseSite
+        {
+            get
+            {
+                if (_courseSiteRepository == null)
+                {
+                    _courseSiteRepository = new CourseSiteRepository(_dbContext);
+                }
+                return _courseSiteRepository;
+            }
+        }
+
+        public ICoursePageRepository CoursePage
+        {
+            get
+            {
+                if (_coursePageRepository == null)
+                {
+                    _coursePageRepository = new CoursePageRepository(_dbContext);
+                }
+                return _coursePageRepository;
             }
         }
     }

@@ -215,6 +215,10 @@ namespace UpDiddyApi
             // kick off the subscriber notification email reminder process every day at 12 UTC 
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
 
+            // this will not be triggered on app startup; testing only!
+            BackgroundJob.Enqueue<ScheduledJobs>(x => x.CourseDataMining());
+
+
             // Add Polly 
             // Create Policies  
             int PollyRetries = int.Parse(Configuration["Polly:Retries"]);

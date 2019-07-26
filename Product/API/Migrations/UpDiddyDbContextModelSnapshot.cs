@@ -305,7 +305,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("PartnerId");
 
-                    b.Property<int>("UnsubscribeGroupId");
+                    b.Property<int?>("UnsubscribeGroupId");
 
                     b.HasKey("CampaignPartnerId");
 
@@ -631,6 +631,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
+                    b.Property<bool>("IsExternal");
+
                     b.Property<string>("MobileImage");
 
                     b.Property<DateTime?>("ModifyDate");
@@ -690,6 +692,81 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("CourseDelivery");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.CoursePage", b =>
+                {
+                    b.Property<int>("CoursePageId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("CourseId");
+
+                    b.Property<Guid>("CoursePageGuid");
+
+                    b.Property<int>("CoursePageStatusId");
+
+                    b.Property<int>("CourseSiteId");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("RawData")
+                        .IsRequired();
+
+                    b.Property<string>("UniqueIdentifier")
+                        .IsRequired();
+
+                    b.Property<string>("Uri")
+                        .IsRequired();
+
+                    b.HasKey("CoursePageId");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("CoursePageStatusId");
+
+                    b.HasIndex("CourseSiteId");
+
+                    b.HasIndex("UniqueIdentifier", "CourseSiteId")
+                        .IsUnique()
+                        .HasName("UIX_CoursePage_CourseSite_UniqueIdentifier");
+
+                    b.ToTable("CoursePage");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CoursePageStatus", b =>
+                {
+                    b.Property<int>("CoursePageStatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid>("CoursePageStatusGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Description");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name");
+
+                    b.HasKey("CoursePageStatusId");
+
+                    b.ToTable("CoursePageStatus");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.CourseReview", b =>
                 {
                     b.Property<int>("CourseReviewId")
@@ -725,6 +802,39 @@ namespace UpDiddyApi.Migrations
                     b.HasKey("CourseReviewId");
 
                     b.ToTable("CourseReview");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CourseSite", b =>
+                {
+                    b.Property<int>("CourseSiteId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<Guid>("CourseSiteGuid");
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<string>("Uri")
+                        .IsRequired();
+
+                    b.HasKey("CourseSiteId");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasName("UIX_CourseSite_Name");
+
+                    b.ToTable("CourseSite");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.CourseSkill", b =>
@@ -3750,6 +3860,23 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.Vendor", "Vendor")
                         .WithMany()
                         .HasForeignKey("VendorId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.CoursePage", b =>
+                {
+                    b.HasOne("UpDiddyApi.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId");
+
+                    b.HasOne("UpDiddyApi.Models.CoursePageStatus", "CoursePageStatus")
+                        .WithMany()
+                        .HasForeignKey("CoursePageStatusId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("UpDiddyApi.Models.CourseSite", "CourseSite")
+                        .WithMany("CoursePages")
+                        .HasForeignKey("CourseSiteId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
