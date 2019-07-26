@@ -30,8 +30,6 @@ namespace UpDiddy.Controllers
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly ISysEmail _sysEmail;
-        private readonly IDistributedCache _cache;
-
         private readonly IApi _api;
 
         [HttpGet]
@@ -43,8 +41,7 @@ namespace UpDiddy.Controllers
         public HomeController(IApi api,
             IConfiguration configuration,
             IHostingEnvironment env,
-            ISysEmail sysEmail,
-            IDistributedCache cache)
+            ISysEmail sysEmail)
             : base(api)
         {
             _env = env;
