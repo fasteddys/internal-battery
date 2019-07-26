@@ -185,11 +185,16 @@ namespace UpDiddyApi.Models
         public DbQuery<v_SubscriberOfferActions> SubscriberOfferActions { get; set; }
         public DbQuery<v_ThrottledLeadEmailDelivery> ThrottledLeadEmailDelivery { get; set; }
         public DbQuery<v_UnreadNotifications> UnreadNotifications { get; set; }
+        public DbQuery<v_NotificationReadCounts> NotificationReadCounts { get; set; }
 
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder
+                .Query<v_NotificationReadCounts>()
+                .ToView("v_NotificationReadCounts");
+
             modelBuilder.Entity<SubscriberNotification>()
                 .HasQueryFilter(sn => sn.IsDeleted == 0);
 
