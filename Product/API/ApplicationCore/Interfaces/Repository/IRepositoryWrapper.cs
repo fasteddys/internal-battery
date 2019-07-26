@@ -42,5 +42,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IActionRepository ActionRepository { get; }
         IContactRepository ContactRepository { get; }
         IOfferRepository Offer { get; }
+        ISubscriberFileRepository SubscriberFileRepository { get; }
     }
 }

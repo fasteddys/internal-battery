@@ -23,6 +23,7 @@ namespace UpDiddyApi.Models
         [JsonIgnore]
         public Subscriber Subscriber { get; set; }
         public string BlobName { get; set; }
+        public string MimeType { get; set; }
 
         public string SimpleName
         {

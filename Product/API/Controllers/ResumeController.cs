@@ -63,7 +63,7 @@ namespace UpDiddyApi.Controllers
             if (subscriber == null)
                 return NotFound(new BasicResponseDto { StatusCode = 404, Description = "Subscriber not found in the system." });
 
-            await _subscriberService.AddResumeAsync(subscriber, resume.FileName, resume.OpenReadStream(), parseResume);
+            await _subscriberService.AddResumeAsync(subscriber, resume, parseResume);
 
             int FileCount = subscriber.SubscriberFile.Count;
             SubscriberFileDto dto = _mapper.Map<SubscriberFileDto>(subscriber.SubscriberFile[FileCount > 0 ? FileCount - 1 : 0]);
