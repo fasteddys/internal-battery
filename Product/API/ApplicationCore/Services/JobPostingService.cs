@@ -33,23 +33,24 @@ namespace UpDiddyApi.ApplicationCore.Services
                 .ToListAsync();
             foreach (var province in provinceList)
             {
-                var str = province.Trim().Replace(" ", "");        
-                int? stateId = null;
-                if (Enum.TryParse(str.ToUpper(), out statePrefixEnum))
+                var str = province.Trim().Replace(" ", "").ToUpper();        
+                string statePrefix = string.Empty;
+                if (Enum.TryParse(str, out statePrefixEnum))
                 {
-                    stateId = (int)statePrefixEnum;
+                    statePrefix = str;
                 }
-                else if (Enum.TryParse(str.ToLower(), out stateNameEnum))
-                {
-                    stateId = (int)stateNameEnum;
+                else if (Enum.TryParse(str, out stateNameEnum))
+                {         
+                   Enums.ProvinceName value = (Enums.ProvinceName)(int)stateNameEnum;
+                   statePrefix = value.ToString();
                 }
-                if (stateId.HasValue)
+                if (!String.IsNullOrEmpty(statePrefix))
                 {
                     var companyQuery = await GetJobsByStateQuery(province);
                     if (companyQuery.Count > 0)
                     {
                         var total = companyQuery.Sum(c => c.JobCount);
-                        jobCount.Add(new JobPostingCountDto(stateId.Value, companyQuery, total));
+                        jobCount.Add(new JobPostingCountDto(statePrefix, companyQuery, total));
                     }
                 }
             }

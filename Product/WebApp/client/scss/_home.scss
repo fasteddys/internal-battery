@@ -157,7 +157,7 @@ body{
         .cc-text-video-band {
             text-align: center;
 
-            .cc-text-video-band-right-column, #map {
+            .cc-text-video-band-right-column, .map {
                 display: none;
             }
         }
@@ -343,7 +343,7 @@ body{
         .cc-text-video-band {
             text-align: left;
 
-            .cc-text-video-band-right-column, #map {
+            .cc-text-video-band-right-column, .map {
                 display: block;
             }
         }

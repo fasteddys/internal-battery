@@ -4,14 +4,14 @@ namespace UpDiddyLib.Dto
 {
     public class JobPostingCountDto
     {
-        public JobPostingCountDto(int stateId, List<JobPostingCompanyCountDto> CompanyPosting, int totalCount)
+        public JobPostingCountDto(string statePrefix, List<JobPostingCompanyCountDto> CompanyPosting, int totalCount)
         {
-            this.StateId = stateId;
+            this.StatePrefix = statePrefix;
             this.CompanyPosting = CompanyPosting;
             this.TotalCount = totalCount;
         }
         //This property is mapped to the enum in the library
-        public int StateId { get; set; }
+        public string StatePrefix { get; set; }
         public int TotalCount {get;set;}
         public List<JobPostingCompanyCountDto> CompanyPosting { get; set; }
     }
