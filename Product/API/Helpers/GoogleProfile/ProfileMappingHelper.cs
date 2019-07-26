@@ -71,8 +71,9 @@ namespace UpDiddyApi.Helpers.GoogleProfile
             // index source partner as custom attribute 
             gcp.customAttributes["SourcePartner"] = new CustomAttribute
             {
-                stringValues = new[] { partnerName },
+                stringValues = new[] {  partnerName }, 
                 filterable = true
+                 
             };
             // index email address as custom attribute
             gcp.customAttributes["EmailAddress"] = new CustomAttribute
