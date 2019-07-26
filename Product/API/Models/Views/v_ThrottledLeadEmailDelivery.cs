@@ -18,5 +18,6 @@ namespace UpDiddyApi.Models.Views
         public bool IsUseSeedEmails { get; set; }
         public string EmailSubAccountId { get; set; }
         public string EmailTemplateId { get; set; }
+        public int? UnsubscribeGroupId { get; set; }
     }
 }

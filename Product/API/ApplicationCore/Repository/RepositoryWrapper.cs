@@ -43,6 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IActionRepository _actionRepository;
         private IContactRepository _contactRepository;
         private IOfferRepository _offerRepository;
+        private ISubscriberFileRepository _subscriberFileRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -460,6 +461,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _offerRepository = new OfferRepository(_dbContext);
                 }
                 return _offerRepository;
+            }
+        }
+
+        public ISubscriberFileRepository SubscriberFileRepository
+        {
+            get
+            {
+                if (_subscriberFileRepository == null)
+                {
+                    _subscriberFileRepository = new SubscriberFileRepository(_dbContext);
+                }
+                return _subscriberFileRepository;
             }
         }
     }

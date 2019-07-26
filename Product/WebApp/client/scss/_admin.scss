@@ -1,4 +1,14 @@
-﻿#AdminContainer {
+﻿@media(min-width:1200px){
+    #AdminContainer {
+    }
+}
+
+@media(min-width:992px){
+    #AdminContainer {
+    }
+}
+
+#AdminContainer {
     background-color: gray;
 
     .nav-admin {

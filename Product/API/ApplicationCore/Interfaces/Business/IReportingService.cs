@@ -15,5 +15,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<List<JobApplicationCountDto>> GetApplicationCountByCompanyAsync(ODataQueryOptions<JobApplication> query, Guid? companyGuid);
         Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDates(DateTime? startPostDate, DateTime? endPostDate);
         Task<List<JobViewCountDto>> GetJobViewCount(Guid jobPostingGuid);
+        Task<List<NotificationCountsReportDto>> GetReadNotificationsAsync(ODataQueryOptions<Notification> query);
     }
 }

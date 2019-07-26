@@ -305,6 +305,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("PartnerId");
 
+                    b.Property<int>("UnsubscribeGroupId");
+
                     b.HasKey("CampaignPartnerId");
 
                     b.HasIndex("CampaignId");
@@ -3032,6 +3034,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid>("CreateGuid");
 
                     b.Property<int>("IsDeleted");
+
+                    b.Property<string>("MimeType");
 
                     b.Property<DateTime?>("ModifyDate");
 

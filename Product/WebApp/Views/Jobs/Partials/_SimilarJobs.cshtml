@@ -24,7 +24,7 @@
                 if (count == Model.SimilarJobsSearchResult.Jobs.Count - 1)
                 {
                     <div class="col-12 col-md-6 col-xl-12 no-padding @OddNumberJobsSecondToLast">
-                        <div><a href="/job/@Job.JobPostingGuid">@Job.Title</a></div>
+                        <div><a href="/job/@Job.JobPostingGuid">@Job.Title.Replace("/"," / ")</a></div>
                         <div class="similar-jobs-location"><a href="/Jobs?province=@state&city=@Job.City"><i class="fas fa-map-marker-alt"></i> @Job.City, @state</a></div>
                         <div class="pt-4 f-0_75rem">
                             @Html.React("Favorite",
@@ -40,7 +40,7 @@
                 else
                 {
                     <div class="col-12 col-md-6 col-xl-12 no-padding">
-                        <div><a href="/job/@Job.JobPostingGuid">@Job.Title</a></div>
+                        <div><a href="/job/@Job.JobPostingGuid">@Job.Title.Replace("/", " / ")</a></div>
                         <div class="similar-jobs-location"><a href="/Jobs?province=@state&city=@Job.City"><i class="fas fa-map-marker-alt"></i> @Job.City, @state</a></div>
                         <div class="pt-4 f-0_75rem">
                             @Html.React("Favorite",

@@ -46,6 +46,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
 using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace UpDiddyApi
 {
@@ -151,6 +152,10 @@ namespace UpDiddyApi
                        .AllowAnyHeader();
             }));
 
+            //configure MimeTypeService
+            var provider = new FileExtensionContentTypeProvider();
+            services.AddSingleton<IMimeMappingService>(new MimeMappingService(provider));
+
             //configuring RepositoryWrapper class to implement repository pattern
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
@@ -208,12 +213,15 @@ namespace UpDiddyApi
 
             // kick off the metered welcome email delivery process at five minutes past the hour every hour
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
-
+            
             // kick off the job abandonment email delivery process
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteJobAbandonmentEmailDelivery(), Cron.Daily());
 
             // kick off the subscriber notification email reminder process every day at 12 UTC 
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
+
+            //Schedule this background job to check if the SubscriberFiles has MimeType. If not update SubscriberFiles with specific MimeType.
+            BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateSubscriberFilesMimeType());
 
             // Add Polly 
             // Create Policies  
