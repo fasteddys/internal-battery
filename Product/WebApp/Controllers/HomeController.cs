@@ -47,7 +47,6 @@ namespace UpDiddy.Controllers
             _env = env;
             _sysEmail = sysEmail;
             _configuration = configuration;
-            _cache = cache;
             _api = api;
         }
         [HttpGet]
