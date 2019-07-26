@@ -2,6 +2,9 @@
 <div class="blog-post-list-container">
     <div class="blog-search d-flex justify-content-center">
         <div class="p-2">
+            <div class="d-flex justify-content-center mt-3">
+                <h1 class="blog-search-title">Blog</h1>
+            </div>
             <form method="get"  asp-controller="blog" asp-action="search">
                 <div class="d-flex flex-row">
                     <div class="p-2">
@@ -21,12 +24,17 @@
         <div class="col-9">
             @if (Model != null)
             {
+                int i = 0;
                 @foreach (var post in Model.Data)
                 {
                     <div class="p-2">
                         @Html.Partial("Partials/_PostItem", post)
                     </div>
-                    <hr />
+                    if(i != Model.Data.Count() - 1)
+                    {
+                        <hr>
+                    }                    
+                    i++;
                 }
                 <div class="d-flex justify-content-center">
                     @if (ViewBag.PreviousPage != null)

@@ -383,7 +383,7 @@ namespace UpDiddy.Controllers
                 };
                 await _Api.UpdateProfileInformationAsync(Subscriber);
                 var redirect = await _Api.GetSubscriberPartnerWebRedirect();
-                if(string.IsNullOrEmpty(redirect.RelativePath))
+                if (string.IsNullOrEmpty(redirect.RelativePath))
                     return RedirectToAction("Profile");
 
                 return Redirect(redirect.RelativePath);
@@ -712,6 +712,15 @@ namespace UpDiddy.Controllers
             await _Api.ResolveResumeParse(resumeParseGuid, formInfo);
 
             return RedirectToAction("Profile");
+        }
+
+        [HttpGet]
+        [Route("/Home/DisableEmailReminders/{subscriberGuid}")]
+        public async Task<IActionResult> DisableEmailRemindersAsync(Guid subscriberGuid)
+        {
+            var response  = await _Api.ToggleSubscriberNotificationEmailAsync(subscriberGuid, false);
+            ViewBag.Status = response.StatusCode == 200 ? "Your notification email reminders have been disabled." : "There was a problem processing your request; please login to disable your notification email reminders.";
+            return View("DisableEmailReminders");
         }
     }
 }
