@@ -12,12 +12,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class CourseDataMiningFactory
     {
-        public static ICourseDataMining GetCourseDataMiningProcess(CourseSite courseSite, IConfiguration config, ILogger logger)
+        public static ICourseDataMining GetCourseDataMiningProcess(CourseSite courseSite, IConfiguration config, ILogger logger, ISovrenAPI sovrenAPI)
         {
             switch (courseSite.Name)
             {
                 case "ITProTV":
-                    return new ITProTVProcess(courseSite, logger, config);
+                    return new ITProTVProcess(courseSite, logger, config, sovrenAPI);
                 default:
                     throw new NotSupportedException($"Unrecognized and/or unsupported courseSite: {courseSite.Name}");                    
             }
