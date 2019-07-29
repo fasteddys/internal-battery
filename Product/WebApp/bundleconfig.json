@@ -14,7 +14,8 @@
       "node_modules/react-table-hoc-fixed-columns/lib/styles.css",
       "node_modules/react-datepicker/dist/react-datepicker.css",
       "node_modules/jquery-background-video/jquery.background-video.css",
-      "node_modules/animate.css/animate.css"
+      "node_modules/animate.css/animate.css",
+      "node_modules/quill/dist/quill.snow.css"
     ],
     "minify": {
       "enabled": false,
@@ -46,6 +47,7 @@
       "node_modules/jquery-ui/ui/widget.js",
       "node_modules/jquery-background-video/jquery.background-video.js",
       "node_modules/jquery-mask-plugin/dist/jquery.mask.js",
+      "node_modules/quill/dist/quill.js",
       "client/dist/js/core.js"
 
     ],
@@ -69,7 +71,8 @@
       "node_modules/react-table-hoc-fixed-columns/lib/styles.css",
       "node_modules/react-datepicker/dist/react-datepicker.css",
       "node_modules/jquery-background-video/jquery.background-video.css",
-      "node_modules/animate.css/animate.css"
+      "node_modules/animate.css/animate.css",
+      "node_modules/quill/dist/quill.snow.css"
     ],
     "minify": {
       "enabled": true,
@@ -101,6 +104,7 @@
       "node_modules/jquery-ui/ui/widget.js",
       "node_modules/jquery-background-video/jquery.background-video.js",
       "node_modules/jquery-mask-plugin/dist/jquery.mask.js",
+      "node_modules/quill/dist/quill.js",
       "client/dist/js/core.js"
     ],
     "minify": {
