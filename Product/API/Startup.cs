@@ -46,6 +46,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
 using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace UpDiddyApi
 {
@@ -151,6 +152,10 @@ namespace UpDiddyApi
                        .AllowAnyHeader();
             }));
 
+            //configure MimeTypeService
+            var provider = new FileExtensionContentTypeProvider();
+            services.AddSingleton<IMimeMappingService>(new MimeMappingService(provider));
+
             //configuring RepositoryWrapper class to implement repository pattern
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
@@ -202,6 +207,8 @@ namespace UpDiddyApi
             int profileIndexerIntervalInMinutes = int.Parse(Configuration["CloudTalent:ProfileIndexerIntervalInMinutes"]);
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes) );
 
+            //Run job to cache job posting count per provimce
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.StoreJobCountPerProvice(), Cron.MinuteInterval(10));
 
             // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
@@ -214,6 +221,9 @@ namespace UpDiddyApi
 
             // kick off the subscriber notification email reminder process every day at 12 UTC 
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
+
+            //Schedule this background job to check if the SubscriberFiles has MimeType. If not update SubscriberFiles with specific MimeType.
+            BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateSubscriberFilesMimeType());
 
             // Add Polly 
             // Create Policies  

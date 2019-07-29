@@ -12,6 +12,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<IQueryable<Notification>> GetAllNonDeleted();
 
         Task<IQueryable<v_UnreadNotifications>> GetUnreadSubscriberNotificationsForEmail(int reminderLookbackInDays);
+
+        Task<IQueryable<v_NotificationReadCounts>> GetNotificationReadCounts();
     }
 }
 

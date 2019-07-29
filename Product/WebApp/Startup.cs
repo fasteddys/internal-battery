@@ -76,21 +76,50 @@ namespace UpDiddy
 
 			services.AddReact();
 
-            services.AddAuthentication(sharedOptions =>
-            {
-                sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-            })
-            .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
-            .AddCookie(options =>
-            {
-                options.AccessDeniedPath = "/Home/Forbidden";
-                options.Cookie.Path = "/";
-                options.SlidingExpiration = false;
-                options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
-                options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
-            });
+            
 
+            if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
+            {
+                services.AddAuthentication(sharedOptions =>
+                {
+                    sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                })
+                .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C:Live", options))
+                .AddCookie(options =>
+                {
+                    options.AccessDeniedPath = "/Home/Forbidden";
+                    options.Cookie.Path = "/";
+                    options.SlidingExpiration = false;
+                    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
+                    options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
+                });
+            }
+            else
+            {
+                services.AddAuthentication(sharedOptions =>
+                {
+                    sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                })
+                .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C:Pre", options))
+                .AddCookie(options =>
+                {
+                    options.AccessDeniedPath = "/Home/Forbidden";
+                    options.Cookie.Path = "/";
+                    options.SlidingExpiration = false;
+                    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
+                    options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
+                });
+            }
+
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies 
+                // is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
+            });
 
             #region AddLocalization
             services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -176,13 +205,13 @@ namespace UpDiddy
                 options.SupportedUICultures = supportedCultures;
             });
 
-            // Add Redis session cahce
+            // Add Redis session cahce 
             services.AddDistributedRedisCache(options =>
             {
                 options.InstanceName = Configuration.GetValue<string>("redis:name");
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
-
+       
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromHours(1);
@@ -311,6 +340,8 @@ namespace UpDiddy
                 return next();
             });
 
+            app.UseCookiePolicy();
+
             // TODO - Change template action below to index upon site launch.
             app.UseMvc(routes =>
             {
@@ -325,7 +356,7 @@ namespace UpDiddy
                     "NotFound",
                     "{*url}",
                     new { controller = "Home", action = "PageNotFound" });
-            });
+            });         
         }
     }
 }

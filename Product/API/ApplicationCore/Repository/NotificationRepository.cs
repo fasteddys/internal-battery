@@ -34,5 +34,10 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
             var spParams = new object[] { new SqlParameter("@ReminderLookbackInDays", reminderLookbackInDays) };
             return _dbContext.Query<v_UnreadNotifications>().FromSql(@"EXEC [dbo].[System_Get_UnreadSubscriberNotifications] @ReminderLookbackInDays", spParams);
         }
+
+        public async Task<IQueryable<v_NotificationReadCounts>> GetNotificationReadCounts()
+        {
+            return _dbContext.NotificationReadCounts;
+        }
     }
 }
