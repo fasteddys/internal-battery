@@ -70,7 +70,7 @@ namespace UpDiddyApi.Controllers
             _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
 
             _postingTTL = int.Parse(_configuration["JobPosting:PostingTTLInDays"]);
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
 
             //job Service to perform all business logic related to jobs
             _jobService = _services.GetService<IJobService>();

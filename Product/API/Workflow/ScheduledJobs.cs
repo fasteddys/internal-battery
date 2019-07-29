@@ -79,7 +79,7 @@ namespace UpDiddyApi.Workflow
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = subscriberService;
             _jobPostingService = jobPostingService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory,repositoryWrapper);
 
         }
 
@@ -872,7 +872,7 @@ namespace UpDiddyApi.Workflow
             try
             {
                 JobPostingAlert jobPostingAlert = _repositoryWrapper.JobPostingAlertRepository.GetJobPostingAlert(jobPostingAlertGuid).Result;
-                CloudTalent cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+                CloudTalent cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
                 JobQueryDto jobQueryDto = JsonConvert.DeserializeObject<JobQueryDto>(jobPostingAlert.JobQueryDto.ToString());
                 switch (jobPostingAlert.Frequency)
                 {
@@ -1339,20 +1339,20 @@ namespace UpDiddyApi.Workflow
 
         public bool CloudTalentAddOrUpdateProfile(Guid subscriberGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
             return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);            
         }
 
         public bool CloudTalentDeleteProfile(Guid subscriberGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
             ct.DeleteProfileFromCloudTalent(_db, subscriberGuid);
             return true;
         }
 
         public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess )
         {
-           CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+           CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
             int indexVersion = int.Parse(_configuration["CloudTalent:ProfileIndexVersion"]);
            List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess,indexVersion);
            foreach ( Subscriber s in subscribers)
@@ -1374,21 +1374,21 @@ namespace UpDiddyApi.Workflow
 
         public bool CloudTalentAddJob(Guid jobPostingGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
             ct.AddJobToCloudTalent(_db, jobPostingGuid);
             return true;
         }
 
         public bool CloudTalentUpdateJob(Guid jobPostingGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
             ct.UpdateJobToCloudTalent(_db, jobPostingGuid);
             return true;
         }
 
         public bool CloudTalentDeleteJob(Guid jobPostingGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
             ct.DeleteJobFromCloudTalent(_db, jobPostingGuid);
             return true;
         }

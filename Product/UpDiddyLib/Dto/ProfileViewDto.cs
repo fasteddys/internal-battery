@@ -17,6 +17,9 @@ namespace UpDiddyLib.Dto
         public string StateCode { get; set; }
         public string PostalCode { get; set; } 
         public string CloudTalentUri { get; set; }
+        public DateTime CreateDate { get; set; }
+        public DateTime ModifyDate { get; set; }
+
 
         /// <summary>
         /// name of partner who is responsible for subscriber joining carreer circle

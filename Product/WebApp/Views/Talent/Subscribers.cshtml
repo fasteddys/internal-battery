@@ -84,10 +84,10 @@
                 });
             }
 
-            function downloadUserFile(data) {
+            function downloadUserFile(data) {                
                 var campaign = $("#SelectedSubscriberSource option:selected").text();
                 campaign = campaign.substring(0, campaign.indexOf('('));
-                var fileData = createCsv(campaign, data);
+                var fileData = createCsv(campaign, data.profiles);
                 var fileName = "users-" + campaign + "-" + moment().format("MMDDYYYYYHHMMSS") + ".csv";
                 var regex = new RegExp(" ", "g");
                 fileName = fileName.replace(regex, "");

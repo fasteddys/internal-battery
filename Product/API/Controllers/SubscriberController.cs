@@ -33,6 +33,8 @@ using Microsoft.AspNet.OData.Query;
 using X.PagedList;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Workflow;
+using UpDiddyApi.ApplicationCore.Services;
+using System.Net.Http;
 
 namespace UpDiddyApi.Controllers
 {
@@ -54,6 +56,7 @@ namespace UpDiddyApi.Controllers
         private IJobService _jobService;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private ITaggingService _taggingService;
+        private readonly CloudTalent _cloudTalent = null;
 
         public SubscriberController(UpDiddyDbContext db,
             IMapper mapper,
@@ -68,7 +71,8 @@ namespace UpDiddyApi.Controllers
             ISubscriberService subscriberService,
             ITaggingService taggingService,
             ISubscriberNotificationService subscriberNotificationService,
-            IJobService jobService)
+            IJobService jobService,
+            IHttpClientFactory httpClientFactory)
         {
             _db = db;
             _mapper = mapper;
@@ -84,6 +88,7 @@ namespace UpDiddyApi.Controllers
             _subscriberNotificationService = subscriberNotificationService;
             _jobService = jobService;
             _taggingService = taggingService;
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory,repositoryWrapper);
         }
 
         #region Basic Subscriber Endpoints
@@ -950,16 +955,18 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         public IActionResult Search(string searchFilter = "any", string searchQuery = null)
         {
-            searchQuery = Utils.ToSqlServerFullTextQuery(searchQuery);
-            searchFilter = HttpUtility.UrlDecode(searchFilter);
 
-            var filter = new SqlParameter("@Filter", (searchFilter == null || searchFilter.ToLower() == "any") ? string.Empty : searchFilter);
-            var query = new SqlParameter("@Query", searchQuery == null ? string.Empty : searchQuery);
-            var spParams = new object[] { filter, query };
+            int MaxProfilePageSize = int.Parse(_configuration["CloudTalent:MaxProfilePageSize"]);
+            ProfileQueryDto profileQueryDto = new ProfileQueryDto()
+            {
+                Keywords = searchQuery,
+                SourcePartner = searchFilter.ToLower() == "any" ? string.Empty : searchFilter,
+                // must be < 1000
+                PageSize = MaxProfilePageSize
 
-            var result = _db.SubscriberSearch.FromSql("[dbo].[System_Search_Subscribers] @Filter, @Query", spParams)
-                .ProjectTo<SubscriberDto>(_mapper.ConfigurationProvider)
-                .ToList();
+            };
+            ProfileSearchResultDto result = _cloudTalent.ProfileSearch(profileQueryDto);   
+            // todo jab refactor front end to support new return type 
 
             return Json(result);
         }
@@ -968,6 +975,9 @@ namespace UpDiddyApi.Controllers
         [HttpGet("/api/[controller]/sources")]
         public IActionResult GetSubscriberSources()
         {
+            //todo jab 
+            // TODO add migration for view updated 
+         
             return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceDto>(_mapper.ConfigurationProvider).ToList());
         }
 
