@@ -1,0 +1,37 @@
+﻿@using Microsoft.AspNetCore.Http.Features
+@using UpDiddy.Controllers;
+
+@{
+    var consentFeature = Context.Features.Get<ITrackingConsentFeature>();
+    var showBanner = !consentFeature?.CanTrack ?? false;
+    var cookieString = consentFeature?.CreateConsentCookie();
+}
+
+@if (showBanner)
+{
+    <div id="cookieConsent" class="alert alert-info alert-dismissible fade show" role="alert">
+        <div class="row">
+            <div class="col-12 col-md-11 consent-text">
+                We use cookies to offer you a better browsing experience, analyze site traffic and personalize content. Read about how we use cookies by clicking our <a class="privacy-link" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>.  If you continue to use this site, you consent to our use of cookies.
+            </div>
+            <div class="col-12 col-md-1">
+                <button type="button" class="consent-cookie-btn btn btn-primary" data-dismiss="alert" aria-label="Close" data-cookie-string="@cookieString">
+                    <span aria-hidden="true"> Accept</span>
+                </button>
+            </div>
+        </div>      
+    </div>
+    <script>
+        (function () {
+            var button = document.querySelector("#cookieConsent button[data-cookie-string]");
+            button.addEventListener("click", function (event) {
+                //Get User Consent for storing cookies.
+                var cookieInfo = button.dataset.cookieString.split(';')[0].split('=');
+                var value = cookieInfo[1];
+                //expires after 7 days. As per Allegis group site they store consent cookie for 7 days
+                $.cookie('AspNet.Consent', value, { expires: 7 });
+                $('#cookiePolicyModal').modal('hide');
+            }, false);
+        })();
+    </script>
+}
