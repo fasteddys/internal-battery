@@ -1,15 +1,65 @@
 ﻿#cookiePolicyModal {
-    .modal-dialog {
-        max-width: 100% !important;
-        margin: 0px;
+        .modal-dialog {
+            max-width: 100% !important;
+            margin: 0px;
+    
+            .modal-body {
+                padding:0px;
+    
+                #cookieConsent {
+                    width: 100%;
+                    margin: 0px;
+                    color: white;
+                    background-color: black;
+                    border:0px;
 
-        .modal-body {
-            padding:0px;
+                    .consent-text{
 
+                        .privacy-link{
+                            color: #f8971d;
+                        }
+                    }
+    
+                    .consent-cookie-btn{
+                        background-color: #f8971d;
+                        color: white;
+                        
+                    }
+                }
+            }
+        }
+    }
+
+@media(max-width:320px){
+    #cookiePolicyModal {
+        .modal-dialog {
             #cookieConsent {
-                width: 100%;
-                margin: 0px;
+                .consent-text{
+                    font-size:10px;
+                }
+
+                .consent-cookie-btn{
+                    font-size: 10px;
+                }
             }
         }
     }
 }
+
+@media(max-width:360px){
+    #cookiePolicyModal {
+        .modal-dialog {
+            #cookieConsent {
+                .consent-text{
+                    font-size:12px;
+                }
+
+                .consent-cookie-btn{
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+}
+
+
