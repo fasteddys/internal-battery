@@ -7,10 +7,8 @@
 <script  src="~/js/modules/usmap.js"></script>
 <script>
    window.onload = (event) => {
-   const baseUrl = @Html.Raw(Json.Serialize(@Model.BaseUrl));  
    var data = @Html.Raw(Json.Serialize(@Model.JobCount));
-   var baseurl = @Html.Raw(Json.Serialize(@Model.BaseUrl));
-   var map = new USMap(data, baseurl);
+   var map = new USMap(data);
    map.initialize(data,baseurl);
    };
 </script>
@@ -47,14 +45,11 @@
                   <div class="cc-text-video-band-verbiage-container d-flex align-items-center">
                      <div class="row">
                         <div class="cc-text-video-band-header font-bold">
-                           Stay Relevant 
-                        </div>
-                        <div class="cc-text-video-band-header font-bold">
-                           Expand Your Skills 
+                           Find the Job that’s Right for You!
                         </div>
                         <div class="cc-text-video-band-description">
-                           <div>We are passionate about preparing the workforce of today for the opportunities of tomorrow. Our goal is to help our members navigate the digital career experience, by aligning their career goals with upskilling, mentoring, and coaching opportunities. Through CareerCircle, you will gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance, versus limited work history or listed resume experience.</div>
-                           <div>By joining our community, we will help guide you to the next step that’s the right fit in your career journey.</div>
+                           <div>Looking for your next opportunity? Select your location on the map to find out what jobs are available near you!</div>
+                           <div>By joining our community, we will help guide you to the next step that’s the right fit in your career journey. Our goal is to help our members navigate the digital career experience, by aligning their career goals with upskilling, mentoring, and coaching opportunities. Through CareerCircle, you will gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance, versus limited work history or listed resume experience.</div>
                         </div>
                      </div>
                   </div>
