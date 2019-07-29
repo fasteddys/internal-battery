@@ -11,7 +11,7 @@
     per domain, so the HTTPContext used to call the Profile page has to
     originate from our app, not login.microsoft.
 *@
-<script>
+<script>   
     document.cookie = "timeZoneOffset=" + new Date().getTimezoneOffset() + ";path=/;max-age=86400";
     // Adding code to make page wait for "Logging In" text to be displayed to user.
     document.addEventListener("DOMContentLoaded", function (event) {

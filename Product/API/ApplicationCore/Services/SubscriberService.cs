@@ -25,6 +25,7 @@ using System.Web;
 using AutoMapper;
 using System.Security.Claims;
 using Microsoft.AspNet.OData.Query;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -111,14 +112,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             return isOperationSuccessful;
         }
 
-        public async Task<SubscriberFile> AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream, bool parseResume = false)
+        public async Task<SubscriberFile> AddResumeAsync(Subscriber subscriber, IFormFile resumeDoc, bool parseResume = false)
         {
 
             using (var transaction = _db.Database.BeginTransaction())
             {
                 try
                 {
-                    SubscriberFile resume = await _AddResumeAsync(subscriber, fileName, fileStream);
+                    SubscriberFile resume = await _AddResumeAsync(subscriber, resumeDoc.FileName, resumeDoc.OpenReadStream(),resumeDoc.ContentType);
                     await _db.SaveChangesAsync();
                     transaction.Commit();
 
@@ -224,7 +225,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     {
                         var bytes = Convert.FromBase64String(file.Base64EncodedData);
                         var contents = new MemoryStream(bytes);
-                        await _AddResumeAsync(newSubscriber, file.Name, contents);
+                        await _AddResumeAsync(newSubscriber, file.Name, contents,file.MimeType);
                     }
 
                     // associate the contact with the subscriber
@@ -281,7 +282,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <param name="fileName"></param>
         /// <param name="fileStream"></param>
         /// <returns></returns>
-        private async Task<SubscriberFile> _AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream)
+        private async Task<SubscriberFile> _AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream, string fileMimeType=null)
         {
             string blobName = await _cloudStorage.UploadFileAsync(String.Format("{0}/{1}/", subscriber.SubscriberGuid, "resume"), fileName, fileStream);
             SubscriberFile subscriberFileResume = new SubscriberFile
@@ -291,7 +292,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 CreateGuid = subscriber.SubscriberGuid.Value,
                 CreateDate = DateTime.UtcNow,
                 ModifyDate = DateTime.UtcNow,
-                SubscriberId = subscriber.SubscriberId
+                SubscriberId = subscriber.SubscriberId,
+                MimeType = fileMimeType
             };
 
             // check to see if file is already in the system, if there is a file in the system in already then delete it

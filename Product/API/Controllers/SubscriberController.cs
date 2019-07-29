@@ -1240,7 +1240,7 @@ namespace UpDiddyApi.Controllers
                 return Ok(new BasicResponseDto { StatusCode = 200, Description = "Subscriber notification deleted successfully." });
         }
 
-        [Authorize]
+        [AllowAnonymous]
         [HttpPut("/api/[controller]/{subscriberGuid}/toggle-notification-emails/{isEnabled}")]
         public async Task<IActionResult> ToggleSubscriberNotificationEmail(Guid subscriberGuid, string isEnabled)
         {
@@ -1248,14 +1248,10 @@ namespace UpDiddyApi.Controllers
             if (!bool.TryParse(isEnabled, out _isEnabled))
                 return BadRequest();
 
-            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            if (loggedInUserGuid != subscriberGuid)
-                return Unauthorized(); // in the future we may support admins changing subscriber properties
-
             bool isSuccess = await _subscriberService.ToggleSubscriberNotificationEmail(subscriberGuid, _isEnabled);
 
             if (!isSuccess)
-                return StatusCode(500, false);
+                return Ok(new BasicResponseDto { StatusCode = 404, Description = "Subscriber notification email setting was not updated successfully." });
             else
                 return Ok(new BasicResponseDto { StatusCode = 200, Description = "Subscriber notification email setting updated successfully." });
         }

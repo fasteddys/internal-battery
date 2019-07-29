@@ -12,13 +12,19 @@ using EntityTypeConst = UpDiddyLib.Helpers.Constants.EventType;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
-    public class JobPostingService : IJobPostingService
+    public class JobApplicationService : IJobApplicationService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
 
-        public JobPostingService(IRepositoryWrapper repositoryWrapper)
+        public JobApplicationService(IRepositoryWrapper repositoryWrapper)
         {
             _repositoryWrapper = repositoryWrapper;
         }
+
+        public async Task<bool> IsSubscriberAppliedToJobPosting(int subscriberId, int jobPostingId)
+        {
+            IQueryable<JobApplication> jobPosting = await _repositoryWrapper.JobApplication.GetAllAsync();
+            return await jobPosting.AnyAsync(x => x.SubscriberId == subscriberId && x.JobPostingId == jobPostingId);
+        }     
     }
 }

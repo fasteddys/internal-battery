@@ -1488,6 +1488,21 @@ namespace UpDiddy.Api
             return await GetAsync<List<JobPostingCountReportDto>>($"report/job-post-count{query}");
         }
 
+        public async Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync()
+        {
+            string cacheKey = $"JobPostingCountByProvince";
+            List<JobPostingCountDto> rval = GetCachedValue<List<JobPostingCountDto>>(cacheKey);
+            if( rval != null)
+            {
+                return rval;
+            }
+            else
+            {
+                rval =  await GetAsync<List<JobPostingCountDto>>($"job/job-post-count");
+            }
+            return rval;
+        }
+
 
         public async Task<IList<NotificationDto>> GetNotificationsAsync()
         {
