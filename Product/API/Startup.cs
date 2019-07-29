@@ -207,6 +207,8 @@ namespace UpDiddyApi
             int profileIndexerIntervalInMinutes = int.Parse(Configuration["CloudTalent:ProfileIndexerIntervalInMinutes"]);
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes) );
 
+            //Run job to cache job posting count per provimce
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.StoreJobCountPerProvice(), Cron.MinuteInterval(10));
 
             // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());

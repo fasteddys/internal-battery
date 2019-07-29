@@ -12,7 +12,6 @@ using UpDiddyLib.Dto;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Hangfire;
 using System.Net.Http;
-using UpDiddyLib.Helpers;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Factory;
@@ -126,7 +125,7 @@ namespace UpDiddyApi.Workflow
                                  totalUnread = reminder.TotalUnread,
                                  notificationTitle = reminder.Title,
                                  notificationsUrl = _configuration["Environment:BaseUrl"].ToString() + "dashboard",
-                                 disableNotificationEmailReminders = _configuration["Environment:BaseUrl"].ToString() + "Subscriber/DisableEmailReminders/" + reminder.SubscriberGuid
+                                 disableNotificationEmailReminders = _configuration["Environment:BaseUrl"].ToString() + "Home/DisableEmailReminders/" + reminder.SubscriberGuid
                              },
                              SendGridAccount.Transactional,
                              null,
@@ -866,6 +865,23 @@ namespace UpDiddyApi.Workflow
             return jobDataMiningStats;
         }
 
+        public async Task StoreJobCountPerProvice()
+        {
+            DateTime executionTime = DateTime.UtcNow;
+            try
+            {
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.StoreJobCountPerProvice started at: {executionTime.ToLongDateString()}");
+                var jobCount = await _jobPostingService.GetJobCountPerProvinceAsync();
+                var value = Newtonsoft.Json.JsonConvert.SerializeObject(jobCount);
+                int CacheTTL = int.Parse(_configuration["redis:cacheTTLInMinutes"]);
+                string cacheKey = "JobPostingCountByProvince";
+                _cache.SetString(cacheKey, value, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL) });
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.StoreJobCountPerProvice encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+        }
         #endregion
 
         #region CareerCircle Jobs 

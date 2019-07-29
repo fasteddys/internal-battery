@@ -113,6 +113,14 @@ namespace UpDiddy
                 });
             }
 
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies 
+                // is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
+            });
+
             #region AddLocalization
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -197,13 +205,13 @@ namespace UpDiddy
                 options.SupportedUICultures = supportedCultures;
             });
 
-            // Add Redis session cahce
+            // Add Redis session cahce 
             services.AddDistributedRedisCache(options =>
             {
                 options.InstanceName = Configuration.GetValue<string>("redis:name");
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
-
+       
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromHours(1);
@@ -332,6 +340,8 @@ namespace UpDiddy
                 return next();
             });
 
+            app.UseCookiePolicy();
+
             // TODO - Change template action below to index upon site launch.
             app.UseMvc(routes =>
             {
@@ -346,7 +356,7 @@ namespace UpDiddy
                     "NotFound",
                     "{*url}",
                     new { controller = "Home", action = "PageNotFound" });
-            });
+            });         
         }
     }
 }

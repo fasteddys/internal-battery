@@ -53,6 +53,8 @@ export const ReadableDateTime = (props) => {
 
 };
 
+
+
 const NotificationItem = ({ notification, selected, onNotificationSelect, toggleMobileView }) => {
 
     let classes = selected ? "selected" : "";
@@ -71,6 +73,12 @@ const NotificationItem = ({ notification, selected, onNotificationSelect, toggle
         <div><span className="notification-date"><ReadableDateTime date={notification.createDate} /></span></div>
     </li>);
 }
+ 
+export const rawMarkup = (info) => {
+    return { __html: info };
+}
+
+
 
 export const NotificationView = ({ isHidden, toggleView, notification, activeScreen, toggleMobileView, onNotificationDelete }) => {
 
@@ -90,7 +98,7 @@ export const NotificationView = ({ isHidden, toggleView, notification, activeScr
                     className: 'btn-success'
                 },
                 cancel: {
-                    label: 'No',
+                    label: 'No', 
                     classname: 'btn-danger'
                 }
             },
@@ -100,7 +108,7 @@ export const NotificationView = ({ isHidden, toggleView, notification, activeScr
                 }
             }
         });
-    };
+    };    
 
     if (notification) {
         return (
@@ -114,7 +122,7 @@ export const NotificationView = ({ isHidden, toggleView, notification, activeScr
                         </div>
                         <span className="notification-date"><ReadableDateTime date={notification.createDate} /></span>
                     </div>
-                    <div>{notification.description}</div>
+                    <div dangerouslySetInnerHTML={rawMarkup( notification.description) }  />        
                 </div>
             </div>
 
