@@ -1,0 +1,69 @@
+# Build dotnet core project using Azure Pipelines
+
+# build name format
+name: rc.webapp.$(date:yyyyMMdd)$(rev:.r)
+pool:
+  vmImage: 'ubuntu-16.04'
+
+variables:
+  buildConfiguration: 'Release'
+
+# trigger CI build for the following branches
+trigger:
+  branches:
+    include:
+      - release/*
+  paths:
+    include:
+      - Product/UpDiddyLib/*
+      - Product/WebApp/*
+    exclude:
+      - Product/API/*
+      - Product/CCProfileService/*
+
+
+# disable CI builds for pull requests for now
+pr: none
+
+steps:
+- script: |
+    dotnet restore Product/WebApp
+  displayName: Restore NuGet Packages
+
+- script: |
+    npm install
+  displayName: Install Node Package Dependencies
+  workingDirectory: Product/WebApp
+
+- script: |
+    npm run bower install
+  displayName: Install Client Side Dependencies
+  workingDirectory: Product/WebApp
+
+- script: |
+    npm run gulp compile
+  displayName: Compile sass, javascript and copy fonts
+  workingDirectory: Product/WebApp
+
+- script: |
+    npm run build
+  displayName: Build js bundle (react)
+  workingDirectory: Product/WebApp
+
+- script: |
+    dotnet build Product/WebApp --configuration $(buildConfiguration)
+  displayName: Compile
+
+- script: |
+    dotnet publish Product/WebApp --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
+  displayName: Publish Files
+
+- script: |
+    cd $(Build.ArtifactStagingDirectory)
+    zip -rm WebApp.zip *
+  displayName: Packaging
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifacts
+  inputs:
+    artifactName: 'webapp'
