@@ -36,7 +36,7 @@ class USMap {
     buildCompanyDiv(cp, name) {
         var str = "";
         for (var c in cp) {
-            var url = "jobs?keywords=" + cp[c].companyName + "&location=" + name;
+            var url = "jobs?company-name=" + cp[c].companyName + "&location=" + name;
             str += '<div>' +
                 '<a rel="nofollow" href="' + url + '">' +
                 cp[c].companyName + ': <b>' + cp[c].jobCount.toString() +
