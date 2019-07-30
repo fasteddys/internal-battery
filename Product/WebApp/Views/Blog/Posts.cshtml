@@ -153,16 +153,17 @@
     </div>
 </div>
 
-@section Scripts{
-    <script type="text/javascript">
-    "use strict";
-
-     function expandMoreLinks(element) {
-         var biographyText=`@Html.Raw(Utils.RemoveHTML(authorInfo.Bio))`;
-          $("#biography").text(biographyText);
-            element.style.display='none';
-     }
-
-    </script>
+@if(showAuthor && authorInfo!=null)
+{
+    @section Scripts{
+        <script type="text/javascript">
+        "use strict";
+                function expandMoreLinks(element) {
+                    var biographyText=`@Html.Raw(Utils.RemoveHTML(authorInfo.Bio))`;
+                    $("#biography").text(biographyText);
+                        element.style.display='none';
+                }
+        </script>
+    }
 }
 
