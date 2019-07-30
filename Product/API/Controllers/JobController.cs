@@ -56,6 +56,8 @@ namespace UpDiddyApi.Controllers
         private readonly IServiceProvider _services;
         private readonly IJobService _jobService;
 
+        private readonly IJobPostingService _jobPostingService;
+
         #region constructor 
         public JobController(IServiceProvider services)
 
@@ -74,6 +76,7 @@ namespace UpDiddyApi.Controllers
 
             //job Service to perform all business logic related to jobs
             _jobService = _services.GetService<IJobService>();
+            _jobPostingService = _services.GetService<IJobPostingService>();
         }
 
         #endregion
@@ -522,6 +525,12 @@ namespace UpDiddyApi.Controllers
         public async Task<IList<JobCategory>> GetJobCategories()
         {
             return _repositoryWrapper.JobCategoryRepository.GetAllAsync().Result.ToList();
+        }
+
+        [HttpGet("api/[controller]/post-count")]
+        public async Task<IList<JobPostingCountDto>> GetJobCountPerProvinceAsync()
+        {
+            return await _jobPostingService.GetJobCountPerProvinceAsync();
         }
 
         #endregion
