@@ -1,0 +1,18 @@
+﻿@{
+    Layout = "_SimpleLayout";
+}
+
+<div class="simple-container">
+    <div class="row">
+        <div class="col-md-12 simple-title">
+            @ViewBag.Status
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 simple-detail">
+            You will be redirected to the home page momentarily...
+        </div>
+    </div>
+</div>
+
+<meta http-equiv="refresh" content="3;url=@Url.Action("Index", "Home")" />

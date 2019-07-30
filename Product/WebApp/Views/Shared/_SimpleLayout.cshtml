@@ -40,13 +40,25 @@
     <meta property="og:url" content="https://@Context.Request.Host@Context.Request.Path" />
 </head>
 <body>
+ <div class="modal fade show" id="cookiePolicyModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="row">
+                        <partial name="_CookieConsentPartial" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <noscript>
         <iframe src="https://www.googletagmanager.com/ns.html?id=@Configuration["GoogleTagManager:Code"].ToString()"
                 height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
     <nav class="navbar cc-navbar fixed-top navbar-expand-lg navbar-light bg-white">
         <div class="container">
-            <a class="navbar-brand" href="~/Home/Index">
+            <a class="navbar-brand" href="/">
                 <img src="~/images/cc_logo.png" asp-append-version="true" />
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#NavigationItems" aria-controls="NavigationItems" aria-expanded="false" aria-label="Toggle navigation">
@@ -92,5 +104,13 @@
     </environment>
     <script type="text/javascript" src="~/js/bundle.js" asp-append-version="true"></script>
     @RenderSection("Scripts", false)
+
+     <script type="text/javascript">
+        $(window).on('load', function () {
+            if ($.cookie('AspNet.Consent') == undefined) {
+                $('#cookiePolicyModal').modal('show');
+            }          
+        });
+    </script>
 </body>
 </html>

@@ -19,15 +19,18 @@
     <div class="d-flex flex-column">
         <div class="p-2">
             <div class="blog-post-title">
-                <b>@Model.Title</b>
+                  <a asp-controller="blog"
+                   asp-action="post"
+                   asp-route-id="@Model.Slug">@Model.Title</a>
             </div>
             <div class="blog-post-info">
                 By
-                <a asp-controller="blog"
+                <!-- <a asp-controller="blog"
                    asp-action="author"
                    asp-route-id="@Model.Author.Slug">
                     @Model.Author.FirstName @Model.Author.LastName
-                </a>
+                </a> -->
+                @Model.Author.FirstName @Model.Author.LastName
                 <b>|</b>
                 <a>
                     @Model.Published.Value.ToString("MMMM dd, yyyy")

@@ -1,81 +1,84 @@
-﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.AspNetCore.Mvc.Localization
 @using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
 @using System.Collections.Generic;
 @using System;
 @model HomeViewModel
-
+<script src="~/js/modules/usmap.js"></script>
+<script>
+   window.onload = (event) => {
+   var data = @Html.Raw(Json.Serialize(@Model.JobCount));
+   var map = new USMap(data);
+   map.initialize(data);
+   };
+</script>
 <div id="HomeContainer">
-    <div id="HomeContainerHero" class="row">
-        <div class="col">
-            <div class="container">
-                <div class="row">
-                    <div class="col-12 signup-top-container-header">At CareerCircle Our Focus is you!</div>
-                    <div class="col-12 col-sm-8 col-md-8 col-xl-4 offset-sm-2 offset-md-2 offset-xl-0">
-                            <div id="SignUpContainer">
-                                <div id="SignUpContainerHeader">
-                                    Create a free account to get started!
-                                </div>
-                                <div id="SignUpComponentContainer">
-                                    @{
-                                        SignUpViewModel suvm = new SignUpViewModel();
-                                        suvm.IsExpressSignUp = true;
-                                        suvm.SignUpButtonText = "Join Our Network";
-                                    }
-                                    @Html.Partial("Components/Authentication/_SignUp", suvm)
-                                </div>
-                            </div>
-                        </div>
-                </div>
+   <div id="HomeContainerHero" class="row">
+      <div class="col">
+         <div class="container">
+            <div class="row">
+               <div class="col-12 signup-top-container-header">At CareerCircle Our Focus is you!</div>
+               <div class="col-12 col-md-8 col-md-8 col-xl-4 offset-md-2 offset-xl-0">
+                  <div id="SignUpContainer">
+                     <div id="SignUpContainerHeader">
+                        Create a free account to get started!
+                     </div>
+                     <div id="SignUpComponentContainer">
+                        @{
+                        SignUpViewModel suvm = new SignUpViewModel();
+                        suvm.IsExpressSignUp = true;
+                        suvm.SignUpButtonText = "Join Our Network";
+                        }
+                        @Html.Partial("Components/Authentication/_SignUp", suvm)
+                     </div>
+                  </div>
+               </div>
             </div>
-        </div>
-    </div>
-    <div id="TextImgContainer" class="cc-text-video-band cc-cscheme-white row">
-        <div class="col-12">
-            <div class="container no-padding">
-                <div class="row">
-                    <div class="col-12 col-md-6 cc-text-video-band-left-column no-padding order-2">
-                        <div class="cc-text-video-band-verbiage-container d-flex align-items-center">
-                            <div class="row">
-                                  <div class="col-12 cc-text-video-band-header font-bold">
-                                    Stay Relevant
-                                </div>
-                                <div class="col-12 cc-text-video-band-header font-bold">
-                                    Expand Your Skills
-                                </div>
-                                <div class="col-12 cc-text-video-band-description">
-                                    <div>We are passionate about preparing the workforce of today for the opportunities of tomorrow. Our goal is to help our members navigate the digital career experience, by aligning their career goals with upskilling, mentoring, and coaching opportunities. Through CareerCircle, you will gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance, versus limited work history or listed resume experience.</div>
-                                    <div>By joining our community, we will help guide you to the next step that’s the right fit in your career journey.</div>
-                                </div>
-                            </div>
+         </div>
+      </div>
+   </div>
+   <div id="TextImgContainer" class="cc-text-video-band cc-cscheme-white row">
+      <div class="col-12">
+         <div class="container no-padding">
+            <div class="row">
+               <div class="col-12 col-xl-3 cc-text-video-band-right-column order-1 order-xl-2">
+                  <div class="cc-text-video-band-verbiage-container d-flex align-items-center">
+                     <div class="row">
+                        <div class="cc-text-video-band-header font-bold">
+                           Find the Job that’s Right for You!
                         </div>
-                    </div>
-                    <div class="col-12 col-md-6 cc-text-video-band-right-column order-1">
-                        <div class="career-circle-video-container d-flex align-items-center">
-                            <div class="row">
-                                <div class="col-12 no-padding">
-                                    <img src="~/images/skills.png" />
-                                </div>
-                            </div>
+                        <div class="cc-text-video-band-description">
+                           <div>Looking for your next opportunity? Select your location on the map to find out what jobs are available near you!</div>
+                           <div>By joining our community, we will help guide you to the next step that’s the right fit in your career journey. Our goal is to help our members navigate the digital career experience, by aligning their career goals with upskilling, mentoring, and coaching opportunities. Through CareerCircle, you will gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance, versus limited work history or listed resume experience.</div>
                         </div>
-                    </div>
-                </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-12 col-xl-9 usmap order-1 order-2 order-xl-1">
+                  <div class="career-circle-map-container  d-flex align-items-center">
+                     <div class="row">
+                        <div class="map">
+                             @Html.Partial("_USMap")
+                        </div>
+                     </div>
+                  </div>
+               </div>
             </div>
-        </div>
-    </div>
-    <div id="HomeBottomContainer" class="row">
-        <div class="col">
-            <div class="container">
-                <div class="row d-flex align-items-center">
-                    <div class="col-12 col-md-6 signup-left-col offset-md-3">
-                        <div class="f-color-white signup-bottom-container-header">Your Advocates for Career Success</div>
-                        <span class="f-color-white">CareerCircle's mission is to provide you with the right tools that will allow you to market your
-capabilities in a powerful way. In the end, your journey of advanced education and
-guidance leads to higher pay, flexibility, and a better life.</span>
-
-                    </div>
-                </div>
+         </div>
+      </div>
+   </div>
+   <div id="HomeBottomContainer" class="row">
+      <div class="col">
+         <div class="container">
+            <div class="row d-flex align-items-center">
+               <div class="col-12 col-md-6 signup-left-col offset-md-3">
+                  <div class="f-color-white signup-bottom-container-header">Your Advocates for Career Success</div>
+                  <span class="f-color-white">CareerCircle's mission is to provide you with the right tools that will allow you to market your
+                  capabilities in a powerful way. In the end, your journey of advanced education and
+                  guidance leads to higher pay, flexibility, and a better life.</span>
+               </div>
             </div>
-        </div>
-    </div>
+         </div>
+      </div>
+   </div>
 </div>

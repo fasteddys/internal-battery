@@ -95,8 +95,8 @@ class Dashboard extends React.Component {
             }
         }
     }
-
-    render() {
+     
+    render() {        
         return (
             <div className="dashboard shadow-2">
                 <div className="row settings">
