@@ -1,285 +1,286 @@
 @import '_variables';
 
-@media(min-width:0px) {
-    .map {
-        position:relative;
-    }
 
-    .map-point {
-        position: absolute;
-        color: $color-primary;
-        display: none;
-        .map-point-count {
-            font-family: $opensans-regular;
-            color: $color-tree-poppy !important;
-            position: relative;
-        }
-    }
+.map {
+    position: relative;
+    width: 100%;
+}
 
-    .map-point:hover,
-    .map-point-count:hover {
-        font-weight:bold;
-        transform: translate(0px, -15px);
-        transform: scale(1.4);
-        color: $color-tree-poppy;
-        z-index: 500;
-    }
-
-    .map-point#NJ {
-        right: 11.2%;
-        top: 30%;
-    }
-
-    .map-point#VA {
-        right: 17%;
-        top: 43%;
-    }
-
-    .map-point#SC {
-        right: 20%;
-        top: 58%;
-    }
-
-    .map-point#NC {
-        right: 16%;
-        top: 51%;
-    }
-
-    .map-point#MD {
-        right: 15%;
-        top: 34%;
-    }
-
-    .map-point#NY {
-        right: 14%;
-        top: 21%;
-    }
-
-    .map-point#GA {
-        right: 25%;
-        top: 63%;
-    }
-
-    .map-point#FL {
-        right: 19%;
-        top: 80%;
-    }
-
-    .map-point#AL {
-        right: 32%;
-        top: 64%;
-    }
-
-    .map-point#MS {
-        right: 37%;
-        top: 65%;
-    }
-
-    .map-point#LA {
-        right: 42%;
-        top: 72%;
-    }
-
-    .map-point#AR {
-        right: 42%;
-        top: 57%;
-    }
-
-    .map-point#TN {
-        right: 31%;
-        top: 51%;
-    }
-
-    .map-point#MO {
-        right: 42%;
-        top: 45%;
-    }
-
-    .map-point#TX {
-        right: 55%;
-        top: 71%;
-    }
-
-    .map-point#OK {
-        right: 52%;
-        top: 57%;
-    }
-
-    .map-point#KS {
-        right: 54%;
-        top: 44%;
-    }
-
-    .map-point#NE {
-        right: 55%;
-        top: 35%;
-    }
-
-    .map-point#SD {
-        right: 57%;
-        top: 23%;
-    }
-
-    .map-point#ND {
-        right: 57%;
-        top: 11%;
-    }
-
-    .map-point#MN {
-        right: 46%;
-        top: 17%;
-    }
-
-    .map-point#IN {      
-        right: 32%;
-        top: 38%;
-    }
-
-    .map-point#IL {
-        right: 37%;
-        top: 38%;
-    }
-
-    .map-point#WI {
-        right: 39%;
-        top: 22%;
-    }
-
-    .map-point#MI {
-        right: 31%;
-        top: 27%;
-    }
-
-    .map-point#OH {
-        right: 26%;
-        top: 36%;
-    }
-
-    .map-point#IA {
-        right: 46%;
-        top: 32%;
-    }
-
-    .map-point#KY {
-        right: 28%;
-        top: 45%;
-    }
-
-    .map-point#WI {
-        right: 39%;
-        top: 22%;
-    }
-
-    .map-point#WVA {
-        right: 24%;
-        top: 39%;
-    }
-
-    .map-point#PA {
-        right: 19%;
-        top: 32%;
-    }
-
-    .map-point#DE {
-        right: 12.7%;
-        top: 35%;
-    }
-
-    .map-point#CT {
-        right: 10%;
-        top: 24%;
-    }
-
-    .map-point#RI {
-        right: 7.4%;
-        top: 22%;
-    }
-
-    .map-point#ME {
-        right: 6%;
-        top: 7%;
-    }
-
-    .map-point#MA {
-        right: 9%;
-        top: 19%;
-    }
-
-    .map-point#VT {
-        right: 11.5%;
-        top: 17%;
-    }
-
-    .map-point#NH {
-        right: 9.2%;
-        top: 13%;
-    }
-
-
-    .map-point#NM {
-        right: 70%;
-        top: 58%;
-    }
-
-
-    .map-point#CO {
-        right: 67%;
-        top: 42%;
-    }
-
-    .map-point#WY {
-        right: 69%;
-        top: 27%;
-    }
-
-
-    .map-point#MT {
-        right: 71%;
-        top: 14%;
-    }
-
-    .map-point#ID {
-        right: 81%;
-        top: 19%;
-    }
-
-    .map-point#UT {
-        right: 78%;
-        top: 40%;
-    }
-
-    .map-point#AZ {
-        right: 79%;
-        top: 55%;
-    }
-
-    .map-point#NV {
-        right: 87%;
-        top: 35%;
-    }
-
-    .map-point#WA {
-        right: 86%;
-        top: 3%;
-    }
-
-    .map-point#OR {
-        right: 89%;
-        top: 17%;
-    }
-
-    .map-point#CA {
-        right: 91%;
-        top: 45%;
-    }
-
-    .map-point#WA {
-        right: 86%;
-        top: 5%;
-    }
-
-    .map-point#NY {
-        right: 14%;
-        top: 21%;
+.map-point {
+    position: absolute;
+    color: $color-primary;
+    display: none;
+    .map-point-count {
+        font-family: $opensans-regular;
+        color: $color-tree-poppy !important;
+        position: relative;
     }
 }
+
+.map-point:hover,
+.map-point-count:hover {
+    font-weight: bold;
+    transform: translate(0px, -15px);
+    transform: scale(1.4);
+    color: $color-tree-poppy;
+    z-index: 500;
+}
+
+.map-point#NJ {
+    right: 11.2%;
+    top: 30%;
+}
+
+.map-point#VA {
+    right: 17%;
+    top: 43%;
+}
+
+.map-point#SC {
+    right: 20%;
+    top: 58%;
+}
+
+.map-point#NC {
+    right: 16%;
+    top: 51%;
+}
+
+.map-point#MD {
+    right: 15%;
+    top: 35%;
+}
+
+.map-point#NY {
+    right: 14%;
+    top: 21%;
+}
+
+.map-point#GA {
+    right: 25%;
+    top: 63%;
+}
+
+.map-point#FL {
+    right: 19%;
+    top: 80%;
+}
+
+.map-point#AL {
+    right: 32%;
+    top: 64%;
+}
+
+.map-point#MS {
+    right: 37%;
+    top: 65%;
+}
+
+.map-point#LA {
+    right: 42%;
+    top: 72%;
+}
+
+.map-point#AR {
+    right: 42%;
+    top: 58%;
+}
+
+.map-point#TN {
+    right: 31%;
+    top: 54%;
+}
+
+.map-point#MO {
+    right: 42%;
+    top: 45%;
+}
+
+.map-point#TX {
+    right: 55%;
+    top: 71%;
+}
+
+.map-point#OK {
+    right: 52%;
+    top: 57%;
+}
+
+.map-point#KS {
+    right: 54%;
+    top: 44%;
+}
+
+.map-point#NE {
+    right: 55%;
+    top: 35%;
+}
+
+.map-point#SD {
+    right: 57%;
+    top: 23%;
+}
+
+.map-point#ND {
+    right: 57%;
+    top: 11%;
+}
+
+.map-point#MN {
+    right: 46%;
+    top: 17%;
+}
+
+.map-point#IN {
+    right: 32%;
+    top: 38%;
+}
+
+.map-point#IL {
+    right: 37%;
+    top: 38%;
+}
+
+.map-point#WI {
+    right: 39%;
+    top: 22%;
+}
+
+.map-point#MI {
+    right: 31%;
+    top: 27%;
+}
+
+.map-point#OH {
+    right: 26%;
+    top: 36%;
+}
+
+.map-point#IA {
+    right: 44%;
+    top: 32%;
+}
+
+.map-point#KY {
+    right: 28%;
+    top: 46%;
+}
+
+.map-point#WI {
+    right: 39%;
+    top: 22%;
+}
+
+.map-point#WVA {
+    right: 24%;
+    top: 39%;
+}
+
+.map-point#PA {
+    right: 18%;
+    top: 31%;
+}
+
+.map-point#DE {
+    right: 12.7%;
+    top: 36%;
+}
+
+.map-point#CT {
+    right: 10%;
+    top: 24%;
+}
+
+.map-point#RI {
+    right: 7.4%;
+    top: 22%;
+}
+
+.map-point#ME {
+    right: 6%;
+    top: 7%;
+}
+
+.map-point#MA {
+    right: 9%;
+    top: 21%;
+}
+
+.map-point#VT {
+    right: 11.5%;
+    top: 17%;
+}
+
+.map-point#NH {
+    right: 9.2%;
+    top: 15%;
+}
+
+
+.map-point#NM {
+    right: 68%;
+    top: 58%;
+}
+
+
+.map-point#CO {
+    right: 67%;
+    top: 42%;
+}
+
+.map-point#WY {
+    right: 69%;
+    top: 27%;
+}
+
+.map-point#MT {
+    right: 71%;
+    top: 10%;
+}
+
+.map-point#ID {
+    right: 80%;
+    top: 20%;
+}
+
+.map-point#UT {
+    right: 78%;
+    top: 40%;
+}
+
+.map-point#AZ {
+    right: 78%;
+    top: 58%;
+}
+
+.map-point#NV {
+    right: 87%;
+    top: 35%;
+}
+
+.map-point#WA {
+    right: 86%;
+    top: 3%;
+}
+
+.map-point#OR {
+    right: 89%;
+    top: 17%;
+}
+
+.map-point#CA {
+    right: 91%;
+    top: 45%;
+}
+
+.map-point#WA {
+    right: 86%;
+    top: 5%;
+}
+
+.map-point#NY {
+    right: 14%;
+    top: 21%;
+}
+
+

@@ -527,7 +527,7 @@ namespace UpDiddyApi.Controllers
             return _repositoryWrapper.JobCategoryRepository.GetAllAsync().Result.ToList();
         }
 
-          [HttpGet("api/[controller]/job-post-count")]
+        [HttpGet("api/[controller]/post-count")]
         public async Task<IList<JobPostingCountDto>> GetJobCountPerProvinceAsync()
         {
             return await _jobPostingService.GetJobCountPerProvinceAsync();
