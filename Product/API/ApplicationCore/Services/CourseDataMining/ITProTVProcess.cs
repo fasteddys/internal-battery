@@ -111,6 +111,10 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                 if (duration != null && duration.InnerText != null)
                     course.Duration = duration.InnerText;
 
+                // overview comes from the first episode description
+                var overview = courseHtml.DocumentNode.SelectSingleNode("//*[contains(@class, '-module--description--')]");
+                if (overview != null && overview.InnerText != null)
+                    course.Overview = overview.InnerText;
 
                 var coursePage = new CoursePage()
                 {
@@ -123,12 +127,33 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                     UniqueIdentifier = coursePageUri.ToString()
                 };
 
-                // create base64 resume file from raw data
-                using (MemoryStream ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(coursePage.RawData)))
+                byte[] bytes;
+                using (var ms = new MemoryStream())
                 {
-                    byte[] bytes = ms.ToArray();
-                    string base64String = Convert.ToBase64String(bytes);
-                    var test = _sovrenApi.SubmitResumeAsync(base64String).Result;
+                    using (var sw = new StreamWriter(ms))
+                    {
+                        sw.WriteLine("Title");
+                        sw.WriteLine(course.Title);
+                        sw.WriteLine("Subtitle");
+                        sw.WriteLine(course.Subtitle);
+                        sw.WriteLine("Description");
+                        sw.WriteLine(course.Description);
+                        sw.WriteLine("Overview");
+                        sw.WriteLine(course.Overview);
+                        sw.Flush();
+                        ms.Seek(0, SeekOrigin.Begin);
+                        bytes = ms.ToArray();
+                    }
+                }
+                string base64 = Convert.ToBase64String(bytes);
+                var test = _sovrenApi.SubmitResumeAsync(base64).Result;
+
+                // create base64 resume file from raw data
+                //using (MemoryStream ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(coursePage.RawData)))
+          //      {
+            //        byte[] bytes = ms.ToArray();
+           //         string base64String = Convert.ToBase64String(bytes);
+           //         var test = _sovrenApi.SubmitResumeAsync(base64String).Result;
 
                     // OpenXML lib? https://github.com/OfficeDev/Open-XML-SDK
 
@@ -169,7 +194,7 @@ skill taxonomy output:
 	</sov:TaxonomyRoot>
 </sov:SkillsTaxonomyOutput>
     */
-                }
+              //  }
 
                 //_sovrenApi.SubmitResumeAsync()
 
@@ -189,6 +214,7 @@ skill taxonomy output:
             public string Subtitle { get; set; }
             public string Description { get; set; }
             public string Duration { get; set; }
+            public string Overview { get; set; }
         }
     }
 }
