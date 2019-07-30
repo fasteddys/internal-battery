@@ -1243,12 +1243,45 @@ namespace UpDiddy.Api
                 return false;
             }
         }
+        private async Task<bool> SetCachedValueAsync<T>(string CacheKey, T Value)
+        {
+            try
+            {
+                int CacheTTL = int.Parse(_configuration["redis:cacheTTLInMinutes"]);
+                string newValue = Newtonsoft.Json.JsonConvert.SerializeObject(Value);
+                await _cache.SetStringAsync(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL) });
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
 
         private T GetCachedValue<T>(string CacheKey)
         {
             try
             {
                 string existingValue = _cache.GetString(CacheKey);
+                if (string.IsNullOrEmpty(existingValue))
+                    return (T)Convert.ChangeType(null, typeof(T));
+                else
+                {
+                    T rval = JsonConvert.DeserializeObject<T>(existingValue);
+                    return rval;
+                }
+            }
+            catch (Exception ex)
+            {
+                return (T)Convert.ChangeType(null, typeof(T));
+            }
+        }
+
+        private async Task<T> GetCachedValueAsync<T>(string CacheKey)
+        {
+            try
+            {
+                string existingValue = await _cache.GetStringAsync(CacheKey);
                 if (string.IsNullOrEmpty(existingValue))
                     return (T)Convert.ChangeType(null, typeof(T));
                 else
@@ -1491,15 +1524,14 @@ namespace UpDiddy.Api
         public async Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync()
         {
             string cacheKey = $"job-PostCount";
-            List<JobPostingCountDto> rval = GetCachedValue<List<JobPostingCountDto>>(cacheKey);
+            List<JobPostingCountDto> rval = await GetCachedValueAsync<List<JobPostingCountDto>>(cacheKey);
             if( rval == null)
             {
                 rval = await GetAsync<List<JobPostingCountDto>>($"job/post-count");
-                SetCachedValue<List<JobPostingCountDto>>(cacheKey, rval);
+                await SetCachedValueAsync<List<JobPostingCountDto>>(cacheKey, rval);
             }
             return rval;     
         }
-
 
         public async Task<IList<NotificationDto>> GetNotificationsAsync()
         {

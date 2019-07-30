@@ -4,12 +4,12 @@
 @using System.Collections.Generic;
 @using System;
 @model HomeViewModel
-<script  src="~/js/modules/usmap.js"></script>
+<script src="~/js/modules/usmap.js"></script>
 <script>
    window.onload = (event) => {
    var data = @Html.Raw(Json.Serialize(@Model.JobCount));
    var map = new USMap(data);
-   map.initialize(data,baseurl);
+   map.initialize(data);
    };
 </script>
 <div id="HomeContainer">
