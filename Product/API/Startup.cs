@@ -47,6 +47,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
+using UpDiddyApi.Workflow.Helpers;
 
 namespace UpDiddyApi
 {
@@ -307,6 +308,10 @@ namespace UpDiddyApi
                     Configuration.GetValue<string>("Tracking:PixelContentType")
                     )
                 );
+
+            GlobalJobFilters.Filters.Add(new HangfireServerFilter(Configuration));
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -325,7 +330,9 @@ namespace UpDiddyApi
             {
                 Authorization = new[] { new HangfireAuthorizationFilter(env, Configuration) }
             });
+
             app.UseHangfireServer();
+
 
             app.UseMvc(routes =>
             {
