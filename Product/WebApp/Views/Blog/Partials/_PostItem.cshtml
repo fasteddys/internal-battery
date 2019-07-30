@@ -25,11 +25,12 @@
             </div>
             <div class="blog-post-info">
                 By
-                <a asp-controller="blog"
+                <!-- <a asp-controller="blog"
                    asp-action="author"
                    asp-route-id="@Model.Author.Slug">
                     @Model.Author.FirstName @Model.Author.LastName
-                </a>
+                </a> -->
+                @Model.Author.FirstName @Model.Author.LastName
                 <b>|</b>
                 <a>
                     @Model.Published.Value.ToString("MMMM dd, yyyy")
