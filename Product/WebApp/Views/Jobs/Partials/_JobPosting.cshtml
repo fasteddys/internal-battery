@@ -82,6 +82,14 @@
         <div class="job-summary">
             @Html.Raw(Model.Summary)
         </div>
+        <div class="job-skills">
+            <ul>
+                @foreach (var skill in Model.Skills)
+                {
+                <li>@skill</li>
+                }
+                </ul>
+</div>
         <div class="pt-4">
             <h4>About CareerCircle</h4>
             <p>The statistic has gone viral that there will be a talent shortage of 85.2M people by 2030. CareerCircle was founded in the spirit of finding solutions to address the pending skills gap versus falling victim to it. With so many capable people wanting to find employment and employers needing partners to achieve their goals, CareerCircle is here to provide a bridge.</p>
