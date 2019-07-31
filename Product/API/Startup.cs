@@ -309,7 +309,7 @@ namespace UpDiddyApi
                     )
                 );
 
-            GlobalJobFilters.Filters.Add(new HangfireServerFilter(Configuration));
+            GlobalJobFilters.Filters.Add(new HangfireServerFilter(Configuration, Logger));
 
 
         }
