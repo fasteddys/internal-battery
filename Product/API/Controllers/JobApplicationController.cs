@@ -247,6 +247,7 @@ namespace UpDiddyApi.Controllers
 
                 Stream SubscriberResumeAsStream = await _subscriberService.GetResumeAsync(subscriber);
                 SubscriberResumeAsStream.Seek(0, SeekOrigin.Begin);
+                string resumeEncoded = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream));
 
                 bool IsExternalRecruiter = jobPosting.Recruiter.Subscriber == null;
 
@@ -292,7 +293,7 @@ namespace UpDiddyApi.Controllers
                         {
                             new Attachment
                             {
-                                Content = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream)),
+                                Content = resumeEncoded,
                                 Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName),
                                 Type=subscriber.SubscriberFile.FirstOrDefault().MimeType
                             },
