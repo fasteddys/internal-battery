@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
@@ -67,7 +68,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return jobPostingAlerts;
         }
 
-        public static bool SaveJobPostingAlert(IRepositoryWrapper repository, ILogger syslog, JobPostingAlertDto jobPostingAlertDto)
+        public static bool SaveJobPostingAlert(IRepositoryWrapper repository, ILogger syslog, JobPostingAlertDto jobPostingAlertDto, IHangfireService _hangfireService)
         {
             bool result = true;
             Guid? jobPostingAlertGuid = null;

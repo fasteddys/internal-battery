@@ -117,7 +117,7 @@ namespace UpDiddyApi.Controllers
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
                 Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
-                //BackgroundJob.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
+                //_hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
                 return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, _mapper.Map<NotificationDto>(notification));
             }
@@ -178,7 +178,7 @@ namespace UpDiddyApi.Controllers
                 _repositoryWrapper.NotificationRepository.Update(ExistingNotification);
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.DeleteSubscriberNotificationRecords(ExistingNotification));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.DeleteSubscriberNotificationRecords(ExistingNotification));
 
                 return Ok(new BasicResponseDto { StatusCode = 200, Description = "Notification " + NotificationGuid + " successfully logically deleted." });
             }

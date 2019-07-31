@@ -39,6 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private IRepositoryWrapper _repository { get; set; }
         private readonly IMapper _mapper;
         private ITaggingService _taggingService { get; set; }
+        private IHangfireService _hangfireService { get; set; }
 
         public SubscriberService(UpDiddyDbContext context, 
             IConfiguration configuration, 
@@ -47,7 +48,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             IRepositoryWrapper repository, 
             ILogger<SubscriberService> logger, 
             IMapper mapper,
-            ITaggingService taggingService)
+            ITaggingService taggingService,
+            IHangfireService hangfireService)
         {
             _db = context;
             _configuration = configuration;
@@ -57,6 +59,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _logger = logger;
             _mapper = mapper;
             _taggingService = taggingService;
+            _hangfireService = hangfireService;
         }
 
 
@@ -124,7 +127,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     transaction.Commit();
 
                     if (parseResume)
-                        BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(subscriber, resume));
+                        _hangfireService.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(subscriber, resume));
 
                     return resume;
                 }
@@ -336,7 +339,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             SubscriberFile resume = subscriber.SubscriberFile.OrderByDescending(e => e.CreateDate).FirstOrDefault();
 
             if (resume != null)
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(subscriber, resume));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.ImportSubscriberProfileDataAsync(subscriber, resume));
 
             return true;
         }

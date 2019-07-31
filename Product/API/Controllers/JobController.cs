@@ -38,6 +38,7 @@ using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.Controllers
 {
@@ -55,11 +56,12 @@ namespace UpDiddyApi.Controllers
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IServiceProvider _services;
         private readonly IJobService _jobService;
+        private readonly IHangfireService _hangfireService;
 
         private readonly IJobPostingService _jobPostingService;
 
         #region constructor 
-        public JobController(IServiceProvider services)
+        public JobController(IServiceProvider services, IHangfireService hangfireService)
 
         {
             _services = services;
@@ -77,6 +79,7 @@ namespace UpDiddyApi.Controllers
             //job Service to perform all business logic related to jobs
             _jobService = _services.GetService<IJobService>();
             _jobPostingService = _services.GetService<IJobPostingService>();
+            _hangfireService = hangfireService;
         }
 
         #endregion
@@ -256,7 +259,7 @@ namespace UpDiddyApi.Controllers
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "No job posting identifier was provided" });
 
                 string ErrorMsg = string.Empty;
-                if (JobPostingFactory.DeleteJob(_db, jobPostingGuid, ref ErrorMsg, _syslog, _mapper, _configuration) == false)
+                if (JobPostingFactory.DeleteJob(_db, jobPostingGuid, ref ErrorMsg, _syslog, _mapper, _configuration, _hangfireService) == false)
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = ErrorMsg });
                 else
                     return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"JobPosting {jobPostingGuid}  has been deleted " });
@@ -288,7 +291,7 @@ namespace UpDiddyApi.Controllers
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting started at: {DateTime.UtcNow.ToLongDateString()}");
                 // update the job posting 
                 string ErrorMsg = string.Empty;
-                bool UpdateOk = JobPostingFactory.UpdateJobPosting(_db, jobPostingDto.JobPostingGuid.Value, jobPostingDto, ref ErrorMsg);
+                bool UpdateOk = JobPostingFactory.UpdateJobPosting(_db, jobPostingDto.JobPostingGuid.Value, jobPostingDto, ref ErrorMsg, _hangfireService);
                 _syslog.Log(LogLevel.Information, $"***** JobController:UpdateJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
                 if (UpdateOk)
                     return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{jobPostingDto.JobPostingGuid.Value}" });
@@ -331,7 +334,7 @@ namespace UpDiddyApi.Controllers
 
                 string errorMsg = string.Empty;
                 Guid newPostingGuid = Guid.Empty;
-                if (JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg, _syslog, _mapper, _configuration) == true)
+                if (JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref newPostingGuid, ref errorMsg, _syslog, _mapper, _configuration, _hangfireService) == true)
                     return Ok(new BasicResponseDto() { StatusCode = 200, Description = $"{newPostingGuid}" });
                 else
                     return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = errorMsg });
@@ -581,7 +584,7 @@ namespace UpDiddyApi.Controllers
             if (existingJobPostingAlerts != null && existingJobPostingAlerts.Count() == 5)
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "You may only have 5 active job alerts - please delete one in 'My Alerts' first." });
 
-            bool isSuccess = JobPostingAlertFactory.SaveJobPostingAlert(_repositoryWrapper, _syslog, jobPostingAlertDto);
+            bool isSuccess = JobPostingAlertFactory.SaveJobPostingAlert(_repositoryWrapper, _syslog, jobPostingAlertDto, _hangfireService);
 
             if (isSuccess)
                 return Ok();
@@ -602,7 +605,7 @@ namespace UpDiddyApi.Controllers
             else
                 jobPostingAlertDto.Subscriber = new SubscriberDto() { SubscriberGuid = subsriberGuidClaim };
 
-            bool isSuccess = JobPostingAlertFactory.SaveJobPostingAlert(_repositoryWrapper, _syslog, jobPostingAlertDto);
+            bool isSuccess = JobPostingAlertFactory.SaveJobPostingAlert(_repositoryWrapper, _syslog, jobPostingAlertDto, _hangfireService);
 
             if (isSuccess)
                 return Ok();

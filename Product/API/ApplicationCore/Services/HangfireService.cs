@@ -19,6 +19,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             IsPreliminaryEnvironment = Boolean.Parse(_configuration["Environment:IsPreliminary"]);
         }
 
+        public void AddOrUpdate<T>(string recurringJobId, Expression<Action<T>> methodCall, string cronExpression, TimeZoneInfo timeZone = null, string queue = "default")
+        {
+            if (IsPreliminaryEnvironment)
+                return;
+
+            RecurringJob.AddOrUpdate<T>(recurringJobId, methodCall, cronExpression);
+        }
+
         public string Enqueue<T>(Expression<Func<T, Task>> methodCall)
         {
             if (IsPreliminaryEnvironment)
@@ -33,6 +41,14 @@ namespace UpDiddyApi.ApplicationCore.Services
                 return string.Empty;
 
             return BackgroundJob.Enqueue(methodCall);
+        }
+
+        public string Enqueue<T>(Expression<Action<T>> methodCall)
+        {
+            if (IsPreliminaryEnvironment)
+                return string.Empty;
+
+            return BackgroundJob.Enqueue<T>(methodCall);
         }
     }
 }

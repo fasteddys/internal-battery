@@ -18,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Hangfire;
 using UpDiddyApi.Workflow;
 using System.Net;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
@@ -89,7 +90,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .ToList();
         }
 
-        public static bool DeleteJob(UpDiddyDbContext db, Guid jobPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        public static bool DeleteJob(UpDiddyDbContext db, Guid jobPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, IHangfireService _hangfireService)
         {
 
             JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(db, jobPostingGuid);
@@ -112,13 +113,13 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
 
             // queue a job to delete the posting from the job index and mark it as deleted in sql server
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteJob(jobPosting.JobPostingGuid));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteJob(jobPosting.JobPostingGuid));
             syslog.Log(LogLevel.Information, $"***** JobController:DeleteJobPosting completed at: {DateTime.UtcNow.ToLongDateString()}");
             return true;
         }
 
 
-        public static bool PostJob(UpDiddyDbContext db, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        public static bool PostJob(UpDiddyDbContext db, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, IHangfireService _hangfireService)
         {
             int postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
 
@@ -172,7 +173,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             JobPostingFactory.SavePostingSkills(db, jobPosting, jobPostingDto);
             //index active jobs into google 
             if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
 
 
             newPostingGuid = jobPosting.JobPostingGuid;
@@ -565,7 +566,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        public static bool UpdateJobPosting(UpDiddyDbContext db, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg)
+        public static bool UpdateJobPosting(UpDiddyDbContext db, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg, IHangfireService _hangfireService)
         {
 
             try
@@ -703,9 +704,9 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 {
                     // Check to see if the job has been indexed into google 
                     if (string.IsNullOrEmpty(jobPosting.CloudTalentUri) == false)
-                        BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobPosting.JobPostingGuid));
+                        _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentUpdateJob(jobPosting.JobPostingGuid));
                     else
-                        BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
+                        _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
                 }
                 return true;
 
