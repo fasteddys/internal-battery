@@ -28,6 +28,8 @@ using Enum = System.Enum;
 using MiniGuids;
 using UpDiddyApi.Helpers.GoogleProfile;
 using UpDiddyApi.ApplicationCore.Services.GoogleProfile;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Repository;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -39,9 +41,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         private GoogleCredential _credential = null;
         private GoogleProfileService _profileApi = null;
         private GoogleProfileService _googleProfile = null;
+      //  private RepositoryWrapper repositoryWrapper;
 
         #region Constructor
-        public CloudTalent(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory)
+        public CloudTalent(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory, IRepositoryWrapper repositoryWrapper)
         {
             _db = context;
             _mapper = mapper;
@@ -50,6 +53,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _syslog = sysLog;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
+            _repositoryWrapper = repositoryWrapper;
 
 
             // cloud talent configuration
@@ -164,8 +168,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 
+                int maxProfileSkillLen =  int.Parse(_configuration["CloudTalent:MaxProfileSkillLen"]);
                 // create googleCloud Profile 
-                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_db, subscriber, skills);
+                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_repositoryWrapper, maxProfileSkillLen, subscriber, skills);
                 step = 1;
                 string errorMsg = string.Empty;
                 BasicResponseDto basicResponseDto =  _profileApi.AddProfile(googleCloudProfile, ref errorMsg);
@@ -201,7 +206,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             try
             {
-                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_db, subscriber, skills);
+                int maxProfileSkillLen = int.Parse(_configuration["CloudTalent:MaxProfileSkillLen"]);
+                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_repositoryWrapper, maxProfileSkillLen, subscriber, skills);
                 string errorMsg = string.Empty;
 
                 if (_profileApi.UpdateProfile(googleCloudProfile, ref errorMsg))
@@ -432,7 +438,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         public ProfileSearchResultDto ProfileSearch(ProfileQueryDto profileQuery, bool isJobPostingAlertSearch = false)
         {
 
-            if (profileQuery.PageSize <= 0 )
+            int MaxProfilePageSize = int.Parse(_configuration["CloudTalent:MaxProfilePageSize"]);
+            if (profileQuery.PageSize <= 0 || profileQuery.PageSize > MaxProfilePageSize)
             {
                 profileQuery.PageSize = int.Parse(_configuration["CloudTalent:ProfilePageSize"]);
             }

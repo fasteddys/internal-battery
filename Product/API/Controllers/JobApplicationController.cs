@@ -35,6 +35,7 @@ using System.Dynamic;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using SendGrid.Helpers.Mail;
 using Microsoft.Extensions.Configuration;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.Controllers
 {
@@ -60,7 +61,8 @@ namespace UpDiddyApi.Controllers
             ILogger<ProfileController> sysLog, 
             IHttpClientFactory httpClientFactory, 
             ISysEmail sysEmail,
-            ISubscriberService subscriberService)
+            ISubscriberService subscriberService,
+            IRepositoryWrapper repositoryWrapper)
 
         {
             _db = db;
@@ -69,7 +71,7 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
             _httpClientFactory = httpClientFactory;
             _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, repositoryWrapper);
             _sysEmail = sysEmail;
             _subscriberService = subscriberService;
         }

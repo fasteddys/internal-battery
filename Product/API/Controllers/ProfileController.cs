@@ -21,6 +21,7 @@ using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Workflow;
 using Hangfire;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.Controllers
 {
@@ -38,13 +39,13 @@ namespace UpDiddyApi.Controllers
         private readonly CloudTalent _cloudTalent = null;
         private readonly ISubscriberService _subscriberService = null;
 
-        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory, ISubscriberService subscriberService)
+        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory, ISubscriberService subscriberService, IRepositoryWrapper repositoryWrapper)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory, repositoryWrapper);
             _subscriberService = subscriberService;
         }
 

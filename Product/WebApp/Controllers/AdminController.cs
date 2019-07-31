@@ -82,9 +82,10 @@ namespace UpDiddy.Controllers
         [Route("/admin/subscriberlookup")]
         public async Task<JsonResult> SubscriberLookup()
         {
-            IList<SubscriberDto> subs = await _api.SubscriberSearchAsync(string.Empty, string.Empty);
+  
+           ProfileSearchResultDto subs = await _api.SubscriberSearchAsync(string.Empty, string.Empty);
 
-            var list = subs
+            var list = subs.Profiles
                 .Select(subscriber => new
                 {
                     entityGuid = subscriber.SubscriberGuid,
