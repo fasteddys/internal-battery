@@ -3,6 +3,22 @@
 // Base Styles
 @media (min-width: 0px) {
 
+    .skills-container {
+        h4 {
+            font-size: 1.5rem;
+        }
+        .skill-pill {
+            background-color: #03264a;
+            color: #fff;
+            display: inline-block;
+            padding: .5rem 1rem;
+            font-size: .75rem;
+            border-radius: 0.35rem;
+            margin-right: .25rem;
+            margin-bottom: .5rem;
+        }
+    }
+
     .job-company {
         height: 60px;
         width: 135px;

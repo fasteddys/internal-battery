@@ -77,33 +77,35 @@
             <strong>Employee Type:</strong> <span class="employee-type">@Model.EmployeeType</span>
         </div>
     }
-    <div class="col-12 pt-3">
-        <h4 class="job-board-heading">Job Summary</h4>
-        <div class="job-summary">
-            @Html.Raw(Model.Summary)
+        <div class="col-12 pt-3">
+            @if (Model.Skills != null && Model.Skills.Count() > 0)
+            {
+                <div class="skills-container">
+                    <h4>Skills</h4>
+                    @foreach (var skill in Model.Skills)
+                    {
+                        <div class="skill-pill">@skill</div>
+                    }
+                </div>
+            }
+            <h4 class="job-board-heading">Job Summary</h4>
+            <div class="job-summary">
+                @Html.Raw(Model.Summary)
+            </div>
+            <div class="pt-4">
+                <h4>About CareerCircle</h4>
+                <p>The statistic has gone viral that there will be a talent shortage of 85.2M people by 2030. CareerCircle was founded in the spirit of finding solutions to address the pending skills gap versus falling victim to it. With so many capable people wanting to find employment and employers needing partners to achieve their goals, CareerCircle is here to provide a bridge.</p>
+                <p>
+                    At CareerCircle, we recognize that CareerskillingTM is the fastest path to improved performance and securing your ideal role. To advance your skills, you need access to the highest caliber of online education technology that is delivered in a meaningful way.
+
+                    Here is where we come in.
+
+                    We partner with experts in education technology to deliver unique learning experiences that can be instructor-led or self- paced, supplemented with the necessary support for optimal results. By completing the coursework provided by these groups, candidates gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance, versus limited work history or listed resume experience.
+
+                    In the end, your journey of advanced education leads to higher pay, flexibility, and a better life.
+                </p>
+            </div>
         </div>
-        <div class="job-skills">
-            <ul>
-                @foreach (var skill in Model.Skills)
-                {
-                <li>@skill</li>
-                }
-                </ul>
-</div>
-        <div class="pt-4">
-            <h4>About CareerCircle</h4>
-            <p>The statistic has gone viral that there will be a talent shortage of 85.2M people by 2030. CareerCircle was founded in the spirit of finding solutions to address the pending skills gap versus falling victim to it. With so many capable people wanting to find employment and employers needing partners to achieve their goals, CareerCircle is here to provide a bridge.</p>
-            <p>
-                At CareerCircle, we recognize that CareerskillingTM is the fastest path to improved performance and securing your ideal role. To advance your skills, you need access to the highest caliber of online education technology that is delivered in a meaningful way.
-
-                Here is where we come in.
-
-                We partner with experts in education technology to deliver unique learning experiences that can be instructor-led or self- paced, supplemented with the necessary support for optimal results. By completing the coursework provided by these groups, candidates gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance, versus limited work history or listed resume experience.
-
-                In the end, your journey of advanced education leads to higher pay, flexibility, and a better life.
-            </p>
-        </div>
-    </div>
     <div class="col-12 pt-3">
         <h4 class="job-board-heading">Contact Information</h4>
         @if (!string.IsNullOrEmpty(Model.ContactName))
