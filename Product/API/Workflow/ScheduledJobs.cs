@@ -33,8 +33,6 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Data.SqlClient;
 using JobPosting = UpDiddyApi.Models.JobPosting;
 using UpDiddyApi.Helpers;
-using UpDiddyApi.Workflow.Helpers;
-using Microsoft.AspNetCore.Mvc;
 
 namespace UpDiddyApi.Workflow
 {
@@ -48,7 +46,6 @@ namespace UpDiddyApi.Workflow
         private readonly ITrackingService _trackingService;
         private readonly CloudTalent _cloudTalent;
         private readonly IMimeMappingService _mimeMappingService;
-        private static bool IsPreliminaryEnvironment;
         public ScheduledJobs(
             UpDiddyDbContext context,
             IMapper mapper,
@@ -85,7 +82,6 @@ namespace UpDiddyApi.Workflow
             _jobPostingService = jobPostingService;
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
             _mimeMappingService = mimeMappingService;
-            IsPreliminaryEnvironment = Boolean.Parse(_configuration["Environment:IsPreliminary"]);
 
         }
 
@@ -416,6 +412,8 @@ namespace UpDiddyApi.Workflow
             }
 
         }
+
+
 
 
         public Boolean ReconcileFutureEnrollments()
@@ -1427,7 +1425,6 @@ namespace UpDiddyApi.Workflow
         /// </summary>
         /// <param name="Notification"></param>
         /// <param name="Subscribers"></param>
-        
         public async Task<bool> CreateSubscriberNotificationRecords(Notification Notification, int IsTargeted, IList<Subscriber> Subscribers = null)
         {
 
