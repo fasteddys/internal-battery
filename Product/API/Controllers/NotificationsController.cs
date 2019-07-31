@@ -31,6 +31,7 @@ using UpDiddyLib.Shared;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Hangfire;
 using UpDiddyApi.Workflow;
+using UpDiddyApi.Workflow.Helpers;
 
 namespace UpDiddyApi.Controllers
 {
@@ -113,8 +114,8 @@ namespace UpDiddyApi.Controllers
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
                 Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
-
+                //BackgroundJob.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
+                BackgroundJobWrapper.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null), Boolean.Parse(_configuration["Environment:IsPreliminary"]));
                 return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, _mapper.Map<NotificationDto>(notification));
             }
             else

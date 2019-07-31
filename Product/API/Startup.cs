@@ -304,10 +304,7 @@ namespace UpDiddyApi
                     Convert.FromBase64String(Configuration.GetValue<string>("Tracking:PixelContentBase64")),
                     Configuration.GetValue<string>("Tracking:PixelContentType")
                     )
-                );
-
-            GlobalJobFilters.Filters.Add(new HangfireServerFilter(Configuration, Logger));
-
+                );           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -9,10 +9,14 @@ using Microsoft.Extensions.Configuration;
 using Hangfire.Server;
 using Hangfire.Common;
 using Serilog;
+using Hangfire.Client;
+using Hangfire.States;
+using Hangfire.Storage;
 
 namespace UpDiddyApi.Workflow.Helpers
 {
-    public class HangfireServerFilter : JobFilterAttribute, IServerFilter
+    public class HangfireServerFilter : JobFilterAttribute,
+    IClientFilter, IServerFilter, IElectStateFilter, IApplyStateFilter
     {
         public bool IsPreliminaryEnvironment;
         private ILogger _logger;
@@ -23,17 +27,53 @@ namespace UpDiddyApi.Workflow.Helpers
             _logger = Logger;
         }
 
-        public void OnPerformed(PerformedContext filterContext)
+        public void OnCreating(CreatingContext context)
         {
-            // Do nothing.
+            _logger.Information($"Creating a job based on method `{context.Job.Method.Name}`...");
+            
         }
-        public void OnPerforming(PerformingContext filterContext)
+
+        public void OnCreated(CreatedContext context)
         {
+            _logger.Information(
+                $"Job that is based on method `{context.Job.Method.Name}` has been created with id `{context.BackgroundJob?.Id}`");
+        }
+
+        public void OnPerforming(PerformingContext context)
+        {
+            _logger.Information($"Starting to perform job `{context.BackgroundJob.Id}`");
             if (IsPreliminaryEnvironment)
             {
-                _logger.Information($"HangfireServerFilter: Hangfire job {filterContext.BackgroundJob.Job.ToString()} (ID: {filterContext.BackgroundJob.Id}) being cancelled due to it being run in a preliminary environment.");
-                filterContext.Canceled = true;
+                _logger.Information($"HangfireServerFilter: Hangfire job {context.BackgroundJob.Job.ToString()} (ID: {context.BackgroundJob.Id}) being cancelled due to it being run in a preliminary environment.");
+                context.Canceled = true;
             }
+        }
+
+        public void OnPerformed(PerformedContext context)
+        {
+            _logger.Information($"Job `{context.BackgroundJob.Id}` has been performed");
+        }
+
+        public void OnStateElection(ElectStateContext context)
+        {
+            var failedState = context.CandidateState as FailedState;
+            if (failedState != null)
+            {
+                _logger.Information(
+                    $"Job `{context.BackgroundJob.Id}` has been failed due to an exception `{failedState.Exception}`");
+            }
+        }
+
+        public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+            _logger.Information(
+                $"Job `{context.BackgroundJob.Id}` state was changed from `{context.OldStateName}` to `{context.NewState.Name}`");
+        }
+
+        public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+            _logger.Information(
+                $"Job `{context.BackgroundJob.Id}` state `{context.OldStateName}` was unapplied.");
         }
     }
 }
