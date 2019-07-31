@@ -14,7 +14,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
     public class SubscriberGroupRepository : UpDiddyRepositoryBase<SubscriberGroup>, ISubscriberGroupRepository
     {
-        public SubscriberGroupRepository(UpDiddyDbContext dbContext) : base(dbContext) { }
-   
+
+ 
+        public SubscriberGroupRepository(UpDiddyDbContext dbContext) : base(dbContext)
+        {
+ 
+        }
+    
     }
 }

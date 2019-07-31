@@ -21,6 +21,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
+ 
         public async Task<IEnumerable<Country>> GetAllCountriesAsync()
         {
             var countries = GetAllAsync();

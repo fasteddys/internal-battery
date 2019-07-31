@@ -9,7 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ISubscriberGroupRepository : IUpDiddyRepositoryBase<SubscriberGroup>
     {
-      
+ 
     }
     
 }

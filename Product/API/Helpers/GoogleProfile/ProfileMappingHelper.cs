@@ -52,7 +52,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                 phoneNumbers = MapPhoneNumber(subscriber)
             };
 
-            IList<Partner> partners =  repositoryWrapper.PartnerContactRepository.GetPartnersAssociatedWithSubscriber(subscriber.SubscriberId).Result;
+            IList<Partner> partners = repositoryWrapper.SubscriberRepository.GetPartnersAssociatedWithSubscriber(subscriber.SubscriberId).Result;
          
             List<string> partnerList = new List<string>();
             if (partners == null || partners.Count <= 0)
@@ -254,12 +254,15 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                  };
                 rVal.EducationHistory.Add(subscriberEducationHistoryDto);
             }
-
+ 
             // map source partner 
-            rVal.SourcePartner = Constants.NotSpecifedOption;
+            rVal.SourcePartner = new List<string>();
+     
             if (summarizedProfile.summary.customAttributes != null && summarizedProfile.summary.customAttributes.ContainsKey("SourcePartner"))
-                rVal.SourcePartner = summarizedProfile.summary.customAttributes["SourcePartner"].stringValues[0];
-
+                foreach ( string s in summarizedProfile.summary.customAttributes["SourcePartner"].stringValues)
+                    rVal.SourcePartner.Add(s);
+            else
+                rVal.SourcePartner.Add(Constants.NotSpecifedOption);
 
             // map create date
             DateTime createDate  = DateTime.MinValue;

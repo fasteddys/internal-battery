@@ -218,11 +218,10 @@ namespace UpDiddy.Controllers
         public ViewResult Subscribers()
         {
             var subscriberSourcesDto = _api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);
-            //todo jab fix to show partners 
             var selectListItems = subscriberSourcesDto.Select(ss => new SelectListItem()
             {
                 Text = $"{ss.Name} ({ss.Count})",
-                Value = ss.Referrer
+                Value = ss.Name
             })
             .AsEnumerable();
 

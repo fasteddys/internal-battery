@@ -960,13 +960,12 @@ namespace UpDiddyApi.Controllers
             ProfileQueryDto profileQueryDto = new ProfileQueryDto()
             {
                 Keywords = searchQuery,
-                SourcePartner = searchFilter.ToLower() == "any" ? string.Empty : searchFilter,
-                // must be < 1000
+                SourcePartner = searchFilter == null || searchFilter.ToLower() == "any" ? string.Empty : searchFilter,
+                // must be < 100
                 PageSize = MaxProfilePageSize
 
             };
             ProfileSearchResultDto result = _cloudTalent.ProfileSearch(profileQueryDto);   
-            // todo jab refactor front end to support new return type 
 
             return Json(result);
         }
@@ -975,8 +974,6 @@ namespace UpDiddyApi.Controllers
         [HttpGet("/api/[controller]/sources")]
         public IActionResult GetSubscriberSources()
         {
-            //todo jab 
-            // TODO add migration for view updated 
          
             return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceDto>(_mapper.ConfigurationProvider).ToList());
         }
