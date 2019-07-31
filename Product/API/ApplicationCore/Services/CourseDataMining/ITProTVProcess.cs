@@ -53,11 +53,11 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                 .Select(x => x.Element(ns + "loc").Value)
                 .ToList();
 
+            // discover course content (including tags/topics) from all urls in the sitemap
             var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 1 };
             int counter = 0;
             Parallel.For(counter, courseUrls.Count(), maxdop, i =>
             {
-                // break this out into a separate method call
                 var coursePage = DiscoverCoursePage(new Uri(courseUrls[i].ToString()));
             });
 
@@ -65,10 +65,47 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
             throw new NotImplementedException();
         }
 
+        private ItProTVCategory DiscoverCourseCategory(Uri courseCategoryUri)
+        {
+            // course categories always have 2 url segments
+            if (courseCategoryUri.Segments.Where(s => s.Length > 1).Count() == 2)
+            {
+                // request the page content for what we believe is a valid course category
+                string response;
+                using (var client = new HttpClient(GetHttpClientHandler()))
+                {
+                    var request = new HttpRequestMessage()
+                    {
+                        RequestUri = courseCategoryUri,
+                        Method = HttpMethod.Get
+                    };
+                    var result = client.SendAsync(request).Result;
+                    response = result.Content.ReadAsStringAsync().Result;
+                }
+
+                // extract the course category information and load it into a class specific to ITProTV
+                HtmlDocument courseCategory = new HtmlDocument();
+                courseCategory.LoadHtml(response);
+                var abbreviation = courseCategory.DocumentNode.SelectSingleNode("//h1*[contains(@class,'--title--')]");
+                var description = courseCategory.DocumentNode.SelectSingleNode("//p*[contains(@class,'--paragraph--')]");
+
+                return new ItProTVCategory()
+                {
+                    Abbreviation = "",
+                    Description = "",
+                    Topic = ""
+                };
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         private CoursePage DiscoverCoursePage(Uri coursePageUri)
         {
-
-            if (coursePageUri.Segments.Where(s => s.Length > 1).Count() < 3)
+            // course pages always have 3 url segments
+            if (coursePageUri.Segments.Where(s => s.Length > 1).Count() == 3)
             {
                 // todo: need to handle categorization here
                 // the topics do not have their own discoverable urls in the sitemap, these will be hard-coded (or pulled from /courses/)
@@ -78,10 +115,10 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
             }
             else
             {
+                // request the page content for what we believe is a valid course 
                 string response;
                 using (var client = new HttpClient(GetHttpClientHandler()))
                 {
-                    // call the api to retrieve a total number of job results
                     var request = new HttpRequestMessage()
                     {
                         RequestUri = coursePageUri,
@@ -91,30 +128,15 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                     response = result.Content.ReadAsStringAsync().Result;
                 }
 
+                // extract the course information and load it into a class specific to ITProTV
                 HtmlDocument courseHtml = new HtmlDocument();
                 courseHtml.LoadHtml(response);
-
-                var course = new ITProTVCourse();
                 var title = courseHtml.DocumentNode.SelectSingleNode("//h1/span[@itemprop=\"name\"]");
-                if (title != null && title.InnerText != null)
-                    course.Title = title.InnerText;
-
                 var subtitle = courseHtml.DocumentNode.SelectSingleNode("//*[contains(@class,'--subtitle--')]");
-                if (subtitle != null && title.InnerText != null)
-                    course.Subtitle = subtitle.InnerText;
-
                 var description = courseHtml.DocumentNode.SelectSingleNode("//*[contains(@class,'--seoDescription--')]");
-                if (description != null && description.InnerText != null)
-                    course.Description = description.InnerText;
-
                 var duration = courseHtml.DocumentNode.SelectSingleNode("//*[contains(@class, '--time--')]");
-                if (duration != null && duration.InnerText != null)
-                    course.Duration = duration.InnerText;
-
-                // overview comes from the first episode description
                 var overview = courseHtml.DocumentNode.SelectSingleNode("//*[contains(@class, '-module--description--')]");
-                if (overview != null && overview.InnerText != null)
-                    course.Overview = overview.InnerText;
+                var course = new ITProTVCourse(title?.InnerText, subtitle?.InnerText, description?.InnerText, duration?.InnerText, overview?.InnerText, string.Empty);
 
                 var coursePage = new CoursePage()
                 {
@@ -127,78 +149,6 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                     UniqueIdentifier = coursePageUri.ToString()
                 };
 
-                byte[] bytes;
-                using (var ms = new MemoryStream())
-                {
-                    using (var sw = new StreamWriter(ms))
-                    {
-                        sw.WriteLine("Title");
-                        sw.WriteLine(course.Title);
-                        sw.WriteLine("Subtitle");
-                        sw.WriteLine(course.Subtitle);
-                        sw.WriteLine("Description");
-                        sw.WriteLine(course.Description);
-                        sw.WriteLine("Overview");
-                        sw.WriteLine(course.Overview);
-                        sw.Flush();
-                        ms.Seek(0, SeekOrigin.Begin);
-                        bytes = ms.ToArray();
-                    }
-                }
-                string base64 = Convert.ToBase64String(bytes);
-                var test = _sovrenApi.SubmitResumeAsync(base64).Result;
-
-                // create base64 resume file from raw data
-                //using (MemoryStream ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(coursePage.RawData)))
-          //      {
-            //        byte[] bytes = ms.ToArray();
-           //         string base64String = Convert.ToBase64String(bytes);
-           //         var test = _sovrenApi.SubmitResumeAsync(base64String).Result;
-
-                    // OpenXML lib? https://github.com/OfficeDev/Open-XML-SDK
-
-                    /* can get the same results writing straight to a text file...
-file content:
-
-Title
-CompTIA IT Fundamentals+ (Exam FC0-U61)
-Subtitle
-Essential IT skills and knowledge
-Description
-Official CompTIA online IT training. This course covers basic IT literacy and ensures you understand the terminology and concepts involved in the IT industry.
-Overview
-The CompTIA IT Fundamentals Certification is an entry level certification designed to introduce users to basic computer principles. It covers basic IT literacy and ensures one understands the different terminology and the various concepts involved In the IT industry. It also serves as a great starting point if you are just getting started in computers and is designed to be the first step on your way to pursuing the CompTIA A+ certification or others similar. Topics covered include hardware basics, troubleshooting, software installation, security and also networking.
-
-base64 encoded value:
-VGl0bGUNCkNvbXBUSUEgSVQgRnVuZGFtZW50YWxzKyAoRXhhbSBGQzAtVTYxKQ0KU3VidGl0bGUNCkVzc2VudGlhbCBJVCBza2lsbHMgYW5kIGtub3dsZWRnZQ0KRGVzY3JpcHRpb24NCk9mZmljaWFsIENvbXBUSUEgb25saW5lIElUIHRyYWluaW5nLiBUaGlzIGNvdXJzZSBjb3ZlcnMgYmFzaWMgSVQgbGl0ZXJhY3kgYW5kIGVuc3VyZXMgeW91IHVuZGVyc3RhbmQgdGhlIHRlcm1pbm9sb2d5IGFuZCBjb25jZXB0cyBpbnZvbHZlZCBpbiB0aGUgSVQgaW5kdXN0cnkuDQpPdmVydmlldw0KVGhlIENvbXBUSUEgSVQgRnVuZGFtZW50YWxzIENlcnRpZmljYXRpb24gaXMgYW4gZW50cnkgbGV2ZWwgY2VydGlmaWNhdGlvbiBkZXNpZ25lZCB0byBpbnRyb2R1Y2UgdXNlcnMgdG8gYmFzaWMgY29tcHV0ZXIgcHJpbmNpcGxlcy4gSXQgY292ZXJzIGJhc2ljIElUIGxpdGVyYWN5IGFuZCBlbnN1cmVzIG9uZSB1bmRlcnN0YW5kcyB0aGUgZGlmZmVyZW50IHRlcm1pbm9sb2d5IGFuZCB0aGUgdmFyaW91cyBjb25jZXB0cyBpbnZvbHZlZCBJbiB0aGUgSVQgaW5kdXN0cnkuIEl0IGFsc28gc2VydmVzIGFzIGEgZ3JlYXQgc3RhcnRpbmcgcG9pbnQgaWYgeW91IGFyZSBqdXN0IGdldHRpbmcgc3RhcnRlZCBpbiBjb21wdXRlcnMgYW5kIGlzIGRlc2lnbmVkIHRvIGJlIHRoZSBmaXJzdCBzdGVwIG9uIHlvdXIgd2F5IHRvIHB1cnN1aW5nIHRoZSBDb21wVElBIEErIGNlcnRpZmljYXRpb24gb3Igb3RoZXJzIHNpbWlsYXIuIFRvcGljcyBjb3ZlcmVkIGluY2x1ZGUgaGFyZHdhcmUgYmFzaWNzLCB0cm91Ymxlc2hvb3RpbmcsIHNvZnR3YXJlIGluc3RhbGxhdGlvbiwgc2VjdXJpdHkgYW5kIGFsc28gbmV0d29ya2luZy4=
-
-skill taxonomy output:
-<sov:SkillsTaxonomyOutput>
-	<sov:TaxonomyRoot name="Sovren">
-		<sov:Taxonomy name="Information Technology" id="10" percentOfOverall="50">
-			<sov:Subtaxonomy name="Privacy and Data Security" id="556" percentOfOverall="25" percentOfParentTaxonomy="50">
-				<sov:Skill name="COMPTIA" id="5551297" existsInText="true" whereFound="Found in SUMMARY"></sov:Skill>
-			</sov:Subtaxonomy>
-			<sov:Subtaxonomy name="Operations, Monitoring and Software Management" id="349" percentOfOverall="25" percentOfParentTaxonomy="50">
-				<sov:Skill name="NETWORKING" id="3490044" existsInText="true" whereFound="Found in SUMMARY"></sov:Skill>
-			</sov:Subtaxonomy>
-		</sov:Taxonomy>
-		<sov:Taxonomy name="Administrative or Clerical" id="1" percentOfOverall="50">
-			<sov:Subtaxonomy name="Admin" id="113" percentOfOverall="25" percentOfParentTaxonomy="50">
-				<sov:Skill name="ENTRY LEVEL" id="081173" existsInText="true" whereFound="Found in SUMMARY"></sov:Skill>
-			</sov:Subtaxonomy>
-			<sov:Subtaxonomy name="Entry Level" id="499" percentOfOverall="25" percentOfParentTaxonomy="50">
-				<sov:Skill name="ENTRY LEVEL" id="081158" existsInText="true" whereFound="Found in SUMMARY"></sov:Skill>
-			</sov:Subtaxonomy>
-		</sov:Taxonomy>
-	</sov:TaxonomyRoot>
-</sov:SkillsTaxonomyOutput>
-    */
-              //  }
-
-                //_sovrenApi.SubmitResumeAsync()
-
-
                 return coursePage;
             }
         }
@@ -208,13 +158,67 @@ skill taxonomy output:
             throw new NotImplementedException();
         }
 
-        private class ITProTVCourse
+        public class ItProTVCategory
         {
-            public string Title { get; set; }
-            public string Subtitle { get; set; }
+            public string Topic { get; set; }
+            public string Abbreviation { get; set; }
             public string Description { get; set; }
-            public string Duration { get; set; }
-            public string Overview { get; set; }
+        }
+
+        public class ITProTVCourse
+        {
+            private List<string> ParseSkillsFromSovren()
+            {
+                /* create a fake resume, send to Sovren, retrieve skill names from xml response. this cannot be done until Sovren is fixed!!
+                byte[] bytes;
+                using (var ms = new MemoryStream())
+                {
+                    using (var sw = new StreamWriter(ms))
+                    {
+                        sw.WriteLine("Title");
+                        sw.WriteLine(this.Title);
+                        sw.WriteLine("Subtitle");
+                        sw.WriteLine(this.Subtitle);
+                        sw.WriteLine("Description");
+                        sw.WriteLine(this.Description);
+                        sw.WriteLine("Overview");
+                        sw.WriteLine(this.Overview);
+                        sw.Flush();
+                        ms.Seek(0, SeekOrigin.Begin);
+                        bytes = ms.ToArray();
+                    }
+                }
+                string base64 = Convert.ToBase64String(bytes);
+                var sovrenResult = _sovrenApi.SubmitResumeAsync(base64).Result;
+                */
+
+                return new List<string>() {
+                    "react",
+                    "simple object access protocol (soap)",
+                    "front end (software engineering)",
+                    "cascading style sheets (css)",
+                    "hypertext markup language (html)",
+                    "java (programming language)"
+                };
+            }
+
+            public ITProTVCourse(string title, string subtitle, string description, string duration, string overview, string category)
+            {
+                this.Title = title;
+                this.Subtitle = subtitle;
+                this.Description = description;
+                this.Duration = duration;
+                this.Overview = overview;
+                Skills = this.ParseSkillsFromSovren();
+            }
+
+            public string Title { get; }
+            public string Subtitle { get; }
+            public string Description { get; }
+            public string Duration { get; }
+            public string Overview { get; }
+            public List<string> Skills { get; }
+            public string Category { get; }
         }
     }
 }
