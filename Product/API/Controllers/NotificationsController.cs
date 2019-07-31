@@ -45,6 +45,7 @@ namespace UpDiddyApi.Controllers
         private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
+        private IHangfireService _hangfireService;
         private readonly IRepositoryWrapper _repositoryWrapper;
 
 
@@ -56,7 +57,8 @@ namespace UpDiddyApi.Controllers
             IB2CGraph client,
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService,
-            IRepositoryWrapper repositoryWrapper)
+            IRepositoryWrapper repositoryWrapper,
+            IHangfireService hangfireService)
         {
             _db = db;
             _mapper = mapper;
@@ -66,6 +68,7 @@ namespace UpDiddyApi.Controllers
             _cloudStorage = cloudStorage;
             _authorizationService = authorizationService;
             _repositoryWrapper = repositoryWrapper;
+            _hangfireService = hangfireService;
         }
 
         [HttpGet]
@@ -115,7 +118,7 @@ namespace UpDiddyApi.Controllers
 
                 Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
                 //BackgroundJob.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
-                BackgroundJobWrapper.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null), Boolean.Parse(_configuration["Environment:IsPreliminary"]));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
                 return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, _mapper.Map<NotificationDto>(notification));
             }
             else
