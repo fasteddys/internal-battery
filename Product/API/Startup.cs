@@ -208,9 +208,6 @@ namespace UpDiddyApi
             int profileIndexerIntervalInMinutes = int.Parse(Configuration["CloudTalent:ProfileIndexerIntervalInMinutes"]);
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes) );
 
-            //Run job to cache job posting count per provimce
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.StoreJobCountPerProvice(), Cron.MinuteInterval(10));
-
             // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
@@ -311,7 +308,6 @@ namespace UpDiddyApi
 
             GlobalJobFilters.Filters.Add(new HangfireServerFilter(Configuration, Logger));
 
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -330,9 +326,7 @@ namespace UpDiddyApi
             {
                 Authorization = new[] { new HangfireAuthorizationFilter(env, Configuration) }
             });
-
             app.UseHangfireServer();
-
 
             app.UseMvc(routes =>
             {

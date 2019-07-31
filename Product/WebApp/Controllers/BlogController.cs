@@ -84,6 +84,7 @@ namespace UpDiddy.Controllers
         [Route("/blog/author/{author}")]
         public async Task<IActionResult> GetPostsByAuthorAsync(string author)
         {
+            ViewData["ShowAuthorInfo"]=true;
             PostsResponse response = await _butterCMSClient.ListPostsAsync(authorSlug: author);
             return View("Posts", response);
         }

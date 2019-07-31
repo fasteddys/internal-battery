@@ -1,10 +1,19 @@
-﻿@model ButterCMS.Models.PostsResponse
+﻿@using System.Collections.Generic;
+@using ButterCMS.Models;
+@using UpDiddyLib.Helpers;
+@model ButterCMS.Models.PostsResponse
+
+@{
+    Author authorInfo=null;
+    bool showAuthor=Convert.ToBoolean(ViewData["ShowAuthorInfo"]);
+    if(showAuthor)
+    {
+        authorInfo = Model.Data.ToList()[0].Author;
+    }
+}
 <div class="blog-post-list-container">
     <div class="blog-search d-flex justify-content-center">
         <div class="p-2">
-            <div class="d-flex justify-content-center mt-3">
-                <h1 class="blog-search-title">Blog</h1>
-            </div>
             <form method="get"  asp-controller="blog" asp-action="search">
                 <div class="d-flex flex-row">
                     <div class="p-2">
@@ -20,8 +29,85 @@
             </form>
         </div>
     </div> 
+    @if(showAuthor && authorInfo!=null)
+    {
+        <div class="author-info d-flex justify-content-center">
+            <div class="col-9">
+                <div class="row">
+                    <div class="col-12 col-md-4 col-lg-3">
+                        <div class="row">
+                            <div class="col-12 name">
+                                @Utils.FormatName(authorInfo.FirstName, authorInfo.LastName)
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 title">
+                                @Utils.FormatGenericField(authorInfo.Title, "job title")
+                            </div>
+                        </div>
+                         <div class="row">
+                            <div class="col-12 image">
+                                @if(authorInfo.ProfileImage!=null && authorInfo.ProfileImage!="")
+                                 {
+                                      <img class="w-50 rounded-circle" src="@authorInfo.ProfileImage" />
+                                 }
+                                else{
+                                    <img class="w-50 rounded-circle" src="~/images/blank_avatar.jpg" />
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-8 col-lg-9">
+                        <div class="row">
+                            <div class="col-12 author-bio">
+                                  @if(authorInfo.Bio.Length>600)
+                                    {
+                                        <label id="biography">@Html.Raw(Utils.RemoveHTML(authorInfo.Bio.Substring(0, 601)))...<a id="bioLink" onclick="expandMoreLinks(this)" href="#">More</a></label>
+                                    }
+                                    else
+                                    {
+                                        <label id="biography">@authorInfo.Bio</label>
+                                    }
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <ul class="social-links">
+                                         @if(authorInfo.FacebookUrl!=null && authorInfo.FacebookUrl!="")
+                                            {
+                                               <li><a class="fab fa-facebook-square" href="@authorInfo.FacebookUrl"></a></li>
+                                            }
+                                        @if(authorInfo.TwitterHandle!=null && authorInfo.TwitterHandle!="")
+                                        {
+                                           <li><a class="fab fa-twitter-square" href="@authorInfo.TwitterHandle"></a></li>
+                                        }
+                                         @if(authorInfo.InstagramUrl!=null && authorInfo.InstagramUrl!="")
+                                        {
+                                             <li><a class="fab fa-instagram" href="@authorInfo.InstagramUrl"></a></li>
+                                        }
+                                         @if(authorInfo.LinkedinUrl!=null && authorInfo.LinkedinUrl!="")
+                                        {
+                                           <li><a class="fab fa-linkedin" href="@authorInfo.LinkedinUrl"></a></li>
+                                        }
+                                         @if(authorInfo.PinterestUrl!=null && authorInfo.PinterestUrl!="")
+                                        {
+                                           <li><a class="fab fa-pinterest-square" href="@authorInfo.PinterestUrl"></a></li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
     <div class="d-flex justify-content-center">
         <div class="col-9">
+            <div class="p-2">
+                <div class="d-flex justify-content-left mt-3">
+                    <h1 class="blog-title">Blog</h1>
+                </div> 
+            </div>
             @if (Model != null)
             {
                 int i = 0;
@@ -66,4 +152,18 @@
         </div>
     </div>
 </div>
+
+@if(showAuthor && authorInfo!=null)
+{
+    @section Scripts{
+        <script type="text/javascript">
+        "use strict";
+                function expandMoreLinks(element) {
+                    var biographyText=`@Html.Raw(Utils.RemoveHTML(authorInfo.Bio))`;
+                    $("#biography").text(biographyText);
+                        element.style.display='none';
+                }
+        </script>
+    }
+}
 

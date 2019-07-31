@@ -183,7 +183,7 @@ body {
             #HomeBottomContainer {
                 padding: 4rem 0;
                 background-image: url(/images/bottom_mobile_banner.jpg);
-                background-size: contain;
+                background-size: cover;
                 background-position: top;
                 background-repeat: no-repeat;
                 background-color: $color-secondary;
