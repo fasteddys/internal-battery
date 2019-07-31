@@ -25,8 +25,6 @@
 
         .blog-title {
             color: $color-black;
-            font-size: 2rem;
-            font-weight:bold;
         }
 
         .blog-post-empty-image,
@@ -134,6 +132,10 @@
                     &:first-child {
                         padding-left: 0;
                     }
+
+                    a {
+                        color: #03264A;
+                    }
                 }
             }
         }
@@ -159,13 +161,6 @@
         .author-info{
             .author-bio{
                 padding-left:15px;
-            }
-
-            .social-links{
-                li {
-                    font-size: 2rem;
-                    padding-left: 1.5rem;
-                }
             }
         }
     }
