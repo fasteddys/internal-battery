@@ -628,7 +628,7 @@ namespace UpDiddyApi.Controllers
             if (jobPostingAlertToDelete == null)
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Job alerts can only be deleted by the owner of the job alert." });
 
-            bool isSuccess = JobPostingAlertFactory.DeleteJobPostingAlert(_repositoryWrapper, _syslog, jobPostingAlertToDelete.JobPostingAlertGuid.Value);
+            bool isSuccess = JobPostingAlertFactory.DeleteJobPostingAlert(_repositoryWrapper, _syslog, jobPostingAlertToDelete.JobPostingAlertGuid.Value, _hangfireService);
 
             if (isSuccess)
                 return Ok();

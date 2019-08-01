@@ -17,7 +17,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public static class JobPostingAlertFactory
     {
-        public static bool DeleteJobPostingAlert(IRepositoryWrapper repository, ILogger syslog, Guid jobPostingAlertGuid)
+        public static bool DeleteJobPostingAlert(IRepositoryWrapper repository, ILogger syslog, Guid jobPostingAlertGuid, IHangfireService _hangfireService)
         {
             bool result = true;
             try
@@ -28,7 +28,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 existingJobPostingAlert.IsDeleted = 1;
                 repository.JobPostingAlertRepository.Update(existingJobPostingAlert);
                 repository.JobPostingAlertRepository.SaveAsync().Wait();
-                RecurringJob.RemoveIfExists($"jobPostingAlert:{jobPostingAlertGuid}");
+                _hangfireService.RemoveIfExists($"jobPostingAlert:{jobPostingAlertGuid}");
             }
             catch (Exception e)
             {
@@ -142,7 +142,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 }
 
                 repository.JobPostingAlertRepository.SaveAsync().Wait();
-                RecurringJob.AddOrUpdate<ScheduledJobs>($"jobPostingAlert:{jobPostingAlertGuid}", sj => sj.ExecuteJobPostingAlert(jobPostingAlertGuid.Value), cronSchedule);
+                _hangfireService.AddOrUpdate<ScheduledJobs>($"jobPostingAlert:{jobPostingAlertGuid}", sj => sj.ExecuteJobPostingAlert(jobPostingAlertGuid.Value), cronSchedule);
             }
             catch (Exception e)
             {

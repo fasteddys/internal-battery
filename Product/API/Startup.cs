@@ -179,49 +179,54 @@ namespace UpDiddyApi
             services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
             // Have the workflow monitor run every minute 
             JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ReconcileFutureEnrollments(), Cron.Daily);
-            // Batch job for updating woz student course progress 
-            int CourseProgressSyncIntervalInHours = 12;
-            int.TryParse(Configuration["Woz:CourseProgressSyncIntervalInHours"].ToString(), out CourseProgressSyncIntervalInHours); 
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.UpdateAllStudentsProgress(), Cron.HourInterval(CourseProgressSyncIntervalInHours));
- 
-            // PromoCodeRedemption cleanup
-            int promoCodeRedemptionCleanupScheduleInMinutes = 5;
-            int promoCodeRedemptionLookbackInMinutes = 30;
-            int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
-            int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
 
-            // remove TinyIds from old CampaignPartnerContact records
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
+            if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
+            {
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ReconcileFutureEnrollments(), Cron.Daily);
+                // Batch job for updating woz student course progress 
+                int CourseProgressSyncIntervalInHours = 12;
+                int.TryParse(Configuration["Woz:CourseProgressSyncIntervalInHours"].ToString(), out CourseProgressSyncIntervalInHours);
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.UpdateAllStudentsProgress(), Cron.HourInterval(CourseProgressSyncIntervalInHours));
 
-            // run the process in production Monday through Friday once every 2 hours between 11 and 23 UTC
-            if (_currentEnvironment.IsProduction())
-                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 11,13,15,17,19,21,23 * * Mon,Tue,Wed,Thu,Fri");
+                // PromoCodeRedemption cleanup
+                int promoCodeRedemptionCleanupScheduleInMinutes = 5;
+                int promoCodeRedemptionLookbackInMinutes = 30;
+                int.TryParse(Configuration["PromoCodeRedemptionCleanupScheduleInMinutes"].ToString(), out promoCodeRedemptionCleanupScheduleInMinutes);
+                int.TryParse(Configuration["PromoCodeRedemptionLookbackInMinutes"].ToString(), out promoCodeRedemptionLookbackInMinutes);
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DoPromoCodeRedemptionCleanup(promoCodeRedemptionLookbackInMinutes), Cron.MinuteInterval(promoCodeRedemptionCleanupScheduleInMinutes));
 
-            // run the process in staging once a week on the weekend (Sunday 4 UTC)
-            if (_currentEnvironment.IsStaging())
-                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
+                // remove TinyIds from old CampaignPartnerContact records
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
 
-            // run job to look for un-indexed profiles and index them 
-            int profileIndexerBatchSize = int.Parse(Configuration["CloudTalent:ProfileIndexerBatchSize"]);
-            int profileIndexerIntervalInMinutes = int.Parse(Configuration["CloudTalent:ProfileIndexerIntervalInMinutes"]);
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes) );
+                // run the process in production Monday through Friday once every 2 hours between 11 and 23 UTC
+                if (_currentEnvironment.IsProduction())
+                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 11,13,15,17,19,21,23 * * Mon,Tue,Wed,Thu,Fri");
 
-            // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
-            // _hangfireService.Enqueue<ScheduledJobs>(x => x.JobDataMining());
+                // run the process in staging once a week on the weekend (Sunday 4 UTC)
+                if (_currentEnvironment.IsStaging())
+                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
 
-            // kick off the metered welcome email delivery process at five minutes past the hour every hour
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
+                // run job to look for un-indexed profiles and index them 
+                int profileIndexerBatchSize = int.Parse(Configuration["CloudTalent:ProfileIndexerBatchSize"]);
+                int profileIndexerIntervalInMinutes = int.Parse(Configuration["CloudTalent:ProfileIndexerIntervalInMinutes"]);
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes));
+
+                // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
+                // _hangfireService.Enqueue<ScheduledJobs>(x => x.JobDataMining());
+
+                // kick off the metered welcome email delivery process at five minutes past the hour every hour
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
+
+                // kick off the job abandonment email delivery process
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteJobAbandonmentEmailDelivery(), Cron.Daily());
+
+                // kick off the subscriber notification email reminder process every day at 12 UTC 
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
+
+                //Schedule this background job to check if the SubscriberFiles has MimeType. If not update SubscriberFiles with specific MimeType.
+                BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateSubscriberFilesMimeType());
+            }
             
-            // kick off the job abandonment email delivery process
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteJobAbandonmentEmailDelivery(), Cron.Daily());
-
-            // kick off the subscriber notification email reminder process every day at 12 UTC 
-            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
-
-            //Schedule this background job to check if the SubscriberFiles has MimeType. If not update SubscriberFiles with specific MimeType.
-            BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateSubscriberFilesMimeType());
 
             // Add Polly 
             // Create Policies  

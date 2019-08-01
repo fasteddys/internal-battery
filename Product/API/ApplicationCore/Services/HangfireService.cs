@@ -50,5 +50,23 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return BackgroundJob.Enqueue<T>(methodCall);
         }
+
+        public string Schedule<T>(Expression<Action<T>> methodCall, TimeSpan delay)
+        {
+            if (IsPreliminaryEnvironment)
+                return string.Empty;
+
+            return BackgroundJob.Schedule<T>(methodCall, delay);
+        }
+
+        public void RemoveIfExists(string recurringJobId)
+        {
+            if (IsPreliminaryEnvironment)
+                return;
+
+            RecurringJob.RemoveIfExists(recurringJobId);
+        }
+
+
     }
 }

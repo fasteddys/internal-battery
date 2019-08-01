@@ -74,7 +74,7 @@ namespace UpDiddyApi.Controllers
 
             // Queue another update in 6 hours 
             if (futureSchedule)
-                BackgroundJob.Schedule<ScheduledJobs>(j => j.UpdateStudentProgress(subscriberGuid, AgeThresholdInHours), TimeSpan.FromHours(AgeThresholdInHours));
+                _hangfireService.Schedule<ScheduledJobs>(j => j.UpdateStudentProgress(subscriberGuid, AgeThresholdInHours), TimeSpan.FromHours(AgeThresholdInHours));
 
             return Ok();
         }
