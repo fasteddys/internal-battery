@@ -619,6 +619,8 @@ namespace UpDiddyApi.Workflow
             var result = true;
             try
             {
+                // todo: get all of the course page status values?
+
                 List<CourseSite> courseSites = _repositoryWrapper.CourseSite.GetAllCourseSitesAsync().Result.ToList();
 
                 foreach (var courseSite in courseSites)
@@ -651,8 +653,17 @@ namespace UpDiddyApi.Workflow
                     // retrieve all current course pages that are visible on the course site
                     List<CoursePage> coursePagesToProcess = courseDataMining.DiscoverCoursePages(existingCoursePages);
 
+                    // insert or update the course pages
 
+                    foreach (var coursePage in coursePagesToProcess)
+                    {
+                        if (coursePage.CoursePageId == 0)
+                            _repositoryWrapper.CoursePage.Create(coursePage);
+                        else
+                            _repositoryWrapper.CoursePage.Update(coursePage);
+                    }
 
+                    await _repositoryWrapper.CoursePage.SaveAsync();
 
 
 

@@ -138,22 +138,27 @@ namespace UpDiddyApi.Migrations
             migrationBuilder.InsertData(
                 table: "CoursePageStatus",
                 columns: new[] { "CoursePageStatusGuid", "CoursePageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
-                values: new object[] { new Guid("EF050BB4-51CF-442B-8B4E-6ECB134AA73B"), 1, new DateTime(2019, 7, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Pending", "This status is applied to a CoursePage when raw data has been inserted or modified. This occurs before processing occurs to act on an associated Course." });
+                values: new object[] { new Guid("EF050BB4-51CF-442B-8B4E-6ECB134AA73B"), 1, new DateTime(2019, 7, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Synced", "This status is applied to a CoursePage when raw data matches that of the existing CoursePage. This status can be set during course page discovery or after an add/update/delete operation has been performed for a related course." });
 
             migrationBuilder.InsertData(
                 table: "CoursePageStatus",
                 columns: new[] { "CoursePageStatusGuid", "CoursePageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
-                values: new object[] { new Guid("9C1DAA78-D499-4C37-A6DA-EEBE6A03F481"), 2, new DateTime(2019, 7, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Active", "This status is applied to a CoursePage when after a job page has been processed successfully and associated with an active Course." });
+                values: new object[] { new Guid("9C1DAA78-D499-4C37-A6DA-EEBE6A03F481"), 2, new DateTime(2019, 7, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Update", "This status is applied to a CoursePage during course page discovery when the raw data is different than that of the existing CoursePage." });
 
             migrationBuilder.InsertData(
                 table: "CoursePageStatus",
                 columns: new[] { "CoursePageStatusGuid", "CoursePageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
-                values: new object[] { new Guid("8B26279D-0212-4F0E-9FFA-F77ACE7CC460"), 3, new DateTime(2019, 7, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Error", "This status is applied to a CoursePage when an error occurs during CoursePage parsing which prevents an associated Course record from being inserted or updated." });
+                values: new object[] { new Guid("8B26279D-0212-4F0E-9FFA-F77ACE7CC460"), 3, new DateTime(2019, 7, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Create", "This status is applied to a CoursePage during course page discovery when there is no existing CoursePage." });
 
             migrationBuilder.InsertData(
                 table: "CoursePageStatus",
                 columns: new[] { "CoursePageStatusGuid", "CoursePageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
-                values: new object[] { new Guid("6DEDA707-E4CF-4B7A-A5C9-8BE349E1F3C7"), 4, new DateTime(2019, 7, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Deleted", "This status is applied to a CoursePage when it is discovered that a previously seen Course is no longer visible on a CourseSite." });
+                values: new object[] { new Guid("6DEDA707-E4CF-4B7A-A5C9-8BE349E1F3C7"), 4, new DateTime(2019, 7, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Delete", "This status is applied to a CoursePage during course page discovery when an existing CoursePage is not found." });
+
+            migrationBuilder.InsertData(
+                table: "CoursePageStatus",
+                columns: new[] { "CoursePageStatusGuid", "CoursePageStatusId", "CreateDate", "CreateGuid", "IsDeleted", "Name", "Description" },
+                values: new object[] { new Guid("E78B6AC8-E5B5-4AED-85E4-9338F34770C5"), 4, new DateTime(2019, 7, 29, 0, 0, 0, 0, DateTimeKind.Unspecified), new Guid("00000000-0000-0000-0000-000000000000"), 0, "Error", "This status is applied to a CoursePage after an add/update/delete for an existing Course does not complete successfully." });
 
         }
 

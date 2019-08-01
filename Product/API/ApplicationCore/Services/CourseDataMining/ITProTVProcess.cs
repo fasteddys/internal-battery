@@ -27,6 +27,9 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                 SslProtocols = System.Security.Authentication.SslProtocols.Tls12
             };
         }
+
+        private ConcurrentBag<ItProTVCategory> Categories { get; set; } = new ConcurrentBag<ItProTVCategory>();
+
         public List<CoursePage> DiscoverCoursePages(List<CoursePage> existingCoursePages)
         {
             // populate this collection with the results of the job discovery operation
@@ -53,16 +56,96 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                 .Select(x => x.Element(ns + "loc").Value)
                 .ToList();
 
-            // discover course content (including tags/topics) from all urls in the sitemap
-            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 1 };
+            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 50 };
+            // discover categories
             int counter = 0;
             Parallel.For(counter, courseUrls.Count(), maxdop, i =>
             {
-                var coursePage = DiscoverCoursePage(new Uri(courseUrls[i].ToString()));
+                var category = DiscoverCourseCategory(new Uri(courseUrls[i].ToString()));
+                if (category != null)
+                    Categories.Add(category);
             });
 
+            // discover courses          
+            counter = 0;
+            Parallel.For(counter, courseUrls.Count(), maxdop, i =>
+            {
+                var coursePage = DiscoverCoursePage(new Uri(courseUrls[i].ToString()));
+                if (coursePage != null)
+                    discoveredCoursePages.Add(coursePage);
 
-            throw new NotImplementedException();
+            });
+
+            // ignore duplicates during discovery as courses can be listed multiple times under different categories
+            var uniqueDiscoveredCourses = (from cp in discoveredCoursePages
+                                           group cp by cp.UniqueIdentifier into g
+                                           select g.OrderBy(a => a, new CompareByUniqueIdentifier()).First()).ToList();
+
+            // set the course page status that should occur for each discovered page
+            foreach (var discoveredCoursePage in uniqueDiscoveredCourses)
+            {
+                var existingCoursePage = existingCoursePages.Where(ecp => ecp.UniqueIdentifier == discoveredCoursePage.UniqueIdentifier).FirstOrDefault();
+                if (existingCoursePage != null)
+                {
+                    discoveredCoursePage.CoursePageId = existingCoursePage.CoursePageId;
+                    discoveredCoursePage.CourseId = existingCoursePage.CourseId;
+                    discoveredCoursePage.CreateDate = existingCoursePage.CreateDate;
+                    discoveredCoursePage.ModifyDate = DateTime.UtcNow;
+                    discoveredCoursePage.ModifyGuid = Guid.Empty;
+
+                    if (existingCoursePage.RawData == discoveredCoursePage.RawData)
+                        discoveredCoursePage.CoursePageStatusId = existingCoursePage.CoursePageStatusId; // preserve the existing status
+                    else
+                    {
+                        if (discoveredCoursePage.CourseId.HasValue)
+                            discoveredCoursePage.CoursePageStatusId = 2; // update
+                        else
+                            discoveredCoursePage.CoursePageStatusId = 3; // create
+                    }
+                }
+                else
+                    discoveredCoursePage.CoursePageStatusId = 3; // create
+            }
+
+            // set the course page status to delete for those course pages that were not discovered
+            var coursePagesToDelete = existingCoursePages.Except(uniqueDiscoveredCourses, new EqualityComparerByUniqueIdentifier()).ToList();
+            foreach (var coursePageToDelete in coursePagesToDelete)
+            {
+                coursePageToDelete.CoursePageStatusId = 4; // delete
+                coursePageToDelete.ModifyDate = DateTime.UtcNow;
+                coursePageToDelete.IsDeleted = 1;
+            }
+            var coursePages = uniqueDiscoveredCourses.ToList<CoursePage>();
+            coursePages.AddRange(coursePagesToDelete);
+
+            return coursePages;
+        }
+
+        public class CompareByUniqueIdentifier : IComparer<CoursePage>
+        {
+            public int Compare(CoursePage x, CoursePage y)
+            {
+                return string.Compare(x.UniqueIdentifier, y.UniqueIdentifier);
+            }
+        }
+
+        public class EqualityComparerByUniqueIdentifier : IEqualityComparer<CoursePage>
+        {
+            public bool Equals(CoursePage x, CoursePage y)
+            {
+                if (Object.ReferenceEquals(x, y))
+                    return true;
+                if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+                    return false;
+                return x.UniqueIdentifier == y.UniqueIdentifier;
+            }
+
+            public int GetHashCode(CoursePage coursePage)
+            {
+                if (Object.ReferenceEquals(coursePage, null))
+                    return 0;
+                return coursePage.UniqueIdentifier == null ? 0 : coursePage.UniqueIdentifier.GetHashCode();
+            }
         }
 
         private ItProTVCategory DiscoverCourseCategory(Uri courseCategoryUri)
@@ -86,15 +169,12 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                 // extract the course category information and load it into a class specific to ITProTV
                 HtmlDocument courseCategory = new HtmlDocument();
                 courseCategory.LoadHtml(response);
-                var abbreviation = courseCategory.DocumentNode.SelectSingleNode("//h1*[contains(@class,'--title--')]");
-                var description = courseCategory.DocumentNode.SelectSingleNode("//p*[contains(@class,'--paragraph--')]");
+                var abbreviation = courseCategory.DocumentNode.SelectSingleNode("//section[contains(@class,'--Hero--')]/section/div/div/h1");
+                var description = courseCategory.DocumentNode.SelectSingleNode("//section[contains(@class,'--Hero--')]/section/div/div/p");
+                var courseNames = courseCategory.DocumentNode.SelectNodes("//section[contains(@class, '--Courses--')]/div/div/ul/a/li/h5").Select(n => n.InnerText).ToList();
 
-                return new ItProTVCategory()
-                {
-                    Abbreviation = "",
-                    Description = "",
-                    Topic = ""
-                };
+                var topic = string.Empty; // todo: hard-code values for now
+                return new ItProTVCategory(topic, abbreviation?.InnerText, description?.InnerText, courseNames);
             }
             else
             {
@@ -106,14 +186,6 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
         {
             // course pages always have 3 url segments
             if (coursePageUri.Segments.Where(s => s.Length > 1).Count() == 3)
-            {
-                // todo: need to handle categorization here
-                // the topics do not have their own discoverable urls in the sitemap, these will be hard-coded (or pulled from /courses/)
-                // cannot retrieve the top-level "topic" (e.g. Cateogry, Certification, Job Role) from the site's html or sitemap.xml (menu is populated by js script)
-
-                return null;
-            }
-            else
             {
                 // request the page content for what we believe is a valid course 
                 string response;
@@ -136,20 +208,26 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                 var description = courseHtml.DocumentNode.SelectSingleNode("//*[contains(@class,'--seoDescription--')]");
                 var duration = courseHtml.DocumentNode.SelectSingleNode("//*[contains(@class, '--time--')]");
                 var overview = courseHtml.DocumentNode.SelectSingleNode("//*[contains(@class, '-module--description--')]");
-                var course = new ITProTVCourse(title?.InnerText, subtitle?.InnerText, description?.InnerText, duration?.InnerText, overview?.InnerText, string.Empty);
+                var categories = Categories.Where(c => c.CourseNames.Contains(title?.InnerText)).ToList();
+                var course = new ITProTVCourse(title?.InnerText, subtitle?.InnerText, description?.InnerText, duration?.InnerText, overview?.InnerText, categories);
 
                 var coursePage = new CoursePage()
                 {
                     CoursePageGuid = Guid.NewGuid(),
-                    CoursePageStatusId = 1, // pending for now... what if it already exists? has content changed? how to handle admin edits since last scrape?
                     CourseSiteId = _courseSite.CourseSiteId,
                     CreateDate = DateTime.UtcNow,
+                    CreateGuid = Guid.Empty,
                     IsDeleted = 0,
                     RawData = JsonConvert.SerializeObject(course),
-                    UniqueIdentifier = coursePageUri.ToString()
+                    UniqueIdentifier = coursePageUri.Segments.Last(),
+                    Uri = coursePageUri
                 };
 
                 return coursePage;
+            }
+            else
+            {
+                return null;
             }
         }
 
@@ -160,9 +238,19 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
 
         public class ItProTVCategory
         {
-            public string Topic { get; set; }
-            public string Abbreviation { get; set; }
-            public string Description { get; set; }
+            public ItProTVCategory(string topic, string abbreviation, string description, List<string> courseNames)
+            {
+                this.Topic = topic;
+                this.Abbreviation = abbreviation;
+                this.Description = description;
+                this.CourseNames = courseNames;
+            }
+
+            public string Topic { get; }
+            public string Abbreviation { get; }
+            public string Description { get; }
+            [JsonIgnore]
+            public List<string> CourseNames { get; }
         }
 
         public class ITProTVCourse
@@ -192,6 +280,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                 var sovrenResult = _sovrenApi.SubmitResumeAsync(base64).Result;
                 */
 
+                // placeholder data for now
                 return new List<string>() {
                     "react",
                     "simple object access protocol (soap)",
@@ -202,14 +291,15 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                 };
             }
 
-            public ITProTVCourse(string title, string subtitle, string description, string duration, string overview, string category)
+            public ITProTVCourse(string title, string subtitle, string description, string duration, string overview, List<ItProTVCategory> categories)
             {
                 this.Title = title;
                 this.Subtitle = subtitle;
                 this.Description = description;
                 this.Duration = duration;
                 this.Overview = overview;
-                Skills = this.ParseSkillsFromSovren();
+                this.Skills = ParseSkillsFromSovren();
+                this.Categories = categories;
             }
 
             public string Title { get; }
@@ -218,7 +308,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
             public string Duration { get; }
             public string Overview { get; }
             public List<string> Skills { get; }
-            public string Category { get; }
+            public List<ItProTVCategory> Categories { get; }
         }
     }
 }
