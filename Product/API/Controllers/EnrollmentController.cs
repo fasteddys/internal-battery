@@ -216,7 +216,7 @@ namespace UpDiddyApi.Controllers
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             // todo: course login dto is one property, thus maybe we can add that property as part of the enrollment in general
-            var CourseLogin = new CourseFactory(_db, _configuration, _syslog, _distributedCache)
+            var CourseLogin = new CourseFactory(_db, _configuration, _syslog, _distributedCache, _hangfireService)
                 .GetCourseLogin(subscriberGuid, EnrollmentGuid);
             return Ok(CourseLogin);
         }

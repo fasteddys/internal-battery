@@ -174,14 +174,13 @@ namespace UpDiddyApi
             // Add AutoMapper 
             services.AddAutoMapper(typeof(UpDiddyApi.Helpers.AutoMapperConfiguration));
 
-            // Configure Hangfire 
-            var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"];
-            services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
-            // Have the workflow monitor run every minute 
-            JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
-
             if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
             {
+                // Configure Hangfire 
+                var HangFireSqlConnection = Configuration["CareerCircleSqlConnection"];
+                services.AddHangfire(x => x.UseSqlServerStorage(HangFireSqlConnection));
+                // Have the workflow monitor run every minute 
+                JobStorage.Current = new SqlServerStorage(HangFireSqlConnection);
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ReconcileFutureEnrollments(), Cron.Daily);
                 // Batch job for updating woz student course progress 
                 int CourseProgressSyncIntervalInHours = 12;
@@ -325,11 +324,15 @@ namespace UpDiddyApi
 
             app.UseCors("Cors");
 
-            app.UseHangfireDashboard("/dashboard", new DashboardOptions
+            if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
             {
-                Authorization = new[] { new HangfireAuthorizationFilter(env, Configuration) }
-            });
-            app.UseHangfireServer();
+                app.UseHangfireDashboard("/dashboard", new DashboardOptions
+                {
+                    Authorization = new[] { new HangfireAuthorizationFilter(env, Configuration) }
+                });
+                app.UseHangfireServer();
+            }
+            
 
             app.UseMvc(routes =>
             {
