@@ -48,7 +48,7 @@ namespace API.Tests
             var courseLog = new Mock<ILogger<CourseController>>();
             var topicLog = new Mock<ILogger<TopicController>>();
             var cache = new Mock<IDistributedCache>();
-            var hangfireService = new Mock<IHangfireService>();
+            var _hangfireService = new Mock<IHangfireService>();
             #endregion
 
             using (var db = new UpDiddyDbContext(dbContextOptions))
@@ -62,7 +62,7 @@ namespace API.Tests
                 db.Add(new Course() { Name = "CourseB (active)", IsDeleted = 0, CourseVariants = courseVariants, Vendor = vendor });
                 db.Add(new Course() { Name = "CourseC (active)", IsDeleted = 0, CourseVariants = courseVariants, Vendor = vendor });
                 db.SaveChanges();
-                var courseController = new CourseController(db, mapper, configuration.Object, email.Object, httpClientFactory.Object, courseLog.Object, cache.Object, hangfireService.Object);
+                var courseController = new CourseController(db, mapper, configuration.Object, email.Object, httpClientFactory.Object, courseLog.Object, cache.Object, _hangfireService.Object);
 
                 // act
                 List<CourseDto> result = null;
