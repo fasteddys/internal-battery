@@ -78,6 +78,10 @@
         </div>
     }
         <div class="col-12 pt-3">
+            <h4 class="job-board-heading">Job Summary</h4>
+            <div class="job-summary">
+                @Html.Raw(Model.Summary)
+            </div>
             @if (Model.Skills != null && Model.Skills.Count() > 0)
             {
                 <div class="skills-container">
@@ -88,10 +92,6 @@
                     }
                 </div>
             }
-            <h4 class="job-board-heading">Job Summary</h4>
-            <div class="job-summary">
-                @Html.Raw(Model.Summary)
-            </div>
             <div class="pt-4">
                 <h4>About CareerCircle</h4>
                 <p>The statistic has gone viral that there will be a talent shortage of 85.2M people by 2030. CareerCircle was founded in the spirit of finding solutions to address the pending skills gap versus falling victim to it. With so many capable people wanting to find employment and employers needing partners to achieve their goals, CareerCircle is here to provide a bridge.</p>
