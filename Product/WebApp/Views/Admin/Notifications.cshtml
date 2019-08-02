@@ -34,6 +34,7 @@
                 <div class="col-12">
                     <div class="d-flex flex-row-reverse">
                         <div id="AddNotificationAction" class="col-12 text-right no-padding">
+                   
                             @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
                                 Text = "Add <i class=\"fas fa-plus\"></i>",
                                 Hyperlink = "/admin/addnotification",
@@ -52,11 +53,24 @@
             </div>
             @section Scripts{
                 <script type="text/javascript">
-                    $(".admin-nav-notifications").addClass("active");
-                    window.onload = function () {
-                        var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-                    }
 
+                    $(document).ready(function () {
+                        var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+
+                        console.log('starting');
+                        $(".table tr").each(function (i, tr) {
+                             console.log( "$(tr).first().val()"  )
+                            
+                        });
+                         
+
+                    });
+
+           
+
+
+                    $(".admin-nav-notifications").addClass("active");
+                    
                     function doSearch(isReset) {
                         if (isReset)
                             document.getElementById('GridSearch').value = '';

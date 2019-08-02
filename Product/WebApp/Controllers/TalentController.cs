@@ -19,6 +19,7 @@ using UpDiddy.Api;
 using UpDiddy.Authentication;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
+ 
 
 namespace UpDiddy.Controllers
 {
@@ -217,11 +218,10 @@ namespace UpDiddy.Controllers
         public ViewResult Subscribers()
         {
             var subscriberSourcesDto = _api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);
-
             var selectListItems = subscriberSourcesDto.Select(ss => new SelectListItem()
             {
                 Text = $"{ss.Name} ({ss.Count})",
-                Value = ss.Referrer
+                Value = ss.Name
             })
             .AsEnumerable();
 
@@ -233,9 +233,9 @@ namespace UpDiddy.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpGet]
         [Route("[controller]/subscriberData")]
-        public async Task<IList<SubscriberDto>> SubscriberData(string searchFilter, string searchQuery = "")
+        public async Task<ProfileSearchResultDto> SubscriberData(string searchFilter, string searchQuery = "")
         {      
-            IList<SubscriberDto> subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery);
+            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery);
             return subscribers;
         }
 
@@ -258,7 +258,7 @@ namespace UpDiddy.Controllers
                 searchFilter = "any";
                 searchQuery = string.Empty;
             }
-            IList<SubscriberDto> subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery);
+            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery);
             return PartialView("_SubscriberGrid", subscribers);
         }
 

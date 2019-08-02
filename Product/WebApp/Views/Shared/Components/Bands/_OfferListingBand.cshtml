@@ -21,6 +21,7 @@
     {
         string divId = "collapse" + offer.OfferGuid;
         string firstColumn = Model.IsEligible ? "col-md-9" : "";
+        string collapseClass = Model.Offers.Count() > 1 ? "collapse" : "collapse show";
         <div class="card">
             <div class="card-header collapsed" id="headingOne" data-toggle="collapse" data-target="#@divId" aria-expanded="true" aria-controls="@divId">
                 <h2 class="mb-0">
@@ -37,7 +38,7 @@
                 </h2>
             </div>
 
-            <div id="@divId" class="collapse" aria-labelledby="headingOne" data-parent="#CareerCircleOffersContainer">
+            <div id="@divId" class="@collapseClass" aria-labelledby="headingOne" data-parent="#CareerCircleOffersContainer">
                 <div class="card-body">
                     <div class="offer-description">
                         <div class="row">

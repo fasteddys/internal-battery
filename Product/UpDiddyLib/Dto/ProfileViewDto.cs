@@ -17,11 +17,14 @@ namespace UpDiddyLib.Dto
         public string StateCode { get; set; }
         public string PostalCode { get; set; } 
         public string CloudTalentUri { get; set; }
+        public DateTime CreateDate { get; set; }
+        public DateTime ModifyDate { get; set; }
+
 
         /// <summary>
         /// name of partner who is responsible for subscriber joining carreer circle
         /// </summary>
-        public string SourcePartner { get; set; } 
+        public List<string> SourcePartner { get; set; } 
         public List<SkillDto> Skills { get; set; }
         public List<SubscriberWorkHistoryDto> WorkHistory { get; set; }
         public List<SubscriberEducationHistoryDto> EducationHistory { get; set; } 

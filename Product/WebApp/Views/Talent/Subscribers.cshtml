@@ -31,13 +31,14 @@
             <div class="form-inline">
                 <div class="form-group">
                     <label for="GridSearch" class="sr-only">Search</label>
-                    <input id="GridSearch" class="form-control" placeholder="Search" />
+                    <input id="GridSearch" class="form-control" placeholder="Search" onkeyup="SearchOnEnter(event)" />
+                    <button class="btn btn-primary" onclick="doSearch(false);">Search</button>
                 </div>
                 <div class="form-group ml-3">
-                    <label for="select-filter">Subscriber Sources:</label>
-                    @Html.DropDownListFor(model => model.SelectedSubscriberSource, Model.SubscriberSources, new { @class = "form-control" })
+                    <label for="select-filter" class="pr-2">Subscriber Sources:</label>
+                    @Html.DropDownListFor(model => model.SelectedSubscriberSource, Model.SubscriberSources, new { @class = "form-control", onchange="doSearch(false)"  } )
                 </div>
-                <button class="btn btn-primary" onclick="doSearch(false);">Search</button>
+       
                 <button class="btn btn-primary" onclick="doSearch(true);">Reset</button>
                 @if ((await AuthorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin")).Succeeded)
                 {
@@ -60,6 +61,12 @@
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
             }
 
+
+            function SearchOnEnter(e) {
+                if (e.code == "Enter")
+                    doSearch(false);
+
+            }
 
             function doDownload() {
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
@@ -84,10 +91,10 @@
                 });
             }
 
-            function downloadUserFile(data) {
+            function downloadUserFile(data) {                
                 var campaign = $("#SelectedSubscriberSource option:selected").text();
                 campaign = campaign.substring(0, campaign.indexOf('('));
-                var fileData = createCsv(campaign, data);
+                var fileData = createCsv(campaign, data.profiles);
                 var fileName = "users-" + campaign + "-" + moment().format("MMDDYYYYYHHMMSS") + ".csv";
                 var regex = new RegExp(" ", "g");
                 fileName = fileName.replace(regex, "");
@@ -132,6 +139,7 @@
                     searchFilter: encodeURIComponent(document.getElementById('SelectedSubscriberSource').value),
                     searchQuery: encodeURIComponent(search)
                 };
+ 
                 // combining the filter and search because of a limitation with the mvc grid
                 grid.query.set('searchAndFilter', JSON.stringify(searchAndFilter));
                 grid.reload();

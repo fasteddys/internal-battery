@@ -58,7 +58,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         public static string JobPostingFullyQualifiedUrl(IConfiguration config, JobPostingDto jobPostingDto)
         {
 
-      
+
             string jobPostingUrl = config["Environment:BaseUrl"].TrimEnd('/') + Utils.CreateSemanticJobPath(
                  jobPostingDto.Industry == null ? string.Empty : jobPostingDto.Industry.Name,
                  jobPostingDto.JobCategory == null ? string.Empty : jobPostingDto.JobCategory.Name,
@@ -118,6 +118,25 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return true;
         }
 
+        public static bool PostJob(UpDiddyDbContext db, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, bool isAcceptsNewSkills, IHangfireService _hangfireService)
+        {
+            if (isAcceptsNewSkills)
+            {
+                var updatedSkills = new List<SkillDto>();
+                foreach (var skillDto in jobPostingDto.JobPostingSkills)
+                {
+                    var skill = SkillFactory.GetOrAdd(db, skillDto.SkillName);
+                    updatedSkills.Add(new SkillDto()
+                    {
+                        SkillGuid = skill.SkillGuid,
+                        SkillName = skill.SkillName
+                    });
+                }
+                jobPostingDto.JobPostingSkills = updatedSkills;
+            }
+
+            return PostJob(db, recruiterId, jobPostingDto, ref newPostingGuid, ref ErrorMsg, syslog, mapper, configuration, _hangfireService);
+        }
 
         public static bool PostJob(UpDiddyDbContext db, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, IHangfireService _hangfireService)
         {
@@ -564,7 +583,25 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         }
 
+        public static bool UpdateJobPosting(UpDiddyDbContext db, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg, bool isAcceptsNewSkills, IHangfireService _hangfireService)
+        {
+            if (isAcceptsNewSkills)
+            {
+                var updatedSkills = new List<SkillDto>();
+                foreach (var skillDto in jobPostingDto.JobPostingSkills)
+                {
+                    var skill = SkillFactory.GetOrAdd(db, skillDto.SkillName);
+                    updatedSkills.Add(new SkillDto()
+                    {
+                        SkillGuid = skill.SkillGuid,
+                        SkillName = skill.SkillName
+                    });
+                }
+                jobPostingDto.JobPostingSkills = updatedSkills;
+            }
 
+            return UpdateJobPosting(db, jobPostingGuid, jobPostingDto, ref ErrorMsg, _hangfireService);
+        }
 
         public static bool UpdateJobPosting(UpDiddyDbContext db, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg, IHangfireService _hangfireService)
         {
