@@ -724,7 +724,7 @@ namespace UpDiddyApi.Workflow
                         // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
                         jobPostingDto.JobPostingGuid = jobPostingGuid;
                         // attempt to update job posting
-                        isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage, _hangfireService);
+                        isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService);
                         // increment updated count in stats
                         if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
                             jobDataMiningStats.NumJobsUpdated += 1;
@@ -737,7 +737,7 @@ namespace UpDiddyApi.Workflow
                         RecruiterCompanyFactory.GetOrAdd(_db, recruiter.RecruiterId, company.CompanyId, true);
 
                         // attempt to create job posting
-                        isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration, _hangfireService);
+                        isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration, true, _hangfireService);
 
                         // increment added count in stats
                         if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
