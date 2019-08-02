@@ -296,12 +296,10 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     jobPostingDto.Country = jobPostingDto.Country.ToUpper();
                     string recruiterName = jobData.discrete_field_3;
                     string recruiterPhone = jobData.discrete_field_5;
-
                     Regex regex = new Regex(@"(\w+)\s?(((\w+\s?(^|\s+)[^@]+(\s+|$)))|(\w+))?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
                     var match = regex.Match(recruiterName);
                     string recruiterFirstName = string.IsNullOrEmpty(match.Groups[1].Value) ? null : match.Groups[1].Value;
                     string recruiterLastName = string.IsNullOrEmpty(match.Groups[2].Value) ? null : match.Groups[2].Value;
-
                     jobPostingDto.Recruiter = new RecruiterDto()
                     {
                         Email = jobData.discrete_field_4,
@@ -309,6 +307,17 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                         LastName = recruiterLastName,
                         PhoneNumber = recruiterPhone
                     };
+                    if (jobData.skills != null)
+                    {
+                        List<SkillDto> skillsDto = new List<SkillDto>();
+                        foreach (var skill in jobData.skills)
+                        {
+                            if (skill != null && !string.IsNullOrWhiteSpace(skill.Value))
+                                skillsDto.Add(new SkillDto() { SkillName = skill.Value });
+                        }
+                        if (skillsDto.Count() > 0)
+                            jobPostingDto.JobPostingSkills = skillsDto;
+                    }
                 }
 
                 return jobPostingDto;
