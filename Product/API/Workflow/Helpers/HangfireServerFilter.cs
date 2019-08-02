@@ -42,11 +42,6 @@ namespace UpDiddyApi.Workflow.Helpers
         public void OnPerforming(PerformingContext context)
         {
             _logger.Information($"Starting to perform job `{context.BackgroundJob.Id}`");
-            if (IsPreliminaryEnvironment)
-            {
-                _logger.Information($"HangfireServerFilter: Hangfire job {context.BackgroundJob.Job.ToString()} (ID: {context.BackgroundJob.Id}) being cancelled due to it being run in a preliminary environment.");
-                context.Canceled = true;
-            }
         }
 
         public void OnPerformed(PerformedContext context)

@@ -211,7 +211,7 @@ namespace UpDiddyApi
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes));
 
                 // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
-                // _hangfireService.Enqueue<ScheduledJobs>(x => x.JobDataMining());
+                // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
                 // kick off the metered welcome email delivery process at five minutes past the hour every hour
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
@@ -309,7 +309,10 @@ namespace UpDiddyApi
                     Convert.FromBase64String(Configuration.GetValue<string>("Tracking:PixelContentBase64")),
                     Configuration.GetValue<string>("Tracking:PixelContentType")
                     )
-                );           
+                );        
+            
+            // Uncomment the following line to enable extensive logging for Hangfire.
+            // GlobalJobFilters.Filters.Add(new HangfireServerFilter(Configuration, Logger));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
