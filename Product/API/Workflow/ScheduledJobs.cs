@@ -33,6 +33,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Data.SqlClient;
 using JobPosting = UpDiddyApi.Models.JobPosting;
 using UpDiddyApi.Helpers;
+using HtmlAgilityPack;
 
 namespace UpDiddyApi.Workflow
 {
@@ -1569,6 +1570,37 @@ namespace UpDiddyApi.Workflow
                     file.MimeType = await _mimeMappingService.MapAsync(file.BlobName);
                     await _repositoryWrapper.SubscriberFileRepository.UpdateSubscriberFileAsync(file);
                 }
+            }
+        }
+        #endregion
+
+         #region Update for Allegis Group Jobs Raw Data Fix
+        /// <summary>
+        /// Fix the RawData field in JobPage table for Allegis Group so that when job mining runs, it doesn't classify existing job as new jobs  
+        /// </summary>
+        /// <returns></returns>
+        public async Task UpdateAllegisGroupJobPageRawDataField()
+        {
+            try
+            {
+                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:UpdateAllegisGroupJobPageRawDataField started at: {DateTime.UtcNow.ToLongDateString()}");
+                var jobs = await _repositoryWrapper.JobPage.GetAllAsync();
+                var allegisjobs = jobs.Where(x => x.JobSiteId == 3 && x.IsDeleted == 0 && x.JobPageStatusId == 2).ToList();
+                foreach (var job in allegisjobs)
+                {
+                    var rawdata = job.RawData;
+                    var html = new HtmlDocument();
+                    html.LoadHtml(rawdata);
+                    var script = html.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']");
+                    var data = JsonConvert.DeserializeObject<dynamic>(script.InnerText);
+                    job.RawData = data.ToString();
+                    _repositoryWrapper.JobPage.Update(job);
+                }
+                await _repositoryWrapper.JobPage.SaveAsync();
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.UpdateAllegisGroupJobPageRawDataField encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
         }
         #endregion
