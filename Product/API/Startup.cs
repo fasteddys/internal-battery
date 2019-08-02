@@ -196,11 +196,21 @@ namespace UpDiddyApi
 
             // run the process in production Monday through Friday once every 2 hours between 11 and 23 UTC
             if (_currentEnvironment.IsProduction())
+            {
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 11,13,15,17,19,21,23 * * Mon,Tue,Wed,Thu,Fri");
+                //Keyword and Location Search Intellisense Job
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),"0 11,13,15,17,19,21,23 * * Mon,Tue,Wed,Thu,Fri");
+            }
+
 
             // run the process in staging once a week on the weekend (Sunday 4 UTC)
             if (_currentEnvironment.IsStaging())
+            {
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
+                //Keyword and Location Search Intellisense Job
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),Cron.Weekly(DayOfWeek.Sunday, 4));
+            }
+
 
             // run job to look for un-indexed profiles and index them 
             int profileIndexerBatchSize = int.Parse(Configuration["CloudTalent:ProfileIndexerBatchSize"]);
@@ -209,6 +219,9 @@ namespace UpDiddyApi
 
             // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
             // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
+
+            //Keyword and Location Search Intellisense Job
+            RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),Cron.DayInterval(int.Parse(Configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"])));
 
             // kick off the metered welcome email delivery process at five minutes past the hour every hour
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());

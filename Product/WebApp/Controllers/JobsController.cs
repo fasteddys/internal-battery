@@ -131,6 +131,10 @@ namespace UpDiddy.Controllers
                     job.CompanyLogoUrl = _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + company.LogoUrl;
             }
 
+            //get KeywordSearchList and LocationSearchList
+            IList<string> keywordSearchList=await _Api.GetKeywordSearchList();
+            IList<string> locationSearchList=await _Api.GetLocationSearchList();
+
             JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
             {
                 RequestId = jobSearchResultDto.RequestId,
@@ -140,7 +144,9 @@ namespace UpDiddy.Controllers
                 Facets = jobSearchResultDto.Facets,
                 Keywords = Keywords,
                 Location = Location,
-                JobQueryForAlert = jobSearchResultDto.JobQueryForAlert
+                JobQueryForAlert = jobSearchResultDto.JobQueryForAlert,
+                KeywordSearchList=keywordSearchList,
+                LocationSearchList=locationSearchList
             };
 
             return View("Index", jobSearchViewModel);
@@ -300,7 +306,7 @@ namespace UpDiddy.Controllers
                 City = job.City,
                 Province = job.Province,
                 SimilarJobsFavorites = SimilarJobsFavorites,
-                LogoUrl = job?.Company?.LogoUrl != null ? _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + job.Company.LogoUrl : string.Empty
+                LogoUrl = job?.Company?.LogoUrl != null ? _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + job.Company.LogoUrl : string.Empty              
             };
 
             // Display subscriber info if it exists

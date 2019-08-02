@@ -6,6 +6,7 @@
 @using System.Globalization;
 @using System.Threading;
 @using System.Text.RegularExpressions;
+@using Newtonsoft.Json;
 
 @{
     string url = ViewBag.QueryUrl as string;
@@ -287,6 +288,19 @@
                     }
                 }
             }
+
+            //Keyword search List
+            var keywordList=JSON.parse('@Html.Raw(JsonConvert.SerializeObject(Model.KeywordSearchList))');
+            $("#keywords").autocomplete({
+                source :keywordList
+            });
+
+            //Location search List
+            var locationList=JSON.parse('@Html.Raw(JsonConvert.SerializeObject(Model.LocationSearchList))');
+            $("#location").autocomplete({
+                source :locationList
+            });
+
         });
 
         function ScrubInputs() {
