@@ -5,11 +5,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
+using HtmlAgilityPack;
+using Newtonsoft.Json;
 
 namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
 {
@@ -70,13 +71,26 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
                     var jobPage = client.GetJobPageByUriAsync(existingJobPage.Uri).Result;
                     // if scrape failed then delete the job
                     if (jobPage == null)
+                    {
                         existingJobPage.JobPageStatusId = 4; // deleted
+                    }
                     else
-                        existingJobPage.JobPageStatusId = existingJobPage.RawData == jobPage?.RawData ? 2 : 1; // no changes/active or updated status/pending
-
+                    {
+                        var html = new HtmlDocument();
+                        html.LoadHtml(jobPage.RawData);
+                        var script = html.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']");
+                        var data = JsonConvert.DeserializeObject<dynamic>(script.InnerText);
+                        if (existingJobPage.RawData == data.ToString())
+                        {
+                            existingJobPage.JobPageStatusId = 2;
+                        }
+                        else
+                        {
+                            existingJobPage.JobPageStatusId = 1;
+                            existingJobPage.RawData = data.ToString();
+                        }
+                    }
                     existingJobPage.ModifyDate = DateTime.UtcNow;
-                    existingJobPage.RawData = jobPage != null ? jobPage.RawData : existingJobPage.RawData;
-
                 }
                 catch (Exception e)
                 {
@@ -91,7 +105,6 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
             });
             stopwatch.Stop();
             var elapsed = stopwatch.ElapsedMilliseconds;
-
             return updatedJobPages.ToList();
         }
 
