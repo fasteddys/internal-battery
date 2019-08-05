@@ -41,7 +41,7 @@ namespace UpDiddyApi.Helpers.Job
             rVal.CompanyName = matchingJob.Job.CompanyDisplayName;
             rVal.Title = matchingJob.Job.Title;
             rVal.Description = matchingJob.Job.Description;
-            rVal.PostingDateUTC = DateTime.Parse(matchingJob.Job.PostingPublishTime.ToString());
+            rVal.PostingDateUTC = DateTime.Parse(matchingJob.Job.PostingCreateTime.ToString());
             // map location that was indexed into google -- do not use a foreach loop since it's sloooooow (might be string concat0
             if (matchingJob.Job.Addresses != null && matchingJob.Job.Addresses.Count > 0)
                 rVal.Location = matchingJob.Job.Addresses[0];
