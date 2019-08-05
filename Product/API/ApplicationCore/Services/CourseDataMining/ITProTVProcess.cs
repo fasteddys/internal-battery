@@ -18,7 +18,11 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
 {
     public class ITProTVProcess : BaseCourseProcess, ICourseDataMining
     {
-        public ITProTVProcess(CourseSite courseSite, ILogger logger, IConfiguration configuration, ISovrenAPI sovrenAPI) : base(courseSite, logger, configuration, sovrenAPI) { }
+        public ISovrenAPI _sovrenApi;
+
+        public ITProTVProcess(CourseSite courseSite, ILogger logger, IConfiguration configuration, ISovrenAPI sovrenAPI) : base(courseSite, logger, configuration, sovrenAPI) {
+            _sovrenApi = sovrenAPI;
+        }
 
         private HttpClientHandler GetHttpClientHandler()
         {
@@ -56,7 +60,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                 .Select(x => x.Element(ns + "loc").Value)
                 .ToList();
 
-            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 50 };
+            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 1 };
             // discover categories
             int counter = 0;
             Parallel.For(counter, courseUrls.Count(), maxdop, i =>
@@ -70,7 +74,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
             counter = 0;
             Parallel.For(counter, courseUrls.Count(), maxdop, i =>
             {
-                var coursePage = DiscoverCoursePage(new Uri(courseUrls[i].ToString()));
+                var coursePage = DiscoverCoursePage(new Uri(courseUrls[i].ToString()), _sovrenApi);
                 if (coursePage != null)
                     discoveredCoursePages.Add(coursePage);
 
@@ -182,7 +186,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
             }
         }
 
-        private CoursePage DiscoverCoursePage(Uri coursePageUri)
+        private CoursePage DiscoverCoursePage(Uri coursePageUri, ISovrenAPI sovrenApi)
         {
             // course pages always have 3 url segments
             if (coursePageUri.Segments.Where(s => s.Length > 1).Count() == 3)
@@ -209,7 +213,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                 var duration = courseHtml.DocumentNode.SelectSingleNode("//*[contains(@class, '--time--')]");
                 var overview = courseHtml.DocumentNode.SelectSingleNode("//*[contains(@class, '-module--description--')]");
                 var categories = Categories.Where(c => c.CourseNames.Contains(title?.InnerText)).ToList();
-                var course = new ITProTVCourse(title?.InnerText, subtitle?.InnerText, description?.InnerText, duration?.InnerText, overview?.InnerText, categories);
+                var course = new ITProTVCourse(title?.InnerText, subtitle?.InnerText, description?.InnerText, duration?.InnerText, overview?.InnerText, categories, sovrenApi);
 
                 var coursePage = new CoursePage()
                 {
@@ -255,9 +259,9 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
 
         public class ITProTVCourse
         {
-            private List<string> ParseSkillsFromSovren()
+            private List<string> ParseSkillsFromSovren(ISovrenAPI sovrenApi)
             {
-                /* create a fake resume, send to Sovren, retrieve skill names from xml response. this cannot be done until Sovren is fixed!!
+                /* create a fake resume, send to Sovren, retrieve skill names from xml response. this cannot be done until Sovren is fixed!!*/
                 byte[] bytes;
                 using (var ms = new MemoryStream())
                 {
@@ -277,8 +281,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                     }
                 }
                 string base64 = Convert.ToBase64String(bytes);
-                var sovrenResult = _sovrenApi.SubmitResumeAsync(base64).Result;
-                */
+                var sovrenResult = sovrenApi.SubmitResumeAsync(base64).Result;
+                
 
                 // placeholder data for now
                 return new List<string>() {
@@ -291,14 +295,14 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
                 };
             }
 
-            public ITProTVCourse(string title, string subtitle, string description, string duration, string overview, List<ItProTVCategory> categories)
+            public ITProTVCourse(string title, string subtitle, string description, string duration, string overview, List<ItProTVCategory> categories, ISovrenAPI sovrenApi)
             {
                 this.Title = title;
                 this.Subtitle = subtitle;
                 this.Description = description;
                 this.Duration = duration;
                 this.Overview = overview;
-                this.Skills = ParseSkillsFromSovren();
+                this.Skills = ParseSkillsFromSovren(sovrenApi);
                 this.Categories = categories;
             }
 
