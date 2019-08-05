@@ -9,12 +9,10 @@ namespace UpDiddy.ViewModels
         public Guid SalesForceSignUpList { get; set; }
 
         [Required]
-        [StringLength(10)]
         [DisplayName("First Name")]
         public string FirstName { get; set; }
 
         [Required]
-        [StringLength(10)]
         [DisplayName("Last Name")]
         public string LastName { get; set; }
 
