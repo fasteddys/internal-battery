@@ -17,20 +17,20 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        [Route("/SalesForceWaitList")]
+        [Route("/SalesForceSignUp")]
         public ActionResult Index()
         {
-            SalesForceWaitListViewModel model = new SalesForceWaitListViewModel();
+            SalesForceSignUpListViewModel model = new SalesForceSignUpListViewModel();
             return View(model);
         }
 
         [HttpPost]
-        [Route("/SalesForceWaitList")]
-        public async Task<ActionResult> Index(SalesForceWaitListViewModel model)
+        [Route("/SalesForceSignUp")]
+        public async Task<ActionResult> Index(SalesForceSignUpListViewModel model)
         {
             if (ModelState.IsValid)
             {
-                SalesForceWaitListDto dto = new SalesForceWaitListDto()
+                SalesForceSignUpListDto dto = new SalesForceSignUpListDto()
                 {
                     FirstName = model.FirstName,
                     LastName = model.LastName,
@@ -38,7 +38,7 @@ namespace UpDiddy.Controllers
                     Email = model.Email
                 };
 
-                await _api.AddSalesForceWaitList(dto);
+                await _api.AddSalesForceSignUpList(dto);
                 return View("Success");
             } else
             {

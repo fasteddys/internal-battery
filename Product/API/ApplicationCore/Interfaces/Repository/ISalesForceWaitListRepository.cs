@@ -6,8 +6,8 @@ using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface ISalesForceWaitListRepository : IUpDiddyRepositoryBase<SalesForceWaitList>
+    public interface ISalesForceSignUpListRepository : IUpDiddyRepositoryBase<SalesForceSignUpList>
     {
-        Task<IQueryable<SalesForceWaitList>> GetAllSalesForceWaitListAsync();
+        Task<IQueryable<SalesForceSignUpList>> GetAllSalesForceSignUpListAsync();
     }
 }

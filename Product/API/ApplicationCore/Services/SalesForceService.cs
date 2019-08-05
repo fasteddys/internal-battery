@@ -27,11 +27,11 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
-        public async Task AddToWaitList(SalesForceWaitListDto dto)
+        public async Task AddToWaitList(SalesForceSignUpListDto dto)
         {
-           var waitList  =_mapper.Map<SalesForceWaitList>(dto);
-            await _repositoryWrapper.SalesForceWaitListRepository.Create(waitList);
-            await _repositoryWrapper.SalesForceWaitListRepository.SaveAsync();
+           var waitList  =_mapper.Map<SalesForceSignUpList>(dto);
+            await _repositoryWrapper.SalesForceSignUpListRepository.Create(waitList);
+            await _repositoryWrapper.SalesForceSignUpListRepository.SaveAsync();
         }
 
     }

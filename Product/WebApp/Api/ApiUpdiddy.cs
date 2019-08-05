@@ -1758,7 +1758,7 @@ namespace UpDiddy.Api
         #endregion
 
         #region Sales Force
-        public async Task<BasicResponseDto> AddSalesForceWaitList(SalesForceWaitListDto dto)
+        public async Task<BasicResponseDto> AddSalesForceSignUpList(SalesForceSignUpListDto dto)
         {
            BasicResponseDto rval = await PutAsync<BasicResponseDto>("salesforce/sign-up", dto);
            return rval;

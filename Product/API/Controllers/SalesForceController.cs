@@ -28,7 +28,7 @@ namespace UpDiddyApi.Controllers
 
         // GET: api/topics/id
        [HttpPut("api/[controller]/sign-up")]
-        public async Task<IActionResult> SignUpForWaitList(SalesForceWaitListDto dto)
+        public async Task<IActionResult> SignUpForWaitList(SalesForceSignUpListDto dto)
         {
             try
             {

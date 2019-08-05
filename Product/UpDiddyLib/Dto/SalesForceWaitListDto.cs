@@ -4,9 +4,9 @@ using System.Text;
 
 namespace UpDiddyLib.Dto
 {
-    public class SalesForceWaitListDto : BaseDto
+    public class SalesForceSignUpListDto : BaseDto
     {
-        public Guid SalesForceWaitListGuid { get; set; }
+        public Guid SalesForceSignUpListGuid { get; set; }
         public string FirstName { get; set; }
         public string LastName {get;set;}
         public string Email {get;set;}

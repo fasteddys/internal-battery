@@ -7,15 +7,15 @@ using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
-    public class SalesForceWaitListRepository :UpDiddyRepositoryBase<SalesForceWaitList>, ISalesForceWaitListRepository
+    public class SalesForceSignUpListRepository :UpDiddyRepositoryBase<SalesForceSignUpList>, ISalesForceSignUpListRepository
     {
         private readonly UpDiddyDbContext _dbContext;
-        public SalesForceWaitListRepository(UpDiddyDbContext dbContext) : base(dbContext)
+        public SalesForceSignUpListRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public Task<IQueryable<SalesForceWaitList>> GetAllSalesForceWaitListAsync()
+        public Task<IQueryable<SalesForceSignUpList>> GetAllSalesForceSignUpListAsync()
         {
            return GetAllAsync();
         }

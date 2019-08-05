@@ -164,7 +164,7 @@ namespace UpDiddy.Api
         #endregion
 
         #region SalesForce
-        Task<BasicResponseDto> AddSalesForceWaitList(SalesForceWaitListDto dto);
+        Task<BasicResponseDto> AddSalesForceSignUpList(SalesForceSignUpListDto dto);
         #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);

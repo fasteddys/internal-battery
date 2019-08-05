@@ -2764,9 +2764,9 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("ResumeParseResult");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.SalesForceWaitList", b =>
+            modelBuilder.Entity("UpDiddyApi.Models.SalesForceSignUpList", b =>
                 {
-                    b.Property<int>("SalesForceWaitListId")
+                    b.Property<int>("SalesForceSignUpListId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -2789,11 +2789,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("PhoneNumber");
 
-                    b.Property<Guid>("SalesForceWaitListGuid");
+                    b.Property<Guid>("SalesForceSignUpListGuid");
 
-                    b.HasKey("SalesForceWaitListId");
+                    b.HasKey("SalesForceSignUpListId");
 
-                    b.ToTable("SalesForceWaitList");
+                    b.ToTable("SalesForceSignUpList");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SecurityClearance", b =>

@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UpDiddy.ViewModels
 {
-    public class SalesForceWaitListViewModel 
+    public class SalesForceSignUpListViewModel 
     {
-        public Guid SalesForceWaitList { get; set; }
+        public Guid SalesForceSignUpList { get; set; }
 
         [Required]
         [StringLength(10)]

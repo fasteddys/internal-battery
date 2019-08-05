@@ -12,6 +12,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface ISalesForceService
     {
-        Task AddToWaitList(SalesForceWaitListDto dto);
+        Task AddToWaitList(SalesForceSignUpListDto dto);
     }
 }
