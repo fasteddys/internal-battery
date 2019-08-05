@@ -283,6 +283,8 @@ namespace UpDiddyApi
             services.AddScoped<ITrackingService, TrackingService>();
             services.AddScoped<IJobPostingService, JobPostingService>();
             services.AddScoped<IJobApplicationService, JobApplicationService>();
+            services.AddScoped<ISalesForceService, SalesForceService>();
+
 
 
             services.AddScoped<ICompanyService, CompanyService>();
