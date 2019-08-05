@@ -35,6 +35,7 @@ using System.Dynamic;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using SendGrid.Helpers.Mail;
 using Microsoft.Extensions.Configuration;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.Controllers
@@ -52,6 +53,8 @@ namespace UpDiddyApi.Controllers
         private readonly CloudTalent _cloudTalent = null;
         private ISysEmail _sysEmail;
         private ISubscriberService _subscriberService;
+        private readonly IHangfireService _hangfireService;
+
 
         #region constructor 
         public JobApplicationController(
@@ -62,6 +65,7 @@ namespace UpDiddyApi.Controllers
             IHttpClientFactory httpClientFactory, 
             ISysEmail sysEmail,
             ISubscriberService subscriberService,
+            IHangfireService hangfireService,
             IRepositoryWrapper repositoryWrapper)
 
         {
@@ -74,6 +78,7 @@ namespace UpDiddyApi.Controllers
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, repositoryWrapper);
             _sysEmail = sysEmail;
             _subscriberService = subscriberService;
+            _hangfireService = hangfireService;
         }
         #endregion
 
@@ -269,7 +274,7 @@ namespace UpDiddyApi.Controllers
 
                 foreach (string Email in EmailAddressesToSend.Keys)
                 {
-                    BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
+                    _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
                     (
                         Email,
                         _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter" +

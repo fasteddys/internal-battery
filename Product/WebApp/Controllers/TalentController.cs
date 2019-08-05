@@ -267,32 +267,45 @@ namespace UpDiddy.Controllers
         [Route("/Talent/Subscriber/{subscriberGuid}")]
         public async Task<IActionResult> SubscriberAsync(Guid subscriberGuid)
         {
-            SubscriberDto subscriber = await _api.SubscriberAsync(subscriberGuid, false);
-            string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
-            string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-            SubscriberViewModel subscriberViewModel = new SubscriberViewModel()
+            SubscriberDto subscriber = null;
+            SubscriberViewModel subscriberViewModel = null;
+            try
             {
-                FirstName = subscriber.FirstName,
-                LastName = subscriber.LastName,
-                Email = subscriber.Email,
-                PhoneNumber = subscriber.PhoneNumber,
-                Address = subscriber.Address,
-                City = subscriber.City,
-                State = subscriber.State?.Code,
-                Country = subscriber.State?.Country?.Code3, 
-                GithubUrl = subscriber.GithubUrl,
-                LinkedInUrl = subscriber.LinkedInUrl,
-                StackOverflowUrl = subscriber.StackOverflowUrl,
-                TwitterUrl = subscriber.TwitterUrl,
-                WorkHistory = subscriber.WorkHistory,
-                EducationHistory = subscriber.EducationHistory,
-                Skills = subscriber.Skills,
-                Enrollments = subscriber.Enrollments,
-                ResumeFileGuid = subscriber.Files?.FirstOrDefault()?.SubscriberFileGuid,
-                ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
-                SubscriberGuid = subscriber.SubscriberGuid.Value,
-                AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster
-            };
+                //todo jab try and avoid exception here
+                subscriber =  await _api.SubscriberAsync(subscriberGuid, false);
+                string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
+                string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+                subscriberViewModel = new SubscriberViewModel()
+                {
+                    FirstName = subscriber.FirstName,
+                    LastName = subscriber.LastName,
+                    Email = subscriber.Email,
+                    PhoneNumber = subscriber.PhoneNumber,
+                    Address = subscriber.Address,
+                    City = subscriber.City,
+                    State = subscriber.State?.Code,
+                    Country = subscriber.State?.Country?.Code3,
+                    GithubUrl = subscriber.GithubUrl,
+                    LinkedInUrl = subscriber.LinkedInUrl,
+                    StackOverflowUrl = subscriber.StackOverflowUrl,
+                    TwitterUrl = subscriber.TwitterUrl,
+                    WorkHistory = subscriber.WorkHistory,
+                    EducationHistory = subscriber.EducationHistory,
+                    Skills = subscriber.Skills,
+                    Enrollments = subscriber.Enrollments,
+                    ResumeFileGuid = subscriber.Files?.FirstOrDefault()?.SubscriberFileGuid,
+                    ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
+                    SubscriberGuid = subscriber.SubscriberGuid.Value,
+                    AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster
+                };
+            }
+            catch
+            {
+                // empty catch here to pass null to the view which will let the user know that the subscriber cannot be found.  This code
+                // path will most mostly likely be hit when there's a mistmatch between the google profile index and the sql server 
+                // database which should not be that often
+            }
+
 
         
             return View("Subscriber", subscriberViewModel);
