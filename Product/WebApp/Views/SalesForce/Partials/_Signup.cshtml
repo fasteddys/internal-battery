@@ -1,0 +1,21 @@
+@model UpDiddy.ViewModels.SalesForceWaitListViewModel
+<div class="salesforce-signup-container d-flex justify-content-center" id="SalesForceSignUpComponent">
+   <form action="/SalesForceWaitList" method="post" id="formSalesForceSignUp">
+      <div class="row">
+         <div class="col-12 sign-up-input no-padding">
+            <input class="wide-input" placeholder="First Name"  name="FirstName" asp-for="FirstName" required />
+         </div>
+         <div class="col-12 sign-up-input no-padding">
+            <input class="wide-input" placeholder="Last Name"  name="LastName" asp-for="LastName" required />
+         </div>
+         <div class="col-12 sign-up-input no-padding">
+            <input class="wide-input" placeholder="Email"  name="Email" asp-for="Email" required />
+         </div>
+         <div class="col-12 sign-up-input no-padding">
+            <input class="wide-input" placeholder="Phone Number (Optional)"  name="PhoneNumber" asp-for="PhoneNumber" />
+         </div>
+         <span asp-validation-for="Email" class="text-danger"></span>
+         <button class="button-container cc-cscheme-darkred skew-left-to-right font-bold ">Submit</button>
+      </div>
+   </form>
+</div>

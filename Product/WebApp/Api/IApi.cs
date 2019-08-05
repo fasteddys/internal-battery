@@ -163,6 +163,10 @@ namespace UpDiddy.Api
 
         #endregion
 
+        #region SalesForce
+        Task<BasicResponseDto> AddSalesForceWaitList(SalesForceWaitListDto dto);
+        #endregion
+
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
         Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid);
         Task RecordSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);

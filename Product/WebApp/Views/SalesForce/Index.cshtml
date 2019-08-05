@@ -1,0 +1,71 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using UpDiddy.ViewModels
+@using UpDiddyLib.Dto
+@using System.Collections.Generic;
+@using System;
+@model UpDiddy.ViewModels.SalesForceWaitListViewModel
+
+<div id="CampaignContainer" class="mom-project-signup">
+    <div class="cc-campaign-sign-up-band row" style="background-image: url('/images/hero/barnett-offer.jpeg'); background-position: top">
+        <div class="col-12">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-7 col-lg-8 cc-campaign-sign-up-band-left-container  d-flex align-items-center">
+                        <div class="row">
+                            <div class="col no-padding">
+                                <div class="row">
+                                    <div class="col-12 no-padding">
+                                        <div class="row">
+                                            <div class="col-12 hero-header font-bold">
+                                                Create Your Free CareerCircle Account to be Considered for this Opportunity!</span>
+                                            </div>
+                                            <div class="col-12 campaign-bullet-list">
+                                                <div class="d-flex flex-column bd-highlight mb-3 mt-3">
+                                                   <h3 class="bd-highlight font-bold" style="text-align: right;"><strong>Sign up.</strong></h3>
+                                                   <h3 class="bd-highlight font-bold" style="text-align: right;"><strong>Create your profile.</strong></h3>
+                                                   <h3 class="bd-highlight font-bold" style="text-align: right;"><strong>Advance your career.</strong></h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-5 col-lg-4 cc-campaign-sign-up-band-right-container no-padding">
+                        <div class="cc-campaign-sign-up-container">
+                            <div class="row">
+                                <div class="col-12 no-padding sub-header font-bold">
+                                    Sign Up Today!
+                                </div>
+                                <div class="col-12 no-padding mini-header">
+                                    Create an account to get started
+                                </div>
+                                <div class="col-12 no-padding">
+                                    @Html.Partial("Partials/_Signup")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
+    {
+        Header = "At CareerCircle, our focus is you!",
+        Elements = new List<string>()
+        {
+            @"<div class='row'>
+                <div class='col-lg-8 offset-lg-2'>
+                  <p>Learn the fundamentals of being a Salesforce Admin – in just 30 days! The Salesforce Proficiency Pack for Administrators is a blended, prescriptive, expert-led training program that gives you a 30-day plan to learn what you need to be an awesome Salesforce Administrator, and fast tracks you to the Salesforce Certified Administrator certification. The program is a mix of engaging bite-sized Trailhead content and live coaching from Salesforce Certified instructors. Twice a week, you will have the opportunity to tune in and review each week’s learning with your instructor and the chance for Q&A with fellow students. The program includes a certification practice exam voucher and a voucher to sit for the Salesforce Certified Administrator exam.</p>
+                  <p>CareerCircle is your digital community focused on helping you take the next steps toward reaching your career goals! They are passionate about connecting you with the necessary skills you need for the career you deserve. When you join the CareerCircle Community, you are connected with several resources to ensure that you feel supported throughout the job seeking process, as well as open some doors to potential opportunities!</p>  
+                </div>
+            </div>
+            "
+        }
+    })
+</div>
+
+
+

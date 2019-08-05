@@ -44,6 +44,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IContactRepository _contactRepository;
         private IOfferRepository _offerRepository;
         private ISubscriberFileRepository _subscriberFileRepository;
+        private ISalesForceWaitListRepository _salesForceWaitListRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -473,6 +474,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _subscriberFileRepository = new SubscriberFileRepository(_dbContext);
                 }
                 return _subscriberFileRepository;
+            }
+        }
+
+        public ISalesForceWaitListRepository SalesForceWaitListRepository
+        {
+            get
+            {
+                if (_salesForceWaitListRepository == null)
+                {
+                    _salesForceWaitListRepository = new SalesForceWaitListRepository(_dbContext);
+                }
+                return _salesForceWaitListRepository;
             }
         }
     }

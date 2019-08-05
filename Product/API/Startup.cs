@@ -195,7 +195,7 @@ namespace UpDiddyApi
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
 
             // Run this job once to fix the RawData field in JobPage table for Allegis Group jobs
-            BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateAllegisGroupJobPageRawDataField());
+            //BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateAllegisGroupJobPageRawDataField());
 
             // run the process in production Monday through Friday once every 2 hours between 11 and 23 UTC
             if (_currentEnvironment.IsProduction())
@@ -278,6 +278,8 @@ namespace UpDiddyApi
             services.AddScoped<ITrackingService, TrackingService>();
             services.AddScoped<IJobPostingService, JobPostingService>();
             services.AddScoped<IJobApplicationService, JobApplicationService>();
+            services.AddScoped<ISalesForceService, SalesForceService>();
+
 
 
             services.AddScoped<ICompanyService, CompanyService>();
