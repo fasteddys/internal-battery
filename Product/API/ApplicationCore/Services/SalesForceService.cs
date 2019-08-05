@@ -1,16 +1,10 @@
-﻿using Hangfire;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
-using EntityTypeConst = UpDiddyLib.Helpers.Constants.EventType;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -29,10 +23,11 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task AddToWaitList(SalesForceSignUpListDto dto)
         {
-           var waitList  =_mapper.Map<SalesForceSignUpList>(dto);
-            await _repositoryWrapper.SalesForceSignUpListRepository.Create(waitList);
+            var item = _mapper.Map<SalesForceSignUpList>(dto);
+            item.CreateDate = DateTime.UtcNow;
+            item.SalesForceSignUpListGuid = Guid.NewGuid();
+            await _repositoryWrapper.SalesForceSignUpListRepository.Create(item);
             await _repositoryWrapper.SalesForceSignUpListRepository.SaveAsync();
         }
-
     }
 }
