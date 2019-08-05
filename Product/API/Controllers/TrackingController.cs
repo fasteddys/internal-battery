@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
-
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
@@ -25,14 +25,17 @@ namespace UpDiddyApi.Controllers
         private readonly FileContentResult _pixelResponse;
         private readonly ITrackingService _trackingService;
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly IHangfireService _hangfireService;
 
-        public TrackingController(UpDiddyDbContext db, ILogger<TrackingController> sysLog, FileContentResult pixelResponse, ITrackingService trackingService, IRepositoryWrapper repositoryWrapper)
+
+        public TrackingController(UpDiddyDbContext db, ILogger<TrackingController> sysLog, FileContentResult pixelResponse, ITrackingService trackingService, IRepositoryWrapper repositoryWrapper, IHangfireService hangfireService)
         {
             _trackingService = trackingService;
             _db = db;
             _syslog = sysLog;
             _pixelResponse = pixelResponse;
             _repositoryWrapper = repositoryWrapper;
+            _hangfireService = hangfireService;
         }
 
         [HttpGet]
@@ -116,7 +119,7 @@ namespace UpDiddyApi.Controllers
                 if (Guid.TryParse(campaign, out campaignGuid) && Guid.TryParse(partnerContact, out partnerContactGuid) && Guid.TryParse(action, out actionGuid))
                 {
                     // invoke the Hangfire job to store the tracking information
-                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreTrackingInformation(campaignGuid, partnerContactGuid, actionGuid, campaignPhase, headers));
+                    _hangfireService.Enqueue<ScheduledJobs>(j => j.StoreTrackingInformation(campaignGuid, partnerContactGuid, actionGuid, campaignPhase, headers));
                 }
             }
             else if (tinyId != null && action != null)
@@ -126,7 +129,7 @@ namespace UpDiddyApi.Controllers
                 if (Guid.TryParse(action, out actionGuid) && !string.IsNullOrWhiteSpace(tinyId))
                 {
                     // invoke the Hangfire job to store the tracking information
-                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreTrackingInformation(tinyId, actionGuid, campaignPhase, headers));
+                    _hangfireService.Enqueue<ScheduledJobs>(j => j.StoreTrackingInformation(tinyId, actionGuid, campaignPhase, headers));
                 }
             }
         }
@@ -148,7 +151,7 @@ namespace UpDiddyApi.Controllers
 
         private void ProcessRecruiterTrackingInformation(Guid ActorGuid, Guid ActionGuid, Guid JobApplicationGuid)
         {
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.StoreRecruiterTrackingInformation(ActorGuid, ActionGuid, JobApplicationGuid));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.StoreRecruiterTrackingInformation(ActorGuid, ActionGuid, JobApplicationGuid));
         }
 
         /// <summary>

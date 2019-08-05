@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
 using Hangfire;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -20,13 +21,15 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IMapper _mapper;
         private ISysEmail _sysEmail;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
-        public JobService(IServiceProvider services)
+        private IHangfireService _hangfireService;
+        public JobService(IServiceProvider services, IHangfireService hangfireService)
         {
             _services = services;
             _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
             _mapper = _services.GetService<IMapper>();
             _sysEmail = _services.GetService<ISysEmail>();
             _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
+            _hangfireService = hangfireService;
         }
         public async Task ReferJobToFriend(JobReferralDto jobReferralDto)
         {
@@ -95,7 +98,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             //generate jobUrl
             var referralUrl = jobReferralGuid == Guid.Empty ? jobReferralDto.ReferUrl : $"{jobReferralDto.ReferUrl}?referrerCode={jobReferralGuid}";
 
-            BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
+            _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
                 jobReferralDto.RefereeEmailId,
                 _configuration["SysEmail:Transactional:TemplateIds:JobReferral-ReferAFriend"],
                 new

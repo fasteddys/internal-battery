@@ -57,6 +57,8 @@ namespace UpDiddyApi.Controllers
         private readonly IRepositoryWrapper _repositoryWrapper;
         private ITaggingService _taggingService;
         private readonly CloudTalent _cloudTalent = null;
+        private readonly IHangfireService _hangfireService;
+
 
         public SubscriberController(UpDiddyDbContext db,
             IMapper mapper,
@@ -72,7 +74,8 @@ namespace UpDiddyApi.Controllers
             ITaggingService taggingService,
             ISubscriberNotificationService subscriberNotificationService,
             IJobService jobService,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            IHangfireService hangfireService)
         {
             _db = db;
             _mapper = mapper;
@@ -89,6 +92,7 @@ namespace UpDiddyApi.Controllers
             _jobService = jobService;
             _taggingService = taggingService;
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory,repositoryWrapper);
+            _hangfireService = hangfireService;
         }
 
         #region Basic Subscriber Endpoints
@@ -162,7 +166,7 @@ namespace UpDiddyApi.Controllers
                 // disable the AD account associated with the subscriber
                 _graphClient.DisableUser(subscriberGuid);
                 // delete subscriber from cloud talent 
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriber.SubscriberGuid.Value));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriber.SubscriberGuid.Value));
 
             }
             catch (Exception e)
@@ -206,7 +210,7 @@ namespace UpDiddyApi.Controllers
 
 
             // update google profile 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
         }
@@ -270,7 +274,7 @@ namespace UpDiddyApi.Controllers
 
 
             // update google profile 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(Subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(Subscriber.SubscriberGuid.Value));
 
 
             return Ok();
@@ -384,7 +388,7 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             // update google profile 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
 
             return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
@@ -438,7 +442,7 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             // update google profile 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
             return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
         }
@@ -594,7 +598,7 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             // update google profile 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
             return Ok(_mapper.Map<SubscriberEducationHistoryDto>(EducationHistory));
         }
@@ -643,7 +647,7 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             // update google profile 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
             return Ok(_mapper.Map<SubscriberEducationHistoryDto>(EducationHistory));
         }
@@ -1151,7 +1155,7 @@ namespace UpDiddyApi.Controllers
         private void SendVerificationEmail(string email, string link)
         {
             // send verification email in background
-            BackgroundJob.Enqueue(() =>
+            _hangfireService.Enqueue(() =>
                 _sysEmail.SendTemplatedEmailAsync(
                     email,
                     _configuration["SysEmail:Transactional:TemplateIds:EmailVerification-LinkEmail"],

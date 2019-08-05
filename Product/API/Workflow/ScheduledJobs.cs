@@ -47,6 +47,7 @@ namespace UpDiddyApi.Workflow
         private readonly ITrackingService _trackingService;
         private readonly CloudTalent _cloudTalent;
         private readonly IMimeMappingService _mimeMappingService;
+        private readonly IHangfireService _hangfireService;
         public ScheduledJobs(
             UpDiddyDbContext context,
             IMapper mapper,
@@ -62,7 +63,8 @@ namespace UpDiddyApi.Workflow
             ISubscriberService subscriberService,
             IJobPostingService jobPostingService,
             ITrackingService trackingService,
-            IMimeMappingService mimeMappingService
+            IMimeMappingService mimeMappingService,
+            IHangfireService hangfireService
            )
         {
             _db = context;
@@ -83,6 +85,7 @@ namespace UpDiddyApi.Workflow
             _jobPostingService = jobPostingService;
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory,_repositoryWrapper);
             _mimeMappingService = mimeMappingService;
+            _hangfireService = hangfireService;
 
         }
 
@@ -722,7 +725,7 @@ namespace UpDiddyApi.Workflow
                         // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
                         jobPostingDto.JobPostingGuid = jobPostingGuid;
                         // attempt to update job posting
-                        isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage, true);
+                        isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService);
                         // increment updated count in stats
                         if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
                             jobDataMiningStats.NumJobsUpdated += 1;
@@ -735,7 +738,7 @@ namespace UpDiddyApi.Workflow
                         RecruiterCompanyFactory.GetOrAdd(_db, recruiter.RecruiterId, company.CompanyId, true);
 
                         // attempt to create job posting
-                        isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration, true);
+                        isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration, true, _hangfireService);
 
                         // increment added count in stats
                         if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
@@ -811,7 +814,7 @@ namespace UpDiddyApi.Workflow
                         // get the job posting guid
                         jobPostingGuid = JobPostingFactory.GetJobPostingById(_db, jobPage.JobPostingId.Value).JobPostingGuid;
                         // attempt to delete job posting
-                        isJobDeleteOperationSuccessful = JobPostingFactory.DeleteJob(_db, jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration);
+                        isJobDeleteOperationSuccessful = JobPostingFactory.DeleteJob(_db, jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration, _hangfireService);
 
                         if (isJobDeleteOperationSuccessful.HasValue && isJobDeleteOperationSuccessful.Value)
                         {

@@ -14,6 +14,7 @@ using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.Workflow
 {
@@ -31,6 +32,8 @@ namespace UpDiddyApi.Workflow
         private IHttpClientFactory _httpClientFactory = null;
         private IRepositoryWrapper _repositoryWrapper;
         private ITaggingService _taggingService;
+        private readonly IHangfireService _hangfireService;
+
 
         public WozEnrollmentFlow(UpDiddyDbContext dbcontext, 
             IMapper mapper, 
@@ -40,7 +43,8 @@ namespace UpDiddyApi.Workflow
             IHttpClientFactory httpClientFactory, 
             ILogger<WozEnrollmentFlow> logger, 
             IRepositoryWrapper repositoryWrapper,
-            ITaggingService taggingService)
+            ITaggingService taggingService,
+            IHangfireService hangfireService)
         {
             _retrySeconds = int.Parse(configuration["Woz:RetrySeconds"]);
             // TODO modify code to work off woz Guid not dumb key 
@@ -53,6 +57,7 @@ namespace UpDiddyApi.Workflow
             _httpClientFactory = httpClientFactory;
             _repositoryWrapper = repositoryWrapper;
             _taggingService = taggingService;
+            _hangfireService = hangfireService;
         }
         #endregion
 
@@ -81,7 +86,7 @@ namespace UpDiddyApi.Workflow
                                 RVal.ResponseJson.IndexOf("is currently in use") > 0   )
                             {
                                 Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentComplete);
-                                BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.GetSectionWorkItem(EnrollmentGuid));
+                                _hangfireService.Enqueue<WozEnrollmentFlow>(wi => wi.GetSectionWorkItem(EnrollmentGuid));
                             }
                             else
                             {
@@ -97,14 +102,14 @@ namespace UpDiddyApi.Workflow
                     case TransactionState.InProgress:
                         string TransactionId = RVal.Data;
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentInProgress);
-                        BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.EnrollStudentInProgressWorkItem(EnrollmentGuid,TransactionId,IsInstructorLed, SubscriberId));
+                        _hangfireService.Enqueue<WozEnrollmentFlow>(wi => wi.EnrollStudentInProgressWorkItem(EnrollmentGuid,TransactionId,IsInstructorLed, SubscriberId));
                         break;
                     case TransactionState.Complete:
                         if ( IsInstructorLed == false )
                             Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.EnrollStudentComplete);
                         else
                             Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.FutureRegisterStudentRequested);
-                        BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.EnrollStudentCompleteWorkItem(EnrollmentGuid,IsInstructorLed, SubscriberId));
+                        _hangfireService.Enqueue<WozEnrollmentFlow>(wi => wi.EnrollStudentCompleteWorkItem(EnrollmentGuid,IsInstructorLed, SubscriberId));
                         break;
                 }
                 RVal.Step = 4;
@@ -147,7 +152,7 @@ namespace UpDiddyApi.Workflow
                         int WozTransactionStatus = int.Parse(RVal.Data);
                         // < 400 try again (See Woz documentation for their status codes)
                         if (WozTransactionStatus < 400)
-                            BackgroundJob.Schedule<WozEnrollmentFlow>(wi => wi.EnrollStudentInProgressWorkItem(EnrollmentGuid, TransactionId,IsInstructorLed, SubscriberId),TimeSpan.FromSeconds(_retrySeconds));
+                            _hangfireService.Schedule<WozEnrollmentFlow>(wi => wi.EnrollStudentInProgressWorkItem(EnrollmentGuid, TransactionId,IsInstructorLed, SubscriberId),TimeSpan.FromSeconds(_retrySeconds));
                         else if (WozTransactionStatus == 400)
                         {                               
                             string ExeterId = string.Empty;
@@ -172,7 +177,7 @@ namespace UpDiddyApi.Workflow
                                 Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.FutureRegisterStudentRequested);
 
                             // Move to next workitem
-                            BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.EnrollStudentCompleteWorkItem(EnrollmentGuid,IsInstructorLed, SubscriberId));
+                            _hangfireService.Enqueue<WozEnrollmentFlow>(wi => wi.EnrollStudentCompleteWorkItem(EnrollmentGuid,IsInstructorLed, SubscriberId));
                         }
                         else
                         {
@@ -212,9 +217,9 @@ namespace UpDiddyApi.Workflow
 
                 // Use a different flow for instructor led courses versus self-paced 
                 if (Enrollment.EnrollmentStatusId == (int)EnrollmentStatus.FutureRegisterStudentRequested)
-                    BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.RegisterInstructorLedStudentWorkItem(EnrollmentGuid));
+                    _hangfireService.Enqueue<WozEnrollmentFlow>(wi => wi.RegisterInstructorLedStudentWorkItem(EnrollmentGuid));
                 else if (Enrollment.EnrollmentStatusId == (int)EnrollmentStatus.EnrollStudentComplete)
-                    BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.GetSectionWorkItem(EnrollmentGuid));
+                    _hangfireService.Enqueue<WozEnrollmentFlow>(wi => wi.GetSectionWorkItem(EnrollmentGuid));
                 else if (Enrollment.EnrollmentStatusId == (int)EnrollmentStatus.FutureRegisterStudentComplete)
                     ; // Do nothing 
                 else
@@ -261,11 +266,11 @@ namespace UpDiddyApi.Workflow
                     case TransactionState.InProgress:
                         string TransactionId = RVal.Data;
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.CreateSectionInProgress);
-                        BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.CreateSectionInProgressWorkItem(EnrollmentGuid, TransactionId));
+                        _hangfireService.Enqueue<WozEnrollmentFlow>(wi => wi.CreateSectionInProgressWorkItem(EnrollmentGuid, TransactionId));
                         break;
                     case TransactionState.Complete:
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.CreateSectionComplete);
-                        BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.RegisterStudentWorkItem(EnrollmentGuid));
+                        _hangfireService.Enqueue<WozEnrollmentFlow>(wi => wi.RegisterStudentWorkItem(EnrollmentGuid));
                         break;
                 }
             }
@@ -305,7 +310,7 @@ namespace UpDiddyApi.Workflow
                         int WozTransactionStatus = int.Parse(RVal.Data);
                         // < 400 try again (See Woz documentation for their status codes)
                         if (WozTransactionStatus < 400)
-                            BackgroundJob.Schedule<WozEnrollmentFlow>(wi => wi.CreateSectionInProgressWorkItem(EnrollmentGuid,TransactionId), TimeSpan.FromSeconds(_retrySeconds));
+                            _hangfireService.Schedule<WozEnrollmentFlow>(wi => wi.CreateSectionInProgressWorkItem(EnrollmentGuid,TransactionId), TimeSpan.FromSeconds(_retrySeconds));
                         else if (WozTransactionStatus == 400)
                         {
                             // Create CourseSectionDto from information received from woz about newly created section 
@@ -313,7 +318,7 @@ namespace UpDiddyApi.Workflow
                             // Save section to CC database 
                             woz.SaveCourseSection(CourseSectionDto, EnrollmentGuid);                           
                             // Move to next workitem
-                            BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.RegisterStudentWorkItem(EnrollmentGuid));
+                            _hangfireService.Enqueue<WozEnrollmentFlow>(wi => wi.RegisterStudentWorkItem(EnrollmentGuid));
                         }
                         else
                         {
@@ -358,7 +363,7 @@ namespace UpDiddyApi.Workflow
                     case TransactionState.InProgress:
                         string TransactionId = RVal.Data;
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.FutureRegisterStudentInProgress);
-                        BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.RegisterInstructorLedStudentInProgressWorkItem(EnrollmentGuid, TransactionId));
+                        _hangfireService.Enqueue<WozEnrollmentFlow>(wi => wi.RegisterInstructorLedStudentInProgressWorkItem(EnrollmentGuid, TransactionId));
                         break;
                     case TransactionState.Complete:
                         // Redundent registration, just mark it complete 
@@ -398,13 +403,13 @@ namespace UpDiddyApi.Workflow
                         Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.InProgress:
-                        BackgroundJob.Schedule<WozEnrollmentFlow>(wi => wi.RegisterInstructorLedStudentInProgressWorkItem(EnrollmentGuid, TransactionId), TimeSpan.FromSeconds(_retrySeconds));
+                        _hangfireService.Schedule<WozEnrollmentFlow>(wi => wi.RegisterInstructorLedStudentInProgressWorkItem(EnrollmentGuid, TransactionId), TimeSpan.FromSeconds(_retrySeconds));
                         break;
                     case TransactionState.Complete:
                         int WozTransactionStatus = int.Parse(RVal.Data);
                         // < 400 try again (See Woz documentation for their status codes)
                         if (WozTransactionStatus < 400)
-                            BackgroundJob.Schedule<WozEnrollmentFlow>(wi => wi.RegisterInstructorLedStudentInProgressWorkItem(EnrollmentGuid, TransactionId), TimeSpan.FromSeconds(_retrySeconds));
+                            _hangfireService.Schedule<WozEnrollmentFlow>(wi => wi.RegisterInstructorLedStudentInProgressWorkItem(EnrollmentGuid, TransactionId), TimeSpan.FromSeconds(_retrySeconds));
                         else if (WozTransactionStatus == 400)
                         {
                             // Mark the enrollment complete and the reconcilation service will finish wiring everything up once woz create the 
@@ -456,7 +461,7 @@ namespace UpDiddyApi.Workflow
                     case TransactionState.InProgress:
                         string TransactionId = RVal.Data;
                         Helper.UpdateEnrollmentStatus(EnrollmentGuid, UpDiddyLib.Dto.EnrollmentStatus.RegisterStudentInProgress);
-                        BackgroundJob.Enqueue<WozEnrollmentFlow>(wi => wi.RegisterStudentInProgressWorkItem(EnrollmentGuid, TransactionId));
+                        _hangfireService.Enqueue<WozEnrollmentFlow>(wi => wi.RegisterStudentInProgressWorkItem(EnrollmentGuid, TransactionId));
                         break;
                     case TransactionState.Complete:
                         // Redundent registration, just mark it complete 
@@ -493,13 +498,13 @@ namespace UpDiddyApi.Workflow
                         Helper.WorkItemFatalError(EnrollmentGuid, RVal);
                         break;
                     case TransactionState.InProgress:
-                        BackgroundJob.Schedule<WozEnrollmentFlow>(wi => wi.RegisterStudentInProgressWorkItem(EnrollmentGuid, TransactionId), TimeSpan.FromSeconds(_retrySeconds));
+                        _hangfireService.Schedule<WozEnrollmentFlow>(wi => wi.RegisterStudentInProgressWorkItem(EnrollmentGuid, TransactionId), TimeSpan.FromSeconds(_retrySeconds));
                         break;
                     case TransactionState.Complete:
                         int WozTransactionStatus = int.Parse(RVal.Data);
                         // < 400 try again (See Woz documentation for their status codes)
                         if (WozTransactionStatus < 400)
-                            BackgroundJob.Schedule<WozEnrollmentFlow>(wi => wi.RegisterStudentInProgressWorkItem(EnrollmentGuid, TransactionId), TimeSpan.FromSeconds(_retrySeconds));
+                            _hangfireService.Schedule<WozEnrollmentFlow>(wi => wi.RegisterStudentInProgressWorkItem(EnrollmentGuid, TransactionId), TimeSpan.FromSeconds(_retrySeconds));
                         else if (WozTransactionStatus == 400)
                         {
                             // Create CourseSectionDto from information received from woz about newly created section 
