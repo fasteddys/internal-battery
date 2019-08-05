@@ -15,7 +15,7 @@ namespace UpDiddyApi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
+                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -2762,6 +2762,38 @@ namespace UpDiddyApi.Migrations
                     b.HasIndex("ResumeParseId");
 
                     b.ToTable("ResumeParseResult");
+                });
+
+            modelBuilder.Entity("UpDiddyApi.Models.SalesForceSignUpList", b =>
+                {
+                    b.Property<int>("SalesForceSignUpListId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired();
+
+                    b.Property<string>("FirstName");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<string>("LastName");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("PhoneNumber");
+
+                    b.Property<Guid>("SalesForceSignUpListGuid");
+
+                    b.HasKey("SalesForceSignUpListId");
+
+                    b.ToTable("SalesForceSignUpList");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.SecurityClearance", b =>

@@ -33,6 +33,8 @@ using Microsoft.AspNet.OData.Query;
 using X.PagedList;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Workflow;
+using UpDiddyApi.ApplicationCore.Services;
+using System.Net.Http;
 
 namespace UpDiddyApi.Controllers
 {
@@ -54,6 +56,9 @@ namespace UpDiddyApi.Controllers
         private IJobService _jobService;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private ITaggingService _taggingService;
+        private readonly CloudTalent _cloudTalent = null;
+        private readonly IHangfireService _hangfireService;
+
 
         public SubscriberController(UpDiddyDbContext db,
             IMapper mapper,
@@ -68,7 +73,9 @@ namespace UpDiddyApi.Controllers
             ISubscriberService subscriberService,
             ITaggingService taggingService,
             ISubscriberNotificationService subscriberNotificationService,
-            IJobService jobService)
+            IJobService jobService,
+            IHttpClientFactory httpClientFactory,
+            IHangfireService hangfireService)
         {
             _db = db;
             _mapper = mapper;
@@ -84,6 +91,8 @@ namespace UpDiddyApi.Controllers
             _subscriberNotificationService = subscriberNotificationService;
             _jobService = jobService;
             _taggingService = taggingService;
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory,repositoryWrapper);
+            _hangfireService = hangfireService;
         }
 
         #region Basic Subscriber Endpoints
@@ -157,7 +166,7 @@ namespace UpDiddyApi.Controllers
                 // disable the AD account associated with the subscriber
                 _graphClient.DisableUser(subscriberGuid);
                 // delete subscriber from cloud talent 
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriber.SubscriberGuid.Value));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(subscriber.SubscriberGuid.Value));
 
             }
             catch (Exception e)
@@ -201,7 +210,7 @@ namespace UpDiddyApi.Controllers
 
 
             // update google profile 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
             return Ok(_mapper.Map<SubscriberDto>(subscriber));
         }
@@ -265,7 +274,7 @@ namespace UpDiddyApi.Controllers
 
 
             // update google profile 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(Subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(Subscriber.SubscriberGuid.Value));
 
 
             return Ok();
@@ -379,7 +388,7 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             // update google profile 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
 
             return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
@@ -433,7 +442,7 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             // update google profile 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
             return Ok(_mapper.Map<SubscriberWorkHistoryDto>(WorkHistory));
         }
@@ -589,7 +598,7 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             // update google profile 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
             return Ok(_mapper.Map<SubscriberEducationHistoryDto>(EducationHistory));
         }
@@ -638,7 +647,7 @@ namespace UpDiddyApi.Controllers
             _db.SaveChanges();
 
             // update google profile 
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(subscriber.SubscriberGuid.Value));
 
             return Ok(_mapper.Map<SubscriberEducationHistoryDto>(EducationHistory));
         }
@@ -950,16 +959,17 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         public IActionResult Search(string searchFilter = "any", string searchQuery = null)
         {
-            searchQuery = Utils.ToSqlServerFullTextQuery(searchQuery);
-            searchFilter = HttpUtility.UrlDecode(searchFilter);
 
-            var filter = new SqlParameter("@Filter", (searchFilter == null || searchFilter.ToLower() == "any") ? string.Empty : searchFilter);
-            var query = new SqlParameter("@Query", searchQuery == null ? string.Empty : searchQuery);
-            var spParams = new object[] { filter, query };
+            int MaxProfilePageSize = int.Parse(_configuration["CloudTalent:MaxProfilePageSize"]);
+            ProfileQueryDto profileQueryDto = new ProfileQueryDto()
+            {
+                Keywords = searchQuery,
+                SourcePartner = searchFilter == null || searchFilter.ToLower() == "any" ? string.Empty : searchFilter,
+                // must be < 100
+                PageSize = MaxProfilePageSize
 
-            var result = _db.SubscriberSearch.FromSql("[dbo].[System_Search_Subscribers] @Filter, @Query", spParams)
-                .ProjectTo<SubscriberDto>(_mapper.ConfigurationProvider)
-                .ToList();
+            };
+            ProfileSearchResultDto result = _cloudTalent.ProfileSearch(profileQueryDto);   
 
             return Json(result);
         }
@@ -968,6 +978,7 @@ namespace UpDiddyApi.Controllers
         [HttpGet("/api/[controller]/sources")]
         public IActionResult GetSubscriberSources()
         {
+         
             return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceDto>(_mapper.ConfigurationProvider).ToList());
         }
 
@@ -1144,7 +1155,7 @@ namespace UpDiddyApi.Controllers
         private void SendVerificationEmail(string email, string link)
         {
             // send verification email in background
-            BackgroundJob.Enqueue(() =>
+            _hangfireService.Enqueue(() =>
                 _sysEmail.SendTemplatedEmailAsync(
                     email,
                     _configuration["SysEmail:Transactional:TemplateIds:EmailVerification-LinkEmail"],

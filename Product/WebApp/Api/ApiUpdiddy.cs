@@ -1337,13 +1337,13 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        public async Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery)
+        public async Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery)
         {
             string endpoint = $"subscriber/search?searchFilter={searchFilter}";
             if (searchQuery != string.Empty)
                 endpoint += $"&searchQuery={searchQuery}";
 
-            return await GetAsync<IList<SubscriberDto>>(endpoint);
+            return await GetAsync<ProfileSearchResultDto>(endpoint);
         }
 
         public async Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync()
@@ -1755,6 +1755,14 @@ namespace UpDiddy.Api
             await GetAsync<BasicResponseDto>($"tracking/track-subscriber-job-view-action/{jobGuid}/{subscriberGuid}");
         }
 
+        #endregion
+
+        #region Sales Force
+        public async Task<BasicResponseDto> AddSalesForceSignUpList(SalesForceSignUpListDto dto)
+        {
+           BasicResponseDto rval = await PutAsync<BasicResponseDto>("salesforce/sign-up", dto);
+           return rval;
+        }
         #endregion
     }
 }

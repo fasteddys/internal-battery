@@ -3,21 +3,33 @@
 @using UpDiddyLib.Helpers
 @model IEnumerable<NotificationDto>
 
+@functions{
+    public string EditDisplayStyle(DateTime? expireDate)
+    {
+
+        if (expireDate == null || expireDate > DateTime.Now)
+            return string.Empty;
+
+        return "d-none";
+    }
+}
+
+
 @(Html
-                .Grid(Model)
-                .Build(columns =>
-                {
-                    columns.Add(model => model.Title).Sortable(true).Titled("Title"); 
-                    columns.Add(model => model.ExpirationDate).Sortable(true).Titled("Expires");
-                    columns.Add(model => $"<a href=\"/admin/modifynotification/" + model.NotificationGuid + "\"><i class=\"fas fa-pencil-alt\"></i></a>").Titled("Edit").Encoded(false).AppendCss("text-center");
-                    columns.Add(model => $"<a class=\"notification-delete\" data-notification=\"" + model.NotificationGuid + "\" data-notification-title=\"" + model.Title + "\"><i class=\"fas fa-trash\"></i></a>").Titled("Delete").Encoded(false).AppendCss("text-center");
-                })
-                .AppendCss("table table-primary table-striped")
-                .Empty("No notifications found. You can add one using the \"Add+\" button above.")
-                .Pageable(pager =>
-                {
-                    pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
-                    pager.ShowPageSizes = true;
-                    pager.RowsPerPage = 10;
-                })
+                    .Grid(Model)
+                    .Build(columns =>
+                    {
+                        columns.Add(model => model.Title).Sortable(true).Titled("Title");
+                        columns.Add(model => model.ExpirationDate).Sortable(true).Titled("Expires");
+                        columns.Add(model => $"<a href=\"/admin/modifynotification/" + model.NotificationGuid + "\"><i class=\"fas fa-pencil-alt " + EditDisplayStyle(model.ExpirationDate) + "\"></i></a>").Titled("Edit").Encoded(false).AppendCss("text-center");
+                        columns.Add(model => $"<a class=\"notification-delete\" data-notification=\"" + model.NotificationGuid + "\" data-notification-title=\"" + model.Title + "\"><i class=\"fas fa-trash\"></i></a>").Titled("Delete").Encoded(false).AppendCss("text-center");
+                    })
+                    .AppendCss("table table-primary table-striped")
+                    .Empty("No notifications found. You can add one using the \"Add+\" button above.")
+                    .Pageable(pager =>
+                    {
+                        pager.PageSizes = new Dictionary<Int32, String> { { 10, "10" }, { 25, "25" }, { 0, "All" } };
+                        pager.ShowPageSizes = true;
+                        pager.RowsPerPage = 10;
+                    })
 )

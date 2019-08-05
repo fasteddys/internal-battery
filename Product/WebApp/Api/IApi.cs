@@ -97,7 +97,7 @@ namespace UpDiddy.Api
         Task<RedirectDto> GetSubscriberPartnerWebRedirect();
 
         #region TalentPortal
-        Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery);
+        Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery);
         Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync();
         Task<BasicResponseDto> SaveNotes(SubscriberNotesDto subscriberNotesDto);
         Task<IList<SubscriberNotesDto>> SubscriberNotesSearch(string subscriberGuid, string searchQuery);
@@ -161,6 +161,10 @@ namespace UpDiddy.Api
 
         Task UpdateJobViewed(string referrerCode);
 
+        #endregion
+
+        #region SalesForce
+        Task<BasicResponseDto> AddSalesForceSignUpList(SalesForceSignUpListDto dto);
         #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);

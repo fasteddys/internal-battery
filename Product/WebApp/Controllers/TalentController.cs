@@ -19,6 +19,7 @@ using UpDiddy.Api;
 using UpDiddy.Authentication;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
+ 
 
 namespace UpDiddy.Controllers
 {
@@ -217,11 +218,10 @@ namespace UpDiddy.Controllers
         public ViewResult Subscribers()
         {
             var subscriberSourcesDto = _api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);
-
             var selectListItems = subscriberSourcesDto.Select(ss => new SelectListItem()
             {
                 Text = $"{ss.Name} ({ss.Count})",
-                Value = ss.Referrer
+                Value = ss.Name
             })
             .AsEnumerable();
 
@@ -233,9 +233,9 @@ namespace UpDiddy.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpGet]
         [Route("[controller]/subscriberData")]
-        public async Task<IList<SubscriberDto>> SubscriberData(string searchFilter, string searchQuery = "")
+        public async Task<ProfileSearchResultDto> SubscriberData(string searchFilter, string searchQuery = "")
         {      
-            IList<SubscriberDto> subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery);
+            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery);
             return subscribers;
         }
 
@@ -258,7 +258,7 @@ namespace UpDiddy.Controllers
                 searchFilter = "any";
                 searchQuery = string.Empty;
             }
-            IList<SubscriberDto> subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery);
+            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery);
             return PartialView("_SubscriberGrid", subscribers);
         }
 
@@ -267,32 +267,45 @@ namespace UpDiddy.Controllers
         [Route("/Talent/Subscriber/{subscriberGuid}")]
         public async Task<IActionResult> SubscriberAsync(Guid subscriberGuid)
         {
-            SubscriberDto subscriber = await _api.SubscriberAsync(subscriberGuid, false);
-            string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
-            string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-            SubscriberViewModel subscriberViewModel = new SubscriberViewModel()
+            SubscriberDto subscriber = null;
+            SubscriberViewModel subscriberViewModel = null;
+            try
             {
-                FirstName = subscriber.FirstName,
-                LastName = subscriber.LastName,
-                Email = subscriber.Email,
-                PhoneNumber = subscriber.PhoneNumber,
-                Address = subscriber.Address,
-                City = subscriber.City,
-                State = subscriber.State?.Code,
-                Country = subscriber.State?.Country?.Code3, 
-                GithubUrl = subscriber.GithubUrl,
-                LinkedInUrl = subscriber.LinkedInUrl,
-                StackOverflowUrl = subscriber.StackOverflowUrl,
-                TwitterUrl = subscriber.TwitterUrl,
-                WorkHistory = subscriber.WorkHistory,
-                EducationHistory = subscriber.EducationHistory,
-                Skills = subscriber.Skills,
-                Enrollments = subscriber.Enrollments,
-                ResumeFileGuid = subscriber.Files?.FirstOrDefault()?.SubscriberFileGuid,
-                ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
-                SubscriberGuid = subscriber.SubscriberGuid.Value,
-                AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster
-            };
+                //todo jab try and avoid exception here
+                subscriber =  await _api.SubscriberAsync(subscriberGuid, false);
+                string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
+                string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+                subscriberViewModel = new SubscriberViewModel()
+                {
+                    FirstName = subscriber.FirstName,
+                    LastName = subscriber.LastName,
+                    Email = subscriber.Email,
+                    PhoneNumber = subscriber.PhoneNumber,
+                    Address = subscriber.Address,
+                    City = subscriber.City,
+                    State = subscriber.State?.Code,
+                    Country = subscriber.State?.Country?.Code3,
+                    GithubUrl = subscriber.GithubUrl,
+                    LinkedInUrl = subscriber.LinkedInUrl,
+                    StackOverflowUrl = subscriber.StackOverflowUrl,
+                    TwitterUrl = subscriber.TwitterUrl,
+                    WorkHistory = subscriber.WorkHistory,
+                    EducationHistory = subscriber.EducationHistory,
+                    Skills = subscriber.Skills,
+                    Enrollments = subscriber.Enrollments,
+                    ResumeFileGuid = subscriber.Files?.FirstOrDefault()?.SubscriberFileGuid,
+                    ResumeFileName = subscriber.Files?.FirstOrDefault()?.SimpleName,
+                    SubscriberGuid = subscriber.SubscriberGuid.Value,
+                    AvatarUrl = string.IsNullOrEmpty(subscriber.AvatarUrl) ? _configuration["CareerCircle:DefaultAvatar"] : AssestBaseUrl + subscriber.AvatarUrl + CacheBuster
+                };
+            }
+            catch
+            {
+                // empty catch here to pass null to the view which will let the user know that the subscriber cannot be found.  This code
+                // path will most mostly likely be hit when there's a mistmatch between the google profile index and the sql server 
+                // database which should not be that often
+            }
+
 
         
             return View("Subscriber", subscriberViewModel);
