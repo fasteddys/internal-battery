@@ -35,6 +35,8 @@ using System.Dynamic;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using SendGrid.Helpers.Mail;
 using Microsoft.Extensions.Configuration;
+using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.Controllers
 {
@@ -51,6 +53,8 @@ namespace UpDiddyApi.Controllers
         private readonly CloudTalent _cloudTalent = null;
         private ISysEmail _sysEmail;
         private ISubscriberService _subscriberService;
+        private readonly IHangfireService _hangfireService;
+
 
         #region constructor 
         public JobApplicationController(
@@ -60,7 +64,9 @@ namespace UpDiddyApi.Controllers
             ILogger<ProfileController> sysLog, 
             IHttpClientFactory httpClientFactory, 
             ISysEmail sysEmail,
-            ISubscriberService subscriberService)
+            ISubscriberService subscriberService,
+            IHangfireService hangfireService,
+            IRepositoryWrapper repositoryWrapper)
 
         {
             _db = db;
@@ -69,9 +75,10 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
             _httpClientFactory = httpClientFactory;
             _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, repositoryWrapper);
             _sysEmail = sysEmail;
             _subscriberService = subscriberService;
+            _hangfireService = hangfireService;
         }
         #endregion
 
@@ -245,6 +252,7 @@ namespace UpDiddyApi.Controllers
 
                 Stream SubscriberResumeAsStream = await _subscriberService.GetResumeAsync(subscriber);
                 SubscriberResumeAsStream.Seek(0, SeekOrigin.Begin);
+                string resumeEncoded = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream));
 
                 bool IsExternalRecruiter = jobPosting.Recruiter.Subscriber == null;
 
@@ -266,7 +274,7 @@ namespace UpDiddyApi.Controllers
 
                 foreach (string Email in EmailAddressesToSend.Keys)
                 {
-                    BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
+                    _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
                     (
                         Email,
                         _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter" +
@@ -290,7 +298,7 @@ namespace UpDiddyApi.Controllers
                         {
                             new Attachment
                             {
-                                Content = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream)),
+                                Content = resumeEncoded,
                                 Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName),
                                 Type=subscriber.SubscriberFile.FirstOrDefault().MimeType
                             },

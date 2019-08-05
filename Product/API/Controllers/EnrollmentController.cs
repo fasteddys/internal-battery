@@ -18,6 +18,7 @@ using UpDiddyApi.ApplicationCore;
 using Microsoft.Extensions.Caching.Distributed;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyLib.MessageQueue;
+using UpDiddyApi.ApplicationCore.Interfaces;
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UpDiddyApi.Controllers
@@ -32,8 +33,10 @@ namespace UpDiddyApi.Controllers
         protected internal ILogger _syslog = null;
         private readonly IDistributedCache _distributedCache;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHangfireService _hangfireService;
 
-        public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<EnrollmentController> sysLog, IHttpClientFactory httpClientFactory, IDistributedCache distributedCache)
+
+        public EnrollmentController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<EnrollmentController> sysLog, IHttpClientFactory httpClientFactory, IDistributedCache distributedCache, IHangfireService hangfireService)
         {
             _db = db;
             _mapper = mapper;
@@ -41,6 +44,7 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
             _distributedCache = distributedCache;
             _httpClientFactory = httpClientFactory;
+            _hangfireService = hangfireService;
         }
 
        
@@ -193,7 +197,7 @@ namespace UpDiddyApi.Controllers
                  *  This line used to enqueue the enrollment flow. Now, it's enqueuing the braintree flow,
                  *  which will then enqueue the enrollment flow if the payment is successful.
                  */
-                BackgroundJob.Enqueue<BraintreePaymentFlow>(x => x.PaymentWorkItem(EnrollmentFlowDto));
+                _hangfireService.Enqueue<BraintreePaymentFlow>(x => x.PaymentWorkItem(EnrollmentFlowDto));
 
                 return Ok(Enrollment.EnrollmentGuid);
             }
@@ -212,7 +216,7 @@ namespace UpDiddyApi.Controllers
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             // todo: course login dto is one property, thus maybe we can add that property as part of the enrollment in general
-            var CourseLogin = new CourseFactory(_db, _configuration, _syslog, _distributedCache)
+            var CourseLogin = new CourseFactory(_db, _configuration, _syslog, _distributedCache, _hangfireService)
                 .GetCourseLogin(subscriberGuid, EnrollmentGuid);
             return Ok(CourseLogin);
         }

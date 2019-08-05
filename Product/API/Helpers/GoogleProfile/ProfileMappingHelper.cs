@@ -16,7 +16,8 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using System.Globalization;
 using System.Threading;
-
+using UpDiddyApi.ApplicationCore.Repository;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.Helpers.GoogleProfile
 {
@@ -24,7 +25,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
     {
 
         #region CC subscriber -> cloud talent profile  mapping helpers
-        static public GoogleCloudProfile CreateGoogleProfile(UpDiddyDbContext db, Subscriber subscriber, IList<SubscriberSkill> skills)
+        static public GoogleCloudProfile CreateGoogleProfile(IRepositoryWrapper repositoryWrapper, int maxSkillLen, Subscriber subscriber, IList<SubscriberSkill> skills)
         {
  
             GoogleCloudProfile gcp = new GoogleCloudProfile()
@@ -44,34 +45,27 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                 },
                 personNames = MapPersonName(subscriber),
                 addresses = MapAddress(subscriber),
-                skills = MapSkill(skills),
+                skills = MapSkill(maxSkillLen, skills),
                 employmentRecords = MapWorkHistory(subscriber),
                 educationRecords = MapEducationHistory(subscriber),
                 emailAddresses = MapEmailAddress(subscriber),
                 phoneNumbers = MapPhoneNumber(subscriber)
             };
 
-            // mark the profile with the name of the partner who is resposnible for the 
-            // subscriber joining careercircle 
-            var partnerInfo = db.SubscriberSignUpPartnerReferences
-                .Where(p => p.SubscriberId == subscriber.SubscriberId)
-                .FirstOrDefault();
-
-            string partnerName = Constants.NotSpecifedOption;
-            if ( partnerInfo != null )
-            {
-                Partner partner = db.Partner
-                    .Where(p => p.PartnerId == partnerInfo.PartnerId)
-                    .FirstOrDefault();
-                
-                if (partner != null)
-                    partnerName = partner.Name;            
-            }
+            IList<Partner> partners = repositoryWrapper.SubscriberRepository.GetPartnersAssociatedWithSubscriber(subscriber.SubscriberId).Result;
+         
+            List<string> partnerList = new List<string>();
+            if (partners == null || partners.Count <= 0)
+                partnerList.Add(Constants.NotSpecifedOption);
+            else
+                foreach (Partner p in partners)
+                    partnerList.Add(p.Name);
+        
             gcp.customAttributes = new Dictionary<string, CustomAttribute>();
             // index source partner as custom attribute 
             gcp.customAttributes["SourcePartner"] = new CustomAttribute
             {
-                stringValues = new[] {  partnerName }, 
+                stringValues = partnerList.ToArray(), 
                 filterable = true
                  
             };
@@ -90,6 +84,25 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                     filterable = true
                 };
             }
+
+            gcp.customAttributes["CreateDate"] = new CustomAttribute
+            {
+                    stringValues = new[] { subscriber.CreateDate.ToShortDateString() },
+                    filterable = true
+            };
+          
+            
+            if ( subscriber.ModifyDate != null)
+            {
+                gcp.customAttributes["ModifyDate"] = new CustomAttribute
+                {
+                    stringValues = new[] { subscriber.ModifyDate.Value.ToShortDateString() },
+                    filterable = true
+                };
+            }
+            
+
+
 
             if (!string.IsNullOrEmpty(subscriber.LastName))
             {
@@ -241,14 +254,28 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                  };
                 rVal.EducationHistory.Add(subscriberEducationHistoryDto);
             }
-
+ 
             // map source partner 
-
-            rVal.SourcePartner = Constants.NotSpecifedOption;
+            rVal.SourcePartner = new List<string>();
+     
             if (summarizedProfile.summary.customAttributes != null && summarizedProfile.summary.customAttributes.ContainsKey("SourcePartner"))
-                rVal.SourcePartner = summarizedProfile.summary.customAttributes["SourcePartner"].stringValues[0];
+                foreach ( string s in summarizedProfile.summary.customAttributes["SourcePartner"].stringValues)
+                    rVal.SourcePartner.Add(s);
+            else
+                rVal.SourcePartner.Add(Constants.NotSpecifedOption);
 
-            
+            // map create date
+            DateTime createDate  = DateTime.MinValue;
+            if (summarizedProfile.summary.customAttributes != null && summarizedProfile.summary.customAttributes.ContainsKey("CreateDate"))
+                 DateTime.TryParse(summarizedProfile.summary.customAttributes["CreateDate"].stringValues[0], out createDate);
+             rVal.CreateDate = createDate;
+
+            // map modify date
+            DateTime modifyDate = DateTime.MinValue;
+            if (summarizedProfile.summary.customAttributes != null && summarizedProfile.summary.customAttributes.ContainsKey("ModifyDate"))
+                DateTime.TryParse(summarizedProfile.summary.customAttributes["ModifyDate"].stringValues[0], out createDate);
+            rVal.ModifyDate = modifyDate;
+
 
             return rVal;
         }
@@ -278,13 +305,17 @@ namespace UpDiddyApi.Helpers.GoogleProfile
             return rVal;
         }
 
-        static private List<Skill> MapSkill(IList<SubscriberSkill> skills)
+        static private List<Skill> MapSkill(int maxSkillLen, IList<SubscriberSkill> skills)
         {
+        
             List<Skill> rVal = new List<Skill>();
             foreach (SubscriberSkill ss in skills)
             {
-                Skill skill = new Skill(ss);
-                rVal.Add(skill);
+                if ( ss.Skill != null && ss.Skill.SkillName.Length <= maxSkillLen )
+                {
+                    Skill skill = new Skill(ss);
+                    rVal.Add(skill);
+                }                
             }            
             return rVal;
         }

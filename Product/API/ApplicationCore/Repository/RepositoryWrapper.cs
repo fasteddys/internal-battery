@@ -180,7 +180,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 if (_subscriberRepository == null)
                 {
-                    _subscriberRepository = new SubscriberRepository(_dbContext);
+                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository,PartnerRepository);
                 }
                 return _subscriberRepository;
             }
@@ -229,7 +229,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 if (_subscriberRepository == null)
                 {
-                    _subscriberRepository = new SubscriberRepository(_dbContext);
+                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository,PartnerRepository);
                 }
                 return _subscriberRepository;
             }

@@ -44,6 +44,8 @@ namespace UpDiddyApi.Controllers
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
         private ISysEmail _sysEmail;
+        private readonly IHangfireService _hangfireService;
+
 
         public OffersController(UpDiddyDbContext db,
             IMapper mapper,
@@ -54,7 +56,8 @@ namespace UpDiddyApi.Controllers
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService,
             IDistributedCache cache,
-            ISysEmail sysEmail)
+            ISysEmail sysEmail,
+            IHangfireService hangfireService)
         {
             _db = db;
             _mapper = mapper;
@@ -65,6 +68,7 @@ namespace UpDiddyApi.Controllers
             _authorizationService = authorizationService;
             _sysEmail = sysEmail;
             _cache = cache;
+            _hangfireService = hangfireService;
         }
 
         [HttpGet]
@@ -138,7 +142,7 @@ namespace UpDiddyApi.Controllers
             else
                 new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "Partner offer", "Offer", offer.OfferGuid);
 
-            BackgroundJob.Enqueue(() =>
+            _hangfireService.Enqueue(() =>
                 _sysEmail.SendTemplatedEmailAsync(subscriber.Email, _configuration["SysEmail:Transactional:TemplateIds:SubscriberOffer-Redemption"], offer, Constants.SendGridAccount.Transactional, null, null, null, null));
             
             return Ok(offer);

@@ -300,6 +300,7 @@ namespace UpDiddy.Controllers
                 City = job.City,
                 Province = job.Province,
                 SimilarJobsFavorites = SimilarJobsFavorites,
+                Skills = job.JobPostingSkills != null ? job.JobPostingSkills.Select(x => x.SkillName).ToList() : null,
                 LogoUrl = job?.Company?.LogoUrl != null ? _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + job.Company.LogoUrl : string.Empty
             };
 

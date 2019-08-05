@@ -3,7 +3,7 @@
 @using UpDiddyLib.Helpers
 @using Microsoft.AspNetCore.Authorization
 @inject IAuthorizationService AuthorizationService
-@model IEnumerable<SubscriberDto>
+@model ProfileSearchResultDto
 
 @{
     var isCareerCircleAdmin = false;
@@ -14,15 +14,15 @@
 }
 
 @(Html
-        .Grid(Model)
+        .Grid(Model.Profiles)
         .Build(columns =>
         {
             columns.Add(model => model.FirstName).Sortable(true).Titled("First Name");
             columns.Add(model => model.LastName).Sortable(true).Titled("Last Name");
             columns.Add(model => model.City).Sortable(true).Titled("City");
-            columns.Add(model => model.State.Name).Titled("State").Sortable(true).Filterable(true);
+            columns.Add(model => model.StateCode).Titled("State").Sortable(true).Filterable(true);
             columns.Add(model => model.CreateDate).Sortable(true).Titled("Joined").RenderedAs(model => model.CreateDate != DateTime.MinValue  ? model.CreateDate.ToShortDateString() : string.Empty);
-            columns.Add(model => model.ModifyDate).Sortable(true).Titled("Last Modified").RenderedAs(model => model.ModifyDate.HasValue ? model.ModifyDate.Value.ToShortDateString() : string.Empty);
+            columns.Add(model => model.ModifyDate).Sortable(true).Titled("Last Modified").RenderedAs(model => model.ModifyDate != DateTime.MinValue ? model.ModifyDate.ToShortDateString() : string.Empty);
             columns.Add(model => $"<a href=\"Subscriber/{model.SubscriberGuid}\"><i class=\"far fa-eye\"></i></a>").Titled("View").Encoded(false).AppendCss("text-center");
             if (isCareerCircleAdmin)
                 columns.Add(model => $"<a href=\"javascript:deleteSubscriber('{model.SubscriberGuid}');\"><i class=\"fa fa-trash\"></i></a>").Titled("Delete").Encoded(false).AppendCss("text-center");

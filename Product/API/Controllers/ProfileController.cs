@@ -21,6 +21,8 @@ using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Workflow;
 using Hangfire;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.Controllers
 {
@@ -37,15 +39,17 @@ namespace UpDiddyApi.Controllers
         protected internal ILogger _syslog = null;
         private readonly CloudTalent _cloudTalent = null;
         private readonly ISubscriberService _subscriberService = null;
+        private readonly IHangfireService _hangfireService;
 
-        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory, ISubscriberService subscriberService)
+        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory, ISubscriberService subscriberService, IRepositoryWrapper repositoryWrapper, IHangfireService hangfireService)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory, repositoryWrapper);
             _subscriberService = subscriberService;
+            _hangfireService = hangfireService;
         }
 
         #region profile tenants
@@ -213,7 +217,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/{SubscriberGuid}")]
         public async Task<IActionResult> ProfileAdd(Guid SubscriberGuid)
         {
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(SubscriberGuid));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(SubscriberGuid));
             return Ok( );
         }
 
@@ -229,7 +233,7 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/{SubscriberGuid}")]
         public async Task<IActionResult> ProfileDelete(Guid SubscriberGuid)
         {
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(SubscriberGuid));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(SubscriberGuid));
             return Ok();
         }
 
