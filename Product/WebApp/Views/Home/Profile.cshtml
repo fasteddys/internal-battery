@@ -199,7 +199,9 @@
         {
            var obj = JSON.parse(message);
            var evt = new CustomEvent('onResumeMergeNeeded', { detail: obj });
-           window.dispatchEvent(evt);
+            window.dispatchEvent(evt);
+            window.location = "/Home/Profile";
+          //  setTimeout(function () { window.location = "/Home/Profile" }, 500);
         };
 
 

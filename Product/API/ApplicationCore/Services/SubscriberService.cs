@@ -583,11 +583,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (educationHistory.StartDate == null || educationHistory.StartDate == DateTime.MinValue || educationHistory.StartDate == parsedEducationHistory.StartDate)
                 {
                     educationHistory.StartDate = parsedEducationHistory.StartDate;
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory", "StartDate", educationHistory.StartDate.Value.ToString("o"), parsedEducationHistory.StartDate.Value.ToString("o"), (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, string.Empty, "SubscriberEducationHistory", "StartDate", educationHistory.StartDate.Value.ToShortDateString(), parsedEducationHistory.StartDate.Value.ToShortDateString(), (int)ResumeParseStatus.Merged, educationHistory.SubscriberEducationHistoryGuid);
                 }
                 else
                 {
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, $"When did you start studying at {educationHistory.EducationalInstitution.Name}?", "SubscriberEducationHistory", "StartDate", educationHistory.StartDate.Value.ToString("o"), parsedEducationHistory.StartDate.Value.ToString("o"), (int)ResumeParseStatus.MergeNeeded, educationHistory.SubscriberEducationHistoryGuid);
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.EducationHistory, $"When did you start studying at {educationHistory.EducationalInstitution.Name}?", "SubscriberEducationHistory", "StartDate", educationHistory.StartDate.Value.ToShortDateString(), parsedEducationHistory.StartDate.Value.ToShortDateString(), (int)ResumeParseStatus.MergeNeeded, educationHistory.SubscriberEducationHistoryGuid);
                     requiresMerge = true;
                 }
 
@@ -695,19 +695,19 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <param name="workHistory"></param>
         /// <param name="parsedWorkHistory"></param>
         /// <returns></returns>
-        private async Task<bool> MergeWorkHistories(ResumeParse resumeParse, SubscriberWorkHistory workHistory, SubscriberWorkHistoryDto parsedWorkHistory)
+        private async Task<bool> MergeWorkHistories(ResumeParse resumeParse, SubscriberWorkHistory existingWorkHistoryItem, SubscriberWorkHistoryDto parsedWorkHistory)
         {
             bool requireMerge = false;
             if (parsedWorkHistory.StartDate != null && parsedWorkHistory.StartDate != DateTime.MinValue)
             {
-                if (workHistory.StartDate == null || workHistory.StartDate == DateTime.MinValue || workHistory.StartDate == parsedWorkHistory.StartDate)
+                if (existingWorkHistoryItem.StartDate == null || existingWorkHistoryItem.StartDate == DateTime.MinValue || existingWorkHistoryItem.StartDate == parsedWorkHistory.StartDate)
                 {
-                    workHistory.StartDate = parsedWorkHistory.StartDate;
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "StartDate", workHistory.StartDate.Value.ToShortDateString(), parsedWorkHistory.StartDate.Value.ToString(), (int)ResumeParseStatus.Merged, workHistory.SubscriberWorkHistoryGuid);
+                    existingWorkHistoryItem.StartDate = parsedWorkHistory.StartDate;
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "StartDate", existingWorkHistoryItem.StartDate.Value.ToShortDateString(), parsedWorkHistory.StartDate.Value.ToString(), (int)ResumeParseStatus.Merged, existingWorkHistoryItem.SubscriberWorkHistoryGuid);
                 }
                 else
                 {
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, $"When did you start employment at {workHistory.Company.CompanyName}?", "SubscriberWorkHistory", "StartDate", workHistory.StartDate.Value.ToShortDateString(), parsedWorkHistory.StartDate.Value.ToShortDateString(), (int)ResumeParseStatus.MergeNeeded, workHistory.SubscriberWorkHistoryGuid);
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, $"When did you start employment at {existingWorkHistoryItem.Company.CompanyName}?", "SubscriberWorkHistory", "StartDate", existingWorkHistoryItem.StartDate.Value.ToShortDateString(), parsedWorkHistory.StartDate.Value.ToShortDateString(), (int)ResumeParseStatus.MergeNeeded, existingWorkHistoryItem.SubscriberWorkHistoryGuid);
                     requireMerge = true;
                 }
 
@@ -715,14 +715,14 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             if (parsedWorkHistory.EndDate != null && parsedWorkHistory.EndDate != DateTime.MinValue)
             {
-                if (workHistory.EndDate == null || workHistory.EndDate == DateTime.MinValue || workHistory.EndDate == parsedWorkHistory.EndDate)
+                if (existingWorkHistoryItem.EndDate == null || existingWorkHistoryItem.EndDate == DateTime.MinValue || existingWorkHistoryItem.EndDate == parsedWorkHistory.EndDate)
                 {
-                    workHistory.EndDate = parsedWorkHistory.EndDate;
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "EndDate", workHistory.EndDate.Value.ToShortDateString(), parsedWorkHistory.EndDate.Value.ToShortDateString(), (int)ResumeParseStatus.Merged, workHistory.SubscriberWorkHistoryGuid);
+                    existingWorkHistoryItem.EndDate = parsedWorkHistory.EndDate;
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "EndDate", existingWorkHistoryItem.EndDate.Value.ToShortDateString(), parsedWorkHistory.EndDate.Value.ToShortDateString(), (int)ResumeParseStatus.Merged, existingWorkHistoryItem.SubscriberWorkHistoryGuid);
                 }
                 else
                 {
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, $"When did your employment at {workHistory.Company.CompanyName} end?", "SubscriberWorkHistory", "EndDate", workHistory.EndDate.Value.ToString("o"), parsedWorkHistory.EndDate.Value.ToString("o"), (int)ResumeParseStatus.MergeNeeded, workHistory.SubscriberWorkHistoryGuid);
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, $"When did your employment at {existingWorkHistoryItem.Company.CompanyName} end?", "SubscriberWorkHistory", "EndDate", existingWorkHistoryItem.EndDate.Value.ToLongDateString(), parsedWorkHistory.EndDate.Value.ToShortDateString(), (int)ResumeParseStatus.MergeNeeded, existingWorkHistoryItem.SubscriberWorkHistoryGuid);
                     requireMerge = true;
                 }
 
@@ -730,7 +730,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             if (string.IsNullOrWhiteSpace(parsedWorkHistory.Title) == false)
             {
-                string jobTitle = Utils.RemoveNewlines(workHistory.Title.Trim());
+                string jobTitle = Utils.RemoveNewlines(existingWorkHistoryItem.Title.Trim());
                 // html encode to be consistent with api endpoints that encode to protect again script injection 
                 string parsedJobTitle = Utils.RemoveNewlines(HttpUtility.HtmlEncode(parsedWorkHistory.Title.Trim()));
 
@@ -738,12 +738,22 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (string.IsNullOrWhiteSpace(jobTitle) || jobTitle.ToLower() == parsedJobTitle.ToLower())
                 {
                     // html encode to be consistent with api endpoints that encode to protect again script injection 
-                    workHistory.Title = parsedJobTitle;
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "Title", jobTitle, parsedJobTitle, (int)ResumeParseStatus.Merged, workHistory.SubscriberWorkHistoryGuid);
+                    existingWorkHistoryItem.Title = parsedJobTitle;
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "Title", jobTitle, parsedJobTitle, (int)ResumeParseStatus.Merged, existingWorkHistoryItem.SubscriberWorkHistoryGuid);
                 }
                 else
                 {
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, $"While working at {workHistory.Company.CompanyName}, what was your job title?", "SubscriberWorkHistory", "Title", jobTitle, parsedJobTitle, (int)ResumeParseStatus.MergeNeeded, workHistory.SubscriberWorkHistoryGuid);
+                    string question = string.Empty;
+                    if (existingWorkHistoryItem.StartDate != null && existingWorkHistoryItem.EndDate != null)
+                        question = $"While working at {existingWorkHistoryItem.Company.CompanyName} from {existingWorkHistoryItem.StartDate.Value.ToShortDateString()} to {existingWorkHistoryItem.EndDate.Value.ToShortDateString()}, what was your job title?";
+                    else if (existingWorkHistoryItem.StartDate != null)
+                        question = $"While working at {existingWorkHistoryItem.Company.CompanyName} starting on {existingWorkHistoryItem.StartDate.Value.ToShortDateString()}, what was your job title?";
+                    else if ( existingWorkHistoryItem.EndDate != null)
+                        question = $"While working at {existingWorkHistoryItem.Company.CompanyName} ending on {existingWorkHistoryItem.EndDate.Value.ToShortDateString()}, what was your job title?";
+                    else
+                        question = $"While working at {existingWorkHistoryItem.Company.CompanyName}, what was your job title?";
+
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, question,  "SubscriberWorkHistory", "Title", jobTitle, parsedJobTitle, (int)ResumeParseStatus.MergeNeeded, existingWorkHistoryItem.SubscriberWorkHistoryGuid);
                     requireMerge = true;
                 }
 
@@ -752,18 +762,29 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             if (string.IsNullOrWhiteSpace(parsedWorkHistory.JobDescription) == false)
             {
-                string jobDescription = Utils.RemoveNewlines(workHistory.JobDescription.Trim());
+                string jobDescription = Utils.RemoveNewlines(existingWorkHistoryItem.JobDescription.Trim());
                 // html encode to be consistent with api endpoints that encode to protect again script injection 
                 string parsedJobDescription = Utils.RemoveNewlines(HttpUtility.HtmlEncode(parsedWorkHistory.JobDescription.Trim()));
 
                 if (string.IsNullOrWhiteSpace(jobDescription) || jobDescription.ToLower() == parsedJobDescription.ToLower())
                 {
-                    workHistory.JobDescription = parsedJobDescription;
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "JobDescription", jobDescription, parsedJobDescription, (int)ResumeParseStatus.Merged, workHistory.SubscriberWorkHistoryGuid);
+                    existingWorkHistoryItem.JobDescription = parsedJobDescription;
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "JobDescription", jobDescription, parsedJobDescription, (int)ResumeParseStatus.Merged, existingWorkHistoryItem.SubscriberWorkHistoryGuid);
                 }
                 else
                 {
-                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, $"While working at {workHistory.Company.CompanyName}, what was your job description?", "SubscriberWorkHistory", "JobDescription", jobDescription, parsedJobDescription, (int)ResumeParseStatus.MergeNeeded, workHistory.SubscriberWorkHistoryGuid);
+                    string question = string.Empty;
+                    if (existingWorkHistoryItem.StartDate != null && existingWorkHistoryItem.EndDate != null)
+                        question = $"While working at {existingWorkHistoryItem.Company.CompanyName} from {existingWorkHistoryItem.StartDate.Value.ToShortDateString()} to {existingWorkHistoryItem.EndDate.Value.ToShortDateString()}, what was your job description?";
+                    else if (existingWorkHistoryItem.StartDate != null)
+                        question = $"While working at {existingWorkHistoryItem.Company.CompanyName} starting on {existingWorkHistoryItem.StartDate.Value.ToShortDateString()}, what was your job description?";
+                    else if (existingWorkHistoryItem.EndDate != null)
+                        question = $"While working at {existingWorkHistoryItem.Company.CompanyName} ending on {existingWorkHistoryItem.EndDate.Value.ToShortDateString()}, what was your job description?";
+                    else
+                        question = $"While working at {existingWorkHistoryItem.Company.CompanyName}, what was your job description?";
+
+
+                    await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, question, "SubscriberWorkHistory", "JobDescription", jobDescription, parsedJobDescription, (int)ResumeParseStatus.MergeNeeded, existingWorkHistoryItem.SubscriberWorkHistoryGuid);
                     requireMerge = true;
                 }
 
@@ -786,28 +807,40 @@ namespace UpDiddyApi.ApplicationCore.Services
             bool requireMerge = false;
             try
             {
+                // get list of work histories parsed from resume 
                 List<SubscriberWorkHistoryDto> parsedWorkHistory = Utils.ParseWorkHistoryFromHrXml(resume);
+                // get list of work histories alreay associated with user 
                 IList<SubscriberWorkHistory> workHistory = SubscriberFactory.GetSubscriberWorkHistoryById(_db, subscriber.SubscriberId);
-                foreach (SubscriberWorkHistoryDto wh in parsedWorkHistory)
+                foreach (SubscriberWorkHistoryDto parsedWorkHistoryItem in parsedWorkHistory)
                 {
-                    string parsedCompanyName = wh.Company.ToLower();
-                    var ExistingCompany = workHistory.Where(s => s.Company.CompanyName.ToLower() == parsedCompanyName).FirstOrDefault();
+                    // ignore jobs without job titles - some resumes such as Jon Foley's have a header section with a summary of their
+                    // career at a given company and then list specific job roles below this header. If this summary is included it would
+                    // create conficts for each specific job role since there would be an overlap in time at the same company.  Best to 
+                    // just ignore those jobs without a job title
+
+                    if (string.IsNullOrEmpty(parsedWorkHistoryItem.Title))
+                        continue;
+                    // get the company name of the company from the parsed work history 
+                    string parsedCompanyName = parsedWorkHistoryItem.Company.ToLower();
+                    // get a list of existing work histories for the parsed company
+                    var ExistingPositions = workHistory.Where(s => s.Company.CompanyName.ToLower() == parsedCompanyName).ToList();
+                    //  look for an existing position at the parsed company that overlaps in time with the parsed position 
+                    var ExistingPosition = await FindOverlappingWorkHistory(ExistingPositions, parsedWorkHistoryItem); 
                     // get or create the company specified by the work history 
                     Company company = await CompanyFactory.GetOrAdd(_db, parsedCompanyName);
                     // if its not an existing company just add it
-                    if (ExistingCompany == null)
-                    {
-                        SubscriberWorkHistory newWorkHistory = await SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(_db, subscriber, wh, company);
+                    if (ExistingPosition == null)
+                    {  
+                        // easy case of adding new company to user 
+                        SubscriberWorkHistory newWorkHistory = await SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(_db, subscriber, parsedWorkHistoryItem, company);
                         await _repository.ResumeParseResultRepository.CreateResumeParseResultAsync(resumeParse.ResumeParseId, (int)ResumeParseSection.WorkHistory, string.Empty, "SubscriberWorkHistory", "Object", string.Empty, string.Empty, (int)ResumeParseStatus.Merged, newWorkHistory.SubscriberWorkHistoryGuid);
+                        // add new work history to existing work histories 
+                        workHistory.Add(newWorkHistory);
                     }
-                    else // Check to see its an update to an existing work history 
-                    {
-                        // todo - at some point make this more intelligent, edge cases as two stints at the same company may not be handled very
-                        // well
-                        var ExistingCompanies = workHistory.Where(s => s.Company.CompanyName.ToLower() == parsedCompanyName).ToList();
-                        foreach (SubscriberWorkHistory swh in ExistingCompanies)
-                            if (await MergeWorkHistories(resumeParse, swh, wh) == true)
-                                requireMerge = true;
+                    else // check for conflicts with an existing position
+                    {                      
+                         if (await MergeWorkHistories(resumeParse, ExistingPosition, parsedWorkHistoryItem) == true)
+                             requireMerge = true;
                     }
                 }
                 await _repository.ResumeParseResultRepository.SaveResumeParseResultAsync();
@@ -821,6 +854,26 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
+
+
+        private async Task<SubscriberWorkHistory> FindOverlappingWorkHistory(List<SubscriberWorkHistory> existingWorkHistoriesForCompany, SubscriberWorkHistoryDto parsedWorkHistoryForCompany)
+        {
+            DateTime startDate = parsedWorkHistoryForCompany.StartDate == null ? DateTime.MinValue : parsedWorkHistoryForCompany.StartDate.Value;
+            DateTime endDate = parsedWorkHistoryForCompany.EndDate == null ? DateTime.MinValue : parsedWorkHistoryForCompany.EndDate.Value;
+
+            foreach ( SubscriberWorkHistory workHistory in existingWorkHistoriesForCompany)
+            {
+                if ( startDate == workHistory.StartDate && 
+                     endDate == workHistory.EndDate && 
+                     workHistory.Title.Trim().ToLower() == parsedWorkHistoryForCompany.Title.Trim().ToLower() 
+                    )
+                {
+                
+                    return workHistory;
+                }
+            }
+            return null;
+        }
 
         /// <summary>
         /// Import skills found in the resume 
