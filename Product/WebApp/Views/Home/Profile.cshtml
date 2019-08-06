@@ -200,8 +200,9 @@
            var obj = JSON.parse(message);
            var evt = new CustomEvent('onResumeMergeNeeded', { detail: obj });
             window.dispatchEvent(evt);
+           // reload window on signalr callback to show newly parsed stuff 
             window.location = "/Home/Profile";
-          //  setTimeout(function () { window.location = "/Home/Profile" }, 500);
+  
         };
 
 
