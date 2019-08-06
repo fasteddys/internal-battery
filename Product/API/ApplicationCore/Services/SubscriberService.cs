@@ -364,6 +364,12 @@ namespace UpDiddyApi.ApplicationCore.Services
             return map;
         }
 
+        public async Task<List<Subscriber>> GetFailedSubscribers()
+        {
+            var query = await _repository.Subscriber.GetAllAsync();
+            return await query.Where(x => x.CloudTalentIndexStatus == 3 && x.IsDeleted == 0).ToListAsync();
+        }
+        
         #region subscriber notes
         public async Task SaveSubscriberNotesAsync(SubscriberNotesDto subscriberNotesDto)
         {

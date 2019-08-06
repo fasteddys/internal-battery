@@ -94,5 +94,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<Subscriber> GetSubscriber(ODataQueryOptions<Subscriber> options);
 
         Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numProfilesToProcess, int ndexVersion);
+
+        Task<List<Subscriber>> GetFailedSubscribers();
     }
 }
