@@ -31,7 +31,9 @@
             <div class="form-inline">
                 <div class="form-group">
                     <label for="GridSearch" class="sr-only">Search</label>
-                    <input id="GridSearch" class="form-control" placeholder="Search" onkeyup="SearchOnEnter(event)" />
+                    <input id="GridSearch" class="form-control" placeholder="Keywords" onkeyup="SearchOnEnter(event)" />
+                    <label for="GridSearchLocation" class="sr-only">Location</label>
+                    <input id="GridSearchLocation" class="form-control" placeholder="Location" onkeyup="SearchOnEnter(event)" />
                     <button class="btn btn-primary" onclick="doSearch(false);">Search</button>
                 </div>
                 <div class="form-group ml-3">
@@ -67,18 +69,22 @@
                     doSearch(false);
 
             }
-
+ 
             function doDownload() {
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
                 var search = document.getElementById('GridSearch').value;
+                var searchLocation = document.getElementById('GridSearchLocation').value;
                 var searchQuery = encodeURIComponent(search);
+                var searchLocationQuery = encodeURIComponent(searchLocation);
                 var searchFilter = encodeURIComponent(document.getElementById('SelectedSubscriberSource').value);
+                var searchLocationFilter = encodeURIComponent(document.getElementById('SelectedSubscriberSource').value);
                 var url = 'subscriberData';
                 $.ajax({
                     url: url,
                     data: {
                         searchQuery: searchQuery,
-                        searchFilter: searchFilter
+                        searchFilter: searchFilter,
+                        searchLocationQuery: searchLocationQuery
                     },
                     contentType: "application/json; charset=utf-8",
                     method: "get",
@@ -135,11 +141,15 @@
                 }
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
                 var search = document.getElementById('GridSearch').value;
+                var searchLocation = document.getElementById('GridSearchLocation').value;
                 var searchAndFilter = {
                     searchFilter: encodeURIComponent(document.getElementById('SelectedSubscriberSource').value),
-                    searchQuery: encodeURIComponent(search)
+                    searchQuery: encodeURIComponent(search),
+                    searchLocationQuery: encodeURIComponent(searchLocation)
                 };
- 
+
+
+                console.log(JSON.stringify(searchAndFilter));
                 // combining the filter and search because of a limitation with the mvc grid
                 grid.query.set('searchAndFilter', JSON.stringify(searchAndFilter));
                 grid.reload();

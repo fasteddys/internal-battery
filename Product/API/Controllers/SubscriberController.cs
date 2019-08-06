@@ -957,7 +957,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet("/api/[controller]/search")]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
-        public IActionResult Search(string searchFilter = "any", string searchQuery = null)
+        public IActionResult Search(string searchFilter = "any", string searchQuery = null, string searchLocationQuery = null)
         {
 
             int MaxProfilePageSize = int.Parse(_configuration["CloudTalent:MaxProfilePageSize"]);
@@ -965,6 +965,7 @@ namespace UpDiddyApi.Controllers
             {
                 Keywords = searchQuery,
                 SourcePartner = searchFilter == null || searchFilter.ToLower() == "any" ? string.Empty : searchFilter,
+                Location = searchLocationQuery,
                 // must be < 100
                 PageSize = MaxProfilePageSize
 
