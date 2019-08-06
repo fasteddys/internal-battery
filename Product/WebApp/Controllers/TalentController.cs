@@ -233,9 +233,11 @@ namespace UpDiddy.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpGet]
         [Route("[controller]/subscriberData")]
-        public async Task<ProfileSearchResultDto> SubscriberData(string searchFilter, string searchQuery = "")
-        {      
-            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery);
+        public async Task<ProfileSearchResultDto> SubscriberData(string searchFilter, string searchQuery = "", string searchLocationQuery = "")
+        {
+       
+ 
+            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery);
             return subscribers;
         }
 
@@ -246,19 +248,21 @@ namespace UpDiddy.Controllers
         {
             string searchFilter;
             string searchQuery;
+            string searchLocationQuery = string.Empty;
 
             if (searchAndFilter != null)
             {
                 var jObject = JObject.Parse(searchAndFilter);
                 searchFilter = jObject["searchFilter"].Value<string>();
                 searchQuery = jObject["searchQuery"].Value<string>();
+                searchLocationQuery = jObject["searchLocationQuery"].Value<string>();
             }
             else
             {
                 searchFilter = "any";
                 searchQuery = string.Empty;
             }
-            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery);
+            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery);
             return PartialView("_SubscriberGrid", subscribers);
         }
 
@@ -271,7 +275,7 @@ namespace UpDiddy.Controllers
             SubscriberViewModel subscriberViewModel = null;
             try
             {
-                //todo jab try and avoid exception here
+   
                 subscriber =  await _api.SubscriberAsync(subscriberGuid, false);
                 string AssestBaseUrl = _configuration["CareerCircle:AssetBaseUrl"];
                 string CacheBuster = "?" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
