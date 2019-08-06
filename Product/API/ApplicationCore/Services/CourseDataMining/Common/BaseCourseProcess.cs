@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
 
-namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
+namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining.Common
 {
     public abstract class BaseCourseProcess
     {

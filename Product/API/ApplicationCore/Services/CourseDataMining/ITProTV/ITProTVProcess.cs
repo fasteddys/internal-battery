@@ -11,10 +11,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Services.CourseDataMining.Common;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 
-namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
+namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining.ITProTV
 {
     public class ITProTVProcess : BaseCourseProcess, ICourseDataMining
     {
@@ -238,81 +239,6 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining
         public CourseDto ProcessCoursePage(CoursePage coursePage)
         {
             throw new NotImplementedException();
-        }
-
-        public class ItProTVCategory
-        {
-            public ItProTVCategory(string topic, string abbreviation, string description, List<string> courseNames)
-            {
-                this.Topic = topic;
-                this.Abbreviation = abbreviation;
-                this.Description = description;
-                this.CourseNames = courseNames;
-            }
-
-            public string Topic { get; }
-            public string Abbreviation { get; }
-            public string Description { get; }
-            [JsonIgnore]
-            public List<string> CourseNames { get; }
-        }
-
-        public class ITProTVCourse
-        {
-            private List<string> ParseSkillsFromSovren(ISovrenAPI sovrenApi)
-            {
-                /* create a fake resume, send to Sovren, retrieve skill names from xml response. this cannot be done until Sovren is fixed!!*/
-                byte[] bytes;
-                using (var ms = new MemoryStream())
-                {
-                    using (var sw = new StreamWriter(ms))
-                    {
-                        sw.WriteLine("Title");
-                        sw.WriteLine(this.Title);
-                        sw.WriteLine("Subtitle");
-                        sw.WriteLine(this.Subtitle);
-                        sw.WriteLine("Description");
-                        sw.WriteLine(this.Description);
-                        sw.WriteLine("Overview");
-                        sw.WriteLine(this.Overview);
-                        sw.Flush();
-                        ms.Seek(0, SeekOrigin.Begin);
-                        bytes = ms.ToArray();
-                    }
-                }
-                string base64 = Convert.ToBase64String(bytes);
-                var sovrenResult = sovrenApi.SubmitResumeAsync(base64).Result;
-                
-
-                // placeholder data for now
-                return new List<string>() {
-                    "react",
-                    "simple object access protocol (soap)",
-                    "front end (software engineering)",
-                    "cascading style sheets (css)",
-                    "hypertext markup language (html)",
-                    "java (programming language)"
-                };
-            }
-
-            public ITProTVCourse(string title, string subtitle, string description, string duration, string overview, List<ItProTVCategory> categories, ISovrenAPI sovrenApi)
-            {
-                this.Title = title;
-                this.Subtitle = subtitle;
-                this.Description = description;
-                this.Duration = duration;
-                this.Overview = overview;
-                this.Skills = ParseSkillsFromSovren(sovrenApi);
-                this.Categories = categories;
-            }
-
-            public string Title { get; }
-            public string Subtitle { get; }
-            public string Description { get; }
-            public string Duration { get; }
-            public string Overview { get; }
-            public List<string> Skills { get; }
-            public List<ItProTVCategory> Categories { get; }
         }
     }
 }
