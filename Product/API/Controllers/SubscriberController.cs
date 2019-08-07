@@ -1322,7 +1322,7 @@ namespace UpDiddyApi.Controllers
             }
             catch (Exception ex)
             {
-                _syslog.Log(LogLevel.Error, $"SubscriberController.GetSubscriber : Error occured when retrieving recruiter with message={ex.Message}", ex);
+                _syslog.Log(LogLevel.Error, $"SubscriberController.GetFailedSubscribersSummaryAsync : Error occured when retrieving recruiter with message={ex.Message}", ex);
                 return StatusCode(500);
             }
         }
