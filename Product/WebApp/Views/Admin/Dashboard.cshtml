@@ -38,7 +38,6 @@
                 </div>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                <!-- New Subscriber Report Card-->
                 <div class="card shadow mb-3">
                     <div class="card-header">Total User Breakdown By Partner</div>
                     <div class="card-body p-0" style="max-height: 250px;overflow-y: auto;">
@@ -70,7 +69,7 @@
                         Recruiter Actions By Partner Report
                     </div>
                     <div class="card-body p-0">
-                        @Html.React("SATable", new { data = ViewBag.partnerSubActionReport, show = false })
+                        @Html.React("SATable", new { show = false })
                     </div>
                 </div>
             </div>
@@ -80,13 +79,10 @@
                         Job Applications by Company
                     </div>
                     <div class="card-body p-0">
-                        @Html.React("JobAppReportTable", new { data = ViewBag.jobApplicationCountReport, show = false})
+                        @Html.React("JobAppReportTable", new { show = false})
                     </div>
                 </div>
             </div>
-
-
-
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <div class="card shadow mb-3">
                     <div class="card-header">Offer Action Summary</div>

@@ -9,7 +9,6 @@ class SATable extends React.Component {
   columns = [];
   constructor(props) {
     super(props);
-    this.buildColumns(props);
     this.state = {
       data: null,
       show: this.props.show,
@@ -23,7 +22,7 @@ class SATable extends React.Component {
   }
 
   buildColumns(props) {
-    this.columns = props.data.actionKey.map(x => {
+    this.columns = props.actionKey.map(x => {
       return {
         Header: x.name,
         id: "col-actionId" + x.actionId,
@@ -82,6 +81,7 @@ class SATable extends React.Component {
       .then(res => res.json())
       .then(
         result => {
+          this.buildColumns(result)
           this.setState({
             isLoaded: true,
             data: result.report,

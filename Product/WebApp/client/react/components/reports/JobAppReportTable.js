@@ -76,7 +76,7 @@ class JobAppReportTable extends React.Component {
       .then(res => res.json())
       .then(
         result => {
-          this.buildColumns(result);
+          this.buildColumns(result)
           this.setState({
             isLoaded: true,
             data: result,

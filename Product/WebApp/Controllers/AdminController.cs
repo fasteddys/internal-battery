@@ -145,14 +145,7 @@ namespace UpDiddy.Controllers
 
             ViewBag.subscriberReport = await _api.GetSubscriberReportAsync(dates);
             ViewBag.partnerReport = await _api.GetSubscriberReportByPartnerAsync();
-            //ViewBag.recruiterActionSummary = await _api.GetRecruiterActionSummaryAsync();
-            //ViewBag.subscriberActionSummary = await _api.GetSubscriberActionSummaryAsync();
             ViewBag.offerActionSummary = await _api.GetOfferActionSummaryAsync();
-            //ViewBag.partnerSubActionReport = await _api.GetPartnerSubscriberActionStatsAsync();
-            //ViewBag.jobApplicationCountReport = await _api.GetJobApplicationCount();
-            //ViewBag.notificationCountsReport = await _api.GetReadNotificationsCount();
-            // todo: this is temporary until active jobs postings report gets a dedicated tab w/criteria filters.
-            //ViewBag.activeJobPostsByCompanyReport = await _api.GetActiveJobPostCountPerCompanyByDatesAsynch(null, null);
             return View("Dashboard");
         }
 
