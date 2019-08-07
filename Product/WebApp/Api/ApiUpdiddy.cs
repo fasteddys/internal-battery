@@ -1633,9 +1633,9 @@ namespace UpDiddy.Api
             return toggledSubscriberNotificationEmailResponse;
         }
 
-        public async Task<IList<FailedSubscriberDto>> GetFailedSubscribersAsync()
+        public async Task<List<FailedSubscriberDto>> GetFailedSubscribersSummaryAsync()
         {
-            return await GetAsync<IList<FailedSubscriberDto>>("subscriber/failed-subscribers");
+            return await GetAsync<List<FailedSubscriberDto>>("subscriber/failed-subscribers");
         }
 
         #endregion

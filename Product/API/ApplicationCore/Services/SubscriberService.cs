@@ -364,7 +364,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             return map;
         }
 
-        public async Task<List<Subscriber>> GetFailedSubscribers()
+        public async Task<List<Subscriber>> GetFailedSubscribersSummaryAsync()
         {
             var query = await _repository.Subscriber.GetAllAsync();
             return await query.Where(x => x.CloudTalentIndexStatus == 3 && x.IsDeleted == 0).ToListAsync();

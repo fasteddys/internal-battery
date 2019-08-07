@@ -124,7 +124,7 @@ namespace UpDiddy.Api
         Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey);
         Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords);
         Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDatesAsynch(DateTime? startPostDate, DateTime? endPostDate);
-        Task<IList<FailedSubscriberDto>> GetFailedSubscribersAsync();
+        Task<List<FailedSubscriberDto>> GetFailedSubscribersSummaryAsync();
 
 
         #endregion
