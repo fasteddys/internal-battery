@@ -13,7 +13,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class CourseDataMiningFactory
     {
-        public static ICourseDataMining GetCourseDataMiningProcess(CourseSite courseSite, IConfiguration config, ILogger logger, ISovrenAPI sovrenAPI)
+        public static ICourseProcess GetCourseDataMiningProcess(CourseSite courseSite, IConfiguration config, ILogger logger, ISovrenAPI sovrenAPI)
         {
             switch (courseSite.Name)
             {

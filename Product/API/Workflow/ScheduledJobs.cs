@@ -34,6 +34,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Data.SqlClient;
 using JobPosting = UpDiddyApi.Models.JobPosting;
 using UpDiddyApi.Helpers;
+using UpDiddyApi.ApplicationCore.Services.CourseDataMining.Common;
 
 namespace UpDiddyApi.Workflow
 {
@@ -607,6 +608,10 @@ namespace UpDiddyApi.Workflow
 
         #region External Courses
 
+        // scrape site into course pages
+
+            // publish courses into data model
+
         /// <summary>
         /// This is the entry point for all external course data mining.
         /// </summary>
@@ -645,7 +650,7 @@ namespace UpDiddyApi.Workflow
                     */
 
                     // load the course data mining process for the course site
-                    ICourseDataMining courseDataMining = CourseDataMiningFactory.GetCourseDataMiningProcess(courseSite, _configuration, _syslog, _sovrenApi);
+                    ICourseProcess courseDataMining = CourseDataMiningFactory.GetCourseDataMiningProcess(courseSite, _configuration, _syslog, _sovrenApi);
 
                     // load all existing course pages - it is important to retrieve all of them regardless of their CoursePageStatus to avoid FK conflicts on insert and update operations
                     List<CoursePage> existingCoursePages = _repositoryWrapper.CoursePage.GetAllCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid).Result.ToList();

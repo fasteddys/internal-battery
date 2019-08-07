@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 
-namespace UpDiddyApi.ApplicationCore.Interfaces
+namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining.Common
 {
-    public interface ICourseDataMining
+    public interface ICourseProcess
     {
         List<CoursePage> DiscoverCoursePages(List<CoursePage> existingCoursePages);
         CourseDto ProcessCoursePage(CoursePage coursePage);
