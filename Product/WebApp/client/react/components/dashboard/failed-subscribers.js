@@ -44,8 +44,7 @@ class FailedSubscribers extends React.Component {
                     Cell: ({ row }) => (
                         <Tooltip title={row.cloudTalentIndexInfo}>
                         <p>{row.cloudTalentIndexInfo}</p>
-                         </Tooltip>
-       
+                         </Tooltip>       
                     )
                 },
 
@@ -61,10 +60,16 @@ class FailedSubscribers extends React.Component {
                     data={this.state.data}
                     columns={this.state.columns}
                     loading={this.state.loading}
-                    showPagination={false}
+                    showPagination={true}
                     className="-striped -highlight"
                     minRows={4}
                     noDataText="No Records"
+                    showPagination={true}
+                    showPaginationTop= {false}
+                    showPaginationBottom= {true}
+                    showPageSizeOptions= {true}
+                    pageSizeOptions= {[5, 10, 20, 25, 50, 100]}
+                    defaultPageSize= {20}
                 />
             </div>
         );
