@@ -2,13 +2,25 @@ import React from 'react';
 import ReactTable from 'react-table';
 import withFixedColumns from 'react-table-hoc-fixed-columns';
 import Tooltip from '@material-ui/core/Tooltip';
+import { withStyles } from '@material-ui/core/styles';
+import moment from 'moment';
 
+
+const HtmlTooltip = withStyles(theme => ({
+    tooltip: {
+      backgroundColor: '#03264A',
+      color: 'white',
+      maxWidth: 220,
+      fontSize: theme.typography.pxToRem(16),
+      border: '1px solid #dadde9',
+    },
+  }))(Tooltip);
 const ReactTableFixedColumns = withFixedColumns(ReactTable);
-
 class FailedSubscribers extends React.Component {
     columns = [];
     constructor(props) {
         super(props);
+        this.toLocalDate = this.toLocalDate.bind(this);
         this.state= {
             data: props.data,
             loading: false,
@@ -30,8 +42,10 @@ class FailedSubscribers extends React.Component {
                     accessor:"email"
                 },
                 {
-                    Header: "Modify Date",
-                    accessor: "modified",
+                    Header: "Create Date",
+                    accessor: "createDate",
+                    Cell: date => <React.Fragment>{this.toLocalDate(date.value)}</React.Fragment>
+
                 },
                 {
                     Header: "CloudTalentIndexInfo",
@@ -40,17 +54,21 @@ class FailedSubscribers extends React.Component {
                 },
                 {
                     Header: "CloudTalentIndexInfo",
-            
+                    accessor: "cloudTalentIndexInfo",
                     Cell: ({ row }) => (
-                        <Tooltip title={row.cloudTalentIndexInfo}>
+                        <HtmlTooltip  title={row.cloudTalentIndexInfo}>
                         <p>{row.cloudTalentIndexInfo}</p>
-                         </Tooltip>       
+                         </HtmlTooltip>       
                     )
                 },
 
             ]
         };
 
+    }
+
+    toLocalDate(dateTime) {
+        return moment(dateTime).local().format("MM-DD-YYYY hh:mm a");
     }
 
     render() {
