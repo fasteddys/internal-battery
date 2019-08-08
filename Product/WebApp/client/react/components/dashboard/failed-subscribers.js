@@ -45,17 +45,9 @@ class FailedSubscribers extends React.Component {
         {
           Header: "CloudTalentIndexInfo",
           accessor: "cloudTalentIndexInfo",
-          show: false
+          style: { 'white-space': 'unset' },
+          minWidth:200,
         },
-        {
-          Header: "CloudTalentIndexInfo",
-          accessor: "cloudTalentIndexInfo",
-          Cell: ({ row }) => (
-            <HtmlTooltip title={row.cloudTalentIndexInfo}>
-              <p>{row.cloudTalentIndexInfo}</p>
-            </HtmlTooltip>
-          )
-        }
       ]
     };
     this.handleClick = this.handleClick.bind(this);
@@ -114,6 +106,7 @@ class FailedSubscribers extends React.Component {
               defaultPageSize={20}
               style={{
                 height: "400px",
+                'white-space': 'unset'
               }}
             />}
           </div>
