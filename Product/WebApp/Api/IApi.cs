@@ -171,7 +171,7 @@ namespace UpDiddy.Api
         Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid);
         Task RecordSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);
 
-        Task<IList<string>> GetKeywordSearchList();
+        Task<IList<string>> GetKeywordSearchList(string keyword);
         Task<IList<string>> GetLocationSearchList();
     }
 }

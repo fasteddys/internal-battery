@@ -290,10 +290,29 @@
                 }
             }
 
-            //Keyword search List
-            var keywordList=JSON.parse('@Html.Raw(JsonConvert.SerializeObject(Model.KeywordSearchList))');
-            $("#keywords").autocomplete({
-                source :keywordList
+            $("#keywords").keyup(function(){
+                var value=$(this).val();
+
+                $.ajax({
+                    url:"/jobs/SearchKeyword",
+                    type:"GET",
+                    dataType:'json',
+                    data:{
+                        keyword:value
+                    },
+                    error: function error(res) {
+                        console.log(res);
+                    },
+                    success:function(data){ 
+                        if(data.length>0)
+                        {
+                             //var keywordList=JSON.parse(data);
+                            $("#keywords").autocomplete({
+                                source :data
+                            });
+                        }
+                    }
+                })
             });
 
             //Location search List
