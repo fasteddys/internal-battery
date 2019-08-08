@@ -246,8 +246,8 @@ namespace UpDiddy
             }
             else
             {
-                //app.UseExceptionHandler("/Home/Error");
-                //app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
+                app.UseExceptionHandler("/Home/Error");
+                app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }
 
             // Initialise ReactJS.NET. Must be before static files.
