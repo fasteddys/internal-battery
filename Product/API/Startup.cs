@@ -286,7 +286,7 @@ namespace UpDiddyApi
             services.AddScoped<ISalesForceService, SalesForceService>();
 
 
-
+            
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IRecruiterService, RecruiterService>();
             services.AddScoped<ITaggingService, TaggingService>();

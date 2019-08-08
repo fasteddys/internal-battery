@@ -10,6 +10,7 @@ using UpDiddy.ViewModels.ButterCMS;
 using ButterCMS.Models;
 using Microsoft.AspNetCore.Http;
 using ButterCMS;
+using UpDiddyLib.Helpers;
 
 
 namespace UpDiddy.Controllers
@@ -45,6 +46,26 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> ShowPostAsync(string slug)
         {
             var response = await _butterCMSClient.RetrievePostAsync(slug);
+
+            string Keywords = string.Empty;
+            bool isFirst = true;
+            foreach(Category c in response.Data.Categories)
+            {
+                if (isFirst)
+                {
+                    Keywords += c.Name;
+                    isFirst = false;
+                }
+                else
+                    Keywords += ", " + c.Name;
+            }
+
+            ViewData[Constants.Seo.META_TITLE] = response.Data.SeoTitle;
+            ViewData[Constants.Seo.META_DESCRIPTION] = response.Data.MetaDescription;
+            ViewData[Constants.Seo.META_KEYWORDS] = Keywords;
+            ViewData[Constants.Seo.OG_TITLE] = response.Data.SeoTitle + " - CareerCircle Blog";
+            ViewData[Constants.Seo.OG_DESCRIPTION] = response.Data.MetaDescription;
+            ViewData[Constants.Seo.OG_IMAGE] = response.Data.FeaturedImage;
             return View("Post", response);
         }
 
