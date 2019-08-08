@@ -244,10 +244,10 @@ namespace UpDiddy
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
             }
-            else if(!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
+            else
             {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
+                //app.UseExceptionHandler("/Home/Error");
+                //app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }
 
             // Initialise ReactJS.NET. Must be before static files.
