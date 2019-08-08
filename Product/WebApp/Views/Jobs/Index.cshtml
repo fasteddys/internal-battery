@@ -306,7 +306,6 @@
                     success:function(data){ 
                         if(data.length>0)
                         {
-                             //var keywordList=JSON.parse(data);
                             $("#keywords").autocomplete({
                                 source :data
                             });
@@ -315,10 +314,28 @@
                 })
             });
 
-            //Location search List
-            var locationList=JSON.parse('@Html.Raw(JsonConvert.SerializeObject(Model.LocationSearchList))');
-            $("#location").autocomplete({
-                source :locationList
+             $("#location").keyup(function(){
+                var value=$(this).val();
+
+                $.ajax({
+                    url:"/jobs/LocationKeyword",
+                    type:"GET",
+                    dataType:'json',
+                    data:{
+                        location:value
+                    },
+                    error: function error(res) {
+                        console.log(res);
+                    },
+                    success:function(data){ 
+                        if(data.length>0)
+                        {
+                            $("#location").autocomplete({
+                                source :data
+                            });
+                        }
+                    }
+                })
             });
 
         });

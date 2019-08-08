@@ -18,7 +18,5 @@ namespace UpDiddy.ViewModels
         public Dictionary<Guid, Guid> FavoritesMap { get; set; } = new Dictionary<Guid,Guid>();
         public List<JobQueryFacetDto> Facets { get; set; }
         public JobQueryDto JobQueryForAlert { get; set; }
-        public IList<string> KeywordSearchList {get;set;}
-        public IList<string> LocationSearchList{get;set;}
     }
 }

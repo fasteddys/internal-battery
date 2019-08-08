@@ -1769,12 +1769,14 @@ namespace UpDiddy.Api
             return keywordListresult;
         }
 
-        public async Task<IList<string>> GetLocationSearchList()
+        public async Task<IList<string>> GetLocationSearchList(string location)
         {
             string cacheKey = "locationSearchList";
             IList<string> rval = await GetCachedValueAsync<IList<string>>(cacheKey);
 
-            return rval;
+            List<string> locationListresult=rval.Where(k=>k.Contains(location)).ToList();
+
+            return locationListresult;
         }
         #endregion
         

@@ -128,10 +128,6 @@ namespace UpDiddy.Controllers
                     job.CompanyLogoUrl = _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + company.LogoUrl;
             }
 
-            //get KeywordSearchList and LocationSearchList
-            //IList<string> keywordSearchList=await _Api.GetKeywordSearchList();
-            IList<string> locationSearchList=await _Api.GetLocationSearchList();
-
             // when applying a new a histogram the page should be reset to the first page
             Regex matchPagingQueryStringParameter = new Regex(@"page=.+?(?=\w)");
             queryParametersString = matchPagingQueryStringParameter.Replace(queryParametersString, string.Empty);
@@ -146,9 +142,7 @@ namespace UpDiddy.Controllers
                 Facets = jobSearchResultDto.Facets,
                 Keywords = Keywords,
                 Location = Location,
-                JobQueryForAlert = jobSearchResultDto.JobQueryForAlert,
-                KeywordSearchList=null,//keywordSearchList,
-                LocationSearchList=locationSearchList
+                JobQueryForAlert = jobSearchResultDto.JobQueryForAlert
             };
 
             return View("Index", jobSearchViewModel);
@@ -1549,6 +1543,14 @@ namespace UpDiddy.Controllers
         {
             var keywordSearchList = await _api.GetKeywordSearchList(keyword);
             return Ok(keywordSearchList);
+        }
+
+        [HttpGet]
+        [Route("[controller]/LocationKeyword")]
+        public async Task<IActionResult> LocationSearch(string location)
+        {
+            var locationSearchList = await _api.GetLocationSearchList(location);
+            return Ok(locationSearchList);
         }
         #endregion
     }

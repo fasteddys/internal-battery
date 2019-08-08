@@ -1598,6 +1598,7 @@ namespace UpDiddyApi.Workflow
             //JobTitles, Company, City and Postal Code
             IQueryable<JobPosting> queryableJobPostings=await _repositoryWrapper.JobPosting.GetAllJobPostings();
             var jobPostingsSearchInfoResults=await  queryableJobPostings.Include(co=>co.Company)
+                                                                        .Where(jpg=>jpg.IsDeleted==0)
                                                                         .Select(jp=>new 
                                                                         {
                                                                             JobTitle= jp.Title,
