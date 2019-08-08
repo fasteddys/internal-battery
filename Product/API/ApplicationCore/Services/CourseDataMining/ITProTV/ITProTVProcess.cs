@@ -17,7 +17,7 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining.ITProTV
 {
-    public class ITProTVProcess : BaseCourseProcess, ICourseDataMining
+    public class ITProTVProcess : BaseCourseProcess, ICourseProcess
     {
         public ISovrenAPI _sovrenApi;
 
