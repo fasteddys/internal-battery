@@ -1337,11 +1337,13 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        public async Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery)
+        public async Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery)
         {
             string endpoint = $"subscriber/search?searchFilter={searchFilter}";
             if (searchQuery != string.Empty)
                 endpoint += $"&searchQuery={searchQuery}";
+            if (searchLocationQuery != string.Empty)
+                endpoint += $"&searchLocationQuery={searchLocationQuery}";
 
             return await GetAsync<ProfileSearchResultDto>(endpoint);
         }
@@ -1758,12 +1760,13 @@ namespace UpDiddy.Api
         #endregion
 
         #region <<Keyword and Location Search List>>
-        public async Task<IList<string>> GetKeywordSearchList()
+        public async Task<IList<string>> GetKeywordSearchList(string keyword)
         {
             string cacheKey = "keywordSearchList";
             IList<string> rval = await GetCachedValueAsync<IList<string>>(cacheKey);
+            List<string> keywordListresult=rval.Where(k=>k.Contains(keyword)).ToList();
 
-            return rval;
+            return keywordListresult;
         }
 
         public async Task<IList<string>> GetLocationSearchList()
@@ -1772,6 +1775,14 @@ namespace UpDiddy.Api
             IList<string> rval = await GetCachedValueAsync<IList<string>>(cacheKey);
 
             return rval;
+        }
+        #endregion
+        
+        #region Sales Force
+        public async Task<BasicResponseDto> AddSalesForceSignUpList(SalesForceSignUpListDto dto)
+        {
+           BasicResponseDto rval = await PutAsync<BasicResponseDto>("salesforce/sign-up", dto);
+           return rval;
         }
         #endregion
     }

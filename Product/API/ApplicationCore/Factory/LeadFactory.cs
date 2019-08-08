@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto.Marketing;
@@ -26,11 +27,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
         private readonly ILogger _syslog;
         private readonly IConfiguration _configuration;
         private readonly IDistributedCache _distributedCache;
+        private IHangfireService _hangfireService;
         private List<LeadStatusDto> _allLeadStatuses = null;
         private LeadResponseDto _leadResponse = new LeadResponseDto() { IsBillable = true, HttpStatusCode = HttpStatusCode.Accepted, LeadStatuses = new List<LeadStatusDto>() };
         private PartnerContact _partnerContact = null;
 
-        public LeadFactory(UpDiddyDbContext db, IConfiguration configuration, ILogger syslog, IDistributedCache distributedCache) : base(db, configuration, syslog, distributedCache)
+        public LeadFactory(UpDiddyDbContext db, IConfiguration configuration, ILogger syslog, IDistributedCache distributedCache, IHangfireService hangfireService) : base(db, configuration, syslog, distributedCache)
         {
             _db = db;
             _distributedCache = distributedCache;
@@ -47,6 +49,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     Name = ls.Name
                 })
                 .ToList();
+            _hangfireService = hangfireService;
         }
 
         /// <summary>
@@ -338,7 +341,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
                 // TODO: identify any business rule failures that would prevent us from sending a welcome email (dupe, missing fields, etc?)
                 int verificationFailureLeadStatusId = _allLeadStatuses.Where(ls => ls.Name == "Verification Failure").FirstOrDefault().LeadStatusId;
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.ValidateEmailAddress(_partnerContact.PartnerContactGuid.Value, leadRequest.EmailAddress, verificationFailureLeadStatusId));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.ValidateEmailAddress(_partnerContact.PartnerContactGuid.Value, leadRequest.EmailAddress, verificationFailureLeadStatusId));
             }
             catch (Exception e)
             {

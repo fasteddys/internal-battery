@@ -92,9 +92,6 @@ namespace UpDiddy.Controllers
                     (string.IsNullOrEmpty(Province) ? string.Empty : Province);
             }
 
-
-            ViewBag.QueryUrl = Request.Path + queryParametersString;
-
             int.TryParse(Request.Query["page"], out int page);
 
             try
@@ -132,9 +129,14 @@ namespace UpDiddy.Controllers
             }
 
             //get KeywordSearchList and LocationSearchList
-            IList<string> keywordSearchList=await _Api.GetKeywordSearchList();
+            //IList<string> keywordSearchList=await _Api.GetKeywordSearchList();
             IList<string> locationSearchList=await _Api.GetLocationSearchList();
 
+            // when applying a new a histogram the page should be reset to the first page
+            Regex matchPagingQueryStringParameter = new Regex(@"page=.+?(?=\w)");
+            queryParametersString = matchPagingQueryStringParameter.Replace(queryParametersString, string.Empty);
+            ViewBag.QueryUrl = Request.Path + queryParametersString;
+            
             JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
             {
                 RequestId = jobSearchResultDto.RequestId,
@@ -145,7 +147,7 @@ namespace UpDiddy.Controllers
                 Keywords = Keywords,
                 Location = Location,
                 JobQueryForAlert = jobSearchResultDto.JobQueryForAlert,
-                KeywordSearchList=keywordSearchList,
+                KeywordSearchList=null,//keywordSearchList,
                 LocationSearchList=locationSearchList
             };
 
@@ -1539,5 +1541,15 @@ namespace UpDiddy.Controllers
             Guid jobPostingGuid = Guid.Parse(jobPostingId);
             return await JobAsync(jobPostingGuid);
         }
+
+        #region Keyword and location Search
+        [HttpGet]
+        [Route("[controller]/SearchKeyword")]
+        public async Task<IActionResult> KeywordSearch(string keyword)
+        {
+            var keywordSearchList = await _api.GetKeywordSearchList(keyword);
+            return Ok(keywordSearchList);
+        }
+        #endregion
     }
 }

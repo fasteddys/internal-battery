@@ -273,7 +273,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
             // map modify date
             DateTime modifyDate = DateTime.MinValue;
             if (summarizedProfile.summary.customAttributes != null && summarizedProfile.summary.customAttributes.ContainsKey("ModifyDate"))
-                DateTime.TryParse(summarizedProfile.summary.customAttributes["ModifyDate"].stringValues[0], out createDate);
+                DateTime.TryParse(summarizedProfile.summary.customAttributes["ModifyDate"].stringValues[0], out modifyDate);
             rVal.ModifyDate = modifyDate;
 
 

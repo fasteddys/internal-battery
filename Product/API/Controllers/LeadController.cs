@@ -38,12 +38,13 @@ namespace UpDiddyApi.Controllers
             ILogger<LeadController> sysLog,
             ICloudStorage cloudStorage,
             IDistributedCache distributedCache,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IHangfireService hangfireService)
         {
             this._syslog = sysLog;
             this._cloudStorage = cloudStorage;
             this._configuration = configuration;
-            _leadFactory = new LeadFactory(db, configuration, sysLog, distributedCache);
+            _leadFactory = new LeadFactory(db, configuration, sysLog, distributedCache, hangfireService);
         }
 
         /// <summary>

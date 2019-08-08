@@ -9,18 +9,21 @@ using UpDiddyApi.Models;
 using UpDiddyApi.Workflow;
 using UpDiddyLib.Dto;
 using Microsoft.Extensions.Logging;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.ApplicationCore
 {
     public class CourseFactory : FactoryBase
     {
         private readonly UpDiddyDbContext _db = null;
+        private readonly IHangfireService _hangfireService;
 
         #region constructor
-        public CourseFactory(UpDiddyDbContext db, IConfiguration configuration, ILogger syslog, IDistributedCache distributedCache) :
+        public CourseFactory(UpDiddyDbContext db, IConfiguration configuration, ILogger syslog, IDistributedCache distributedCache, IHangfireService hangfireService) :
             base(db, configuration, syslog, distributedCache)
         {
             _db = db;
+            _hangfireService = hangfireService;
         }
         #endregion
 
@@ -122,7 +125,7 @@ namespace UpDiddyApi.ApplicationCore
                             if (string.IsNullOrEmpty(inProgressFlag))
                             {
                                 step = 7;
-                                BackgroundJob.Schedule<ScheduledJobs>(j => j.UpdateWozStudentLastLogin(subscriberGuid.ToString()), TimeSpan.FromMinutes(HangFireDelay));
+                                _hangfireService.Schedule<ScheduledJobs>(j => j.UpdateWozStudentLastLogin(subscriberGuid.ToString()), TimeSpan.FromMinutes(HangFireDelay));
                                 // The hangfire delay should be sufficient for the the cache TTL
                                 _cache.SetString(cacheKey, "Inprogress", new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(HangFireDelay) });
                             }

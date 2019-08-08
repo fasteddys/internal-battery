@@ -294,7 +294,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             };
  
-            ProfileQuery cloudTalentProfileQuery = new ProfileQuery();
+            ProfileQuery cloudTalentProfileQuery = new ProfileQuery();            
             // add keywords 
             if (string.IsNullOrEmpty(profileQuery.Keywords) == false)
             {
@@ -418,7 +418,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 pageSize = profileQuery.PageSize,
                 offset = profileQuery.PageSize * (profileQuery.PageNum - 1),
                 orderBy = profileQuery.OrderBy,
-                parent = _configuration["CloudTalent:ProfileTenant"]
+                parent = _configuration["CloudTalent:ProfileTenant"],
+                disableSpellCheck = true
 
             };
 
@@ -944,7 +945,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 PageSize = jobQuery.PageSize,
                 Offset = jobQuery.PageSize * (jobQuery.PageNum - 1),
                 OrderBy = jobQuery.OrderBy
-
+               
 
             };
 
