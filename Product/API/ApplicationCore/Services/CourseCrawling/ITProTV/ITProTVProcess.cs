@@ -11,11 +11,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyApi.ApplicationCore.Services.CourseDataMining.Common;
+using UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 
-namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining.ITProTV
+namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
 {
     public class ITProTVProcess : BaseCourseProcess, ICourseProcess
     {

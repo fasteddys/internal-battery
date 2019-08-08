@@ -46,6 +46,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
 using Microsoft.AspNet.OData.Extensions;
+using UpDiddyApi.ApplicationCore.Services.CourseCrawling;
 
 namespace UpDiddyApi
 {
@@ -216,7 +217,7 @@ namespace UpDiddyApi
             RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
 
             // this will not be triggered on app startup; testing only!
-            BackgroundJob.Enqueue<ScheduledJobs>(x => x.CourseDataMining());
+            // BackgroundJob.Enqueue<ScheduledJobs>(x => x.CourseDataMining());
 
 
             // Add Polly 
@@ -278,6 +279,7 @@ namespace UpDiddyApi
             services.AddScoped<IRecruiterService, RecruiterService>();
             services.AddScoped<ITaggingService, TaggingService>();
             services.AddScoped<ISubscriberNotificationService, SubscriberNotificationService>();
+            services.AddScoped<ICourseCrawlingService, CourseCrawlingService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

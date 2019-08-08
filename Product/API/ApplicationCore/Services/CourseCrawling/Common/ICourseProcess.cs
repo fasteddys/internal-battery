@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 
-namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining.Common
+namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common
 {
     public interface ICourseProcess
     {

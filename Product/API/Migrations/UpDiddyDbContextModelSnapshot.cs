@@ -818,6 +818,10 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<int>("IsDeleted");
 
+                    b.Property<DateTime?>("LastCrawl");
+
+                    b.Property<DateTime?>("LastSync");
+
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");

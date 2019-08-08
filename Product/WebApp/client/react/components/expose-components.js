@@ -57,3 +57,7 @@ global.CompaniesGrid = CompaniesGrid;
 //Recruiters
 import RecruitersGrid from './recruiters/RecruitersGrid';
 global.RecruitersGrid = RecruitersGrid;
+
+//Courses
+import CoursesGrid from './courses/CoursesGrid';
+global.CoursesGrid = CoursesGrid;

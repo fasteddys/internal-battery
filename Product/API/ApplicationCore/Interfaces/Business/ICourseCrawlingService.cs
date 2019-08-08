@@ -6,8 +6,9 @@ using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
-    public interface ICourseDataMining
+    public interface ICourseCrawlingService
     {
+        Task<List<CourseSiteDto>> GetCourseSitesAsync();
         Task<List<CourseSiteScrapeResultsDto>> ScrapeCourseData(CourseSiteDto courseSite);
         Task<List<CourseSitePublishResultsDto>> PublishCourseData(CourseSiteDto courseSite);
     }

@@ -591,6 +591,15 @@ namespace UpDiddy.Controllers
         }
         #endregion
 
+        #region Courses
+        [Authorize]
+        [HttpGet("/[controller]/courses")]
+        public IActionResult GetCourses()
+        {
+            return View("Courses");
+        }
+        #endregion
+
         #region Recruiters
         [Authorize]
         [HttpGet("/[controller]/recruiters")]

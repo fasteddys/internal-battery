@@ -34,7 +34,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Data.SqlClient;
 using JobPosting = UpDiddyApi.Models.JobPosting;
 using UpDiddyApi.Helpers;
-using UpDiddyApi.ApplicationCore.Services.CourseDataMining.Common;
+using UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common;
 
 namespace UpDiddyApi.Workflow
 {

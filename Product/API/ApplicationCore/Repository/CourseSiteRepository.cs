@@ -12,12 +12,12 @@ namespace UpDiddyApi.ApplicationCore.Repository
     {
         public CourseSiteRepository(UpDiddyDbContext dbContext) : base(dbContext) { }
 
-        public async Task<IEnumerable<CourseSite>> GetAllCourseSitesAsync()
+        public async Task<IQueryable<CourseSite>> GetAllCourseSitesAsync()
         {
-            var courseSites = GetAllAsync();
-            return await courseSites.Result
-                .Where(cs => cs.IsDeleted == 0)
-                .ToListAsync();
+            var courseSites = await GetAllAsync();
+            return courseSites
+                .Include(cs => cs.CoursePages).ThenInclude(cp => cp.CoursePageStatus)
+                .Where(cs => cs.IsDeleted == 0).OrderBy(cs => cs.Name);
         }
     }
 }

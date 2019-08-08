@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyApi.ApplicationCore.Services.CourseDataMining.Common;
+using UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common;
 
-namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining.ITProTV
+namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
 {
     public class ITProTVCourse
     {

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining.ITProTV
+namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
 {
     public class ItProTVCategory
     {

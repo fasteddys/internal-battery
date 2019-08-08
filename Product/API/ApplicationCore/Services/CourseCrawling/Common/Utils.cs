@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using UpDiddyApi.ApplicationCore.Interfaces;
 
-namespace UpDiddyApi.ApplicationCore.Services.CourseDataMining.Common
+namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common
 {
     public static class Utils
     {

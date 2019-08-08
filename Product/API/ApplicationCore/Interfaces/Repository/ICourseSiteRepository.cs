@@ -8,6 +8,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ICourseSiteRepository : IUpDiddyRepositoryBase<CourseSite>
     {
-        Task<IEnumerable<CourseSite>> GetAllCourseSitesAsync();
+        Task<IQueryable<CourseSite>> GetAllCourseSitesAsync();
     }
 }

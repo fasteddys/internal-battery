@@ -14,6 +14,8 @@ namespace UpDiddyApi.Models
         public string Name { get; set; }
         [Required]
         public Uri Uri { get; set; }
+        public DateTime? LastCrawl { get; set; }
+        public DateTime? LastSync { get; set; }
         public List<CoursePage> CoursePages { get; set; } = new List<CoursePage>();
     }
 }

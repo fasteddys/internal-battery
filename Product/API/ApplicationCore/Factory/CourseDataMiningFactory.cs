@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyApi.ApplicationCore.Services.CourseDataMining.Common;
-using UpDiddyApi.ApplicationCore.Services.CourseDataMining.ITProTV;
+using UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common;
+using UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Factory
