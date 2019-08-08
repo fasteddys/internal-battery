@@ -45,8 +45,8 @@ class FailedSubscribers extends React.Component {
         {
           Header: "CloudTalentIndexInfo",
           accessor: "cloudTalentIndexInfo",
-          style: { 'white-space': 'unset' },
-          minWidth:200,
+          style: { whiteSpace: 'unset' },
+          minWidth: 200,
         },
       ]
     };
@@ -104,10 +104,6 @@ class FailedSubscribers extends React.Component {
               showPageSizeOptions={true}
               pageSizeOptions={[5, 10, 20, 25, 50, 100]}
               defaultPageSize={20}
-              style={{
-                height: "400px",
-                'white-space': 'unset'
-              }}
             />}
           </div>
         </div>
