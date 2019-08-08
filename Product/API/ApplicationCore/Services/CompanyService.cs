@@ -38,8 +38,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             if(company!=null)
             {
                 company.CompanyName = companyDto.CompanyName;
-                company.IsHiringAgency = companyDto.IsHiringAgency == true ? 1 : 0;
-                company.IsJobPoster = companyDto.IsJobPoster == true ? 1 : 0;
+                company.IsHiringAgency = companyDto.IsHiringAgency;
+                company.IsJobPoster = companyDto.IsJobPoster;
                 company.ModifyDate = DateTime.Now;
 
                 await _repositoryWrapper.Company.UpdateCompany(company);
