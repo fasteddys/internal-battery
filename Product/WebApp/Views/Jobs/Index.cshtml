@@ -138,7 +138,7 @@
                                                 {
                                                     counter++;
                                                     <div>
-                                                        <a rel="nofollow" href="@string.Format("{0}city={1}", @ViewBag.QueryUrl.ToString().Replace("location","province"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("{0}city={1}", @ViewBag.QueryUrl.ToString().Replace("location","province"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")"> @string.Join(", ",facet.Label.Split(",")[0], facet.Label.Split(",")[1].ToUpper()) &nbsp(@facet.Count)</a>
                                                     </div>
                                                     @if (counter >= 15)
                                                     {
@@ -282,7 +282,7 @@
                         Regex queryParameterToRemove = new Regex(queryParameter.Key + @"=.+?(?=\&)");
                         var undoUrl = queryParameterToRemove.Replace(url, string.Empty).Trim('&');
                         <text>
-                            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl' data-toggle='tooltip' data-placement='bottom' title='Remove'>X</a><span></div>";
+                            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl' data-toggle='tooltip' data-placement='bottom' title='Remove'><b>(X)</b></a><span></div>";
                             parentElementUndoElement.innerHTML = innerHtml;
                         </text>
                     }
