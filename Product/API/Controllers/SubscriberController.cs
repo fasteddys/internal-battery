@@ -1310,5 +1310,21 @@ namespace UpDiddyApi.Controllers
                 return StatusCode(500);
             }
         }
+
+        [HttpGet]
+        [Route("/api/[controller]/failed-subscribers")]
+        public async Task<IActionResult> GetFailedSubscribersSummaryAsync()
+        {
+            try
+            {
+                var subscriber = await _subscriberService.GetFailedSubscribersSummaryAsync();
+                return Ok(_mapper.Map<List<FailedSubscriberDto>>(subscriber));
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(LogLevel.Error, $"SubscriberController.GetFailedSubscribersSummaryAsync : Error occured when retrieving recruiter with message={ex.Message}", ex);
+                return StatusCode(500);
+            }
+        }
     }
 }
