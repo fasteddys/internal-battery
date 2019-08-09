@@ -316,6 +316,9 @@
                                         {
                                             response(data);
                                         }
+                                        else{
+                                            response([]);
+                                        }
                                     }
                                 });
 
@@ -347,6 +350,9 @@
                                             if(data && data.length>0)
                                             {
                                                response(data);
+                                            }
+                                             else{
+                                                response([]);
                                             }
                                         }
                                     });
