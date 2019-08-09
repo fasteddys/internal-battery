@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Identity.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.Identity.Client;
+
 using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Generic;
 
 namespace UpDiddy.Models
 {

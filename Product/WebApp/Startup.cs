@@ -33,6 +33,8 @@ using React.AspNet;
 using DeviceDetectorNET;
 using UpDiddy.Services;
 using UpDiddy.Services.ButterCMS;
+ 
+ 
 
 namespace UpDiddy
 {
@@ -76,15 +78,26 @@ namespace UpDiddy
 
 			services.AddReact();
 
-            
+            /* From MS EXAMPLE TODO JAB REMOVE 
+                                   services.AddAuthentication(sharedOptions =>
+                                   {
+                                       sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                                       sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                                   })
+                        .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
+                        .AddCookie();
 
+              */
+
+ 
+  
             if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
             {
                 services.AddAuthentication(sharedOptions =>
                 {
                     sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-                })
+                })                
                 .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C:Live", options))
                 .AddCookie(options =>
                 {

@@ -2,6 +2,7 @@ using Microsoft.Identity.Client;
 
 using System.Threading;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace UpDiddy.Models
 {
@@ -20,6 +21,7 @@ namespace UpDiddy.Models
             UserId = userId;
             CacheId = UserId + "_TokenCache";
             httpContext = httpcontext;
+            Load();
         }
 
         public ITokenCache EnablePersistence(ITokenCache cache)
