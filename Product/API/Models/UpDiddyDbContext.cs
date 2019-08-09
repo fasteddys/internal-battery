@@ -174,6 +174,9 @@ namespace UpDiddyApi.Models
         public DbSet<SubscriberGroup> SubscriberGroup { get; set; }
         public DbSet<GroupPartner> GroupPartner { get; set; }
 
+        public DbSet<SalesForceSignUpList> SalesForceSignUpList {get;set;}
+
+        
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }

@@ -200,9 +200,9 @@ namespace UpDiddyApi
                 // Run this job once to fix the RawData field in JobPage table for Allegis Group jobs
                 BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateAllegisGroupJobPageRawDataField());
 
-               // run the process in production Monday through Friday once every 2 hours between 11 and 23 UTC
+                // run the process in production Monday through Friday once every 4 hours between 11 and 23 UTC
                 if (_currentEnvironment.IsProduction())
-                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 11,13,15,17,19,21,23 * * Mon,Tue,Wed,Thu,Fri");
+                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 11,15,19,23 * * Mon,Tue,Wed,Thu,Fri");
 
                 // run the process in staging once a week on the weekend (Sunday 4 UTC)
                 if (_currentEnvironment.IsStaging())
@@ -213,8 +213,8 @@ namespace UpDiddyApi
                 int profileIndexerIntervalInMinutes = int.Parse(Configuration["CloudTalent:ProfileIndexerIntervalInMinutes"]);
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes));
 
-            // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
-            //BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
+                // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
+                //BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
                 // kick off the metered welcome email delivery process at five minutes past the hour every hour
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
@@ -226,9 +226,9 @@ namespace UpDiddyApi
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.SubscriberNotificationEmailReminder(), Cron.Daily(12));
 
                 //Schedule this background job to check if the SubscriberFiles has MimeType. If not update SubscriberFiles with specific MimeType.
-                BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateSubscriberFilesMimeType());
+                // BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateSubscriberFilesMimeType());
             }
-            
+
 
             // Add Polly 
             // Create Policies  
@@ -283,8 +283,10 @@ namespace UpDiddyApi
             services.AddScoped<ITrackingService, TrackingService>();
             services.AddScoped<IJobPostingService, JobPostingService>();
             services.AddScoped<IJobApplicationService, JobApplicationService>();
+            services.AddScoped<ISalesForceService, SalesForceService>();
 
 
+            
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IRecruiterService, RecruiterService>();
             services.AddScoped<ITaggingService, TaggingService>();
@@ -312,8 +314,8 @@ namespace UpDiddyApi
                     Convert.FromBase64String(Configuration.GetValue<string>("Tracking:PixelContentBase64")),
                     Configuration.GetValue<string>("Tracking:PixelContentType")
                     )
-                );        
-            
+                );
+
             // Uncomment the following line to enable extensive logging for Hangfire.
             // GlobalJobFilters.Filters.Add(new HangfireServerFilter(Configuration, Logger));
         }
@@ -338,14 +340,14 @@ namespace UpDiddyApi
                 });
                 app.UseHangfireServer();
             }
-            
+
 
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Version}/{action=Get}/{id?}");
-                
+
                 // Odata
                 routes.Filter().OrderBy().Count();
                 routes.EnableDependencyInjection();

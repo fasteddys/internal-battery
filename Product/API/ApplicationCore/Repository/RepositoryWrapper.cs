@@ -44,6 +44,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IContactRepository _contactRepository;
         private IOfferRepository _offerRepository;
         private ISubscriberFileRepository _subscriberFileRepository;
+        private ISalesForceSignUpListRepository _SalesForceSignUpListRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -473,6 +474,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _subscriberFileRepository = new SubscriberFileRepository(_dbContext);
                 }
                 return _subscriberFileRepository;
+            }
+        }
+
+        public ISalesForceSignUpListRepository SalesForceSignUpListRepository
+        {
+            get
+            {
+                if (_SalesForceSignUpListRepository == null)
+                {
+                    _SalesForceSignUpListRepository = new SalesForceSignUpListRepository(_dbContext);
+                }
+                return _SalesForceSignUpListRepository;
             }
         }
     }

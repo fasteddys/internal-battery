@@ -92,9 +92,6 @@ namespace UpDiddy.Controllers
                     (string.IsNullOrEmpty(Province) ? string.Empty : Province);
             }
 
-
-            ViewBag.QueryUrl = Request.Path + queryParametersString;
-
             int.TryParse(Request.Query["page"], out int page);
 
             try
@@ -131,6 +128,11 @@ namespace UpDiddy.Controllers
                     job.CompanyLogoUrl = _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + company.LogoUrl;
             }
 
+            // when applying a new a histogram the page should be reset to the first page
+            Regex matchPagingQueryStringParameter = new Regex(@"page=.+?(?=\w)");
+            queryParametersString = matchPagingQueryStringParameter.Replace(queryParametersString, string.Empty);
+            ViewBag.QueryUrl = Request.Path + queryParametersString;
+            
             JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
             {
                 RequestId = jobSearchResultDto.RequestId,

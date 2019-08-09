@@ -3,11 +3,11 @@
 <section class="section cards-section mt-3 pt-3">
     <div class="container">
         <div class="row">
-            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12" style="height:200px:overflow:auto;">
                 <!-- New Subscriber Report Card-->
-                <div class="card shadow mb-3">
+                <div class="card shadow mb-3" >
                     <div class="card-header">New Users - 3 Week Review</div>
-                    <div class="card-body p-0">
+                    <div class="card-body p-0" style="max-height: 250px;overflow-y: auto;">
                         <table class="table table-striped mb-0">
                             <thead>
                                 <tr>
@@ -38,10 +38,9 @@
                 </div>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                <!-- New Subscriber Report Card-->
                 <div class="card shadow mb-3">
                     <div class="card-header">Total User Breakdown By Partner</div>
-                    <div class="card-body p-0">
+                    <div class="card-body p-0" style="max-height: 250px;overflow-y: auto;">
                         <table class="table table-striped mb-0">
                             <thead>
                                 <tr>
@@ -64,85 +63,23 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-7 col-md-6 col-sm-12 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <div class="card shadow my-3">
                     <div class="card-header">
                         Recruiter Actions By Partner Report
                     </div>
                     <div class="card-body p-0">
-                        @Html.React("SATable", new { data = ViewBag.partnerSubActionReport })
+                        @Html.React("SATable", new { show = false })
                     </div>
                 </div>
             </div>
-            <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
                 <div class="card shadow my-3">
                     <div class="card-header">
                         Job Applications by Company
                     </div>
                     <div class="card-body p-0">
-                        @Html.React("JobAppReportTable", new { data = ViewBag.jobApplicationCountReport })
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-7 col-md-6 col-sm-12 col-xs-12">
-                <div class="card shadow my-3">
-                    <div class="card-header">
-                        Notifications Read
-                    </div>
-                    <div class="card-body p-0">
-                        @Html.React("NotificationCountsTable", new { data = ViewBag.notificationCountsReport })
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                <div class="card shadow mb-3">
-                    <div class="card-header">Recruiter Action Summary</div>
-                    <div class="card-body p-0">
-                        <table class="table table-striped mb-0">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Email</th>
-                                    <th scope="col">Action</th>
-                                    <th class="text-right" scope="col">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var r in ViewBag.recruiterActionSummary)
-                                {
-                                    <tr>
-                                        <td>@r.RecruiterEmail</td>
-                                        <td>@r.Action</td>
-                                        <td class="text-right">@r.ActionCount</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                <div class="card shadow mb-3">
-                    <div class="card-header">Subscriber Action Summary</div>
-                    <div class="card-body p-0">
-                        <table class="table table-striped mb-0">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Email</th>
-                                    <th scope="col">Action</th>
-                                    <th class="text-right" scope="col">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var r in ViewBag.subscriberActionSummary)
-                                {
-                                    <tr>
-                                        <td>@r.SubscriberEmail</td>
-                                        <td>@r.Action</td>
-                                        <td class="text-right">@r.ActionCount</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+                        @Html.React("JobAppReportTable", new { show = false})
                     </div>
                 </div>
             </div>
@@ -172,32 +109,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                <div class="card shadow mb-3">
-                    <div class="card-header">Active Job Posting Counts By Company</div>
-                    <div class="card-body p-0">
-                        <table class="table table-striped mb-0">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Company</th>
-                                    <th scope="col">Posting Date</th>
-                                    <th class="text-right" scope="col">Posting Count</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var r in ViewBag.activeJobPostsByCompanyReport)
-                                {
-                                    <tr>
-                                        <td>@r.CompanyName</td>
-                                        <td>@r.PostingDate.ToShortDateString()</td>
-                                        <td class="text-right">@r.PostingCount</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+           
         </div>
     </div>
 </section>
