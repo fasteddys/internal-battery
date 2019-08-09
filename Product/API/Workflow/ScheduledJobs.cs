@@ -1637,7 +1637,7 @@ namespace UpDiddyApi.Workflow
             foreach(Skill skill in skillsList)
             {
                 if(skill.SkillName!=null)
-                     locationSearch.Add(skill.SkillName);
+                     keywordSearch.Add(skill.SkillName);
             }
 
             string serializedKeyworkSearchList=JsonConvert.SerializeObject(keywordSearch.ConvertAll(k=>k.ToLower()).Distinct());

@@ -200,6 +200,9 @@ namespace UpDiddyApi
                 // Run this job once to fix the RawData field in JobPage table for Allegis Group jobs
                 BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateAllegisGroupJobPageRawDataField());
 
+                 // Run this job once to initially get the keyword and location search
+                 BackgroundJob.Enqueue<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo());
+
                 // run the process in production Monday through Friday once every 4 hours between 11 and 23 UTC
                 if (_currentEnvironment.IsProduction())
                 {
@@ -223,11 +226,6 @@ namespace UpDiddyApi
 
                 // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
                 //BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
-                if (_currentEnvironment.IsDevelopment())
-                {
-                    //Keyword and Location Search Intellisense Job - For local Development purpose only
-                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),Cron.DayInterval(int.Parse(Configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"])));
-                }
 
                 // kick off the metered welcome email delivery process at five minutes past the hour every hour
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
