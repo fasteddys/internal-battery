@@ -31,7 +31,7 @@ namespace UpDiddyApi.Authorization
             {
                 HangfireUnlockedCookie = Crypto.Decrypt(_configuration["Crypto:Key"], context.GetHttpContext().Request.Cookies["HangfireUnlocked"]);
             }
-            catch(Exception e)
+            catch(Exception)
             {
                 return false;
             }

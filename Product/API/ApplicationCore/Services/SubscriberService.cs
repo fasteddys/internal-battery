@@ -65,7 +65,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
-            var querableSubscribers = await _repository.SubscriberRepository.GetAllSubscribersAsync();
+            var querableSubscribers = _repository.SubscriberRepository.GetAllSubscribersAsync();
 
             List<Subscriber> rVal = await querableSubscribers.Where(s => s.IsDeleted == 0 && s.CloudTalentIndexVersion < indexVersion)
                                                             .Take(numSubscribers)
@@ -346,9 +346,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<Dictionary<Guid, Guid>> GetSubscriberJobPostingFavoritesByJobGuid(Guid subscriberGuid, List<Guid> jobGuids)
         {
-            var subscribers = await _repository.Subscriber.GetAllSubscribersAsync();
-            var jobPostingFavorites = await _repository.JobPostingFavorite.GetAllJobPostingFavoritesAsync();
-            var jobPostings = await _repository.JobPosting.GetAllJobPostings();
+            var subscribers = _repository.Subscriber.GetAllSubscribersAsync();
+            var jobPostingFavorites = _repository.JobPostingFavorite.GetAllJobPostingFavoritesAsync();
+            var jobPostings = _repository.JobPosting.GetAllJobPostings();
             jobPostings = jobPostings.Where(jp => jobGuids.Contains(jp.JobPostingGuid));
 
             var query = from jp in jobPostings
@@ -360,13 +360,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                             jobPostingGuid = jp.JobPostingGuid,
                             jobPostingFavoriteGuid = favorites.JobPostingFavoriteGuid
                         };
-            var map = query.ToDictionary(x => x.jobPostingGuid, x => x.jobPostingFavoriteGuid);
+            var map = await query.ToDictionaryAsync(x => x.jobPostingGuid, x => x.jobPostingFavoriteGuid);
             return map;
         }
 
         public async Task<List<Subscriber>> GetFailedSubscribersSummaryAsync()
         {
-            var query = await _repository.Subscriber.GetAllAsync();
+            var query = _repository.Subscriber.GetAll();
             return await query.Where(x => x.CloudTalentIndexStatus == 3 && x.IsDeleted == 0).ToListAsync();
         }
         
@@ -427,9 +427,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             List<SubscriberNotesDto> subscriberPublicNotes;
 
             //get notes for subscriber that are private and visible to current logged in recruiter
-            var recruiterPrivateNotesQueryable = from subscriberNote in await _repository.SubscriberNotesRepository.GetAllAsync()
-                                                 join recruiter in await _repository.RecruiterRepository.GetAllAsync() on subscriberNote.RecruiterId equals recruiter.RecruiterId
-                                                 join subscriber in await _repository.SubscriberRepository.GetAllAsync() on recruiter.SubscriberId equals subscriber.SubscriberId
+            var recruiterPrivateNotesQueryable = from subscriberNote in  _repository.SubscriberNotesRepository.GetAll()
+                                                 join recruiter in  _repository.RecruiterRepository.GetAll() on subscriberNote.RecruiterId equals recruiter.RecruiterId
+                                                 join subscriber in  _repository.SubscriberRepository.GetAll() on recruiter.SubscriberId equals subscriber.SubscriberId
                                                  where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && subscriberNote.RecruiterId.Equals(rec.RecruiterId) && subscriberNote.ViewableByOthersInRecruiterCompany.Equals(false)
                                                  select new SubscriberNotesDto()
                                                  {
@@ -446,10 +446,10 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             //get notes for subscriber that are public and visible to recruiters of current logged in recruiter company
-            var subscriberPublicNotesQueryable = from subscriberNote in await _repository.SubscriberNotesRepository.GetAllAsync()
-                                                 join recruiter in await _repository.RecruiterRepository.GetAllAsync() on subscriberNote.RecruiterId equals recruiter.RecruiterId
-                                                 join company in await _repository.Company.GetAllCompanies() on recruiter.CompanyId equals company.CompanyId
-                                                 join subscriber in await _repository.SubscriberRepository.GetAllAsync() on recruiter.SubscriberId equals subscriber.SubscriberId
+            var subscriberPublicNotesQueryable = from subscriberNote in  _repository.SubscriberNotesRepository.GetAll()
+                                                 join recruiter in  _repository.RecruiterRepository.GetAll() on subscriberNote.RecruiterId equals recruiter.RecruiterId
+                                                 join company in  _repository.Company.GetAllCompanies() on recruiter.CompanyId equals company.CompanyId
+                                                 join subscriber in  _repository.SubscriberRepository.GetAll() on recruiter.SubscriberId equals subscriber.SubscriberId
                                                  where subscriberNote.SubscriberId.Equals(subscriberData.SubscriberId) && subscriberNote.IsDeleted.Equals(0) && recruiter.CompanyId.Equals(rec.CompanyId) && subscriberNote.ViewableByOthersInRecruiterCompany.Equals(true)
                                                  select new SubscriberNotesDto()
                                                  {
@@ -529,7 +529,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 return requiresMerge;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
                 return false;
@@ -834,7 +834,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     // get a list of existing work histories for the parsed company
                     var ExistingPositions = workHistory.Where(s => s.Company.CompanyName.ToLower() == parsedCompanyName).ToList();
                     //  look for an existing position at the parsed company that overlaps in time with the parsed position 
-                    var ExistingPosition = await FindOverlappingWorkHistory(ExistingPositions, parsedWorkHistoryItem); 
+                    var ExistingPosition = FindOverlappingWorkHistory(ExistingPositions, parsedWorkHistoryItem); 
                     // get or create the company specified by the work history 
                     Company company = await CompanyFactory.GetOrAdd(_db, parsedCompanyName);
                     // if its not an existing company just add it
@@ -865,7 +865,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
 
-        private async Task<SubscriberWorkHistory> FindOverlappingWorkHistory(List<SubscriberWorkHistory> existingWorkHistoriesForCompany, SubscriberWorkHistoryDto parsedWorkHistoryForCompany)
+        private SubscriberWorkHistory FindOverlappingWorkHistory(List<SubscriberWorkHistory> existingWorkHistoriesForCompany, SubscriberWorkHistoryDto parsedWorkHistoryForCompany)
         {
             DateTime startDate = parsedWorkHistoryForCompany.StartDate == null ? DateTime.MinValue : parsedWorkHistoryForCompany.StartDate.Value;
             DateTime endDate = parsedWorkHistoryForCompany.EndDate == null ? DateTime.MinValue : parsedWorkHistoryForCompany.EndDate.Value;
@@ -1078,7 +1078,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<Subscriber> GetSubscriber(ODataQueryOptions<Subscriber> options)
         {
-            var queryableSubscriber = options.ApplyTo(await _repository.SubscriberRepository.GetAllSubscribersAsync());
+            var queryableSubscriber = options.ApplyTo(_repository.SubscriberRepository.GetAllSubscribersAsync());
             var subscriberList=await queryableSubscriber.Cast<Subscriber>().Where(s=>s.IsDeleted==0).ToListAsync();
 
             return subscriberList.Count>0 ? subscriberList[0] :null;

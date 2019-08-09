@@ -1,33 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-
-using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Dto.Marketing;
-using System.Net;
-using Microsoft.SqlServer.Server;
-// Use alias to avoid collisions on classname such as "Company"
-using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
-using AutoMapper.Configuration;
 using AutoMapper;
-using Microsoft.Extensions.Caching.Distributed;
-using UpDiddyApi.ApplicationCore;
-using Hangfire;
-using UpDiddyApi.Workflow;
 using UpDiddyApi.Helpers.Job;
 using System.Security.Claims;
 using UpDiddyLib.Shared.GoogleJobs;
@@ -36,7 +20,6 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyLib.Helpers;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
-using System.Text;
 using Microsoft.AspNetCore.Http;
 using UpDiddyApi.ApplicationCore.Interfaces;
 
@@ -382,9 +365,9 @@ namespace UpDiddyApi.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("api/[controller]/{jobPostingGuid}")]
-        public IActionResult GetJob(Guid jobPostingGuid)
+        public async Task<IActionResult> GetJob(Guid jobPostingGuid)
         {
-            JobPosting jobPosting = JobPostingFactory.GetJobPostingByGuidWithRelatedObjects(_db, jobPostingGuid);
+            JobPosting jobPosting = await JobPostingFactory.GetJobPostingByGuidWithRelatedObjectsAsync(_db, jobPostingGuid);
             if (jobPosting == null)
                 return NotFound(new BasicResponseDto() { StatusCode = 404, Description = "JobPosting not found" });
             JobPostingDto rVal = _mapper.Map<JobPostingDto>(jobPosting);
@@ -426,8 +409,9 @@ namespace UpDiddyApi.Controllers
         [Route("api/[controller]/active-job-count")]
         public async Task<IActionResult> GetActiveJobCount()
         {
-            var allJobPostings = await _repositoryWrapper.JobPosting.GetAllAsync();
-            return Ok(new BasicResponseDto() { StatusCode = 200, Description = allJobPostings.Where(jp => jp.IsDeleted == 0).Count().ToString() });
+            var allJobPostings = _repositoryWrapper.JobPosting.GetAll().Where(jp => jp.IsDeleted == 0);
+            var count = await allJobPostings.CountAsync();
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = count.ToString() });
         }
 
         [HttpGet]
@@ -460,7 +444,7 @@ namespace UpDiddyApi.Controllers
                 ClientEvent ce = await _cloudTalent.CreateClientEventAsync(rVal.RequestId, ClientEventType.Impression, rVal.Jobs.Select(job => job.CloudTalentUri).ToList<string>());
                 rVal.ClientEventId = ce.EventId;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 _syslog.Log(LogLevel.Error, "JobController.JobSearchByLocation:: Unable to record client event");
             }
@@ -527,7 +511,8 @@ namespace UpDiddyApi.Controllers
         [HttpGet("api/[controller]/categories")]
         public async Task<IList<JobCategory>> GetJobCategories()
         {
-            return _repositoryWrapper.JobCategoryRepository.GetAllAsync().Result.ToList();
+            var result =  _repositoryWrapper.JobCategoryRepository.GetAll();
+            return await result.ToListAsync();
         }
 
         [HttpGet("api/[controller]/post-count")]

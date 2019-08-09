@@ -153,7 +153,6 @@ namespace UpDiddyApi.Helpers.Job
                         Name = hr.Key
 
                     };
-                    int index = 0;
                     if (hr.StringValueHistogramResult != null)
                     {
                         foreach (KeyValuePair<string, int?> facetInfo in hr.StringValueHistogramResult)

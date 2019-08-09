@@ -39,7 +39,7 @@ namespace UpDiddy.Controllers
 
         [LoadSubscriber(isHardRefresh: true, isSubscriberRequired: true)]
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             string DeviceType = _deviceResolver.Device.Type.ToString();
             this.subscriber.Notifications.Reverse();

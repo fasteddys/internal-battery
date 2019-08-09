@@ -19,8 +19,6 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Helpers;
-using System.Net;
-using Microsoft.SqlServer.Server;
 
 namespace UpDiddyApi.Controllers
 {
@@ -50,7 +48,7 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/campaign")]
-        public IActionResult CreateCampaign([FromBody] CampaignCreateDto campaignCreateDto)
+        public async Task<IActionResult> CreateCampaign([FromBody] CampaignCreateDto campaignCreateDto)
         {
 
             CampaignCreateResponseDto rVal = new CampaignCreateResponseDto();
@@ -65,7 +63,7 @@ namespace UpDiddyApi.Controllers
 
                     _db.Campaign.Add(campaign);
                     // save changes to get the campaign id
-                    _db.SaveChanges();
+                    await _db.SaveChangesAsync();
 
                     // Create campaign phase 
                     CampaignPhase campaignPhase = CampaignPhaseFactory.CreateCampaignPhase(campaignCreateDto.PhaseName, campaignCreateDto.PhaseDescription, campaign.CampaignId);
@@ -83,7 +81,7 @@ namespace UpDiddyApi.Controllers
                     rVal.LandingPageUrl = $"https://careercircle.com/Home/Campaign/{campaign.CampaignGuid}/[%contact_guid%]?campaignphase={WebUtility.UrlEncode(campaignCreateDto.PhaseName)}";
                     rVal.TrackingImageUrl = $"'https://api.careercircle.io/api/tracking/{campaign.CampaignGuid}/[%contact_guid%]/8653122B-74F1-4020-8812-04C355CE56E7?campaignphase={WebUtility.UrlEncode(campaignCreateDto.PhaseName)}";
 
-                    _db.SaveChanges();
+                    await _db.SaveChangesAsync();
                     transaction.Commit();
                     return Ok(rVal);
                 }
@@ -102,12 +100,12 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/campaign-detail/{CampaignGuid}")]
-        public IActionResult CampaignDetails(Guid CampaignGuid)
+        public async Task<IActionResult> CampaignDetails(Guid CampaignGuid)
         {
 
-            var campaignInfo = _db.CampaignDetail.FromSql("System_CampaignDetails '" + CampaignGuid + "'")
+            var campaignInfo = await _db.CampaignDetail.FromSql("System_CampaignDetails '" + CampaignGuid + "'")
                 .ProjectTo<CampaignDetailDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
 
             return Ok(campaignInfo);
         }
@@ -116,11 +114,11 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/campaign-statistic")]
-        public IActionResult CampaignStatistics()
+        public async Task<IActionResult> CampaignStatistics()
         {
-            var campaignInfo = _db.CampaignStatistic.FromSql("System_CampaignStatistics")
+            var campaignInfo = await _db.CampaignStatistic.FromSql("System_CampaignStatistics")
                 .ProjectTo<CampaignStatisticDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
             return Ok(campaignInfo);
         }
 
@@ -133,14 +131,14 @@ namespace UpDiddyApi.Controllers
         [HttpPost]
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [Route("api/[controller]/campaign/{CampaignGuid}/publish-contact/{ContactListname}")]
-        public IActionResult CreateProviderContactList(Guid campaignGuid, string ContactListName)
+        public async Task<IActionResult> CreateProviderContactList(Guid campaignGuid, string ContactListName)
         {
             var campaign = CampaignFactory.GetCampaignByGuid(_db, campaignGuid);
             if (campaign == null)
                 return BadRequest();
             ContactListName = WebUtility.UrlDecode(ContactListName);
 
-            IList<EmailContactDto> TheList = _db.CampaignPartnerContact
+            IList<EmailContactDto> TheList = await _db.CampaignPartnerContact
                 .Include(cpc => cpc.PartnerContact).ThenInclude(pc => pc.Contact).ThenInclude(c => c.Subscriber)
                 .Where(c => c.IsDeleted == 0 && c.CampaignId == campaign.CampaignId)
                 .Select(cpc => new EmailContactDto
@@ -151,7 +149,7 @@ namespace UpDiddyApi.Controllers
                     email = cpc.PartnerContact.Contact.Email,
                     subscriber_guid = cpc.PartnerContact.Contact.Subscriber != null ? cpc.PartnerContact.Contact.Subscriber.SubscriberGuid.ToString() : string.Empty
                 })
-                .ToList();
+                .ToListAsync();
 
             string ResponseJson = string.Empty;
             SendGridInterface sendGridInterface = new SendGridInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory, Constants.Appsettings.SendGrid_Marketing_ApiKey);

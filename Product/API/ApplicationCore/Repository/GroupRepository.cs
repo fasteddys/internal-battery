@@ -40,7 +40,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 Path = Page.ToLower()
             };
 
-            Create(Group);
+            await Create(Group);
             await SaveAsync();
 
             return Group;

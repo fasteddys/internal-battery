@@ -18,8 +18,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<IEnumerable<JobSite>> GetAllJobSitesAsync()
         {
-            var jobSites = GetAllAsync();
-            return await jobSites.Result
+            var jobSites = GetAll();
+            return await jobSites
                 .Where(js => js.IsDeleted == 0)
                 .ToListAsync();
         }

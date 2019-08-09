@@ -353,12 +353,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         #region Helper Functions
 
-        private static bool _ImportSovrenEducationHistory(UpDiddyDbContext db, Subscriber subscriber, string profileData, ILogger syslog)
+        private static async Task<bool> _ImportSovrenEducationHistory(UpDiddyDbContext db, Subscriber subscriber, string profileData, ILogger syslog)
         {
             try
             {
                 List<SubscriberEducationHistoryDto> eductionHistory = Utils.ParseEducationHistoryFromHrXml(profileData);
-                _AddSubscriberEducationHistory(db, subscriber, eductionHistory);
+                await _AddSubscriberEducationHistory(db, subscriber, eductionHistory);
                 return true;
             }
             catch (Exception e)
@@ -370,12 +370,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
 
-        private static bool _ImportSovrenWorkHistory(UpDiddyDbContext db, Subscriber subscriber, string profileData, ILogger syslog)
+        private static async Task<bool> _ImportSovrenWorkHistory(UpDiddyDbContext db, Subscriber subscriber, string profileData, ILogger syslog)
         {
             try
             {
                 List<SubscriberWorkHistoryDto> workHistory = Utils.ParseWorkHistoryFromHrXml(profileData);
-                _AddSubscriberWorkHistory(db, subscriber, workHistory);
+                await _AddSubscriberWorkHistory(db, subscriber, workHistory);
                 return true;
             }
             catch (Exception e)
@@ -457,7 +457,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             }
         }
 
-        private static void _AddSubscriberWorkHistory(UpDiddyDbContext db, Subscriber subscriber, List<SubscriberWorkHistoryDto> workHistoryList)
+        private static async Task _AddSubscriberWorkHistory(UpDiddyDbContext db, Subscriber subscriber, List<SubscriberWorkHistoryDto> workHistoryList)
         {
             foreach (SubscriberWorkHistoryDto wh in workHistoryList)
             {
@@ -465,7 +465,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 Company company = CompanyFactory.GetOrAdd(db, wh.Company).Result;
                 SubscriberWorkHistory workHistory = SubscriberWorkHistoryFactory.GetWorkHistoryForSubscriber(db, subscriber, company, wh.StartDate, wh.EndDate);
                 if (workHistory == null)
-                    SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(db, subscriber, wh, company);
+                    await SubscriberWorkHistoryFactory.AddWorkHistoryForSubscriber(db, subscriber, wh, company);
             }
         }
 
@@ -489,7 +489,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         }
 
 
-        private static void _AddSubscriberEducationHistory(UpDiddyDbContext db, Subscriber subscriber, List<SubscriberEducationHistoryDto> educationHistoryList)
+        private static async Task _AddSubscriberEducationHistory(UpDiddyDbContext db, Subscriber subscriber, List<SubscriberEducationHistoryDto> educationHistoryList)
         {
             foreach (SubscriberEducationHistoryDto eh in educationHistoryList)
             {
@@ -499,7 +499,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
                 SubscriberEducationHistory educationHistory = SubscriberEducationHistoryFactory.GetEducationHistoryForSubscriber(db, subscriber, educationalInstitution, educationalDegree, eh.StartDate, eh.EndDate, eh.DegreeDate);
                 if (educationHistory == null)
-                    SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree, educationalDegreeType);
+                    await SubscriberEducationHistoryFactory.AddEducationHistoryForSubscriber(db, subscriber, eh, educationalInstitution, educationalDegree, educationalDegreeType);
             }
          
         }

@@ -33,7 +33,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             {
                 company = CreateCompany(companyName);
                 db.Company.Add(company);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
             return company;
         }

@@ -7,31 +7,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using UpDiddyApi.Authorization;
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Helpers;
-using System.IO;
 using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyApi.ApplicationCore.Factory;
-using System.Data.SqlClient;
-using AutoMapper.QueryableExtensions;
-using System.Data;
-using System.Web;
-using UpDiddyLib.Dto.Marketing;
-using UpDiddyLib.Shared;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using Hangfire;
 using UpDiddyApi.Workflow;
-using UpDiddyApi.Workflow.Helpers;
 
 namespace UpDiddyApi.Controllers
 {
@@ -74,16 +57,17 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         public async Task<IList<Notification>> Get()
         {
-            return _repositoryWrapper.NotificationRepository.GetAllNonDeleted().Result.ToList();
+           return  await _repositoryWrapper.NotificationRepository.GetAllNonDeleted().ToListAsync();
+
         }
 
         [HttpGet("{NotificationGuid}")]
         public async Task<Notification> GetNotification(Guid NotificationGuid)
         {
-            return _repositoryWrapper.NotificationRepository.GetByConditionAsync(
+            var result = await _repositoryWrapper.NotificationRepository.GetByConditionAsync(
                 s => s.NotificationGuid == NotificationGuid &&
-                s.IsDeleted == 0).Result.FirstOrDefault();
-
+                s.IsDeleted == 0);
+            return result.FirstOrDefault();
         }
 
         [HttpPost]
@@ -113,7 +97,7 @@ namespace UpDiddyApi.Controllers
                 notification.IsDeleted = 0;
                 notification.ModifyGuid = loggedInUserGuid;
                 notification.CreateGuid = loggedInUserGuid;
-                _repositoryWrapper.NotificationRepository.Create(notification);
+                await _repositoryWrapper.NotificationRepository.Create(notification);
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
                 Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
