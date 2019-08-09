@@ -1607,6 +1607,9 @@ namespace UpDiddyApi.Workflow
                                                                             PostalCode=jp.PostalCode
                                                                         }).ToListAsync();
 
+            //Get Skills for all active Job Postings
+            IEnumerable<Skill> skillsList=await _repositoryWrapper.SkillRepository.GetAllSkillsForJobPostings();
+
             //Get State Names
             IEnumerable<State> statesList=await _repositoryWrapper.State.GetStatesForDefaultCountry();
 
@@ -1629,6 +1632,12 @@ namespace UpDiddyApi.Workflow
 
                 if(jobPostingSearchInfo?.PostalCode!=null)    
                     locationSearch.Add(jobPostingSearchInfo.PostalCode);
+            }
+
+            foreach(Skill skill in skillsList)
+            {
+                if(skill.SkillName!=null)
+                     locationSearch.Add(skill.SkillName);
             }
 
             string serializedKeyworkSearchList=JsonConvert.SerializeObject(keywordSearch.ConvertAll(k=>k.ToLower()).Distinct());
