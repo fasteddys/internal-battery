@@ -15,3 +15,9 @@ $(document).on("click", "a.notification-delete", function () {
     $("#DeleteNotificationConfirmationModal #DeleteConfirmationNotificationName").html(notificationName);
     $("#DeleteNotificationConfirmationModal").modal();
 });
+
+$("#IsTargeted").on("click", function(){
+    
+    var divToShow = $(".group-notification-select");
+    divToShow.toggleClass("hidden");
+});

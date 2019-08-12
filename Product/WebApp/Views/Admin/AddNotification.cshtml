@@ -57,6 +57,33 @@
                         </div>
 
                         <div class="form-group row">
+                            <label for="IsTargeted" class="col-sm-2 col-form-label">Targeted notification?</label>
+                            <div class="col-sm-10">
+                                <div class="input-group date">
+                                    <input type="checkbox" class="form-control" asp-for="IsTargeted">
+                                </div>
+                                <small id="isTargettedHelpBlock" class="form-text text-muted">
+                                    Check this box if this notification is to be targeted to a specific group of people, rather than every CareerCircle user.
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-group hidden row group-notification-select">
+                            <label for="exampleFormControlSelect1"  class="col-sm-2 col-form-label">Select group:</label>
+                            <div class="col-sm-10">
+                                <div class="input-group">
+                                    <select class="form-control">
+                                        <option>1</option>
+                                        <option>2</option>
+                                        <option>3</option>
+                                        <option>4</option>
+                                        <option>5</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
                             <div class="col-12 text-right">
                                 @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
                                     Text = "Create",

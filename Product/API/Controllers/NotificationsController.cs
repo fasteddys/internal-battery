@@ -106,7 +106,7 @@ namespace UpDiddyApi.Controllers
                 notification.Title = notificationDto.Title;
                 notification.Description = notificationDto.Description;
                 notification.NotificationGuid = NewNotificationGuid;
-                notification.IsTargeted = notificationDto.IsTargeted;
+                notification.IsTargeted = notificationDto.IsTargeted == true ? 1 : 0;
                 notification.ExpirationDate = notificationDto.ExpirationDate;
                 notification.CreateDate = CurrentDateTime;
                 notification.ModifyDate = CurrentDateTime;
@@ -143,7 +143,7 @@ namespace UpDiddyApi.Controllers
 
                 ExistingNotification.Title = NewNotificationDto.Title;
                 ExistingNotification.Description = NewNotificationDto.Description;
-                ExistingNotification.IsTargeted = NewNotificationDto.IsTargeted;
+                ExistingNotification.IsTargeted = NewNotificationDto.IsTargeted == true ? 1 : 0;
                 ExistingNotification.ExpirationDate = NewNotificationDto.ExpirationDate;
                 ExistingNotification.ModifyDate = DateTime.UtcNow;
 
