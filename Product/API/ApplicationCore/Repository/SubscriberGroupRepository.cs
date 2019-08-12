@@ -21,9 +21,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _db = dbContext;
         }
 
-        public IList<Subscriber> GetSubscribersAssociatedWithGroup(int GroupId){
-            return _db.SubscriberGroup.Where(sg => sg.GroupId == GroupId && sg.IsDeleted == 0)
-                .Include(sg => sg.Subscriber).ToList();
+        public async Task<IList<Subscriber>> GetSubscribersAssociatedWithGroupAsync(int GroupId){
+            IList<SubscriberGroup> SubscriberGroups = await _db.SubscriberGroup.Where(sg => sg.GroupId == GroupId && sg.IsDeleted == 0)
+                .Include(sg => sg.Subscriber).ToListAsync();
+            
+            List<Subscriber> Subscribers = new List<Subscriber>();
+
+            foreach(SubscriberGroup sg in SubscriberGroups){
+                Subscribers.Add(sg.Subscriber);
+            }
+
+            return Subscribers;
         }
     
     }

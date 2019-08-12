@@ -9,6 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ISubscriberGroupRepository : IUpDiddyRepositoryBase<SubscriberGroup>
     {
+        Task<IList<Subscriber>> GetSubscribersAssociatedWithGroupAsync(int GroupId);
  
     }
     

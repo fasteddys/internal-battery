@@ -32,6 +32,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Hangfire;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.Workflow.Helpers;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.Controllers
 {
@@ -47,6 +48,7 @@ namespace UpDiddyApi.Controllers
         private ICloudStorage _cloudStorage;
         private IHangfireService _hangfireService;
         private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly ISubscriberService _subscriberService;
 
 
         public NotificationsController(UpDiddyDbContext db,
@@ -58,7 +60,8 @@ namespace UpDiddyApi.Controllers
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService,
             IRepositoryWrapper repositoryWrapper,
-            IHangfireService hangfireService)
+            IHangfireService hangfireService,
+            ISubscriberService subscriberService)
         {
             _db = db;
             _mapper = mapper;
@@ -69,6 +72,7 @@ namespace UpDiddyApi.Controllers
             _authorizationService = authorizationService;
             _repositoryWrapper = repositoryWrapper;
             _hangfireService = hangfireService;
+            _subscriberService = subscriberService;
         }
 
         [HttpGet]
@@ -117,8 +121,8 @@ namespace UpDiddyApi.Controllers
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
                 Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
-                //_hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
-                _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
+                IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(notificationDto.GroupGuid);
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, Subscribers));
                 return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, _mapper.Map<NotificationDto>(notification));
             }
             else
