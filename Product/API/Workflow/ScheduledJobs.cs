@@ -621,14 +621,16 @@ namespace UpDiddyApi.Workflow
         public async Task<bool> JobDataMining()
         {
             _syslog.Log(LogLevel.Information, $"***** JobDataMining started at: {DateTime.UtcNow.ToLongDateString()}");
-
+            string jobSiteName = string.Empty;
+            string position = string.Empty;
             var result = true;
             try
             {
-                List<JobSite> jobSites = _repositoryWrapper.JobSite.GetAllJobSitesAsync().Result.ToList();
+                IEnumerable<JobSite> jobSites = await _repositoryWrapper.JobSite.GetAllJobSitesAsync();
 
                 foreach (var jobSite in jobSites)
                 {
+                    jobSiteName = jobSite.Name;
                     // initialize stat tracking for operation
                     JobSiteScrapeStatistic jobDataMiningStats =
                         new JobSiteScrapeStatistic()
@@ -649,12 +651,16 @@ namespace UpDiddyApi.Workflow
                     IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite, _configuration, _syslog);
 
                     // load all existing job pages - it is important to retrieve all of them regardless of their JobPageStatus to avoid FK conflicts on insert and update operations
-                    List<JobPage> existingJobPages = _repositoryWrapper.JobPage.GetAllJobPagesForJobSiteAsync(jobSite.JobSiteGuid).Result.ToList();
+                    IEnumerable<JobPage> existingJobPages = await _repositoryWrapper.JobPage.GetAllJobPagesForJobSiteAsync(jobSite.JobSiteGuid);
+                    position = "GetAllJobPagesForJobSiteAsyncCompleted";
+
                     // set the number of existing active job pages before we perform any discovery operations
                     int existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
 
                     // retrieve all current job pages that are visible on the job site
-                    List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages);
+                    List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages.ToList());
+                    position = "DiscoverJobPagesCompleted";
+
                     // set the number of pending and active jobs discovered - this will be the future state if we continue processing this job site
                     int futurePendingAndActiveJobPagesCount = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2).Count();
 
@@ -679,6 +685,7 @@ namespace UpDiddyApi.Workflow
                     {
                         // convert job pages to job postings and perform the necessary CRUD operations
                         jobDataMiningStats = await ProcessJobPages(jobDataMining, jobPagesToProcess, jobDataMiningStats);
+                        position = "ProcessJobPagesCompleted";
                     }
 
                     // store aggregate data about operations performed by job site; set scrape date at the very end of the process
@@ -690,7 +697,7 @@ namespace UpDiddyApi.Workflow
             catch (Exception e)
             {
                 // todo: implement better logging
-                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.JobDataMining encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.JobDataMining encountered an exception for {jobSiteName} after {position}; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 result = false;
             }
 
@@ -1584,37 +1591,6 @@ namespace UpDiddyApi.Workflow
                     file.MimeType = await _mimeMappingService.MapAsync(file.BlobName);
                     await _repositoryWrapper.SubscriberFileRepository.UpdateSubscriberFileAsync(file);
                 }
-            }
-        }
-        #endregion
-
-        #region Update for Allegis Group Jobs Raw Data Fix
-        /// <summary>
-        /// Fix the RawData field in JobPage table for Allegis Group so that when job mining runs, it doesn't classify existing job as new jobs  
-        /// </summary>
-        /// <returns></returns>
-        public async Task UpdateAllegisGroupJobPageRawDataField()
-        {
-            try
-            {
-                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:UpdateAllegisGroupJobPageRawDataField started at: {DateTime.UtcNow.ToLongDateString()}");
-                var jobs = await _repositoryWrapper.JobPage.GetAllAsync();
-                var allegisjobs = jobs.Where(x => x.JobSiteId == 3 && x.IsDeleted == 0 && x.JobPageStatusId == 2).ToList();
-                foreach (var job in allegisjobs)
-                {
-                    var rawdata = job.RawData;
-                    var html = new HtmlDocument();
-                    html.LoadHtml(rawdata);
-                    var script = html.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']");
-                    var data = JsonConvert.DeserializeObject<dynamic>(script.InnerText);
-                    job.RawData = data.ToString();
-                    _repositoryWrapper.JobPage.Update(job);
-                }
-                await _repositoryWrapper.JobPage.SaveAsync();
-            }
-            catch (Exception e)
-            {
-                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.UpdateAllegisGroupJobPageRawDataField encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
             }
         }
         #endregion
