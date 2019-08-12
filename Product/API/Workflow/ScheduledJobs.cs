@@ -23,17 +23,13 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Helpers.Job;
-using UpDiddyLib.Helpers;
-using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using System.Linq.Expressions;
 using static UpDiddyLib.Helpers.Constants;
 using Newtonsoft.Json.Linq;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Data.SqlClient;
 using JobPosting = UpDiddyApi.Models.JobPosting;
 using UpDiddyApi.Helpers;
-using HtmlAgilityPack;
 
 namespace UpDiddyApi.Workflow
 {
@@ -108,9 +104,9 @@ namespace UpDiddyApi.Workflow
             {
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SubscriberNotificationEmailReminder started at: {executionTime.ToLongDateString()}");
 
-                var lastDay = await _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(1);
-                var lastSevenDays = await _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(7);
-                var lastThirtyDays = await _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(30);
+                var lastDay =  _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(1);
+                var lastSevenDays =  _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(7);
+                var lastThirtyDays =  _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(30);
                 var allReminders = lastDay.Union(lastSevenDays).Union(lastThirtyDays).ToList();
 
                 if (allReminders != null && allReminders.Count() > 0)
@@ -120,7 +116,7 @@ namespace UpDiddyApi.Workflow
                     foreach (var reminder in allReminders)
                     {
 
-                        if (_sysEmail.SendTemplatedEmailAsync(
+                        if (await _sysEmail.SendTemplatedEmailAsync(
                              reminder.Email,
                              _configuration["SysEmail:Transactional:TemplateIds:SubscriberNotification-Reminder"].ToString(),
                              new
@@ -134,7 +130,7 @@ namespace UpDiddyApi.Workflow
                              SendGridAccount.Transactional,
                              null,
                              null,
-                             executionTime).Result)
+                             executionTime))
                         {
                             // only update the execution time if the email was delivered successfully
                             executionTime = executionTime.Add(emailInterval);
@@ -186,7 +182,7 @@ namespace UpDiddyApi.Workflow
                             
                             if (
                                 // send the seed email using the lead email's account and template
-                                _sysEmail.SendTemplatedEmailAsync(
+                                await _sysEmail.SendTemplatedEmailAsync(
                                     partnerContact.Metadata["Email"].ToString(),
                                     leadEmail.EmailTemplateId,
                                     new
@@ -199,7 +195,7 @@ namespace UpDiddyApi.Workflow
                                     null,
                                     null,
                                     executionTime,
-                                    leadEmail.UnsubscribeGroupId).Result)
+                                    leadEmail.UnsubscribeGroupId))
                             {
                                 // update the execution time if the seed email was delivered successfully
                                 executionTime = executionTime.Add(emailInterval);
@@ -263,7 +259,7 @@ namespace UpDiddyApi.Workflow
         public async Task ValidateEmailAddress(Guid partnerContactGuid, string email, int verificationFailureLeadStatusId)
         {
             // retrieve the partner contact that will be associated with any lead statuses we store and the log of the zero bounce request
-            var partnerContact = _db.PartnerContact.Where(pc => pc.PartnerContactGuid == partnerContactGuid).FirstOrDefault();
+            var partnerContact = await _db.PartnerContact.Where(pc => pc.PartnerContactGuid == partnerContactGuid).FirstOrDefaultAsync();
 
             if (partnerContact == null)
                 throw new ApplicationException("Unrecognized partner contact");
@@ -690,7 +686,7 @@ namespace UpDiddyApi.Workflow
 
                     // store aggregate data about operations performed by job site; set scrape date at the very end of the process
                     jobDataMiningStats.ScrapeDate = DateTime.UtcNow;
-                    _repositoryWrapper.JobSiteScrapeStatistic.Create(jobDataMiningStats);
+                    await _repositoryWrapper.JobSiteScrapeStatistic.Create(jobDataMiningStats);
                     await _repositoryWrapper.JobSiteScrapeStatistic.SaveAsync();
                 }
             }
@@ -732,7 +728,7 @@ namespace UpDiddyApi.Workflow
                         // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
                         jobPostingDto.JobPostingGuid = jobPostingGuid;
                         // attempt to update job posting
-                        isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService);
+                        isJobPostingOperationSuccessful =  JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService);
                         // increment updated count in stats
                         if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
                             jobDataMiningStats.NumJobsUpdated += 1;
@@ -766,7 +762,7 @@ namespace UpDiddyApi.Workflow
                         if (jobPage.JobPageId > 0)
                             _repositoryWrapper.JobPage.Update(jobPage);
                         else
-                            _repositoryWrapper.JobPage.Create(jobPage);
+                        await _repositoryWrapper.JobPage.Create(jobPage);
                         await _repositoryWrapper.JobPage.SaveAsync();
 
                     }
@@ -778,7 +774,7 @@ namespace UpDiddyApi.Workflow
                         if (jobPage.JobPageId > 0)
                             _repositoryWrapper.JobPage.Update(jobPage);
                         else
-                            _repositoryWrapper.JobPage.Create(jobPage);
+                        await _repositoryWrapper.JobPage.Create(jobPage);
                         await _repositoryWrapper.JobPage.SaveAsync();
 
                         // increment error count in stats
@@ -832,7 +828,7 @@ namespace UpDiddyApi.Workflow
                             if (jobPage.JobPageId > 0)
                                 _repositoryWrapper.JobPage.Update(jobPage);
                             else
-                                _repositoryWrapper.JobPage.Create(jobPage);
+                            await _repositoryWrapper.JobPage.Create(jobPage);
                             await _repositoryWrapper.JobPage.SaveAsync();
 
                             // increment drop count in stats
@@ -846,7 +842,7 @@ namespace UpDiddyApi.Workflow
                             if (jobPage.JobPageId > 0)
                                 _repositoryWrapper.JobPage.Update(jobPage);
                             else
-                                _repositoryWrapper.JobPage.Create(jobPage);
+                            await _repositoryWrapper.JobPage.Create(jobPage);
                             await _repositoryWrapper.JobPage.SaveAsync();
 
                             // increment error count in stats
@@ -1210,7 +1206,7 @@ namespace UpDiddyApi.Workflow
                         EntityId = JobApplication.JobApplicationId,
                         EntityTypeId = EntityType.EntityTypeId
                     });
-                    RecruiterActionRepository.Create(NewRecruiterAction);
+                    await RecruiterActionRepository.Create(NewRecruiterAction);
                     await RecruiterActionRepository.SaveAsync();
                     return NewRecruiterAction;
                 }
@@ -1453,7 +1449,7 @@ namespace UpDiddyApi.Workflow
                 };
                 SubscriberNotifications.Add(subscriberNotification);
             }
-            _repositoryWrapper.SubscriberNotificationRepository.CreateRange(SubscriberNotifications.ToArray());
+            await _repositoryWrapper.SubscriberNotificationRepository.CreateRange(SubscriberNotifications.ToArray());
             await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
 
             return true;
@@ -1581,14 +1577,14 @@ namespace UpDiddyApi.Workflow
         public async Task UpdateSubscriberFilesMimeType()
         {
             //get all SubscriberFiles with Empty MimeType
-            var queryableSubscriberFile = await _repositoryWrapper.SubscriberFileRepository.GetAllSubscriberFileQueryableAsync();
-            var nullMimeTypeFiles=await queryableSubscriberFile.Where(x => x.MimeType == null && x.IsDeleted==0).ToListAsync();
+            var queryableSubscriberFile =  _repositoryWrapper.SubscriberFileRepository.GetAllSubscriberFileQueryableAsync();
+            var nullMimeTypeFiles = await queryableSubscriberFile.Where(x => x.MimeType == null && x.IsDeleted==0).ToListAsync();
 
             if (nullMimeTypeFiles.Count > 0)
             {
                 foreach(SubscriberFile file in nullMimeTypeFiles)
                 {
-                    file.MimeType = await _mimeMappingService.MapAsync(file.BlobName);
+                    file.MimeType =  _mimeMappingService.MapAsync(file.BlobName);
                     await _repositoryWrapper.SubscriberFileRepository.UpdateSubscriberFileAsync(file);
                 }
             }

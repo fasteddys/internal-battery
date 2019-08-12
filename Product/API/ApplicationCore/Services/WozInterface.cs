@@ -757,7 +757,7 @@ namespace UpDiddyApi.ApplicationCore
                     .Select(x => FromWozTime(x))
                     .ToList();
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
             return Rval;
@@ -927,7 +927,7 @@ namespace UpDiddyApi.ApplicationCore
                     _db.SaveChanges();
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // if something goes wrong, get the most recent TOS from our system
                 WozTermsOfService tos = _db.WozTermsOfService

@@ -47,7 +47,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 ModifyDate = currentDateTime,
                 SubscriberGroupGuid = Guid.NewGuid()
             };
-            _repositoryWrapper.SubscriberGroupRepository.Create(subscriberGroup);
+            await _repositoryWrapper.SubscriberGroupRepository.Create(subscriberGroup);
             await _repositoryWrapper.SubscriberGroupRepository.SaveAsync();
 
             return true;
@@ -96,7 +96,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     PartnerId = Partner.PartnerId
                 };
 
-                _repositoryWrapper.GroupPartnerRepository.Create(GroupPartner);
+                await _repositoryWrapper.GroupPartnerRepository.Create(GroupPartner);
                 await _repositoryWrapper.GroupPartnerRepository.SaveAsync();
             }
             return true;

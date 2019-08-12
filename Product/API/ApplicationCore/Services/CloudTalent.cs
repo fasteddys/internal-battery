@@ -596,7 +596,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
                 _db.SaveChanges();
                 _syslog.LogError(e, "CloudTalent.IndexJob Error", e, jobPosting);
-                throw e;
+                    throw e;
             }
         }
 

@@ -35,7 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<Dictionary<Subscriber, List<JobPosting>>> GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime date)
         {
-            IQueryable<SubscriberAction> subscriberAction = await _repositoryWrapper.SubscriberActionRepository.GetAllAsync();           
+            IQueryable<SubscriberAction> subscriberAction = _repositoryWrapper.SubscriberActionRepository.GetAll();           
             List<SubscriberAction> todaysActions = await subscriberAction
                 .Where(x => x.EntityType.Name == UpDiddyLib.Helpers.Constants.EventType.JobPosting && x.Action.Name == UpDiddyLib.Helpers.Constants.Action.ApplyJob && x.CreateDate.Date == date.Date)
                 .ToListAsync();
@@ -94,7 +94,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 ModifyGuid = null,
                 OccurredDate = DateTime.UtcNow
             };
-            _repositoryWrapper.SubscriberActionRepository.Create(subAction);
+            await _repositoryWrapper.SubscriberActionRepository.Create(subAction);
             await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
         }
 

@@ -119,7 +119,7 @@ namespace UpDiddyApi.Controllers
                 if (!subscriberGuid.Equals(EnrollmentFlowDto.SubscriberDto.SubscriberGuid))
                     return Unauthorized();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return BadRequest(new { code = 400, message = "Missing required data in EnrollmentDto." });
             }

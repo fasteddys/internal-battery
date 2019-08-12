@@ -9,11 +9,11 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface INotificationRepository : IUpDiddyRepositoryBase<Notification>
     {
-        Task<IQueryable<Notification>> GetAllNonDeleted();
+        IQueryable<Notification> GetAllNonDeleted();
 
-        Task<IQueryable<v_UnreadNotifications>> GetUnreadSubscriberNotificationsForEmail(int reminderLookbackInDays);
+        IQueryable<v_UnreadNotifications> GetUnreadSubscriberNotificationsForEmail(int reminderLookbackInDays);
 
-        Task<IQueryable<v_NotificationReadCounts>> GetNotificationReadCounts();
+        IQueryable<v_NotificationReadCounts> GetNotificationReadCounts();
     }
 }
 

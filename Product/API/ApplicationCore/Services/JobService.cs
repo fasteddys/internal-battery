@@ -9,7 +9,6 @@ using UpDiddyLib.Dto;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
-using Hangfire;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Helpers.Job;
 using Microsoft.Extensions.Logging;

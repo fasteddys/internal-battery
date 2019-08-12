@@ -328,7 +328,7 @@ namespace UpDiddy.Controllers
                 jdvm.LoggedInSubscriberGuid = subscriber.SubscriberGuid;
                 jdvm.LoggedInSubscriberEmail = subscriber.Email;
                 jdvm.LoggedInSubscriberName = subscriber.FirstName + " " + subscriber.LastName;
-                _Api.RecordSubscriberJobViewAction(JobGuid, GetSubscriberGuid());
+                await _Api.RecordSubscriberJobViewAction(JobGuid, GetSubscriberGuid());
             }
 
             //update job as viewed if there is referrer code
@@ -968,7 +968,7 @@ namespace UpDiddy.Controllers
                         if (!FacetLabelExists(StateFacet.Facets, UpDiddyLib.Helpers.Utils.GetStateByName(state.Replace("-", " ")).ToString()))
                             return false;
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         // Returns false if unable to find matching state from
                         return false;

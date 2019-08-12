@@ -24,8 +24,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
  
         public async Task<IEnumerable<Country>> GetAllCountriesAsync()
         {
-            var countries = GetAllAsync();
-            return await countries.Result.Join(_stateRepository.GetAllStatesAsync().Result, c=>c.CountryId,s=>s.CountryId,(c,s)=>c)
+            var countries = GetAll();
+            return await countries.Join(_stateRepository.GetAllStatesAsync().Result, c=>c.CountryId,s=>s.CountryId,(c,s)=>c)
                             .Distinct()
                             .Where(c => c.IsDeleted == 0)
                             .OrderBy(c => c.Sequence)

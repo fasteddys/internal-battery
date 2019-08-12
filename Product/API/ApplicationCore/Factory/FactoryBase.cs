@@ -33,7 +33,7 @@ namespace UpDiddyApi.ApplicationCore
                 _cache.SetString(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL) });
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -52,7 +52,7 @@ namespace UpDiddyApi.ApplicationCore
                     return rval;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return (T)Convert.ChangeType(null, typeof(T));
             }

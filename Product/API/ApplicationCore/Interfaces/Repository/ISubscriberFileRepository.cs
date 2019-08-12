@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ISubscriberFileRepository : IUpDiddyRepositoryBase<SubscriberFile>
     {
-        Task<IQueryable<SubscriberFile>> GetAllSubscriberFileQueryableAsync();
+        IQueryable<SubscriberFile> GetAllSubscriberFileQueryableAsync();
         Task UpdateSubscriberFileAsync(SubscriberFile subscriberFile);
     }
 }
