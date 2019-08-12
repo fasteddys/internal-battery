@@ -449,6 +449,11 @@ namespace UpDiddyApi.Controllers
                 {
                     rVal= await _jobService.GetJobsByLocationAsync(Country, Province, City, Industry, JobCategory, Skill, PageNum, Request.Query);
                 }
+                else
+                {
+                    _syslog.Log(LogLevel.Information, $"Invalid data for Country={Country}, Province={Province}, City={City}, Industry={Industry}, JobCategory={JobCategory}, Skill={Skill} and PageNumber={PageNum}");
+                    return BadRequest();
+                }
             }
             catch(Exception ex)
             {
