@@ -72,6 +72,10 @@ namespace UpDiddy.ViewComponents
             ButterViewModel.MetaDescription = ButterViewModel.MetaDescription.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.META_DESCRIPTION]);
             ButterViewModel.MetaKeywords = ButterViewModel.MetaKeywords.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.META_KEYWORDS]);
 
+            ButterViewModel.OpenGraphTitle = ButterViewModel.OpenGraphTitle.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.OG_TITLE]);
+            ButterViewModel.OpenGraphDescription = ButterViewModel.OpenGraphDescription.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.OG_DESCRIPTION]);
+            ButterViewModel.OpenGraphImage = ButterViewModel.OpenGraphImage.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.OG_IMAGE]);
+
             return View(ButterViewModel);
 
         }

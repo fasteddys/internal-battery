@@ -146,7 +146,16 @@ namespace UpDiddy.Controllers
             ViewBag.subscriberReport = await _api.GetSubscriberReportAsync(dates);
             ViewBag.partnerReport = await _api.GetSubscriberReportByPartnerAsync();
             ViewBag.offerActionSummary = await _api.GetOfferActionSummaryAsync();
+            ViewBag.failedSubscriberSummary = await _api.GetFailedSubscribersSummaryAsync();
             return View("Dashboard");
+        }
+
+        [HttpGet]
+        [Route("/admin/subscriber-index-error")]
+        public async Task<JsonResult> GetFailedSubscribers()
+        {
+            var data = await _api.GetFailedSubscribersSummaryAsync();
+            return Json(data);
         }
 
         [HttpGet]
