@@ -118,36 +118,7 @@ namespace UpDiddy.Api
             new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).EnablePersistence(app.UserTokenCache);
             var accounts = await app.GetAccountsAsync();
             IAccount account = accounts.FirstOrDefault();
-            int retries = 3;
-            try
-            {
-                while (true)
-                {
-                    try
-                    {
-                        result = await app.AcquireTokenSilent(scope, account).ExecuteAsync();
-                        break;
-                    }
-                    catch (MsalUiRequiredException e)
-                    {
-                        if (retries-- == 0)
-                            throw;
-                        _syslog.LogInformation(e, $"An error occurred in GetBearerTokenAsync(). {retries.ToString()} retries left.", retries);
-                        Thread.Sleep(250);
-                    }
-                }
-            }
-            catch (MsalUiRequiredException e)
-            {
-                var serializedAccount = JsonConvert.SerializeObject(accounts);
-                var serializedScope = JsonConvert.SerializeObject(scope);
-                var serializedUserTokenCache = JsonConvert.SerializeObject(app.UserTokenCache);                
-                e.Data.Add("Account", serializedAccount);
-                e.Data.Add("SignedInUserID", signedInUserID);
-                e.Data.Add("Scope", serializedScope);
-                e.Data.Add("UserTokenCache", serializedUserTokenCache);
-                _syslog.LogInformation(e, "An error occurred in GetBearerTokenAsync().");
-            }
+            result = await app.AcquireTokenSilent(scope, account).ExecuteAsync();
             return result;
         }
 
@@ -647,7 +618,7 @@ namespace UpDiddy.Api
         {
             string cacheKey = "job-activeJobCount";
             BasicResponseDto rval = GetCachedValue<BasicResponseDto>(cacheKey);
-            if(rval == null)
+            if (rval == null)
             {
                 rval = await _GetActiveJobCountAsync();
                 SetCachedValue<BasicResponseDto>(cacheKey, rval);
@@ -734,13 +705,13 @@ namespace UpDiddy.Api
         {
             try
             {
-                ResumeParseDto retVal = await GetAsync<ResumeParseDto>("resume/resume-parse");               
+                ResumeParseDto retVal = await GetAsync<ResumeParseDto>("resume/resume-parse");
                 return retVal;
             }
             catch
             {
                 return null;
-            }                        
+            }
         }
 
 
@@ -748,17 +719,17 @@ namespace UpDiddy.Api
         {
             try
             {
-                BasicResponseDto retVal = await PostAsync<BasicResponseDto>($"resume/resolve-profile-merge/{resumeParseGuid}",mergeInfo);
+                BasicResponseDto retVal = await PostAsync<BasicResponseDto>($"resume/resolve-profile-merge/{resumeParseGuid}", mergeInfo);
                 return retVal;
             }
-            catch ( Exception e)
+            catch (Exception e)
             {
                 string temp = e.Message;
                 return null;
             }
         }
 
-    
+
         #endregion
 
         #region jobs
@@ -1527,12 +1498,12 @@ namespace UpDiddy.Api
         {
             string cacheKey = $"job-PostCount";
             List<JobPostingCountDto> rval = await GetCachedValueAsync<List<JobPostingCountDto>>(cacheKey);
-            if( rval == null)
+            if (rval == null)
             {
                 rval = await GetAsync<List<JobPostingCountDto>>($"job/post-count");
                 await SetCachedValueAsync<List<JobPostingCountDto>>(cacheKey, rval);
             }
-            return rval;     
+            return rval;
         }
 
         public async Task<IList<NotificationDto>> GetNotificationsAsync()
@@ -1622,7 +1593,7 @@ namespace UpDiddy.Api
             return updatedSubscriberNotificationResponse;
 
         }
-        
+
         public async Task<BasicResponseDto> DeleteSubscriberNotificationAsync(Guid SubscriberGuid, NotificationDto notificationDto)
         {
             BasicResponseDto deletedSubscriberNotificationResponse = await DeleteAsync<BasicResponseDto>($"subscriber/delete-notification/{notificationDto.NotificationGuid}");
@@ -1788,8 +1759,8 @@ namespace UpDiddy.Api
         #region Sales Force
         public async Task<BasicResponseDto> AddSalesForceSignUpList(SalesForceSignUpListDto dto)
         {
-           BasicResponseDto rval = await PutAsync<BasicResponseDto>("salesforce/sign-up", dto);
-           return rval;
+            BasicResponseDto rval = await PutAsync<BasicResponseDto>("salesforce/sign-up", dto);
+            return rval;
         }
         #endregion
     }

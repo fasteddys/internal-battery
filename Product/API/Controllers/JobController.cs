@@ -441,30 +441,25 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         [Route("api/[controller]/browse-jobs-location/{Country?}/{Province?}/{City?}/{Industry?}/{JobCategory?}/{Skill?}/{PageNum?}")]
         public async Task<IActionResult> JobSearchByLocation(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum)
-        {
-            int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
-            JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize, Request.Query);
-            JobSearchResultDto rVal = _cloudTalent.JobSearch(jobQuery);
-
-            // set common properties for an alert jobQuery and include this in the response
-            jobQuery.DatePublished = null;
-            jobQuery.ExcludeCustomProperties = 1;
-            jobQuery.ExcludeFacets = 1;
-            jobQuery.PageSize = 20;
-            jobQuery.NumPages = 1;
-            rVal.JobQueryForAlert = jobQuery;
-
-            // don't let this stop job search from returning
+        {           
+            JobSearchResultDto rVal=null;
             try
             {
-                ClientEvent ce = await _cloudTalent.CreateClientEventAsync(rVal.RequestId, ClientEventType.Impression, rVal.Jobs.Select(job => job.CloudTalentUri).ToList<string>());
-                rVal.ClientEventId = ce.EventId;
+                if(ModelState.IsValid)
+                {
+                    rVal= await _jobService.GetJobsByLocationAsync(Country, Province, City, Industry, JobCategory, Skill, PageNum, Request.Query);
+                }
+                else
+                {
+                    _syslog.Log(LogLevel.Information, $"Invalid data for Country={Country}, Province={Province}, City={City}, Industry={Industry}, JobCategory={JobCategory}, Skill={Skill} and PageNumber={PageNum}");
+                    return BadRequest();
+                }
             }
-            catch (Exception e)
+            catch(Exception ex)
             {
-                _syslog.Log(LogLevel.Error, "JobController.JobSearchByLocation:: Unable to record client event");
+                _syslog.Log(LogLevel.Error, "JobController.JobSearchByLocation:",ex.StackTrace);
+                return StatusCode(500, ex.Message);
             }
-
             return Ok(rVal);
         }
 
