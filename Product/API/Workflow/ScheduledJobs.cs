@@ -1590,5 +1590,104 @@ namespace UpDiddyApi.Workflow
             }
         }
         #endregion
+
+        #region Pull all JobTitles, Company, City, State and Postal Code for search intelligence
+        
+        public async Task CacheKeywordLocationSearchIntelligenceInfo()
+        {
+            List<string> keywordSearch=new List<string>();
+            List<string> locationSearch=new List<string>();
+
+            //JobTitles, Company, City and Postal Code
+            IQueryable<JobPosting> queryableJobPostings=await _repositoryWrapper.JobPosting.GetAllJobPostings();
+            var jobPostingsSearchInfoResults=await  queryableJobPostings.Include(co=>co.Company)
+                                                                        .Where(jpg=>jpg.IsDeleted==0)
+                                                                        .Select(jp=>new 
+                                                                        {
+                                                                            JobTitle= jp.Title,
+                                                                            CompanyName=jp.Company.CompanyName,
+                                                                            City=jp.City,
+                                                                            PostalCode=jp.PostalCode
+                                                                        }).ToListAsync();
+
+            //Get Skills for all active Job Postings
+            IEnumerable<Skill> skillsList=await _repositoryWrapper.SkillRepository.GetAllSkillsForJobPostings();
+
+            //Get State Names
+            IEnumerable<State> statesList=await _repositoryWrapper.State.GetStatesForDefaultCountry();
+
+            foreach(State state in statesList)
+            {
+                if(state.Name!=null)
+                     locationSearch.Add(state.Name);
+            }
+            
+            foreach(var jobPostingSearchInfo in jobPostingsSearchInfoResults)
+            {
+                if(jobPostingSearchInfo.JobTitle!=null)
+                    keywordSearch.Add(jobPostingSearchInfo.JobTitle);
+
+                if(jobPostingSearchInfo.CompanyName!=null)
+                    keywordSearch.Add(jobPostingSearchInfo.CompanyName);
+
+                if(jobPostingSearchInfo.City!=null)
+                    locationSearch.Add(jobPostingSearchInfo.City);
+
+                if(jobPostingSearchInfo?.PostalCode!=null)    
+                    locationSearch.Add(jobPostingSearchInfo.PostalCode);
+            }
+
+            foreach(Skill skill in skillsList)
+            {
+                if(skill.SkillName!=null)
+                     keywordSearch.Add(skill.SkillName);
+            }
+
+            string serializedKeyworkSearchList=JsonConvert.SerializeObject(keywordSearch.ConvertAll(k=>k.ToLower()).Distinct());
+            string serializedLocationSearchList=JsonConvert.SerializeObject(locationSearch.ConvertAll(l=>l.ToLower()).Distinct());
+
+            //cache for 2 days unless the scheduled job runs.
+            //caching of keyword and location happens when the job data mining job runs
+            DistributedCacheEntryOptions options=new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpirationRelativeToNow=TimeSpan.FromDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"]))
+            };
+
+            //cache the list to use for intelligence search
+            _cache.SetString("keywordSearchList",serializedKeyworkSearchList,options);
+            _cache.SetString("locationSearchList",serializedLocationSearchList,options);
+        }
+        #endregion
+
+        #region Update for Allegis Group Jobs Raw Data Fix
+        /// <summary>
+        /// Fix the RawData field in JobPage table for Allegis Group so that when job mining runs, it doesn't classify existing job as new jobs  
+        /// </summary>
+        /// <returns></returns>
+        public async Task UpdateAllegisGroupJobPageRawDataField()
+        {
+            try
+            {
+                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:UpdateAllegisGroupJobPageRawDataField started at: {DateTime.UtcNow.ToLongDateString()}");
+                var jobs = await _repositoryWrapper.JobPage.GetAllAsync();
+                var allegisjobs = jobs.Where(x => x.JobSiteId == 3 && x.IsDeleted == 0 && x.JobPageStatusId == 2).ToList();
+                foreach (var job in allegisjobs)
+                {
+                    var rawdata = job.RawData;
+                    var html = new HtmlDocument();
+                    html.LoadHtml(rawdata);
+                    var script = html.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']");
+                    var data = JsonConvert.DeserializeObject<dynamic>(script.InnerText);
+                    job.RawData = data.ToString();
+                    _repositoryWrapper.JobPage.Update(job);
+                }
+                await _repositoryWrapper.JobPage.SaveAsync();
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Information, $"**** ScheduledJobs.UpdateAllegisGroupJobPageRawDataField encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+            }
+        }
+        #endregion
     }
 }

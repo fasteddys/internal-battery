@@ -188,13 +188,27 @@ namespace UpDiddyApi
                 // remove TinyIds from old CampaignPartnerContact records
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
 
+                // Run this job once to fix the RawData field in JobPage table for Allegis Group jobs
+                BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateAllegisGroupJobPageRawDataField());
+
+                 // Run this job once to initially get the keyword and location search
+                 BackgroundJob.Enqueue<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo());
+
                 // run the process in production Monday through Friday once every 4 hours between 11 and 23 UTC
                 if (_currentEnvironment.IsProduction())
-                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 11,15,19,23 * * Mon,Tue,Wed,Thu,Fri");
+                {
+                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 11,15,19,23 * * Mon,Tue,Wed,Thu,Fri");
+                     //Keyword and Location Search Intellisense Job
+                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),"0 11,13,15,17,19,21,23 * * Mon,Tue,Wed,Thu,Fri");
+                }
 
                 // run the process in staging once a week on the weekend (Sunday 4 UTC)
                 if (_currentEnvironment.IsStaging())
+                {
                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
+                    //Keyword and Location Search Intellisense Job
+                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),Cron.Weekly(DayOfWeek.Sunday, 4));
+                }
 
                 // run job to look for un-indexed profiles and index them 
                 int profileIndexerBatchSize = int.Parse(Configuration["CloudTalent:ProfileIndexerBatchSize"]);

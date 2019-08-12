@@ -6,6 +6,7 @@
 @using System.Globalization;
 @using System.Threading;
 @using System.Text.RegularExpressions;
+@using Newtonsoft.Json;
 
 @{
     string url = ViewBag.QueryUrl as string;
@@ -288,6 +289,79 @@
                     }
                 }
             }
+
+          
+
+            $( "#keywords" ).autocomplete({
+                source : function(request, response){
+                    //trim the input value
+                    request.term = request.term.trim();
+                    if(request.term == ""){
+                        //when empty, returns empty result
+                        response([]);
+                    }else{
+                        //our own implementation of request to the server
+                                $.ajax({
+                                    url:"/jobs/SearchKeyword",
+                                    type:"GET",
+                                    dataType:'json',
+                                    data:{
+                                        keyword:request.term
+                                    },
+                                    error: function error(res) {
+                                        console.log(res);
+                                    },
+                                    success:function(data){ 
+                                        if(data && data.length>0)
+                                        {
+                                            response(data);
+                                        }
+                                        else{
+                                            response([]);
+                                        }
+                                    }
+                                });
+
+                    }
+                }
+                }); 
+
+
+                 $( "#location" ).autocomplete({
+                    source : function(request, response){
+                        //trim the input value
+                        request.term = request.term.trim();
+                        if(request.term == ""){
+                            //when empty, returns empty result
+                            response([]);
+                        }else{
+                            //our own implementation of request to the server
+                                    $.ajax({
+                                        url:"/jobs/LocationKeyword",
+                                        type:"GET",
+                                        dataType:'json',
+                                        data:{
+                                            location:request.term
+                                        },
+                                        error: function error(res) {
+                                            console.log(res);
+                                        },
+                                        success:function(data){ 
+                                            if(data && data.length>0)
+                                            {
+                                               response(data);
+                                            }
+                                             else{
+                                                response([]);
+                                            }
+                                        }
+                                    });
+
+                        }
+                    },
+                    autoFocus:true
+                }); 
+
         });
 
         function ScrubInputs() {

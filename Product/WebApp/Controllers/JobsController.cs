@@ -1526,5 +1526,23 @@ namespace UpDiddy.Controllers
             Guid jobPostingGuid = Guid.Parse(jobPostingId);
             return await JobAsync(jobPostingGuid);
         }
+
+        #region Keyword and location Search
+        [HttpGet]
+        [Route("[controller]/SearchKeyword")]
+        public async Task<IActionResult> KeywordSearch(string keyword)
+        {
+            var keywordSearchList = await _api.GetKeywordSearchList(keyword);
+            return Ok(keywordSearchList);
+        }
+
+        [HttpGet]
+        [Route("[controller]/LocationKeyword")]
+        public async Task<IActionResult> LocationSearch(string location)
+        {
+            var locationSearchList = await _api.GetLocationSearchList(location);
+            return Ok(locationSearchList);
+        }
+        #endregion
     }
 }
