@@ -91,7 +91,6 @@
     <EmbeddedResource Remove="Resources\Views.test.About.fr.resx" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="OpenIdConnectOptionsSetup.cs" />
     <Compile Remove="Resources\AppResources.Designer.cs" />
     <Compile Remove="Resources\AppResources.es.Designer.cs" />
     <Compile Remove="Resources\AppResources.en.Designer.cs" />
