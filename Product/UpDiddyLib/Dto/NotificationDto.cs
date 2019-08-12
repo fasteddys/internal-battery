@@ -12,5 +12,7 @@ namespace UpDiddyLib.Dto
         public bool IsTargeted { get; set; }
         public DateTime? ExpirationDate { get; set; }
         public int HasRead { get; set; }
+        public List<GroupDto> Groups { get; set; }
+        public Guid GroupGuid { get; set; }
     }
 }

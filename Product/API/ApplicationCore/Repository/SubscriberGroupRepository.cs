@@ -14,11 +14,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
     public class SubscriberGroupRepository : UpDiddyRepositoryBase<SubscriberGroup>, ISubscriberGroupRepository
     {
-
+        private UpDiddyDbContext _db;
  
         public SubscriberGroupRepository(UpDiddyDbContext dbContext) : base(dbContext)
         {
- 
+            _db = dbContext;
+        }
+
+        public IList<Subscriber> GetSubscribersAssociatedWithGroup(int GroupId){
+            return _db.SubscriberGroup.Where(sg => sg.GroupId == GroupId && sg.IsDeleted == 0)
+                .Include(sg => sg.Subscriber).ToList();
         }
     
     }

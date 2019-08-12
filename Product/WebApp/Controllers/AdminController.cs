@@ -551,9 +551,10 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult AddNotification()
+        public async Task<IActionResult> AddNotification()
         {
-            return View();
+            List<GroupDto> Groups = await _api.GetGroupsAsync();
+            return View(new NotificationDto { Groups = Groups} );
         }
 
         [Authorize]
@@ -571,7 +572,8 @@ namespace UpDiddy.Controllers
                         NotificationGuid = Guid.NewGuid(),
                         Title = NewNotification.Title,
                         Description = NewNotification.Description,
-                        ExpirationDate = NewNotification.ExpirationDate
+                        ExpirationDate = NewNotification.ExpirationDate,
+                        GroupGuid = NewNotification.GroupGuid
                     });
                     return RedirectToAction("Notifications");
                 }

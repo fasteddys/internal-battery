@@ -1640,6 +1640,10 @@ namespace UpDiddy.Api
             return await GetAsync<List<FailedSubscriberDto>>("subscriber/failed-subscribers");
         }
 
+        public async Task<List<GroupDto>> GetGroupsAsync(){
+            return await GetAsync<List<GroupDto>>("groups");
+        }
+
         #endregion
 
         #region JobBoard

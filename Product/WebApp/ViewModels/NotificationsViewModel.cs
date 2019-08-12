@@ -16,5 +16,6 @@ namespace UpDiddy.ViewModels
         public string Description { get; set; }
         public bool IsTargeted { get; set; }
         public DateTime? ExpirationDate { get; set; }
+        public Guid GroupGuid { get; set; }
     }
 }
