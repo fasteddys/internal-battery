@@ -5,15 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common;
 using UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
-    public class CourseDataMiningFactory
+    public class CourseCrawlingFactory
     {
-        public static ICourseProcess GetCourseDataMiningProcess(CourseSite courseSite, IConfiguration config, ILogger logger, ISovrenAPI sovrenAPI)
+        public static ICourseProcess GetCourseProcess(CourseSite courseSite, IConfiguration config, ILogger logger, ISovrenAPI sovrenAPI)
         {
             switch (courseSite.Name)
             {

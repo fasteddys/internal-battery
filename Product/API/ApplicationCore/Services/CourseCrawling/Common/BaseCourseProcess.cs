@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common
 {
@@ -18,9 +20,9 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common
         public BaseCourseProcess(CourseSite courseSite, ILogger logger, IConfiguration configuration, ISovrenAPI sovrenApi)
         {
             _syslog = logger;
-            _courseSite = courseSite;
             _configuration = configuration;
             _sovrenApi = sovrenApi;
+            _courseSite = courseSite;
         }
     }
 }

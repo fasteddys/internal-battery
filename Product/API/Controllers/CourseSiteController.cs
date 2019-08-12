@@ -21,7 +21,7 @@ namespace UpDiddyApi.Controllers
             _courseCrawlingService = courseCrawlingService;
         }
 
-       // [Authorize(Policy = "IsCareerCircleAdmin")]
+        // [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpGet]
         [Route("api/course-sites")]
         public async Task<IActionResult> CourseSitesAsync()
@@ -37,6 +37,21 @@ namespace UpDiddyApi.Controllers
                 _logger.Log(LogLevel.Error, $"CourseSiteController.CourseSitesAsync : Error occured when retrieving course sites: {ex.Message}", ex);
                 return StatusCode(500);
             }
+        }
+
+        [HttpPatch]
+        [Route("api/course-sites/{courseSiteGuid}/crawl")]
+        public async Task<IActionResult> CrawlCourseSitesAsync(Guid courseSiteGuid)
+        {
+
+            throw new NotImplementedException();
+        }
+
+        [HttpPatch]
+        [Route("api/course-sites/{courseSiteGuid}/crawl")]
+        public async Task<IActionResult> SyncCourseSitesAsync(Guid courseSiteGuid)
+        {
+            throw new NotImplementedException();
         }
     }
 }

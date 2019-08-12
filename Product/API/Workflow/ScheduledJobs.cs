@@ -650,7 +650,7 @@ namespace UpDiddyApi.Workflow
                     */
 
                     // load the course data mining process for the course site
-                    ICourseProcess courseDataMining = CourseDataMiningFactory.GetCourseDataMiningProcess(courseSite, _configuration, _syslog, _sovrenApi);
+                    ICourseProcess courseDataMining = CourseCrawlingFactory.GetCourseProcess(courseSite, _configuration, _syslog, _sovrenApi);
 
                     // load all existing course pages - it is important to retrieve all of them regardless of their CoursePageStatus to avoid FK conflicts on insert and update operations
                     List<CoursePage> existingCoursePages = _repositoryWrapper.CoursePage.GetAllCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid).Result.ToList();
@@ -659,7 +659,6 @@ namespace UpDiddyApi.Workflow
                     List<CoursePage> coursePagesToProcess = courseDataMining.DiscoverCoursePages(existingCoursePages);
 
                     // insert or update the course pages
-
                     foreach (var coursePage in coursePagesToProcess)
                     {
                         if (coursePage.CoursePageId == 0)

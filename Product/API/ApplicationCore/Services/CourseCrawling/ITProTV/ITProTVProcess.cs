@@ -19,10 +19,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
 {
     public class ITProTVProcess : BaseCourseProcess, ICourseProcess
     {
-        public ISovrenAPI _sovrenApi;
-
         public ITProTVProcess(CourseSite courseSite, ILogger logger, IConfiguration configuration, ISovrenAPI sovrenAPI) : base(courseSite, logger, configuration, sovrenAPI) {
-            _sovrenApi = sovrenAPI;
+
         }
 
         private HttpClientHandler GetHttpClientHandler()

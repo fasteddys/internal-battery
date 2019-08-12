@@ -9,7 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface ICourseCrawlingService
     {
         Task<List<CourseSiteDto>> GetCourseSitesAsync();
-        Task<List<CourseSiteScrapeResultsDto>> ScrapeCourseData(CourseSiteDto courseSite);
-        Task<List<CourseSitePublishResultsDto>> PublishCourseData(CourseSiteDto courseSite);
+        Task<CourseSiteDto> CrawlCourseSiteAsync(string courseSiteName);
+        Task<CourseSiteDto> SyncCourseSiteAsync(string courseSiteName);
     }
 }
