@@ -119,15 +119,6 @@ namespace UpDiddy.Controllers
             if (jobSearchResultDto == null)
                 return NotFound();
 
-            var companies = await _api.GetAllCompaniesAsync();
-            foreach (var job in jobSearchResultDto.Jobs)
-            {
-                var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
-
-                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
-                    job.CompanyLogoUrl = _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + company.LogoUrl;
-            }
-
             // when applying a new a histogram the page should be reset to the first page
             Regex matchPagingQueryStringParameter = new Regex(@"page=.+?(?=\w)");
             queryParametersString = matchPagingQueryStringParameter.Replace(queryParametersString, string.Empty);
