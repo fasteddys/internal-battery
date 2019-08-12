@@ -35,7 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
-            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 1 };
+            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 10 };
             // iterate through search results looking for new jobs (new urls)
             Parallel.For(0, urls.Count(), maxdop, index =>
             {
