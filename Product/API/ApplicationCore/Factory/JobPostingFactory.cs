@@ -120,7 +120,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static bool PostJob(UpDiddyDbContext db, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, bool isAcceptsNewSkills, IHangfireService _hangfireService)
         {
-            if (isAcceptsNewSkills)
+            if (isAcceptsNewSkills && jobPostingDto?.JobPostingSkills != null)
             {
                 var updatedSkills = new List<SkillDto>();
                 foreach (var skillDto in jobPostingDto.JobPostingSkills)

@@ -35,7 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
-            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 5 };
+            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 1 };
             // iterate through search results looking for new jobs (new urls)
             Parallel.For(0, urls.Count(), maxdop, index =>
             {
@@ -76,18 +76,14 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
                     }
                     else
                     {
-                        var html = new HtmlDocument();
-                        html.LoadHtml(jobPage.RawData);
-                        var script = html.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']");
-                        var data = JsonConvert.DeserializeObject<dynamic>(script.InnerText);
-                        if (existingJobPage.RawData == data.ToString())
+                        if (existingJobPage.RawData == jobPage.RawData)
                         {
                             existingJobPage.JobPageStatusId = 2;
                         }
                         else
                         {
                             existingJobPage.JobPageStatusId = 1;
-                            existingJobPage.RawData = data.ToString();
+                            existingJobPage.RawData = jobPage.RawData;
                         }
                     }
                     existingJobPage.ModifyDate = DateTime.UtcNow;
