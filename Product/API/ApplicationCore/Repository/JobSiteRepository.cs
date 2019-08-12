@@ -21,6 +21,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var jobSites = GetAll();
             return await jobSites
                 .Where(js => js.IsDeleted == 0)
+                .OrderBy(js => js.JobSiteId)
                 .ToListAsync();
         }
     }
