@@ -1655,8 +1655,8 @@ namespace UpDiddyApi.Workflow
             };
 
             //cache the list to use for intelligence search
-            _cache.SetString("keywordSearchList",serializedKeyworkSearchList,options);
-            _cache.SetString("locationSearchList",serializedLocationSearchList,options);
+            await _cache.SetStringAsync("keywordSearchList",serializedKeyworkSearchList,options);
+            await _cache.SetStringAsync("locationSearchList",serializedLocationSearchList,options);
         }
         #endregion
 

@@ -161,9 +161,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             jobQuery.NumPages = 1;
             jobSearchResult.JobQueryForAlert = jobQuery;
 
-            // don't let this stop job search from returning
-            ClientEvent ce = await _cloudTalent.CreateClientEventAsync(jobSearchResult.RequestId, ClientEventType.Impression, jobSearchResult.Jobs.Select(job => job.CloudTalentUri).ToList<string>());
-            jobSearchResult.ClientEventId = ce.EventId;
+            //ClientEvents are triggered only when there are jobs
+            if(jobSearchResult.Jobs!=null && jobSearchResult.Jobs.Count>0)
+            {
+                // don't let this stop job search from returning
+                ClientEvent ce = await _cloudTalent.CreateClientEventAsync(jobSearchResult.RequestId, ClientEventType.Impression, jobSearchResult.Jobs.Select(job => job.CloudTalentUri).ToList<string>());
+                jobSearchResult.ClientEventId = ce.EventId;
+            }
 
             return jobSearchResult;
         }
