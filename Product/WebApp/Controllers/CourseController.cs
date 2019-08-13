@@ -307,14 +307,14 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpGet("[controller]/ClinicalResearchCoordinator")]
-        public async Task<IActionResult> ClinicalResearchCoordinator()
+        public IActionResult ClinicalResearchCoordinator()
         {
             return View("ClinicalResearchCoordinator");
         }
 
         [Authorize]
         [HttpGet("[controller]/itprotv-comptia-it-fundamentals")]
-        public async Task<IActionResult> ITProTVCourse()
+        public IActionResult ITProTVCourse()
         {
             return View("ITProTVCourse");
         }

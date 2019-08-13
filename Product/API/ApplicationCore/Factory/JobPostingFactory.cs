@@ -1,23 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
-using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
-using Google.Protobuf.WellKnownTypes;
-using Google.Apis.CloudTalentSolution.v3;
-using Google.Apis.Services;
-using Google.Apis.Auth.OAuth2;
-using UpDiddyApi.ApplicationCore.Services;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using Hangfire;
 using UpDiddyApi.Workflow;
-using System.Net;
 using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.ApplicationCore.Factory
@@ -120,10 +112,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         public static bool PostJob(UpDiddyDbContext db, int recruiterId, JobPostingDto jobPostingDto, ref Guid newPostingGuid, ref string ErrorMsg, ILogger syslog, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, bool isAcceptsNewSkills, IHangfireService _hangfireService)
         {
-            if (isAcceptsNewSkills)
+            if (isAcceptsNewSkills && jobPostingDto?.JobPostingSkills != null)
             {
                 var updatedSkills = new List<SkillDto>();
-                foreach (var skillDto in jobPostingDto.JobPostingSkills)
+                foreach (var skillDto in  jobPostingDto.JobPostingSkills)
                 {
                     var skill = SkillFactory.GetOrAdd(db, skillDto.SkillName);
                     updatedSkills.Add(new SkillDto()
@@ -266,6 +258,27 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .Include(c => c.JobPostingSkills).ThenInclude(ss => ss.Skill)
                 .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
                 .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Get a job posting by guid
+        /// </summary>       
+        /// <returns></returns>        
+        public static async Task<JobPosting> GetJobPostingByGuidWithRelatedObjectsAsync(UpDiddyDbContext db, Guid guid)
+        {
+            return await db.JobPosting
+                .Include(c => c.Company)
+                .Include(c => c.Industry)
+                .Include(c => c.SecurityClearance)
+                .Include(c => c.EmploymentType)
+                .Include(c => c.ExperienceLevel)
+                .Include(c => c.EducationLevel)
+                .Include(c => c.CompensationType)
+                .Include(c => c.JobCategory)
+                .Include(c => c.Recruiter.Subscriber)
+                .Include(c => c.JobPostingSkills).ThenInclude(ss => ss.Skill)
+                .Where(s => s.IsDeleted == 0 && s.JobPostingGuid == guid)
+                .FirstOrDefaultAsync();
         }
 
 

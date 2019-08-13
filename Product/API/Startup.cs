@@ -7,10 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Cors;
 using AutoMapper;
-using UpDiddyLib.Dto;
-using UpDiddyApi.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Hangfire;
 using UpDiddyApi.Workflow;
@@ -20,14 +17,12 @@ using UpDiddyLib.Helpers;
 using Polly;
 using Polly.Extensions.Http;
 using System.Net.Http;
-using UpDiddyLib.Helpers;
 using UpDiddyLib.Shared;
 using Microsoft.ApplicationInsights.SnapshotCollector;
 using Microsoft.Extensions.Options;
 using Microsoft.ApplicationInsights.AspNetCore;
 using Microsoft.ApplicationInsights.Extensibility;
 using Serilog;
-using Serilog.Sinks.ApplicationInsights;
 using UpDiddyLib.Serilog.Sinks;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
@@ -35,11 +30,8 @@ using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.ApplicationCore.Services.AzureAPIManagement;
 using System.Collections.Generic;
-using UpDiddyApi.ApplicationCore.Interfaces;
-using System.Security.Claims;
 using UpDiddyApi.Authorization;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.SignalR;
 using UpDiddyApi.Helpers.SignalR;
 using UpDiddyApi.Authorization.APIGateway;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
@@ -47,7 +39,6 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
-using UpDiddyApi.Workflow.Helpers;
 
 namespace UpDiddyApi
 {
@@ -197,16 +188,24 @@ namespace UpDiddyApi
                 // remove TinyIds from old CampaignPartnerContact records
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
 
-                // Run this job once to fix the RawData field in JobPage table for Allegis Group jobs
-                BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateAllegisGroupJobPageRawDataField());
+                 // Run this job once to initially get the keyword and location search
+                 BackgroundJob.Enqueue<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo());
 
                 // run the process in production Monday through Friday once every 4 hours between 11 and 23 UTC
                 if (_currentEnvironment.IsProduction())
-                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 11,15,19,23 * * Mon,Tue,Wed,Thu,Fri");
+                {
+                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 11,15,19,23 * * Mon,Tue,Wed,Thu,Fri");
+                     //Keyword and Location Search Intellisense Job
+                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),"0 11,13,15,17,19,21,23 * * Mon,Tue,Wed,Thu,Fri");
+                }
 
                 // run the process in staging once a week on the weekend (Sunday 4 UTC)
                 if (_currentEnvironment.IsStaging())
+                {
                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
+                    //Keyword and Location Search Intellisense Job
+                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),Cron.Weekly(DayOfWeek.Sunday, 4));
+                }
 
                 // run job to look for un-indexed profiles and index them 
                 int profileIndexerBatchSize = int.Parse(Configuration["CloudTalent:ProfileIndexerBatchSize"]);
@@ -214,7 +213,7 @@ namespace UpDiddyApi
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes));
 
                 // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
-                //BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
+                // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
                 // kick off the metered welcome email delivery process at five minutes past the hour every hour
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());

@@ -48,7 +48,7 @@ namespace UpDiddy.ViewComponents
             _sysEmail = sysEmail;
         }
 
-        public IViewComponentResult Invoke()
+        public async Task<IViewComponentResult> InvokeAsync()
         {
             Guid SubscriberGuid = Guid.Empty;
             foreach(Claim claim in HttpContext.User.Claims)
@@ -60,7 +60,7 @@ namespace UpDiddy.ViewComponents
             int NotificationCount = 0;
             if (User.Identity.IsAuthenticated && SubscriberGuid != Guid.Empty)
             {
-                SubscriberDto Subscriber = _Api.SubscriberAsync(SubscriberGuid, false).Result;
+                SubscriberDto Subscriber = await _Api.SubscriberAsync(SubscriberGuid, false);
                 foreach(NotificationDto Notification in Subscriber.Notifications)
                 {
                     if (Notification.HasRead == 0)
@@ -70,7 +70,7 @@ namespace UpDiddy.ViewComponents
 
 
 
-            var ButterResponse =_butterService.RetrieveContentFields<PublicSiteNavigationViewModel<PublicSiteNavigationMenuItemViewModel>>(
+            var ButterResponse = await _butterService.RetrieveContentFieldsAsync<PublicSiteNavigationViewModel<PublicSiteNavigationMenuItemViewModel>>(
                 "CareerCirclePublicSiteNavigation",
                 new string[1] { _configuration["ButterCMS:CareerCirclePublicSiteNavigation:Slug"] }, 
                 new Dictionary<string, string> {

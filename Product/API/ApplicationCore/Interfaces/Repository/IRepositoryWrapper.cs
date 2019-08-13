@@ -44,5 +44,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IOfferRepository Offer { get; }
         ISubscriberFileRepository SubscriberFileRepository { get; }
         ISalesForceSignUpListRepository SalesForceSignUpListRepository {get;}
+        ISkillRepository SkillRepository {get;}
     }
 }

@@ -18,13 +18,13 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet("[controller]")]
-        public async Task<IActionResult> Unlock()
+        public IActionResult Unlock()
         {
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> SubmitToken(string unlockToken)
+        public IActionResult SubmitToken(string unlockToken)
         {
             HttpContext.Response.Cookies.Append("HangfireUnlocked", Crypto.Encrypt(_configuration["Crypto:Key"], unlockToken));
             return Redirect("/dashboard");

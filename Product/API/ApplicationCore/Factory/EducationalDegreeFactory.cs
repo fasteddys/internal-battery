@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class EducationalDegreeFactory
     {
-        public static async Task<EducationalDegree> CreateEducationalDegree(string degree)
+        public static EducationalDegree CreateEducationalDegree(string degree)
         {
             EducationalDegree rVal = new EducationalDegree();
             rVal.Degree = degree;
@@ -21,19 +22,19 @@ namespace UpDiddyApi.ApplicationCore.Factory
             return rVal;
         }
 
-        static public async Task<EducationalDegree> GetOrAdd(UpDiddyDbContext db, string degree)
+        public static async Task<EducationalDegree> GetOrAdd(UpDiddyDbContext db, string degree)
         {
             degree = degree.Trim();
 
-            EducationalDegree educationalDegree = db.EducationalDegree
+            EducationalDegree educationalDegree = await db.EducationalDegree
                 .Where(s => s.IsDeleted == 0 && s.Degree == degree)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (educationalDegree == null)
             {
-                educationalDegree =  await CreateEducationalDegree(degree);
+                educationalDegree =  CreateEducationalDegree(degree);
                 db.EducationalDegree.Add(educationalDegree);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
             return educationalDegree;
         }

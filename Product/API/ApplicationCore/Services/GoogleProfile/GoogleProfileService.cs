@@ -1,25 +1,12 @@
 ﻿using AutoMapper;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.MessageQueue;
-using SendGrid.Helpers.Mail;
-using SendGrid;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json.Linq;
-using UpDiddyLib.Helpers;
-using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using UpDiddyLib.Helpers;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyApi.Helpers.GoogleProfile;
 using System.Net;
 

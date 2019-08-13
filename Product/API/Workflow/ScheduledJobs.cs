@@ -23,10 +23,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Helpers.Job;
-using UpDiddyLib.Helpers;
-using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using System.Linq.Expressions;
 using static UpDiddyLib.Helpers.Constants;
 using Newtonsoft.Json.Linq;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
@@ -108,9 +105,9 @@ namespace UpDiddyApi.Workflow
             {
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SubscriberNotificationEmailReminder started at: {executionTime.ToLongDateString()}");
 
-                var lastDay = await _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(1);
-                var lastSevenDays = await _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(7);
-                var lastThirtyDays = await _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(30);
+                var lastDay =  _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(1);
+                var lastSevenDays =  _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(7);
+                var lastThirtyDays =  _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(30);
                 var allReminders = lastDay.Union(lastSevenDays).Union(lastThirtyDays).ToList();
 
                 if (allReminders != null && allReminders.Count() > 0)
@@ -120,7 +117,7 @@ namespace UpDiddyApi.Workflow
                     foreach (var reminder in allReminders)
                     {
 
-                        if (_sysEmail.SendTemplatedEmailAsync(
+                        if (await _sysEmail.SendTemplatedEmailAsync(
                              reminder.Email,
                              _configuration["SysEmail:Transactional:TemplateIds:SubscriberNotification-Reminder"].ToString(),
                              new
@@ -134,7 +131,7 @@ namespace UpDiddyApi.Workflow
                              SendGridAccount.Transactional,
                              null,
                              null,
-                             executionTime).Result)
+                             executionTime))
                         {
                             // only update the execution time if the email was delivered successfully
                             executionTime = executionTime.Add(emailInterval);
@@ -186,7 +183,7 @@ namespace UpDiddyApi.Workflow
                             
                             if (
                                 // send the seed email using the lead email's account and template
-                                _sysEmail.SendTemplatedEmailAsync(
+                                await _sysEmail.SendTemplatedEmailAsync(
                                     partnerContact.Metadata["Email"].ToString(),
                                     leadEmail.EmailTemplateId,
                                     new
@@ -199,7 +196,7 @@ namespace UpDiddyApi.Workflow
                                     null,
                                     null,
                                     executionTime,
-                                    leadEmail.UnsubscribeGroupId).Result)
+                                    leadEmail.UnsubscribeGroupId))
                             {
                                 // update the execution time if the seed email was delivered successfully
                                 executionTime = executionTime.Add(emailInterval);
@@ -263,7 +260,7 @@ namespace UpDiddyApi.Workflow
         public async Task ValidateEmailAddress(Guid partnerContactGuid, string email, int verificationFailureLeadStatusId)
         {
             // retrieve the partner contact that will be associated with any lead statuses we store and the log of the zero bounce request
-            var partnerContact = _db.PartnerContact.Where(pc => pc.PartnerContactGuid == partnerContactGuid).FirstOrDefault();
+            var partnerContact = await _db.PartnerContact.Where(pc => pc.PartnerContactGuid == partnerContactGuid).FirstOrDefaultAsync();
 
             if (partnerContact == null)
                 throw new ApplicationException("Unrecognized partner contact");
@@ -621,14 +618,16 @@ namespace UpDiddyApi.Workflow
         public async Task<bool> JobDataMining()
         {
             _syslog.Log(LogLevel.Information, $"***** JobDataMining started at: {DateTime.UtcNow.ToLongDateString()}");
-
+            string jobSiteName = string.Empty;
+            string position = string.Empty;
             var result = true;
             try
             {
-                List<JobSite> jobSites = _repositoryWrapper.JobSite.GetAllJobSitesAsync().Result.ToList();
+                IEnumerable<JobSite> jobSites = await _repositoryWrapper.JobSite.GetAllJobSitesAsync();
 
                 foreach (var jobSite in jobSites)
                 {
+                    jobSiteName = jobSite.Name;
                     // initialize stat tracking for operation
                     JobSiteScrapeStatistic jobDataMiningStats =
                         new JobSiteScrapeStatistic()
@@ -649,12 +648,16 @@ namespace UpDiddyApi.Workflow
                     IJobDataMining jobDataMining = JobDataMiningFactory.GetJobDataMiningProcess(jobSite, _configuration, _syslog);
 
                     // load all existing job pages - it is important to retrieve all of them regardless of their JobPageStatus to avoid FK conflicts on insert and update operations
-                    List<JobPage> existingJobPages = _repositoryWrapper.JobPage.GetAllJobPagesForJobSiteAsync(jobSite.JobSiteGuid).Result.ToList();
+                    IEnumerable<JobPage> existingJobPages = await _repositoryWrapper.JobPage.GetAllJobPagesForJobSiteAsync(jobSite.JobSiteGuid);
+                    position = "GetAllJobPagesForJobSiteAsyncCompleted";
+
                     // set the number of existing active job pages before we perform any discovery operations
                     int existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
 
                     // retrieve all current job pages that are visible on the job site
-                    List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages);
+                    List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages.ToList());
+                    position = "DiscoverJobPagesCompleted";
+
                     // set the number of pending and active jobs discovered - this will be the future state if we continue processing this job site
                     int futurePendingAndActiveJobPagesCount = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2).Count();
 
@@ -679,18 +682,19 @@ namespace UpDiddyApi.Workflow
                     {
                         // convert job pages to job postings and perform the necessary CRUD operations
                         jobDataMiningStats = await ProcessJobPages(jobDataMining, jobPagesToProcess, jobDataMiningStats);
+                        position = "ProcessJobPagesCompleted";
                     }
 
                     // store aggregate data about operations performed by job site; set scrape date at the very end of the process
                     jobDataMiningStats.ScrapeDate = DateTime.UtcNow;
-                    _repositoryWrapper.JobSiteScrapeStatistic.Create(jobDataMiningStats);
+                    await _repositoryWrapper.JobSiteScrapeStatistic.Create(jobDataMiningStats);
                     await _repositoryWrapper.JobSiteScrapeStatistic.SaveAsync();
                 }
             }
             catch (Exception e)
             {
                 // todo: implement better logging
-                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.JobDataMining encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.JobDataMining encountered an exception for {jobSiteName} after {position}; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 result = false;
             }
 
@@ -725,7 +729,7 @@ namespace UpDiddyApi.Workflow
                         // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
                         jobPostingDto.JobPostingGuid = jobPostingGuid;
                         // attempt to update job posting
-                        isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService);
+                        isJobPostingOperationSuccessful =  JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService);
                         // increment updated count in stats
                         if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
                             jobDataMiningStats.NumJobsUpdated += 1;
@@ -759,7 +763,7 @@ namespace UpDiddyApi.Workflow
                         if (jobPage.JobPageId > 0)
                             _repositoryWrapper.JobPage.Update(jobPage);
                         else
-                            _repositoryWrapper.JobPage.Create(jobPage);
+                        await _repositoryWrapper.JobPage.Create(jobPage);
                         await _repositoryWrapper.JobPage.SaveAsync();
 
                     }
@@ -771,7 +775,7 @@ namespace UpDiddyApi.Workflow
                         if (jobPage.JobPageId > 0)
                             _repositoryWrapper.JobPage.Update(jobPage);
                         else
-                            _repositoryWrapper.JobPage.Create(jobPage);
+                        await _repositoryWrapper.JobPage.Create(jobPage);
                         await _repositoryWrapper.JobPage.SaveAsync();
 
                         // increment error count in stats
@@ -825,7 +829,7 @@ namespace UpDiddyApi.Workflow
                             if (jobPage.JobPageId > 0)
                                 _repositoryWrapper.JobPage.Update(jobPage);
                             else
-                                _repositoryWrapper.JobPage.Create(jobPage);
+                            await _repositoryWrapper.JobPage.Create(jobPage);
                             await _repositoryWrapper.JobPage.SaveAsync();
 
                             // increment drop count in stats
@@ -839,7 +843,7 @@ namespace UpDiddyApi.Workflow
                             if (jobPage.JobPageId > 0)
                                 _repositoryWrapper.JobPage.Update(jobPage);
                             else
-                                _repositoryWrapper.JobPage.Create(jobPage);
+                            await _repositoryWrapper.JobPage.Create(jobPage);
                             await _repositoryWrapper.JobPage.SaveAsync();
 
                             // increment error count in stats
@@ -1203,7 +1207,7 @@ namespace UpDiddyApi.Workflow
                         EntityId = JobApplication.JobApplicationId,
                         EntityTypeId = EntityType.EntityTypeId
                     });
-                    RecruiterActionRepository.Create(NewRecruiterAction);
+                    await RecruiterActionRepository.Create(NewRecruiterAction);
                     await RecruiterActionRepository.SaveAsync();
                     return NewRecruiterAction;
                 }
@@ -1222,7 +1226,7 @@ namespace UpDiddyApi.Workflow
             try
             {
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ExecuteJobAbandonmentEmailDelivery started at: {DateTime.UtcNow.ToLongDateString()}");
-                Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = await _trackingService.GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime.UtcNow);
+                Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = await _trackingService.GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime.UtcNow.AddDays(-1));
                 if(subscribersToJobPostingMapping.Count > 0)
                 {
                     string jobPostingUrl = _configuration["CareerCircle:ViewJobPostingUrl"];
@@ -1446,7 +1450,7 @@ namespace UpDiddyApi.Workflow
                 };
                 SubscriberNotifications.Add(subscriberNotification);
             }
-            _repositoryWrapper.SubscriberNotificationRepository.CreateRange(SubscriberNotifications.ToArray());
+            await _repositoryWrapper.SubscriberNotificationRepository.CreateRange(SubscriberNotifications.ToArray());
             await _repositoryWrapper.SubscriberNotificationRepository.SaveAsync();
 
             return true;
@@ -1574,17 +1578,85 @@ namespace UpDiddyApi.Workflow
         public async Task UpdateSubscriberFilesMimeType()
         {
             //get all SubscriberFiles with Empty MimeType
-            var queryableSubscriberFile = await _repositoryWrapper.SubscriberFileRepository.GetAllSubscriberFileQueryableAsync();
-            var nullMimeTypeFiles=await queryableSubscriberFile.Where(x => x.MimeType == null && x.IsDeleted==0).ToListAsync();
+            var queryableSubscriberFile =  _repositoryWrapper.SubscriberFileRepository.GetAllSubscriberFileQueryableAsync();
+            var nullMimeTypeFiles = await queryableSubscriberFile.Where(x => x.MimeType == null && x.IsDeleted==0).ToListAsync();
 
             if (nullMimeTypeFiles.Count > 0)
             {
                 foreach(SubscriberFile file in nullMimeTypeFiles)
                 {
-                    file.MimeType = await _mimeMappingService.MapAsync(file.BlobName);
+                    file.MimeType =  _mimeMappingService.MapAsync(file.BlobName);
                     await _repositoryWrapper.SubscriberFileRepository.UpdateSubscriberFileAsync(file);
                 }
             }
+        }
+        #endregion
+
+        #region Pull all JobTitles, Company, City, State and Postal Code for search intelligence
+        
+        public async Task CacheKeywordLocationSearchIntelligenceInfo()
+        {
+            List<string> keywordSearch=new List<string>();
+            List<string> locationSearch=new List<string>();
+
+            //JobTitles, Company, City and Postal Code
+            IQueryable<JobPosting> queryableJobPostings=_repositoryWrapper.JobPosting.GetAllJobPostings();
+            var jobPostingsSearchInfoResults=await  queryableJobPostings.Include(co=>co.Company)
+                                                                        .Where(jpg=>jpg.IsDeleted==0)
+                                                                        .Select(jp=>new 
+                                                                        {
+                                                                            JobTitle= jp.Title,
+                                                                            CompanyName=jp.Company.CompanyName,
+                                                                            City=jp.City,
+                                                                            PostalCode=jp.PostalCode
+                                                                        }).ToListAsync();
+
+            //Get Skills for all active Job Postings
+            IEnumerable<Skill> skillsList=await _repositoryWrapper.SkillRepository.GetAllSkillsForJobPostings();
+
+            //Get State Names
+            IEnumerable<State> statesList=await _repositoryWrapper.State.GetStatesForDefaultCountry();
+
+            foreach(State state in statesList)
+            {
+                if(state.Name!=null)
+                     locationSearch.Add(state.Name);
+            }
+            
+            foreach(var jobPostingSearchInfo in jobPostingsSearchInfoResults)
+            {
+                if(jobPostingSearchInfo.JobTitle!=null)
+                    keywordSearch.Add(jobPostingSearchInfo.JobTitle);
+
+                if(jobPostingSearchInfo.CompanyName!=null)
+                    keywordSearch.Add(jobPostingSearchInfo.CompanyName);
+
+                if(jobPostingSearchInfo.City!=null)
+                    locationSearch.Add(jobPostingSearchInfo.City);
+
+                if(jobPostingSearchInfo?.PostalCode!=null)    
+                    locationSearch.Add(jobPostingSearchInfo.PostalCode);
+            }
+
+            foreach(Skill skill in skillsList)
+            {
+                if(skill.SkillName!=null)
+                     keywordSearch.Add(skill.SkillName);
+            }
+
+            string serializedKeyworkSearchList=JsonConvert.SerializeObject(keywordSearch.ConvertAll(k=>k.ToLower()).Distinct());
+            string serializedLocationSearchList=JsonConvert.SerializeObject(locationSearch.ConvertAll(l=>l.ToLower()).Distinct());
+
+            //cache for 2 days unless the scheduled job runs.
+            //caching of keyword and location happens when the job data mining job runs
+            DistributedCacheEntryOptions options=new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpirationRelativeToNow=TimeSpan.FromDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"]))
+            };
+
+            //cache the list to use for intelligence search
+            _cache.SetString("keywordSearchList",serializedKeyworkSearchList,options);
+            _cache.SetString("locationSearchList",serializedLocationSearchList,options);
         }
         #endregion
 
@@ -1598,7 +1670,7 @@ namespace UpDiddyApi.Workflow
             try
             {
                  _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:UpdateAllegisGroupJobPageRawDataField started at: {DateTime.UtcNow.ToLongDateString()}");
-                var jobs = await _repositoryWrapper.JobPage.GetAllAsync();
+                var jobs =  _repositoryWrapper.JobPage.GetAll();
                 var allegisjobs = jobs.Where(x => x.JobSiteId == 3 && x.IsDeleted == 0 && x.JobPageStatusId == 2).ToList();
                 foreach (var job in allegisjobs)
                 {

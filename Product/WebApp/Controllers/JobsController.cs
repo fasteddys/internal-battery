@@ -119,15 +119,6 @@ namespace UpDiddy.Controllers
             if (jobSearchResultDto == null)
                 return NotFound();
 
-            var companies = await _api.GetAllCompaniesAsync();
-            foreach (var job in jobSearchResultDto.Jobs)
-            {
-                var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
-
-                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
-                    job.CompanyLogoUrl = _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + company.LogoUrl;
-            }
-
             // when applying a new a histogram the page should be reset to the first page
             Regex matchPagingQueryStringParameter = new Regex(@"page=.+?(?=\w)");
             queryParametersString = matchPagingQueryStringParameter.Replace(queryParametersString, string.Empty);
@@ -337,7 +328,7 @@ namespace UpDiddy.Controllers
                 jdvm.LoggedInSubscriberGuid = subscriber.SubscriberGuid;
                 jdvm.LoggedInSubscriberEmail = subscriber.Email;
                 jdvm.LoggedInSubscriberName = subscriber.FirstName + " " + subscriber.LastName;
-                _Api.RecordSubscriberJobViewAction(JobGuid, GetSubscriberGuid());
+                await _Api.RecordSubscriberJobViewAction(JobGuid, GetSubscriberGuid());
             }
 
             //update job as viewed if there is referrer code
@@ -977,7 +968,7 @@ namespace UpDiddy.Controllers
                         if (!FacetLabelExists(StateFacet.Facets, UpDiddyLib.Helpers.Utils.GetStateByName(state.Replace("-", " ")).ToString()))
                             return false;
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         // Returns false if unable to find matching state from
                         return false;
@@ -1535,5 +1526,23 @@ namespace UpDiddy.Controllers
             Guid jobPostingGuid = Guid.Parse(jobPostingId);
             return await JobAsync(jobPostingGuid);
         }
+
+        #region Keyword and location Search
+        [HttpGet]
+        [Route("[controller]/SearchKeyword")]
+        public async Task<IActionResult> KeywordSearch(string keyword)
+        {
+            var keywordSearchList = await _api.GetKeywordSearchList(keyword);
+            return Ok(keywordSearchList);
+        }
+
+        [HttpGet]
+        [Route("[controller]/LocationKeyword")]
+        public async Task<IActionResult> LocationSearch(string location)
+        {
+            var locationSearchList = await _api.GetLocationSearchList(location);
+            return Ok(locationSearchList);
+        }
+        #endregion
     }
 }

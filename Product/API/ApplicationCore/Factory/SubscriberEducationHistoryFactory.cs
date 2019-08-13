@@ -47,7 +47,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     EducationalDegreeTypeId = educationalDegreeType.EducationalDegreeTypeId
             };
             db.SubscriberEducationHistory.Add(rVal);
-            db.SaveChanges();    
+            await db.SaveChangesAsync();    
             
             return rVal;
         }
