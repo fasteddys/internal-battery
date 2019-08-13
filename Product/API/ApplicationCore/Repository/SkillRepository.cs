@@ -15,9 +15,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             _dbContext=dbContext;
         }
-        public async Task<IQueryable<Skill>> GetAllSkillsQueryable()
+        public IQueryable<Skill> GetAllSkillsQueryable()
         {
-            return await GetAllAsync();
+            return GetAll();
         }
 
         public async Task<List<Skill>> GetAllSkillsForJobPostings()
