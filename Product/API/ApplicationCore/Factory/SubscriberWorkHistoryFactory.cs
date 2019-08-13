@@ -48,7 +48,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                     IsDeleted = 0
                 };
                 db.SubscriberWorkHistory.Add(wh);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
                 return wh;
             }
             catch

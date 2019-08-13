@@ -57,7 +57,7 @@ namespace UpDiddyApi.Controllers
         /// <returns></returns>
         [HttpPost]
         [Authorize(AuthenticationSchemes = APIGatewayDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> InsertLeadAsync([FromBody] LeadRequestDto leadRequest)
+        public IActionResult InsertLeadAsync([FromBody] LeadRequestDto leadRequest)
         {
             var apiToken = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             var leadResponse = _leadFactory.InsertLead(leadRequest, apiToken);
@@ -77,7 +77,7 @@ namespace UpDiddyApi.Controllers
         [DisableRequestSizeLimit]
         [Authorize(AuthenticationSchemes = APIGatewayDefaults.AuthenticationScheme)]
         [Route("{leadIdentifier}/file")]
-        public async Task<object> AddOrReplaceFileAsync(Guid leadIdentifier, [FromBody] LeadFileDto leadFile)
+        public object AddOrReplaceFileAsync(Guid leadIdentifier, [FromBody] LeadFileDto leadFile)
         {
             string apiToken = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             var leadResponse = _leadFactory.AddOrReplaceFile(leadIdentifier, leadFile, apiToken);
@@ -85,21 +85,21 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetLeadAsync(Guid leadIdentifier)
+        public IActionResult GetLeadAsync(Guid leadIdentifier)
         {
             // don't need to support this yet (or maybe ever)
             throw new NotImplementedException();
         }
 
         [HttpPatch]
-        public async Task<object> UpdateLeadAsync([FromBody] LeadRequestDto leadRequest)
+        public object UpdateLeadAsync([FromBody] LeadRequestDto leadRequest)
         {
             // don't need to support this yet (or maybe ever)
             throw new NotImplementedException();
         }
 
         [HttpDelete]
-        public async Task<object> DeleteLeadAsync(Guid leadIdentifier)
+        public object DeleteLeadAsync(Guid leadIdentifier)
         {
             // don't need to support this yet (or maybe ever)
             throw new NotImplementedException();

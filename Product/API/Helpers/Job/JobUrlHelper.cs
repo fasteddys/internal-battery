@@ -1,22 +1,7 @@
-﻿using System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
-using Google.Protobuf.WellKnownTypes;
-using Google.Apis.CloudTalentSolution.v3;
-using UpDiddyLib.Helpers;
-using UpDiddyApi.Models;
+﻿
 using UpDiddyLib.Dto;
-using UpDiddyApi.ApplicationCore.Factory;
-using Microsoft.Extensions.Logging;
-using AutoMapper;
-using UpDiddyApi.ApplicationCore.Services;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Configuration;
 
 namespace UpDiddyApi.Helpers.Job
 {

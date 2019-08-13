@@ -19,9 +19,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<IEnumerable<JobPostingAlert>> GetAllJobPostingAlertsBySubscriber(Guid subscriberGuid)
         {
-            var jobPostingAlerts = GetAllAsync();
+            var jobPostingAlerts = GetAll();
 
-            return await jobPostingAlerts.Result
+            return await jobPostingAlerts
                 .Include(a => a.Subscriber)
                 .Where(a => a.Subscriber.SubscriberGuid == subscriberGuid)
                 .ToListAsync();
@@ -29,8 +29,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<JobPostingAlert> GetJobPostingAlert(Guid jobPostingAlertGuid)
         {
-            var jobPostingAlerts = GetAllAsync();
-            return await jobPostingAlerts.Result
+            var jobPostingAlerts = GetAll();
+            return await jobPostingAlerts
                 .Include(a => a.Subscriber) 
                 .Where(a => a.JobPostingAlertGuid == jobPostingAlertGuid)
                 .FirstOrDefaultAsync();

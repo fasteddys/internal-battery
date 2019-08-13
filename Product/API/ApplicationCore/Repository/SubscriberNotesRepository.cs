@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-
+using Microsoft.EntityFrameworkCore;
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     public class SubscriberNotesRepository : UpDiddyRepositoryBase<SubscriberNotes>, ISubscriberNotesRepository
@@ -19,17 +18,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
             await SaveAsync();
         }
 
-        public Task<IQueryable<SubscriberNotes>> GetAllSubscriberNotesQueryable()
+        public IQueryable<SubscriberNotes> GetAllSubscriberNotesQueryable()
         {
-            return GetAllAsync();
+            return GetAll();
         }
 
         public async Task<SubscriberNotes> GetSubscriberNotesBySubscriberNotesGuid(Guid subscrberNotesGuid)
         {
-            var querableSubscriberNotes = await GetAllAsync();
-            var subscriberNotesResult = querableSubscriberNotes
+            var querableSubscriberNotes = GetAll();
+            var subscriberNotesResult = await querableSubscriberNotes
                             .Where(s => s.IsDeleted == 0 && s.SubscriberNotesGuid == subscrberNotesGuid)
-                            .ToList();
+                            .ToListAsync();
 
             return subscriberNotesResult.Count == 0 ? null : subscriberNotesResult[0];
         }

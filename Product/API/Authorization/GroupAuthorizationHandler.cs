@@ -31,7 +31,7 @@ namespace UpDiddyApi.Authorization
             {
                 groups = await _graphClient.GetUserGroupsByObjectId(userId);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // if exception then stop here, don't assume they have access
                 return false;

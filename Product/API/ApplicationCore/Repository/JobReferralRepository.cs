@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -26,10 +27,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<JobReferral> GetJobReferralByGuid(Guid jobReferralGuid)
         {
-            var queryableJobReferral = await GetAllAsync();
-            var jobReferralResult = queryableJobReferral
+            var queryableJobReferral = GetAll();
+            var jobReferralResult = await queryableJobReferral
                                 .Where(jr => jr.IsDeleted == 0 && jr.JobReferralGuid == jobReferralGuid)
-                                .ToList();
+                                .ToListAsync();
 
             return jobReferralResult.Count == 0 ? null : jobReferralResult[0];
         }
@@ -38,7 +39,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             //persist jobReferral changes to database 
             Update(jobReferral);
-            SaveAsync().Wait();
+            await SaveAsync();
         }
     }
 }

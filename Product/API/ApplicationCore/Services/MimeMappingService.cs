@@ -16,7 +16,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _contentTypeProvider = contentTypeProvider;
         }
 
-        public async Task<string> MapAsync(string fileName)
+        public string MapAsync(string fileName)
         {
             string contentType;
             if (!_contentTypeProvider.TryGetContentType(fileName, out contentType))

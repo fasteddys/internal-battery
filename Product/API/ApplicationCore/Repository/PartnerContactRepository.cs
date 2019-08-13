@@ -27,9 +27,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
                 return null;
 
             IList<Partner> Partners = new List<Partner>();
-            IQueryable<PartnerContact> partnerContacts = await GetAllAsync();
+            IQueryable<PartnerContact> partnerContacts =  GetAll();
             IQueryable<PartnerContact> iePartnerContacts = partnerContacts.Where(pc => pc.ContactId == contact.ContactId).Include<PartnerContact>("Partner");
-            IList<PartnerContact> PartnerContacts = iePartnerContacts.ToList();
+            IList<PartnerContact> PartnerContacts = await iePartnerContacts.ToListAsync();
             foreach(PartnerContact partnerContact in PartnerContacts)
             {
                 Partners.Add(partnerContact.Partner);

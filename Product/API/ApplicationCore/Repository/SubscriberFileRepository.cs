@@ -14,9 +14,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
 
         }
-        public async Task<IQueryable<SubscriberFile>> GetAllSubscriberFileQueryableAsync()
+        public IQueryable<SubscriberFile> GetAllSubscriberFileQueryableAsync()
         {
-           return await GetAllAsync();
+           return GetAll();
         }
 
         public async Task UpdateSubscriberFileAsync(SubscriberFile subscriberFile)

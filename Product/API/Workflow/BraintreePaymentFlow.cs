@@ -41,7 +41,7 @@ namespace UpDiddyApi.Workflow
             _hangfireService = hangfireService;
         }
 
-        public async Task<MessageTransactionResponse> PaymentWorkItem(EnrollmentFlowDto EnrollmentFlowDto)
+        public MessageTransactionResponse PaymentWorkItem(EnrollmentFlowDto EnrollmentFlowDto)
         {
 
             // Extract the two DTOs from the DTO that's passed in.

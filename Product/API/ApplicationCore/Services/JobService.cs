@@ -9,8 +9,13 @@ using UpDiddyLib.Dto;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddyApi.Models;
 using UpDiddyLib.Helpers;
-using Hangfire;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.Helpers.Job;
+using Microsoft.Extensions.Logging;
+using System.Net.Http;
+using Google.Apis.CloudTalentSolution.v3.Data;
+using UpDiddyLib.Shared.GoogleJobs;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -22,14 +27,25 @@ namespace UpDiddyApi.ApplicationCore.Services
         private ISysEmail _sysEmail;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private IHangfireService _hangfireService;
+        private readonly CloudTalent _cloudTalent = null;
+        private readonly UpDiddyDbContext _db = null;
+        private readonly ILogger _syslog;
+        private readonly IHttpClientFactory _httpClientFactory = null;
+        private readonly ICompanyService _companyService;
         public JobService(IServiceProvider services, IHangfireService hangfireService)
         {
             _services = services;
+
+             _db = _services.GetService<UpDiddyDbContext>();
+            _syslog = _services.GetService<ILogger<JobService>>();
+            _httpClientFactory = _services.GetService<IHttpClientFactory>();
             _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
             _mapper = _services.GetService<IMapper>();
             _sysEmail = _services.GetService<ISysEmail>();
             _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
+            _companyService=services.GetService<ICompanyService>();
             _hangfireService = hangfireService;
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
         }
         public async Task ReferJobToFriend(JobReferralDto jobReferralDto)
         {
@@ -127,5 +143,41 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await _repositoryWrapper.JobReferralRepository.UpdateJobReferral(jobReferral);
             }
         }
+
+        public async Task<JobSearchResultDto> GetJobsByLocationAsync(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum,IQueryCollection query)
+        {
+            int PageSize = int.Parse(_configuration["CloudTalent:JobPageSize"]);
+            JobQueryDto jobQuery = JobQueryHelper.CreateJobQuery(Country, Province, City, Industry, JobCategory, Skill, PageNum, PageSize, query);
+            JobSearchResultDto jobSearchResult = _cloudTalent.JobSearch(jobQuery);
+
+            //assign company logo urls
+            await AssignCompanyLogoUrlToJobs(jobSearchResult.Jobs);
+
+            // set common properties for an alert jobQuery and include this in the response
+            jobQuery.DatePublished = null;
+            jobQuery.ExcludeCustomProperties = 1;
+            jobQuery.ExcludeFacets = 1;
+            jobQuery.PageSize = 20;
+            jobQuery.NumPages = 1;
+            jobSearchResult.JobQueryForAlert = jobQuery;
+
+            // don't let this stop job search from returning
+            ClientEvent ce = await _cloudTalent.CreateClientEventAsync(jobSearchResult.RequestId, ClientEventType.Impression, jobSearchResult.Jobs.Select(job => job.CloudTalentUri).ToList<string>());
+            jobSearchResult.ClientEventId = ce.EventId;
+
+            return jobSearchResult;
+        }
+
+        private async Task AssignCompanyLogoUrlToJobs(List<JobViewDto> jobs)
+        {
+            var companies = await _companyService.GetCompaniesAsync();
+            foreach (var job in jobs)
+            {
+                var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
+
+                if (!string.IsNullOrWhiteSpace(company?.LogoUrl))
+                    job.CompanyLogoUrl = _configuration["StorageAccount:AssetBaseUrl"] + "Company/" + company.LogoUrl;
+            }
+        } 
     }
 }

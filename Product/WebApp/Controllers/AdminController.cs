@@ -204,7 +204,7 @@ namespace UpDiddy.Controllers
 
                 return View("Contacts", partner);
             }
-            catch (ApiException e)
+            catch (ApiException)
             {
                 return BadRequest();
             }
@@ -429,7 +429,7 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Partners");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     // Log exception
                 }
@@ -470,7 +470,7 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Partners");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     // Log error
                 }
@@ -489,7 +489,7 @@ namespace UpDiddy.Controllers
                     return BadRequest();
                 return RedirectToAction("Partners");
             }
-            catch (ApiException e)
+            catch (ApiException)
             {
                 // Log error
             }
@@ -533,7 +533,7 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Notifications");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     // Log exception
                 }
@@ -575,7 +575,7 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Notifications");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     // Log error
                 }
@@ -594,7 +594,7 @@ namespace UpDiddy.Controllers
                     return BadRequest();
                 return RedirectToAction("Notifications");
             }
-            catch (ApiException e)
+            catch (ApiException)
             {
                 // Log error
             }
