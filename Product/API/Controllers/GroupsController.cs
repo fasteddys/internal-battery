@@ -53,6 +53,7 @@ namespace UpDiddyApi.Controllers
             _repositoryWrapper = repositoryWrapper;
         }
 
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpGet]
         public async Task<IActionResult> Get()
         {
