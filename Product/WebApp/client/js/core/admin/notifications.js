@@ -21,3 +21,7 @@ $("#IsTargeted").on("click", function(){
     var divToShow = $(".group-notification-select");
     divToShow.toggleClass("hidden");
 });
+
+$( document ).ready(function() {
+    $( "#IsTargeted" ).prop( "checked", false );
+});
