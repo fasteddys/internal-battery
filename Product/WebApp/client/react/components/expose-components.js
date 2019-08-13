@@ -63,3 +63,7 @@ global.CompaniesGrid = CompaniesGrid;
 //Recruiters
 import RecruitersGrid from './recruiters/RecruitersGrid';
 global.RecruitersGrid = RecruitersGrid;
+
+
+import JobAbandonmentCount from './reports/JobAbandonmentCountTable';
+global.JobAbandonmentCount = JobAbandonmentCount;

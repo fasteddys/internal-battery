@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -136,6 +137,46 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             return jobviewCountDtoList;
+        }
+
+        public async Task<List<KeyValuePair<DateTime, int>>> GetJobAbandonmentCountByDateAsync(DateTime startDate, DateTime endDate)
+        {
+
+
+            var subscriberAction = _repositoryWrapper.SubscriberActionRepository.GetAll();
+            var subscriber = _repositoryWrapper.Subscriber.GetAll();
+            var jobPosting = _repositoryWrapper.JobPosting.GetAll();
+            var jobApplication = _repositoryWrapper.JobApplication.GetAll();
+            var action = await _repositoryWrapper.ActionRepository.GetByNameAsync(UpDiddyLib.Helpers.Constants.Action.ApplyJob);
+            List<KeyValuePair<DateTime, int>> result = new List<KeyValuePair<DateTime, int>>();
+            while(startDate.Date != endDate.Date)
+            {
+                
+                var count = await (from sa in subscriberAction
+                                join s in subscriber on sa.SubscriberId equals s.SubscriberId
+                                join jp in jobPosting on sa.EntityId equals jp.JobPostingId
+                                join ja in jobApplication.DefaultIfEmpty() on
+                                new
+                                {
+                                    jp.JobPostingId,
+                                    sa.SubscriberId
+                                }
+                                equals
+                                new
+                                {
+                                    ja.JobPostingId,
+                                    ja.SubscriberId
+                                }
+                                where sa.ActionId == action.ActionId 
+                                //&& ja.JobApplicationGuid == null
+                                && (sa.CreateDate.Date == startDate || startDate == null)
+                                select sa).CountAsync();
+
+                 KeyValuePair<DateTime, int> pair = new KeyValuePair<DateTime, int>(startDate, count);
+                 result.Add(pair);
+                 startDate = startDate.AddDays(1);                 
+            }
+            return result;        
         }
     }
 }

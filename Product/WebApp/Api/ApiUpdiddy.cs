@@ -1574,6 +1574,12 @@ namespace UpDiddy.Api
             return await GetAsync<List<FailedSubscriberDto>>("subscriber/failed-subscribers");
         }
 
+        public async Task<List<KeyValuePair<DateTime, int>>> GetJobAbandonmentCountByDateAsync(DateTime startDate, DateTime endDate)
+        {
+            
+            return await GetAsync<List<KeyValuePair<DateTime, int>>>($"report/job-abandonment-count/?startDate={startDate.ToString("MM/dd/yyyy")}&endDate={endDate.ToString("MM/dd/yyyy")}");
+        }
+
         #endregion
 
         #region JobBoard

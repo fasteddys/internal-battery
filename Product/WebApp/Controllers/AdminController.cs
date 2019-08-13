@@ -146,7 +146,7 @@ namespace UpDiddy.Controllers
             ViewBag.subscriberReport = await _api.GetSubscriberReportAsync(dates);
             ViewBag.partnerReport = await _api.GetSubscriberReportByPartnerAsync();
             ViewBag.offerActionSummary = await _api.GetOfferActionSummaryAsync();
-            ViewBag.failedSubscriberSummary = await _api.GetFailedSubscribersSummaryAsync();
+            ViewBag.abandonmentCount = await _api.GetJobAbandonmentCountByDateAsync(DateTime.Today.AddDays(-3).Date, DateTime.Today.Date);
             return View("Dashboard");
         }
 

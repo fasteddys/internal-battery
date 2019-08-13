@@ -8,9 +8,7 @@ using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto.Reporting;
-using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
-using UpDiddyLib.Dto;
 using Microsoft.EntityFrameworkCore;
 
 namespace UpDiddyApi.Controllers
@@ -315,5 +313,31 @@ namespace UpDiddyApi.Controllers
 
             return response;
         }
+
+        [HttpGet]
+        [Route("api/[controller]/job-abandonment-count/{startDate?}/{endDate?}")]
+        public async Task<IActionResult> JobAbandonmentCountByDateAsync(DateTime startDate, DateTime endDate)
+        {
+           ActionResult response;
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var result = await _reportingService.GetJobAbandonmentCountByDateAsync(startDate, endDate);
+                    response = Ok(result);
+
+                }
+                else
+                    response = BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _syslog.LogError(ex, $"Error in ReportController.JobAbandonmentCountByDateAsync method for StartDate={startDate} and EndDate={endDate}");
+                response = StatusCode(500);
+            }
+
+            return response;
+        }
+
     }
 }

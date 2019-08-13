@@ -1,8 +1,6 @@
 using System;
 using UpDiddyLib.Dto;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using System.IO;
 using System.Threading.Tasks;
 using System.Net.Http;
 using UpDiddyLib.Dto.Marketing;
@@ -125,6 +123,7 @@ namespace UpDiddy.Api
         Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords);
         Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDatesAsynch(DateTime? startPostDate, DateTime? endPostDate);
         Task<List<FailedSubscriberDto>> GetFailedSubscribersSummaryAsync();
+        Task<List<KeyValuePair<DateTime,int>>> GetJobAbandonmentCountByDateAsync(DateTime startDate, DateTime endDate);
 
 
         #endregion

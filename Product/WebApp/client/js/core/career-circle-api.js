@@ -167,6 +167,10 @@
         return await _http.get(`/report/job-applications${buildQuery(query)}`);
     }
 
+    var getJobAbandonmentCount =  function(startDate, endDate) {
+        return  _http.get('/report/job-abandonment-count/?startDate=' + startDate + '&endDate=' + endDate);
+    }
+
     var requestVerification = function (verifyUrl) {
         return _http.post('/subscriber/request-verification', JSON.stringify({ verifyUrl: verifyUrl }));
     }
@@ -282,6 +286,7 @@
         editRecruiter: editRecruiter,
         deleteRecruiter: deleteRecruiter,
         getNotificationCountReport: getNotificationCountReport,
+        getJobAbandonmentCount: getJobAbandonmentCount,
     };
     
 })(API_URL);
