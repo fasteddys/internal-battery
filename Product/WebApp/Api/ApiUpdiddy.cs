@@ -116,6 +116,7 @@ namespace UpDiddy.Api
                 .WithClientSecret(AzureOptions.ClientSecret)
                 .Build();
             new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).EnablePersistence(app.UserTokenCache);
+   
             var accounts = await app.GetAccountsAsync();
             IAccount account = accounts.FirstOrDefault();
             int retries = 3;

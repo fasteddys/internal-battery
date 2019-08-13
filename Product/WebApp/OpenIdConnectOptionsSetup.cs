@@ -115,11 +115,8 @@ namespace UpDiddy
                     .WithRedirectUri(AzureAdB2COptions.RedirectUri)
                     .WithClientSecret(AzureAdB2COptions.ClientSecret)
                     .Build();
-
-
-                // todo jab this was static cache in the latet example from microsoft 
-                   new MSALStaticCache(signedInUserID, context.HttpContext).EnablePersistence(cca.UserTokenCache);
-               // new MSALSessionCache(signedInUserID, context.HttpContext).EnablePersistence(cca.UserTokenCache);
+ 
+                new MSALSessionCache(signedInUserID, context.HttpContext).EnablePersistence(cca.UserTokenCache);
                 try
                 {
                     AuthenticationResult result = await cca.AcquireTokenByAuthorizationCode(AzureAdB2COptions.ApiScopes.Split(' '), code)
