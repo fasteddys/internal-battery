@@ -35,6 +35,7 @@ using System.Data.SqlClient;
 using JobPosting = UpDiddyApi.Models.JobPosting;
 using UpDiddyApi.Helpers;
 using UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common;
+using System.Collections.Concurrent;
 
 namespace UpDiddyApi.Workflow
 {
@@ -608,121 +609,108 @@ namespace UpDiddyApi.Workflow
 
         #region External Courses
 
-        // scrape site into course pages
-
-            // publish courses into data model
-
         /// <summary>
-        /// This is the entry point for all external course data mining.
+        /// This method is responsible for the out-of-band processing for the course site crawling operation.
         /// </summary>
         /// <returns></returns>
         [DisableConcurrentExecution(timeoutInSeconds: 60)]
-        public async Task<bool> CourseDataMining()
+        public async Task<bool> CrawlCourseSiteAsync(CourseSite courseSite)
         {
-            _syslog.Log(LogLevel.Information, $"***** CourseDataMining started at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** Crawling course site '{courseSite.Name}'. Started at: {DateTime.UtcNow.ToLongDateString()}");
 
             var result = true;
             try
             {
-                // todo: get all of the course page status values?
+                // load the course process for the course site
+                ICourseProcess courseProcess = CourseCrawlingFactory.GetCourseProcess(courseSite, _configuration, _syslog, _sovrenApi);
 
-                List<CourseSite> courseSites = _repositoryWrapper.CourseSite.GetAllCourseSitesAsync().Result.ToList();
+                // load all existing course pages - it is important to retrieve all of them regardless of their CoursePageStatus to avoid FK conflicts on insert and update operations
+                var coursePages = await _repositoryWrapper.CoursePage.GetAllCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid);
 
-                foreach (var courseSite in courseSites)
+                // retrieve all current course pages that are visible on the course site
+                List<CoursePage> coursePagesToProcess = await courseProcess.DiscoverCoursePagesAsync(coursePages.ToList());
+
+                // insert or update the course pages (each inserted or updated course page can have a status of: Create, Update, Delete) 
+                foreach (var coursePage in coursePagesToProcess)
                 {
-                    /*
-                    // initialize stat tracking for operation
-                    JobSiteScrapeStatistic jobDataMiningStats =
-                        new JobSiteScrapeStatistic()
-                        {
-                            CreateDate = DateTime.UtcNow,
-                            CreateGuid = Guid.Empty,
-                            IsDeleted = 0,
-                            JobSiteId = jobSite.JobSiteId,
-                            JobSiteScrapeStatisticGuid = Guid.NewGuid(),
-                            NumJobsAdded = 0,
-                            NumJobsDropped = 0,
-                            NumJobsErrored = 0,
-                            NumJobsProcessed = 0,
-                            NumJobsUpdated = 0
-                        };
-
-                    */
-
-                    // load the course data mining process for the course site
-                    ICourseProcess courseDataMining = CourseCrawlingFactory.GetCourseProcess(courseSite, _configuration, _syslog, _sovrenApi);
-
-                    // load all existing course pages - it is important to retrieve all of them regardless of their CoursePageStatus to avoid FK conflicts on insert and update operations
-                    List<CoursePage> existingCoursePages = _repositoryWrapper.CoursePage.GetAllCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid).Result.ToList();
-
-                    // retrieve all current course pages that are visible on the course site
-                    List<CoursePage> coursePagesToProcess = courseDataMining.DiscoverCoursePages(existingCoursePages);
-
-                    // insert or update the course pages
-                    foreach (var coursePage in coursePagesToProcess)
-                    {
-                        if (coursePage.CoursePageId == 0)
-                            _repositoryWrapper.CoursePage.Create(coursePage);
-                        else
-                            _repositoryWrapper.CoursePage.Update(coursePage);
-                    }
-
-                    await _repositoryWrapper.CoursePage.SaveAsync();
-
-
-
-
-
-
-                    /*
-                    // set the number of existing active job pages before we perform any discovery operations
-                    int existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
-
-                    // retrieve all current job pages that are visible on the job site
-                    List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages);
-                    // set the number of pending and active jobs discovered - this will be the future state if we continue processing this job site
-                    int futurePendingAndActiveJobPagesCount = jobPagesToProcess.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2).Count();
-
-                    bool isExceedsSafetyThreshold = false;
-                    if (jobSite.PercentageReductionThreshold.HasValue)
-                    {
-                        // perform safety check to ensure we don't erase all jobs if there is an intermittent problem with a job site
-                        if (existingActiveJobPageCount > 0)
-                        {
-                            decimal percentageShift = (decimal)futurePendingAndActiveJobPagesCount / (decimal)existingActiveJobPageCount;
-                            if (percentageShift < jobSite.PercentageReductionThreshold.Value)
-                                isExceedsSafetyThreshold = true;
-                        }
-                    }
-                    if (isExceedsSafetyThreshold)
-                    {
-                        // save the number of discovered jobs as the number of processed jobs
-                        jobDataMiningStats.NumJobsProcessed = jobPagesToProcess.Count;
-                        _syslog.Log(LogLevel.Critical, $"**** ScheduledJobs.JobDataMining aborted processing for {jobSite.Name} because the number of future active jobs ({futurePendingAndActiveJobPagesCount.ToString()}) fell too far below the number of existing active jobs ({existingActiveJobPageCount.ToString()}). The safety threshold is {jobSite.PercentageReductionThreshold.Value.ToString("P2")}.");
-                    }
+                    if (coursePage.CoursePageId == 0)
+                        _repositoryWrapper.CoursePage.Create(coursePage);
                     else
-                    {
-                        // convert job pages to job postings and perform the necessary CRUD operations
-                        jobDataMiningStats = await ProcessJobPages(jobDataMining, jobPagesToProcess, jobDataMiningStats);
-                    }
-
-                    // store aggregate data about operations performed by job site; set scrape date at the very end of the process
-                    jobDataMiningStats.ScrapeDate = DateTime.UtcNow;
-                    _repositoryWrapper.JobSiteScrapeStatistic.Create(jobDataMiningStats);
-                    await _repositoryWrapper.JobSiteScrapeStatistic.SaveAsync();
-
-    */
+                        _repositoryWrapper.CoursePage.Update(coursePage);
                 }
+                await _repositoryWrapper.CoursePage.SaveAsync();
+
+                // update the course site to indicate that the operation is complete
+                courseSite.LastCrawl = DateTime.UtcNow;
+                courseSite.IsCrawling = false;
+                courseSite.ModifyDate = DateTime.UtcNow;
+                courseSite.ModifyGuid = Guid.Empty;
+                _repositoryWrapper.CourseSite.Update(courseSite);
+                await _repositoryWrapper.CourseSite.SaveAsync();
             }
             catch (Exception e)
             {
-                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.CourseDataMining encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.CrawlCourseSiteAsync encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                 result = false;
             }
 
-            _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.CourseDataMining completed at: {DateTime.UtcNow.ToLongDateString()}");
+            _syslog.Log(LogLevel.Information, $"***** Crawling course site '{courseSite.Name}'. Completed at: {DateTime.UtcNow.ToLongDateString()}");
             return result;
         }
+
+        /// <summary>
+        /// This method is responsible for the out-of-band processing for the course site syncing operation.
+        /// </summary>
+        /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task<bool> SyncCourseSiteAsync(CourseSite courseSite)
+        {
+            _syslog.Log(LogLevel.Information, $"***** Syncing course site '{courseSite.Name}'. Started at: {DateTime.UtcNow.ToLongDateString()}");
+
+            var result = true;
+            try
+            {
+                // load the course process for the course site
+                ICourseProcess courseProcess = CourseCrawlingFactory.GetCourseProcess(courseSite, _configuration, _syslog, _sovrenApi);
+
+                // load all existing course pages
+                var coursePages = (await _repositoryWrapper.CoursePage.GetAllCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid)).ToList();
+                
+                // transform course pages into courses which can be updated in the career circle schema
+                ConcurrentBag<CourseDto> transformedCourses = new ConcurrentBag<CourseDto>();
+                // todo: change maxdop after dev complete
+                var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 1 };
+                int counter = 0;
+                Parallel.For(0, coursePages.Count(), maxdop, async (index) =>
+                {
+                    var courseDto = await courseProcess.ProcessCoursePageAsync(coursePages[index]);
+                    transformedCourses.Add(courseDto);
+                });
+
+
+                // act on the adds and updates differently
+
+                // update the course site to indicate that the operation is complete
+                courseSite.LastCrawl = DateTime.UtcNow;
+                courseSite.IsCrawling = false;
+                courseSite.ModifyDate = DateTime.UtcNow;
+                courseSite.ModifyGuid = Guid.Empty;
+                _repositoryWrapper.CourseSite.Update(courseSite);
+                await _repositoryWrapper.CourseSite.SaveAsync();
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.SyncCourseSiteAsync encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                result = false;
+            }
+
+            _syslog.Log(LogLevel.Information, $"***** Syncing course site '{courseSite.Name}'. Completed at: {DateTime.UtcNow.ToLongDateString()}");
+            return result;
+        }
+
+
+
+
 
         #endregion
 

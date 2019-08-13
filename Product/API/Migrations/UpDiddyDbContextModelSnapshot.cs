@@ -816,7 +816,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
+                    b.Property<bool>("IsCrawling");
+
                     b.Property<int>("IsDeleted");
+
+                    b.Property<bool>("IsSyncing");
 
                     b.Property<DateTime?>("LastCrawl");
 
@@ -3411,6 +3415,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Description");
 
                     b.Property<int>("IsDeleted");
 

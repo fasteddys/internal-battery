@@ -9,7 +9,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common
 {
     public interface ICourseProcess
     {
-        List<CoursePage> DiscoverCoursePages(List<CoursePage> existingCoursePages);
-        CourseDto ProcessCoursePage(CoursePage coursePage);
+        Task<List<CoursePage>> DiscoverCoursePagesAsync(List<CoursePage> existingCoursePages);
+        Task<CourseDto> ProcessCoursePageAsync(CoursePage coursePage);
     }
 }

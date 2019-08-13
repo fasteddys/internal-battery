@@ -10,6 +10,7 @@ using HtmlAgilityPack;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common;
 using UpDiddyApi.Models;
@@ -19,7 +20,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
 {
     public class ITProTVProcess : BaseCourseProcess, ICourseProcess
     {
-        public ITProTVProcess(CourseSite courseSite, ILogger logger, IConfiguration configuration, ISovrenAPI sovrenAPI) : base(courseSite, logger, configuration, sovrenAPI) {
+        public ITProTVProcess(CourseSite courseSite, ILogger logger, IConfiguration configuration, ISovrenAPI sovrenAPI) : base(courseSite, logger, configuration, sovrenAPI)
+        {
 
         }
 
@@ -33,7 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
 
         private ConcurrentBag<ItProTVCategory> Categories { get; set; } = new ConcurrentBag<ItProTVCategory>();
 
-        public List<CoursePage> DiscoverCoursePages(List<CoursePage> existingCoursePages)
+        public async Task<List<CoursePage>> DiscoverCoursePagesAsync(List<CoursePage> existingCoursePages)
         {
             // populate this collection with the results of the job discovery operation
             ConcurrentBag<CoursePage> discoveredCoursePages = new ConcurrentBag<CoursePage>();
@@ -177,7 +179,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
                 var courseNames = courseCategory.DocumentNode.SelectNodes("//section[contains(@class, '--Courses--')]/div/div/ul/a/li/h5").Select(n => n.InnerText).ToList();
 
                 var topic = string.Empty; // todo: hard-code values for now
-                return new ItProTVCategory(topic, abbreviation?.InnerText, description?.InnerText, courseNames);
+                return new ItProTVCategory(abbreviation?.InnerText, description?.InnerText, courseNames);
             }
             else
             {
@@ -234,9 +236,52 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
             }
         }
 
-        public CourseDto ProcessCoursePage(CoursePage coursePage)
+        public async Task<CourseDto> ProcessCoursePageAsync(CoursePage coursePage)
         {
-            throw new NotImplementedException();
+            JObject rawData = JsonConvert.DeserializeObject<JObject>(coursePage.RawData);
+
+            CourseDto courseDto = new CourseDto()
+            {
+                Code = coursePage.UniqueIdentifier,
+                CreateDate = coursePage.CreateDate,
+                CreateGuid = Guid.Empty,
+                ModifyDate = coursePage.ModifyDate,
+                ModifyGuid = Guid.Empty,
+                Description = rawData["Description"].Value<string>(),
+                IsDeleted = coursePage.CoursePageStatusId == 4 ? 1 : 0,
+                Name = rawData["Title"].Value<string>(),
+                CourseVariants = new List<CourseVariantDto>(),
+                Skills = new List<SkillDto>(),
+                TagTopics = new List<TagTopicDto>()
+            };
+
+            CourseVariantTypeDto courseVariantTypeDto = new CourseVariantTypeDto() { Name = "Self-Paced" };
+            CourseVariantDto courseVariantDto = new CourseVariantDto() { Price = 0, CourseVariantType = courseVariantTypeDto };
+            courseDto.CourseVariants.Add(courseVariantDto);
+
+            VendorDto vendorDto = new VendorDto() { Name = "ITPro.TV" };
+            courseDto.Vendor = vendorDto;
+
+            JArray skills = (JArray)rawData["Skills"];
+            foreach (var skill in skills)
+            {
+                courseDto.Skills.Add(new SkillDto() { SkillName = skill.Value<string>() });
+            }
+
+            JArray categories = (JArray)rawData["Categories"];
+            foreach (var category in categories)
+            {
+                string abbreviation = category["Abbreviation"].Value<string>();
+                string description = category["Description"].Value<string>();
+                TagDto tagDto = new TagDto() { Name = abbreviation, Description = description };
+
+                string topic = category["Topic"].Value<string>();
+                TopicDto topicDto = new TopicDto() { Name = topic };
+                TagTopicDto tagTopicDto = new TagTopicDto() { Tag = tagDto, Topic = topicDto };
+                courseDto.TagTopics.Add(tagTopicDto);
+            }
+
+            return courseDto;
         }
     }
 }

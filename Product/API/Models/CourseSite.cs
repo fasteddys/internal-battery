@@ -17,5 +17,7 @@ namespace UpDiddyApi.Models
         public DateTime? LastCrawl { get; set; }
         public DateTime? LastSync { get; set; }
         public List<CoursePage> CoursePages { get; set; } = new List<CoursePage>();
+        public bool IsCrawling { get; set; }
+        public bool IsSyncing { get; set; }
     }
 }

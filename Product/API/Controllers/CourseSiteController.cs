@@ -29,7 +29,6 @@ namespace UpDiddyApi.Controllers
             try
             {
                 var courseSites = await _courseCrawlingService.GetCourseSitesAsync();
-
                 return Ok(courseSites);
             }
             catch (Exception ex)
@@ -39,19 +38,38 @@ namespace UpDiddyApi.Controllers
             }
         }
 
+        // [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpPatch]
         [Route("api/course-sites/{courseSiteGuid}/crawl")]
         public async Task<IActionResult> CrawlCourseSitesAsync(Guid courseSiteGuid)
         {
-
-            throw new NotImplementedException();
+            try
+            {
+                var courseSiteDto = await _courseCrawlingService.CrawlCourseSiteAsync(courseSiteGuid);
+                return Ok(courseSiteDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"CourseSiteController.CrawlCourseSitesAsync : Error occured when crawling course site: {ex.Message}", ex);
+                return StatusCode(500);
+            }
         }
 
+        // [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpPatch]
-        [Route("api/course-sites/{courseSiteGuid}/crawl")]
+        [Route("api/course-sites/{courseSiteGuid}/sync")]
         public async Task<IActionResult> SyncCourseSitesAsync(Guid courseSiteGuid)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var courseSiteDto = await _courseCrawlingService.SyncCourseSiteAsync(courseSiteGuid);
+                return Ok(courseSiteDto);
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Error, $"CourseSiteController.SyncCourseSitesAsync : Error occured when syncing course site: {ex.Message}", ex);
+                return StatusCode(500);
+            }
         }
     }
 }
