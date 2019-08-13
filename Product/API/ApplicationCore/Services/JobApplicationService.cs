@@ -1,15 +1,9 @@
-﻿using Hangfire;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-using UpDiddyApi.Workflow;
-using EntityTypeConst = UpDiddyLib.Helpers.Constants.EventType;
-
 namespace UpDiddyApi.ApplicationCore.Services
 {
     public class JobApplicationService : IJobApplicationService
@@ -23,7 +17,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<bool> IsSubscriberAppliedToJobPosting(int subscriberId, int jobPostingId)
         {
-            IQueryable<JobApplication> jobPosting = await _repositoryWrapper.JobApplication.GetAllAsync();
+            IQueryable<JobApplication> jobPosting = _repositoryWrapper.JobApplication.GetAll();
             return await jobPosting.AnyAsync(x => x.SubscriberId == subscriberId && x.JobPostingId == jobPostingId);
         }     
     }

@@ -17,16 +17,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<IEnumerable<State>> GetAllStatesAsync()
         {
-            var states = GetAllAsync();
-            return await states.Result
+            var states = GetAll();
+            return await states
                                .Include(s => s.Country)
                                .ToListAsync();                             
         }
 
         public async Task<IEnumerable<State>> GetStatesByCountryGuid(Guid countryGuid)
         {
-            var states = GetAllAsync();
-            return await states.Result
+            var states = GetAll();
+            return await states
                                 .Include(s => s.Country)
                                 .Where(s=>s.IsDeleted==0 && s.Country.CountryGuid== countryGuid)
                                 .ToListAsync();
@@ -34,8 +34,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<IEnumerable<State>> GetStatesForDefaultCountry()
         {
-            var states = GetAllAsync();
-            return await states.Result
+            var states = GetAll();
+            return await states
                                .Include(s => s.Country)
                                .Where(s => s.IsDeleted == 0 && s.Country.Sequence == 1)
                                .OrderBy(s=>s.Sequence)

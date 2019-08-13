@@ -18,12 +18,12 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<IQueryable<Notification>> GetAllNonDeleted()
+        public IQueryable<Notification> GetAllNonDeleted()
         {
             return _dbContext.Set<Notification>().IgnoreQueryFilters().Where(n => n.IsDeleted == 0).AsNoTracking();
         }
 
-        public async Task<IQueryable<v_UnreadNotifications>> GetUnreadSubscriberNotificationsForEmail(int reminderLookbackInDays)
+        public IQueryable<v_UnreadNotifications> GetUnreadSubscriberNotificationsForEmail(int reminderLookbackInDays)
         {
             /* I am aware of the desire to keep DbContext out of our repository classes and have them appear only in UpDiddyRepositoryBase. I 
              * attempted to create a generic method in UpDiddyRepositoryBase that would accept a generic type for `DbContext.Query`, however I
@@ -35,7 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
             return _dbContext.Query<v_UnreadNotifications>().FromSql(@"EXEC [dbo].[System_Get_UnreadSubscriberNotifications] @ReminderLookbackInDays", spParams);
         }
 
-        public async Task<IQueryable<v_NotificationReadCounts>> GetNotificationReadCounts()
+        public IQueryable<v_NotificationReadCounts> GetNotificationReadCounts()
         {
             return _dbContext.NotificationReadCounts;
         }

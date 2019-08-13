@@ -101,7 +101,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 await blob.DeleteAsync();
                 return true;
 
-            } catch(Exception e)
+            } catch(Exception)
             {
                 // todo: log
                 return false;

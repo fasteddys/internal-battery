@@ -1,30 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.MessageQueue;
 using Microsoft.EntityFrameworkCore;
-using UpDiddyApi.ApplicationCore;
 using UpDiddyLib.Helpers;
 using System.Net.Http;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using System.Security.Claims;
-using Hangfire;
-using UpDiddyApi.Workflow;
 using Newtonsoft.Json;
 using System.Data.SqlClient;
 using System.Data;
-using System.Collections.Concurrent;
-using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Controllers
 {

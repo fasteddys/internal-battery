@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -21,17 +22,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<IList<ResumeParseResult>> GetResultsRequiringMergeById(int resumeParseId)
         {
-            return _db.ResumeParseResult                 
+            return await _db.ResumeParseResult                 
                     .Where(rp => rp.IsDeleted == 0 && rp.ResumeParseId == resumeParseId && rp.ParseStatus == (int) ResumeParseStatus.MergeNeeded)
-                    .ToList();
+                    .ToListAsync();
         }
 
         public async Task<ResumeParseResult> GetResumeParseResultByGuidAsync(Guid resumeParseResultGuid)
         {
 
-            var result = _db.ResumeParseResult
+            var result = await _db.ResumeParseResult
                                 .Where(jp => jp.IsDeleted == 0 && jp.ResumeParseResultGuid == resumeParseResultGuid)
-                                .FirstOrDefault();
+                                .FirstOrDefaultAsync();
 
             return result;
         }

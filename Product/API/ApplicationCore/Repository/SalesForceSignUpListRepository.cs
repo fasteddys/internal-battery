@@ -15,9 +15,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-        public Task<IQueryable<SalesForceSignUpList>> GetAllSalesForceSignUpListAsync()
+        public IQueryable<SalesForceSignUpList> GetAllSalesForceSignUpListAsync()
         {
-           return GetAllAsync();
+           return GetAll();
         }
     }
 }

@@ -17,14 +17,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<bool?> MostRecentResultInLast90Days(string email)
         {
-            var requests = GetAllAsync();
-            var mostRecentResultInLast90Days = requests.Result
+            var requests = GetAll();
+            var mostRecentResultInLast90Days = await requests
                                 .Include(zb => zb.PartnerContact).ThenInclude(pc => pc.Contact)
                                 .Where(zb => zb.IsDeleted == 0
                                     && zb.PartnerContact.Contact.Email == email 
                                     && EF.Functions.DateDiffDay(zb.CreateDate, DateTime.UtcNow) <= 90)
                                 .OrderByDescending(zb => zb.CreateDate)
-                                .FirstOrDefault();
+                                .FirstOrDefaultAsync();
 
             if (mostRecentResultInLast90Days != null)
             {

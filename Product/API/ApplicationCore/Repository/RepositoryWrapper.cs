@@ -45,6 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IOfferRepository _offerRepository;
         private ISubscriberFileRepository _subscriberFileRepository;
         private ISalesForceSignUpListRepository _SalesForceSignUpListRepository;
+        private ISkillRepository _skillRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -486,6 +487,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _SalesForceSignUpListRepository = new SalesForceSignUpListRepository(_dbContext);
                 }
                 return _SalesForceSignUpListRepository;
+            }
+        }
+
+        public ISkillRepository SkillRepository
+        {
+            get
+            {
+                if (_skillRepository == null)
+                {
+                    _skillRepository = new SkillRepository(_dbContext);
+                }
+                return _skillRepository;
             }
         }
     }
