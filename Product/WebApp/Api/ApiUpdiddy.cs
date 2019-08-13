@@ -1704,7 +1704,7 @@ namespace UpDiddy.Api
         {
             string cacheKey = "keywordSearchList";
             IList<string> rval = await GetCachedValueAsync<IList<string>>(cacheKey);
-            List<string> keywordListresult=rval.Where(k=>k.Contains(keyword))?.ToList();
+            List<string> keywordListresult=rval?.Where(k=>k.Contains(keyword))?.ToList();
 
             return keywordListresult;
         }
@@ -1714,7 +1714,7 @@ namespace UpDiddy.Api
             string cacheKey = "locationSearchList";
             IList<string> rval = await GetCachedValueAsync<IList<string>>(cacheKey);
 
-            List<string> locationListresult=rval.Where(k=>k.Contains(location))?.ToList();
+            List<string> locationListresult=rval?.Where(k=>k.Contains(location))?.ToList();
 
             return locationListresult;
         }

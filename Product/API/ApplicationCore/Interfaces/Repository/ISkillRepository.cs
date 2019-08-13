@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ISkillRepository : IUpDiddyRepositoryBase<Skill>
     {
-        Task<IQueryable<Skill>> GetAllSkillsQueryable();
+        IQueryable<Skill> GetAllSkillsQueryable();
         Task<List<Skill>> GetAllSkillsForJobPostings();
     }
 }

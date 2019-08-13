@@ -188,9 +188,6 @@ namespace UpDiddyApi
                 // remove TinyIds from old CampaignPartnerContact records
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.DeactivateCampaignPartnerContacts(), Cron.Daily());
 
-                // Run this job once to fix the RawData field in JobPage table for Allegis Group jobs
-                BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateAllegisGroupJobPageRawDataField());
-
                  // Run this job once to initially get the keyword and location search
                  BackgroundJob.Enqueue<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo());
 

@@ -30,6 +30,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Data.SqlClient;
 using JobPosting = UpDiddyApi.Models.JobPosting;
 using UpDiddyApi.Helpers;
+using HtmlAgilityPack;
 
 namespace UpDiddyApi.Workflow
 {
@@ -1599,7 +1600,7 @@ namespace UpDiddyApi.Workflow
             List<string> locationSearch=new List<string>();
 
             //JobTitles, Company, City and Postal Code
-            IQueryable<JobPosting> queryableJobPostings=await _repositoryWrapper.JobPosting.GetAllJobPostings();
+            IQueryable<JobPosting> queryableJobPostings=_repositoryWrapper.JobPosting.GetAllJobPostings();
             var jobPostingsSearchInfoResults=await  queryableJobPostings.Include(co=>co.Company)
                                                                         .Where(jpg=>jpg.IsDeleted==0)
                                                                         .Select(jp=>new 
@@ -1669,7 +1670,7 @@ namespace UpDiddyApi.Workflow
             try
             {
                  _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:UpdateAllegisGroupJobPageRawDataField started at: {DateTime.UtcNow.ToLongDateString()}");
-                var jobs = await _repositoryWrapper.JobPage.GetAllAsync();
+                var jobs =  _repositoryWrapper.JobPage.GetAll();
                 var allegisjobs = jobs.Where(x => x.JobSiteId == 3 && x.IsDeleted == 0 && x.JobPageStatusId == 2).ToList();
                 foreach (var job in allegisjobs)
                 {
