@@ -115,7 +115,7 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> DeletePartnerAsync(Guid PartnerGuid);
         Task<IList<NotificationDto>> GetNotificationsAsync();
         Task<NotificationDto> GetNotificationAsync(Guid notificationGuid);
-        Task<NotificationDto> CreateNotificationAsync(NotificationDto notificationDto);
+        Task<NewNotificationDto> CreateNotificationAsync(NewNotificationDto newNotificationDto);
         Task<BasicResponseDto> UpdateNotificationAsync(NotificationDto notificationDto);
         Task<BasicResponseDto> DeleteNotificationAsync(Guid NotificationGuid);
         Task<BasicResponseDto> UpdateSubscriberNotificationAsync(Guid SubscriberGuid, NotificationDto notificationDto);

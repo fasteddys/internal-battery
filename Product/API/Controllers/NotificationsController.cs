@@ -91,8 +91,9 @@ namespace UpDiddyApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateNotification([FromBody] NotificationDto notificationDto)
+        public async Task<IActionResult> CreateNotification([FromBody] NewNotificationDto newNotificationDto)
         {
+            NotificationDto notificationDto = newNotificationDto.NotificationDto;
             // Ensure required information is present prior to creating new partner
             if (notificationDto == null || string.IsNullOrEmpty(notificationDto.Title) || string.IsNullOrEmpty(notificationDto.Description))
             {
@@ -121,9 +122,9 @@ namespace UpDiddyApi.Controllers
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
                 Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
-                IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(notificationDto.GroupGuid);
+                IList<Subscriber> Subscribers = await _subscriberService.GetSubscribersInGroupAsync(newNotificationDto.GroupGuid);
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, Subscribers));
-                return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, _mapper.Map<NotificationDto>(notification));
+                return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, new NewNotificationDto{NotificationDto = _mapper.Map<NotificationDto>(notification)} );
             }
             else
                 return Unauthorized();
