@@ -676,6 +676,7 @@ namespace UpDiddyApi.Workflow
                 // load all existing course pages
                 var coursePages = (await _repositoryWrapper.CoursePage.GetAllCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid)).ToList();
                 
+
                 // transform course pages into courses which can be updated in the career circle schema
                 ConcurrentBag<CourseDto> transformedCourses = new ConcurrentBag<CourseDto>();
                 // todo: change maxdop after dev complete
@@ -689,6 +690,10 @@ namespace UpDiddyApi.Workflow
 
 
                 // act on the adds and updates differently
+
+                // only transform the courses where course page status is 2 or 3 (update or create, respectively)
+                // ignore everything with synced or error
+                // call the delete operation for those with course page status of 4... logical delete, break link or no?
 
                 // update the course site to indicate that the operation is complete
                 courseSite.LastCrawl = DateTime.UtcNow;
