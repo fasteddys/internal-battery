@@ -31,7 +31,111 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             };
         }
 
+
         public List<JobPage> DiscoverJobPages(List<JobPage> existingJobPages)
+        {
+            throw new NotImplementedException();
+        }
+        private JobPage DiscoverJobPage(Uri jobPageUri, List<JobPage> existingJobPages)
+        {
+            int jobPageStatusId = 1; // pending
+            string rawHtml;
+            JObject rawData;
+            Uri jobDetailUri = null;
+
+            bool isJobExists = true;
+            // retrieve the latest job page data
+            using (var client = new HttpClient(GetHttpClientHandler()))
+            {
+                var request = new HttpRequestMessage()
+                {
+                    RequestUri = jobPageUri,
+                    Method = HttpMethod.Get
+                };
+                var result = client.SendAsync(request).Result;
+                if (result.StatusCode != HttpStatusCode.OK)
+                    isJobExists = false;
+                rawHtml = result.Content.ReadAsStringAsync().Result;
+            }
+            HtmlDocument jobHtml = new HtmlDocument();
+            jobHtml.LoadHtml(rawHtml);
+
+            // check for a message indicating that the job does not exist
+            if (jobHtml.DocumentNode.SelectSingleNode("//div[contains(@class, 'missing-job-bar')]") != null)
+            {
+                return null;
+            }
+            else
+            {
+                var jsonJobData = jobHtml.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']");
+                rawData = JObject.Parse(jsonJobData.InnerText);
+
+                // add formatted job description to job data
+                var jobSummaryH2 = jobHtml.DocumentNode.SelectSingleNode("//div[contains(@class, 'jdp-job-description-card')]/h2[contains(@class, 'content-card-header')]");
+                jobSummaryH2.Remove();
+                var descriptionFromHtml = jobHtml.DocumentNode.SelectSingleNode("//div[contains(@class, 'jdp-job-description-card')]");
+                if (descriptionFromHtml != null && descriptionFromHtml.InnerHtml != null)
+                    rawData.Add("formattedDescription", descriptionFromHtml.InnerHtml.Trim());
+
+                // add the RWS identifier to job data
+                var rwsId = jobHtml.DocumentNode.SelectSingleNode("//div/strong[text()='Posting ID:']/following-sibling::div");
+                rawData.Add("rwsId", rwsId.InnerText.Trim());
+
+                // retrieve recruiter information 
+                var recruiterName = jobHtml.DocumentNode.SelectSingleNode("//div[contains(.,'Name:')]/following-sibling::div");
+                string[] split = recruiterName.InnerText.Trim().Split(' ');
+                string recruiterfirstName = null, recruiterlastName = null;
+                if (split != null && split.Length >= 2)
+                {
+                    recruiterfirstName = split[0];
+                    recruiterlastName = split[1];
+                }
+                var recruiterPhone = jobHtml.DocumentNode.SelectSingleNode("//div[contains(.,'Phone:')]/following-sibling::div");
+                var recruiterEmail = jobHtml.DocumentNode.SelectSingleNode("//div[contains(.,'Email:')]/following-sibling::div/a");
+
+                // add recruiter information to job data
+                rawData.Add(
+                    new JProperty("recruiter",
+                        new JObject(
+                            new JProperty("firstName", recruiterfirstName),
+                            new JProperty("lastName", recruiterlastName),
+                            new JProperty("phone", recruiterPhone.InnerText.Trim()),
+                            new JProperty("email", recruiterEmail.InnerText.Trim()))));
+
+                // check for an existing job page based on the RWS identifier
+                var existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == rwsId.InnerText.Trim()).FirstOrDefault();
+                if (existingJobPage != null)
+                {
+                    // check to see if the page content has changed since we last ran this process
+                    if (existingJobPage.RawData == rawData.ToString())
+                        jobPageStatusId = 2; // active (no action required)
+
+                    existingJobPage.JobPageStatusId = jobPageStatusId;
+                    existingJobPage.RawData = rawData.ToString();
+                    existingJobPage.ModifyDate = DateTime.UtcNow;
+                    existingJobPage.ModifyGuid = Guid.Empty;
+                    return existingJobPage;
+                }
+                else
+                {
+                    // add the new job page to the collection
+                    return new JobPage()
+                    {
+                        CreateDate = DateTime.UtcNow,
+                        CreateGuid = Guid.Empty,
+                        IsDeleted = 0,
+                        JobPageGuid = Guid.NewGuid(),
+                        JobPageStatusId = jobPageStatusId,
+                        RawData = rawData.ToString(),
+                        UniqueIdentifier = rwsId.InnerText.Trim(),
+                        Uri = jobDetailUri,
+                        JobSiteId = _jobSite.JobSiteId
+                    };
+                }
+            }
+        }
+
+        public async Task<List<JobPage>> DiscoverJobPagesAsync(List<JobPage> existingJobPages)
         {
             // populate this collection with the results of the job discovery operation
             ConcurrentBag<JobPage> discoveredJobPages = new ConcurrentBag<JobPage>();
@@ -40,27 +144,39 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
 
-            string response;
-            using (var client = new HttpClient(GetHttpClientHandler()))
+            List<Uri> jobPageUrls = new List<Uri>();
+            bool isSearchPageContainsJobs = false; // todo: false for testing purposes only; revert to true once done with small sample size!
+            int pageIndex = 0;
+            do
             {
-                // call the api to retrieve a total number of job results
-                var request = new HttpRequestMessage()
-                {
-                    RequestUri = _jobSite.Uri,
-                    Method = HttpMethod.Get
-                };
-                var result = client.SendAsync(request).Result;
-                response = result.Content.ReadAsStringAsync().Result;
-            }
-            dynamic jsonData = JsonConvert.DeserializeObject<dynamic>(response);
-            int jobCount = Convert.ToInt32(jsonData.num_found);
+                UriBuilder searchUriBuilder = new UriBuilder(_jobSite.Uri);
+                searchUriBuilder.Query = "?pagenumber=" + (pageIndex++).ToString();
 
-            /* haven't been able to determine a way to change the size of the 'results' collection 
-             * using query string params, it seems to always be 10. until we can figure out a way 
-             * to retrieve all job postings at once, divide the number of jobs by 10 (rounding up) 
-             * and call this endpoint that many times to ensure we get all jobs 
-             */
-            int timesToRequestResultsPage = Convert.ToInt32(Math.Ceiling((double)jobCount / 10));
+                string response;
+                using (var client = new HttpClient(GetHttpClientHandler()))
+                {
+                    var request = new HttpRequestMessage()
+                    {
+                        RequestUri = searchUriBuilder.Uri,
+                        Method = HttpMethod.Get
+                    };
+                    var result = client.SendAsync(request).Result;
+                    response = result.Content.ReadAsStringAsync().Result;
+                }
+
+                HtmlDocument searchResultPage = new HtmlDocument();
+                searchResultPage.LoadHtml(response);
+                var rawJobListData = searchResultPage.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']");
+                var jsonJobListData = JObject.Parse(rawJobListData.InnerText);
+
+                var searchResultPageJobUrls = (from p in jsonJobListData["itemListElement"]
+                                               select (Uri)p["url"]).ToList();
+
+                if (searchResultPageJobUrls != null && searchResultPageJobUrls.Count() > 0)
+                    jobPageUrls.AddRange(searchResultPageJobUrls);
+                else
+                    isSearchPageContainsJobs = false;
+            } while (isSearchPageContainsJobs);
 
             /* run the paged requests in parallel - tested with a variety of MAXDOP settings and 50 was the sweet spot locally 
              * when developing in the office. from home, i had to limit it to 15; anything higher and i started getting SSL errors.
@@ -70,125 +186,23 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
              * use maxdop = 1 for debugging.
              */
 
-            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 10 };
-            int counter = 0;
-            Parallel.For(counter, timesToRequestResultsPage, maxdop, i =>
+            foreach (var jobPageUrl in jobPageUrls)
             {
-                string jobData;
-                using (var client = new HttpClient(GetHttpClientHandler()))
-                {
-                    // call the api to retrieve a list of results incrementing the page number each time
-                    int progress = Interlocked.Increment(ref counter);
-                    UriBuilder builder = new UriBuilder(_jobSite.Uri);
-                    builder.Query += "&page=" + progress.ToString();
-                    var request = new HttpRequestMessage()
-                    {
-                        RequestUri = builder.Uri,
-                        Method = HttpMethod.Get
-                    };
-                    var result = client.SendAsync(request).Result;
-                    jobData = result.Content.ReadAsStringAsync().Result;
-                }
-                dynamic jsonResults = null;
-                try
-                {
-                    jsonResults = JsonConvert.DeserializeObject<dynamic>(jobData);
-                }
-                catch (JsonReaderException jre)
-                {
-                    _syslog.Log(LogLevel.Information, $"***** TEKsystemsProcess.DiscoverJobPages encountered an exception; message: {jre.Message}, stack trace: {jre.StackTrace}, source: {jre.Source}", jobData);
-                }
-                if (jsonResults != null)
-                {
-                    // keeping this loop serial rather than parallel intentionally (nesting parallel loops can quickly cause performance issues)
-                    foreach (var job in jsonResults.results)
-                    {
-                        int jobPageStatusId = 1; // pending
-                        string rawHtml;
-                        Uri jobDetailUri = null;
-                        try
-                        {
-                            bool isJobExists = true;
-                            // retrieve the latest job page data
-                            jobDetailUri = new Uri(_jobSite.Uri.GetLeftPart(System.UriPartial.Authority) + job.job_details_url);
-                            using (var client = new HttpClient(GetHttpClientHandler()))
-                            {
-                                var request = new HttpRequestMessage()
-                                {
-                                    RequestUri = jobDetailUri,
-                                    Method = HttpMethod.Get
-                                };
-                                var result = client.SendAsync(request).Result;
-                                if (result.StatusCode != HttpStatusCode.OK)
-                                    isJobExists = false;
-                                rawHtml = result.Content.ReadAsStringAsync().Result;
-                            }
-                            HtmlDocument jobHtml = new HtmlDocument();
-                            jobHtml.LoadHtml(rawHtml);
+                JobPage discoveredJobPage = null;
+                // Task.Run(() => discoveredJobPage = DiscoverJobPage(jobPageUrl, existingJobPages));
+                // await Task.Delay(TimeSpan.FromSeconds(65));
 
-                            // remove the 'application' field from our raw data to prevent it from triggering an update operation
-                            if (job.applications != null)
-                                ((JObject)job).Remove("applications");
+                //   Task.Delay(1000).ContinueWith(t => bar());
 
-                            // does the html contain an error message indicating the job does not exist?
-                            if (jobHtml.DocumentNode.SelectSingleNode("//results-main[@error-message=\"The job you have requested cannot be found. Please see our complete list of jobs below.\"]") != null)
-                                isJobExists = false;
+                // try the above logic for a better delay implementation
 
-                            if (!isJobExists)
-                            {
-                                jobPageStatusId = 4; // delete
-                            }
-                            else
-                            {
-                                // append additional data that is not present in search results for the page, status already marked as new
-                                var descriptionFromHtml = jobHtml.DocumentNode.SelectSingleNode("//div[@class=\"job-description\"]");
-                                if (descriptionFromHtml != null && descriptionFromHtml.InnerHtml != null)
-                                    job.responsibilities = descriptionFromHtml.InnerHtml.Trim();
-                            }
+                discoveredJobPage = DiscoverJobPage(jobPageUrl, existingJobPages);
+                if (discoveredJobPage != null)
+                    discoveredJobPages.Add(discoveredJobPage);
+            }
 
-                            // get the related JobPostingId (if one exists)
-                            string jobId = job.display_job_id;
-                            var existingJobPage = existingJobPages.Where(jp => jp.UniqueIdentifier == jobId).FirstOrDefault();
-                            if (existingJobPage != null)
-                            {
-                                // check to see if the page content has changed since we last ran this process
-                                if (existingJobPage.RawData == job.ToString())
-                                    jobPageStatusId = 2; // active (no action required)
-
-                                existingJobPage.JobPageStatusId = jobPageStatusId;
-                                existingJobPage.RawData = job.ToString();
-                                existingJobPage.ModifyDate = DateTime.UtcNow;
-                                existingJobPage.ModifyGuid = Guid.Empty;
-                                discoveredJobPages.Add(existingJobPage);
-                            }
-                            else
-                            {
-                                // add the new job page to the collection
-                                discoveredJobPages.Add(new JobPage()
-                                {
-                                    CreateDate = DateTime.UtcNow,
-                                    CreateGuid = Guid.Empty,
-                                    IsDeleted = 0,
-                                    JobPageGuid = Guid.NewGuid(),
-                                    JobPageStatusId = jobPageStatusId,
-                                    RawData = job.ToString(),
-                                    UniqueIdentifier = jobId,
-                                    Uri = jobDetailUri,
-                                    JobSiteId = _jobSite.JobSiteId
-                                });
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            jobPageStatusId = 3; // record that an error occurred while processing this job page
-                            _syslog.Log(LogLevel.Information, $"***** TEKsystemProcess.DiscoverJobPages encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
-                        }
-                    }
-                }
-            });
-
-            if (discoveredJobPages.Count() != jobCount)
-                _syslog.Log(LogLevel.Information, $"***** TEKsystemsProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but TEKsystem's API indicates there should be {jobCount} jobs.");
+            if (discoveredJobPages.Count() != jobPageUrls.Count)
+                _syslog.Log(LogLevel.Information, $"***** TEKsystemsProcess.DiscoverJobPages found {discoveredJobPages.Count()} jobs but TEKsystem's API indicates there should be {jobPageUrls.Count} jobs.");
 
             /* deal with duplicate job postings (or job postings that are similar enough to be considered duplicates). examples:
              * - two job listings that have the same url and id but in the raw data the "applications" property is different (id: J3Q20V76L8YK2XBR6S8)
@@ -209,52 +223,14 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             var existingActiveJobs = existingJobPages.Where(jp => jp.JobPageStatusId == 2);
             var discoveredActiveAndPendingJobs = uniqueDiscoveredJobs.Where(jp => jp.JobPageStatusId == 1 || jp.JobPageStatusId == 2);
             var unreferencedActiveJobs = existingActiveJobs.Except(discoveredActiveAndPendingJobs, new EqualityComparerByUniqueIdentifier());
-            // rather than eliminating jobs on the basis that they don't exist in the job site's search results, make a request to each one.
-            // if the page returns 200 OK, leave it alone. if anything else occurs, mark it for deletion.
-            ConcurrentBag<JobPage> jobsToDelete = new ConcurrentBag<JobPage>();
-            Parallel.ForEach(unreferencedActiveJobs, maxdop, unreferencedActiveJob =>
-            {
-                bool isJobPageExists = true;
-                try
-                {
-                    string rawHtml;
-                    using (var client = new HttpClient(GetHttpClientHandler()))
-                    {
-                        // call the api to retrieve a list of results incrementing the page number each time
-                        UriBuilder builder = new UriBuilder(unreferencedActiveJob.Uri);
-                        var request = new HttpRequestMessage()
-                        {
-                            RequestUri = builder.Uri,
-                            Method = HttpMethod.Get
-                        };
-                        var result = client.SendAsync(request).Result;
-                        if (result.StatusCode != HttpStatusCode.OK)
-                            isJobPageExists = false;
-                        rawHtml = result.Content.ReadAsStringAsync().Result;
-                        HtmlDocument jobHtml = new HtmlDocument();
-                        jobHtml.LoadHtml(rawHtml);
-                        if (jobHtml.DocumentNode.SelectSingleNode("//results-main[@error-message=\"The job you have requested cannot be found. Please see our complete list of jobs below.\"]") != null)
-                            isJobPageExists = false;
-                    }
-                }
-                catch (Exception e)
-                {
-                    _syslog.Log(LogLevel.Information, $"***** TEKsystemsProcess.DiscoverJobPages encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
-                }
-                finally
-                {
-                    if (!isJobPageExists)
-                    {
-                        unreferencedActiveJob.JobPageStatusId = 4;
-                        jobsToDelete.Add(unreferencedActiveJob);
-                    }
-                }
-            });
+
+            // if the page didnt appear in the search results, flag it for deletion 
+            unreferencedActiveJobs.Select(j => { j.JobPageStatusId = 4; return j; }).ToList();
 
             // combine new/modified jobs and unreferenced jobs which should be deleted
             List<JobPage> updatedJobPages = new List<JobPage>();
             updatedJobPages.AddRange(uniqueDiscoveredJobs);
-            updatedJobPages.AddRange(jobsToDelete);
+            updatedJobPages.AddRange(unreferencedActiveJobs);
 
             // diagnostics - remove this once we have tuned the process
             stopwatch.Stop();

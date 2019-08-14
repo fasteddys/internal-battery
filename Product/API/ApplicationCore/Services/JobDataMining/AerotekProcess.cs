@@ -31,6 +31,11 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             };
         }
 
+        public async Task<List<JobPage>> DiscoverJobPagesAsync(List<JobPage> existingJobPages)
+        {
+            throw new NotImplementedException();
+        }
+
         public List<JobPage> DiscoverJobPages(List<JobPage> existingJobPages)
         {
             // populate this collection with the results of the job discovery operation

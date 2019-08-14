@@ -213,7 +213,7 @@ namespace UpDiddyApi
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes));
 
                 // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
-                // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
+                BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
                 // kick off the metered welcome email delivery process at five minutes past the hour every hour
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
