@@ -131,9 +131,9 @@ class JobAbandonmentCount extends React.Component {
               {
                 Header: "Date",
                 accessor: "ActionCreateDate",
-                Cell: date => (
+                Cell: data => (
                   <React.Fragment>
-                    {this.toLocalDate(date.value)}
+                    {this.toLocalDate(data.original.actionCreateDate)}
                   </React.Fragment>
                 ),
                 Footer: (
