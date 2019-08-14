@@ -60,9 +60,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<IList<Partner>> GetPartnersAssociatedWithSubscriber(int subscriberId)
         {
 
-            
-            var subscriberGroups = _subscriberGroupRepository.GetAll(). 
-                Where(s => s.SubscriberId == subscriberId);
+
+            var subscriberGroups = _subscriberGroupRepository.GetAll();
 
             var groupPartners = _groupPartnerRepository.GetAll();
             var partners = _partnerRepository.GetAll();
