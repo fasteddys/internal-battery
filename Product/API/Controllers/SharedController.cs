@@ -32,7 +32,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> GetCountries()
         {
 
-            var countries = _repositoryWrapper.Country.GetAllCountriesAsync().Result;
+            var countries = await _repositoryWrapper.Country.GetAllCountriesAsync();
               
             return Ok(_mapper.Map<List<CountryDto>>(countries));
         }

@@ -53,9 +53,9 @@ namespace UpDiddyApi.Helpers
                     lastName = j.Key.LastName,
                     subscriberid = j.Key.SubscriberId,
                     email = j.Key.Email,
-                    state = j.Key.State.Name,
-                    city = j.Key.City,
-                    phoneNumber = j.Key.PhoneNumber
+                    state = j.Key.State != null ? j.Key.State.Name ?? string.Empty : string.Empty,
+                    city = j.Key.City ?? string.Empty,
+                    phoneNumber = j.Key.PhoneNumber ?? string.Empty,
                 },
                 jobAbandoned = JArray.FromObject(j.Value
                 .Select(x => new
@@ -64,9 +64,9 @@ namespace UpDiddyApi.Helpers
                     summary = FormatJobSummary(x.Description),
                     postingDate = x.PostingDateUTC.ToShortDateString(),
                     jobUrl = jobPostingUrl + x.JobPostingGuid,
-                    city = x.City,
-                    province = x.Province,
-                    country = x.Country,
+                    city = x.City ?? string.Empty,
+                    province = x.Province ?? string.Empty,
+                    country = x.Country ?? string.Empty,
 
                 })).ToArray()
             }).ToList());

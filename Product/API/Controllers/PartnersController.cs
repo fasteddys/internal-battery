@@ -5,29 +5,14 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using UpDiddyApi.Authorization;
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Helpers;
-using System.IO;
 using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyApi.ApplicationCore.Factory;
-using System.Data.SqlClient;
-using AutoMapper.QueryableExtensions;
-using System.Data;
-using System.Web;
-using UpDiddyLib.Dto.Marketing;
-using UpDiddyLib.Shared;
+
 
 namespace UpDiddyApi.Controllers
 {

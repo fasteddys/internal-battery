@@ -7,6 +7,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces
 {
     public interface IMimeMappingService
     {
-        Task<string> MapAsync(string fileName);
+        string MapAsync(string fileName);
     }
 }

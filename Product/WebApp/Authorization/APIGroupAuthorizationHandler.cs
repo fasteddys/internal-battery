@@ -43,7 +43,7 @@ namespace UpDiddy.Authorization
                     groups = dto.groups;
                     _accessor.HttpContext.Session.SetString(CACHE_KEY + userId, JsonConvert.SerializeObject(groups));
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // if exception then stop here, assume they don't have access
                     return false;

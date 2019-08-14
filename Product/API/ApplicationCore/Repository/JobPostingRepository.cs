@@ -17,9 +17,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-        public Task<IQueryable<JobPosting>> GetAllJobPostings()
+        public IQueryable<JobPosting> GetAllJobPostings()
         {
-            return GetAllAsync();
+            return GetAll();
         }
 
         public async Task<JobPosting> GetJobPostingById(int id)
@@ -32,10 +32,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<JobPosting> GetJobPostingByGuid(Guid jobPostingGuid)
         {
 
-            var queryableJobPosting = await GetAllAsync();
-            var jobPostingResult = queryableJobPosting
+            var queryableJobPosting =  GetAll();
+            var jobPostingResult = await queryableJobPosting
                                 .Where(jp => jp.IsDeleted == 0 && jp.JobPostingGuid == jobPostingGuid)
-                                .ToList();
+                                .ToListAsync();
 
             return jobPostingResult.Count == 0 ? null : jobPostingResult[0];
         }

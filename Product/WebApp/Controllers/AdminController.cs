@@ -150,6 +150,14 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
+        [Route("/admin/subscriber-index-error")]
+        public async Task<JsonResult> GetFailedSubscribers()
+        {
+            var data = await _api.GetFailedSubscribersSummaryAsync();
+            return Json(data);
+        }
+
+        [HttpGet]
         [Route("/admin/partner-sub-action")]
         public async Task<JsonResult> GetPartnerSubActionReport()
         {
@@ -195,7 +203,7 @@ namespace UpDiddy.Controllers
 
                 return View("Contacts", partner);
             }
-            catch (ApiException e)
+            catch (ApiException)
             {
                 return BadRequest();
             }
@@ -420,7 +428,7 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Partners");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     // Log exception
                 }
@@ -461,7 +469,7 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Partners");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     // Log error
                 }
@@ -480,7 +488,7 @@ namespace UpDiddy.Controllers
                     return BadRequest();
                 return RedirectToAction("Partners");
             }
-            catch (ApiException e)
+            catch (ApiException)
             {
                 // Log error
             }
@@ -524,7 +532,7 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Notifications");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     // Log exception
                 }
@@ -566,7 +574,7 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Notifications");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     // Log error
                 }
@@ -585,7 +593,7 @@ namespace UpDiddy.Controllers
                     return BadRequest();
                 return RedirectToAction("Notifications");
             }
-            catch (ApiException e)
+            catch (ApiException)
             {
                 // Log error
             }

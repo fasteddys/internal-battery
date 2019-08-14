@@ -15,7 +15,6 @@ import Validate from './Validate';
 import TextArea from './TextArea';
 import Breadcrumb from './breadcrumbs/Breadcrumb';
 import NotificationEditor from './NotificationEditor';
- 
 
 global.React = React;
 global.ReactDOM = ReactDOM;
@@ -33,7 +32,8 @@ global.Validate = Validate;
 global.TextArea = TextArea;
 global.Breadcrumb = Breadcrumb;
 global.NotificationEditor = NotificationEditor;
- 
+
+
 // dashboard
 import Dashboard from './dashboard/dashboard';
 global.Dashboard = Dashboard;
@@ -43,6 +43,9 @@ import NotificationView from './dashboard/dashboard-helpers';
 global.NotificationView = NotificationView;
 import NotificationItem from './dashboard/dashboard-helpers';
 global.NotificationItem = NotificationItem;
+
+import FailedSubscribers from  './dashboard/failed-subscribers';
+global.FailedSubscribers = FailedSubscribers;
 
 // reports 
 global.SATable = SATable;
@@ -60,3 +63,7 @@ global.CompaniesGrid = CompaniesGrid;
 //Recruiters
 import RecruitersGrid from './recruiters/RecruitersGrid';
 global.RecruitersGrid = RecruitersGrid;
+
+
+import JobAbandonmentCount from './reports/JobAbandonmentCountTable';
+global.JobAbandonmentCount = JobAbandonmentCount;

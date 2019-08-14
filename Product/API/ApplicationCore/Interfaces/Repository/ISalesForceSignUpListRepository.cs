@@ -8,6 +8,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ISalesForceSignUpListRepository : IUpDiddyRepositoryBase<SalesForceSignUpList>
     {
-        Task<IQueryable<SalesForceSignUpList>> GetAllSalesForceSignUpListAsync();
+        IQueryable<SalesForceSignUpList> GetAllSalesForceSignUpListAsync();
     }
 }

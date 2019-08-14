@@ -10,8 +10,8 @@ namespace UpDiddy.Services.ButterCMS
 {
     public interface IButterCMSService
     {
-        T RetrieveContentFields<T>(string CacheKey, string[] Keys, Dictionary<string, string> QueryParameters) where T : class;
-        PageResponse<T> RetrievePage<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters = null) where T : ButterCMSBaseViewModel;
-        bool ClearCachedValue<T>(string CacheKey);
+        Task<T> RetrieveContentFieldsAsync<T>(string CacheKey, string[] Keys, Dictionary<string, string> QueryParameters) where T : class;
+        Task<PageResponse<T>> RetrievePageAsync<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters = null) where T : ButterCMSBaseViewModel;
+        Task<bool> ClearCachedValueAsync<T>(string CacheKey);
     }
 }

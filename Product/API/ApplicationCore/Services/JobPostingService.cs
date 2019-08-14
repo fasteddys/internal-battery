@@ -22,7 +22,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync()
         {
-            var query = await _repositoryWrapper.JobPosting.GetAllAsync();
+            var query = _repositoryWrapper.JobPosting.GetAll();
             var jobCount = new List<JobPostingCountDto>();
             Enums.ProvincePrefix statePrefixEnum;
             Enums.ProvinceName stateNameEnum;
@@ -59,8 +59,8 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         private async Task<List<JobPostingCompanyCountDto>> GetJobsByStateQuery(string province)
         {
-            var query = await _repositoryWrapper.JobPosting.GetAllAsync();
-            return query.Where(x => x.Province == province && x.IsDeleted == 0)
+            var query = _repositoryWrapper.JobPosting.GetAll();
+            return await query.Where(x => x.Province == province && x.IsDeleted == 0)
                 .GroupBy(l => l.Company)
                 .Select(g => new JobPostingCompanyCountDto()
                 {
@@ -70,7 +70,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 })
                 .OrderByDescending(x => x.JobCount)
                 .Take(3)
-                .ToList();
+                .ToListAsync();
         }
     }
 }

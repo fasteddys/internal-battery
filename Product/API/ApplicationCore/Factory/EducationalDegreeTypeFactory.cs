@@ -50,7 +50,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             {
                 educationalDegreeType = CreateEducationalDegreeType(degreeType);
                 db.EducationalDegreeType.Add(educationalDegreeType);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
             return educationalDegreeType;
         }

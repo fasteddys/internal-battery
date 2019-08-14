@@ -6,6 +6,7 @@
 @using System.Globalization;
 @using System.Threading;
 @using System.Text.RegularExpressions;
+@using Newtonsoft.Json;
 
 @{
     string url = ViewBag.QueryUrl as string;
@@ -138,7 +139,7 @@
                                                 {
                                                     counter++;
                                                     <div>
-                                                        <a rel="nofollow" href="@string.Format("{0}city={1}", @ViewBag.QueryUrl.ToString().Replace("location","province"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("{0}city={1}", @ViewBag.QueryUrl.ToString().Replace("location","province"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")"> @string.Join(", ",facet.Label.Split(",")[0], facet.Label.Split(",")[1].ToUpper()) &nbsp(@facet.Count)</a>
                                                     </div>
                                                     @if (counter >= 15)
                                                     {
@@ -282,12 +283,85 @@
                         Regex queryParameterToRemove = new Regex(queryParameter.Key + @"=.+?(?=\&)");
                         var undoUrl = queryParameterToRemove.Replace(url, string.Empty).Trim('&');
                         <text>
-                            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl' data-toggle='tooltip' data-placement='bottom' title='Remove'>X</a><span></div>";
+                            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl' data-toggle='tooltip' data-placement='bottom' title='Remove'><b>(X)</b></a><span></div>";
                             parentElementUndoElement.innerHTML = innerHtml;
                         </text>
                     }
                 }
             }
+
+          
+
+            $( "#keywords" ).autocomplete({
+                source : function(request, response){
+                    //trim the input value
+                    request.term = request.term.trim();
+                    if(request.term == ""){
+                        //when empty, returns empty result
+                        response([]);
+                    }else{
+                        //our own implementation of request to the server
+                                $.ajax({
+                                    url:"/jobs/SearchKeyword",
+                                    type:"GET",
+                                    dataType:'json',
+                                    data:{
+                                        keyword:request.term
+                                    },
+                                    error: function error(res) {
+                                        console.log(res);
+                                    },
+                                    success:function(data){ 
+                                        if(data && data.length>0)
+                                        {
+                                            response(data);
+                                        }
+                                        else{
+                                            response([]);
+                                        }
+                                    }
+                                });
+
+                    }
+                }
+                }); 
+
+
+                 $( "#location" ).autocomplete({
+                    source : function(request, response){
+                        //trim the input value
+                        request.term = request.term.trim();
+                        if(request.term == ""){
+                            //when empty, returns empty result
+                            response([]);
+                        }else{
+                            //our own implementation of request to the server
+                                    $.ajax({
+                                        url:"/jobs/LocationKeyword",
+                                        type:"GET",
+                                        dataType:'json',
+                                        data:{
+                                            location:request.term
+                                        },
+                                        error: function error(res) {
+                                            console.log(res);
+                                        },
+                                        success:function(data){ 
+                                            if(data && data.length>0)
+                                            {
+                                               response(data);
+                                            }
+                                             else{
+                                                response([]);
+                                            }
+                                        }
+                                    });
+
+                        }
+                    },
+                    autoFocus:true
+                }); 
+
         });
 
         function ScrubInputs() {

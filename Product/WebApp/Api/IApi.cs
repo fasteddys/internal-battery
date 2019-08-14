@@ -1,8 +1,6 @@
 using System;
 using UpDiddyLib.Dto;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using System.IO;
 using System.Threading.Tasks;
 using System.Net.Http;
 using UpDiddyLib.Dto.Marketing;
@@ -124,6 +122,7 @@ namespace UpDiddy.Api
         Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey);
         Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords);
         Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDatesAsynch(DateTime? startPostDate, DateTime? endPostDate);
+        Task<List<FailedSubscriberDto>> GetFailedSubscribersSummaryAsync();
 
         #endregion
 
@@ -170,5 +169,8 @@ namespace UpDiddy.Api
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
         Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid);
         Task RecordSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);
+
+        Task<IList<string>> GetKeywordSearchList(string keyword);
+        Task<IList<string>> GetLocationSearchList(string location);
     }
 }

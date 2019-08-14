@@ -127,7 +127,7 @@ namespace UpDiddy
                     AuthenticationResult result = await authCodeBuilder.ExecuteAsync();
                     context.HandleCodeRedemption(result.AccessToken, result.IdToken);    
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //TODO: Handle
                     throw;

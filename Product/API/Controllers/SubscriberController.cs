@@ -99,7 +99,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet("{subscriberGuid}/company")]
         [Authorize]
-        public async Task<IActionResult> GetCompanies(Guid subscriberGuid)
+        public IActionResult GetCompanies(Guid subscriberGuid)
         {
             // Validate guid for GetSubscriber call
             if (Guid.Empty.Equals(subscriberGuid) || subscriberGuid == null)
@@ -681,7 +681,7 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         [HttpPost]
         [Route("/api/[controller]/avatar")]
-        public async Task<IActionResult> UploadAvatar(IFormFile avatar)
+        public IActionResult UploadAvatar(IFormFile avatar)
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             string errorMsg = string.Empty;
@@ -696,7 +696,7 @@ namespace UpDiddyApi.Controllers
         [Authorize]
         [HttpDelete]
         [Route("/api/[controller]/avatar")]
-        public async Task<IActionResult> RemoveAvatar()
+        public IActionResult RemoveAvatar()
         {
             Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
@@ -906,7 +906,7 @@ namespace UpDiddyApi.Controllers
             //check to see if there is any referralCode to map to JobReferral
             if (signUpDto.referralCode != null)
             {
-                _jobService.UpdateJobReferral(signUpDto.referralCode, subscriber.SubscriberGuid.ToString());
+                await _jobService.UpdateJobReferral(signUpDto.referralCode, subscriber.SubscriberGuid.ToString());
             }
 
             SendVerificationEmail(subscriber.Email, signUpDto.verifyUrl + subscriber.EmailVerification.Token);
@@ -920,19 +920,19 @@ namespace UpDiddyApi.Controllers
             if (subscriberGuid == null || subscriberGuid == Guid.Empty)
                 return BadRequest();
 
-            Subscriber subscriber = _db
+            Subscriber subscriber = await _db
                 .Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == subscriberGuid)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (subscriber == null)
                 return BadRequest();
 
-            var result = _db.SubscriberSignUpPartnerReferences.Where(s => s.SubscriberId == subscriber.SubscriberId).FirstOrDefault();
+            var result = await _db.SubscriberSignUpPartnerReferences.Where(s => s.SubscriberId == subscriber.SubscriberId).FirstOrDefaultAsync();
 
             if (result.PartnerId == null)
                 return Ok(new RedirectDto() { RelativePath = null });
 
-            var redirect = _db.PartnerWebRedirect.Where(e => e.PartnerId == result.PartnerId).FirstOrDefault();
+            var redirect = await _db.PartnerWebRedirect.Where(e => e.PartnerId == result.PartnerId).FirstOrDefaultAsync();
             return Ok(new RedirectDto() { RelativePath = redirect?.RelativePath });
         }
 
@@ -1119,12 +1119,12 @@ namespace UpDiddyApi.Controllers
             Subscriber subscriber = _db.Subscriber.Where(s => s.SubscriberGuid.Equals(userGuid))
                 .First();
 
-            var favoriteQuery = await _repositoryWrapper.JobPostingFavorite.GetAllJobPostingFavoritesAsync();
+            var favoriteQuery = _repositoryWrapper.JobPostingFavorite.GetAllJobPostingFavoritesAsync();
             favoriteQuery = favoriteQuery.Where(fave => fave.IsDeleted == 0 && fave.SubscriberId == subscriber.SubscriberId);
-            var companyQuery = await _repositoryWrapper.Company.GetAllCompanies();
-            var jobAppQuery = await _repositoryWrapper.JobApplication.GetAllJobApplicationsAsync();
+            var companyQuery = _repositoryWrapper.Company.GetAllCompanies();
+            var jobAppQuery = _repositoryWrapper.JobApplication.GetAllJobApplicationsAsync();
             jobAppQuery = jobAppQuery.Where(app => app.SubscriberId == subscriber.SubscriberId);
-            var jobQuery = await _repositoryWrapper.JobPosting.GetAllJobPostings();
+            var jobQuery = _repositoryWrapper.JobPosting.GetAllJobPostings();
             jobQuery = jobQuery.Where(job => job.PostingExpirationDateUTC > DateTime.UtcNow.Date);
 
             var query = (from job in jobQuery
@@ -1148,7 +1148,7 @@ namespace UpDiddyApi.Controllers
                 PageSize = 10,
                 Count = query.Count()
             };
-            result.Results = query.Skip((result.Page - 1) * result.PageSize).Take(result.PageSize).ToList();
+            result.Results = await query.Skip((result.Page - 1) * result.PageSize).Take(result.PageSize).ToListAsync();
 
             return Ok(result);
         }
@@ -1307,6 +1307,22 @@ namespace UpDiddyApi.Controllers
             catch (Exception ex)
             {
                 _syslog.Log(LogLevel.Error, $"SubscriberController.GetSubscriber : Error occured when retrieving recruiter with message={ex.Message}", ex);
+                return StatusCode(500);
+            }
+        }
+
+        [HttpGet]
+        [Route("/api/[controller]/failed-subscribers")]
+        public async Task<IActionResult> GetFailedSubscribersSummaryAsync()
+        {
+            try
+            {
+                var subscriber = await _subscriberService.GetFailedSubscribersSummaryAsync();
+                return Ok(_mapper.Map<List<FailedSubscriberDto>>(subscriber));
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(LogLevel.Error, $"SubscriberController.GetFailedSubscribersSummaryAsync : Error occured when retrieving recruiter with message={ex.Message}", ex);
                 return StatusCode(500);
             }
         }

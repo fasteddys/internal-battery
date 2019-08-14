@@ -23,16 +23,16 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-        public Task<IQueryable<Subscriber>> GetAllSubscribersAsync()
+        public IQueryable<Subscriber> GetAllSubscribersAsync()
         {
-            return GetAllAsync();
+            return GetAll();
         }
 
         public async Task<Subscriber> GetSubscriberByEmailAsync(string email)
         {
-            var subscriberResult =  _dbContext.Subscriber
+            var subscriberResult =  await _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.Email == email)
-                              .FirstOrDefault();
+                              .FirstOrDefaultAsync();
 
             return subscriberResult;
         }  
@@ -41,33 +41,35 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
 
    
-            var subscriberResult = _dbContext.Subscriber
+            var subscriberResult = await _dbContext.Subscriber
                               .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
-                              .FirstOrDefault();
+                              .FirstOrDefaultAsync();
 
             return subscriberResult;
         }
 
         public async Task<Subscriber> GetSubscriberByIdAsync(int subscriberId)
         {
-            return _dbContext.Subscriber
+            return await _dbContext.Subscriber
               .Where(s => s.IsDeleted == 0 && s.SubscriberId == subscriberId)
               .Include( s => s.State)
-              .FirstOrDefault(); 
+              .FirstOrDefaultAsync(); 
         }
 
 
         public async Task<IList<Partner>> GetPartnersAssociatedWithSubscriber(int subscriberId)
         {
 
-            
-            var subscriberGroups = _subscriberGroupRepository.GetAllAsync();
-            var groupPartners = _groupPartnerRepository.GetAllAsync();
-            var partners = _partnerRepository.GetAllAsync();
 
-            return await subscriberGroups.Result
-                .Join(groupPartners.Result, sg => sg.GroupId, gp => gp.GroupId, (sg, gp) => new { sg, gp })
-                .Join(partners.Result, sg_gp => sg_gp.gp.PartnerId, partner => partner.PartnerId, (sg_gp, partner) => new Partner()
+            var subscriberGroups = _subscriberGroupRepository.GetAll()
+                .Where(s => s.SubscriberId == subscriberId);
+            
+            var groupPartners = _groupPartnerRepository.GetAll();                
+            var partners = _partnerRepository.GetAll();
+
+            return await subscriberGroups
+                .Join(groupPartners, sg => sg.GroupId, gp => gp.GroupId, (sg, gp) => new { sg, gp })
+                .Join(partners, sg_gp => sg_gp.gp.PartnerId, partner => partner.PartnerId, (sg_gp, partner) => new Partner()
                 {
                     ModifyDate = partner.ModifyDate,
                     LogoUrl = partner.LogoUrl,
