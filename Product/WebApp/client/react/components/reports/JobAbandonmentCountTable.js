@@ -3,37 +3,19 @@ import ReactTable from "react-table";
 import withFixedColumns from "react-table-hoc-fixed-columns";
 import DatePicker from "react-datepicker";
 import moment from "moment";
-import Validate from '../Validate';
-
 const ReactTableFixedColumns = withFixedColumns(ReactTable);
-
 class JobAbandonmentCount extends React.Component {
   columns = [];
   constructor(props) {
     super(props);
-    this.toLocalDate = this.toLocalDate.bind(this);
-    this.reloadData = this.reloadData.bind(this);
     this.state = {
-      data: props.abandonmentCount,
-      show: true,
+      show: false,
       date: {
         ge: null,
         le: null
-      },
-      columns: [
-        {
-          Header: "Date",
-          accessor: "key",
-          Cell: date => (
-            <React.Fragment>{this.toLocalDate(date.value)}</React.Fragment>
-          )
-        },
-        {
-          Header: "Count",
-          accessor: "value"
-        }
-      ]
+      }
     };
+    this.validateDates = this.validateDates.bind(this);
     this.handleClick = this.handleClick.bind(this);
   }
 
@@ -42,10 +24,6 @@ class JobAbandonmentCount extends React.Component {
   }
 
   handleStartDateChange(date) {
-    // this.setState({ date: { ge: date, le: this.state.date.le } }, () =>
-    //   this.reloadData()
-    // );
-
     this.setState({
       date: {
         ge: date,
@@ -55,10 +33,6 @@ class JobAbandonmentCount extends React.Component {
   }
 
   handleEndDateChange(date) {
-    // this.setState({ date: { ge: this.state.date.ge, le: date } }, () =>
-    //   this.reloadData()
-    // );
-
     this.setState({
       date: {
         ge: this.state.date.ge,
@@ -67,20 +41,26 @@ class JobAbandonmentCount extends React.Component {
     });
   }
 
-  getQuery() {
-    const query = { filter: {} };
-    if (this.state.date.ge) query.startDate = this.toLocalDate(this.state.date.ge);
-    if (this.state.date.le) query.endDate = this.toLocalDate(this.state.date.le)
-    return query;
+  validateDates() {
+    const { date } = this.state;
+    if (date.ge == null || date.le == null) {
+      ToastService.error("Enter a valid From and To dates");
+      return;
+    }
+    var startDate = this.toLocalDate(date.ge);
+    var endDate = this.toLocalDate(date.le);
+    if (startDate <= endDate) {
+      this.fetchData(startDate, endDate);
+    } else {
+      ToastService.error("End date must be after Start date");
+    }
   }
 
-  reloadData() {
-    var startDate = this.toLocalDate(this.state.date.ge);
-    var endDate = this.toLocalDate(this.state.date.le);
+  fetchData(startDate, endDate) {
     this.setState({ loading: true }, () =>
-      CareerCircleAPI.getJobAbandonmentCount( startDate,endDate )
+      CareerCircleAPI.getJobAbandonmentCount(startDate, endDate)
         .then(res => {
-          this.setState({ data: res.abandonmentCount });
+          this.setState({ show: true, data: res.data });
         })
         .catch(() =>
           ToastService.error("An error occured while loading the report.")
@@ -92,32 +72,24 @@ class JobAbandonmentCount extends React.Component {
   }
 
   handleClick() {
-    this.reloadData();
+    this.validateDates();
   }
 
   render() {
+    const { data, date } = this.state;
     return (
       <div className="react-report-table">
         <div className="advanced-filters-wrapper p-2">
-          {!this.state.show && (
-            <button
-              className="btn btn-primary ml-0 m-2 "
-              onClick={this.handleClick}
-            >
-              Get Data
-            </button>
-          )}
-
           <div className="form-inline">
             <div className="form-group mr-1">
               <div className="d-block">
                 <DatePicker
                   placeholderText="From Date"
-                  selected={this.state.date.ge}
+                  selected={date.ge}
                   showYearDropdown
                   selectsStart
-                  startDate={this.state.date.ge}
-                  endDate={this.state.date.le}
+                  startDate={date.ge}
+                  endDate={date.le}
                   isClearable={true}
                   onChange={date => this.handleStartDateChange(date)}
                   maxDate={new Date()}
@@ -129,18 +101,18 @@ class JobAbandonmentCount extends React.Component {
               <div className="d-block">
                 <DatePicker
                   placeholderText="To Date"
-                  selected={this.state.date.le}
+                  selected={date.le}
                   showYearDropdown
                   selectsEnd
-                  startDate={this.state.date.ge}
-                  endDate={this.state.date.le}
+                  startDate={date.ge}
+                  endDate={date.le}
                   isClearable={true}
                   onChange={date => this.handleEndDateChange(date)}
                   maxDate={new Date()}
                 />
               </div>
             </div>
-            <div className="form-group ml-1">
+            <div className="form-group ml-3">
               <div className="d-block">
                 <i onClick={this.handleClick} className="fas fa-search" />
               </div>
@@ -149,9 +121,39 @@ class JobAbandonmentCount extends React.Component {
         </div>
         {this.state.show && (
           <ReactTableFixedColumns
-            data={this.state.data}
+            data={data}
             columns={this.state.columns}
             loading={this.state.loading}
+            style={{
+              height: "300px"
+            }}
+            columns={[
+              {
+                Header: "Date",
+                accessor: "ActionCreateDate",
+                Cell: date => (
+                  <React.Fragment>
+                    {this.toLocalDate(date.value)}
+                  </React.Fragment>
+                ),
+                Footer: (
+                  <span style={{ float: "right" }}>
+                    <strong>Total:</strong>
+                  </span>
+                )
+              },
+              {
+                Header: "Count",
+                accessor: "count",
+                headerClassName: "text-right mr-2",
+                className: "text-right mr-2",
+                Footer: (
+                  <strong>
+                    {data && data.reduce((sum, { count }) => sum + count, 0)}
+                  </strong>
+                )
+              }
+            ]}
             showPagination={false}
             className="-striped -highlight"
             minRows={4}

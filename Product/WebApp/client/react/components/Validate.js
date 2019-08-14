@@ -1,5 +1,4 @@
-﻿import moment from "moment";
-const Validate = (value, rules) => {
+﻿const Validate = (value, rules) => {
     let isValid = true;
 
     for (let rule in rules) {
@@ -10,8 +9,6 @@ const Validate = (value, rules) => {
             case 'isRequired': isValid = isValid && requiredValidator(value); break;
 
             case 'isEmail': isValid = isValid && emailValidator(value); break;
-
-            case 'isDate' : isValid = isValid && dateValidator(value); break;
 
             default: isValid = true;
         }
@@ -51,11 +48,6 @@ const requiredValidator = value => {
 const emailValidator = value => {
     var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(value).toLowerCase());
-}
-
-const dateValidator = value => {
-    var date = moment(value);
-    return date.isValid();
 }
 
 

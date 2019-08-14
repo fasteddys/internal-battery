@@ -123,8 +123,6 @@ namespace UpDiddy.Api
         Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords);
         Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDatesAsynch(DateTime? startPostDate, DateTime? endPostDate);
         Task<List<FailedSubscriberDto>> GetFailedSubscribersSummaryAsync();
-        Task<List<KeyValuePair<DateTime,int>>> GetJobAbandonmentCountByDateAsync(DateTime startDate, DateTime endDate);
-
 
         #endregion
 

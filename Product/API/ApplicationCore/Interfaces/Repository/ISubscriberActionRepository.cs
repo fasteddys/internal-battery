@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.Models;
 
@@ -10,5 +9,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     {
         Task CreateSubscriberAction(SubscriberAction subscriberAction);
         Task<List<SubscriberAction>> GetSubscriberActionByEntityAndEntityType(int entityTypeId, int? entityId);
+        Task<List<JobAbandonmentStatistics>> GetJobAbandonmentStatisticsAsync( DateTime startDate, DateTime endDate);
     }
 }
