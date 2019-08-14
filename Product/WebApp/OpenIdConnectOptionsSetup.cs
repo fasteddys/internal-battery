@@ -26,8 +26,7 @@ namespace UpDiddy
 
         public static AuthenticationBuilder AddAzureAdB2C(this AuthenticationBuilder builder, Action<AzureAdB2COptions> configureOptions)
         {
-            builder.Services.Configure(configureOptions);
-            //todo jab is AzureAdB2CAuthenticationBuilderExtensions necessary below 
+            builder.Services.Configure(configureOptions);    
             builder.Services.AddSingleton<IConfigureOptions<OpenIdConnectOptions>, AzureAdB2CAuthenticationBuilderExtensions.OpenIdConnectOptionsSetup>();
             builder.AddOpenIdConnect();
             return builder;
@@ -115,7 +114,7 @@ namespace UpDiddy
                     .WithRedirectUri(AzureAdB2COptions.RedirectUri)
                     .WithClientSecret(AzureAdB2COptions.ClientSecret)
                     .Build();
- 
+                
                 new MSALSessionCache(signedInUserID, context.HttpContext).EnablePersistence(cca.UserTokenCache);
                 try
                 {

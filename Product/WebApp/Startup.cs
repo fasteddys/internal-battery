@@ -77,22 +77,8 @@ namespace UpDiddy
 			services.AddJsEngineSwitcher(options => options.DefaultEngineName = ChakraCoreJsEngine.EngineName)
 				.AddChakraCore();
 
-			services.AddReact();
-
-            /* From MS EXAMPLE TODO JAB REMOVE 
-                                   services.AddAuthentication(sharedOptions =>
-                                   {
-                                       sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                                       sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-                                   })
-                        .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
-                        .AddCookie();
-
-              */
-
- 
-  
-  
+			services.AddReact(); 
+            
             if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
             {
                 services.AddAuthentication(sharedOptions =>

@@ -13,14 +13,19 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using System;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+ 
 
 namespace UpDiddy.Controllers
 {
     public class SessionController : Controller
-    {
-        public SessionController(IOptions<AzureAdB2COptions> b2cOptions)
+    { 
+        private ILogger _syslog = null;
+        public SessionController(IOptions<AzureAdB2COptions> b2cOptions, ILogger<SessionController> sysLog)
         {
             AzureAdB2COptions = b2cOptions.Value;
+            _syslog = sysLog;
         }
 
         public AzureAdB2COptions AzureAdB2COptions { get; set; }
@@ -118,11 +123,33 @@ namespace UpDiddy.Controllers
                 .WithRedirectUri(AzureAdB2COptions.RedirectUri)
                 .WithClientSecret(AzureAdB2COptions.ClientSecret)
                 .Build();
-            
-            new MSALSessionCache(signedInUserID, HttpContext).EnablePersistence(app.UserTokenCache); 
+     
+            new MSALSessionCache(signedInUserID, HttpContext).EnablePersistence(app.UserTokenCache);
+    
             var accounts = await app.GetAccountsAsync();
+            if (accounts.Count() == 0)
+            {
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_SessionController.TokenAsync unable to locate account");
+            }
 
             AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();
+
+            // temp code to log jwt info, specifically expiration dates 
+            try
+            {
+                string scopes = string.Empty;
+                foreach (string s in result.Scopes)
+                    scopes += s + ";";
+                string LogInfo = $"MSAL_SessionController.TokenAsync Token ExpiresOn: {result.ExpiresOn} Token ExtendedExpiresOn: {result.ExtendedExpiresOn} Access Token Length: {result.AccessToken.Length}  Scopes: {scopes}  User: {result.UniqueId} )";
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, LogInfo);
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_SessionController.TokenAsync Error logging info {ex.Message}");
+            }
+
+
+
             return Ok(new { accessToken = result.AccessToken, expiresOn = result.ExpiresOn, uniqueId = result.UniqueId });
         }
     }
