@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using UpDiddy.ViewModels.ButterCMS;
 using UpDiddyLib.Helpers;
 
@@ -120,6 +121,11 @@ namespace UpDiddy.Services.ButterCMS
                     Constants.SendGridAccount.Transactional);
                 await _cacheService.SetCachedValueAsync<string>(CacheKeyForNavigationLoadFailure, "true");
             }            
+        }
+
+        public async Task<XmlDocument> GetButterSitemapAsync(){
+            XmlDocument xmlDocument = await _butterClient.GetSitemapAsync();
+            return xmlDocument;
         }
 
         private class CMSResponseHelper<T>

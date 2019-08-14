@@ -10,7 +10,10 @@ using UpDiddy.Api;
 using UpDiddy.Helpers;
 using UpDiddy.Helpers.Job;
 using UpDiddy.Services;
+using UpDiddy.Services.ButterCMS;
 using UpDiddyLib.Dto;
+using System.Xml;
+using System.IO;
 
 namespace UpDiddy.Controllers
 {
@@ -19,17 +22,20 @@ namespace UpDiddy.Controllers
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly ICacheService _cacheService;
+        private readonly IButterCMSService _butterService;
 
 
         public SitemapController(IApi api,
             IConfiguration configuration,
             ICacheService cacheService,
+            IButterCMSService butterCMSService,
             IHostingEnvironment env)
             : base(api)
         {
             _env = env;
             _configuration = configuration;
             _cacheService = cacheService;
+            _butterService = butterCMSService;
         }
 
         [HttpGet]
@@ -75,9 +81,18 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
+        [Produces("application/xml")]
+        [Route("[controller]/cms-sitemap.xml")]
+        public async Task<XmlDocument> Cms(){
+            XmlDocument cmsXmlResponse = await _butterService.GetButterSitemapAsync();
+            return cmsXmlResponse;
+        }
+
+        [HttpGet]
         [Route("/sitemap.xml")]
         public async Task<IActionResult> Sitemap()
         {
+
             List<SitemapIndexNode> sitemapIndexNodes = new List<SitemapIndexNode>
             {
                 new SitemapIndexNode(Url.Action("static-sitemap.xml", "sitemap")),
