@@ -1,11 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
-using System.Data.SqlClient;
 
 
 namespace UpDiddyApi.ApplicationCore.Repository
@@ -33,15 +30,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 subscriberActionsList = await GetByConditionAsync(sa => sa.EntityTypeId == entityTypeId && sa.IsDeleted == 0);
 
             return subscriberActionsList.ToList();
-        }
-
-        public async Task<List<JobAbandonmentStatistics>> GetJobAbandonmentStatisticsAsync(DateTime startDate, DateTime endDate)
-        {
-            var spParams = new object[] {
-                new SqlParameter("@StartDate", startDate),
-                new SqlParameter("@EndDate", endDate)
-                };
-            return await _dbContext.JobAbandonmentStatistics.FromSql<JobAbandonmentStatistics>("System_JobAbandonmentStatistics @StartDate, @EndDate", spParams).ToListAsync();
         }
     }
 }
