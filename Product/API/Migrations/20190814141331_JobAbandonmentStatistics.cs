@@ -8,7 +8,7 @@ namespace UpDiddyApi.Migrations
         {
             migrationBuilder.Sql(@"
                 EXEC('
-                CREATE PROCEDURE [dbo].[System_JobAbandonmentStatistics] 
+                 CREATE PROCEDURE [dbo].[System_JobAbandonmentStatistics] 
                     @StartDate DATETIME
                     ,@EndDate DATETIME
                 AS
@@ -21,7 +21,7 @@ namespace UpDiddyApi.Migrations
                         ,su.Email
                         ,su.LastName
                         ,ja.JobApplicationId
-                        ,Convert(DATE, a.CreateDate)  AS 'ActionCreateDate'
+                        ,Convert(DATE, a.CreateDate)  AS ActionCreateDate
                         ,ja.CreateDate
                     FROM SubscriberAction a
                     JOIN Subscriber su ON a.SubscriberId = su.SubscriberId
@@ -40,8 +40,8 @@ namespace UpDiddyApi.Migrations
                             )
                     ) AS query
                 GROUP BY query.ActionCreateDate
+                ORDER BY ActionCreateDate desc
                 END
-                GO
                 ')
             ");
         }
