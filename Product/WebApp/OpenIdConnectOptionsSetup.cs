@@ -14,6 +14,7 @@ using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddy.Helpers;
 using UpDiddy.Api;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddy
 {
@@ -34,10 +35,11 @@ namespace UpDiddy
 
         public class OpenIdConnectOptionsSetup : IConfigureNamedOptions<OpenIdConnectOptions>
         {
-
-            public OpenIdConnectOptionsSetup(IOptions<AzureAdB2COptions> b2cOptions)
+            IDistributedCache _cache = null;
+            public OpenIdConnectOptionsSetup(IOptions<AzureAdB2COptions> b2cOptions, IDistributedCache distributedCache)
             {
                 AzureAdB2COptions = b2cOptions.Value;
+                _cache = distributedCache;
             }
 
             public AzureAdB2COptions AzureAdB2COptions { get; set; }
@@ -115,7 +117,7 @@ namespace UpDiddy
                     .WithClientSecret(AzureAdB2COptions.ClientSecret)
                     .Build();
                 
-                new MSALSessionCache(signedInUserID, context.HttpContext).EnablePersistence(cca.UserTokenCache);
+                new MSALSessionCache(signedInUserID,_cache).EnablePersistence(cca.UserTokenCache);
                 try
                 {
                     AuthenticationResult result = await cca.AcquireTokenByAuthorizationCode(AzureAdB2COptions.ApiScopes.Split(' '), code)

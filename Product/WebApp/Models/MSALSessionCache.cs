@@ -3,6 +3,7 @@ using Microsoft.Identity.Client;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace UpDiddy.Models
 {
@@ -10,61 +11,52 @@ namespace UpDiddy.Models
     {
         private static ReaderWriterLockSlim SessionLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
         string UserId = string.Empty;
-        string CacheId = string.Empty;
-        HttpContext httpContext = null;
-
+        string CacheId = string.Empty; 
+        IDistributedCache _distributedCache = null;
         ITokenCache cache;
 
-        public MSALSessionCache(string userId, HttpContext httpcontext)
+        public MSALSessionCache(string userId, IDistributedCache distributedCache)
         {
             // not object, we want the SUB
             UserId = userId;
             CacheId = UserId + "_TokenCache";
-            httpContext = httpcontext;
-          //  Load();
+            _distributedCache = distributedCache;          
         }
 
         public ITokenCache EnablePersistence(ITokenCache cache)
         {
             this.cache = cache;
             cache.SetBeforeAccess(BeforeAccessNotification);
-            cache.SetAfterAccess(AfterAccessNotification);
-          //  Load();
+            cache.SetAfterAccess(AfterAccessNotification);          
             return cache;
         }
 
         public void SaveUserStateValue(string state)
         {
             SessionLock.EnterWriteLock();
-            httpContext.Session.SetString(CacheId + "_state", state);
+            _distributedCache.SetString(CacheId + "_state", state);
             SessionLock.ExitWriteLock();
         }
         public string ReadUserStateValue()
         {
-            string state = string.Empty;
-            SessionLock.EnterReadLock();
-            state = (string)httpContext.Session.GetString(CacheId + "_state");
-            SessionLock.ExitReadLock();
+            string state = string.Empty; 
+            state =  _distributedCache.GetString(CacheId + "_state");    
             return state;
         }
         public void Load(ITokenCacheSerializer tokenCacheSerializer)
-        {
-            SessionLock.EnterReadLock();
-            byte[] blob = httpContext.Session.Get(CacheId);
+        {         
+            byte[] blob = _distributedCache.Get(CacheId);
             if (blob != null)
             {
                 tokenCacheSerializer.DeserializeMsalV3(blob);
-            }
-            SessionLock.ExitReadLock();
+            }         
         }
 
         public void Persist(ITokenCacheSerializer tokenCacheSerializer)
-        {
-            SessionLock.EnterWriteLock();
-
-            // Reflect changes in the persistent store
-            httpContext.Session.Set(CacheId, tokenCacheSerializer.SerializeMsalV3());
-            SessionLock.ExitWriteLock();
+        {            
+            // Reflect changes in the persistent store                     
+            _distributedCache.Set(CacheId, tokenCacheSerializer.SerializeMsalV3());
+            
         }
 
         // Triggered right before MSAL needs to access the cache.

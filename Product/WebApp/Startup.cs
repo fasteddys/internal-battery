@@ -33,9 +33,7 @@ using React.AspNet;
 using DeviceDetectorNET;
 using UpDiddy.Services;
 using UpDiddy.Services.ButterCMS;
- 
- 
- 
+using UpDiddy.ExceptionHandling;
 
 namespace UpDiddy
 {
@@ -132,9 +130,11 @@ namespace UpDiddy
                        .AllowAnyHeader();
             }));
 
-            services.AddMvc()
-                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-                .AddDataAnnotationsLocalization();
+            services.AddMvc(config => {
+                config.Filters.Add(typeof(CCExceptionFilter));
+            })
+            .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+            .AddDataAnnotationsLocalization();
 
             services.AddAuthorization(options =>
             {
@@ -206,18 +206,21 @@ namespace UpDiddy
                 options.SupportedUICultures = supportedCultures;
             });
 
-            // Add Redis session cahce 
-            services.AddDistributedRedisCache(options =>
-            {
-                options.InstanceName = Configuration.GetValue<string>("redis:name");
-                options.Configuration = Configuration.GetValue<string>("redis:host");
-            });
        
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromHours(1);
                 options.Cookie.HttpOnly = true;
             });
+
+
+            // Add Redis session cahce 
+            services.AddDistributedRedisCache(options =>
+            {
+                options.InstanceName = Configuration.GetValue<string>("redis:name");
+                options.Configuration = Configuration.GetValue<string>("redis:host");
+            });
+
             // Add Api
             services.AddScoped<IApi, ApiUpdiddy>();
             services.AddScoped<ICacheService, CacheService>();
@@ -246,7 +249,8 @@ namespace UpDiddy
                 app.UseBrowserLink();
             }
             else
-            {
+            {   
+                //todo jab ad
                 app.UseExceptionHandler("/Home/Error");
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }

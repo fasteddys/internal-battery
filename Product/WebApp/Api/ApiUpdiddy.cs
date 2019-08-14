@@ -100,7 +100,18 @@ namespace UpDiddy.Api
         }
 
         private async Task<AuthenticationResult> GetBearerTokenAsync()
-        {
+        {dfdfdd 
+
+            // TODO JAB remove test code 
+            int x = 0;
+            if ( x == 0 )
+                throw new Exception("45");
+
+            if ( x == 90 )
+            throw new MsalUiRequiredException("45", "#4");
+
+
+
             AuthenticationResult result = null;
             // Retrieve the token with the specified scopes
             var scope = AzureOptions.ApiScopes.Split(' ');
@@ -111,7 +122,7 @@ namespace UpDiddy.Api
                 .WithClientSecret(AzureOptions.ClientSecret)
                 .Build();
             
-            new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).EnablePersistence(app.UserTokenCache);
+            new MSALSessionCache(signedInUserID,_cache).EnablePersistence(app.UserTokenCache);
 
             var accounts = await app.GetAccountsAsync();
             if ( accounts.Count() == 0 )
