@@ -1,6 +1,4 @@
-﻿using Microsoft.VisualBasic;
-using System;
-using System.Text;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,8 +13,6 @@ using UpDiddy.Services;
 using UpDiddy.Services.ButterCMS;
 using UpDiddyLib.Dto;
 using System.Xml;
-using UpDiddyLib.Helpers;
-using System.IO;
 
 namespace UpDiddy.Controllers
 {
@@ -134,7 +130,6 @@ namespace UpDiddy.Controllers
         [Route("/sitemap.xml")]
         public async Task<IActionResult> Sitemap()
         {
-
             List<SitemapIndexNode> sitemapIndexNodes = new List<SitemapIndexNode>
             {
                 new SitemapIndexNode(Url.Action("static-sitemap.xml", "sitemap")),
