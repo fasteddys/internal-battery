@@ -89,6 +89,8 @@ namespace UpDiddy.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
         }
 
+
+
         [HttpGet]
         public IActionResult SignedOut()
         {
@@ -96,6 +98,32 @@ namespace UpDiddy.Controllers
             {
                 // Redirect to home page if the user is authenticated.
                 return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+
+            return View();
+        }
+
+
+
+        [HttpGet]
+        public IActionResult AuthRequired()
+        {
+            HttpContext.Session.Clear();
+            SetAzureAdB2CCulture();
+            var callbackUrl = Url.Action(nameof(AuthenticationRequired), "Session", values: null, protocol: Request.Scheme);
+            return SignOut(new AuthenticationProperties { RedirectUri = callbackUrl },
+                CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+        }
+
+
+
+        [HttpGet]
+        public IActionResult AuthenticationRequired()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                // Redirect to home page if the user is authenticated.
+               // return RedirectToAction(nameof(HomeController.Index), "Home");
             }
 
             return View();

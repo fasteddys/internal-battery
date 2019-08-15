@@ -243,18 +243,20 @@ namespace UpDiddy
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+ 
+        
             if (env.IsDevelopment() || env.IsStaging())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
             }
             else
-            {   
-                //todo jab ad
+            {     
                 app.UseExceptionHandler("/Home/Error");
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }
-
+       
+           
             // Initialise ReactJS.NET. Must be before static files.
             app.UseReact(config =>
             {

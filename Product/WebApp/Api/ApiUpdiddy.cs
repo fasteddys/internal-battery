@@ -100,18 +100,7 @@ namespace UpDiddy.Api
         }
 
         private async Task<AuthenticationResult> GetBearerTokenAsync()
-        {dfdfdd 
-
-            // TODO JAB remove test code 
-            int x = 0;
-            if ( x == 0 )
-                throw new Exception("45");
-
-            if ( x == 90 )
-            throw new MsalUiRequiredException("45", "#4");
-
-
-
+        {     
             AuthenticationResult result = null;
             // Retrieve the token with the specified scopes
             var scope = AzureOptions.ApiScopes.Split(' ');
@@ -612,6 +601,10 @@ namespace UpDiddy.Api
 
         public async Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page, int? timeZoneOffset)
         {
+            // todo jab remove test code 
+            int x = 9;
+            if ( x == 9 )
+            throw new MsalUiRequiredException("1", "3");
             string endpoint = "subscriber/me/job-alerts";
             if (page.HasValue)
                 endpoint = QueryHelpers.AddQueryString(endpoint, "page", page.Value.ToString());

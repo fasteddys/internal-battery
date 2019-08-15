@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,25 +31,40 @@ namespace UpDiddyApi.Authorization
 
         private async Task<bool> CheckAuthAsync(string userId, GroupRequirement requirement)
         {
-            IList<Microsoft.Graph.Group> groups = new List<Microsoft.Graph.Group>();
-            try
-            {
-                groups = await _graphClient.GetUserGroupsByObjectId(userId);
-            }
-            catch (Exception ex)
-            {
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_GroupAuthorizationHandler.CheckAuthAsync Error getting user group info for user: {userId}  Exception: {ex.Message}" , requirement);
-                // if exception then stop here, don't assume they have access
-                return false;
-            }
+ 
+            // important to not use "SubscriberGroups" as the cache key since that what the webapp is using and the cached type is different
+            string cacheKey = "APISubscriberGroups" + userId;
+            string cachedGroups = _cache.GetString(cacheKey);
 
-            // if no groups then just not authorized at this point
-            if (groups.Count < 1)
+            IList<Microsoft.Graph.Group> groups = null;
+            if (cachedGroups != null)
             {
-                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_GroupAuthorizationHandler.CheckAuthAsync No groups from for user: {userId}" );
-                return false;
+                groups = JsonConvert.DeserializeObject<IList<Microsoft.Graph.Group>>(cachedGroups);
             }
-                
+            else
+            {
+                groups = new List<Microsoft.Graph.Group>();
+                try
+                {
+                    groups = await _graphClient.GetUserGroupsByObjectId(userId);
+                    int SubscriberGroupsCacheTimeInMinutes = int.Parse(_configuration["CareerCircle:SubscriberGroupsCacheTimeInMinutes"]);                    
+                    _cache.SetString(cacheKey, JsonConvert.SerializeObject(groups), new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = DateTime.Now.AddHours(SubscriberGroupsCacheTimeInMinutes).TimeOfDay });
+                }
+                catch (Exception ex)
+                {
+                    _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_GroupAuthorizationHandler.CheckAuthAsync Error getting user group info for user: {userId}  Exception: {ex.Message}", requirement);
+                    // if exception then stop here, don't assume they have access
+                    return false;
+                }
+
+                // if no groups then just not authorized at this point
+                if (groups.Count < 1)
+                {
+                    _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_GroupAuthorizationHandler.CheckAuthAsync No groups from for user: {userId}");
+                    return false;
+                }
+            }
+ 
 
             // get the configured groups
             List<ConfigADGroup> requiredGroups = _configuration.GetSection("ADGroups:Values")

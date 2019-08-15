@@ -20,22 +20,24 @@ namespace UpDiddy.Authorization
         IApi _api;
         IHttpContextAccessor _accessor;
         ILogger _syslog = null;
+        IDistributedCache _cache = null;
 
         public const string CACHE_KEY = "SubscriberGroups";
 
-        public ApiGroupAuthorizationHandler(IApi api, IConfiguration configuration, IHttpContextAccessor contextAccessor, ILogger<ApiGroupAuthorizationHandler> sysLog)
+        public ApiGroupAuthorizationHandler(IApi api, IConfiguration configuration, IHttpContextAccessor contextAccessor, ILogger<ApiGroupAuthorizationHandler> sysLog, IDistributedCache cache)
         {
             _api = api;
             _configuration = configuration;
             _accessor = contextAccessor;
             _syslog = sysLog;
+            _cache = cache;
         }
 
         private async Task<bool> CheckAuthAsync(string userId, GroupRequirement requirement)
         {
             IList<string> groups = new List<string>();
-            string cachedGroups = _accessor.HttpContext.Session.GetString(CACHE_KEY + userId);
-            if(false)
+            string cachedGroups = _cache.GetString(CACHE_KEY + userId);        
+            if (cachedGroups != null)
             {
                 groups = JsonConvert.DeserializeObject<List<string>>(cachedGroups);
             } else
@@ -44,7 +46,8 @@ namespace UpDiddy.Authorization
                 {
                     SubscriberADGroupsDto dto = await _api.MyGroupsAsync();
                     groups = dto.groups;
-                    _accessor.HttpContext.Session.SetString(CACHE_KEY + userId, JsonConvert.SerializeObject(groups));
+                    int SubscriberGroupsCacheTimeInMinutes = int.Parse(_configuration["CareerCircle:SubscriberGroupsCacheTimeInMinutes"]);     
+                    _cache.SetString(CACHE_KEY + userId, JsonConvert.SerializeObject(groups),new DistributedCacheEntryOptions() {AbsoluteExpirationRelativeToNow = DateTime.Now.AddHours(SubscriberGroupsCacheTimeInMinutes).TimeOfDay });
                 }
                 catch (Exception ex)
                 {
