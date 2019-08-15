@@ -244,7 +244,7 @@ namespace UpDiddy
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
             }
-            else
+            else if(!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
             {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
