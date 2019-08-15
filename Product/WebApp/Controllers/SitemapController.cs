@@ -64,7 +64,6 @@ namespace UpDiddy.Controllers
             {
                 new SitemapNode(Url.Action("Index","Home")) { ChangeFrequency = ChangeFrequency.Weekly },
                 new SitemapNode(Url.Action("About","Home")) { ChangeFrequency = ChangeFrequency.Monthly },
-                new SitemapNode(Url.Action("Index","Blog")) { ChangeFrequency = ChangeFrequency.Monthly },
                 new SitemapNode(Url.Action("Offers","Home")){ ChangeFrequency = ChangeFrequency.Daily },
                 new SitemapNode(Url.Action("Contact","Home")){ ChangeFrequency = ChangeFrequency.Monthly },
                 new SitemapNode(Url.Action("Privacy","Home")){ ChangeFrequency = ChangeFrequency.Monthly },
@@ -91,6 +90,12 @@ namespace UpDiddy.Controllers
             XmlNode node = cmsXmlResponse.FirstChild.NextSibling;
             bool NextNodeExists = true; 
             List<SitemapNode> nodes = new List<SitemapNode>();
+
+            // Add static pages for Blog route
+            nodes.Add(new SitemapNode(Url.Action("Index","Blog")) { ChangeFrequency = ChangeFrequency.Weekly });
+            nodes.Add(new SitemapNode(Url.Action("Search","Blog")) { ChangeFrequency = ChangeFrequency.Weekly });
+
+
             while(NextNodeExists){
                 string BlogPostUrl = _configuration["Environment:BaseUrl"] + "Blog/Post/" + node.InnerText;
                 nodes.Add(new SitemapNode(BlogPostUrl) { ChangeFrequency = ChangeFrequency.Weekly });
