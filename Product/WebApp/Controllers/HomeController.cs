@@ -59,7 +59,7 @@ namespace UpDiddy.Controllers
         {
             try
             {
-                HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
+                HomeViewModel HomeViewModel = new HomeViewModel(_configuration);
                 var jobCount = await _Api.GetJobCountPerProvinceAsync();
                 HomeViewModel.JobCount = jobCount;
                 return View(HomeViewModel);
