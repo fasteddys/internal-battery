@@ -1226,7 +1226,7 @@ namespace UpDiddyApi.Workflow
             try
             {
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ExecuteJobAbandonmentEmailDelivery started at: {DateTime.UtcNow.ToLongDateString()}");
-                Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = await _trackingService.GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime.UtcNow);
+                Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = await _trackingService.GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime.UtcNow.AddDays(-1));
                 if(subscribersToJobPostingMapping.Count > 0)
                 {
                     string jobPostingUrl = _configuration["CareerCircle:ViewJobPostingUrl"];
@@ -1655,8 +1655,8 @@ namespace UpDiddyApi.Workflow
             };
 
             //cache the list to use for intelligence search
-            _cache.SetString("keywordSearchList",serializedKeyworkSearchList,options);
-            _cache.SetString("locationSearchList",serializedLocationSearchList,options);
+            await _cache.SetStringAsync("keywordSearchList",serializedKeyworkSearchList,options);
+            await _cache.SetStringAsync("locationSearchList",serializedLocationSearchList,options);
         }
         #endregion
 

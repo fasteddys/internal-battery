@@ -61,9 +61,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
 
 
-            var subscriberGroups = _subscriberGroupRepository.GetAll();
-
-            var groupPartners = _groupPartnerRepository.GetAll();
+            var subscriberGroups = _subscriberGroupRepository.GetAll()
+                .Where(s => s.SubscriberId == subscriberId);
+            
+            var groupPartners = _groupPartnerRepository.GetAll();                
             var partners = _partnerRepository.GetAll();
 
             return await subscriberGroups

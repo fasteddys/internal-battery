@@ -601,10 +601,6 @@ namespace UpDiddy.Api
 
         public async Task<PagingDto<JobPostingAlertDto>> GetUserJobAlerts(int? page, int? timeZoneOffset)
         {
-            // todo jab remove test code 
-            int x = 9;
-            if ( x == 9 )
-            throw new MsalUiRequiredException("1", "3");
             string endpoint = "subscriber/me/job-alerts";
             if (page.HasValue)
                 endpoint = QueryHelpers.AddQueryString(endpoint, "page", page.Value.ToString());
