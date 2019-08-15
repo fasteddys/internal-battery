@@ -655,7 +655,7 @@ namespace UpDiddyApi.Workflow
                     int existingActiveJobPageCount = existingJobPages.Where(jp => jp.JobPageStatusId == 2).Count();
 
                     // retrieve all current job pages that are visible on the job site
-                    List<JobPage> jobPagesToProcess = await jobDataMining.DiscoverJobPagesAsync(existingJobPages.ToList());
+                    List<JobPage> jobPagesToProcess = jobDataMining.DiscoverJobPages(existingJobPages.ToList());
                     position = "DiscoverJobPagesCompleted";
 
                     // set the number of pending and active jobs discovered - this will be the future state if we continue processing this job site
@@ -736,6 +736,10 @@ namespace UpDiddyApi.Workflow
                     }
                     else
                     {
+                        // treat an empty recruiter email as an application exception
+                        if (string.IsNullOrWhiteSpace(jobPostingDto?.Recruiter?.Email))
+                            throw new ApplicationException("Recruiter email is required.");
+
                         // we have to add/update the recruiter and the associated company - should the job posting factory encapsulate that logic?
                         Recruiter recruiter = RecruiterFactory.GetAddOrUpdate(_db, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
                         Company company = CompanyFactory.GetCompanyByGuid(_db, jobPostingDto.Company.CompanyGuid);

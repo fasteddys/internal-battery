@@ -17,8 +17,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
     public class AllegisGroupProcess : BaseProcess, IJobDataMining
     {
         public AllegisGroupProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config) : base(jobSite, logger, companyGuid, config ) { }
-
-
+        
         public async Task<List<JobPage>> DiscoverJobPagesAsync(List<JobPage> existingJobPages)
         {
             throw new NotImplementedException();
