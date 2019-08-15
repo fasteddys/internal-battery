@@ -35,7 +35,7 @@ namespace UpDiddy.Controllers
         [Route("/blog/{page?}")]
         public async Task<IActionResult> IndexAsync(int page = 1)
         {
-            var response = await _butterCMSClient.ListPostsAsync(page, 10);
+            var response = await _butterCMSClient.ListPostsAsync(page, Constants.CMS.BLOG_PAGINATION_PAGE_COUNT);
             ViewBag.NextPage = response.Meta.NextPage;
             ViewBag.PreviousPage = response.Meta.PreviousPage;
             return View("Posts", response);

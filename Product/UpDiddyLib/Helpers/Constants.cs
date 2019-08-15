@@ -104,6 +104,7 @@ namespace UpDiddyLib.Helpers
             public static readonly string NULL_RESPONSE = "NULL_RESPONSE";
             public static readonly string RESPONSE_RECEIVED = "RESPONSE_RECEIVED";
             public static readonly string LEVELS = "levels";
+            public static readonly int BLOG_PAGINATION_PAGE_COUNT = 10;
         }
 
         public static class Seo
@@ -134,6 +135,14 @@ namespace UpDiddyLib.Helpers
         {
             public static readonly string ApplyJob = "Apply job";
             public static readonly string View = "View";
+        }
+
+        public static class Xml
+        {
+            public static readonly string XML_HEADER = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
+            public static readonly string XML_ROOT_NODE_OPENING = "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">";
+            public static readonly string XML_ROOT_NODE_CLOSING = "</urlset>";
+
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +15,7 @@ using UpDiddy.Services;
 using UpDiddy.Services.ButterCMS;
 using UpDiddyLib.Dto;
 using System.Xml;
+using UpDiddyLib.Helpers;
 using System.IO;
 
 namespace UpDiddy.Controllers
@@ -61,6 +64,7 @@ namespace UpDiddy.Controllers
             {
                 new SitemapNode(Url.Action("Index","Home")) { ChangeFrequency = ChangeFrequency.Weekly },
                 new SitemapNode(Url.Action("About","Home")) { ChangeFrequency = ChangeFrequency.Monthly },
+                new SitemapNode(Url.Action("Index","Blog")) { ChangeFrequency = ChangeFrequency.Monthly },
                 new SitemapNode(Url.Action("Offers","Home")){ ChangeFrequency = ChangeFrequency.Daily },
                 new SitemapNode(Url.Action("Contact","Home")){ ChangeFrequency = ChangeFrequency.Monthly },
                 new SitemapNode(Url.Action("Privacy","Home")){ ChangeFrequency = ChangeFrequency.Monthly },
@@ -81,11 +85,44 @@ namespace UpDiddy.Controllers
         }
 
         [HttpGet]
-        [Produces("application/xml")]
         [Route("[controller]/cms-sitemap.xml")]
-        public async Task<XmlDocument> Cms(){
+        public async Task<IActionResult> Cms(){
             XmlDocument cmsXmlResponse = await _butterService.GetButterSitemapAsync();
-            return cmsXmlResponse;
+            XmlNode node = cmsXmlResponse.FirstChild.NextSibling;
+            bool NextNodeExists = true; 
+            List<SitemapNode> nodes = new List<SitemapNode>();
+            while(NextNodeExists){
+                string BlogPostUrl = _configuration["Environment:BaseUrl"] + "Blog/Post/" + node.InnerText;
+                nodes.Add(new SitemapNode(BlogPostUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                NextNodeExists = node.NextSibling != null;
+                node = node.NextSibling;
+            }
+
+            IList<string> AuthorSlugs = await _butterService.GetBlogAuthorSlugsAsync();
+            foreach(string Slug in AuthorSlugs){
+                string AuthorPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Author/" + Slug;
+                nodes.Add(new SitemapNode(AuthorPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+            }
+
+            IList<string> CategorySlugs = await _butterService.GetBlogCategorySlugsAsync();
+            foreach(string Slug in CategorySlugs){
+                string CategoryPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Category/" + Slug;
+                nodes.Add(new SitemapNode(CategoryPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+            }
+
+            IList<string> TagSlugs = await _butterService.GetBlogTagSlugsAsync();
+            foreach(string Slug in TagSlugs){
+                string TagPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Tag/" + Slug;
+                nodes.Add(new SitemapNode(TagPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+            }
+
+            int NumberOfBlogPages = await _butterService.GetNumberOfBlogPostPagesAsync();
+            string BlogIndexPaginationUrl = _configuration["Environment:BaseUrl"] + "Blog/";
+            for(int i = 1; i <= NumberOfBlogPages; i++){
+                nodes.Add(new SitemapNode(BlogIndexPaginationUrl + i) { ChangeFrequency = ChangeFrequency.Weekly });
+            }
+
+            return new SitemapProvider().CreateSitemap(new SitemapModel(nodes));
         }
 
         [HttpGet]
@@ -98,7 +135,7 @@ namespace UpDiddy.Controllers
                 new SitemapIndexNode(Url.Action("static-sitemap.xml", "sitemap")),
                 new SitemapIndexNode(Url.Action("courses-sitemap.xml", "sitemap")),
                 new SitemapIndexNode(Url.Action("jobs-sitemap.xml", "sitemap")),
-                // todo: create separate node for Butter CMS sitemap (once we have published content there other than site nav and LPs) https://buttercms.com/docs/api/?csharp#feeds
+                new SitemapIndexNode(Url.Action("cms-sitemap.xml", "sitemap"))
             };
             
             // add browse jobs
