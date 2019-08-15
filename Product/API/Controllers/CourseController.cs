@@ -112,7 +112,7 @@ namespace UpDiddyApi.Controllers
             rval = _db.Course
                 .Where(t => t.IsDeleted == 0 && t.TopicId == topicId)
                 .ProjectTo<CourseDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .OrderBy(x => x.SortOrder).ToList();
 
             return Ok(rval);
         }
