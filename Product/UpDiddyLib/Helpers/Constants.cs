@@ -136,13 +136,5 @@ namespace UpDiddyLib.Helpers
             public static readonly string ApplyJob = "Apply job";
             public static readonly string View = "View";
         }
-
-        public static class Xml
-        {
-            public static readonly string XML_HEADER = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
-            public static readonly string XML_ROOT_NODE_OPENING = "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">";
-            public static readonly string XML_ROOT_NODE_CLOSING = "</urlset>";
-
-        }
     }
 }
