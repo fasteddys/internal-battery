@@ -29,8 +29,8 @@ namespace UpDiddyApi.Migrations
                     LEFT JOIN JobApplication ja ON ja.JobPostingId = jp.JobPostingId
                         AND ja.SubscriberId = a.SubscriberId
                     WHERE a.actionId = 9
-                        AND a.CreateDate >= @StartDate
-                        AND a.CreateDate <= @EndDate
+                        AND CONVERT(date,a.CreateDate) >= @StartDate
+                        AND CONVERT(date,a.CreateDate) <= @EndDate
                         AND (
                             (
                                 ja.CreateDate IS NOT NULL
