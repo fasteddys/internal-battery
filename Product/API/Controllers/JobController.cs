@@ -14,7 +14,6 @@ using UpDiddyLib.Dto;
 using AutoMapper;
 using UpDiddyApi.Helpers.Job;
 using System.Security.Claims;
-using UpDiddyLib.Shared.GoogleJobs;
 using Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using Microsoft.Extensions.DependencyInjection;
