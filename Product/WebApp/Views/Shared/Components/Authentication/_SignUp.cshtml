@@ -21,6 +21,11 @@
             {
                 <input type="hidden" asp-for="PartnerGuid" name="PartnerGuid" value="@Model.PartnerGuid" form="@_form" />
             }
+
+            if (Model.GroupGuid != Guid.Empty && Model.GroupGuid != null)
+            {
+                <input type="hidden" asp-for="GroupGuid" name="GroupGuid" value="@Model.GroupGuid" form="@_form" />
+            }
         }
         <div class="row">
             <div id="SignUpEmail" class="col-12 sign-up-input no-padding">

@@ -14,5 +14,6 @@ namespace UpDiddyApi.Models
         public int SubscriberId { get; set; }
         public virtual Group Group { get; set; }
         public int GroupId { get; set; }
+        public bool CreatedByGroup{get;set;}
     }
 }

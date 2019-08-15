@@ -212,7 +212,7 @@ namespace UpDiddyApi.Workflow
             }
             else
             {
-                Group WozStudentGroup = _repositoryWrapper.GroupRepository.GetGroupByName(UpDiddyLib.Helpers.Constants.CrossReference.Group.WOZ_STUDENT);
+                Group WozStudentGroup = await _repositoryWrapper.GroupRepository.GetGroupByName(UpDiddyLib.Helpers.Constants.CrossReference.Group.WOZ_STUDENT);
                 await _taggingService.AddSubscriberToGroupAsync(WozStudentGroup.GroupId, SubscriberId);
 
                 // Use a different flow for instructor led courses versus self-paced 

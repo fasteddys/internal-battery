@@ -12,6 +12,7 @@ namespace UpDiddyLib.Dto.Marketing
         public string verifyUrl { get; set; }
         public string referralCode { get; set; }
         public Guid partnerGuid { get; set; }
+        public Guid groupGuid { get; set;}
     }
 }
  
