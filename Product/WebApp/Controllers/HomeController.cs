@@ -31,6 +31,7 @@ namespace UpDiddy.Controllers
         private readonly IHostingEnvironment _env;
         private readonly ISysEmail _sysEmail;
         private readonly IApi _api;
+        private readonly IDistributedCache _cache;
 
         [HttpGet]
         public async Task<IActionResult> GetCountries()
@@ -41,13 +42,16 @@ namespace UpDiddy.Controllers
         public HomeController(IApi api,
             IConfiguration configuration,
             IHostingEnvironment env,
-            ISysEmail sysEmail)
+            ISysEmail sysEmail,
+            IDistributedCache distributedCache)
+            
             : base(api)
         {
             _env = env;
             _sysEmail = sysEmail;
             _configuration = configuration;
             _api = api;
+            _cache = distributedCache;
         }
         [HttpGet]
         public async Task<IActionResult> GetStatesByCountry(Guid countryGuid)
@@ -190,8 +194,17 @@ namespace UpDiddy.Controllers
             // logic being determined in web app for managing API data
 
             await _Api.UpdateStudentCourseProgressAsync(true);
-
-            if (this.subscriber.HasOnboarded > 0)
+ 
+            // Handle the case of MsalUiRequireRedirect 
+            var userId =  User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            string CacheKey = $"{userId}MsalUiRequiredRedirect";
+            string MsalUiRequiredRedirect =  _cache.GetString(CacheKey); 
+            if ( string.IsNullOrEmpty(MsalUiRequiredRedirect) == false )
+            {
+                await _cache.RemoveAsync(CacheKey);
+                return Redirect(MsalUiRequiredRedirect);
+            }
+            else if (this.subscriber.HasOnboarded > 0)
                 return RedirectToAction("Profile", "Home");
             else
                 return RedirectToAction("Signup", "Home");
