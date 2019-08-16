@@ -13,7 +13,7 @@ namespace UpDiddyApi.Migrations
 
             migrationBuilder.Sql(@"
 UPDATE dbo.JobSite
-SET CrawlDelayInMilliseconds = 5000, 
+SET CrawlDelayInMilliseconds = 3000, 
 	ModifyDate = GETUTCDATE()
 WHERE [Name] = 'TEKsystems'
 

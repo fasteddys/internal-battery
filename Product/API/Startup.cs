@@ -191,10 +191,10 @@ namespace UpDiddyApi
                  // Run this job once to initially get the keyword and location search
                  BackgroundJob.Enqueue<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo());
 
-                // run the process in production Monday through Friday once every 4 hours between 11 and 23 UTC
                 if (_currentEnvironment.IsProduction())
                 {
-                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 11,15,19,23 * * Mon,Tue,Wed,Thu,Fri");
+                    // run the job crawl in production Monday through Friday once per day at 15:00 UTC
+                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 15 * * Mon,Tue,Wed,Thu,Fri");
                      //Keyword and Location Search Intellisense Job
                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),"0 11,13,15,17,19,21,23 * * Mon,Tue,Wed,Thu,Fri");
                 }
@@ -213,7 +213,7 @@ namespace UpDiddyApi
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CloudTalentIndexNewProfiles(profileIndexerBatchSize), Cron.MinuteInterval(profileIndexerIntervalInMinutes));
 
                 // use for local testing only - DO NOT UNCOMMENT AND COMMIT THIS CODE!
-                BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
+                // BackgroundJob.Enqueue<ScheduledJobs>(x => x.JobDataMining());
 
                 // kick off the metered welcome email delivery process at five minutes past the hour every hour
                 RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.ExecuteLeadEmailDelivery(), Cron.Hourly());
