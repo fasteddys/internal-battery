@@ -132,10 +132,11 @@ namespace UpDiddy.Controllers
         {
             List<SitemapIndexNode> sitemapIndexNodes = new List<SitemapIndexNode>
             {
+                
                 new SitemapIndexNode(Url.Action("static-sitemap.xml", "sitemap")),
+                new SitemapIndexNode(Url.Action("cms-sitemap.xml", "sitemap")),
                 new SitemapIndexNode(Url.Action("courses-sitemap.xml", "sitemap")),
-                new SitemapIndexNode(Url.Action("jobs-sitemap.xml", "sitemap")),
-                new SitemapIndexNode(Url.Action("cms-sitemap.xml", "sitemap"))
+                new SitemapIndexNode(Url.Action("jobs-sitemap.xml", "sitemap"))
             };
             
             // add browse jobs
