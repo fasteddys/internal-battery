@@ -104,6 +104,7 @@ namespace UpDiddyLib.Helpers
             public static readonly string NULL_RESPONSE = "NULL_RESPONSE";
             public static readonly string RESPONSE_RECEIVED = "RESPONSE_RECEIVED";
             public static readonly string LEVELS = "levels";
+            public static readonly string COURSE_CACHE_KEY_PREFIX = "cms_course";
         }
 
         public static class Seo

@@ -333,7 +333,10 @@ namespace UpDiddy.Controllers
             {
                 QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
             }
-            PageResponse<CmsCourseViewModel> cmsCourse = await _butterService.RetrievePageAsync<CmsCourseViewModel>("course_" + slug, slug, QueryParams);
+
+            PageResponse<CmsCourseViewModel> cmsCourse = await _butterService.RetrievePageAsync<CmsCourseViewModel>(
+                _butterService.AssembleCacheKey(Constants.CMS.COURSE_CACHE_KEY_PREFIX, slug, HttpContext.Request.Query), slug, QueryParams);
+            
             if(cmsCourse == null)
                 return NotFound();
 
