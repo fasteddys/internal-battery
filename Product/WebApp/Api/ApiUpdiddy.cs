@@ -1009,6 +1009,7 @@ namespace UpDiddy.Api
             return await GetAsync<RedirectDto>("subscriber/me/partner-web-redirect");
         }
 
+
         #endregion
 
         #region Cache Helper Functions
@@ -1332,7 +1333,7 @@ namespace UpDiddy.Api
 
         public async Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync()
         {
-            return await GetAsync<SubscriberReportDto>($"report/partners");
+            return await GetAsync<SubscriberReportDto>($"report`");
         }
 
         public async Task<List<JobApplicationCountDto>> GetJobApplicationCount(Guid? companyGuid = null)
@@ -1717,14 +1718,6 @@ namespace UpDiddy.Api
             List<string> locationListresult=rval?.Where(k=>k.Contains(location))?.ToList();
 
             return locationListresult;
-        }
-        #endregion
-        
-        #region Sales Force
-        public async Task<BasicResponseDto> AddSalesForceSignUpList(SalesForceSignUpListDto dto)
-        {
-            BasicResponseDto rval = await PutAsync<BasicResponseDto>("salesforce/sign-up", dto);
-            return rval;
         }
         #endregion
     }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+﻿using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Repository
@@ -44,7 +40,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IContactRepository _contactRepository;
         private IOfferRepository _offerRepository;
         private ISubscriberFileRepository _subscriberFileRepository;
-        private ISalesForceSignUpListRepository _SalesForceSignUpListRepository;
         private ISkillRepository _skillRepository;
 
 
@@ -478,17 +473,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
-        public ISalesForceSignUpListRepository SalesForceSignUpListRepository
-        {
-            get
-            {
-                if (_SalesForceSignUpListRepository == null)
-                {
-                    _SalesForceSignUpListRepository = new SalesForceSignUpListRepository(_dbContext);
-                }
-                return _SalesForceSignUpListRepository;
-            }
-        }
 
         public ISkillRepository SkillRepository
         {
