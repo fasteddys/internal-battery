@@ -1,0 +1,64 @@
+@using UpDiddy.ViewModels.ButterCMS
+@using UpDiddy.ViewModels
+@using UpDiddy.Helpers
+@model CmsCourseViewModel
+
+<div class="clinical-research-container">
+    <div class="clinical-hero-container">
+        @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
+            {
+                BackgroundImage = @Model.Band1ImagePath,
+                Elements = new List<string>()
+                {
+                    ""
+                },
+                Class="itpro-hero"
+            }
+        )
+    </div>
+    @{
+        List<string> Elements = new List<string>(){Model.Band2Text};
+    }
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+    {
+        Header = @Model.Band2Title,
+        Class = "skew skew-left-to-right cc-cscheme-secondary-dark",
+        Elements = Elements
+    })
+    @{
+        List<string> Elements2 = new List<string>()
+        {
+            @Model.Band3LeftText, 
+            @Model.Band3RightText
+        };
+    }
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+    {
+        Class = "cc-cscheme-secondary-white",
+        Elements = Elements2
+    })
+
+    @{
+        List<string> Elements3 = new List<string>()
+    {
+        "<div class=\"container-align-center\">" + Model.Band4Text + "</div><br /><br /><div class=\"container-align-center\">" + @Html.PartialToHtmlMarkup("Components/Buttons/_Action", new ActionButtonViewModel {
+                                        Text = @Model.Band4ButtonText,
+                                        Hyperlink = "https://app.itpro.tv/plans/free-signup/circle/",
+                                        FitToText = true,
+                                        ChosenColorScheme = "cc-cscheme-white",
+                                        ButtonAction = ActionButtonViewModel.Action.CTA,
+                                        ButtonClass = "signup-cta",
+                                        OpenNewWindow = true
+                                    }) + "</div>"
+
+    };
+    }
+    @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel
+    {
+        Header = @Model.Band4Title,
+        Class = "skew skew-right-to-left cc-cscheme-primary",
+        Elements = Elements3
+    })
+
+</div>
+
