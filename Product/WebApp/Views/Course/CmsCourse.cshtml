@@ -3,8 +3,8 @@
 @using UpDiddy.Helpers
 @model CmsCourseViewModel
 
-<div class="clinical-research-container">
-    <div class="clinical-hero-container">
+<div class="cms-course-container">
+    <div class="cms-course-hero-container">
         @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
             {
                 BackgroundImage = @Model.Band1ImagePath,
@@ -43,7 +43,7 @@
     {
         "<div class=\"container-align-center\">" + Model.Band4Text + "</div><br /><br /><div class=\"container-align-center\">" + @Html.PartialToHtmlMarkup("Components/Buttons/_Action", new ActionButtonViewModel {
                                         Text = @Model.Band4ButtonText,
-                                        Hyperlink = "https://app.itpro.tv/plans/free-signup/circle/",
+                                        Hyperlink = @Model.Band4ButtonUrl,
                                         FitToText = true,
                                         ChosenColorScheme = "cc-cscheme-white",
                                         ButtonAction = ActionButtonViewModel.Action.CTA,
