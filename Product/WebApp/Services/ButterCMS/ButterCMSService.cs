@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using UpDiddy.ViewModels.ButterCMS;
 using UpDiddyLib.Helpers;
 
@@ -133,6 +134,70 @@ namespace UpDiddy.Services.ButterCMS
                     Constants.SendGridAccount.Transactional);
                 await _cacheService.SetCachedValueAsync<string>(CacheKeyForNavigationLoadFailure, "true");
             }            
+        }
+
+        public async Task<XmlDocument> GetButterSitemapAsync(){
+            XmlDocument xmlDocument = await _butterClient.GetSitemapAsync();
+            return xmlDocument;
+        }
+
+        public async Task<IList<string>> GetBlogAuthorSlugsAsync(){
+            IEnumerable<Author> Authors =  await _butterClient.ListAuthorsAsync(includeRecentPosts: true);
+            IList<string> AuthorSlugs = new List<string>();
+            foreach(Author author in Authors){
+                if(author.RecentPosts.Count() > 0)
+                    AuthorSlugs.Add(author.Slug);
+            }
+            return AuthorSlugs;
+        }
+
+        public async Task<IList<string>> GetBlogCategorySlugsAsync(){
+            IEnumerable<Category> Categories =  await _butterClient.ListCategoriesAsync(includeRecentPosts: true);
+            IList<string> CategoriesList = new List<string>();
+            foreach(Category category in Categories){
+                if(category.RecentPosts.Count() > 0)
+                    CategoriesList.Add(category.Slug);
+            }
+            return CategoriesList;
+        }
+
+        public async Task<IList<string>> GetBlogTagSlugsAsync(){
+            IEnumerable<Tag> Tags =  await _butterClient.ListTagsAsync(includeRecentPosts: true);
+            IList<string> TagsList = new List<string>();
+            foreach(Tag tag in Tags){
+                if(tag.RecentPosts.Count() > 0)
+                    TagsList.Add(tag.Slug);
+            }
+            return TagsList;
+        }
+
+        /*
+            This method implementation is not ideal, as we are calling Butter to iterate through
+            all blog post pages to get the count number. I don't see any way to get the total 
+            number of Blog posts in Butter, so this was the only approach. We are leveraging the
+            'excludeBody' parameter of the call to reduce payload size.
+         */
+        public async Task<int> GetNumberOfBlogPostPagesAsync(){
+            PostsResponse posts = await _butterClient.ListPostsAsync(pageSize: Constants.CMS.BLOG_PAGINATION_PAGE_COUNT,
+                excludeBody: true);  
+            int NumberOfPages = 0;
+            if(posts == null)
+                return NumberOfPages;
+            
+            NumberOfPages++;
+            int? NextPageExists = posts.Meta.NextPage;
+
+            if(NextPageExists == null)
+                return NumberOfPages;
+            
+            while(NextPageExists != null){
+                NumberOfPages++;
+                posts = await _butterClient.ListPostsAsync(page: NumberOfPages, pageSize: Constants.CMS.BLOG_PAGINATION_PAGE_COUNT,
+                    excludeBody: true); 
+                NextPageExists = posts.Meta.NextPage;
+            }
+
+            return NumberOfPages;
         }
 
         private class CMSResponseHelper<T>
