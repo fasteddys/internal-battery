@@ -13,6 +13,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using UpDiddy.Api;
 using UpDiddy.Authentication;
 using System.Threading.Tasks;
+using UpDiddy.Services.ButterCMS;
+using UpDiddy.ViewModels.ButterCMS;
+using ButterCMS.Models;
+using Microsoft.AspNetCore.Http;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -22,6 +26,7 @@ namespace UpDiddy.Controllers
     {
         private readonly IConfiguration _configuration;
         private IBraintreeConfiguration braintreeConfiguration;
+        private IButterCMSService _butterService;
         private static readonly TransactionStatus[] transactionSuccessStatuses = {
                 TransactionStatus.AUTHORIZED,
                 TransactionStatus.AUTHORIZING,
@@ -32,10 +37,11 @@ namespace UpDiddy.Controllers
                 TransactionStatus.SUBMITTED_FOR_SETTLEMENT
             };
 
-        public CourseController(IApi api, IConfiguration configuration) : base(api)
+        public CourseController(IApi api, IConfiguration configuration, IButterCMSService butterCMSService) : base(api)
         {
             _configuration = configuration;
             braintreeConfiguration = new BraintreeConfiguration(_configuration);
+            _butterService = butterCMSService;
 
         }        
 
@@ -317,6 +323,36 @@ namespace UpDiddy.Controllers
         public IActionResult ITProTVCourse()
         {
             return View("ITProTVCourse");
+        }
+
+        [Authorize]
+        [HttpGet("[controller]/{slug}")]
+        public async Task<IActionResult> CmsCourse(string slug){
+            Dictionary<string, string> QueryParams = new Dictionary<string, string>();
+            foreach (string s in HttpContext.Request.Query.Keys)
+            {
+                QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
+            }
+
+            PageResponse<CmsCourseViewModel> cmsCourse = await _butterService.RetrievePageAsync<CmsCourseViewModel>(
+                _butterService.AssembleCacheKey(Constants.CMS.COURSE_CACHE_KEY_PREFIX, slug, HttpContext.Request.Query), slug, QueryParams);
+            
+            if(cmsCourse == null)
+                return NotFound();
+
+            CmsCourseViewModel course = new CmsCourseViewModel{
+                Band1ImagePath = cmsCourse.Data.Fields.Band1ImagePath,
+                Band2Text = cmsCourse.Data.Fields.Band2Text,
+                Band2Title = cmsCourse.Data.Fields.Band2Title,
+                Band3LeftText = cmsCourse.Data.Fields.Band3LeftText,
+                Band3RightText = cmsCourse.Data.Fields.Band3RightText,
+                Band4ButtonUrl = cmsCourse.Data.Fields.Band4ButtonUrl,
+                Band4Text = cmsCourse.Data.Fields.Band4Text,
+                Band4Title = cmsCourse.Data.Fields.Band4Title,
+                Band4ButtonText = cmsCourse.Data.Fields.Band4ButtonText
+            };
+            
+            return View(course);
         }
     }
 }
