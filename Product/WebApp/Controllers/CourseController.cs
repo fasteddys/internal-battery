@@ -335,7 +335,7 @@ namespace UpDiddy.Controllers
             }
             PageResponse<CmsCourseViewModel> cmsCourse = await _butterService.RetrievePageAsync<CmsCourseViewModel>("course_" + slug, slug, QueryParams);
             if(cmsCourse == null)
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return NotFound();
 
             CmsCourseViewModel course = new CmsCourseViewModel{
                 Band1ImagePath = cmsCourse.Data.Fields.Band1ImagePath,
