@@ -103,6 +103,19 @@ namespace UpDiddy.Services.ButterCMS
             return await _cacheService.RemoveCachedValueAsync<T>(CacheKey);
         }
 
+        public string AssembleCacheKey(string KeyPrefix, string PageSlug, IQueryCollection Query = null){
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append(KeyPrefix)
+                .Append("_")
+                .Append(PageSlug);
+
+            // Check to see if this is a preview request.
+            if(Query != null && Query.Keys.Contains("preview") && Query["preview"].Equals("1"))
+                stringBuilder.Append("_preview");
+
+            return stringBuilder.ToString();
+        }
+
         private async Task SendEmailNotificationAsync(string CacheKey)
         {
             /**

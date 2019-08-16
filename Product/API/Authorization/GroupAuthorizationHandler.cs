@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,30 +18,53 @@ namespace UpDiddyApi.Authorization
         IB2CGraph _graphClient;
         IConfiguration _configuration;
         IDistributedCache _cache;
+        ILogger _syslog = null;
+ 
 
-        public GroupAuthorizationHandler(IB2CGraph graphClient, IConfiguration configuration, IDistributedCache distributedCache)
+        public GroupAuthorizationHandler(IB2CGraph graphClient, IConfiguration configuration, IDistributedCache distributedCache, ILogger<GroupAuthorizationHandler> sysLog)
         {
             _graphClient = graphClient;
             _configuration = configuration;
             _cache = distributedCache;
+            _syslog = sysLog;
         }
 
         private async Task<bool> CheckAuthAsync(string userId, GroupRequirement requirement)
         {
-            IList<Microsoft.Graph.Group> groups = new List<Microsoft.Graph.Group>();
-            try
-            {
-                groups = await _graphClient.GetUserGroupsByObjectId(userId);
-            }
-            catch (Exception)
-            {
-                // if exception then stop here, don't assume they have access
-                return false;
-            }
+ 
+            // important to not use "SubscriberGroups" as the cache key since that what the webapp is using and the cached type is different
+            string cacheKey = "APISubscriberGroups" + userId;
+            string cachedGroups = _cache.GetString(cacheKey);
 
-            // if no groups then just not authorized at this point
-            if (groups.Count < 1)
-                return false;
+            IList<Microsoft.Graph.Group> groups = null;
+            if (cachedGroups != null)
+            {
+                groups = JsonConvert.DeserializeObject<IList<Microsoft.Graph.Group>>(cachedGroups);
+            }
+            else
+            {
+                groups = new List<Microsoft.Graph.Group>();
+                try
+                {
+                    groups = await _graphClient.GetUserGroupsByObjectId(userId);
+                    int SubscriberGroupsCacheTimeInMinutes = int.Parse(_configuration["CareerCircle:SubscriberGroupsCacheTimeInMinutes"]);                    
+                    _cache.SetString(cacheKey, JsonConvert.SerializeObject(groups), new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = DateTime.Now.AddHours(SubscriberGroupsCacheTimeInMinutes).TimeOfDay });
+                }
+                catch (Exception ex)
+                {
+                    _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_GroupAuthorizationHandler.CheckAuthAsync Error getting user group info for user: {userId}  Exception: {ex.Message}", requirement);
+                    // if exception then stop here, don't assume they have access
+                    return false;
+                }
+
+                // if no groups then just not authorized at this point
+                if (groups.Count < 1)
+                {
+                    _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_GroupAuthorizationHandler.CheckAuthAsync No groups from for user: {userId}");
+                    return false;
+                }
+            }
+ 
 
             // get the configured groups
             List<ConfigADGroup> requiredGroups = _configuration.GetSection("ADGroups:Values")
@@ -50,6 +75,7 @@ namespace UpDiddyApi.Authorization
             // claims in GroupRequirement are treated as OR conditions
             Microsoft.Graph.Group group = groups.Where(e => requiredGroups.Where(rg => rg.Id.Equals(e.AdditionalData["objectId"])).Any()).FirstOrDefault();
 
+            _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_GroupAuthorizationHandler.CheckAuthAsync returning {group != null} for user: {userId}");
             return group != null;
         }
 

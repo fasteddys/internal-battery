@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+﻿using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Repository
@@ -46,6 +42,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ISubscriberFileRepository _subscriberFileRepository;
         private ISalesForceSignUpListRepository _SalesForceSignUpListRepository;
         private ISkillRepository _skillRepository;
+        private IStoredProcedureRepository _storedProcedureRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -499,6 +496,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _skillRepository = new SkillRepository(_dbContext);
                 }
                 return _skillRepository;
+            }
+        }
+
+        public IStoredProcedureRepository StoredProcedureRepository
+        {
+            get
+            {
+                if (_storedProcedureRepository == null)
+                {
+                    _storedProcedureRepository = new StoredProcedureRepository(_dbContext);
+                }
+                return _storedProcedureRepository;
             }
         }
     }

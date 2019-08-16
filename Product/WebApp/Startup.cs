@@ -33,6 +33,7 @@ using React.AspNet;
 using DeviceDetectorNET;
 using UpDiddy.Services;
 using UpDiddy.Services.ButterCMS;
+using UpDiddy.ExceptionHandling;
 
 namespace UpDiddy
 {
@@ -74,17 +75,15 @@ namespace UpDiddy
 			services.AddJsEngineSwitcher(options => options.DefaultEngineName = ChakraCoreJsEngine.EngineName)
 				.AddChakraCore();
 
-			services.AddReact();
-
+			services.AddReact(); 
             
-
             if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
             {
                 services.AddAuthentication(sharedOptions =>
                 {
                     sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-                })
+                })                
                 .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C:Live", options))
                 .AddCookie(options =>
                 {
@@ -131,9 +130,11 @@ namespace UpDiddy
                        .AllowAnyHeader();
             }));
 
-            services.AddMvc()
-                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-                .AddDataAnnotationsLocalization();
+            services.AddMvc(config => {
+                config.Filters.Add(typeof(CCExceptionFilter));
+            })
+            .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+            .AddDataAnnotationsLocalization();
 
             services.AddAuthorization(options =>
             {
@@ -205,18 +206,21 @@ namespace UpDiddy
                 options.SupportedUICultures = supportedCultures;
             });
 
-            // Add Redis session cahce 
-            services.AddDistributedRedisCache(options =>
-            {
-                options.InstanceName = Configuration.GetValue<string>("redis:name");
-                options.Configuration = Configuration.GetValue<string>("redis:host");
-            });
        
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromHours(1);
                 options.Cookie.HttpOnly = true;
             });
+
+
+            // Add Redis session cahce 
+            services.AddDistributedRedisCache(options =>
+            {
+                options.InstanceName = Configuration.GetValue<string>("redis:name");
+                options.Configuration = Configuration.GetValue<string>("redis:host");
+            });
+
             // Add Api
             services.AddScoped<IApi, ApiUpdiddy>();
             services.AddScoped<ICacheService, CacheService>();
@@ -239,17 +243,20 @@ namespace UpDiddy
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+ 
+        
             if (env.IsDevelopment() || env.IsStaging())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
             }
-            else
+            else if(!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
             {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
             }
-
+       
+           
             // Initialise ReactJS.NET. Must be before static files.
             app.UseReact(config =>
             {

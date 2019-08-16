@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UpDiddy.ViewModels.ButterCMS;
 using System.Xml;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddy.Services.ButterCMS
 {
@@ -16,6 +17,6 @@ namespace UpDiddy.Services.ButterCMS
         Task<IList<string>> GetBlogCategorySlugsAsync();
         Task<IList<string>> GetBlogTagSlugsAsync();
         Task<int> GetNumberOfBlogPostPagesAsync();
-
+        string AssembleCacheKey(string KeyPrefix, string PageSlug, IQueryCollection Query = null);
     }
 }
