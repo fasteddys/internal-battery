@@ -83,7 +83,9 @@ namespace UpDiddy.Controllers
         [Route("[controller]/cms-sitemap.xml")]
         public async Task<IActionResult> Cms(){
             XmlDocument cmsXmlResponse = await _butterService.GetButterSitemapAsync();
-            XmlNode node = cmsXmlResponse.FirstChild.NextSibling;
+
+            // Gets to the first url node of the sitemap returned from CMS
+            XmlNode node = cmsXmlResponse.FirstChild.NextSibling.FirstChild;
             bool NextNodeExists = true; 
             List<SitemapNode> nodes = new List<SitemapNode>();
 
@@ -113,8 +115,10 @@ namespace UpDiddy.Controllers
 
             IList<string> TagSlugs = await _butterService.GetBlogTagSlugsAsync();
             foreach(string Slug in TagSlugs){
-                string TagPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Tag/" + Slug;
-                nodes.Add(new SitemapNode(TagPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                if(!String.IsNullOrEmpty(Slug.Trim())){
+                    string TagPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Tag/" + Slug;
+                    nodes.Add(new SitemapNode(TagPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                }
             }
 
             int NumberOfBlogPages = await _butterService.GetNumberOfBlogPostPagesAsync();
