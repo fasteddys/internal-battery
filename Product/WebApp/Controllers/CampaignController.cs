@@ -326,8 +326,7 @@ namespace UpDiddy.Controllers
 
                 //check for any referrerCode 
                 referralCode = Request.Cookies["referrerCode"]==null ? null : Request.Cookies["referrerCode"].ToString(),
-                partnerGuid = signUpViewModel.PartnerGuid,
-                groupGuid=signUpViewModel.GroupGuid
+                partnerGuid = signUpViewModel.PartnerGuid
             };
 
             // Guard UX from any unforeseen server error.

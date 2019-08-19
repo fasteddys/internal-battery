@@ -8,6 +8,5 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public interface IStoredProcedureRepository
     {
         Task<List<JobAbandonmentStatistics>> GetJobAbandonmentStatisticsAsync(DateTime startDate, DateTime endDate);
-        Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync();   
     }
 }
