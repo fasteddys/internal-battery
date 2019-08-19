@@ -45,8 +45,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 GroupId = GroupId,
                 SubscriberId = SubscriberId,
                 ModifyDate = currentDateTime,
-                SubscriberGroupGuid = Guid.NewGuid(),
-                CreatedByGroup=true
+                SubscriberGroupGuid = Guid.NewGuid()
             };
             await _repositoryWrapper.SubscriberGroupRepository.CreateSubscriberGroup(subscriberGroup);
         }
