@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddyLib.Dto;
@@ -107,6 +108,8 @@ namespace UpDiddy.Controllers
         {
             ViewData["ShowAuthorInfo"]=true;
             PostsResponse response = await _butterCMSClient.ListPostsAsync(authorSlug: author);
+            if(response?.Data?.Count() == 0)
+                return NotFound();
             return View("Posts", response);
         }
     }
