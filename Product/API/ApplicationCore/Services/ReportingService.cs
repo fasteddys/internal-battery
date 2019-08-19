@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +8,6 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Reporting;
-using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
 using static UpDiddyLib.Helpers.Constants;
 
@@ -141,7 +139,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<JobAbandonmentStatistics>> GetJobAbandonmentCountByDateAsync(DateTime startDate, DateTime endDate)
         {
-            var result = await _repositoryWrapper.SubscriberActionRepository.GetJobAbandonmentStatisticsAsync(startDate, endDate);
+            var result = await _repositoryWrapper.StoredProcedureRepository.GetJobAbandonmentStatisticsAsync(startDate, endDate);
             return result;        
         }
     }

@@ -100,7 +100,7 @@ namespace UpDiddy.Api
         }
 
         private async Task<AuthenticationResult> GetBearerTokenAsync()
-        {
+        {     
             AuthenticationResult result = null;
             // Retrieve the token with the specified scopes
             var scope = AzureOptions.ApiScopes.Split(' ');
@@ -110,10 +110,32 @@ namespace UpDiddy.Api
                 .WithB2CAuthority(AzureOptions.Authority)
                 .WithClientSecret(AzureOptions.ClientSecret)
                 .Build();
-            new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).EnablePersistence(app.UserTokenCache);
+            
+            new MSALSessionCache(signedInUserID,_cache).EnablePersistence(app.UserTokenCache);
+
             var accounts = await app.GetAccountsAsync();
+            if ( accounts.Count() == 0 )
+            {
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_ApiUpdiddy.GetBearerTokenAsync unable to locate account" );
+            }
+ 
             IAccount account = accounts.FirstOrDefault();
             result = await app.AcquireTokenSilent(scope, account).ExecuteAsync();
+
+            // temp code to log jwt info, specifically expiration dates 
+            try
+            {
+                string scopes = string.Empty;
+                foreach (string s in result.Scopes)
+                    scopes += s + ";";
+                string LogInfo = $"MSAL_ApiUpdiddy.GetBearerTokenAsync Token ExpiresOn: {result.ExpiresOn} Token ExtendedExpiresOn: {result.ExtendedExpiresOn} Access Token Length: {result.AccessToken.Length}  Scopes: {scopes}  User: {result.UniqueId} )";
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, LogInfo);
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_ApiUpdiddy.GetBearerTokenAsync Error logging info {ex.Message}");
+            }
+
             return result;
         }
 

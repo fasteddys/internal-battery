@@ -1,0 +1,27 @@
+﻿@{
+    Layout = "_SimpleLayout";
+}
+
+<div class="simple-container">
+    <div class="row">
+        <div class="col-md-12 simple-title">
+           Session Expired
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 simple-detail">
+            Logging you back in...
+        </div>
+    </div>
+</div>
+
+@section Scripts
+    {
+    <script type="text/javascript">
+        document.cookie = "timeZoneOffset=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        $(document).ready(function () {
+            CareerCircleAPI.signOut();
+        });
+    </script>
+}
+<meta http-equiv="refresh" content="3;url=@Url.Action("SignIn", "Session")" />

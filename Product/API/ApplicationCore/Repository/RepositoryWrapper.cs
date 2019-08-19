@@ -41,6 +41,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IOfferRepository _offerRepository;
         private ISubscriberFileRepository _subscriberFileRepository;
         private ISkillRepository _skillRepository;
+        private IStoredProcedureRepository _storedProcedureRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -483,6 +484,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _skillRepository = new SkillRepository(_dbContext);
                 }
                 return _skillRepository;
+            }
+        }
+
+        public IStoredProcedureRepository StoredProcedureRepository
+        {
+            get
+            {
+                if (_storedProcedureRepository == null)
+                {
+                    _storedProcedureRepository = new StoredProcedureRepository(_dbContext);
+                }
+                return _storedProcedureRepository;
             }
         }
     }
