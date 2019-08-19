@@ -10,8 +10,8 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    [Migration("20190815164840_AddedCreatedByGroupColumn")]
-    partial class AddedCreatedByGroupColumn
+    [Migration("20190816192408_SPSystem_SubscriberSignUpAndCourseEnrollmentStatisticsByPartner")]
+    partial class SPSystem_SubscriberSignUpAndCourseEnrollmentStatisticsByPartner
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
