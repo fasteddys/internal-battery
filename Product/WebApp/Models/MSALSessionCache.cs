@@ -47,15 +47,24 @@ namespace UpDiddy.Models
             string state = string.Empty;
             // try and get the state from the memory cache first
             if (!_memoryCache.TryGetValue(CacheId + "_state", out state))
-                state =  _distributedCache.GetString(CacheId + "_state");    
+            {
+                state = _distributedCache.GetString(CacheId + "_state");
+                // add to the memory cache if we had to get it from redis 
+                _memoryCache.Set(CacheId + "_state", state);
+            }
+
             return state;
         }
         public void Load(ITokenCacheSerializer tokenCacheSerializer)
         {
             byte[] blob = null;
             if (!_memoryCache.TryGetValue(CacheId, out blob))
+            {
                 blob = _distributedCache.Get(CacheId);
-
+                // add to memory cached if we had to get the value from redis 
+                _memoryCache.Set(CacheId, blob);
+            }
+                
             if (blob != null)
             {
                 tokenCacheSerializer.DeserializeMsalV3(blob);
