@@ -1355,7 +1355,7 @@ namespace UpDiddy.Api
 
         public async Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync()
         {
-            return await GetAsync<SubscriberReportDto>($"report`");
+            return await GetAsync<SubscriberReportDto>($"report/partners");
         }
 
         public async Task<List<JobApplicationCountDto>> GetJobApplicationCount(Guid? companyGuid = null)
