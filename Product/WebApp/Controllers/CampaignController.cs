@@ -274,6 +274,13 @@ namespace UpDiddy.Controllers
             bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.Email) &&
                 !string.IsNullOrEmpty(signUpViewModel.Password) &&
                 !string.IsNullOrEmpty(signUpViewModel.ReenterPassword);
+            
+            //Check the fields if it is a waitlist
+            if(signUpViewModel.IsWaitList)
+            {
+                modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.FirstName) && 
+                !string.IsNullOrEmpty(signUpViewModel.LastName);
+            }
 
             // Make sure user has filled out all fields.
             if (!modelHasAllFields)
@@ -311,6 +318,9 @@ namespace UpDiddy.Controllers
                 email = signUpViewModel.Email,
                 password = signUpViewModel.Password,
                 campaignGuid = signUpViewModel.CampaignGuid,
+                firstName  = signUpViewModel.IsWaitList ? signUpViewModel.FirstName : null,
+                lastName  = signUpViewModel.IsWaitList ? signUpViewModel.LastName : null,
+                phoneNumber  = signUpViewModel.IsWaitList ? signUpViewModel.PhoneNumber : null,
                 referer = Request.Headers["Referer"].ToString(),
                 verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
 
@@ -387,10 +397,18 @@ namespace UpDiddy.Controllers
                 content_band_header = LandingPage.Data.Fields.content_band_header,
                 content_band_text = LandingPage.Data.Fields.content_band_text,
                 partner = LandingPage.Data.Fields.partner,
+                IsWaitList = LandingPage.Data.Fields.IsWaitList,
                 IsExpressSignUp = true
             };
 
             return View("CampaignLandingPage", CampaignLandingPageViewModel);
+        }
+
+        [Route("/salesforcesignup")]
+        public IActionResult RedirecttoSalesForceWaitList()
+        {
+            var redirectUrl = "/campaign/salesforce-waitlist";
+            return Redirect(redirectUrl);
         }
     }
 }

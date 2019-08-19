@@ -852,6 +852,9 @@ namespace UpDiddyApi.Controllers
             subscriber = new Subscriber();
             subscriber.SubscriberGuid = Guid.Parse(user.AdditionalData["objectId"].ToString());
             subscriber.Email = signUpDto.email;
+            subscriber.FirstName = signUpDto.firstName;
+            subscriber.LastName = signUpDto.lastName;
+            subscriber.PhoneNumber = signUpDto.phoneNumber;
             subscriber.CreateDate = DateTime.UtcNow;
             subscriber.ModifyDate = DateTime.UtcNow;
             subscriber.IsDeleted = 0;

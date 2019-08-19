@@ -37,7 +37,6 @@
         IContactRepository ContactRepository { get; }
         IOfferRepository Offer { get; }
         ISubscriberFileRepository SubscriberFileRepository { get; }
-        ISalesForceSignUpListRepository SalesForceSignUpListRepository {get; }
         ISkillRepository SkillRepository { get; }
         IEnrollmentRepository EnrollmentRepository { get;  }
         IStoredProcedureRepository StoredProcedureRepository { get;  }
