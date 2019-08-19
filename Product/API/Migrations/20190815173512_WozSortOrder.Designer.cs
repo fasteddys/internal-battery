@@ -3,19 +3,21 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190815173512_WozSortOrder")]
+    partial class WozSortOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
+                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -1238,13 +1240,9 @@ namespace UpDiddyApi.Migrations
                     b.Property<string>("Name")
                         .IsRequired();
 
-                    b.Property<int?>("PartnerId");
-
                     b.Property<string>("Path");
 
                     b.HasKey("GroupId");
-
-                    b.HasIndex("PartnerId");
 
                     b.ToTable("Group");
                 });
@@ -1714,8 +1712,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("JobSiteId")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int?>("CrawlDelayInMilliseconds");
 
                     b.Property<DateTime>("CreateDate");
 
@@ -3100,8 +3096,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("CreateGuid");
 
-                    b.Property<bool>("CreatedByGroup");
-
                     b.Property<int>("GroupId");
 
                     b.Property<int>("IsDeleted");
@@ -3844,13 +3838,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.CampaignCourseVariant", "CampaignCourseVariant")
                         .WithMany()
                         .HasForeignKey("CampaignId", "CourseVariantId");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.Group", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Partner", "Partner")
-                        .WithMany()
-                        .HasForeignKey("PartnerId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.GroupPartner", b =>

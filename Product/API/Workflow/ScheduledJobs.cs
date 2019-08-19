@@ -80,7 +80,7 @@ namespace UpDiddyApi.Workflow
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = subscriberService;
             _jobPostingService = jobPostingService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory,_repositoryWrapper);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
             _mimeMappingService = mimeMappingService;
             _hangfireService = hangfireService;
 
@@ -105,9 +105,9 @@ namespace UpDiddyApi.Workflow
             {
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs.SubscriberNotificationEmailReminder started at: {executionTime.ToLongDateString()}");
 
-                var lastDay =  _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(1);
-                var lastSevenDays =  _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(7);
-                var lastThirtyDays =  _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(30);
+                var lastDay = _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(1);
+                var lastSevenDays = _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(7);
+                var lastThirtyDays = _repositoryWrapper.NotificationRepository.GetUnreadSubscriberNotificationsForEmail(30);
                 var allReminders = lastDay.Union(lastSevenDays).Union(lastThirtyDays).ToList();
 
                 if (allReminders != null && allReminders.Count() > 0)
@@ -180,7 +180,7 @@ namespace UpDiddyApi.Workflow
                             var spParams = new object[] { deliveryDate };
                             // retrieve the oldest and least frequently used seed email 
                             var partnerContact = _db.PartnerContact.FromSql<PartnerContact>("[dbo].[System_Get_ContactForSeedEmail] @DeliveryDate", spParams).FirstOrDefault();
-                            
+
                             if (
                                 // send the seed email using the lead email's account and template
                                 await _sysEmail.SendTemplatedEmailAsync(
@@ -729,13 +729,17 @@ namespace UpDiddyApi.Workflow
                         // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
                         jobPostingDto.JobPostingGuid = jobPostingGuid;
                         // attempt to update job posting
-                        isJobPostingOperationSuccessful =  JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService);
+                        isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService);
                         // increment updated count in stats
                         if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
                             jobDataMiningStats.NumJobsUpdated += 1;
                     }
                     else
                     {
+                        // treat an empty recruiter email as an application exception
+                        if (string.IsNullOrWhiteSpace(jobPostingDto?.Recruiter?.Email))
+                            throw new ApplicationException("Recruiter email is required.");
+
                         // we have to add/update the recruiter and the associated company - should the job posting factory encapsulate that logic?
                         Recruiter recruiter = RecruiterFactory.GetAddOrUpdate(_db, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
                         Company company = CompanyFactory.GetCompanyByGuid(_db, jobPostingDto.Company.CompanyGuid);
@@ -763,7 +767,7 @@ namespace UpDiddyApi.Workflow
                         if (jobPage.JobPageId > 0)
                             _repositoryWrapper.JobPage.Update(jobPage);
                         else
-                        await _repositoryWrapper.JobPage.Create(jobPage);
+                            await _repositoryWrapper.JobPage.Create(jobPage);
                         await _repositoryWrapper.JobPage.SaveAsync();
 
                     }
@@ -775,7 +779,7 @@ namespace UpDiddyApi.Workflow
                         if (jobPage.JobPageId > 0)
                             _repositoryWrapper.JobPage.Update(jobPage);
                         else
-                        await _repositoryWrapper.JobPage.Create(jobPage);
+                            await _repositoryWrapper.JobPage.Create(jobPage);
                         await _repositoryWrapper.JobPage.SaveAsync();
 
                         // increment error count in stats
@@ -829,7 +833,7 @@ namespace UpDiddyApi.Workflow
                             if (jobPage.JobPageId > 0)
                                 _repositoryWrapper.JobPage.Update(jobPage);
                             else
-                            await _repositoryWrapper.JobPage.Create(jobPage);
+                                await _repositoryWrapper.JobPage.Create(jobPage);
                             await _repositoryWrapper.JobPage.SaveAsync();
 
                             // increment drop count in stats
@@ -843,7 +847,7 @@ namespace UpDiddyApi.Workflow
                             if (jobPage.JobPageId > 0)
                                 _repositoryWrapper.JobPage.Update(jobPage);
                             else
-                            await _repositoryWrapper.JobPage.Create(jobPage);
+                                await _repositoryWrapper.JobPage.Create(jobPage);
                             await _repositoryWrapper.JobPage.SaveAsync();
 
                             // increment error count in stats
@@ -874,7 +878,6 @@ namespace UpDiddyApi.Workflow
         }
 
         #endregion
-
 
         #region Resume Parsing 
         public async Task<bool> ImportSubscriberProfileDataAsync(Subscriber subscriber, SubscriberFile resume)
@@ -1227,7 +1230,7 @@ namespace UpDiddyApi.Workflow
             {
                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:_ExecuteJobAbandonmentEmailDelivery started at: {DateTime.UtcNow.ToLongDateString()}");
                 Dictionary<Subscriber, List<JobPosting>> subscribersToJobPostingMapping = await _trackingService.GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime.UtcNow.AddDays(-1));
-                if(subscribersToJobPostingMapping.Count > 0)
+                if (subscribersToJobPostingMapping.Count > 0)
                 {
                     string jobPostingUrl = _configuration["CareerCircle:ViewJobPostingUrl"];
                     dynamic recruiterTemplate = new JObject();
@@ -1239,7 +1242,7 @@ namespace UpDiddyApi.Workflow
                             , entry.Value.FirstOrDefault().Title
                             , Int32.Parse(_configuration["CloudTalent:MaxNumOfSimilarJobsForJobAbandonment"]));
                         JobSearchResultDto similarJobSearchResults = _cloudTalent.JobSearch(jobQuery);
-                        
+
                         //Remove duplicates subscriber already attempted to apply to
                         foreach (var job in entry.Value)
                         {
@@ -1268,7 +1271,7 @@ namespace UpDiddyApi.Workflow
                               null,
                               null);
                     }
-                }          
+                }
             }
             catch (Exception e)
             {
@@ -1357,7 +1360,7 @@ namespace UpDiddyApi.Workflow
         public bool CloudTalentAddOrUpdateProfile(Guid subscriberGuid)
         {
             CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
-            return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);            
+            return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);
         }
 
         public bool CloudTalentDeleteProfile(Guid subscriberGuid)
@@ -1367,12 +1370,12 @@ namespace UpDiddyApi.Workflow
             return true;
         }
 
-        public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess )
+        public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess)
         {
-           CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
             int indexVersion = int.Parse(_configuration["CloudTalent:ProfileIndexVersion"]);
-           List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess,indexVersion);
-           foreach ( Subscriber s in subscribers)
+            List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess, indexVersion);
+            foreach (Subscriber s in subscribers)
             {
                 ct.AddOrUpdateProfileToCloudTalent(_db, s.SubscriberGuid.Value);
 
@@ -1511,7 +1514,7 @@ namespace UpDiddyApi.Workflow
                 // load the related entity associated with the action (only if specified)
                 EntityType entityType = null;
                 int? entityId = null;
-                if (entityGuid!=Guid.Empty)
+                if (entityGuid != Guid.Empty)
                 {
                     // load the entity type
                     entityType = await _repositoryWrapper.EntityTypeRepository.GetEntityTypeByEntityGuid(entityTypeGuid);
@@ -1578,14 +1581,14 @@ namespace UpDiddyApi.Workflow
         public async Task UpdateSubscriberFilesMimeType()
         {
             //get all SubscriberFiles with Empty MimeType
-            var queryableSubscriberFile =  _repositoryWrapper.SubscriberFileRepository.GetAllSubscriberFileQueryableAsync();
-            var nullMimeTypeFiles = await queryableSubscriberFile.Where(x => x.MimeType == null && x.IsDeleted==0).ToListAsync();
+            var queryableSubscriberFile = _repositoryWrapper.SubscriberFileRepository.GetAllSubscriberFileQueryableAsync();
+            var nullMimeTypeFiles = await queryableSubscriberFile.Where(x => x.MimeType == null && x.IsDeleted == 0).ToListAsync();
 
             if (nullMimeTypeFiles.Count > 0)
             {
-                foreach(SubscriberFile file in nullMimeTypeFiles)
+                foreach (SubscriberFile file in nullMimeTypeFiles)
                 {
-                    file.MimeType =  _mimeMappingService.MapAsync(file.BlobName);
+                    file.MimeType = _mimeMappingService.MapAsync(file.BlobName);
                     await _repositoryWrapper.SubscriberFileRepository.UpdateSubscriberFileAsync(file);
                 }
             }
@@ -1593,70 +1596,70 @@ namespace UpDiddyApi.Workflow
         #endregion
 
         #region Pull all JobTitles, Company, City, State and Postal Code for search intelligence
-        
+
         public async Task CacheKeywordLocationSearchIntelligenceInfo()
         {
-            List<string> keywordSearch=new List<string>();
-            List<string> locationSearch=new List<string>();
+            List<string> keywordSearch = new List<string>();
+            List<string> locationSearch = new List<string>();
 
             //JobTitles, Company, City and Postal Code
-            IQueryable<JobPosting> queryableJobPostings=_repositoryWrapper.JobPosting.GetAllJobPostings();
-            var jobPostingsSearchInfoResults=await  queryableJobPostings.Include(co=>co.Company)
-                                                                        .Where(jpg=>jpg.IsDeleted==0)
-                                                                        .Select(jp=>new 
+            IQueryable<JobPosting> queryableJobPostings = _repositoryWrapper.JobPosting.GetAllJobPostings();
+            var jobPostingsSearchInfoResults = await queryableJobPostings.Include(co => co.Company)
+                                                                        .Where(jpg => jpg.IsDeleted == 0)
+                                                                        .Select(jp => new
                                                                         {
-                                                                            JobTitle= jp.Title,
-                                                                            CompanyName=jp.Company.CompanyName,
-                                                                            City=jp.City,
-                                                                            PostalCode=jp.PostalCode
+                                                                            JobTitle = jp.Title,
+                                                                            CompanyName = jp.Company.CompanyName,
+                                                                            City = jp.City,
+                                                                            PostalCode = jp.PostalCode
                                                                         }).ToListAsync();
 
             //Get Skills for all active Job Postings
-            IEnumerable<Skill> skillsList=await _repositoryWrapper.SkillRepository.GetAllSkillsForJobPostings();
+            IEnumerable<Skill> skillsList = await _repositoryWrapper.SkillRepository.GetAllSkillsForJobPostings();
 
             //Get State Names
-            IEnumerable<State> statesList=await _repositoryWrapper.State.GetStatesForDefaultCountry();
+            IEnumerable<State> statesList = await _repositoryWrapper.State.GetStatesForDefaultCountry();
 
-            foreach(State state in statesList)
+            foreach (State state in statesList)
             {
-                if(state.Name!=null)
-                     locationSearch.Add(state.Name);
+                if (state.Name != null)
+                    locationSearch.Add(state.Name);
             }
-            
-            foreach(var jobPostingSearchInfo in jobPostingsSearchInfoResults)
+
+            foreach (var jobPostingSearchInfo in jobPostingsSearchInfoResults)
             {
-                if(jobPostingSearchInfo.JobTitle!=null)
+                if (jobPostingSearchInfo.JobTitle != null)
                     keywordSearch.Add(jobPostingSearchInfo.JobTitle);
 
-                if(jobPostingSearchInfo.CompanyName!=null)
+                if (jobPostingSearchInfo.CompanyName != null)
                     keywordSearch.Add(jobPostingSearchInfo.CompanyName);
 
-                if(jobPostingSearchInfo.City!=null)
+                if (jobPostingSearchInfo.City != null)
                     locationSearch.Add(jobPostingSearchInfo.City);
 
-                if(jobPostingSearchInfo?.PostalCode!=null)    
+                if (jobPostingSearchInfo?.PostalCode != null)
                     locationSearch.Add(jobPostingSearchInfo.PostalCode);
             }
 
-            foreach(Skill skill in skillsList)
+            foreach (Skill skill in skillsList)
             {
-                if(skill.SkillName!=null)
-                     keywordSearch.Add(skill.SkillName);
+                if (skill.SkillName != null)
+                    keywordSearch.Add(skill.SkillName);
             }
 
-            string serializedKeyworkSearchList=JsonConvert.SerializeObject(keywordSearch.ConvertAll(k=>k.ToLower()).Distinct());
-            string serializedLocationSearchList=JsonConvert.SerializeObject(locationSearch.ConvertAll(l=>l.ToLower()).Distinct());
+            string serializedKeyworkSearchList = JsonConvert.SerializeObject(keywordSearch.ConvertAll(k => k.ToLower()).Distinct());
+            string serializedLocationSearchList = JsonConvert.SerializeObject(locationSearch.ConvertAll(l => l.ToLower()).Distinct());
 
             //cache for 2 days unless the scheduled job runs.
             //caching of keyword and location happens when the job data mining job runs
-            DistributedCacheEntryOptions options=new DistributedCacheEntryOptions()
+            DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
             {
-                AbsoluteExpirationRelativeToNow=TimeSpan.FromDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"]))
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"]))
             };
 
             //cache the list to use for intelligence search
-            await _cache.SetStringAsync("keywordSearchList",serializedKeyworkSearchList,options);
-            await _cache.SetStringAsync("locationSearchList",serializedLocationSearchList,options);
+            await _cache.SetStringAsync("keywordSearchList", serializedKeyworkSearchList, options);
+            await _cache.SetStringAsync("locationSearchList", serializedLocationSearchList, options);
         }
         #endregion
 
@@ -1669,8 +1672,8 @@ namespace UpDiddyApi.Workflow
         {
             try
             {
-                 _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:UpdateAllegisGroupJobPageRawDataField started at: {DateTime.UtcNow.ToLongDateString()}");
-                var jobs =  _repositoryWrapper.JobPage.GetAll();
+                _syslog.Log(LogLevel.Information, $"***** ScheduledJobs:UpdateAllegisGroupJobPageRawDataField started at: {DateTime.UtcNow.ToLongDateString()}");
+                var jobs = _repositoryWrapper.JobPage.GetAll();
                 var allegisjobs = jobs.Where(x => x.JobSiteId == 3 && x.IsDeleted == 0 && x.JobPageStatusId == 2).ToList();
                 foreach (var job in allegisjobs)
                 {

@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Identity.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Microsoft.Identity.Client;
+
 using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
+using System.Collections.Generic;
 
 namespace UpDiddy.Models
 {
@@ -32,27 +31,28 @@ namespace UpDiddy.Models
             this.cache = cache;
             cache.SetBeforeAccess(BeforeAccessNotification);
             cache.SetAfterAccess(AfterAccessNotification);
-            Load();
+ 
+          //  Load();
             return cache;
         }
 
-        public void Load()
+        public void Load(ITokenCacheSerializer  tokenCacheSerializer)
         {
             SessionLock.EnterReadLock();
             byte[] blob = staticCache.ContainsKey(CacheId) ? staticCache[CacheId] : null;
             if (blob != null)
             {
-                cache.DeserializeMsalV3(blob);
+                tokenCacheSerializer.DeserializeMsalV3(blob);
             }
             SessionLock.ExitReadLock();
         }
 
-        public void Persist()
+        public void Persist(ITokenCacheSerializer tokenCacheSerializer)
         {
             SessionLock.EnterWriteLock();
 
             // Reflect changes in the persistent store
-            staticCache[CacheId] = cache.SerializeMsalV3();
+            staticCache[CacheId] = tokenCacheSerializer.SerializeMsalV3();
             SessionLock.ExitWriteLock();
         }
 
@@ -60,7 +60,7 @@ namespace UpDiddy.Models
         // Reload the cache from the persistent store in case it changed since the last access.
         void BeforeAccessNotification(TokenCacheNotificationArgs args)
         {
-            Load();
+            Load(args.TokenCache);
         }
 
         // Triggered right after MSAL accessed the cache.
@@ -69,8 +69,12 @@ namespace UpDiddy.Models
             // if the access operation resulted in a cache update
             if (args.HasStateChanged)
             {
-                Persist();
+                
+                Persist(args.TokenCache);
             }
         }
+ 
+
+
     }
 }

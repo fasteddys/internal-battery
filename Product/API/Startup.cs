@@ -191,10 +191,10 @@ namespace UpDiddyApi
                  // Run this job once to initially get the keyword and location search
                  BackgroundJob.Enqueue<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo());
 
-                // run the process in production Monday through Friday once every 4 hours between 11 and 23 UTC
                 if (_currentEnvironment.IsProduction())
                 {
-                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 11,15,19,23 * * Mon,Tue,Wed,Thu,Fri");
+                    // run the job crawl in production Monday through Friday once per day at 15:00 UTC
+                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 15 * * Mon,Tue,Wed,Thu,Fri");
                      //Keyword and Location Search Intellisense Job
                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),"0 11,13,15,17,19,21,23 * * Mon,Tue,Wed,Thu,Fri");
                 }
@@ -227,43 +227,11 @@ namespace UpDiddyApi
                 //Schedule this background job to check if the SubscriberFiles has MimeType. If not update SubscriberFiles with specific MimeType.
                 // BackgroundJob.Enqueue<ScheduledJobs>(x => x.UpdateSubscriberFilesMimeType());
             }
-
-
-            // Add Polly 
-            // Create Policies  
-            int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
-            int PollyTimeoutInSeconds = int.Parse(Configuration["Polly:PollyTimeoutInSeconds"]);
-
-            // Create a timeout policy that will prevent  api  get calls from taking more that PollyTimeoutInSeconds 
-            // in total.  This timeout is inclusive of the intitial get call and any subsequent polly retries.  For example
-            // if PollyTimeoutInSeconds = 8 and PollyRetries = 5 and a get call responds with an error at 4 seconds, the 
-            // operation will fail after the second retry since the PollyTimeoutInSeconds has been exceeded.
-            var ApiGetTimeoutPolicy = Policy.TimeoutAsync(PollyTimeoutInSeconds);
-            // Create retry policy          
-            var ApiGetRetryPolicy = HttpPolicyExtensions
-                .HandleTransientHttpError()
-                .WaitAndRetryAsync(PollyRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-            // Combine timeout and retry policies to create Get policy       
-            var ApiGetPolicy = ApiGetTimeoutPolicy.WrapAsync(ApiGetRetryPolicy);
-
-            // Define a policy without retries for non idempotenic operations
-            // FMI: https://www.stevejgordon.co.uk/httpclientfactory-using-polly-for-transient-fault-handling
-            var ApiPostPolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
-            var ApiPutPolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
-            var ApiDeletePolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
-
-            services.AddHttpClient(Constants.HttpGetClientName)
-              .AddPolicyHandler(ApiGetPolicy);
-
-            services.AddHttpClient(Constants.HttpPostClientName)
-                          .AddPolicyHandler(ApiPostPolicy);
-
-            services.AddHttpClient(Constants.HttpPutClientName)
-                          .AddPolicyHandler(ApiPutPolicy);
-
-            services.AddHttpClient(Constants.HttpDeleteClientName)
-              .AddPolicyHandler(ApiDeletePolicy);
-
+ 
+            services.AddHttpClient(Constants.HttpGetClientName);
+            services.AddHttpClient(Constants.HttpPostClientName);
+            services.AddHttpClient(Constants.HttpPutClientName);
+            services.AddHttpClient(Constants.HttpDeleteClientName);              
 
             #region Add Custom Services
             services.AddTransient<ISovrenAPI, Sovren>();
