@@ -13,14 +13,17 @@ namespace UpDiddy.Models
         string UserId = string.Empty;
         string CacheId = string.Empty; 
         IDistributedCache _distributedCache = null;
+        IMemoryCache _memoryCache = null;
         ITokenCache cache;
+ 
 
-        public MSALSessionCache(string userId, IDistributedCache distributedCache)
+        public MSALSessionCache(string userId, IDistributedCache distributedCache, IMemoryCache memoryCache)
         {
             // not object, we want the SUB
             UserId = userId;
             CacheId = UserId + "_TokenCache";
-            _distributedCache = distributedCache;          
+            _distributedCache = distributedCache;
+            _memoryCache = memoryCache;
         }
 
         public ITokenCache EnablePersistence(ITokenCache cache)
@@ -34,18 +37,25 @@ namespace UpDiddy.Models
         public void SaveUserStateValue(string state)
         {
             SessionLock.EnterWriteLock();
+            // store the state in memory cache as well as backed in redis 
+            _memoryCache.Set(CacheId + "_state", state);
             _distributedCache.SetString(CacheId + "_state", state);
             SessionLock.ExitWriteLock();
         }
         public string ReadUserStateValue()
         {
-            string state = string.Empty; 
-            state =  _distributedCache.GetString(CacheId + "_state");    
+            string state = string.Empty;
+            // try and get the state from the memory cache first
+            if (!_memoryCache.TryGetValue(CacheId + "_state", out state))
+                state =  _distributedCache.GetString(CacheId + "_state");    
             return state;
         }
         public void Load(ITokenCacheSerializer tokenCacheSerializer)
-        {         
-            byte[] blob = _distributedCache.Get(CacheId);
+        {
+            byte[] blob = null;
+            if (!_memoryCache.TryGetValue(CacheId, out blob))
+                blob = _distributedCache.Get(CacheId);
+
             if (blob != null)
             {
                 tokenCacheSerializer.DeserializeMsalV3(blob);
@@ -53,10 +63,12 @@ namespace UpDiddy.Models
         }
 
         public void Persist(ITokenCacheSerializer tokenCacheSerializer)
-        {            
-            // Reflect changes in the persistent store                     
-            _distributedCache.Set(CacheId, tokenCacheSerializer.SerializeMsalV3());
-            
+        {
+            var MsalInfo = tokenCacheSerializer.SerializeMsalV3();
+            // store the info in the process memory cache
+            _memoryCache.Set(CacheId, MsalInfo);
+            // back the memory cache with redis                   
+            _distributedCache.Set(CacheId, MsalInfo);            
         }
 
         // Triggered right before MSAL needs to access the cache.
