@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,36 +21,72 @@ namespace UpDiddy.Authorization
         IConfiguration _configuration;
         IApi _api;
         IHttpContextAccessor _accessor;
-        ILogger _syslog = null;
-        IDistributedCache _cache = null;
+        ILogger _syslog = null; 
+        IMemoryCache _memoryCache = null;
+        //todo jab remove 
+        IDistributedCache _distributedCache = null;
+ 
 
         public const string CACHE_KEY = "SubscriberGroups";
 
-        public ApiGroupAuthorizationHandler(IApi api, IConfiguration configuration, IHttpContextAccessor contextAccessor, ILogger<ApiGroupAuthorizationHandler> sysLog, IDistributedCache cache)
+        public ApiGroupAuthorizationHandler(IApi api, IConfiguration configuration, IHttpContextAccessor contextAccessor, ILogger<ApiGroupAuthorizationHandler> sysLog, IMemoryCache memoryCache, IDistributedCache distributedCache 
+            )
         {
             _api = api;
             _configuration = configuration;
             _accessor = contextAccessor;
-            _syslog = sysLog;
-            _cache = cache;
+            _syslog = sysLog; 
+            _memoryCache = memoryCache;
+            //todo jab remove 
+            _distributedCache = distributedCache;
         }
 
         private async Task<bool> CheckAuthAsync(string userId, GroupRequirement requirement)
         {
+            // TODO JAB remove test 
+            /*
+            string blob = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
+            _memoryCache.Set<string>("test", blob, DateTime.Now.AddHours(4).TimeOfDay);
+            _distributedCache.SetString("test",blob);
+            int i = 0;
+            string rval = string.Empty;
+            DateTime start = DateTime.Now;
+            for (i = 0; i < 10000; ++i)
+                rval = _distributedCache.GetString("test");
+            DateTime stop = DateTime.Now;
+            TimeSpan delta = stop - start;
+
+            start = DateTime.Now;
+            for (i = 0; i < 10000; ++i)
+                rval = _memoryCache.Get<string>("test");
+            stop = DateTime.Now;
+            TimeSpan delta1 = stop - start;
+
+    */
+
+
+
+
+
+
+
+
+
+
             IList<string> groups = new List<string>();
-            string cachedGroups = _cache.GetString(CACHE_KEY + userId);        
+            string cachedGroups = _memoryCache.Get<string>(CACHE_KEY + userId);        
             if (cachedGroups != null)
             {
                 groups = JsonConvert.DeserializeObject<List<string>>(cachedGroups);
             } else
             {
                 try
-                {
+                {  
                     SubscriberADGroupsDto dto = await _api.MyGroupsAsync();
                     groups = dto.groups;
-                    int SubscriberGroupsCacheTimeInMinutes = int.Parse(_configuration["CareerCircle:SubscriberGroupsCacheTimeInMinutes"]);     
-                    _cache.SetString(CACHE_KEY + userId, JsonConvert.SerializeObject(groups),new DistributedCacheEntryOptions() {AbsoluteExpirationRelativeToNow = DateTime.Now.AddHours(SubscriberGroupsCacheTimeInMinutes).TimeOfDay });
-                }
+                    int SubscriberGroupsCacheTimeInMinutes = int.Parse(_configuration["CareerCircle:SubscriberGroupsCacheTimeInMinutes"]);
+                    _memoryCache.Set<string>(CACHE_KEY + userId, JsonConvert.SerializeObject(groups), DateTime.Now.AddHours(SubscriberGroupsCacheTimeInMinutes).TimeOfDay);               
+                }      
                 catch (Exception ex)
                 {
                     _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_ApiGroupAuthorizationHandler.CheckAuthAsync Error getting user group info for user: {userId}  Exception: {ex.Message}", requirement);

@@ -20,6 +20,7 @@ using UpDiddyLib.Shared;
 using UpDiddyLib.Dto.Reporting;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace UpDiddy.Api
 {
@@ -30,12 +31,14 @@ namespace UpDiddy.Api
         protected IHttpClientFactory _HttpClientFactory { get; set; }
         public AzureAdB2COptions AzureOptions { get; set; }
         private IHttpContextAccessor _contextAccessor { get; set; }
-        public IDistributedCache _cache { get; set; }
+        public IDistributedCache _cache1 { get; set; }
+        public IMemoryCache _memoryCache { get; set; }
         public HttpContext _currentContext { get; set; }
         private readonly ILogger _syslog;
 
+
         #region Constructor
-        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog )
+        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog, IMemoryCache memoryCache )
         {
             _syslog = sysLog;
             AzureOptions = azureAdB2COptions.Value;
@@ -44,8 +47,9 @@ namespace UpDiddy.Api
             // Set the base URI for API calls 
             _ApiBaseUri = _configuration["Api:ApiUrl"];
             _HttpClientFactory = httpClientFactory;
-            _cache = cache;
+            _cache1 = cache;
             _currentContext = contextAccessor.HttpContext;
+            _memoryCache = memoryCache;
         }
         #endregion
 
@@ -119,9 +123,9 @@ namespace UpDiddy.Api
                 _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_ApiUpdiddy.GetBearerTokenAsync unable to locate account" );
             }
  
-            IAccount account = accounts.FirstOrDefault();
+            IAccount account = accounts.FirstOrDefault();     
             result = await app.AcquireTokenSilent(scope, account).ExecuteAsync();
-
+                
             // temp code to log jwt info, specifically expiration dates 
             try
             {

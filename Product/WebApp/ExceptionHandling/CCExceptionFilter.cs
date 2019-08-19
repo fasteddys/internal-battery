@@ -12,7 +12,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace UpDiddy.ExceptionHandling
 {
-    public class CCExceptionFilter : IExceptionFilter
+    public class CCExceptionFilter : ExceptionFilterAttribute
     {
 
         IDistributedCache _cache = null;
@@ -25,10 +25,10 @@ namespace UpDiddy.ExceptionHandling
         }
 
 
-        public void OnException(ExceptionContext context)
+        public override void OnException(ExceptionContext context)
         { 
             var exceptionType = context.Exception.GetType();         
-            if (exceptionType == typeof(MsalUiRequiredException))
+            if (exceptionType == typeof(MsalUiRequiredException) )
             {
                 // cache the page the user was trying to access when the MsalUIRequiredException occured 
                 // so they can be redirected after logging back in
@@ -39,6 +39,7 @@ namespace UpDiddy.ExceptionHandling
                 context.ExceptionHandled = true;
                 context.HttpContext.Response.Redirect("/Session/AuthRequired");
             }                     
+            
         }
 
     }
