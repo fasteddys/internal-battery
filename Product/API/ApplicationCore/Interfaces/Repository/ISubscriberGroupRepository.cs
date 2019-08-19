@@ -9,7 +9,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface ISubscriberGroupRepository : IUpDiddyRepositoryBase<SubscriberGroup>
     {
- 
+        Task<SubscriberGroup> GetSubscriberGroupByGroupIdSubscriberId(int GroupId, int SubscriberId);
+        Task CreateSubscriberGroup(SubscriberGroup subscriberGroup);
     }
     
 }

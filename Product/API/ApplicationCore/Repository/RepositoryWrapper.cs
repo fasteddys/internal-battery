@@ -41,6 +41,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IOfferRepository _offerRepository;
         private ISubscriberFileRepository _subscriberFileRepository;
         private ISkillRepository _skillRepository;
+        private IEnrollmentRepository _enrollmentRepository;
         private IStoredProcedureRepository _storedProcedureRepository;
 
 
@@ -484,6 +485,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _skillRepository = new SkillRepository(_dbContext);
                 }
                 return _skillRepository;
+            }
+        }
+
+         public IEnrollmentRepository EnrollmentRepository
+        {
+            get
+            {
+                if (_enrollmentRepository == null)
+                {
+                    _enrollmentRepository = new EnrollmentRepository(_dbContext);
+                }
+                return _enrollmentRepository;
             }
         }
 

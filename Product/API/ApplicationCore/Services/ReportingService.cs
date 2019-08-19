@@ -142,5 +142,56 @@ namespace UpDiddyApi.ApplicationCore.Services
             var result = await _repositoryWrapper.StoredProcedureRepository.GetJobAbandonmentStatisticsAsync(startDate, endDate);
             return result;        
         }
+
+        public async Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync()
+        {
+            var result = await _repositoryWrapper.StoredProcedureRepository.GetSubscriberSignUpCourseEnrollmentStatisticsAsync();
+            return result;        
+        }
+
+        public async Task<SubscriberReportDto> GetSubscriberAndEnrollmentReportByDates(List<DateTime> dates)
+        {
+            List<BasicCountReportDto> totalsByDate = new List<BasicCountReportDto>();
+
+            BasicCountReportDto totals = new BasicCountReportDto()
+            {
+                SubscriberCount = await _repositoryWrapper.SubscriberRepository.GetSubscribersCountByStartEndDates(),
+                EnrollmentCount = await _repositoryWrapper.EnrollmentRepository.GetEnrollmentsCountByStartEndDates()
+            };
+
+            if (!dates.Any())
+                return new SubscriberReportDto()
+                {
+                    Totals = totals
+                };
+
+            dates.Sort();
+            DateTime? prevDate = null;
+            for (int i = dates.Count - 1; i >= 0; i--)
+            {
+                DateTime startDate = dates[i];
+
+                var subscribersCount=await _repositoryWrapper.SubscriberRepository.GetSubscribersCountByStartEndDates(startDate, prevDate);
+                var enrollmentsCount=await _repositoryWrapper.EnrollmentRepository.GetEnrollmentsCountByStartEndDates(startDate, prevDate);
+
+                BasicCountReportDto basicCountReport=new BasicCountReportDto()
+                {
+                    StartDate=startDate,
+                    EndDate=prevDate.HasValue ? prevDate : null,
+                    SubscriberCount=subscribersCount, 
+                    EnrollmentCount=enrollmentsCount
+                };
+
+                totalsByDate.Add(basicCountReport);
+
+                prevDate = startDate.AddDays(-1);
+            }
+
+            return new SubscriberReportDto()
+            {
+                Totals = totals,
+                Report = totalsByDate
+            };
+        }
     }
 }

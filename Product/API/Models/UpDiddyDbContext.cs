@@ -182,6 +182,7 @@ namespace UpDiddyApi.Models
         public DbQuery<v_UnreadNotifications> UnreadNotifications { get; set; }
         public DbQuery<v_NotificationReadCounts> NotificationReadCounts { get; set; }
         public DbQuery<JobAbandonmentStatistics> JobAbandonmentStatistics { get; set; }
+        public DbQuery<SubscriberSignUpCourseEnrollmentStatistics> SubscriberSignUpCourseEnrollmentStatistics { get; set; }
 
         #endregion
 

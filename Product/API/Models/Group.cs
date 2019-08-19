@@ -15,5 +15,7 @@ namespace UpDiddyApi.Models
         public string Description { get; set; }
         public string Path { get; set; }
         public int IsLeavable { get; set; }
+        public int? PartnerId{get;set;}
+        public Partner Partner { get; set; }
     }
 }

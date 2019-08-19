@@ -38,6 +38,7 @@
         IOfferRepository Offer { get; }
         ISubscriberFileRepository SubscriberFileRepository { get; }
         ISkillRepository SkillRepository { get; }
+        IEnrollmentRepository EnrollmentRepository { get;  }
         IStoredProcedureRepository StoredProcedureRepository { get;  }
     }
 }

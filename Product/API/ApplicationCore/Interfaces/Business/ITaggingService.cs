@@ -14,7 +14,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// </summary>
         /// <param name="GroupId"></param>
         /// <param name="SubscriberId"></param>
-        Task<bool> AddSubscriberToGroupAsync(int GroupId, int SubscriberId);
+        Task AddSubscriberToGroupAsync(int GroupId, int SubscriberId);
 
         /// <summary>
         /// Adds subscriber to group associated with the partners that the subscriber's
@@ -24,13 +24,11 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<bool> AddConvertedContactToGroupBasedOnPartnerAsync(int SubscriberId);
 
         /// <summary>
-        /// If a partner is specified, create a link in GroupPartner table, and 
-        /// add a subscriber to a new group.
+        /// Assign Subscriber to specified GroupGuid.async If GroupGuid is null or not available assign to default Group.
         /// </summary>
-        /// <param name="ReferrerUrl"></param>
-        /// <param name="PartnerGuid"></param>
+        /// <param name="GroupGuid"></param>
         /// <param name="SubscriberId"></param>
-        Task<bool> CreateGroup(string ReferrerUrl, Guid PartnerGuid, int SubscriberId);
+        Task AssignGroup(Guid GroupGuid, int SubscriberId);
     }
 
 
