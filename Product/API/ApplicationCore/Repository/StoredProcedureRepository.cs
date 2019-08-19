@@ -25,10 +25,5 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 };
             return await _dbContext.JobAbandonmentStatistics.FromSql<JobAbandonmentStatistics>("System_JobAbandonmentStatistics @StartDate, @EndDate", spParams).ToListAsync();
         }
-
-        public async  Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync()
-        {
-            return await  _dbContext.SubscriberSignUpCourseEnrollmentStatistics.FromSql<SubscriberSignUpCourseEnrollmentStatistics>("EXECUTE dbo.System_SubscriberSignUpAndCourseEnrollmentStatisticsByPartner").ToListAsync();
-        }
     }
 }
