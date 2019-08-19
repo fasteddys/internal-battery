@@ -1,5 +1,4 @@
 ﻿@using UpDiddy.ViewModels
-@using UpDiddyLib.Dto
 @using System.Net
 @model SignUpViewModel
 
@@ -23,6 +22,18 @@
             }
         }
         <div class="row">
+            @if(Model.IsWaitList)
+            {
+            <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
+                <input class="wide-input" placeholder="Your First Name" form="@_form" name="FirstName" asp-for="FirstName" required />
+            </div>
+             <div id="SignUpLastName" class="col-12 sign-up-input no-padding">
+                <input class="wide-input" placeholder="Your Last Name" form="@_form" name="LastName" asp-for="LastName" required />
+            </div>
+             <div id="SignUpPhone" class="col-12 sign-up-input no-padding">
+                <input class="wide-input" placeholder="Your Phone Number (Optional)" form="@_form" name="PhoneNumber" asp-for="PhoneNumber" />
+            </div>
+            }   
             <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
                 <input class="wide-input" placeholder="Your email" form="@_form" name="Email" asp-for="Email" required />
             </div>
@@ -46,7 +57,7 @@
                     Form = _form,
                     ButtonAction = ActionButtonViewModel.Action.SUBMIT
                 })
-            </div>
+            </div>  
             @if (!string.IsNullOrWhiteSpace(Model.ObfuscatedEmail))
             {
                 <div class="col-12 no-padding notification">
@@ -54,6 +65,7 @@
                 </div>
             }
         </div>
+        @Html.HiddenFor(x => Model.IsWaitList)
     </form>
     <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
