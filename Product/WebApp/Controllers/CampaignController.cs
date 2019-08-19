@@ -274,6 +274,13 @@ namespace UpDiddy.Controllers
             bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.Email) &&
                 !string.IsNullOrEmpty(signUpViewModel.Password) &&
                 !string.IsNullOrEmpty(signUpViewModel.ReenterPassword);
+            
+            //Check the fields if it is a waitlist
+            if(signUpViewModel.IsWaitList)
+            {
+                modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.FirstName) && 
+                !string.IsNullOrEmpty(signUpViewModel.LastName);
+            }
 
             // Make sure user has filled out all fields.
             if (!modelHasAllFields)
@@ -394,6 +401,13 @@ namespace UpDiddy.Controllers
             };
 
             return View("CampaignLandingPage", CampaignLandingPageViewModel);
+        }
+
+        [Route("/salesforcesignup")]
+        public IActionResult RedirecttoSalesForceWaitList()
+        {
+            var redirectUrl = "/campaign/salesforce-waitlist";
+            return Redirect(redirectUrl);
         }
     }
 }
