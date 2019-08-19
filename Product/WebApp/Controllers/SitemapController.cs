@@ -103,14 +103,18 @@ namespace UpDiddy.Controllers
 
             IList<string> AuthorSlugs = await _butterService.GetBlogAuthorSlugsAsync();
             foreach(string Slug in AuthorSlugs){
-                string AuthorPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Author/" + Slug;
-                nodes.Add(new SitemapNode(AuthorPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                if(!String.IsNullOrEmpty(Slug.Trim())){
+                    string AuthorPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Author/" + Slug;
+                    nodes.Add(new SitemapNode(AuthorPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                }
             }
 
             IList<string> CategorySlugs = await _butterService.GetBlogCategorySlugsAsync();
             foreach(string Slug in CategorySlugs){
-                string CategoryPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Category/" + Slug;
-                nodes.Add(new SitemapNode(CategoryPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                if(!String.IsNullOrEmpty(Slug.Trim())){
+                    string CategoryPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Category/" + Slug;
+                    nodes.Add(new SitemapNode(CategoryPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                }
             }
 
             IList<string> TagSlugs = await _butterService.GetBlogTagSlugsAsync();
