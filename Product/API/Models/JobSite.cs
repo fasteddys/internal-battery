@@ -18,5 +18,6 @@ namespace UpDiddyApi.Models
         public List<JobPage> JobListings { get; set; } = new List<JobPage>();
         [Column(TypeName = "decimal(3,2)")]
         public decimal? PercentageReductionThreshold { get; set; }
+        public int? CrawlDelayInMilliseconds { get; set; }
     }
 }

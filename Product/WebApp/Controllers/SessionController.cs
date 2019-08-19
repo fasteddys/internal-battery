@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using System; 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace UpDiddy.Controllers
 {
@@ -22,11 +23,13 @@ namespace UpDiddy.Controllers
     { 
         private ILogger _syslog = null;
         IDistributedCache _cache = null;
-        public SessionController(IOptions<AzureAdB2COptions> b2cOptions, ILogger<SessionController> sysLog, IDistributedCache distributedCache)
+        IMemoryCache _memoryCache = null;
+        public SessionController(IOptions<AzureAdB2COptions> b2cOptions, ILogger<SessionController> sysLog, IDistributedCache distributedCache, IMemoryCache memoryCache)
         {
             AzureAdB2COptions = b2cOptions.Value;
             _syslog = sysLog;
             _cache = distributedCache;
+            _memoryCache = memoryCache;
         }
 
         public AzureAdB2COptions AzureAdB2COptions { get; set; }
@@ -153,7 +156,7 @@ namespace UpDiddy.Controllers
                 .WithClientSecret(AzureAdB2COptions.ClientSecret)
                 .Build();
      
-            new MSALSessionCache(signedInUserID,_cache).EnablePersistence(app.UserTokenCache);
+            new MSALSessionCache(signedInUserID,_cache,_memoryCache).EnablePersistence(app.UserTokenCache);
     
             var accounts = await app.GetAccountsAsync();
             if (accounts.Count() == 0)

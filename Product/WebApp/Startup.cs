@@ -130,6 +130,7 @@ namespace UpDiddy
                        .AllowAnyHeader();
             }));
 
+            services.AddMemoryCache();
             services.AddMvc(config => {
                 config.Filters.Add(typeof(CCExceptionFilter));
             })

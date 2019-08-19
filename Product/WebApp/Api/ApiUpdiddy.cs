@@ -31,7 +31,7 @@ namespace UpDiddy.Api
         protected IHttpClientFactory _HttpClientFactory { get; set; }
         public AzureAdB2COptions AzureOptions { get; set; }
         private IHttpContextAccessor _contextAccessor { get; set; }
-        public IDistributedCache _cache1 { get; set; }
+        public IDistributedCache _cache { get; set; }
         public IMemoryCache _memoryCache { get; set; }
         public HttpContext _currentContext { get; set; }
         private readonly ILogger _syslog;
@@ -47,7 +47,7 @@ namespace UpDiddy.Api
             // Set the base URI for API calls 
             _ApiBaseUri = _configuration["Api:ApiUrl"];
             _HttpClientFactory = httpClientFactory;
-            _cache1 = cache;
+            _cache = cache;
             _currentContext = contextAccessor.HttpContext;
             _memoryCache = memoryCache;
         }
@@ -115,7 +115,7 @@ namespace UpDiddy.Api
                 .WithClientSecret(AzureOptions.ClientSecret)
                 .Build();
             
-            new MSALSessionCache(signedInUserID,_cache).EnablePersistence(app.UserTokenCache);
+            new MSALSessionCache(signedInUserID,_cache,_memoryCache).EnablePersistence(app.UserTokenCache);
 
             var accounts = await app.GetAccountsAsync();
             if ( accounts.Count() == 0 )
@@ -1035,6 +1035,7 @@ namespace UpDiddy.Api
             return await GetAsync<RedirectDto>("subscriber/me/partner-web-redirect");
         }
 
+
         #endregion
 
         #region Cache Helper Functions
@@ -1743,14 +1744,6 @@ namespace UpDiddy.Api
             List<string> locationListresult=rval?.Where(k=>k.Contains(location))?.ToList();
 
             return locationListresult;
-        }
-        #endregion
-        
-        #region Sales Force
-        public async Task<BasicResponseDto> AddSalesForceSignUpList(SalesForceSignUpListDto dto)
-        {
-            BasicResponseDto rval = await PutAsync<BasicResponseDto>("salesforce/sign-up", dto);
-            return rval;
         }
         #endregion
     }

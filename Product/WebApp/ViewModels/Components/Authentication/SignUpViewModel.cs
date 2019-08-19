@@ -22,6 +22,11 @@ namespace UpDiddy.ViewModels
         public string ObfuscatedEmail { get; set; }
         public Guid PartnerGuid { get; set; }
         public string SignUpButtonText{get;set;}
+        public Guid? CourseGuid { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string PhoneNumber { get; set; }
+        public bool IsWaitList {get;set;}
     }
 }
 
