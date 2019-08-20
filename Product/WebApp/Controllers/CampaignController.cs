@@ -270,7 +270,7 @@ namespace UpDiddy.Controllers
         [HttpPost]
         [Route("/[controller]/express-sign-up")]
         public async Task<IActionResult> ExpressSignUpAsync(SignUpViewModel signUpViewModel)
-        {
+        {    
             bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.Email) &&
                 !string.IsNullOrEmpty(signUpViewModel.Password) &&
                 !string.IsNullOrEmpty(signUpViewModel.ReenterPassword);
