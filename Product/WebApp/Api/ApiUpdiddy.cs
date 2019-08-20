@@ -48,7 +48,7 @@ namespace UpDiddy.Api
             _HttpClientFactory = httpClientFactory;
             _cache = cache;
             _currentContext = contextAccessor.HttpContext;
-            _memoryCache = memoryCache;
+             _memoryCache = memoryCache;
         }
         #endregion
 
@@ -1222,13 +1222,14 @@ namespace UpDiddy.Api
 
         #region Private Cache Functions
 
-        private async Task<bool> SetCachedValueAsync<T>(string CacheKey, T Value)
+        private async Task<bool> SetCachedValueAsync<T>(string CacheKey, T Value, DistributedCacheEntryOptions options = null)
         {
             try
             {
                 int CacheTTL = int.Parse(_configuration["redis:cacheTTLInMinutes"]);
                 string newValue = Newtonsoft.Json.JsonConvert.SerializeObject(Value);
-                await _cache.SetStringAsync(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL) });
+                var cacheOptions = options != null ? options : new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL)};
+                await _cache.SetStringAsync(CacheKey, newValue, cacheOptions );
                 return true;
             }
             catch (Exception)
@@ -1486,11 +1487,17 @@ namespace UpDiddy.Api
         public async Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync()
         {
             string cacheKey = $"job-PostCount";
+
+            DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(Convert.ToDouble(_configuration["USMaps:cacheTTLInHours"]))
+            };
+
             List<JobPostingCountDto> rval = await GetCachedValueAsync<List<JobPostingCountDto>>(cacheKey);
             if (rval == null)
             {
                 rval = await GetAsync<List<JobPostingCountDto>>($"job/post-count");
-                await SetCachedValueAsync<List<JobPostingCountDto>>(cacheKey, rval);
+                await SetCachedValueAsync<List<JobPostingCountDto>>(cacheKey, rval, options);
             }
             return rval;
         }
