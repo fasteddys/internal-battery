@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -16,25 +17,25 @@ namespace UpDiddyApi.Authorization
     public class GroupAuthorizationHandler : AuthorizationHandler<GroupRequirement>
     {
         IB2CGraph _graphClient;
-        IConfiguration _configuration;
-        IDistributedCache _cache;
+        IConfiguration _configuration; 
         ILogger _syslog = null;
- 
+        IMemoryCache _memoryCache = null;
 
-        public GroupAuthorizationHandler(IB2CGraph graphClient, IConfiguration configuration, IDistributedCache distributedCache, ILogger<GroupAuthorizationHandler> sysLog)
+
+        public GroupAuthorizationHandler(IB2CGraph graphClient, IConfiguration configuration, ILogger<GroupAuthorizationHandler> sysLog, IMemoryCache memoryCache)
         {
             _graphClient = graphClient;
-            _configuration = configuration;
-            _cache = distributedCache;
+            _configuration = configuration; 
             _syslog = sysLog;
+            _memoryCache = memoryCache;
         }
 
         private async Task<bool> CheckAuthAsync(string userId, GroupRequirement requirement)
         {
  
             // important to not use "SubscriberGroups" as the cache key since that what the webapp is using and the cached type is different
-            string cacheKey = "APISubscriberGroups" + userId;
-            string cachedGroups = _cache.GetString(cacheKey);
+            string cacheKey = "APISubscriberGroups" + userId;            
+            string cachedGroups = _memoryCache.Get<String>(cacheKey);
 
             IList<Microsoft.Graph.Group> groups = null;
             if (cachedGroups != null)
@@ -48,7 +49,7 @@ namespace UpDiddyApi.Authorization
                 {
                     groups = await _graphClient.GetUserGroupsByObjectId(userId);
                     int SubscriberGroupsCacheTimeInMinutes = int.Parse(_configuration["CareerCircle:SubscriberGroupsCacheTimeInMinutes"]);                    
-                    _cache.SetString(cacheKey, JsonConvert.SerializeObject(groups), new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = DateTime.Now.AddHours(SubscriberGroupsCacheTimeInMinutes).TimeOfDay });
+                    _memoryCache.Set<String>(cacheKey, JsonConvert.SerializeObject(groups),  DateTime.Now.AddHours(SubscriberGroupsCacheTimeInMinutes).TimeOfDay);
                 }
                 catch (Exception ex)
                 {
@@ -64,7 +65,6 @@ namespace UpDiddyApi.Authorization
                     return false;
                 }
             }
- 
 
             // get the configured groups
             List<ConfigADGroup> requiredGroups = _configuration.GetSection("ADGroups:Values")

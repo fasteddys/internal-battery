@@ -269,8 +269,9 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 var jobData = JsonConvert.DeserializeObject<dynamic>(jobPage.RawData);
                 jobPostingDto.Title = (jobData.title).Value;
                 jobPostingDto.Description = (jobData.formattedDescription).Value;
+                string rawDatePosted = ((jobData.datePosted).Value).ToString();
                 DateTime datePosted;
-                if (DateTime.TryParse((jobData.datePosted).Value, out datePosted))
+                if (DateTime.TryParse(rawDatePosted, out datePosted))
                 {
                     jobPostingDto.CreateDate = datePosted;
                 }

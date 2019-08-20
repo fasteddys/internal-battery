@@ -23,6 +23,8 @@ using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Caching.Memory;
+
 namespace UpDiddy.Controllers
 {
     public class HomeController : BaseController
@@ -31,7 +33,7 @@ namespace UpDiddy.Controllers
         private readonly IHostingEnvironment _env;
         private readonly ISysEmail _sysEmail;
         private readonly IApi _api;
-        private readonly IDistributedCache _cache;
+        private readonly IMemoryCache _memoryCache;
 
         [HttpGet]
         public async Task<IActionResult> GetCountries()
@@ -43,7 +45,7 @@ namespace UpDiddy.Controllers
             IConfiguration configuration,
             IHostingEnvironment env,
             ISysEmail sysEmail,
-            IDistributedCache distributedCache)
+            IMemoryCache memoryCache)
             
             : base(api)
         {
@@ -51,7 +53,7 @@ namespace UpDiddy.Controllers
             _sysEmail = sysEmail;
             _configuration = configuration;
             _api = api;
-            _cache = distributedCache;
+            _memoryCache = memoryCache;
         }
         [HttpGet]
         public async Task<IActionResult> GetStatesByCountry(Guid countryGuid)
@@ -198,10 +200,10 @@ namespace UpDiddy.Controllers
             // Handle the case of MsalUiRequireRedirect 
             var userId =  User.FindFirst(ClaimTypes.NameIdentifier).Value;
             string CacheKey = $"{userId}MsalUiRequiredRedirect";
-            string MsalUiRequiredRedirect =  _cache.GetString(CacheKey); 
+            string MsalUiRequiredRedirect =  _memoryCache.Get<String>(CacheKey); 
             if ( string.IsNullOrEmpty(MsalUiRequiredRedirect) == false )
             {
-                await _cache.RemoveAsync(CacheKey);
+                _memoryCache.Remove(CacheKey);
                 return Redirect(MsalUiRequiredRedirect);
             }
             else if (this.subscriber.HasOnboarded > 0)
