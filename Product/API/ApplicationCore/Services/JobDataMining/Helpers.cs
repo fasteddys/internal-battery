@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,17 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 {
     public static class Helpers
     {
+        public static string ConvertJValueToString(object obj)
+        {
+            if (obj != null && obj is JValue casted)
+            {
+                JValue jValue = (JValue)obj;
+                if (jValue != null && jValue.Value != null)
+                    return jValue.Value.ToString();
+            }
+            return null;
+        }
+
         public static async Task ForEachWithDelay<T>(this ICollection<T> items, Func<T, Task> action, double interval)
         {
             using (var timer = new System.Timers.Timer(interval))
@@ -28,13 +40,13 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                         }
                         finally
                         {
-                                // Complete task.
-                                remaining -= 1;
+                            // Complete task.
+                            remaining -= 1;
 
                             if (remaining == 0)
                             {
-                                    // No more items to process. Complete task.
-                                    task.Start();
+                                // No more items to process. Complete task.
+                                task.Start();
                             }
                         }
                     }
