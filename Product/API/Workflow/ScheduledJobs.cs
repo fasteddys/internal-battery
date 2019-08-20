@@ -722,36 +722,41 @@ namespace UpDiddyApi.Workflow
                     // convert JobPage into JobPostingDto
                     var jobPostingDto = jobDataMining.ProcessJobPage(jobPage);
 
-                    if (jobPage.JobPostingId.HasValue)
+                    if (string.IsNullOrWhiteSpace(jobPostingDto?.Recruiter?.Email) || jobPostingDto == null)
                     {
-                        // get the job posting guid
-                        jobPostingGuid = JobPostingFactory.GetJobPostingById(_db, jobPage.JobPostingId.Value).JobPostingGuid;
-                        // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
-                        jobPostingDto.JobPostingGuid = jobPostingGuid;
-                        // attempt to update job posting
-                        isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService);
-                        // increment updated count in stats
-                        if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
-                            jobDataMiningStats.NumJobsUpdated += 1;
+                        // do not attempt to process a job page if the recruiter email is empty or if we were unable to construct a jobPostingDto
+                        isJobPostingOperationSuccessful = false;
                     }
                     else
                     {
-                        // treat an empty recruiter email as an application exception
-                        if (string.IsNullOrWhiteSpace(jobPostingDto?.Recruiter?.Email))
-                            throw new ApplicationException("Recruiter email is required.");
+                        if (jobPage.JobPostingId.HasValue)
+                        {
+                            // get the job posting guid
+                            jobPostingGuid = JobPostingFactory.GetJobPostingById(_db, jobPage.JobPostingId.Value).JobPostingGuid;
+                            // the factory method uses the guid property of the dto for GetJobPostingByGuidWithRelatedObjects - need to set that too
+                            jobPostingDto.JobPostingGuid = jobPostingGuid;
+                            // attempt to update job posting
+                            isJobPostingOperationSuccessful = JobPostingFactory.UpdateJobPosting(_db, jobPostingGuid, jobPostingDto, ref errorMessage, true, _hangfireService);
+                            // increment updated count in stats
+                            if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
+                                jobDataMiningStats.NumJobsUpdated += 1;
+                        }
+                        else
+                        {
+                            // we have to add/update the recruiter and the associated company - should the job posting factory encapsulate that logic?
+                            Recruiter recruiter = RecruiterFactory.GetAddOrUpdate(_db, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
+                            Company company = CompanyFactory.GetCompanyByGuid(_db, jobPostingDto.Company.CompanyGuid);
+                            RecruiterCompanyFactory.GetOrAdd(_db, recruiter.RecruiterId, company.CompanyId, true);
 
-                        // we have to add/update the recruiter and the associated company - should the job posting factory encapsulate that logic?
-                        Recruiter recruiter = RecruiterFactory.GetAddOrUpdate(_db, jobPostingDto.Recruiter.Email, jobPostingDto.Recruiter.FirstName, jobPostingDto.Recruiter.LastName, null, null);
-                        Company company = CompanyFactory.GetCompanyByGuid(_db, jobPostingDto.Company.CompanyGuid);
-                        RecruiterCompanyFactory.GetOrAdd(_db, recruiter.RecruiterId, company.CompanyId, true);
+                            // attempt to create job posting
+                            isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration, true, _hangfireService);
 
-                        // attempt to create job posting
-                        isJobPostingOperationSuccessful = JobPostingFactory.PostJob(_db, recruiter.RecruiterId, jobPostingDto, ref jobPostingGuid, ref errorMessage, _syslog, _mapper, _configuration, true, _hangfireService);
-
-                        // increment added count in stats
-                        if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
-                            jobDataMiningStats.NumJobsAdded += 1;
+                            // increment added count in stats
+                            if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
+                                jobDataMiningStats.NumJobsAdded += 1;
+                        }
                     }
+
                     if (isJobPostingOperationSuccessful.HasValue && isJobPostingOperationSuccessful.Value)
                     {
                         // indicate that the job was updated successfully and is now active

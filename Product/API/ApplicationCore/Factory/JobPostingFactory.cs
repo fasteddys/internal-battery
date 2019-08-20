@@ -115,14 +115,15 @@ namespace UpDiddyApi.ApplicationCore.Factory
             if (isAcceptsNewSkills && jobPostingDto?.JobPostingSkills != null)
             {
                 var updatedSkills = new List<SkillDto>();
-                foreach (var skillDto in  jobPostingDto.JobPostingSkills)
+                foreach (var skillDto in jobPostingDto.JobPostingSkills)
                 {
                     var skill = SkillFactory.GetOrAdd(db, skillDto.SkillName);
-                    updatedSkills.Add(new SkillDto()
-                    {
-                        SkillGuid = skill.SkillGuid,
-                        SkillName = skill.SkillName
-                    });
+                    if (!updatedSkills.Exists(s => s.SkillGuid == skill.SkillGuid))
+                        updatedSkills.Add(new SkillDto()
+                        {
+                            SkillGuid = skill.SkillGuid,
+                            SkillName = skill.SkillName
+                        });
                 }
                 jobPostingDto.JobPostingSkills = updatedSkills;
             }
@@ -604,11 +605,12 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 foreach (var skillDto in jobPostingDto.JobPostingSkills)
                 {
                     var skill = SkillFactory.GetOrAdd(db, skillDto.SkillName);
-                    updatedSkills.Add(new SkillDto()
-                    {
-                        SkillGuid = skill.SkillGuid,
-                        SkillName = skill.SkillName
-                    });
+                    if (!updatedSkills.Exists(s => s.SkillGuid == skill.SkillGuid))
+                        updatedSkills.Add(new SkillDto()
+                        {
+                            SkillGuid = skill.SkillGuid,
+                            SkillName = skill.SkillName
+                        });
                 }
                 jobPostingDto.JobPostingSkills = updatedSkills;
             }
