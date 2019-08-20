@@ -26,7 +26,7 @@ namespace UpDiddy.ViewModels
         public string FirstName { get; set; }
         public string LastName { get; set; }
         [DataType(DataType.PhoneNumber)]
-        [RegularExpression(@"(^$)|(^\d{10}$)", ErrorMessage = "Not a valid phone number")]
+        [RegularExpression(@"^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$|^$", ErrorMessage = "Not a valid phone number")]
         public string PhoneNumber { get; set; }
         public bool IsWaitList {get;set;}
     }
