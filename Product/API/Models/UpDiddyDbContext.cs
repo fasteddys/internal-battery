@@ -167,6 +167,7 @@ namespace UpDiddyApi.Models
         public DbSet<Group> Group { get; set; }
         public DbSet<SubscriberGroup> SubscriberGroup { get; set; }
         public DbSet<GroupPartner> GroupPartner { get; set; }
+        public DbSet<SalesForceSignUpList> SalesForceSignUpList { get; set; }
 
         
         #region DBQueries
@@ -182,6 +183,7 @@ namespace UpDiddyApi.Models
         public DbQuery<v_UnreadNotifications> UnreadNotifications { get; set; }
         public DbQuery<v_NotificationReadCounts> NotificationReadCounts { get; set; }
         public DbQuery<JobAbandonmentStatistics> JobAbandonmentStatistics { get; set; }
+        public DbQuery<JobCountPerProvince> JobCountPerProvince { get; set; }
 
         #endregion
 

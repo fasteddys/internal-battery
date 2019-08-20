@@ -20,57 +20,51 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// 
         /// </summary>
         /// <returns></returns>
-        public async Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync()
+         public async Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync()
         {
-            var query = _repositoryWrapper.JobPosting.GetAll();
-            var jobCount = new List<JobPostingCountDto>();
-            Enums.ProvincePrefix statePrefixEnum;
+            var jobCount = await _repositoryWrapper.StoredProcedureRepository.GetJobCountPerProvince();
+            var provinces = jobCount.Select(x => x.Province).Distinct();
+            var jobCountDto = new List<JobPostingCountDto>();
             Enums.ProvinceName stateNameEnum;
-            var provinceList = await query
-                .Where(x => x.IsDeleted == 0)
-                .Select(x => x.Province)
-                .Distinct()
-                .ToListAsync();
-            foreach (var province in provinceList)
+            Enums.ProvincePrefix statePrefixEnum;
+            foreach (var province in provinces)
             {
-                var str = province.Trim().Replace(" ", "").ToUpper();        
+                var str = province.Trim().Replace(" ", "").ToUpper();
                 string statePrefix = string.Empty;
                 if (Enum.TryParse(str, out statePrefixEnum))
                 {
                     statePrefix = str;
                 }
                 else if (Enum.TryParse(str, out stateNameEnum))
-                {         
-                   Enums.ProvinceName value = (Enums.ProvinceName)(int)stateNameEnum;
-                   statePrefix = value.ToString();
+                {
+                    Enums.ProvinceName value = (Enums.ProvinceName)(int)stateNameEnum;
+                    statePrefix = value.ToString();
                 }
                 if (!String.IsNullOrEmpty(statePrefix))
                 {
-                    var companyQuery = await GetJobsByStateQuery(province);
-                    if (companyQuery.Count > 0)
+                    var distinctCompanies = jobCount
+                    .Where(x => x.Province == province)
+                    .Select(m => new { m.CompanyName, m.CompanyGuid, m.Count })
+                    .OrderByDescending(x => x.Count);
+                    List<JobPostingCompanyCountDto> companyCountdto = new List<JobPostingCompanyCountDto>();
+                    foreach (var company in distinctCompanies)
                     {
-                        var total = companyQuery.Sum(c => c.JobCount);
-                        jobCount.Add(new JobPostingCountDto(statePrefix, companyQuery, total));
+                        companyCountdto.Add(new JobPostingCompanyCountDto()
+                        {
+                            CompanyGuid = company.CompanyGuid,
+                            CompanyName = company.CompanyName,
+                            JobCount = company.Count
+                        });
+                    }
+
+                    if (companyCountdto.Count > 0)
+                    {
+                        var total = jobCount.Where(x => x.Province == province).Sum(s => s.Count);
+                        jobCountDto.Add(new JobPostingCountDto(statePrefix, companyCountdto, total));
                     }
                 }
             }
-            return jobCount;
-        }
-
-        private async Task<List<JobPostingCompanyCountDto>> GetJobsByStateQuery(string province)
-        {
-            var query = _repositoryWrapper.JobPosting.GetAll();
-            return await query.Where(x => x.Province == province && x.IsDeleted == 0)
-                .GroupBy(l => l.Company)
-                .Select(g => new JobPostingCompanyCountDto()
-                {
-                    CompanyGuid = g.Key.CompanyGuid,
-                    CompanyName = g.Key.CompanyName,
-                    JobCount = g.Distinct().Count()
-                })
-                .OrderByDescending(x => x.JobCount)
-                .Take(3)
-                .ToListAsync();
+            return jobCountDto;
         }
     }
 }
