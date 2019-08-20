@@ -83,7 +83,9 @@ namespace UpDiddy.Controllers
         [Route("[controller]/cms-sitemap.xml")]
         public async Task<IActionResult> Cms(){
             XmlDocument cmsXmlResponse = await _butterService.GetButterSitemapAsync();
-            XmlNode node = cmsXmlResponse.FirstChild.NextSibling;
+
+            // Gets to the first url node of the sitemap returned from CMS
+            XmlNode node = cmsXmlResponse.FirstChild.NextSibling.FirstChild;
             bool NextNodeExists = true; 
             List<SitemapNode> nodes = new List<SitemapNode>();
 
@@ -101,20 +103,26 @@ namespace UpDiddy.Controllers
 
             IList<string> AuthorSlugs = await _butterService.GetBlogAuthorSlugsAsync();
             foreach(string Slug in AuthorSlugs){
-                string AuthorPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Author/" + Slug;
-                nodes.Add(new SitemapNode(AuthorPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                if(!String.IsNullOrEmpty(Slug.Trim())){
+                    string AuthorPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Author/" + Slug;
+                    nodes.Add(new SitemapNode(AuthorPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                }
             }
 
             IList<string> CategorySlugs = await _butterService.GetBlogCategorySlugsAsync();
             foreach(string Slug in CategorySlugs){
-                string CategoryPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Category/" + Slug;
-                nodes.Add(new SitemapNode(CategoryPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                if(!String.IsNullOrEmpty(Slug.Trim())){
+                    string CategoryPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Category/" + Slug;
+                    nodes.Add(new SitemapNode(CategoryPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                }
             }
 
             IList<string> TagSlugs = await _butterService.GetBlogTagSlugsAsync();
             foreach(string Slug in TagSlugs){
-                string TagPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Tag/" + Slug;
-                nodes.Add(new SitemapNode(TagPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                if(!String.IsNullOrEmpty(Slug.Trim())){
+                    string TagPageUrl = _configuration["Environment:BaseUrl"] + "Blog/Tag/" + Slug;
+                    nodes.Add(new SitemapNode(TagPageUrl) { ChangeFrequency = ChangeFrequency.Weekly });
+                }
             }
 
             int NumberOfBlogPages = await _butterService.GetNumberOfBlogPostPagesAsync();

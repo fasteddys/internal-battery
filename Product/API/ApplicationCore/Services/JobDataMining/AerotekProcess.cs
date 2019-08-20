@@ -167,7 +167,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             // retrieve all of the individual job urls by crawling the search results
             List<Uri> jobPageUrls = new List<Uri>();
             bool isSearchPageContainsJobs = true;
-            int pageIndex = 0;
+            int pageIndex = 1;
             do
             {
                 UriBuilder searchUriBuilder = new UriBuilder(_jobSite.Uri);
@@ -269,7 +269,18 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                 var jobData = JsonConvert.DeserializeObject<dynamic>(jobPage.RawData);
                 jobPostingDto.Title = (jobData.title).Value;
                 jobPostingDto.Description = (jobData.formattedDescription).Value;
-                jobPostingDto.CreateDate = (jobData.datePosted).Value;
+                DateTime datePosted;
+                if (DateTime.TryParse((jobData.datePosted).Value, out datePosted))
+                {
+                    jobPostingDto.CreateDate = datePosted;
+                }
+                else
+                {
+                    if (jobPage.JobPostingId.HasValue)
+                        jobPostingDto.CreateDate = jobPage.CreateDate;
+                    else
+                        jobPostingDto.CreateDate = DateTime.UtcNow;
+                }
                 jobPostingDto.City = (jobData.jobLocation.address.addressLocality).Value;
                 jobPostingDto.Province = (jobData.jobLocation.address.addressRegion).Value;
                 jobPostingDto.Country = (jobData.jobLocation.address.addressCountry).Value;
@@ -288,8 +299,9 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     {
                         skillsDto.Add(new SkillDto() { SkillName = skill.Trim() });
                     }
-                    if (skillsDto.Count() > 0)
-                        jobPostingDto.JobPostingSkills = skillsDto;
+                    List<SkillDto> distinctSkillsDto = skillsDto.Distinct().ToList();
+                    if (distinctSkillsDto.Count() > 0)
+                        jobPostingDto.JobPostingSkills = distinctSkillsDto;
                 }
 
                 return jobPostingDto;

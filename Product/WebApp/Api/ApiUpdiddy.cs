@@ -20,6 +20,7 @@ using UpDiddyLib.Shared;
 using UpDiddyLib.Dto.Reporting;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace UpDiddy.Api
 {
@@ -31,11 +32,12 @@ namespace UpDiddy.Api
         public AzureAdB2COptions AzureOptions { get; set; }
         private IHttpContextAccessor _contextAccessor { get; set; }
         public IDistributedCache _cache { get; set; }
+        public IMemoryCache _memoryCache { get; set; }
         public HttpContext _currentContext { get; set; }
         private readonly ILogger _syslog;
 
         #region Constructor
-        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog )
+        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog, IMemoryCache memoryCache )
         {
             _syslog = sysLog;
             AzureOptions = azureAdB2COptions.Value;
@@ -46,6 +48,7 @@ namespace UpDiddy.Api
             _HttpClientFactory = httpClientFactory;
             _cache = cache;
             _currentContext = contextAccessor.HttpContext;
+            _memoryCache = memoryCache;
         }
         #endregion
 
@@ -111,7 +114,7 @@ namespace UpDiddy.Api
                 .WithClientSecret(AzureOptions.ClientSecret)
                 .Build();
             
-            new MSALSessionCache(signedInUserID,_cache).EnablePersistence(app.UserTokenCache);
+            new MSALSessionCache(signedInUserID,_cache,_memoryCache).EnablePersistence(app.UserTokenCache);
 
             var accounts = await app.GetAccountsAsync();
             if ( accounts.Count() == 0 )
