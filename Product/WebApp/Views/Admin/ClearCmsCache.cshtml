@@ -1,0 +1,24 @@
+@Html.Partial("Admin/_AdminNavigation")
+
+<div id="ClearCmsCacheContainer" class="row mt-4">
+    <div class="col-12">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm">
+                    <form class="form-inline">
+                        <div class="form-group mx-sm-3 mb-2">
+                            <span>@ViewBag.Environment</span>
+                            <span>_cms_</span>
+                            <input type="text" class="form-control" id="CacheKey" name="CacheKey" placeholder="Cache Key">
+                        </div>
+                        <button type="button" onClick="ClearCmsCache()" class="btn btn-primary mb-2">Clear</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    
+}

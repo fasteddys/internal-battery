@@ -20,6 +20,7 @@ namespace UpDiddy.Services.ButterCMS
         private IConfiguration _configuration = null;
         private ISysEmail _sysEmail = null;
         private ButterCMSClient _butterClient;
+        private string CacheKeyPrefix;
 
         public ButterCMSService(ICacheService cacheService, IConfiguration configuration, ISysEmail sysEmail)
         {
@@ -27,6 +28,7 @@ namespace UpDiddy.Services.ButterCMS
             _configuration = configuration;
             _sysEmail = sysEmail;
             _butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
+            CacheKeyPrefix = Constants.CMS.CACHE_KEY_PREFIX;
         }
 
         /// <summary>
@@ -45,7 +47,7 @@ namespace UpDiddy.Services.ButterCMS
         /// <returns>An object in the form of T representing the BCMS response</returns>
         public async Task<T> RetrieveContentFieldsAsync<T>(string CacheKey, string[] Keys, Dictionary<string, string> QueryParameters) where T : class
         {
-            T CachedButterResponse = await _cacheService.GetCachedValueAsync<T>(CacheKey);
+            T CachedButterResponse = await _cacheService.GetCachedValueAsync<T>(CacheKeyPrefix + CacheKey);
             try
             {
                 if (CachedButterResponse == null)
@@ -57,7 +59,7 @@ namespace UpDiddy.Services.ButterCMS
                         await SendEmailNotificationAsync(CacheKey);
                         return null;
                     }
-                    await _cacheService.SetCachedValueAsync(CacheKey, CachedButterResponse);
+                    await _cacheService.SetCachedValueAsync(CacheKeyPrefix + CacheKey, CachedButterResponse);
                 }
             }
             catch(ContentFieldObjectMismatchException)
@@ -70,7 +72,7 @@ namespace UpDiddy.Services.ButterCMS
 
         public async Task<PageResponse<T>> RetrievePageAsync<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters = null) where T : ButterCMSBaseViewModel
         {
-            CMSResponseHelper<PageResponse<T>> ResponseHelper = await _cacheService.GetCachedValueAsync<CMSResponseHelper<PageResponse<T>>>(CacheKey);
+            CMSResponseHelper<PageResponse<T>> ResponseHelper = await _cacheService.GetCachedValueAsync<CMSResponseHelper<PageResponse<T>>>(CacheKeyPrefix + CacheKey);
 
             try
             {
@@ -85,7 +87,7 @@ namespace UpDiddy.Services.ButterCMS
                     else
                         ResponseHelper.ResponseCode = Constants.CMS.RESPONSE_RECEIVED;
 
-                    await _cacheService.SetCachedValueAsync(CacheKey, ResponseHelper);
+                    await _cacheService.SetCachedValueAsync(CacheKeyPrefix + CacheKey, ResponseHelper);
                 }
 
             }
@@ -98,14 +100,15 @@ namespace UpDiddy.Services.ButterCMS
             
         }
 
-        public async Task<bool> ClearCachedValueAsync<T>(string CacheKey)
+        public async Task<bool> ClearCachedValueAsync(string CacheKey)
         {
-            return await _cacheService.RemoveCachedValueAsync<T>(CacheKey);
+            return await _cacheService.RemoveCachedValueAsync(CacheKeyPrefix + CacheKey);
         }
 
         public string AssembleCacheKey(string KeyPrefix, string PageSlug, IQueryCollection Query = null){
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append(KeyPrefix)
+            stringBuilder.Append(CacheKeyPrefix)
+                .Append(KeyPrefix)
                 .Append("_")
                 .Append(PageSlug);
 
@@ -123,7 +126,7 @@ namespace UpDiddy.Services.ButterCMS
              * we don't spam the CareerCircle errors inbox upon navigation fetch failure.
              */
             string CacheKeyForNavigationLoadFailure = "HasSentNavigationLoadFailureEmail";
-            string HasSentNotificationEmail = await _cacheService.GetCachedValueAsync<string>(CacheKeyForNavigationLoadFailure);
+            string HasSentNotificationEmail = await _cacheService.GetCachedValueAsync<string>(CacheKeyPrefix + CacheKeyForNavigationLoadFailure);
             if (string.IsNullOrEmpty(HasSentNotificationEmail))
             {
                 StringBuilder HtmlMessage = new StringBuilder();
@@ -132,7 +135,7 @@ namespace UpDiddy.Services.ButterCMS
                     "ALERT! Navigation failed to load.",
                     HtmlMessage.ToString(),
                     Constants.SendGridAccount.Transactional);
-                await _cacheService.SetCachedValueAsync<string>(CacheKeyForNavigationLoadFailure, "true");
+                await _cacheService.SetCachedValueAsync<string>(CacheKeyPrefix + CacheKeyForNavigationLoadFailure, "true");
             }            
         }
 
