@@ -25,5 +25,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 };
             return await _dbContext.JobAbandonmentStatistics.FromSql<JobAbandonmentStatistics>("System_JobAbandonmentStatistics @StartDate, @EndDate", spParams).ToListAsync();
         }
+
+        public async Task<List<JobCountPerProvince>>  GetJobCountPerProvince()
+        {
+            return await _dbContext.JobCountPerProvince.FromSql<JobCountPerProvince>("System_JobCountPerProvince").ToListAsync();
+        }
     }
 }

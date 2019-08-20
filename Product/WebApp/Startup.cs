@@ -245,19 +245,17 @@ namespace UpDiddy
             loggerFactory.AddDebug();
 
  
-        
             if (env.IsDevelopment() || env.IsStaging())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
             }
             else if(!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
-            {
+            {  
                 app.UseExceptionHandler("/Home/Error");
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
-            }
-       
-           
+            } 
+ 
             // Initialise ReactJS.NET. Must be before static files.
             app.UseReact(config =>
             {

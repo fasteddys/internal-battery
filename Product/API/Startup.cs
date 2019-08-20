@@ -151,6 +151,7 @@ namespace UpDiddyApi
             //configuring RepositoryWrapper class to implement repository pattern
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
 
+            services.AddMemoryCache();
             // Add framework services.
             // the 'ignore' option for reference loop handling was implemented to prevent circular errors during serialization 
             // (e.g. SubscriberDto contains a collection of EnrollmentDto objects, and the EnrollmentDto object has a reference to a SubscriberDto)

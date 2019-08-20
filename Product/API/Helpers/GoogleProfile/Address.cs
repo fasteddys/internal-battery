@@ -29,10 +29,13 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 
             if (string.IsNullOrEmpty(this.structuredAddress.regionCode))
                 this.structuredAddress.regionCode = Constants.RegionCodeUS;
-
-
-            this.structuredAddress.addressLines = new List<string>();
-            this.structuredAddress.addressLines.Add(subscriber.Address);
+ 
+           if ( ! string .IsNullOrEmpty(subscriber.Address))
+           {
+                this.structuredAddress.addressLines = new List<string>();
+                this.structuredAddress.addressLines.Add(subscriber.Address);
+           }
+            
         }
 
     }

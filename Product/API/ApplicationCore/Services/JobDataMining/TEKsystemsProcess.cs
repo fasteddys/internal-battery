@@ -68,7 +68,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
                     // add formatted job description to job data
                     var jobSummaryH2 = jobHtml.DocumentNode.SelectSingleNode("//div[contains(@class, 'jdp-job-description-card')]/h2[contains(@class, 'content-card-header')]");
-                    jobSummaryH2.Remove();
+                    if (jobSummaryH2 != null)
+                        jobSummaryH2.Remove();
                     var descriptionFromHtml = jobHtml.DocumentNode.SelectSingleNode("//div[contains(@class, 'jdp-job-description-card')]");
                     if (descriptionFromHtml != null && descriptionFromHtml.InnerHtml != null)
                         rawData.Add("formattedDescription", descriptionFromHtml.InnerHtml.Trim());
@@ -231,7 +232,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
             var unreferencedActiveJobs = existingActiveJobs.Except(discoveredActiveAndPendingJobs, new EqualityComparerByUniqueIdentifier());
 
             // if the page didnt appear in the search results, flag it for deletion 
-            unreferencedActiveJobs.Select(j => { j.JobPageStatusId = 4; return j; }).ToList();
+            unreferencedActiveJobs = unreferencedActiveJobs.Select(j => { j.JobPageStatusId = 4; return j; }).ToList();
 
             // combine new/modified jobs and unreferenced jobs which should be deleted
             List<JobPage> updatedJobPages = new List<JobPage>();
@@ -263,10 +264,11 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
 
                 // everything else relies upon valid raw data
                 var jobData = JsonConvert.DeserializeObject<dynamic>(jobPage.RawData);
-                jobPostingDto.Title = (jobData.title).Value;
-                jobPostingDto.Description = (jobData.formattedDescription).Value;
+                jobPostingDto.Title = Helpers.ConvertJValueToString(jobData.title);
+                jobPostingDto.Description = Helpers.ConvertJValueToString(jobData.formattedDescription);
+                string rawDatePosted = Helpers.ConvertJValueToString((jobData.datePosted));
                 DateTime datePosted;
-                if (DateTime.TryParse((jobData.datePosted).Value, out datePosted))
+                if (DateTime.TryParse(rawDatePosted, out datePosted))
                 {
                     jobPostingDto.CreateDate = datePosted;
                 }
@@ -277,17 +279,18 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining
                     else
                         jobPostingDto.CreateDate = DateTime.UtcNow;
                 }
-                jobPostingDto.City = (jobData.jobLocation.address.addressLocality).Value;
-                jobPostingDto.Province = (jobData.jobLocation.address.addressRegion).Value;
-                jobPostingDto.Country = (jobData.jobLocation.address.addressCountry).Value;
+                jobPostingDto.City = Helpers.ConvertJValueToString(jobData.jobLocation.address.addressLocality);
+                jobPostingDto.Province = Helpers.ConvertJValueToString(jobData.jobLocation.address.addressRegion);
+                jobPostingDto.Country = Helpers.ConvertJValueToString(jobData.jobLocation.address.addressCountry);
                 jobPostingDto.Recruiter = new RecruiterDto()
                 {
-                    Email = (jobData.recruiter.email).Value,
-                    FirstName = (jobData.recruiter.firstName).Value,
-                    LastName = (jobData.recruiter.lastName).Value,
-                    PhoneNumber = (jobData.recruiter.phone).Value
+                    Email = Helpers.ConvertJValueToString(jobData.recruiter.email),
+                    FirstName = Helpers.ConvertJValueToString(jobData.recruiter.firstName),
+                    LastName = Helpers.ConvertJValueToString(jobData.recruiter.lastName),
+                    PhoneNumber = Helpers.ConvertJValueToString(jobData.recruiter.phone)
                 };
-                if (jobData.skills != null)
+                string rawSkills = Helpers.ConvertJValueToString(jobData.skills);
+                if (!string.IsNullOrWhiteSpace(rawSkills))
                 {
                     string[] skills = (jobData.skills).Value.Split(',');
                     List<SkillDto> skillsDto = new List<SkillDto>();
