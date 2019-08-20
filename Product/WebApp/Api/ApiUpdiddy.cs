@@ -36,6 +36,7 @@ namespace UpDiddy.Api
         public HttpContext _currentContext { get; set; }
         private readonly ILogger _syslog;
 
+
         #region Constructor
         public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog, IMemoryCache memoryCache )
         {
@@ -122,9 +123,9 @@ namespace UpDiddy.Api
                 _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_ApiUpdiddy.GetBearerTokenAsync unable to locate account" );
             }
  
-            IAccount account = accounts.FirstOrDefault();
+            IAccount account = accounts.FirstOrDefault();     
             result = await app.AcquireTokenSilent(scope, account).ExecuteAsync();
-
+                
             // temp code to log jwt info, specifically expiration dates 
             try
             {
@@ -1228,7 +1229,8 @@ namespace UpDiddy.Api
             {
                 int CacheTTL = int.Parse(_configuration["redis:cacheTTLInMinutes"]);
                 string newValue = Newtonsoft.Json.JsonConvert.SerializeObject(Value);
-                await _cache.SetStringAsync(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL) });
+                _memoryCache.Set(CacheKey, newValue, DateTimeOffset.Now.AddMinutes(CacheTTL));
+                //await _cache.SetStringAsync(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL) });
                 return true;
             }
             catch (Exception)
@@ -1241,7 +1243,8 @@ namespace UpDiddy.Api
         {
             try
             {
-                _cache.Remove(CacheKey);
+                // _cache.Remove(CacheKey);
+                _memoryCache.Remove(CacheKey);
                 return true;
             }
             catch (Exception)
@@ -1254,7 +1257,9 @@ namespace UpDiddy.Api
         {
             try
             {
-                string existingValue = await _cache.GetStringAsync(CacheKey);
+           
+                //string existingValue = await _cache.GetStringAsync(CacheKey);
+                string existingValue = _memoryCache.Get<string>(CacheKey);
                 if (string.IsNullOrEmpty(existingValue))
                     return (T)Convert.ChangeType(null, typeof(T));
                 else
