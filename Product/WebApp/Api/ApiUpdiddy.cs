@@ -1487,15 +1487,13 @@ namespace UpDiddy.Api
         public async Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync()
         {
             string cacheKey = $"job-PostCount";
-
-            DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(Convert.ToDouble(_configuration["USMaps:cacheTTLInHours"]))
-            };
-
             List<JobPostingCountDto> rval = await GetCachedValueAsync<List<JobPostingCountDto>>(cacheKey);
             if (rval == null)
             {
+                DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(Convert.ToDouble(_configuration["USMaps:cacheTTLInHours"]))
+                };
                 rval = await GetAsync<List<JobPostingCountDto>>($"job/post-count");
                 await SetCachedValueAsync<List<JobPostingCountDto>>(cacheKey, rval, options);
             }
