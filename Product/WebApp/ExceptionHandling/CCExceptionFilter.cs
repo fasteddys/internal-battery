@@ -9,17 +9,18 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace UpDiddy.ExceptionHandling
 {
     public class CCExceptionFilter : ExceptionFilterAttribute
     {
 
-        IDistributedCache _cache = null;
+        IMemoryCache _memoryCache = null;
         IConfiguration _config = null;
-        public CCExceptionFilter(IDistributedCache distributedCache, IConfiguration configuration)
+        public CCExceptionFilter(IMemoryCache memoryCache, IConfiguration configuration)
         {
-            _cache = distributedCache;
+            _memoryCache = memoryCache;
             _config = configuration;
 
         }
@@ -35,7 +36,7 @@ namespace UpDiddy.ExceptionHandling
                 var userId = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
                 string CacheKey = $"{userId}MsalUiRequiredRedirect";
                 int MsalRedirectTTLInSeconds = int.Parse(_config["CareerCircle:MsalRedirectTTLInSeconds"]);
-                _cache.SetString(CacheKey, context.HttpContext.Request.Path, new DistributedCacheEntryOptions() { AbsoluteExpirationRelativeToNow = DateTime.Now.AddSeconds(MsalRedirectTTLInSeconds).TimeOfDay });
+                _memoryCache.Set<String>(CacheKey, context.HttpContext.Request.Path,  DateTime.Now.AddSeconds(MsalRedirectTTLInSeconds).TimeOfDay );
                 context.ExceptionHandled = true;
                 context.HttpContext.Response.Redirect("/Session/AuthRequired");
             }                     

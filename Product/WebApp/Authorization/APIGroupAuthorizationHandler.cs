@@ -23,55 +23,21 @@ namespace UpDiddy.Authorization
         IHttpContextAccessor _accessor;
         ILogger _syslog = null; 
         IMemoryCache _memoryCache = null;
-        //todo jab remove 
-        IDistributedCache _distributedCache = null;
- 
 
         public const string CACHE_KEY = "SubscriberGroups";
 
-        public ApiGroupAuthorizationHandler(IApi api, IConfiguration configuration, IHttpContextAccessor contextAccessor, ILogger<ApiGroupAuthorizationHandler> sysLog, IMemoryCache memoryCache, IDistributedCache distributedCache 
-            )
+        public ApiGroupAuthorizationHandler(IApi api, IConfiguration configuration, IHttpContextAccessor contextAccessor, ILogger<ApiGroupAuthorizationHandler> sysLog, IMemoryCache memoryCache )
         {
             _api = api;
             _configuration = configuration;
             _accessor = contextAccessor;
             _syslog = sysLog; 
             _memoryCache = memoryCache;
-            //todo jab remove 
-            _distributedCache = distributedCache;
+      
         }
 
         private async Task<bool> CheckAuthAsync(string userId, GroupRequirement requirement)
         {
-            // TODO JAB remove test 
-            /*
-            string blob = "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
-            _memoryCache.Set<string>("test", blob, DateTime.Now.AddHours(4).TimeOfDay);
-            _distributedCache.SetString("test",blob);
-            int i = 0;
-            string rval = string.Empty;
-            DateTime start = DateTime.Now;
-            for (i = 0; i < 10000; ++i)
-                rval = _distributedCache.GetString("test");
-            DateTime stop = DateTime.Now;
-            TimeSpan delta = stop - start;
-
-            start = DateTime.Now;
-            for (i = 0; i < 10000; ++i)
-                rval = _memoryCache.Get<string>("test");
-            stop = DateTime.Now;
-            TimeSpan delta1 = stop - start;
-
-    */
-
-
-
-
-
-
-
-
-
 
             IList<string> groups = new List<string>();
             string cachedGroups = _memoryCache.Get<string>(CACHE_KEY + userId);        
@@ -101,7 +67,6 @@ namespace UpDiddy.Authorization
                 _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_ApiGroupAuthorizationHandler.CheckAuthAsync No groups from for user: {userId}");
                 return false;
             }
-
 
             _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_GroupAuthorizationHandler.CheckAuthAsync returning {groups.Contains(requirement.RoleName)} for user: {userId}");
             // get the configured groups
