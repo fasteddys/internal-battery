@@ -222,16 +222,16 @@ namespace UpDiddyApi.Controllers
             if (subsriberGuidClaim != Subscriber.SubscriberGuid)
                 return Unauthorized();
 
-            Subscriber subscriberFromDb = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == Subscriber.SubscriberGuid).FirstOrDefault();
-
+          //  Subscriber subscriberFromDb = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == Subscriber.SubscriberGuid).FirstOrDefault();
+            // todo jab fix 
             var subscriberGuid = new SqlParameter("@SubscriberGuid", Subscriber.SubscriberGuid);
-            var firstName = new SqlParameter("@FirstName", (object)(Subscriber.FirstName ?? subscriberFromDb.FirstName) ?? DBNull.Value);
-            var lastName = new SqlParameter("@LastName", (object)(Subscriber.LastName ?? subscriberFromDb.LastName) ?? DBNull.Value);
-            var address = new SqlParameter("@Address", (object)(Subscriber.Address ?? subscriberFromDb.Address) ?? DBNull.Value);
-            var city = new SqlParameter("@City", (object)(Subscriber.City ?? subscriberFromDb.City) ?? DBNull.Value);
-            var postalCode = new SqlParameter("@PostalCode", (object)(Subscriber.PostalCode ?? subscriberFromDb.PostalCode) ?? DBNull.Value);
-            var stateGuid = new SqlParameter("@StateGuid", (Subscriber?.State?.StateGuid != null ? (object)Subscriber.State.StateGuid : (subscriberFromDb.State?.StateGuid != null ? (object)subscriberFromDb.State.StateGuid : DBNull.Value)));
-            var phoneNumber = new SqlParameter("@PhoneNumber", (object)(Subscriber.PhoneNumber ?? subscriberFromDb.PhoneNumber) ?? DBNull.Value);
+            var firstName = new SqlParameter("@FirstName", (object) Subscriber.FirstName ??  DBNull.Value);
+            var lastName = new SqlParameter("@LastName", (object) Subscriber.LastName ?? DBNull.Value);
+            var address = new SqlParameter("@Address", (object)Subscriber.Address ?? DBNull.Value);
+            var city = new SqlParameter("@City", (object) Subscriber.City ??  DBNull.Value);
+            var postalCode = new SqlParameter("@PostalCode", (object) Subscriber.PostalCode ?? (object) DBNull.Value);
+            var stateGuid = new SqlParameter("@StateGuid", (Subscriber?.State?.StateGuid != null ? (object)Subscriber.State.StateGuid :  DBNull.Value));
+            var phoneNumber = new SqlParameter("@PhoneNumber", (object) Subscriber.PhoneNumber ?? (object) DBNull.Value);
             var facebookUrl = new SqlParameter("@FacebookUrl", (object)Subscriber.FacebookUrl ?? DBNull.Value);
             var twitterUrl = new SqlParameter("@TwitterUrl", (object)Subscriber.TwitterUrl ?? DBNull.Value);
             var linkedInUrl = new SqlParameter("@LinkedInUrl", (object)Subscriber.LinkedInUrl ?? DBNull.Value);
