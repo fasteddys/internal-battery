@@ -21,7 +21,6 @@ namespace UpDiddyApi.Migrations
                     GROUP BY c.CompanyName
                         ,jp.Province
                         ,c.CompanyGuid
-                    ORDER BY jp.Province
                 END
                 ')
             ");

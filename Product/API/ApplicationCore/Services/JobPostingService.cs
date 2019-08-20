@@ -45,7 +45,6 @@ namespace UpDiddyApi.ApplicationCore.Services
                     var distinctCompanies = jobCount
                     .Where(x => x.Province == province)
                     .Select(m => new { m.CompanyName, m.CompanyGuid, m.Count })
-                    .Distinct()
                     .OrderByDescending(x => x.Count);
                     List<JobPostingCompanyCountDto> companyCountdto = new List<JobPostingCompanyCountDto>();
                     foreach (var company in distinctCompanies)
