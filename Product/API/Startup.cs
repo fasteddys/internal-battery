@@ -14,8 +14,6 @@ using UpDiddyApi.Workflow;
 using Hangfire.SqlServer;
 using System;
 using UpDiddyLib.Helpers;
-using Polly;
-using Polly.Extensions.Http;
 using System.Net.Http;
 using UpDiddyLib.Shared;
 using Microsoft.ApplicationInsights.SnapshotCollector;
