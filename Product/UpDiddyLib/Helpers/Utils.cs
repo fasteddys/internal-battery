@@ -19,6 +19,29 @@ namespace UpDiddyLib.Helpers
 {
     static public class Utils
     {
+        public static bool validStartDate(DateTime? startDate, DateTime? endDate)
+        {
+            if (startDate == null || startDate.Value != DateTime.MinValue)
+                return false;
+
+            if (endDate != null && endDate.Value != DateTime.MinValue && startDate.Value >= endDate.Value)
+                return false;
+
+            return true;
+        }
+
+        public static bool validEndDate(DateTime? startDate, DateTime? endDate)
+        {
+            if (endDate == null || endDate.Value != DateTime.MinValue)
+                return false;
+
+            if (startDate != null && startDate.Value != DateTime.MinValue && endDate.Value < startDate.Value)
+                return false;
+
+            return true;
+        }
+
+
         public static DateTime Next(this DateTime from, DayOfWeek dayOfWeek)
         {
             int start = (int)from.DayOfWeek;

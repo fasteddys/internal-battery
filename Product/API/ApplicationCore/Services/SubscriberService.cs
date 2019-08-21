@@ -67,7 +67,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             var querableSubscribers = _repository.SubscriberRepository.GetAllSubscribersAsync();
 
-            List<Subscriber> rVal = await querableSubscribers.Where(s => s.IsDeleted == 0 && s.CloudTalentIndexVersion < indexVersion)
+            List<Subscriber> rVal = await querableSubscribers.Where(s => s.IsDeleted == 0 && (s.CloudTalentIndexVersion < indexVersion || s.CloudTalentIndexVersion == 0) )
                                                             .Take(numSubscribers)
                                                             .ToListAsync();
 
