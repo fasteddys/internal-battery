@@ -105,13 +105,13 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("/api/[controller]/partners")]
-        public async Task<IActionResult> SubscriberReportByPartner([FromQuery] List<DateTime> dates)
+        public async Task<IActionResult> SubscriberReportByPartner([FromQuery]DateTime startDate, [FromQuery]DateTime endDate)
         {
             ActionResult response;
             try
             {
-                var subscriberSignUpCourseEnrollmentStatistics = await _reportingService.GetSubscriberSignUpCourseEnrollmentStatisticsAsync();
-                response = Ok(new { report = subscriberSignUpCourseEnrollmentStatistics });
+                var subscriberSignUpCourseEnrollmentStatistics = await _reportingService.GetSubscriberSignUpCourseEnrollmentStatisticsAsync(startDate, endDate);
+                response = Ok(subscriberSignUpCourseEnrollmentStatistics);
                 return response;
             }
             catch (Exception ex)

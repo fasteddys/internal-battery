@@ -67,3 +67,6 @@ global.RecruitersGrid = RecruitersGrid;
 
 import JobAbandonmentCount from './reports/JobAbandonmentCountTable';
 global.JobAbandonmentCount = JobAbandonmentCount;
+
+import TotalUserBreakdownByPartner from './reports/TotalUserBreakdownByPartnerTable';
+global.TotalUserBreakdownByPartner = TotalUserBreakdownByPartner;
