@@ -8,7 +8,9 @@ namespace UpDiddyApi.Migrations
         {
             migrationBuilder.Sql(@"
             EXEC('
-            CREATE PROCEDURE [dbo].[System_SubscriberSignUpAndCourseEnrollmentStatisticsByPartner] 
+           CREATE PROCEDURE [dbo].[System_SubscriberSignUpAndCourseEnrollmentStatisticsByPartner] 
+            @StartDate DATETIME
+	        ,@EndDate DATETIME
             AS
             BEGIN
                          ;WITH 
@@ -21,7 +23,7 @@ namespace UpDiddyApi.Migrations
 								inner join [Group] g on gp.GroupId=g.GroupId
 								inner join SubscriberGroup sg on g.GroupId=sg.GroupId
 								inner join Subscriber s on sg.SubscriberId=s.SubscriberId
-                                where s.IsDeleted=0 and sg.IsDeleted=0 and g.IsDeleted=0 and p.IsDeleted=0 and gp.IsDeleted=0
+                                where s.IsDeleted=0 and sg.IsDeleted=0 and g.IsDeleted=0 and p.IsDeleted=0 and gp.IsDeleted=0 and sg.CreateDate >= @StartDate and sg.CreateDate <= @EndDate
                                 Group by p.Name,p.PartnerId
                             ), Enrollment_CTE AS
                             (
@@ -32,7 +34,7 @@ namespace UpDiddyApi.Migrations
 								inner join SubscriberGroup sg on g.GroupId=sg.GroupId
 								inner join Subscriber s on sg.SubscriberId=s.SubscriberId
                                 join Enrollment e on s.SubscriberId=e.SubscriberId
-                                where s.IsDeleted=0 and sg.IsDeleted=0 and g.IsDeleted=0 and p.IsDeleted=0 and e.IsDeleted=0 and gp.IsDeleted=0
+                                where s.IsDeleted=0 and sg.IsDeleted=0 and g.IsDeleted=0 and p.IsDeleted=0 and e.IsDeleted=0 and gp.IsDeleted=0 and sg.CreateDate >= @StartDate and sg.CreateDate <= @EndDate
                                 Group by p.PartnerId, p.Name
                             )
 
