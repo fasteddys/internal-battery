@@ -9,5 +9,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     {
         Task<List<JobAbandonmentStatistics>> GetJobAbandonmentStatisticsAsync(DateTime startDate, DateTime endDate);
         Task<List<JobCountPerProvince>> GetJobCountPerProvince();
+        Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync();
     }
 }

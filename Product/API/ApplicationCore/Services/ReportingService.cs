@@ -142,5 +142,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             var result = await _repositoryWrapper.StoredProcedureRepository.GetJobAbandonmentStatisticsAsync(startDate, endDate);
             return result;        
         }
+
+        public async Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync()
+        {
+            var result = await _repositoryWrapper.StoredProcedureRepository.GetSubscriberSignUpCourseEnrollmentStatisticsAsync();
+            return result;
+        }
     }
 }

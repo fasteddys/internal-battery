@@ -139,26 +139,19 @@ namespace UpDiddyApi.Controllers
         [Route("/api/[controller]/partners")]
         public async Task<IActionResult> SubscriberReportByPartner([FromQuery] List<DateTime> dates)
         {
-            var query = from s in _db.SubscriberSignUpPartnerReferences
-                        join sub in _db.Subscriber on s.SubscriberId equals sub.SubscriberId
-                        join p in _db.Partner on s.PartnerId equals p.PartnerId into pGroup
-                        from partner in pGroup.DefaultIfEmpty()
-                        join e in _db.Enrollment on s.SubscriberId equals e.SubscriberId into eGroup
-                        from enrollment in eGroup.DefaultIfEmpty()
-                        group new
-                        {
-                            PartnerName = partner == null ? "N/A" : partner.Name,
-                            HasEnrollment = enrollment != null,
-                            SubscriberId = s.SubscriberId
-                        }
-                        by (partner.PartnerId == null) ? -1 : partner.PartnerId into report
-                        select new
-                        {
-                            subscriberCount = report.Select(x => x.SubscriberId).Distinct().Count(),
-                            enrollmentCount = report.Count(x => x.HasEnrollment),
-                            partnerName = report.First().PartnerName
-                        };
-            return Ok(new { report = await query.ToListAsync() });
+            ActionResult response;
+            try
+            {
+                var subscriberSignUpCourseEnrollmentStatistics = await _reportingService.GetSubscriberSignUpCourseEnrollmentStatisticsAsync();
+                response = Ok(new { report = subscriberSignUpCourseEnrollmentStatistics });
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(LogLevel.Error, $"Error in ReportController.SubscriberReportByPartner method", ex);
+                response = StatusCode(500);
+                return response;
+            }
         }
 
         [HttpGet]
