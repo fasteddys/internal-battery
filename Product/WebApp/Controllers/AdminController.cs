@@ -612,8 +612,10 @@ namespace UpDiddy.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> ClearCmsCacheAsync(String CacheKey){
-            bool ClearedCache = await _butterService.ClearCachedValueAsync(CacheKey);
+        public async Task<IActionResult> ClearCmsCacheAsync([FromBody] CachedPageDto CachedPage)
+        {
+
+            bool ClearedCache = await _butterService.ClearCachedPageAsync(CachedPage.Slug);
 
             if(ClearedCache)
                 return Ok();

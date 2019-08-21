@@ -50,7 +50,7 @@ namespace UpDiddy.ViewComponents
         public async Task<IViewComponentResult> InvokeAsync(string PagePath)
         {
             
-            var response = await _butterService.RetrievePageAsync<ButterCMSBaseViewModel>($"bcms_page_{PagePath}", PagePath.Split("/").Last().ToLower());
+            var response = await _butterService.RetrievePageAsync<ButterCMSBaseViewModel>(PagePath);
 
             ButterCMSBaseViewModel ButterViewModel = GetButterCMSBaseViewModel();
 

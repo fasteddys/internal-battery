@@ -4,21 +4,27 @@
     <div class="col-12">
         <div class="container">
             <div class="row">
-                <div class="col-sm">
-                    <form class="form-inline">
-                        <div class="form-group mx-sm-3 mb-2">
-                            <span>@ViewBag.Environment</span>
-                            <span>_cms_</span>
-                            <input type="text" class="form-control" id="CacheKey" name="CacheKey" placeholder="Cache Key">
+                <div class="col-12">
+                    <h2>Clear cached CMS page</h2>
+                </div>
+            </div>
+            <div class="row mt-4 mb-4">
+                <div class="col-6">
+                    <h5>Enter the url of the page you would like to clear:</h5>
+                    
+                </div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col-8">
+                            <input type="text" class="form-control" id="CachedPage" name="CachedPage" placeholder="Page url">
+                            <small class="ml-2">(e.g. https://www.careercircle.com/Topics)</small>
                         </div>
-                        <button type="button" onClick="ClearCmsCache()" class="btn btn-primary mb-2">Clear</button>
-                    </form>
+                        <div class="col-4">
+                            <button type="button" onClick="clearCmsCache()" class="btn btn-primary mb-2">Clear</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-@section Scripts{
-    
-}

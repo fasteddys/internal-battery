@@ -102,6 +102,7 @@ namespace UpDiddyLib.Helpers
         public static class CMS
         {
             public static readonly string CACHE_KEY_PREFIX = "_cms_";
+            public static readonly string PAGE_CACHE_KEY_PREFIX = "page";
             public static readonly string NULL_RESPONSE = "NULL_RESPONSE";
             public static readonly string RESPONSE_RECEIVED = "RESPONSE_RECEIVED";
             public static readonly string LEVELS = "levels";
