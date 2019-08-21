@@ -16,5 +16,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<List<NotificationCountsReportDto>> GetReadNotificationsAsync(ODataQueryOptions<Notification> query);
         Task<List<JobAbandonmentStatistics>> GetJobAbandonmentCountByDateAsync(DateTime startDate, DateTime endDate);
         Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync();
+        Task<SubscriberReportDto> GetSubscriberAndEnrollmentReportByDates(List<DateTime> dates);
     }
 }

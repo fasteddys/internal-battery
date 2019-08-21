@@ -137,7 +137,7 @@ namespace UpDiddy.Controllers
             // get monday
             int delta = DayOfWeek.Monday - DateTime.Today.DayOfWeek;
             DateTime monday = DateTime.Today.AddDays(delta);
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 7; i++)
             {
                 dates.Add(monday);
                 monday = monday.AddDays(-7);

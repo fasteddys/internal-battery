@@ -10,6 +10,7 @@ using UpDiddyApi.Models;
 using UpDiddyLib.Dto.Reporting;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace UpDiddyApi.Controllers
 {
@@ -84,54 +85,21 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("/api/[controller]/subscribers")]
-        public IActionResult SubscribersReport([FromQuery] List<DateTime> dates)
+        public async Task<IActionResult> SubscribersReport([FromQuery] List<DateTime> dates)
         {
-            List<BasicCountReportDto> totalsByDate = new List<BasicCountReportDto>();
-            var subscriberQuery = _db.Subscriber.AsQueryable();
-            var enrollmentQuery = _db.Enrollment.AsQueryable();
-
-            BasicCountReportDto totals = new BasicCountReportDto()
+            ActionResult response;
+            try
             {
-                SubscriberCount = subscriberQuery.Count(),
-                EnrollmentCount = enrollmentQuery.Count()
-            };
-
-            if (!dates.Any())
-                return Ok(new SubscriberReportDto()
-                {
-                    Totals = totals
-                });
-
-            dates.Sort();
-            DateTime? prevDate = null;
-            for (int i = dates.Count - 1; i >= 0; i--)
-            {
-                BasicCountReportDto bcr = new BasicCountReportDto();
-                DateTime startDate = dates[i];
-                subscriberQuery = _db.Subscriber.Where(s => s.CreateDate >= startDate);
-                enrollmentQuery = _db.Enrollment.Where(s => s.DateEnrolled >= startDate);
-
-                if (prevDate.HasValue)
-                {
-                    subscriberQuery = subscriberQuery.Where(s => s.CreateDate < prevDate);
-                    enrollmentQuery = enrollmentQuery.Where(s => s.DateEnrolled < prevDate);
-
-                    bcr.EndDate = prevDate.Value;
-                }
-
-                bcr.StartDate = startDate;
-                bcr.SubscriberCount = subscriberQuery.Count();
-                bcr.EnrollmentCount = enrollmentQuery.Count();
-                totalsByDate.Add(bcr);
-
-                prevDate = startDate;
+                var subscriberAndEnrollmentReportByDates = await _reportingService.GetSubscriberAndEnrollmentReportByDates(dates);
+                response = Ok(subscriberAndEnrollmentReportByDates);
+                return response;
             }
-
-            return Ok(new SubscriberReportDto()
+            catch (Exception ex)
             {
-                Totals = totals,
-                Report = totalsByDate
-            });
+                _syslog.Log(LogLevel.Error, $"Error in ReportController.SubscribersReport method for dates={JsonConvert.SerializeObject(dates)}", ex);
+                response = StatusCode(500);
+                return response;
+            }
         }
 
 

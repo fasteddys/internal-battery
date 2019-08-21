@@ -91,5 +91,22 @@ namespace UpDiddyApi.ApplicationCore.Repository
         
         }
 
+        public async Task<int> GetSubscribersCountByStartEndDates(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            //get queryable object for subscribers
+            var queryableSubscribers = GetAll();
+
+            if (startDate.HasValue)
+            {
+                queryableSubscribers = queryableSubscribers.Where(s => s.CreateDate >= startDate);
+            }
+            if (endDate.HasValue)
+            {
+                queryableSubscribers = queryableSubscribers.Where(s => s.CreateDate < endDate);
+            }
+
+            return await queryableSubscribers.Where(s => s.IsDeleted == 0).CountAsync();
+        }
+
     }
 }
