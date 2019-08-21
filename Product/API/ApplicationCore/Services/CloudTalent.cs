@@ -194,7 +194,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             catch (Exception e)
             {
                 // Update job posting with index error
-                subscriber.CloudTalentIndexInfo = e.Message + " Step = " + step;
+                subscriber.CloudTalentIndexInfo = Utils.ISO8601DateString(DateTime.Now) + ": " + e.Message + " Step = " + step;
                 subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
                 _db.SaveChanges();
                 _syslog.LogError(e, $"CloudTalent.IndexProfile Error: {e.Message} at step {step} ", e, subscriber);
@@ -224,7 +224,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             catch (Exception e)
             {
                 // Update job posting with index error
-                subscriber.CloudTalentIndexInfo = e.Message;
+                subscriber.CloudTalentIndexInfo = Utils.ISO8601DateString(DateTime.Now) + ": " + e.Message;
                 subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
                 _db.SaveChanges();
                 _syslog.LogError(e, "CloudTalent.ReIndexProfile Error", e, subscriber);

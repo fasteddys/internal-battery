@@ -23,14 +23,16 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 
         public EducationRecord(SubscriberEducationHistory subscriberEducationHistory)
         {
-            if (Utils.validStartDate(subscriberEducationHistory.StartDate, subscriberEducationHistory.EndDate))
+            // validate start and end dates to ensure indexing into google since they will not index 
+            // a profile where these are in
+            if (Utils.validStartDate(subscriberEducationHistory.StartDate, subscriberEducationHistory.EndDate)) 
                 this.startDate = new Date()
                 {
                     day = subscriberEducationHistory.StartDate.Value.Day,
                     month = subscriberEducationHistory.StartDate.Value.Month,
                     year = subscriberEducationHistory.StartDate.Value.Year
                 };
-            if (Utils.validEndDate(subscriberEducationHistory.StartDate, subscriberEducationHistory.EndDate))
+            if (Utils.validEndDate(subscriberEducationHistory.StartDate, subscriberEducationHistory.EndDate))           
                 this.endDate = new Date()
                 {
                     day = subscriberEducationHistory.EndDate.Value.Day,

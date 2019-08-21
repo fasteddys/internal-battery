@@ -20,9 +20,8 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 
         public EmploymentRecord(SubscriberWorkHistory subscriberWorkHistory)
         {
-             
-            
-            if ( Utils.validStartDate(subscriberWorkHistory.StartDate, subscriberWorkHistory.EndDate) )
+
+            if (Utils.validStartDate(subscriberWorkHistory.StartDate, subscriberWorkHistory.EndDate)) 
                 this.startDate = new Date()
                 {
                     day = subscriberWorkHistory.StartDate.Value.Day,
@@ -31,8 +30,8 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                      
                 };
 
-            if (Utils.validEndDate(subscriberWorkHistory.StartDate, subscriberWorkHistory.EndDate))
-                    this.endDate = new Date()
+            if(Utils.validEndDate(subscriberWorkHistory.StartDate, subscriberWorkHistory.EndDate))            
+                this.endDate = new Date()
                 {
                     day = subscriberWorkHistory.EndDate.Value.Day,
                     month = subscriberWorkHistory.EndDate.Value.Month,

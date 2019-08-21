@@ -222,8 +222,6 @@ namespace UpDiddyApi.Controllers
             if (subsriberGuidClaim != Subscriber.SubscriberGuid)
                 return Unauthorized();
 
-          //  Subscriber subscriberFromDb = _db.Subscriber.Where(t => t.IsDeleted == 0 && t.SubscriberGuid == Subscriber.SubscriberGuid).FirstOrDefault();
-            // todo jab fix 
             var subscriberGuid = new SqlParameter("@SubscriberGuid", Subscriber.SubscriberGuid);
             var firstName = new SqlParameter("@FirstName", (object) Subscriber.FirstName ??  DBNull.Value);
             var lastName = new SqlParameter("@LastName", (object) Subscriber.LastName ?? DBNull.Value);
