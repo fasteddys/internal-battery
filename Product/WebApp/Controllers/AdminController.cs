@@ -614,6 +614,8 @@ namespace UpDiddy.Controllers
         [HttpPost]
         public async Task<IActionResult> ClearCmsCacheAsync([FromBody] CachedPageDto CachedPage)
         {
+            if(!CachedPage.Slug.ToLower().Contains(_configuration["Environment:BaseUrl"].Substring(0, _configuration["Environment:BaseUrl"].Length - 1).ToLower()))
+                return NotFound();
 
             bool ClearedCache = await _butterService.ClearCachedPageAsync(CachedPage.Slug);
 
