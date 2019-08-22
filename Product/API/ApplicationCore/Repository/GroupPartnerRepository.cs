@@ -19,7 +19,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         }
 
-        public async Task<GroupPartner> GetGroupPartnerByGroupIdPartnerId(int Groupid, int PartnerId)
+        public async Task<GroupPartner> GetGroupPartnerByGroupIdPartnerIdAsync(int Groupid, int PartnerId)
         {
             var queryableGroupPartner=GetAll();
             return await queryableGroupPartner.Where(gp=>gp.GroupId==Groupid && gp.PartnerId==PartnerId && gp.IsDeleted==0).FirstOrDefaultAsync();;

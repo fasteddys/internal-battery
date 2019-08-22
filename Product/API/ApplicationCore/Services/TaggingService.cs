@@ -85,7 +85,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     IEnumerable<Partner> iePartner = await _repositoryWrapper.PartnerRepository.GetByConditionAsync(p => p.PartnerGuid == PartnerGuid);
                     Partner Partner = iePartner.FirstOrDefault();
 
-                    GroupPartner existingGroupPartner=await _repositoryWrapper.GroupPartnerRepository.GetGroupPartnerByGroupIdPartnerId(Group.GroupId, Partner.PartnerId);
+                    GroupPartner existingGroupPartner=await _repositoryWrapper.GroupPartnerRepository.GetGroupPartnerByGroupIdPartnerIdAsync(Group.GroupId, Partner.PartnerId);
 
                     if(existingGroupPartner==null)
                     {
