@@ -113,6 +113,20 @@ namespace UpDiddy.Services.ButterCMS
         }
 
         private string AssemblePageCacheKey(string PageSlug, Dictionary<string, string> QueryParameters = null){
+            Dictionary<string, string> QueryParamsFromUrl = ExtractQueryParamsFromUrlString(PageSlug);
+
+            //Urls may come in the query params attached
+            if(QueryParamsFromUrl != null){
+                if(QueryParameters == null){
+                    QueryParameters = new Dictionary<string, string>();
+                }
+                foreach(string key in QueryParamsFromUrl.Keys){
+                    if(!QueryParameters.Keys.Contains(key))
+                        QueryParameters.Add(key, QueryParamsFromUrl[key]);
+                }
+            }
+            
+
             PageSlug = DecipherKeyRouteFromUrl(PageSlug);
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.Append(CmsCacheKeyPrefix)
@@ -127,6 +141,29 @@ namespace UpDiddy.Services.ButterCMS
             }
 
             return stringBuilder.ToString();
+        }
+
+        private Dictionary<string, string> ExtractQueryParamsFromUrlString(string Url){
+            int index = Url.IndexOf("?");
+            string QueryParamString = string.Empty;
+            if (index <= 0)
+                return null;
+
+            if(index + 1 >= Url.Length)
+                return null;
+            
+            QueryParamString = Url.Substring(index + 1, Url.Length - index - 1);
+            Dictionary<string, string> QueryParams = new Dictionary<string, string>();
+            if(QueryParamString.Equals(string.Empty))
+                return QueryParams;
+
+            string[] split = QueryParamString.Split("&");
+            
+            foreach(string s in split){
+                string[] param = s.Split("=");
+                QueryParams.Add(param[0], param[1]);
+            }
+            return QueryParams;
         }
 
         private string DecipherCmsPageFromUrl(string Url){
