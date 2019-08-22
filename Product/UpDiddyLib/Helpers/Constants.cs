@@ -108,6 +108,7 @@ namespace UpDiddyLib.Helpers
             public static readonly string LEVELS = "levels";
             public static readonly int BLOG_PAGINATION_PAGE_COUNT = 10;
             public static readonly string COURSE_CACHE_KEY_PREFIX = "course";
+            public static readonly string BLOG_TITLE_TAG_SUFFIX = " | CareerCircle Blog";
         }
 
         public static class Seo
