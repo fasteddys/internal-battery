@@ -1,40 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.IO;
-using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using UpDiddyApi.ApplicationCore.Factory;
 using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Dto.Marketing;
-using System.Net;
-using Microsoft.SqlServer.Server;
-// Use alias to avoid collistions on classname such as "Company"
-using CloudTalentSolution = Google.Apis.CloudTalentSolution.v3.Data;
-using AutoMapper.Configuration;
 using AutoMapper;
-using Microsoft.Extensions.Caching.Distributed;
 using UpDiddyApi.ApplicationCore;
-using Hangfire;
-using UpDiddyApi.Workflow;
-using UpDiddyApi.Helpers.Job;
 using System.Security.Claims;
 using UpDiddyLib.Helpers;
-using System.Dynamic;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using SendGrid.Helpers.Mail;
 using Microsoft.Extensions.Configuration;
+using UpDiddyApi.ApplicationCore.Interfaces;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 
 namespace UpDiddyApi.Controllers
 {
@@ -51,6 +36,8 @@ namespace UpDiddyApi.Controllers
         private readonly CloudTalent _cloudTalent = null;
         private ISysEmail _sysEmail;
         private ISubscriberService _subscriberService;
+        private readonly IHangfireService _hangfireService;
+
 
         #region constructor 
         public JobApplicationController(
@@ -60,7 +47,9 @@ namespace UpDiddyApi.Controllers
             ILogger<ProfileController> sysLog, 
             IHttpClientFactory httpClientFactory, 
             ISysEmail sysEmail,
-            ISubscriberService subscriberService)
+            ISubscriberService subscriberService,
+            IHangfireService hangfireService,
+            IRepositoryWrapper repositoryWrapper)
 
         {
             _db = db;
@@ -69,9 +58,10 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
             _httpClientFactory = httpClientFactory;
             _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, repositoryWrapper);
             _sysEmail = sysEmail;
             _subscriberService = subscriberService;
+            _hangfireService = hangfireService;
         }
         #endregion
 
@@ -244,6 +234,9 @@ namespace UpDiddyApi.Controllers
                 _db.SaveChanges();
 
                 Stream SubscriberResumeAsStream = await _subscriberService.GetResumeAsync(subscriber);
+                SubscriberResumeAsStream.Seek(0, SeekOrigin.Begin);
+                string resumeEncoded = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream));
+
                 bool IsExternalRecruiter = jobPosting.Recruiter.Subscriber == null;
 
                 string RecruiterEmailToUse = jobPosting.Recruiter.Subscriber?.Email ?? jobPosting.Recruiter.Email;
@@ -264,7 +257,7 @@ namespace UpDiddyApi.Controllers
 
                 foreach (string Email in EmailAddressesToSend.Keys)
                 {
-                    BackgroundJob.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
+                    _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync
                     (
                         Email,
                         _configuration["SysEmail:Transactional:TemplateIds:JobApplication-Recruiter" +
@@ -288,15 +281,16 @@ namespace UpDiddyApi.Controllers
                         {
                             new Attachment
                             {
-                                Content = Convert.ToBase64String(Utils.StreamToByteArray(SubscriberResumeAsStream)),
-                                Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName)
+                                Content = resumeEncoded,
+                                Filename = Path.GetFileName(subscriber.SubscriberFile.FirstOrDefault().BlobName),
+                                Type=subscriber.SubscriberFile.FirstOrDefault().MimeType
                             },
                             new Attachment
                             {
                                 Content = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(jobApplicationDto.CoverLetter)),
                                 Filename = "CoverLetter.txt"
                             }
-                        }, 
+                        },
                         null,
                         null
                     ));

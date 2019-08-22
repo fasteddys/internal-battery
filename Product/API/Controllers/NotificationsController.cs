@@ -7,29 +7,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using UpDiddyApi.Authorization;
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Helpers;
-using System.IO;
 using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyApi.ApplicationCore.Factory;
-using System.Data.SqlClient;
-using AutoMapper.QueryableExtensions;
-using System.Data;
-using System.Web;
-using UpDiddyLib.Dto.Marketing;
-using UpDiddyLib.Shared;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
-using Hangfire;
 using UpDiddyApi.Workflow;
 
 namespace UpDiddyApi.Controllers
@@ -44,6 +28,7 @@ namespace UpDiddyApi.Controllers
         private IB2CGraph _graphClient;
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
+        private IHangfireService _hangfireService;
         private readonly IRepositoryWrapper _repositoryWrapper;
 
 
@@ -55,7 +40,8 @@ namespace UpDiddyApi.Controllers
             IB2CGraph client,
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService,
-            IRepositoryWrapper repositoryWrapper)
+            IRepositoryWrapper repositoryWrapper,
+            IHangfireService hangfireService)
         {
             _db = db;
             _mapper = mapper;
@@ -65,21 +51,23 @@ namespace UpDiddyApi.Controllers
             _cloudStorage = cloudStorage;
             _authorizationService = authorizationService;
             _repositoryWrapper = repositoryWrapper;
+            _hangfireService = hangfireService;
         }
 
         [HttpGet]
         public async Task<IList<Notification>> Get()
         {
-            return _repositoryWrapper.NotificationRepository.GetAllNonDeleted().Result.ToList();
+           return  await _repositoryWrapper.NotificationRepository.GetAllNonDeleted().ToListAsync();
+
         }
 
         [HttpGet("{NotificationGuid}")]
         public async Task<Notification> GetNotification(Guid NotificationGuid)
         {
-            return _repositoryWrapper.NotificationRepository.GetByConditionAsync(
+            var result = await _repositoryWrapper.NotificationRepository.GetByConditionAsync(
                 s => s.NotificationGuid == NotificationGuid &&
-                s.IsDeleted == 0).Result.FirstOrDefault();
-
+                s.IsDeleted == 0);
+            return result.FirstOrDefault();
         }
 
         [HttpPost]
@@ -109,12 +97,12 @@ namespace UpDiddyApi.Controllers
                 notification.IsDeleted = 0;
                 notification.ModifyGuid = loggedInUserGuid;
                 notification.CreateGuid = loggedInUserGuid;
-                _repositoryWrapper.NotificationRepository.Create(notification);
+                await _repositoryWrapper.NotificationRepository.Create(notification);
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
                 Notification NewNotification = _repositoryWrapper.NotificationRepository.GetByConditionAsync(n => n.NotificationGuid == NewNotificationGuid).Result.FirstOrDefault();
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
-
+                //_hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.CreateSubscriberNotificationRecords(NewNotification, notification.IsTargeted, null));
                 return Created(_configuration["Environment:ApiUrl"] + "notification/" + notification.NotificationGuid, _mapper.Map<NotificationDto>(notification));
             }
             else
@@ -174,7 +162,7 @@ namespace UpDiddyApi.Controllers
                 _repositoryWrapper.NotificationRepository.Update(ExistingNotification);
                 await _repositoryWrapper.NotificationRepository.SaveAsync();
 
-                BackgroundJob.Enqueue<ScheduledJobs>(j => j.DeleteSubscriberNotificationRecords(ExistingNotification));
+                _hangfireService.Enqueue<ScheduledJobs>(j => j.DeleteSubscriberNotificationRecords(ExistingNotification));
 
                 return Ok(new BasicResponseDto { StatusCode = 200, Description = "Notification " + NotificationGuid + " successfully logically deleted." });
             }

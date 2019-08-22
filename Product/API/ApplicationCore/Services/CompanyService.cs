@@ -38,8 +38,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             if(company!=null)
             {
                 company.CompanyName = companyDto.CompanyName;
-                company.IsHiringAgency = companyDto.IsHiringAgency == true ? 1 : 0;
-                company.IsJobPoster = companyDto.IsJobPoster == true ? 1 : 0;
+                company.IsHiringAgency = companyDto.IsHiringAgency;
+                company.IsJobPoster = companyDto.IsJobPoster;
                 company.ModifyDate = DateTime.Now;
 
                 await _repositoryWrapper.Company.UpdateCompany(company);
@@ -61,7 +61,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<CompanyDto>> GetCompaniesAsync()
         {
-            var queryableCompanies = await _repositoryWrapper.Company.GetAllCompanies();
+            var queryableCompanies =  _repositoryWrapper.Company.GetAllCompanies();
             //get only non deleted records
             return _mapper.Map<List<CompanyDto>>(await queryableCompanies.Where(c=>c.IsDeleted==0 && c.CompanyGuid!=Guid.Empty).ToListAsync());
         }

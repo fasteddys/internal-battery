@@ -1,8 +1,6 @@
 using System;
 using UpDiddyLib.Dto;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using System.IO;
 using System.Threading.Tasks;
 using System.Net.Http;
 using UpDiddyLib.Dto.Marketing;
@@ -78,6 +76,8 @@ namespace UpDiddy.Api
         Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid);
         Task<JobPostingDto> GetJobPostingByGuid(Guid jobPostingGuid);
 
+        Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync();
+
         Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid);
 
         Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid);
@@ -95,7 +95,7 @@ namespace UpDiddy.Api
         Task<RedirectDto> GetSubscriberPartnerWebRedirect();
 
         #region TalentPortal
-        Task<IList<SubscriberDto>> SubscriberSearchAsync(string searchFilter, string searchQuery);
+        Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery);
         Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync();
         Task<BasicResponseDto> SaveNotes(SubscriberNotesDto subscriberNotesDto);
         Task<IList<SubscriberNotesDto>> SubscriberNotesSearch(string subscriberGuid, string searchQuery);
@@ -121,8 +121,8 @@ namespace UpDiddy.Api
         Task<BasicResponseDto> ToggleSubscriberNotificationEmailAsync(Guid subscriberGuid, bool isEnabled);
         Task<List<ImportActionDto>> ImportContactsAsync(Guid partnerGuid, string cacheKey);
         Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords);
-
         Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDatesAsynch(DateTime? startPostDate, DateTime? endPostDate);
+        Task<List<FailedSubscriberDto>> GetFailedSubscribersSummaryAsync();
 
         #endregion
 
@@ -162,8 +162,12 @@ namespace UpDiddy.Api
 
         #endregion
 
+
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
         Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid);
         Task RecordSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);
+
+        IList<string> GetKeywordSearchList(string keyword);
+        IList<string> GetLocationSearchList(string location);
     }
 }

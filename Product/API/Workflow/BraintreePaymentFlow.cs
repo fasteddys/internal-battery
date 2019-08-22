@@ -14,6 +14,7 @@ using UpDiddyLib.Helpers.Braintree;
 using UpDiddyLib.MessageQueue;
 using EnrollmentStatus = UpDiddyLib.Dto.EnrollmentStatus;
 using Microsoft.Extensions.Logging;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.Workflow
 {
@@ -26,8 +27,10 @@ namespace UpDiddyApi.Workflow
         private ISysEmail _sysEmail = null;
         private ILogger _sysLog = null;
         private IBraintreeConfiguration _braintreeConfiguration = null;
+        private readonly IHangfireService _hangfireService;
 
-        public BraintreePaymentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration, ISysEmail sysEmail, IServiceProvider serviceProvider, ILogger<BraintreePaymentFlow> logger)
+
+        public BraintreePaymentFlow(UpDiddyDbContext dbcontext, IMapper mapper, IConfiguration configuration, ISysEmail sysEmail, IServiceProvider serviceProvider, ILogger<BraintreePaymentFlow> logger, IHangfireService hangfireService)
         {
             _db = dbcontext;
             _mapper = mapper;
@@ -35,9 +38,10 @@ namespace UpDiddyApi.Workflow
             _sysEmail = sysEmail;
             _sysLog = logger;
             _braintreeConfiguration = new BraintreeConfiguration(_configuration);
+            _hangfireService = hangfireService;
         }
 
-        public async Task<MessageTransactionResponse> PaymentWorkItem(EnrollmentFlowDto EnrollmentFlowDto)
+        public MessageTransactionResponse PaymentWorkItem(EnrollmentFlowDto EnrollmentFlowDto)
         {
 
             // Extract the two DTOs from the DTO that's passed in.
@@ -165,7 +169,7 @@ namespace UpDiddyApi.Workflow
                         (Guid)EnrollmentDto.EnrollmentGuid, 
                         rebateToc);
                     SetSelfPacedOrInstructorLedStatus(Helper, EnrollmentDto);
-                    BackgroundJob.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString(), EnrollmentDto.SubscriberId));
+                    _hangfireService.Enqueue<WozEnrollmentFlow>(x => x.EnrollStudentWorkItem(EnrollmentDto.EnrollmentGuid.ToString(), EnrollmentDto.SubscriberId));
                     return CreateResponse(CreateResponseJson(SuccessfulMessage), SuccessfulMessage, string.Empty, TransactionState.Complete);
                 }
                 else

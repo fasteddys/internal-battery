@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using UpDiddyApi.Models;
-
-namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
+﻿namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IRepositoryWrapper
     {
@@ -42,6 +36,9 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         IActionRepository ActionRepository { get; }
         IContactRepository ContactRepository { get; }
         IOfferRepository Offer { get; }
+        ISubscriberFileRepository SubscriberFileRepository { get; }
+        ISkillRepository SkillRepository { get; }
+        IStoredProcedureRepository StoredProcedureRepository { get;  }
         ICourseSiteRepository CourseSite { get; }
         ICoursePageRepository CoursePage { get; }
     }

@@ -8,7 +8,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
     public interface IUpDiddyRepositoryBase<TEntity> where TEntity: class
     {
-        Task<IQueryable<TEntity>> GetAllAsync();
+        IQueryable<TEntity> GetAll();
         Task<IEnumerable<TEntity>> GetByConditionWithTrackingAsync(Expression<Func<TEntity,bool>> expression);
         Task<IEnumerable<TEntity>> GetByConditionAsync(Expression<Func<TEntity,bool>> expression);
         Task Create(TEntity entity);

@@ -5,18 +5,19 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
+using HtmlAgilityPack;
+using Newtonsoft.Json;
 
 namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
 {
     public class AllegisGroupProcess : BaseProcess, IJobDataMining
     {
         public AllegisGroupProcess(JobSite jobSite, ILogger logger, Guid companyGuid, IConfiguration config) : base(jobSite, logger, companyGuid, config ) { }
-
+        
         public List<JobPage> DiscoverJobPages(List<JobPage> existingJobPages)
         {
             // init code for http client and allegis group icims parser/client
@@ -70,13 +71,22 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
                     var jobPage = client.GetJobPageByUriAsync(existingJobPage.Uri).Result;
                     // if scrape failed then delete the job
                     if (jobPage == null)
+                    {
                         existingJobPage.JobPageStatusId = 4; // deleted
+                    }
                     else
-                        existingJobPage.JobPageStatusId = existingJobPage.RawData == jobPage?.RawData ? 2 : 1; // no changes/active or updated status/pending
-
+                    {
+                        if (existingJobPage.RawData == jobPage.RawData)
+                        {
+                            existingJobPage.JobPageStatusId = 2;
+                        }
+                        else
+                        {
+                            existingJobPage.JobPageStatusId = 1;
+                            existingJobPage.RawData = jobPage.RawData;
+                        }
+                    }
                     existingJobPage.ModifyDate = DateTime.UtcNow;
-                    existingJobPage.RawData = jobPage != null ? jobPage.RawData : existingJobPage.RawData;
-
                 }
                 catch (Exception e)
                 {
@@ -91,7 +101,6 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
             });
             stopwatch.Stop();
             var elapsed = stopwatch.ElapsedMilliseconds;
-
             return updatedJobPages.ToList();
         }
 

@@ -139,14 +139,18 @@ body {
             .cc-text-video-band {
                 text-align: center;
 
-                .cc-text-video-band-right-column {
-                    display: none;
-                }
+            .sub-description-1{
+                display:none;
             }
 
-            .acct-disclaimer {
-                font-size: .75rem;
+            .map {
+                display: none;
             }
+        }
+        
+        .acct-disclaimer{
+            font-size: .75rem;
+        }
 
             #HomeContainerHero {
                 padding: 4rem 0;
@@ -183,7 +187,7 @@ body {
             #HomeBottomContainer {
                 padding: 4rem 0;
                 background-image: url(/images/bottom_mobile_banner.jpg);
-                background-size: contain;
+                background-size: cover;
                 background-position: top;
                 background-repeat: no-repeat;
                 background-color: $color-secondary;
@@ -256,6 +260,10 @@ body {
 
                 .cc-text-video-band-description {
                     padding-top: 1rem !important;
+                }
+
+                .container {
+                    max-width:1500px;
                 }
             }
         }
@@ -347,9 +355,14 @@ body {
             .cc-text-video-band {
                 text-align: left;
 
-                .cc-text-video-band-right-column {
-                    display: block;
+            .cc-text-video-band-right-column{
+                .sub-description-1{
+                    display:block;
                 }
+            }
+
+            .cc-text-video-band-right-column, .map {
+                display: block;
             }
 
             #HomeBottomContainer {
@@ -384,6 +397,7 @@ body {
             }
         }
     }
+}
 }
 
 // Large Styles

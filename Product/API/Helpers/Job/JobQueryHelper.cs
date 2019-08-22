@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Helpers.Job
@@ -13,8 +9,6 @@ namespace UpDiddyApi.Helpers.Job
 
         static public JobQueryDto CreateJobQuery(string Country, string Province, string City, string Industry, string JobCategory, string Skill, int PageNum, int PageSize, IQueryCollection query)
         {
-     
-    
             JobQueryDto jobQuery = new JobQueryDto();
 
             // map parameters that may have been specified via an url component 
@@ -30,7 +24,7 @@ namespace UpDiddyApi.Helpers.Job
             jobQuery.StreetAddress = GetQueryParam(query, "street-address");
             jobQuery.Keywords = GetQueryParam(query, "keywords");
             jobQuery.DatePublished = GetQueryParam(query, "datepublished");
-            jobQuery.CompanyName = GetQueryParam(query, "company-name");
+            jobQuery.CompanyName = GetQueryParam(query, "companyname");
             jobQuery.EmploymentType = GetQueryParam(query, "employmenttype");
             jobQuery.ExperienceLevel = GetQueryParam(query, "experience-level");
             jobQuery.EducationLevel = GetQueryParam(query, "education-level");
@@ -39,21 +33,44 @@ namespace UpDiddyApi.Helpers.Job
             // Search options
             jobQuery.ExcludeCustomProperties = GetIntQueryParam(query, "exclude-custom-properties");
             jobQuery.ExcludeFacets = GetIntQueryParam(query, "exclude-facets");
-            jobQuery.OrderBy = GetQueryParam(query, "order-by");
+            if (string.IsNullOrWhiteSpace(jobQuery.Country)
+                && string.IsNullOrWhiteSpace(jobQuery.Province)
+                && string.IsNullOrWhiteSpace(jobQuery.City)
+                && string.IsNullOrWhiteSpace(jobQuery.Industry)
+                && string.IsNullOrWhiteSpace(jobQuery.JobCategory)
+                && string.IsNullOrWhiteSpace(jobQuery.Skill)
+                && string.IsNullOrWhiteSpace(jobQuery.Location)
+                && string.IsNullOrWhiteSpace(jobQuery.PostalCode)
+                && string.IsNullOrWhiteSpace(jobQuery.StreetAddress)
+                && string.IsNullOrWhiteSpace(jobQuery.Keywords)
+                && string.IsNullOrWhiteSpace(jobQuery.DatePublished)
+                && string.IsNullOrWhiteSpace(jobQuery.CompanyName)
+                && string.IsNullOrWhiteSpace(jobQuery.EmploymentType)
+                && string.IsNullOrWhiteSpace(jobQuery.ExperienceLevel)
+                && string.IsNullOrWhiteSpace(jobQuery.EducationLevel)
+                && jobQuery.SearchRadius == 0)
+            {
+                // override the sort order when no seach parameters have been defined (see work item 990 for the reasoning behind this decision)
+                jobQuery.OrderBy = "postingPublishTime desc";
+            }
+            else
+            {
+                jobQuery.OrderBy = GetQueryParam(query, "order-by");
+            }
 
             // Commute search
             jobQuery.Lat = GetDoubleQueryParam(query, "lat");
             jobQuery.Lng = GetDoubleQueryParam(query, "lng");
             jobQuery.CommuteTime = GetIntQueryParam(query, "commute-time");
-           
+
             jobQuery.PreciseAddress = GetBoolQueryParam(query, "precise-address");
             jobQuery.PublicTransit = GetBoolQueryParam(query, "public-transit");
-            jobQuery.RushHour = GetBoolQueryParam(query, "rush-hour"); 
+            jobQuery.RushHour = GetBoolQueryParam(query, "rush-hour");
 
             // Set up pagination
-            jobQuery.PageNum = GetIntQueryParam(query, "page-num",PageNum);            
+            jobQuery.PageNum = GetIntQueryParam(query, "page-num", PageNum);
             jobQuery.PageSize = GetIntQueryParam(query, "page-size", PageSize);
-            
+
             return jobQuery;
         }
 
@@ -116,9 +133,9 @@ namespace UpDiddyApi.Helpers.Job
             // check to see if the param was specified through an url component 
             if (urlComponentValue != null && string.IsNullOrEmpty(urlComponentValue) == false && urlComponentValue != "all")
                 return WebUtility.UrlDecode(urlComponentValue).Trim();
-            
+
             // empty string -> not specified 
-             return string.Empty;
+            return string.Empty;
         }
 
         static private int GetIntQueryParam(IQueryCollection queryInfo, string ParamName, int urlComponentValue = 0)
@@ -139,7 +156,7 @@ namespace UpDiddyApi.Helpers.Job
             catch
             {
                 return 0;
-            }      
+            }
         }
 
 

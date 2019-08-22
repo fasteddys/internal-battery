@@ -47,10 +47,10 @@ namespace UpDiddy.ViewComponents
             };
         }
 
-        public IViewComponentResult Invoke(string PagePath)
+        public async Task<IViewComponentResult> InvokeAsync(string PagePath)
         {
             
-            var response = _butterService.RetrievePage<ButterCMSBaseViewModel>($"bcms_page_{PagePath}", PagePath.Split("/").Last().ToLower());
+            var response = await _butterService.RetrievePageAsync<ButterCMSBaseViewModel>($"bcms_page_{PagePath}", PagePath.Split("/").Last().ToLower());
 
             ButterCMSBaseViewModel ButterViewModel = GetButterCMSBaseViewModel();
 
@@ -71,6 +71,10 @@ namespace UpDiddy.ViewComponents
             ButterViewModel.MetaTitle = ButterViewModel.MetaTitle.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.META_TITLE]);
             ButterViewModel.MetaDescription = ButterViewModel.MetaDescription.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.META_DESCRIPTION]);
             ButterViewModel.MetaKeywords = ButterViewModel.MetaKeywords.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.META_KEYWORDS]);
+
+            ButterViewModel.OpenGraphTitle = ButterViewModel.OpenGraphTitle.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.OG_TITLE]);
+            ButterViewModel.OpenGraphDescription = ButterViewModel.OpenGraphDescription.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.OG_DESCRIPTION]);
+            ButterViewModel.OpenGraphImage = ButterViewModel.OpenGraphImage.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.OG_IMAGE]);
 
             return View(ButterViewModel);
 

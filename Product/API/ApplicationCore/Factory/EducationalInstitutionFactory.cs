@@ -34,7 +34,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
             {
                 educationalInstitution = CreateEducationalInstitution(institutionName);
                 db.EducationalInstitution.Add(educationalInstitution);
-                db.SaveChanges();
+                await db.SaveChangesAsync();
             }
             return educationalInstitution;
         }

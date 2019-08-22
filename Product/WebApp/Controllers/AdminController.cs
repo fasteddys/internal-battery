@@ -82,9 +82,10 @@ namespace UpDiddy.Controllers
         [Route("/admin/subscriberlookup")]
         public async Task<JsonResult> SubscriberLookup()
         {
-            IList<SubscriberDto> subs = await _api.SubscriberSearchAsync(string.Empty, string.Empty);
+  
+           ProfileSearchResultDto subs = await _api.SubscriberSearchAsync(string.Empty, string.Empty, string.Empty);
 
-            var list = subs
+            var list = subs.Profiles
                 .Select(subscriber => new
                 {
                     entityGuid = subscriber.SubscriberGuid,
@@ -144,15 +145,32 @@ namespace UpDiddy.Controllers
 
             ViewBag.subscriberReport = await _api.GetSubscriberReportAsync(dates);
             ViewBag.partnerReport = await _api.GetSubscriberReportByPartnerAsync();
-            ViewBag.recruiterActionSummary = await _api.GetRecruiterActionSummaryAsync();
-            ViewBag.subscriberActionSummary = await _api.GetSubscriberActionSummaryAsync();
             ViewBag.offerActionSummary = await _api.GetOfferActionSummaryAsync();
-            ViewBag.partnerSubActionReport = await _api.GetPartnerSubscriberActionStatsAsync();
-            ViewBag.jobApplicationCountReport = await _api.GetJobApplicationCount();
-            ViewBag.notificationCountsReport = await _api.GetReadNotificationsCount();
-            // todo: this is temporary until active jobs postings report gets a dedicated tab w/criteria filters.
-            ViewBag.activeJobPostsByCompanyReport = await _api.GetActiveJobPostCountPerCompanyByDatesAsynch(null, null);
             return View("Dashboard");
+        }
+
+        [HttpGet]
+        [Route("/admin/subscriber-index-error")]
+        public async Task<JsonResult> GetFailedSubscribers()
+        {
+            var data = await _api.GetFailedSubscribersSummaryAsync();
+            return Json(data);
+        }
+
+        [HttpGet]
+        [Route("/admin/partner-sub-action")]
+        public async Task<JsonResult> GetPartnerSubActionReport()
+        {
+            var data = await _api.GetPartnerSubscriberActionStatsAsync();
+            return Json(data);
+        }
+
+        [HttpGet]
+        [Route("/admin/job-application-count")]
+        public async Task<JsonResult> GetJobApplicationCount()
+        {
+            var data = await _api.GetJobApplicationCount();
+            return Json(data);
         }
 
         [HttpPut]
@@ -185,7 +203,7 @@ namespace UpDiddy.Controllers
 
                 return View("Contacts", partner);
             }
-            catch (ApiException e)
+            catch (ApiException)
             {
                 return BadRequest();
             }
@@ -410,7 +428,7 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Partners");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     // Log exception
                 }
@@ -451,7 +469,7 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Partners");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     // Log error
                 }
@@ -470,7 +488,7 @@ namespace UpDiddy.Controllers
                     return BadRequest();
                 return RedirectToAction("Partners");
             }
-            catch (ApiException e)
+            catch (ApiException)
             {
                 // Log error
             }
@@ -514,7 +532,7 @@ namespace UpDiddy.Controllers
                     });
                     return RedirectToAction("Notifications");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     // Log exception
                 }
@@ -541,7 +559,7 @@ namespace UpDiddy.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateNotificationAsync(NotificationsViewModel NewNotification)
         {
-
+ 
 
             if (ModelState.IsValid)
             {
@@ -549,14 +567,14 @@ namespace UpDiddy.Controllers
                 {
                     NotificationDto newNotificationFromDb = await _api.CreateNotificationAsync(new NotificationDto
                     {
-                        NotificationGuid = NewNotification.NotificationGuid,
+                        NotificationGuid = Guid.NewGuid(),
                         Title = NewNotification.Title,
                         Description = NewNotification.Description,
                         ExpirationDate = NewNotification.ExpirationDate
                     });
                     return RedirectToAction("Notifications");
                 }
-                catch (ApiException e)
+                catch (ApiException)
                 {
                     // Log error
                 }
@@ -575,7 +593,7 @@ namespace UpDiddy.Controllers
                     return BadRequest();
                 return RedirectToAction("Notifications");
             }
-            catch (ApiException e)
+            catch (ApiException)
             {
                 // Log error
             }

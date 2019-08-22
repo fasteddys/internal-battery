@@ -21,14 +21,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
             await SaveAsync();
         }
 
-        public async Task<IQueryable<Company>> GetAllCompanies()
+        public  IQueryable<Company> GetAllCompanies()
         {
-            return await GetAllAsync();
+            return  GetAll();
         }
 
         public async Task<Company> GetCompanyByCompanyGuid(Guid companyGuid)
         {
-            var querableCompanies = await GetAllAsync();
+            var querableCompanies =  GetAll();
             var companyResult = await querableCompanies
                             .Where(c=> c.IsDeleted == 0 && c.CompanyGuid == companyGuid)
                             .ToListAsync();

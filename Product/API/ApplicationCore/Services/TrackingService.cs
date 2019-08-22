@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UpDiddyApi.ApplicationCore.Interfaces;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
@@ -16,11 +17,14 @@ namespace UpDiddyApi.ApplicationCore.Services
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IJobApplicationService _jobApplicationService;
+        private readonly IHangfireService _hangfireService;
 
-        public TrackingService(IRepositoryWrapper repositoryWrapper, IJobApplicationService jobApplicationService)
+        public TrackingService(IRepositoryWrapper repositoryWrapper, IJobApplicationService jobApplicationService, IHangfireService hangfireService)
         {
             _repositoryWrapper = repositoryWrapper;
             _jobApplicationService = jobApplicationService;
+            _hangfireService = hangfireService;
+
         }
 
 
@@ -31,7 +35,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<Dictionary<Subscriber, List<JobPosting>>> GetSubscriberAbandonedJobPostingHistoryByDateAsync(DateTime date)
         {
-            IQueryable<SubscriberAction> subscriberAction = await _repositoryWrapper.SubscriberActionRepository.GetAllAsync();           
+            IQueryable<SubscriberAction> subscriberAction = _repositoryWrapper.SubscriberActionRepository.GetAll();           
             List<SubscriberAction> todaysActions = await subscriberAction
                 .Where(x => x.EntityType.Name == UpDiddyLib.Helpers.Constants.EventType.JobPosting && x.Action.Name == UpDiddyLib.Helpers.Constants.Action.ApplyJob && x.CreateDate.Date == date.Date)
                 .ToListAsync();
@@ -90,7 +94,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 ModifyGuid = null,
                 OccurredDate = DateTime.UtcNow
             };
-            _repositoryWrapper.SubscriberActionRepository.Create(subAction);
+            await _repositoryWrapper.SubscriberActionRepository.Create(subAction);
             await _repositoryWrapper.SubscriberActionRepository.SaveAsync();
         }
 
@@ -102,7 +106,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (jobGuid !=Guid.Empty && subscriberGuid!=Guid.Empty)
             {
                     // invoke the Hangfire job to store the tracking information
-                    BackgroundJob.Enqueue<ScheduledJobs>(j => j.TrackSubscriberActionInformation(subscriberGuid, action.ActionGuid, entityType.EntityTypeGuid, jobGuid));
+                    _hangfireService.Enqueue<ScheduledJobs>(j => j.TrackSubscriberActionInformation(subscriberGuid, action.ActionGuid, entityType.EntityTypeGuid, jobGuid));
             }
         }
     }

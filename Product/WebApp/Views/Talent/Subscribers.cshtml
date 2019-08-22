@@ -31,13 +31,16 @@
             <div class="form-inline">
                 <div class="form-group">
                     <label for="GridSearch" class="sr-only">Search</label>
-                    <input id="GridSearch" class="form-control" placeholder="Search" />
+                    <input id="GridSearch" class="form-control" placeholder="Keywords" onkeyup="SearchOnEnter(event)" />
+                    <label for="GridSearchLocation" class="sr-only">Location</label>
+                    <input id="GridSearchLocation" class="form-control" placeholder="Location" onkeyup="SearchOnEnter(event)" />
+                    <button class="btn btn-primary" onclick="doSearch(false);">Search</button>
                 </div>
                 <div class="form-group ml-3">
-                    <label for="select-filter">Subscriber Sources:</label>
-                    @Html.DropDownListFor(model => model.SelectedSubscriberSource, Model.SubscriberSources, new { @class = "form-control" })
+                    <label for="select-filter" class="pr-2">Subscriber Sources:</label>
+                    @Html.DropDownListFor(model => model.SelectedSubscriberSource, Model.SubscriberSources, new { @class = "form-control", onchange="doSearch(false)"  } )
                 </div>
-                <button class="btn btn-primary" onclick="doSearch(false);">Search</button>
+       
                 <button class="btn btn-primary" onclick="doSearch(true);">Reset</button>
                 @if ((await AuthorizationService.AuthorizeAsync(User, "IsCareerCircleAdmin")).Succeeded)
                 {
@@ -61,17 +64,27 @@
             }
 
 
+            function SearchOnEnter(e) {
+                if (e.code == "Enter")
+                    doSearch(false);
+
+            }
+ 
             function doDownload() {
                 var grid = new MvcGrid(document.querySelector('.mvc-grid'));
                 var search = document.getElementById('GridSearch').value;
+                var searchLocation = document.getElementById('GridSearchLocation').value;
                 var searchQuery = encodeURIComponent(search);
+                var searchLocationQuery = encodeURIComponent(searchLocation);
                 var searchFilter = encodeURIComponent(document.getElementById('SelectedSubscriberSource').value);
+                var searchLocationFilter = encodeURIComponent(document.getElementById('SelectedSubscriberSource').value);
                 var url = 'subscriberData';
                 $.ajax({
                     url: url,
                     data: {
                         searchQuery: searchQuery,
-                        searchFilter: searchFilter
+                        searchFilter: searchFilter,
+                        searchLocationQuery: searchLocationQuery
                     },
                     contentType: "application/json; charset=utf-8",
                     method: "get",
@@ -84,10 +97,10 @@
                 });
             }
 
-            function downloadUserFile(data) {
+            function downloadUserFile(data) {                
                 var campaign = $("#SelectedSubscriberSource option:selected").text();
                 campaign = campaign.substring(0, campaign.indexOf('('));
-                var fileData = createCsv(campaign, data);
+                var fileData = createCsv(campaign, data.profiles);
                 var fileName = "users-" + campaign + "-" + moment().format("MMDDYYYYYHHMMSS") + ".csv";
                 var regex = new RegExp(" ", "g");
                 fileName = fileName.replace(regex, "");
@@ -126,12 +139,25 @@
                     document.getElementById('GridSearch').value = '';
                     $('#SelectedSubscriberSource option:eq(0)').prop('selected', true);
                 }
-                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                
+                var grid = new MvcGrid(document.querySelector('.mvc-grid')
+                );
+                
+                document.querySelector('.mvc-grid').addEventListener('reloadfail', function (e) {
+                    ToastService.error("Please confirm your are logged in by reloading this page" , "Search Error");
+                });
+                
+
                 var search = document.getElementById('GridSearch').value;
+                var searchLocation = document.getElementById('GridSearchLocation').value;
                 var searchAndFilter = {
                     searchFilter: encodeURIComponent(document.getElementById('SelectedSubscriberSource').value),
-                    searchQuery: encodeURIComponent(search)
+                    searchQuery: encodeURIComponent(search),
+                    searchLocationQuery: encodeURIComponent(searchLocation)
                 };
+
+
+                console.log(JSON.stringify(searchAndFilter));
                 // combining the filter and search because of a limitation with the mvc grid
                 grid.query.set('searchAndFilter', JSON.stringify(searchAndFilter));
                 grid.reload();

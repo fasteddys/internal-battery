@@ -8,9 +8,8 @@ using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto.Reporting;
-using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
-using UpDiddyLib.Dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace UpDiddyApi.Controllers
 {
@@ -32,7 +31,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> OfferActionSummary()
         {
             return Ok(
-                _db.SubscriberOfferActions
+                await _db.SubscriberOfferActions
                 .GroupBy(rca => new { rca.Action, rca.OfferName, rca.OfferCode })
                 .Select(g => new OfferActionSummaryDto()
                 {
@@ -42,7 +41,7 @@ namespace UpDiddyApi.Controllers
                     OfferCode = g.Key.OfferCode
                 })
                 .OrderByDescending(r => r.ActionCount)
-                .ToList());
+                .ToListAsync());
         }
 
         [HttpGet]
@@ -50,7 +49,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> RecruiterActionSummary()
         {
             return Ok(
-                _db.RecruiterSubscriberActions
+                await _db.RecruiterSubscriberActions
                 .GroupBy(rca => new { rca.RecruiterEmail, rca.RecruiterFirstName, rca.RecruiterLastName, rca.Action })
                 .Select(g => new RecruiterActionSummaryDto()
                 {
@@ -61,7 +60,7 @@ namespace UpDiddyApi.Controllers
                     RecruiterLastName = g.Key.RecruiterLastName,
                 })
                 .OrderByDescending(r => r.ActionCount)
-                .ToList());
+                .ToListAsync());
         }
 
         [HttpGet]
@@ -69,7 +68,7 @@ namespace UpDiddyApi.Controllers
         public async Task<IActionResult> SubscriberActionSummary()
         {
             return Ok(
-                _db.RecruiterSubscriberActions
+                await _db.RecruiterSubscriberActions
                 .GroupBy(rca => new { rca.SubscriberEmail, rca.SubscriberFirstName, rca.SubscriberLastName, rca.Action })
                 .Select(g => new SubscriberActionSummaryDto()
                 {
@@ -80,12 +79,12 @@ namespace UpDiddyApi.Controllers
                     SubscriberLastName = g.Key.SubscriberLastName,
                 })
                 .OrderByDescending(r => r.ActionCount)
-                .ToList());
+                .ToListAsync());
         }
 
         [HttpGet]
         [Route("/api/[controller]/subscribers")]
-        public async Task<IActionResult> SubscribersReport([FromQuery] List<DateTime> dates)
+        public IActionResult SubscribersReport([FromQuery] List<DateTime> dates)
         {
             List<BasicCountReportDto> totalsByDate = new List<BasicCountReportDto>();
             var subscriberQuery = _db.Subscriber.AsQueryable();
@@ -159,7 +158,7 @@ namespace UpDiddyApi.Controllers
                             enrollmentCount = report.Count(x => x.HasEnrollment),
                             partnerName = report.First().PartnerName
                         };
-            return Ok(new { report = query.ToList() });
+            return Ok(new { report = await query.ToListAsync() });
         }
 
         [HttpGet]
@@ -189,7 +188,7 @@ namespace UpDiddyApi.Controllers
                             }).ToDictionary(x => x.ActionId.ToString(), x => x.Count)
                         };
 
-            var actions = _db.Action.Select(x => new ActionKeyDto { Name = x.Name, ActionId = x.ActionId }).Where(x => x.ActionId == 6 || x.ActionId == 7).ToList();
+            var actions = await _db.Action.Select(x => new ActionKeyDto { Name = x.Name, ActionId = x.ActionId }).Where(x => x.ActionId == 6 || x.ActionId == 7).ToListAsync();
             return Ok(new { report = query, actionKey = actions });
         }
 
@@ -314,5 +313,31 @@ namespace UpDiddyApi.Controllers
 
             return response;
         }
+
+        [HttpGet]
+        [Route("api/[controller]/job-abandonment-count/{startDate?}/{endDate?}")]
+        public async Task<IActionResult> JobAbandonmentCountByDateAsync(DateTime startDate, DateTime endDate)
+        {
+           ActionResult response;
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var result = await _reportingService.GetJobAbandonmentCountByDateAsync(startDate, endDate);
+                    response = Ok(result);
+
+                }
+                else
+                    response = BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _syslog.LogError(ex, $"Error in ReportController.JobAbandonmentCountByDateAsync method for StartDate={startDate} and EndDate={endDate}");
+                response = StatusCode(500);
+            }
+
+            return response;
+        }
+
     }
 }

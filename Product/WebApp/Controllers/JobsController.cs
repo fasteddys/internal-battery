@@ -92,9 +92,6 @@ namespace UpDiddy.Controllers
                     (string.IsNullOrEmpty(Province) ? string.Empty : Province);
             }
 
-
-            ViewBag.QueryUrl = Request.Path + queryParametersString;
-
             int.TryParse(Request.Query["page"], out int page);
 
             try
@@ -122,15 +119,11 @@ namespace UpDiddy.Controllers
             if (jobSearchResultDto == null)
                 return NotFound();
 
-            var companies = await _api.GetAllCompaniesAsync();
-            foreach (var job in jobSearchResultDto.Jobs)
-            {
-                var company = companies.Where(x => x.CompanyName == job.CompanyName).FirstOrDefault();
-
-                if (!string.IsNullOrWhiteSpace(company.LogoUrl))
-                    job.CompanyLogoUrl = _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + company.LogoUrl;
-            }
-
+            // when applying a new a histogram the page should be reset to the first page
+            Regex matchPagingQueryStringParameter = new Regex(@"page=.+?(?=\w)");
+            queryParametersString = matchPagingQueryStringParameter.Replace(queryParametersString, string.Empty);
+            ViewBag.QueryUrl = Request.Path + queryParametersString;
+            
             JobSearchViewModel jobSearchViewModel = new JobSearchViewModel()
             {
                 RequestId = jobSearchResultDto.RequestId,
@@ -300,6 +293,7 @@ namespace UpDiddy.Controllers
                 City = job.City,
                 Province = job.Province,
                 SimilarJobsFavorites = SimilarJobsFavorites,
+                Skills = job.JobPostingSkills != null ? job.JobPostingSkills.Select(x => x.SkillName).ToList() : null,
                 LogoUrl = job?.Company?.LogoUrl != null ? _configuration["CareerCircle:AssetBaseUrl"] + "Company/" + job.Company.LogoUrl : string.Empty
             };
 
@@ -334,7 +328,7 @@ namespace UpDiddy.Controllers
                 jdvm.LoggedInSubscriberGuid = subscriber.SubscriberGuid;
                 jdvm.LoggedInSubscriberEmail = subscriber.Email;
                 jdvm.LoggedInSubscriberName = subscriber.FirstName + " " + subscriber.LastName;
-                _Api.RecordSubscriberJobViewAction(JobGuid, GetSubscriberGuid());
+                await _Api.RecordSubscriberJobViewAction(JobGuid, GetSubscriberGuid());
             }
 
             //update job as viewed if there is referrer code
@@ -974,7 +968,7 @@ namespace UpDiddy.Controllers
                         if (!FacetLabelExists(StateFacet.Facets, UpDiddyLib.Helpers.Utils.GetStateByName(state.Replace("-", " ")).ToString()))
                             return false;
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         // Returns false if unable to find matching state from
                         return false;
@@ -1532,5 +1526,23 @@ namespace UpDiddy.Controllers
             Guid jobPostingGuid = Guid.Parse(jobPostingId);
             return await JobAsync(jobPostingGuid);
         }
+
+        #region Keyword and location Search
+        [HttpGet]
+        [Route("[controller]/SearchKeyword")]
+        public IActionResult KeywordSearch(string keyword)
+        {
+            var keywordSearchList = _api.GetKeywordSearchList(keyword);
+            return Ok(keywordSearchList);
+        }
+
+        [HttpGet]
+        [Route("[controller]/LocationKeyword")]
+        public IActionResult LocationSearch(string location)
+        {
+            var locationSearchList = _api.GetLocationSearchList(location);
+            return Ok(locationSearchList);
+        }
+        #endregion
     }
 }

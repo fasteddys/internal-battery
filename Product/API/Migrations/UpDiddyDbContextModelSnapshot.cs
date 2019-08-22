@@ -1829,6 +1829,8 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("CrawlDelayInMilliseconds");
+
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");
@@ -2882,6 +2884,38 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("ResumeParseResult");
                 });
 
+            modelBuilder.Entity("UpDiddyApi.Models.SalesForceSignUpList", b =>
+                {
+                    b.Property<int>("SalesForceSignUpListId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreateDate");
+
+                    b.Property<Guid>("CreateGuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired();
+
+                    b.Property<string>("FirstName");
+
+                    b.Property<int>("IsDeleted");
+
+                    b.Property<string>("LastName");
+
+                    b.Property<DateTime?>("ModifyDate");
+
+                    b.Property<Guid?>("ModifyGuid");
+
+                    b.Property<string>("PhoneNumber");
+
+                    b.Property<Guid>("SalesForceSignUpListGuid");
+
+                    b.HasKey("SalesForceSignUpListId");
+
+                    b.ToTable("SalesForceSignUpList");
+                });
+
             modelBuilder.Entity("UpDiddyApi.Models.SecurityClearance", b =>
                 {
                     b.Property<int>("SecurityClearanceId")
@@ -3152,6 +3186,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid>("CreateGuid");
 
                     b.Property<int>("IsDeleted");
+
+                    b.Property<string>("MimeType");
 
                     b.Property<DateTime?>("ModifyDate");
 

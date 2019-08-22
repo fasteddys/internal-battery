@@ -7,10 +7,10 @@ namespace UpDiddy.Services
 {
     public interface ICacheService
     {
-        bool SetCachedValue<T>(string CacheKey, T Value);
-        bool SetCachedValue<T>(string CacheKey, T Value, DateTimeOffset expiryTime);
-        T GetCachedValue<T>(string CacheKey);
-        bool RemoveCachedValue<T>(string CacheKey);
+        Task<bool> SetCachedValueAsync<T>(string CacheKey, T Value);
+        Task<bool> SetCachedValueAsync<T>(string CacheKey, T Value, DateTimeOffset expiryTime);
+        Task<T> GetCachedValueAsync<T>(string CacheKey);
+        Task<bool> RemoveCachedValueAsync<T>(string CacheKey);
         Task<T> GetSetCachedValueAsync<T>(string CacheKey, Func<Task<T>> func, DateTimeOffset expiryTime);
     }
 }

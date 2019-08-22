@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNet.OData.Query;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,7 +32,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         /// <param name="fileStream"></param>
         /// <param name="parseResume"></param>
         /// <returns></returns>
-        Task<SubscriberFile> AddResumeAsync(Subscriber subscriber, string fileName, Stream fileStream, bool parseResume);
+        Task<SubscriberFile> AddResumeAsync(Subscriber subscriber, IFormFile resumeDoc, bool parseResume);
         
         /// <summary>
         /// Creates subscriber using Partner Contact Guid. Potential user must be associated with Campaign, have associated Contact and PartnerContact.
@@ -93,5 +94,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
         Task<Subscriber> GetSubscriber(ODataQueryOptions<Subscriber> options);
 
         Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numProfilesToProcess, int ndexVersion);
+
+        Task<List<Subscriber>> GetFailedSubscribersSummaryAsync();
     }
 }

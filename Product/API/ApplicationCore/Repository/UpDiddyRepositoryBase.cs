@@ -18,11 +18,11 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<IQueryable<TEntity>> GetAllAsync()
+        public IQueryable<TEntity> GetAll()
         {
-            return this._dbContext
-                             .Set<TEntity>()
-                             .AsNoTracking();
+                return this._dbContext
+                            .Set<TEntity>()
+                            .AsNoTracking();
                                 
         }
 

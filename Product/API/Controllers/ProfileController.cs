@@ -5,22 +5,17 @@ using UpDiddyLib.Dto;
 using System;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
-using System.Data.SqlClient;
-using System.Data;
-using System.Security.Claims;
-using UpDiddyApi.ApplicationCore.Factory;
-using UpDiddyLib.Helpers;
 using System.Web;
-using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Services;
 using UpDiddyApi.Workflow;
-using Hangfire;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.Controllers
 {
@@ -37,15 +32,17 @@ namespace UpDiddyApi.Controllers
         protected internal ILogger _syslog = null;
         private readonly CloudTalent _cloudTalent = null;
         private readonly ISubscriberService _subscriberService = null;
+        private readonly IHangfireService _hangfireService;
 
-        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory, ISubscriberService subscriberService)
+        public ProfileController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger<ProfileController> sysLog, IHttpClientFactory httpClientFactory, ISubscriberService subscriberService, IRepositoryWrapper repositoryWrapper, IHangfireService hangfireService)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory, repositoryWrapper);
             _subscriberService = subscriberService;
+            _hangfireService = hangfireService;
         }
 
         #region profile tenants
@@ -58,7 +55,7 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         [HttpGet]
         [Route("api/[controller]/tenants")]
-        public async Task<IActionResult> TenantList()
+        public IActionResult TenantList()
         {
             // search profiles 
             BasicResponseDto rVal = _cloudTalent.ProfileTenantList();
@@ -72,24 +69,24 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet]
         [Route("api/skill/{userQuery}")]
-        public IActionResult GetSkills(string userQuery)
+        public async Task<IActionResult> GetSkills(string userQuery)
         {
             userQuery = HttpUtility.UrlDecode(userQuery);
 
-            var skills = _db.Skill
+            var skills = await _db.Skill
                 .Where(s => s.IsDeleted == 0 && s.SkillName.Contains(userQuery))
                 .OrderBy(s => s.SkillName)
                 .ProjectTo<SkillDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
 
             return Ok(skills);
         }
 
         [HttpGet]
         [Route("api/company/{userQuery}")]
-        public IActionResult GetCompanies(string userQuery)
+        public async Task<IActionResult> GetCompanies(string userQuery)
         {
-            var companies = _db.Company
+            var companies = await _db.Company
                 .Where(c => c.IsDeleted == 0 && c.CompanyName.Contains(userQuery))
                 .OrderBy(c => c.CompanyName)
                 .Select(c => new Company()
@@ -104,16 +101,16 @@ namespace UpDiddyApi.Controllers
                       ModifyGuid = c.ModifyGuid
                   })
                 .ProjectTo<CompanyDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
 
             return Ok(companies);
         }
 
         [HttpGet]
         [Route("api/educational-institution/{userQuery}")]
-        public IActionResult GetEducationalInstitutions(string userQuery)
+        public async Task<IActionResult> GetEducationalInstitutions(string userQuery)
         {
-            var educationalInstitutions = _db.EducationalInstitution
+            var educationalInstitutions = await _db.EducationalInstitution
                 .Where(c => c.IsDeleted == 0 && c.Name.Contains(userQuery))
                 .OrderBy(c => c.Name)
                 .Select(ei => new EducationalInstitution()
@@ -128,16 +125,16 @@ namespace UpDiddyApi.Controllers
                     ModifyGuid = ei.ModifyGuid
                 })
                 .ProjectTo<EducationalInstitutionDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
 
             return Ok(educationalInstitutions);
         }
 
         [HttpGet]
         [Route("api/educational-degree/{userQuery}")]
-        public IActionResult GetEducationalDegrees(string userQuery)
+        public async Task<IActionResult> GetEducationalDegrees(string userQuery)
         {
-            var educationalDegrees = _db.EducationalDegree
+            var educationalDegrees = await _db.EducationalDegree
                 .Where(c => c.IsDeleted == 0 && c.Degree.Contains(userQuery))
                 .OrderBy(c => c.Degree)
                 .Select(ed => new EducationalDegree()
@@ -152,32 +149,32 @@ namespace UpDiddyApi.Controllers
                     ModifyGuid = ed.ModifyGuid
                 })
                 .ProjectTo<EducationalDegreeDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
 
             return Ok(educationalDegrees);
         }
 
         [Route("api/educational-degree-types")]
-        public IActionResult GetEducationalDegreesTypes()
+        public async Task<IActionResult> GetEducationalDegreesTypes()
         {
-            var educationalDegreesType = _db.EducationalDegreeType
+            var educationalDegreesType = await _db.EducationalDegreeType
                 .Where(c => c.IsDeleted == 0)
                 .OrderBy(c => c.DegreeType)
                 .ProjectTo<EducationalDegreeTypeDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
 
             return Ok(educationalDegreesType);
         }
 
         [HttpGet]
         [Route("api/compensation-types")]
-        public IActionResult GetCompensationTypes()
+        public async Task<IActionResult> GetCompensationTypes()
         {
-            var compensationTypes = _db.CompensationType
+            var compensationTypes = await _db.CompensationType
                 .Where(c => c.IsDeleted == 0)
                 .OrderBy(c => c.CompensationTypeName)
                 .ProjectTo<CompensationTypeDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
 
             return Ok(compensationTypes);
         }
@@ -195,7 +192,7 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         [HttpGet]
         [Route("api/[controller]/{PageNum?}")]
-        public async Task<IActionResult> ProfileSearch([FromBody] ProfileQueryDto profileQueryDto)
+        public IActionResult ProfileSearch([FromBody] ProfileQueryDto profileQueryDto)
         {
             // search profiles 
             ProfileSearchResultDto rVal = _cloudTalent.ProfileSearch(profileQueryDto);
@@ -211,9 +208,9 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         [HttpPost]
         [Route("api/[controller]/{SubscriberGuid}")]
-        public async Task<IActionResult> ProfileAdd(Guid SubscriberGuid)
+        public IActionResult ProfileAdd(Guid SubscriberGuid)
         {
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(SubscriberGuid));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddOrUpdateProfile(SubscriberGuid));
             return Ok( );
         }
 
@@ -227,9 +224,9 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         [HttpDelete]
         [Route("api/[controller]/{SubscriberGuid}")]
-        public async Task<IActionResult> ProfileDelete(Guid SubscriberGuid)
+        public IActionResult ProfileDelete(Guid SubscriberGuid)
         {
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(SubscriberGuid));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentDeleteProfile(SubscriberGuid));
             return Ok();
         }
 
@@ -243,7 +240,7 @@ namespace UpDiddyApi.Controllers
         [Authorize(Policy = "IsRecruiterOrAdmin")]
         [HttpDelete]
         [Route("api/[controller]/delete-by-uri")]
-        public async Task<IActionResult> DeleteProfileByGoogleName([FromBody] string TalentCloudUri)
+        public IActionResult DeleteProfileByGoogleName([FromBody] string TalentCloudUri)
         {
             _cloudTalent.DeleteProfileFromCloudTalentByUri(_db, TalentCloudUri);
             return Ok();

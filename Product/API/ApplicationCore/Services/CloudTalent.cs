@@ -28,6 +28,8 @@ using Enum = System.Enum;
 using MiniGuids;
 using UpDiddyApi.Helpers.GoogleProfile;
 using UpDiddyApi.ApplicationCore.Services.GoogleProfile;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Repository;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -39,9 +41,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         private GoogleCredential _credential = null;
         private GoogleProfileService _profileApi = null;
         private GoogleProfileService _googleProfile = null;
+      //  private RepositoryWrapper repositoryWrapper;
 
         #region Constructor
-        public CloudTalent(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory)
+        public CloudTalent(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory, IRepositoryWrapper repositoryWrapper)
         {
             _db = context;
             _mapper = mapper;
@@ -50,6 +53,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _syslog = sysLog;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
+            _repositoryWrapper = repositoryWrapper;
 
 
             // cloud talent configuration
@@ -164,8 +168,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 
+                int maxProfileSkillLen =  int.Parse(_configuration["CloudTalent:MaxProfileSkillLen"]);
                 // create googleCloud Profile 
-                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_db, subscriber, skills);
+                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_repositoryWrapper, maxProfileSkillLen, subscriber, skills);
                 step = 1;
                 string errorMsg = string.Empty;
                 BasicResponseDto basicResponseDto =  _profileApi.AddProfile(googleCloudProfile, ref errorMsg);
@@ -189,7 +194,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             catch (Exception e)
             {
                 // Update job posting with index error
-                subscriber.CloudTalentIndexInfo = e.Message + " Step = " + step;
+                subscriber.CloudTalentIndexInfo = Utils.ISO8601DateString(DateTime.Now) + ": " + e.Message + " Step = " + step;
                 subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
                 _db.SaveChanges();
                 _syslog.LogError(e, $"CloudTalent.IndexProfile Error: {e.Message} at step {step} ", e, subscriber);
@@ -201,7 +206,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             try
             {
-                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_db, subscriber, skills);
+                int maxProfileSkillLen = int.Parse(_configuration["CloudTalent:MaxProfileSkillLen"]);
+                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_repositoryWrapper, maxProfileSkillLen, subscriber, skills);
                 string errorMsg = string.Empty;
 
                 if (_profileApi.UpdateProfile(googleCloudProfile, ref errorMsg))
@@ -218,7 +224,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             catch (Exception e)
             {
                 // Update job posting with index error
-                subscriber.CloudTalentIndexInfo = e.Message;
+                subscriber.CloudTalentIndexInfo = Utils.ISO8601DateString(DateTime.Now) + ": " + e.Message;
                 subscriber.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
                 _db.SaveChanges();
                 _syslog.LogError(e, "CloudTalent.ReIndexProfile Error", e, subscriber);
@@ -288,7 +294,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             };
  
-            ProfileQuery cloudTalentProfileQuery = new ProfileQuery();
+            ProfileQuery cloudTalentProfileQuery = new ProfileQuery();            
             // add keywords 
             if (string.IsNullOrEmpty(profileQuery.Keywords) == false)
             {
@@ -412,7 +418,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 pageSize = profileQuery.PageSize,
                 offset = profileQuery.PageSize * (profileQuery.PageNum - 1),
                 orderBy = profileQuery.OrderBy,
-                parent = _configuration["CloudTalent:ProfileTenant"]
+                parent = _configuration["CloudTalent:ProfileTenant"],
+                disableSpellCheck = true
 
             };
 
@@ -432,7 +439,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         public ProfileSearchResultDto ProfileSearch(ProfileQueryDto profileQuery, bool isJobPostingAlertSearch = false)
         {
 
-            if (profileQuery.PageSize <= 0 )
+            int MaxProfilePageSize = int.Parse(_configuration["CloudTalent:MaxProfilePageSize"]);
+            if (profileQuery.PageSize <= 0 || profileQuery.PageSize > MaxProfilePageSize)
             {
                 profileQuery.PageSize = int.Parse(_configuration["CloudTalent:ProfilePageSize"]);
             }
@@ -588,7 +596,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 jobPosting.CloudTalentIndexStatus = (int)GoogleCloudIndexStatus.IndexError;
                 _db.SaveChanges();
                 _syslog.LogError(e, "CloudTalent.IndexJob Error", e, jobPosting);
-                throw e;
+                    throw e;
             }
         }
 
@@ -937,7 +945,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 PageSize = jobQuery.PageSize,
                 Offset = jobQuery.PageSize * (jobQuery.PageNum - 1),
                 OrderBy = jobQuery.OrderBy
-
+               
 
             };
 

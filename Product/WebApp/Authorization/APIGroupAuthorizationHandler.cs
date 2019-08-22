@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -18,33 +21,41 @@ namespace UpDiddy.Authorization
         IConfiguration _configuration;
         IApi _api;
         IHttpContextAccessor _accessor;
+        ILogger _syslog = null; 
+        IMemoryCache _memoryCache = null;
 
         public const string CACHE_KEY = "SubscriberGroups";
 
-        public ApiGroupAuthorizationHandler(IApi api, IConfiguration configuration, IHttpContextAccessor contextAccessor)
+        public ApiGroupAuthorizationHandler(IApi api, IConfiguration configuration, IHttpContextAccessor contextAccessor, ILogger<ApiGroupAuthorizationHandler> sysLog, IMemoryCache memoryCache )
         {
             _api = api;
             _configuration = configuration;
             _accessor = contextAccessor;
+            _syslog = sysLog; 
+            _memoryCache = memoryCache;
+      
         }
 
         private async Task<bool> CheckAuthAsync(string userId, GroupRequirement requirement)
         {
+
             IList<string> groups = new List<string>();
-            string cachedGroups = _accessor.HttpContext.Session.GetString(CACHE_KEY + userId);
-            if(false)
+            string cachedGroups = _memoryCache.Get<string>(CACHE_KEY + userId);        
+            if (cachedGroups != null)
             {
                 groups = JsonConvert.DeserializeObject<List<string>>(cachedGroups);
             } else
             {
                 try
-                {
+                {  
                     SubscriberADGroupsDto dto = await _api.MyGroupsAsync();
                     groups = dto.groups;
-                    _accessor.HttpContext.Session.SetString(CACHE_KEY + userId, JsonConvert.SerializeObject(groups));
-                }
-                catch (Exception e)
+                    int SubscriberGroupsCacheTimeInMinutes = int.Parse(_configuration["CareerCircle:SubscriberGroupsCacheTimeInMinutes"]);
+                    _memoryCache.Set<string>(CACHE_KEY + userId, JsonConvert.SerializeObject(groups), DateTime.Now.AddHours(SubscriberGroupsCacheTimeInMinutes).TimeOfDay);               
+                }      
+                catch (Exception ex)
                 {
+                    _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_ApiGroupAuthorizationHandler.CheckAuthAsync Error getting user group info for user: {userId}  Exception: {ex.Message}", requirement);
                     // if exception then stop here, assume they don't have access
                     return false;
                 }
@@ -52,8 +63,12 @@ namespace UpDiddy.Authorization
 
             // if no groups then just not authorized at this point
             if (groups.Count < 1)
+            {
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_ApiGroupAuthorizationHandler.CheckAuthAsync No groups from for user: {userId}");
                 return false;
+            }
 
+            _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_GroupAuthorizationHandler.CheckAuthAsync returning {groups.Contains(requirement.RoleName)} for user: {userId}");
             // get the configured groups
             return groups.Contains(requirement.RoleName);
         }

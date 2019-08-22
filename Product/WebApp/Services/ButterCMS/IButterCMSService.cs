@@ -1,17 +1,22 @@
 ﻿using ButterCMS.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UpDiddy.ViewModels.ButterCMS;
-using UpDiddy.ViewModels.Components.Layout;
+using System.Xml;
+using Microsoft.AspNetCore.Http;
 
 namespace UpDiddy.Services.ButterCMS
 {
     public interface IButterCMSService
     {
-        T RetrieveContentFields<T>(string CacheKey, string[] Keys, Dictionary<string, string> QueryParameters) where T : class;
-        PageResponse<T> RetrievePage<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters = null) where T : ButterCMSBaseViewModel;
-        bool ClearCachedValue<T>(string CacheKey);
+        Task<T> RetrieveContentFieldsAsync<T>(string CacheKey, string[] Keys, Dictionary<string, string> QueryParameters) where T : class;
+        Task<PageResponse<T>> RetrievePageAsync<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters = null) where T : ButterCMSBaseViewModel;
+        Task<bool> ClearCachedValueAsync<T>(string CacheKey);
+        Task<XmlDocument> GetButterSitemapAsync();
+        Task<IList<string>> GetBlogAuthorSlugsAsync();
+        Task<IList<string>> GetBlogCategorySlugsAsync();
+        Task<IList<string>> GetBlogTagSlugsAsync();
+        Task<int> GetNumberOfBlogPostPagesAsync();
+        string AssembleCacheKey(string KeyPrefix, string PageSlug, IQueryCollection Query = null);
     }
 }

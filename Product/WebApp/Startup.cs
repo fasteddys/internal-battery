@@ -12,13 +12,9 @@ using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Rewrite;
 using UpDiddy.Helpers.RewriteRules;
-using Polly;
 using System.Net.Http;
-using Polly.Extensions.Http;
 using UpDiddyLib.Helpers;
 using Microsoft.Extensions.Caching.Distributed;
-using Polly.Registry;
-using Polly.Caching;
 using System.Collections;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Shared;
@@ -33,6 +29,7 @@ using React.AspNet;
 using DeviceDetectorNET;
 using UpDiddy.Services;
 using UpDiddy.Services.ButterCMS;
+using UpDiddy.ExceptionHandling;
 
 namespace UpDiddy
 {
@@ -74,23 +71,50 @@ namespace UpDiddy
 			services.AddJsEngineSwitcher(options => options.DefaultEngineName = ChakraCoreJsEngine.EngineName)
 				.AddChakraCore();
 
-			services.AddReact();
+			services.AddReact(); 
+            
+            if (!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
+            {
+                services.AddAuthentication(sharedOptions =>
+                {
+                    sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                })                
+                .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C:Live", options))
+                .AddCookie(options =>
+                {
+                    options.AccessDeniedPath = "/Home/Forbidden";
+                    options.Cookie.Path = "/";
+                    options.SlidingExpiration = false;
+                    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
+                    options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
+                });
+            }
+            else
+            {
+                services.AddAuthentication(sharedOptions =>
+                {
+                    sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                })
+                .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C:Pre", options))
+                .AddCookie(options =>
+                {
+                    options.AccessDeniedPath = "/Home/Forbidden";
+                    options.Cookie.Path = "/";
+                    options.SlidingExpiration = false;
+                    options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
+                    options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
+                });
+            }
 
-            services.AddAuthentication(sharedOptions =>
+            services.Configure<CookiePolicyOptions>(options =>
             {
-                sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-            })
-            .AddAzureAdB2C(options => Configuration.Bind("Authentication:AzureAdB2C", options))
-            .AddCookie(options =>
-            {
-                options.AccessDeniedPath = "/Home/Forbidden";
-                options.Cookie.Path = "/";
-                options.SlidingExpiration = false;
-                options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
-                options.Cookie.Expiration = TimeSpan.FromMinutes(int.Parse(Configuration["Cookies:MaxLoginDurationMinutes"]));
+                // This lambda determines whether user consent for non-essential cookies 
+                // is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
             });
-
 
             #region AddLocalization
             services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -102,9 +126,12 @@ namespace UpDiddy
                        .AllowAnyHeader();
             }));
 
-            services.AddMvc()
-                .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
-                .AddDataAnnotationsLocalization();
+            services.AddMemoryCache();
+            services.AddMvc(config => {
+                config.Filters.Add(typeof(CCExceptionFilter));
+            })
+            .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+            .AddDataAnnotationsLocalization();
 
             services.AddAuthorization(options =>
             {
@@ -119,41 +146,10 @@ namespace UpDiddy
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);
 
-            // Add Polly 
-
-            // Create Policies  
-            int PollyRetries = int.Parse(Configuration["Polly:Retries"]);
-            int PollyTimeoutInSeconds = int.Parse(Configuration["Polly:PollyTimeoutInSeconds"]);
-
-            // Create a timeout policy that will prevent  api  get calls from taking more that PollyTimeoutInSeconds 
-            // in total.  This timeout is inclusive of the intitial get call and any subsequent polly retries.  For example
-            // if PollyTimeoutInSeconds = 8 and PollyRetries = 5 and a get call responds with an error at 4 seconds, the 
-            // operation will fail after the second retry since the PollyTimeoutInSeconds has been exceeded.
-            var ApiGetTimeoutPolicy = Policy.TimeoutAsync(PollyTimeoutInSeconds);
-            // Create retry policy          
-            var ApiGetRetryPolicy = HttpPolicyExtensions
-                .HandleTransientHttpError()
-                .WaitAndRetryAsync(PollyRetries, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-            // Combine timeout and retry policies to create Get policy 
-            var ApiGetPolicy = ApiGetTimeoutPolicy.WrapAsync(ApiGetRetryPolicy);
-
-            // Define a policy without retries for non idempotenic operations
-            // FMI: https://www.stevejgordon.co.uk/httpclientfactory-using-polly-for-transient-fault-handling
-            var ApiPostPolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
-            var ApiPutPolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
-            var ApiDeletePolicy = Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
-
-            services.AddHttpClient(Constants.HttpGetClientName)
-              .AddPolicyHandler(ApiGetPolicy);
-
-            services.AddHttpClient(Constants.HttpPostClientName)
-                          .AddPolicyHandler(ApiPostPolicy);
-
-            services.AddHttpClient(Constants.HttpPutClientName)
-                          .AddPolicyHandler(ApiPutPolicy);
-
-            services.AddHttpClient(Constants.HttpDeleteClientName)
-              .AddPolicyHandler(ApiDeletePolicy);
+            services.AddHttpClient(Constants.HttpGetClientName);
+            services.AddHttpClient(Constants.HttpPostClientName);
+            services.AddHttpClient(Constants.HttpPutClientName);
+            services.AddHttpClient(Constants.HttpDeleteClientName);              
 
             // Configure supported cultures and localization options
             services.Configure<RequestLocalizationOptions>(options =>
@@ -176,18 +172,21 @@ namespace UpDiddy
                 options.SupportedUICultures = supportedCultures;
             });
 
-            // Add Redis session cahce
+       
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromHours(1);
+                options.Cookie.HttpOnly = true;
+            });
+
+
+            // Add Redis session cahce 
             services.AddDistributedRedisCache(options =>
             {
                 options.InstanceName = Configuration.GetValue<string>("redis:name");
                 options.Configuration = Configuration.GetValue<string>("redis:host");
             });
 
-            services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromHours(1);
-                options.Cookie.HttpOnly = true;
-            });
             // Add Api
             services.AddScoped<IApi, ApiUpdiddy>();
             services.AddScoped<ICacheService, CacheService>();
@@ -210,17 +209,18 @@ namespace UpDiddy
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+ 
             if (env.IsDevelopment() || env.IsStaging())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseBrowserLink();
             }
-            else
-            {
+            else if(!Boolean.Parse(Configuration["Environment:IsPreliminary"]))
+            {  
                 app.UseExceptionHandler("/Home/Error");
                 app.UseRewriter(new RewriteOptions().Add(new RedirectWwwRule()));
-            }
-
+            } 
+ 
             // Initialise ReactJS.NET. Must be before static files.
             app.UseReact(config =>
             {
@@ -311,6 +311,8 @@ namespace UpDiddy
                 return next();
             });
 
+            app.UseCookiePolicy();
+
             // TODO - Change template action below to index upon site launch.
             app.UseMvc(routes =>
             {
@@ -325,7 +327,7 @@ namespace UpDiddy
                     "NotFound",
                     "{*url}",
                     new { controller = "Home", action = "PageNotFound" });
-            });
+            });         
         }
     }
 }

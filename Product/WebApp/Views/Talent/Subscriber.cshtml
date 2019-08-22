@@ -23,289 +23,291 @@
         </div>
     </div>
 </div>
-<div class="container">
-    <div class="row">
-        <div class="col-sm-2 mt-3 mb-3 talent-breadcrumb">
-            <div class="form-inline">
-                <div class="form-group">
-                    <a asp-controller="Talent" asp-action="Subscribers">Subscribers</a>
-                    &nbsp;/&nbsp;
-                    @Utils.FormatName(Model.FirstName, Model.LastName)
+@if (Model != null)
+{
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-2 mt-3 mb-3 talent-breadcrumb">
+                <div class="form-inline">
+                    <div class="form-group">
+                        <a asp-controller="Talent" asp-action="Subscribers">Subscribers</a>
+                        &nbsp;/&nbsp;
+                        @Utils.FormatName(Model.FirstName, Model.LastName)
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-3 subscriber-sidebar">
-            <div class="row">
-                <div class="col-12 name">
-                    @Utils.FormatName(Model.FirstName, Model.LastName)
+        <div class="row">
+            <div class="col-3 subscriber-sidebar">
+                <div class="row">
+                    <div class="col-12 name">
+                        @Utils.FormatName(Model.FirstName, Model.LastName)
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-12 title">
-                    @Utils.FormatGenericField(Model.CurrentTitle, "job title")
+                <div class="row">
+                    <div class="col-12 title">
+                        @Utils.FormatGenericField(Model.CurrentTitle, "job title")
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-12 image">
-                    <img class="w-50 rounded-circle" src="@Model.AvatarUrl" />
+                <div class="row">
+                    <div class="col-12 image">
+                        <img class="w-50 rounded-circle" src="@Model.AvatarUrl" />
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-12 addEditNote">
-                    <button type="button" class="btn btn-primary addNote" data-toggle="modal" data-target="#addNoteModal"
-                            data-subscriberguid="@Model.SubscriberGuid">
-                        Add Note
-                    </button>
+                <div class="row">
+                    <div class="col-12 addEditNote">
+                        <button type="button" class="btn btn-primary addNote" data-toggle="modal" data-target="#addNoteModal"
+                                data-subscriberguid="@Model.SubscriberGuid">
+                            Add Note
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-12 contact-header p-0">
-                    Contact
+                <div class="row">
+                    <div class="col-12 contact-header p-0">
+                        Contact
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-12 contact-details p-0">
-                    <ul class="p-0">
-                        <li><a href="mailto:@Model.Email">@Model.Email</a></li>
-                        <li><a href="tel:@Model.PhoneNumber">@Utils.FormatPhoneNumber(Model.PhoneNumber)</a></li>
-                        <li>@Utils.FormatGenericField(Model.Address, "street address")</li>
-                        <li>@Utils.FormatCityStateAndPostalCode(Model.City, Model.State, Model.PostalCode)</li>
-                    </ul>
+                <div class="row">
+                    <div class="col-12 contact-details p-0">
+                        <ul class="p-0">
+                            <li><a href="mailto:@Model.Email">@Model.Email</a></li>
+                            <li><a href="tel:@Model.PhoneNumber">@Utils.FormatPhoneNumber(Model.PhoneNumber)</a></li>
+                            <li>@Utils.FormatGenericField(Model.Address, "street address")</li>
+                            <li>@Utils.FormatCityStateAndPostalCode(Model.City, Model.State, Model.PostalCode)</li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-12 contact-header p-0">
-                    Files
+                <div class="row">
+                    <div class="col-12 contact-header p-0">
+                        Files
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-12 contact-details p-0">
-                    <ul class="p-0">
-                        @{
-                            if (Model.ResumeFileGuid.HasValue)
-                            {
-                                <text>
-                                    <li>
-                                        <a class="download" href="/Talent/Subscriber/@Model.SubscriberGuid/File/@Model.ResumeFileGuid" target="_blank"><i class="fas fa-download" title="Download"></i> @Model.ResumeFileName</a>
-                                    </li>
-                                </text>
+                <div class="row">
+                    <div class="col-12 contact-details p-0">
+                        <ul class="p-0">
+                            @{
+                                if (Model.ResumeFileGuid.HasValue)
+                                {
+                                    <text>
+                                        <li>
+                                            <a class="download" href="/Talent/Subscriber/@Model.SubscriberGuid/File/@Model.ResumeFileGuid" target="_blank"><i class="fas fa-download" title="Download"></i> @Model.ResumeFileName</a>
+                                        </li>
+                                    </text>
+                                }
+                                else
+                                {
+                                    <text>No resume provided</text>
+                                }
                             }
-                            else
-                            {
-                                <text>No resume provided</text>
-                            }
-                        }
-                    </ul>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-9 subscriber-tabs">
-            <ul class="nav nav-tabs nav-fill">
-                <li class="nav-item">
-                    <a class="nav-link active" id="work-tab" data-toggle="tab" href="#work" role="tab" aria-controls="work" aria-selected="true">Work History</a>
-                </li>
-                <li class="nav-item" href="#">
-                    <a class="nav-link" id="education-tab" data-toggle="tab" href="#education" role="tab" aria-controls="education" aria-selected="false">Education/Certs</a>
-                </li>
-                <li class="nav-item" href="#">
-                    <a class="nav-link" id="skill-tab" data-toggle="tab" href="#skill" role="tab" aria-controls="skill" aria-selected="false">Skills</a>
-                </li>
-                <li class="nav-item" href="#">
-                    <a class="nav-link" id="upskill-tab" data-toggle="tab" href="#upskill" role="tab" aria-controls="upskill" aria-selected="false">Upskilling</a>
-                </li>
-                <li class="nav-item" href="#">
-                    <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">Notes/Activities</a>
-                </li>
-            </ul>
+            <div class="col-9 subscriber-tabs">
+                <ul class="nav nav-tabs nav-fill">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="work-tab" data-toggle="tab" href="#work" role="tab" aria-controls="work" aria-selected="true">Work History</a>
+                    </li>
+                    <li class="nav-item" href="#">
+                        <a class="nav-link" id="education-tab" data-toggle="tab" href="#education" role="tab" aria-controls="education" aria-selected="false">Education/Certs</a>
+                    </li>
+                    <li class="nav-item" href="#">
+                        <a class="nav-link" id="skill-tab" data-toggle="tab" href="#skill" role="tab" aria-controls="skill" aria-selected="false">Skills</a>
+                    </li>
+                    <li class="nav-item" href="#">
+                        <a class="nav-link" id="upskill-tab" data-toggle="tab" href="#upskill" role="tab" aria-controls="upskill" aria-selected="false">Upskilling</a>
+                    </li>
+                    <li class="nav-item" href="#">
+                        <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">Notes/Activities</a>
+                    </li>
+                </ul>
 
-            <div class="tab-content subscriber-content">
-                <div class="tab-pane fade show active" id="work" role="tabpanel" aria-labelledby="work-tab">
-                    @{
-                        if (Model.WorkHistory.Count() == 0)
-                        {
-                            <text>No work history provided</text>
-                        }
-                        else
-                        {
-                            foreach (var workHistory in Model.WorkHistory.OrderByDescending(wh => wh.StartDate))
-                            {
-                                <div class="row">
-                                    <div class="col-12 px-0 py-2 instance">
-                                        <div class="row">
-                                            <div class="col-12 px-0 title">
-                                                @Utils.FormatGenericField(workHistory.Title, "work title")
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-12 px-0 company">
-                                                @Utils.FormatGenericField(workHistory.Company, "company name")<i class="fas fa-paperclip"></i>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-12 px-0 period">
-                                                @Utils.FormatDateRange(workHistory.StartDate, workHistory.EndDate, "work history")
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-12 description px-2 py-2">
-                                                @Utils.FormatGenericField(workHistory.JobDescription, "job description")
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        }
-                    }
-                </div>
-                <div class="tab-pane fade" id="education" role="tabpanel" aria-labelledby="education-tab">
-                    @{
-                        if (Model.EducationHistory.Count() == 0)
-                        {
-                            <text>No education history provided</text>
-                        }
-                        else
-                        {
-                            foreach (var educationHistory in Model.EducationHistory.OrderByDescending(eh => eh.StartDate))
-                            {
-                                <div class="row">
-                                    <div class="col-12 px-0 py-2 instance">
-                                        <div class="row">
-                                            <div class="col-12 px-0 institution">
-                                                @Utils.FormatGenericField(educationHistory.EducationalInstitution, "educational institution")<i class="fas fa-paperclip"></i>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-12 px-0 degree">
-                                                @Utils.FormatEducationalDegreeAndType(educationHistory.EducationalDegree, educationHistory.EducationalDegreeType)
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-12 px-0 period">
-                                                @Utils.FormatDateRange(educationHistory.StartDate, educationHistory.EndDate, "education history")
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        }
-                    }
-                </div>
-                <div class="tab-pane fade" id="skill" role="tabpanel" aria-labelledby="skill-tab">
-                    <div class="row">
+                <div class="tab-content subscriber-content">
+                    <div class="tab-pane fade show active" id="work" role="tabpanel" aria-labelledby="work-tab">
                         @{
-                            if (Model.Skills.Count() == 0)
+                            if (Model.WorkHistory.Count() == 0)
                             {
-                                <text>No skills provided</text>
+                                <text>No work history provided</text>
                             }
                             else
                             {
-                                <div class="col-12 px-0 py-3">
-                                    @foreach (var skill in Model.Skills)
-                                    {
-                                        <div class="skill-pill">
-                                            @Html.DisplayFor(item => skill.SkillName)
+                                foreach (var workHistory in Model.WorkHistory.OrderByDescending(wh => wh.StartDate))
+                                {
+                                    <div class="row">
+                                        <div class="col-12 px-0 py-2 instance">
+                                            <div class="row">
+                                                <div class="col-12 px-0 title">
+                                                    @Utils.FormatGenericField(workHistory.Title, "work title")
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-12 px-0 company">
+                                                    @Utils.FormatGenericField(workHistory.Company, "company name")<i class="fas fa-paperclip"></i>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-12 px-0 period">
+                                                    @Utils.FormatDateRange(workHistory.StartDate, workHistory.EndDate, "work history")
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-12 description px-2 py-2">
+                                                    @Utils.FormatGenericField(workHistory.JobDescription, "job description")
+                                                </div>
+                                            </div>
                                         </div>
-                                    }
-                                </div>
+                                    </div>
+                                }
                             }
                         }
                     </div>
-                </div>
-                <div class="tab-pane fade" id="upskill" role="tabpanel" aria-labelledby="upskill-tab">
-                    @{
-                        if (Model.Enrollments.Count() == 0)
-                        {
-                            <text>No course enrollments exist</text>
-                        }
-                        else
-                        {
-                            <ul class="courses-in-progress-list-desktop">
-                                @foreach (EnrollmentDto enrollment in Model.Enrollments)
+                    <div class="tab-pane fade" id="education" role="tabpanel" aria-labelledby="education-tab">
+                        @{
+                            if (Model.EducationHistory.Count() == 0)
+                            {
+                                <text>No education history provided</text>
+                            }
+                            else
+                            {
+                                foreach (var educationHistory in Model.EducationHistory.OrderByDescending(eh => eh.StartDate))
                                 {
-                                    <li class="course-in-progress-li">
-                                        <div class="course-in-progress-anchor-container">
-                                            <div class="course-in-progress-info">
-                                                <div class="row no-padding">
-                                                    <div class="col-12 col-sm-8">
-                                                        @enrollment.Course.Name
-                                                    </div>
-                                                    <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
-                                                        <i>
-                                                            Status:
-                                                            @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Pending)
-                                                            {
-                                                                <text>Enrollment in progress</text>
-                                                            }
-                                                            else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
-                                                            {
-                                                                <text>Successfully enrolled</text>
-                                                            }
-                                                            else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Error)
-                                                            {
-                                                                <text>Enrollment error</text>
-                                                            }
-                                                            else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Unknown)
-                                                            {
-                                                                <text>Unknown</text>
-                                                            }
-                                                        </i>
-                                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 px-0 py-2 instance">
+                                            <div class="row">
+                                                <div class="col-12 px-0 institution">
+                                                    @Utils.FormatGenericField(educationHistory.EducationalInstitution, "educational institution")<i class="fas fa-paperclip"></i>
                                                 </div>
                                             </div>
-                                            @{
-                                                @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
-                                                {
-                                                    double percentComplete = enrollment.PercentComplete;
-                                                    string classFormatter = "";
-                                                    if (percentComplete < 50)
+                                            <div class="row">
+                                                <div class="col-12 px-0 degree">
+                                                    @Utils.FormatEducationalDegreeAndType(educationHistory.EducationalDegree, educationHistory.EducationalDegreeType)
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-12 px-0 period">
+                                                    @Utils.FormatDateRange(educationHistory.StartDate, educationHistory.EndDate, "education history")
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+                    </div>
+                    <div class="tab-pane fade" id="skill" role="tabpanel" aria-labelledby="skill-tab">
+                        <div class="row">
+                            @{
+                                if (Model.Skills.Count() == 0)
+                                {
+                                    <text>No skills provided</text>
+                                }
+                                else
+                                {
+                                    <div class="col-12 px-0 py-3">
+                                        @foreach (var skill in Model.Skills)
+                                        {
+                                            <div class="skill-pill">
+                                                @Html.DisplayFor(item => skill.SkillName)
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="upskill" role="tabpanel" aria-labelledby="upskill-tab">
+                        @{
+                            if (Model.Enrollments.Count() == 0)
+                            {
+                                <text>No course enrollments exist</text>
+                            }
+                            else
+                            {
+                                <ul class="courses-in-progress-list-desktop">
+                                    @foreach (EnrollmentDto enrollment in Model.Enrollments)
+                                    {
+                                        <li class="course-in-progress-li">
+                                            <div class="course-in-progress-anchor-container">
+                                                <div class="course-in-progress-info">
+                                                    <div class="row no-padding">
+                                                        <div class="col-12 col-sm-8">
+                                                            @enrollment.Course.Name
+                                                        </div>
+                                                        <div class="col-12 col-sm-4 no-padding cip-progress-indictation">
+                                                            <i>
+                                                                Status:
+                                                                @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Pending)
+                                                                {
+                                                                    <text>Enrollment in progress</text>
+                                                                }
+                                                                else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
+                                                                {
+                                                                    <text>Successfully enrolled</text>
+                                                                }
+                                                                else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Error)
+                                                                {
+                                                                    <text>Enrollment error</text>
+                                                                }
+                                                                else if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Unknown)
+                                                                {
+                                                                    <text>Unknown</text>
+                                                                }
+                                                            </i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                @{
+                                                    @if (enrollment.SimplifiedEnrollmentStatus == SimplifiedEnrollmentStatus.Success)
                                                     {
-                                                        classFormatter = "less-than-50";
-                                                    }
-                                                    else
-                                                    {
-                                                        classFormatter = "more-than-50";
-                                                    }
-                                                    <div class="course-in-progress">
+                                                        double percentComplete = enrollment.PercentComplete;
+                                                        string classFormatter = "";
+                                                        if (percentComplete < 50)
+                                                        {
+                                                            classFormatter = "less-than-50";
+                                                        }
+                                                        else
+                                                        {
+                                                            classFormatter = "more-than-50";
+                                                        }
+                                                        <div class="course-in-progress">
 
-                                                        <div class="progress @(classFormatter)">
+                                                            <div class="progress @(classFormatter)">
 
-                                                            <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
-                                                                <div class="course-completion-percentage">
-                                                                    @(percentComplete)%
+                                                                <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="@(percentComplete)" aria-valuemin="0" aria-valuemax="100">
+                                                                    <div class="course-completion-percentage">
+                                                                        @(percentComplete)%
+                                                                    </div>
                                                                 </div>
+
                                                             </div>
 
                                                         </div>
-
-                                                    </div>
+                                                    }
                                                 }
-                                            }
-                                        </div>
-                                    </li>
-                                }
-                            </ul>
+                                            </div>
+                                        </li>
+                                    }
+                                </ul>
+                            }
                         }
-                    }
-                </div>
-                <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
-                    <div class="container p-1">
-                        <div class="container-align-right">
-                            <div class="row">
-                                <div class="col-5">
-                                    <input type="text" class="form-control" id="txtNotesCreateDate" placeholder="Created Date" autocomplete="off">
+                    </div>
+                    <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
+                        <div class="container p-1">
+                            <div class="container-align-right">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <input type="text" class="form-control" id="txtNotesCreateDate" placeholder="Created Date" autocomplete="off">
+                                    </div>
+                                    <div class="col-3 notesSearchButton">
+                                        <button id="searchNotes" type="submit" class="btn btn-primary" data-subscriberguid="@Model.SubscriberGuid">Search</button>
+                                    </div>
+                                    <div class="col-4 addEditNote">
+                                        <button type="button" class="btn btn-primary addNote" data-toggle="modal" data-target="#addNoteModal"
+                                                data-subscriberguid="@Model.SubscriberGuid">
+                                            Add Note
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="col-3 notesSearchButton">
-                                    <button id="searchNotes" type="submit" class="btn btn-primary" data-subscriberguid="@Model.SubscriberGuid">Search</button>
-                                </div>
-                                <div class="col-4 addEditNote">
-                                    <button type="button" class="btn btn-primary addNote" data-toggle="modal" data-target="#addNoteModal"
-                                            data-subscriberguid="@Model.SubscriberGuid">
-                                        Add Note
-                                    </button>
-                                </div>
-                            </div>                                
                                 <div class="row">
                                     <div class="col-12 notesGrid">
                                         @Html.AjaxGrid(Url.Action("SubscriberNotesGrid", "Talent",
@@ -315,174 +317,187 @@
                                            searchQuery=""
                                        }))
                                     </div>
-                                </div>                            
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            @await Html.PartialAsync("_SubscriberAddNotes")
         </div>
-
-        @await Html.PartialAsync("_SubscriberAddNotes")
     </div>
-</div>
+}
+else
+{
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 p-4">
+                 Sorry that subscriber seems to be missing....
+            </div>
+        </div>
+    </div>
 
-@section Scripts{
-    <script type="text/javascript">
-
-        window.onload = function () {
-            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
         }
 
-        //add Notes
-        $(document).ready(function () {
-            $('#notesArea').val('');
-            $('#IsPrivate').checked = false;
 
-            //clear notes and isPrivate on clicking addNote button
-            $('.addNote').click(function (e) {
-                $('#notesArea').val('');
-                $('#IsPrivate').prop('checked', false);
-                $('#showError').css('display', 'none');
-                $('#showSuccess').css('display', 'none');
-            });
+        @section Scripts{
+            <script type="text/javascript">
 
-            //feed Modal
-            $('#addNoteModal').on('show.bs.modal', function (event) {
-                $('#showError').css('display', 'none');
-                $('#showSuccess').css('display', 'none');
-
-                var button = $(event.relatedTarget);
-                var subscriberNotesGuid = button.data('subscribernotesguid');
-                var subscriberGuid = button.data('subscriberguid');
-                var notes = button.data('notes');
-                var isPrivate = (button.data('isprivate')=='True');
-
-                var modal = $(this);
-                modal.find('#subscriberNotesGuid').val(subscriberNotesGuid);
-                modal.find('#subscriberGuid').val(subscriberGuid);
-                modal.find('#notesArea').val(notes);
-                modal.find('#IsPrivate')[0].checked = isPrivate;
-            });
-
-            //search Notes on selection of date
-            $('#searchNotes').click(function (e) {
-                e.preventDefault();
-
-                //refresh grid
-                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-
-                var searchQuery = $('#txtNotesCreateDate').val();
-
-                grid.query.set('searchQuery', searchQuery);
-                grid.reload();
-
-            })
-
-            //save notes
-            $('#saveNotes').click(function (e) {
-                e.preventDefault();
-
-                var notes = $('#notesArea').val();
-                if (notes == '') {
-                    $('.message_box').html(
-                        '<span style="color:red;">Notes is empty!</span>'
-                    );
-                    $('#notesArea').focus();
-                    return false;
+                window.onload = function () {
+                    var grid = new MvcGrid(document.querySelector('.mvc-grid'));
                 }
-                else {
-                    $('.message_box').html(
-                        '<span></span>'
-                    );
 
-                    $.ajax({
-                        url: '/Talent/Subscriber/Notes',
-                        type: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({
-                            subscriberNotesGuid: $('#subscriberNotesGuid').val(),
-                            subscriberGuid: $('#subscriberGuid').val(),
-                            notes: $('#notesArea').val(),
-                            ViewableByOthersInRecruiterCompany: $('#IsPrivate').is(":checked") == false ? true : false
-                        }),
-                        success: function (res) {
-                            if (res) {
-                                if (res.statusCode == 200) {
-                                    $('#showError').css('display', 'none');
-                                    $('#showSuccess').css('display', 'block');
-                                    setTimeout(function () { $('#addNoteModal').modal('hide'); }, 1000);
+                //add Notes
+                $(document).ready(function () {
+                    $('#notesArea').val('');
+                    $('#IsPrivate').checked = false;
+
+                    //clear notes and isPrivate on clicking addNote button
+                    $('.addNote').click(function (e) {
+                        $('#notesArea').val('');
+                        $('#IsPrivate').prop('checked', false);
+                        $('#showError').css('display', 'none');
+                        $('#showSuccess').css('display', 'none');
+                    });
+
+                    //feed Modal
+                    $('#addNoteModal').on('show.bs.modal', function (event) {
+                        $('#showError').css('display', 'none');
+                        $('#showSuccess').css('display', 'none');
+
+                        var button = $(event.relatedTarget);
+                        var subscriberNotesGuid = button.data('subscribernotesguid');
+                        var subscriberGuid = button.data('subscriberguid');
+                        var notes = button.data('notes');
+                        var isPrivate = (button.data('isprivate') == 'True');
+
+                        var modal = $(this);
+                        modal.find('#subscriberNotesGuid').val(subscriberNotesGuid);
+                        modal.find('#subscriberGuid').val(subscriberGuid);
+                        modal.find('#notesArea').val(notes);
+                        modal.find('#IsPrivate')[0].checked = isPrivate;
+                    });
+
+                    //search Notes on selection of date
+                    $('#searchNotes').click(function (e) {
+                        e.preventDefault();
+
+                        //refresh grid
+                        var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+
+                        var searchQuery = $('#txtNotesCreateDate').val();
+
+                        grid.query.set('searchQuery', searchQuery);
+                        grid.reload();
+
+                    })
+
+                    //save notes
+                    $('#saveNotes').click(function (e) {
+                        e.preventDefault();
+
+                        var notes = $('#notesArea').val();
+                        if (notes == '') {
+                            $('.message_box').html(
+                                '<span style="color:red;">Notes is empty!</span>'
+                            );
+                            $('#notesArea').focus();
+                            return false;
+                        }
+                        else {
+                            $('.message_box').html(
+                                '<span></span>'
+                            );
+
+                            $.ajax({
+                                url: '/Talent/Subscriber/Notes',
+                                type: 'POST',
+                                contentType: 'application/json',
+                                data: JSON.stringify({
+                                    subscriberNotesGuid: $('#subscriberNotesGuid').val(),
+                                    subscriberGuid: $('#subscriberGuid').val(),
+                                    notes: $('#notesArea').val(),
+                                    ViewableByOthersInRecruiterCompany: $('#IsPrivate').is(":checked") == false ? true : false
+                                }),
+                                success: function (res) {
+                                    if (res) {
+                                        if (res.statusCode == 200) {
+                                            $('#showError').css('display', 'none');
+                                            $('#showSuccess').css('display', 'block');
+                                            setTimeout(function () { $('#addNoteModal').modal('hide'); }, 1000);
 
 
-                                    //refresh grid
-                                    var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-                                    var searchQuery = $('#txtNotesCreateDate').val();
+                                            //refresh grid
+                                            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                                            var searchQuery = $('#txtNotesCreateDate').val();
 
-                                    grid.query.set('searchQuery', searchQuery);
-                                    grid.reload();
-                                }
-                                else {
+                                            grid.query.set('searchQuery', searchQuery);
+                                            grid.reload();
+                                        }
+                                        else {
+                                            $('#showError').css('display', 'block');
+                                            $('#showSuccess').cc('display', 'none');
+                                        }
+
+                                    }
+                                },
+                                error: function (jXHR, textStatus, errorThrown) {
                                     $('#showError').css('display', 'block');
-                                    $('#showSuccess').cc('display', 'none');
+                                    $('#showSuccess').css('display', 'none');
                                 }
+                            });
+                        }
 
+                    })
+
+                    $('#txtNotesCreateDate').datepicker({
+                        autoclose: true,
+                        clearBtn: true
+                    });
+                });
+
+                //delete notes
+                function deleteSubscriberNote(subscriberNotesGuid) {
+                    bootbox.confirm({
+                        message: "Are you sure you want to delete this Note?",
+                        buttons: {
+                            confirm: {
+                                label: 'Yes',
+                                className: 'btn-success'
+                            },
+                            cancel: {
+                                label: 'No',
+                                classname: 'btn-danger'
                             }
                         },
-                        error: function (jXHR, textStatus, errorThrown) {
-                            $('#showError').css('display', 'block');
-                            $('#showSuccess').css('display', 'none');
+                        callback: function (result) {
+                            if (result) {
+                                $.ajax({
+                                    url: '/Talent/Subscriber/Notes/' + subscriberNotesGuid,
+                                    method: "DELETE",
+                                    success: function (data, textStatus, jqXHR) {
+                                        if (textStatus === "success") {
+                                            ToastService.success("The grid is being refreshed...", "Note deleted");
+
+                                            //refresh grid
+                                            var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                                            var searchQuery = $('#txtNotesCreateDate').val();
+
+                                            grid.query.set('searchQuery', searchQuery);
+                                            grid.reload();
+                                        } else {
+                                            ToastService.warning("The Note was not deleted successfully", "Something went wrong");
+                                        }
+                                    },
+                                    error: function (jqXHR, textStatus, errorThrown) {
+                                        ToastService.error(textStatus, errorThrown);
+                                    }
+                                });
+                            }
                         }
                     });
                 }
-
-            })
-
-            $('#txtNotesCreateDate').datepicker({
-                autoclose: true,
-                clearBtn: true
-            });
-        });
-
-        //delete notes
-        function deleteSubscriberNote(subscriberNotesGuid) {
-            bootbox.confirm({
-                message: "Are you sure you want to delete this Note?",
-                buttons: {
-                    confirm: {
-                        label: 'Yes',
-                        className: 'btn-success'
-                    },
-                    cancel: {
-                        label: 'No',
-                        classname: 'btn-danger'
-                    }
-                },
-                callback: function (result) {
-                    if (result) {
-                        $.ajax({
-                            url: '/Talent/Subscriber/Notes/' + subscriberNotesGuid,
-                            method: "DELETE",
-                            success: function (data, textStatus, jqXHR) {
-                                if (textStatus === "success") {
-                                    ToastService.success("The grid is being refreshed...", "Note deleted");
-
-                                    //refresh grid
-                                    var grid = new MvcGrid(document.querySelector('.mvc-grid'));
-                                    var searchQuery = $('#txtNotesCreateDate').val();
-
-                                    grid.query.set('searchQuery', searchQuery);
-                                    grid.reload();
-                                } else {
-                                    ToastService.warning("The Note was not deleted successfully", "Something went wrong");
-                                }
-                            },
-                            error: function (jqXHR, textStatus, errorThrown) {
-                                ToastService.error(textStatus, errorThrown);
-                            }
-                        });
-                    }
-                }
-            });
+            </script>
         }
-    </script>
-}
 

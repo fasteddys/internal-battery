@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using UpDiddy.ViewModels.ButterCMS;
 using UpDiddyLib.Helpers;
 
@@ -42,41 +43,41 @@ namespace UpDiddy.Services.ButterCMS
         /// <param name="Keys">Any keys required to fetch the content</param>
         /// <param name="QueryParameters">Any additional query parameters to modify the GET request</param>
         /// <returns>An object in the form of T representing the BCMS response</returns>
-        public T RetrieveContentFields<T>(string CacheKey, string[] Keys, Dictionary<string, string> QueryParameters) where T : class
+        public async Task<T> RetrieveContentFieldsAsync<T>(string CacheKey, string[] Keys, Dictionary<string, string> QueryParameters) where T : class
         {
-            T CachedButterResponse = _cacheService.GetCachedValue<T>(CacheKey);
+            T CachedButterResponse = await _cacheService.GetCachedValueAsync<T>(CacheKey);
             try
             {
                 if (CachedButterResponse == null)
                 {
-                    CachedButterResponse = _butterClient.RetrieveContentFields<T>(Keys, QueryParameters);
+                    CachedButterResponse = await _butterClient.RetrieveContentFieldsAsync<T>(Keys, QueryParameters);
                     
                     if(CachedButterResponse == null)
                     {
-                        SendEmailNotification(CacheKey);
+                        await SendEmailNotificationAsync(CacheKey);
                         return null;
                     }
-                    _cacheService.SetCachedValue(CacheKey, CachedButterResponse);
+                    await _cacheService.SetCachedValueAsync(CacheKey, CachedButterResponse);
                 }
             }
-            catch(ContentFieldObjectMismatchException Exception)
+            catch(ContentFieldObjectMismatchException)
             {
-                SendEmailNotification(CacheKey);
+                await SendEmailNotificationAsync(CacheKey);
                 return null;
             }
             return CachedButterResponse;
         }
 
-        public PageResponse<T> RetrievePage<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters = null) where T : ButterCMSBaseViewModel
+        public async Task<PageResponse<T>> RetrievePageAsync<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters = null) where T : ButterCMSBaseViewModel
         {
-            CMSResponseHelper<PageResponse<T>> ResponseHelper = _cacheService.GetCachedValue<CMSResponseHelper<PageResponse<T>>>(CacheKey);
+            CMSResponseHelper<PageResponse<T>> ResponseHelper = await _cacheService.GetCachedValueAsync<CMSResponseHelper<PageResponse<T>>>(CacheKey);
 
             try
             {
                 if (ResponseHelper == null)
                 {
                     ResponseHelper = new CMSResponseHelper<PageResponse<T>>();
-                    PageResponse<T> CachedButterResponse = _butterClient.RetrievePage<T>("*", Slug, QueryParameters);
+                    PageResponse<T> CachedButterResponse = await _butterClient.RetrievePageAsync<T>("*", Slug, QueryParameters);
                     ResponseHelper.Data = CachedButterResponse;
 
                     if (CachedButterResponse == null)
@@ -84,11 +85,11 @@ namespace UpDiddy.Services.ButterCMS
                     else
                         ResponseHelper.ResponseCode = Constants.CMS.RESPONSE_RECEIVED;
 
-                    _cacheService.SetCachedValue(CacheKey, ResponseHelper);
+                    await _cacheService.SetCachedValueAsync(CacheKey, ResponseHelper);
                 }
 
             }
-            catch (ContentFieldObjectMismatchException Exception)
+            catch (ContentFieldObjectMismatchException)
             {
                 return null;
             }
@@ -97,30 +98,106 @@ namespace UpDiddy.Services.ButterCMS
             
         }
 
-        public bool ClearCachedValue<T>(string CacheKey)
+        public async Task<bool> ClearCachedValueAsync<T>(string CacheKey)
         {
-            return _cacheService.RemoveCachedValue<T>(CacheKey);
+            return await _cacheService.RemoveCachedValueAsync<T>(CacheKey);
         }
 
-        private void SendEmailNotification(string CacheKey)
+        public string AssembleCacheKey(string KeyPrefix, string PageSlug, IQueryCollection Query = null){
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append(KeyPrefix)
+                .Append("_")
+                .Append(PageSlug);
+
+            // Check to see if this is a preview request.
+            if(Query != null && Query.Keys.Contains("preview") && Query["preview"].Equals("1"))
+                stringBuilder.Append("_preview");
+
+            return stringBuilder.ToString();
+        }
+
+        private async Task SendEmailNotificationAsync(string CacheKey)
         {
             /**
              * We're caching that we've sent this email to ensure that as traffic increases,
              * we don't spam the CareerCircle errors inbox upon navigation fetch failure.
              */
             string CacheKeyForNavigationLoadFailure = "HasSentNavigationLoadFailureEmail";
-            string HasSentNotificationEmail = _cacheService.GetCachedValue<string>(CacheKeyForNavigationLoadFailure);
+            string HasSentNotificationEmail = await _cacheService.GetCachedValueAsync<string>(CacheKeyForNavigationLoadFailure);
             if (string.IsNullOrEmpty(HasSentNotificationEmail))
             {
                 StringBuilder HtmlMessage = new StringBuilder();
                 HtmlMessage.Append("Error retrieving " + CacheKey + " from ButterCMS, or Redis. Falling back to error navigation.");
-                _sysEmail.SendEmailAsync(_configuration["ButterCMS:CareerCirclePublicSiteNavigation:FailedFetchNotifyEmail"],
+                await _sysEmail.SendEmailAsync(_configuration["ButterCMS:CareerCirclePublicSiteNavigation:FailedFetchNotifyEmail"],
                     "ALERT! Navigation failed to load.",
                     HtmlMessage.ToString(),
                     Constants.SendGridAccount.Transactional);
-                _cacheService.SetCachedValue<string>(CacheKeyForNavigationLoadFailure, "true");
+                await _cacheService.SetCachedValueAsync<string>(CacheKeyForNavigationLoadFailure, "true");
+            }            
+        }
+
+        public async Task<XmlDocument> GetButterSitemapAsync(){
+            XmlDocument xmlDocument = await _butterClient.GetSitemapAsync();
+            return xmlDocument;
+        }
+
+        public async Task<IList<string>> GetBlogAuthorSlugsAsync(){
+            IEnumerable<Author> Authors =  await _butterClient.ListAuthorsAsync(includeRecentPosts: true);
+            IList<string> AuthorSlugs = new List<string>();
+            foreach(Author author in Authors){
+                if(author.RecentPosts.Count() > 0)
+                    AuthorSlugs.Add(author.Slug);
             }
+            return AuthorSlugs;
+        }
+
+        public async Task<IList<string>> GetBlogCategorySlugsAsync(){
+            IEnumerable<Category> Categories =  await _butterClient.ListCategoriesAsync(includeRecentPosts: true);
+            IList<string> CategoriesList = new List<string>();
+            foreach(Category category in Categories){
+                if(category.RecentPosts.Count() > 0)
+                    CategoriesList.Add(category.Slug);
+            }
+            return CategoriesList;
+        }
+
+        public async Task<IList<string>> GetBlogTagSlugsAsync(){
+            IEnumerable<Tag> Tags =  await _butterClient.ListTagsAsync(includeRecentPosts: true);
+            IList<string> TagsList = new List<string>();
+            foreach(Tag tag in Tags){
+                if(tag.RecentPosts.Count() > 0)
+                    TagsList.Add(tag.Slug);
+            }
+            return TagsList;
+        }
+
+        /*
+            This method implementation is not ideal, as we are calling Butter to iterate through
+            all blog post pages to get the count number. I don't see any way to get the total 
+            number of Blog posts in Butter, so this was the only approach. We are leveraging the
+            'excludeBody' parameter of the call to reduce payload size.
+         */
+        public async Task<int> GetNumberOfBlogPostPagesAsync(){
+            PostsResponse posts = await _butterClient.ListPostsAsync(pageSize: Constants.CMS.BLOG_PAGINATION_PAGE_COUNT,
+                excludeBody: true);  
+            int NumberOfPages = 0;
+            if(posts == null)
+                return NumberOfPages;
             
+            NumberOfPages++;
+            int? NextPageExists = posts.Meta.NextPage;
+
+            if(NextPageExists == null)
+                return NumberOfPages;
+            
+            while(NextPageExists != null){
+                NumberOfPages++;
+                posts = await _butterClient.ListPostsAsync(page: NumberOfPages, pageSize: Constants.CMS.BLOG_PAGINATION_PAGE_COUNT,
+                    excludeBody: true); 
+                NextPageExists = posts.Meta.NextPage;
+            }
+
+            return NumberOfPages;
         }
 
         private class CMSResponseHelper<T>

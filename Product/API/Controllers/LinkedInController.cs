@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using UpDiddyApi.ApplicationCore.Factory;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.Controllers
 {
@@ -27,10 +28,12 @@ namespace UpDiddyApi.Controllers
         private readonly string _apiBaseUri = String.Empty;
         private WozTransactionLog _log = null;
         private IHttpClientFactory _httpClientFactory = null;
+        private readonly IHangfireService _hangfireService;
+
         #endregion
 
         #region Constructor
-        public LinkedInController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,  IHttpClientFactory httpClientFactory, ILogger<LinkedInController> sysLog)
+        public LinkedInController(UpDiddyDbContext db, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration,  IHttpClientFactory httpClientFactory, ILogger<LinkedInController> sysLog, IHangfireService hangfireService)
         {
             _db = db;
             _mapper = mapper;
@@ -38,7 +41,8 @@ namespace UpDiddyApi.Controllers
             _apiBaseUri = _configuration["LinkedIn:ApiUrl"]; 
             _log = new WozTransactionLog();
             _syslog = sysLog;
-            _httpClientFactory = httpClientFactory;            
+            _httpClientFactory = httpClientFactory;
+            _hangfireService = hangfireService;
         }
         #endregion
 
@@ -64,7 +68,7 @@ namespace UpDiddyApi.Controllers
                 return BadRequest(new BasicResponseDto() { StatusCode = 400, Description = "Missing return url as get param." });
 
             // Enqueue job and return 
-                    BackgroundJob.Enqueue<LinkedInInterface>(lif => lif.SyncProfile(subscriberGuid, code, returnUrl) );
+                    _hangfireService.Enqueue<LinkedInInterface>(lif => lif.SyncProfile(subscriberGuid, code, returnUrl) );
             BasicResponseDto rVal = new BasicResponseDto()
             {
                 StatusCode = (int) ProfileDataStatus.Processing,

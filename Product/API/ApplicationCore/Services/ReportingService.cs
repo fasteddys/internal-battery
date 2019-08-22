@@ -8,7 +8,6 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Reporting;
-using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
 using static UpDiddyLib.Helpers.Constants;
 
@@ -24,10 +23,10 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<List<JobApplicationCountDto>> GetApplicationCountByCompanyAsync(ODataQueryOptions<JobApplication> options, Guid? companyGuid)
         {
             //get all jobs querayble
-            var queryable = options.ApplyTo(await _repositoryWrapper.JobApplication.GetAllJobApplicationsAsync());
-            var jobPostingRep = await _repositoryWrapper.JobPosting.GetAllJobPostings();
+            var queryable = options.ApplyTo( _repositoryWrapper.JobApplication.GetAllJobApplicationsAsync());
+            var jobPostingRep =  _repositoryWrapper.JobPosting.GetAllJobPostings();
             //get all companies queryable
-            var companyRep = await _repositoryWrapper.Company.GetAllCompanies();
+            var companyRep =  _repositoryWrapper.Company.GetAllCompanies();
 
             var jobApplicationsQuery = from jobApplication in queryable.Cast<JobApplication>()
                                        join jp in jobPostingRep on jobApplication.JobPostingId equals jp.JobPostingId
@@ -50,25 +49,15 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<NotificationCountsReportDto>> GetReadNotificationsAsync(ODataQueryOptions<Notification> options)
         {
-            var notifications = options.ApplyTo(await _repositoryWrapper.NotificationRepository.GetAllAsync());
-            var subscriberNotifications = await _repositoryWrapper.SubscriberNotificationRepository.GetAllAsync();
-
-
-            var readNotifications = from sn in subscriberNotifications
-                                    join n in notifications.Cast<Notification>() on sn.NotificationId equals n.NotificationId
-                                    group new
-                                    {
-                                        NotificationTitle = n.Title,
-                                        PublishedDate = n.CreateDate
-                                    } by n.NotificationId into g
-                                    select new NotificationCountsReportDto
-                                    {
-                                        NotificationTitle = g.First().NotificationTitle,
-                                        PublishedDate = g.First().PublishedDate,
-                                        ReadCount = g.Count()
-                                    };
-
-            return await readNotifications.OrderByDescending(rn => rn.PublishedDate).ToListAsync();
+            var view =  _repositoryWrapper.NotificationRepository.GetNotificationReadCounts();
+            return await view.Select(v => new NotificationCountsReportDto()
+            {
+                NotificationTitle = v.NotificationTitle,
+                PublishedDate = v.PublishedDate,
+                ReadCount = v.ReadCount
+            })
+            .OrderByDescending(n => n.PublishedDate)
+            .ToListAsync();
         }
 
         /// <summary>
@@ -82,10 +71,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             List<JobPostingCountReportDto> jobPostingCountReportDtos;
 
             //get all jobs querayble
-            var jobPostingRepo = _repositoryWrapper.JobPosting.GetAllJobPostings().Result;
+            var jobPostingRepo = _repositoryWrapper.JobPosting.GetAllJobPostings();
 
             //get all companies queryable
-            var companyRepo = _repositoryWrapper.Company.GetAllCompanies().Result;
+            var companyRepo = _repositoryWrapper.Company.GetAllCompanies();
 
             var query = from c in companyRepo
                         join jp in jobPostingRepo on c.CompanyId equals jp.CompanyId
@@ -116,7 +105,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             if (jobPostingGuid == null)
             {
-                var jobPostingListQuerable = await _repositoryWrapper.JobPosting.GetAllJobPostings();
+                var jobPostingListQuerable = _repositoryWrapper.JobPosting.GetAllJobPostings();
                 jobPostingList.AddRange(jobPostingListQuerable.ToList());
             }
             else
@@ -146,6 +135,12 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             return jobviewCountDtoList;
+        }
+
+        public async Task<List<JobAbandonmentStatistics>> GetJobAbandonmentCountByDateAsync(DateTime startDate, DateTime endDate)
+        {
+            var result = await _repositoryWrapper.StoredProcedureRepository.GetJobAbandonmentStatisticsAsync(startDate, endDate);
+            return result;        
         }
     }
 }

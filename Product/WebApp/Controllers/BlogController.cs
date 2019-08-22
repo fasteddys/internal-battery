@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddyLib.Dto;
@@ -10,6 +11,7 @@ using UpDiddy.ViewModels.ButterCMS;
 using ButterCMS.Models;
 using Microsoft.AspNetCore.Http;
 using ButterCMS;
+using UpDiddyLib.Helpers;
 
 
 namespace UpDiddy.Controllers
@@ -34,7 +36,7 @@ namespace UpDiddy.Controllers
         [Route("/blog/{page?}")]
         public async Task<IActionResult> IndexAsync(int page = 1)
         {
-            var response = await _butterCMSClient.ListPostsAsync(page, 10);
+            var response = await _butterCMSClient.ListPostsAsync(page, Constants.CMS.BLOG_PAGINATION_PAGE_COUNT);
             ViewBag.NextPage = response.Meta.NextPage;
             ViewBag.PreviousPage = response.Meta.PreviousPage;
             return View("Posts", response);
@@ -45,6 +47,26 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> ShowPostAsync(string slug)
         {
             var response = await _butterCMSClient.RetrievePostAsync(slug);
+
+            string Keywords = string.Empty;
+            bool isFirst = true;
+            foreach(Category c in response.Data.Categories)
+            {
+                if (isFirst)
+                {
+                    Keywords += c.Name;
+                    isFirst = false;
+                }
+                else
+                    Keywords += ", " + c.Name;
+            }
+
+            ViewData[Constants.Seo.META_TITLE] = response.Data.SeoTitle;
+            ViewData[Constants.Seo.META_DESCRIPTION] = response.Data.MetaDescription;
+            ViewData[Constants.Seo.META_KEYWORDS] = Keywords;
+            ViewData[Constants.Seo.OG_TITLE] = response.Data.SeoTitle + " - CareerCircle Blog";
+            ViewData[Constants.Seo.OG_DESCRIPTION] = response.Data.MetaDescription;
+            ViewData[Constants.Seo.OG_IMAGE] = response.Data.FeaturedImage;
             return View("Post", response);
         }
 
@@ -84,7 +106,10 @@ namespace UpDiddy.Controllers
         [Route("/blog/author/{author}")]
         public async Task<IActionResult> GetPostsByAuthorAsync(string author)
         {
+            ViewData["ShowAuthorInfo"]=true;
             PostsResponse response = await _butterCMSClient.ListPostsAsync(authorSlug: author);
+            if(response?.Data?.Count() == 0)
+                return NotFound();
             return View("Posts", response);
         }
     }

@@ -15,9 +15,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-        public Task<IQueryable<JobPostingFavorite>> GetAllJobPostingFavoritesAsync()
+        public IQueryable<JobPostingFavorite> GetAllJobPostingFavoritesAsync()
         {
-           return GetAllAsync();
+           return GetAll();
         }
     }
 }

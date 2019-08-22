@@ -10,23 +10,20 @@ using Microsoft.Extensions.Configuration;
 using UpDiddy.Api;
 using UpDiddy.ViewModels;
 using UpDiddyLib.Dto;
-using SendGrid;
-using SendGrid.Helpers.Mail;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Text.Encodings.Web;
 using System.IO;
 using UpDiddyLib.Helpers;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Security.Claims;
-using UpDiddy.Helpers;
-using UpDiddyLib.Dto.Marketing;
 using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace UpDiddy.Controllers
 {
@@ -35,6 +32,8 @@ namespace UpDiddy.Controllers
         private readonly IConfiguration _configuration;
         private readonly IHostingEnvironment _env;
         private readonly ISysEmail _sysEmail;
+        private readonly IApi _api;
+        private readonly IMemoryCache _memoryCache;
 
         [HttpGet]
         public async Task<IActionResult> GetCountries()
@@ -45,12 +44,16 @@ namespace UpDiddy.Controllers
         public HomeController(IApi api,
             IConfiguration configuration,
             IHostingEnvironment env,
-            ISysEmail sysEmail)
+            ISysEmail sysEmail,
+            IMemoryCache memoryCache)
+            
             : base(api)
         {
             _env = env;
             _sysEmail = sysEmail;
             _configuration = configuration;
+            _api = api;
+            _memoryCache = memoryCache;
         }
         [HttpGet]
         public async Task<IActionResult> GetStatesByCountry(Guid countryGuid)
@@ -60,8 +63,18 @@ namespace UpDiddy.Controllers
 
         public async Task<IActionResult> Index()
         {
-            HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
-            return View(HomeViewModel);
+            try
+            {
+                HomeViewModel HomeViewModel = new HomeViewModel(_configuration);
+                var jobCount = await _Api.GetJobCountPerProvinceAsync();
+                HomeViewModel.JobCount = jobCount;
+                return View(HomeViewModel);
+            }
+            catch (ApiException ex)
+            {
+                Response.StatusCode = (int)ex.StatusCode;
+                return new JsonResult(new BasicResponseDto { StatusCode = (int)ex.StatusCode, Description = "Oops, We're sorry somthing went wrong!" });
+            }          
         }
 
         public IActionResult TermsOfService()
@@ -183,8 +196,17 @@ namespace UpDiddy.Controllers
             // logic being determined in web app for managing API data
 
             await _Api.UpdateStudentCourseProgressAsync(true);
-
-            if (this.subscriber.HasOnboarded > 0)
+ 
+            // Handle the case of MsalUiRequireRedirect 
+            var userId =  User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            string CacheKey = $"{userId}MsalUiRequiredRedirect";
+            string MsalUiRequiredRedirect =  _memoryCache.Get<String>(CacheKey); 
+            if ( string.IsNullOrEmpty(MsalUiRequiredRedirect) == false )
+            {
+                _memoryCache.Remove(CacheKey);
+                return Redirect(MsalUiRequiredRedirect);
+            }
+            else if (this.subscriber.HasOnboarded > 0)
                 return RedirectToAction("Profile", "Home");
             else
                 return RedirectToAction("Signup", "Home");
@@ -375,7 +397,7 @@ namespace UpDiddy.Controllers
                 };
                 await _Api.UpdateProfileInformationAsync(Subscriber);
                 var redirect = await _Api.GetSubscriberPartnerWebRedirect();
-                if(string.IsNullOrEmpty(redirect.RelativePath))
+                if (string.IsNullOrEmpty(redirect.RelativePath))
                     return RedirectToAction("Profile");
 
                 return Redirect(redirect.RelativePath);
@@ -704,6 +726,15 @@ namespace UpDiddy.Controllers
             await _Api.ResolveResumeParse(resumeParseGuid, formInfo);
 
             return RedirectToAction("Profile");
+        }
+
+        [HttpGet]
+        [Route("/Home/DisableEmailReminders/{subscriberGuid}")]
+        public async Task<IActionResult> DisableEmailRemindersAsync(Guid subscriberGuid)
+        {
+            var response  = await _Api.ToggleSubscriberNotificationEmailAsync(subscriberGuid, false);
+            ViewBag.Status = response.StatusCode == 200 ? "Your notification email reminders have been disabled." : "There was a problem processing your request; please login to disable your notification email reminders.";
+            return View("DisableEmailReminders");
         }
     }
 }

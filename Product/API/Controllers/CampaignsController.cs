@@ -1,33 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using UpDiddyApi.Authorization;
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
-using UpDiddyLib.Helpers;
-using System.IO;
 using UpDiddyApi.ApplicationCore.Interfaces;
-using UpDiddyApi.ApplicationCore.Factory;
-using System.Data.SqlClient;
-using AutoMapper.QueryableExtensions;
-using System.Data;
-using System.Web;
-using UpDiddyLib.Dto.Marketing;
-using UpDiddyLib.Shared;
 
 namespace UpDiddyApi.Controllers
 {
@@ -63,28 +47,28 @@ namespace UpDiddyApi.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            List<Campaign> campaigns = _db.Campaign
+            List<Campaign> campaigns = await _db.Campaign
                 .Where(s => s.IsDeleted == 0)
-                .ToList();
+                .ToListAsync();
             return Ok(campaigns);
         }
 
         [HttpGet("{CampaignGuid}")]
         public async Task<IActionResult> GetCampaign(Guid CampaignGuid)
         {
-            Campaign campaign = _db.Campaign
+            Campaign campaign = await _db.Campaign
                 .Where(s => s.IsDeleted == 0 && s.CampaignGuid == CampaignGuid)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
             return Ok(campaign);
         }
 
         [HttpGet("partner-contact/{tinyId}")]
         public async Task<IActionResult> GetCampaignPartnerContactAsync(string tinyId)
         {
-            var cpc = _db.CampaignPartnerContact.Where(x => x.TinyId == tinyId && x.IsDeleted == 0)
+            var cpc = await _db.CampaignPartnerContact.Where(x => x.TinyId == tinyId && x.IsDeleted == 0)
                    .Include(x => x.Campaign)
                    .Include(x => x.PartnerContact).ThenInclude(y => y.Contact)
-                   .FirstOrDefault();
+                   .FirstOrDefaultAsync();
 
             CampaignPartnerContactDto campaignPartnerContact = null;
 

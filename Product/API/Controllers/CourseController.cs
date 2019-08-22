@@ -20,6 +20,7 @@ using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using Hangfire;
 using UpDiddyApi.Workflow;
+using UpDiddyApi.ApplicationCore.Interfaces;
 
 namespace UpDiddyApi.Controllers
 {
@@ -37,8 +38,9 @@ namespace UpDiddyApi.Controllers
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ISysEmail _sysemail;
         private readonly IDistributedCache _distributedCache;
+        private readonly IHangfireService _hangfireService;
 
-        public CourseController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, ILogger<CourseController> syslog, IDistributedCache distributedCache)
+        public CourseController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ISysEmail sysemail, IHttpClientFactory httpClientFactory, ILogger<CourseController> syslog, IDistributedCache distributedCache, IHangfireService hangfireService)
         {
             _db = db;
             _mapper = mapper;
@@ -49,6 +51,7 @@ namespace UpDiddyApi.Controllers
             _wozInterface = new WozInterface(_db, _mapper, _configuration, _syslog, _httpClientFactory);
             _sysemail = sysemail;
             _distributedCache = distributedCache;
+            _hangfireService = hangfireService;
         }
 
         [HttpPut]
@@ -67,11 +70,11 @@ namespace UpDiddyApi.Controllers
                 return Ok();
 
             int AgeThresholdInHours = int.Parse(_configuration["ProgressUpdateAgeThresholdInHours"]);
-            BackgroundJob.Enqueue<ScheduledJobs>(j => j.UpdateStudentProgress(subscriberGuid, AgeThresholdInHours));
+            _hangfireService.Enqueue<ScheduledJobs>(j => j.UpdateStudentProgress(subscriberGuid, AgeThresholdInHours));
 
             // Queue another update in 6 hours 
             if (futureSchedule)
-                BackgroundJob.Schedule<ScheduledJobs>(j => j.UpdateStudentProgress(subscriberGuid, AgeThresholdInHours), TimeSpan.FromHours(AgeThresholdInHours));
+                _hangfireService.Schedule<ScheduledJobs>(j => j.UpdateStudentProgress(subscriberGuid, AgeThresholdInHours), TimeSpan.FromHours(AgeThresholdInHours));
 
             return Ok();
         }
@@ -109,7 +112,7 @@ namespace UpDiddyApi.Controllers
             rval = _db.Course
                 .Where(t => t.IsDeleted == 0 && t.TopicId == topicId)
                 .ProjectTo<CourseDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .OrderBy(x => x.SortOrder).ToList();
 
             return Ok(rval);
         }

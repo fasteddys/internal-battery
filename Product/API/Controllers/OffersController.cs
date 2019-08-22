@@ -44,6 +44,8 @@ namespace UpDiddyApi.Controllers
         private IAuthorizationService _authorizationService;
         private ICloudStorage _cloudStorage;
         private ISysEmail _sysEmail;
+        private readonly IHangfireService _hangfireService;
+
 
         public OffersController(UpDiddyDbContext db,
             IMapper mapper,
@@ -54,7 +56,8 @@ namespace UpDiddyApi.Controllers
             ICloudStorage cloudStorage,
             IAuthorizationService authorizationService,
             IDistributedCache cache,
-            ISysEmail sysEmail)
+            ISysEmail sysEmail,
+            IHangfireService hangfireService)
         {
             _db = db;
             _mapper = mapper;
@@ -65,12 +68,13 @@ namespace UpDiddyApi.Controllers
             _authorizationService = authorizationService;
             _sysEmail = sysEmail;
             _cache = cache;
+            _hangfireService = hangfireService;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            List<OfferDto> offers = _db.Offer
+            List<OfferDto> offers = await _db.Offer
                 .Where(s => s.IsDeleted == 0)
                 .Include(s => s.Partner)
                 .Select(s => new Offer
@@ -88,7 +92,7 @@ namespace UpDiddyApi.Controllers
                      Partner = s.Partner
                 })
                 .ProjectTo<OfferDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
 
 
             return Ok(offers);
@@ -105,10 +109,10 @@ namespace UpDiddyApi.Controllers
             if (!SubscriberFactory.IsEligibleForOffers(_db, loggedInUserGuid, _syslog, _mapper, User.Identity))
                 return Unauthorized();
 
-            OfferDto offer = _db.Offer
+            OfferDto offer = await _db.Offer
                 .Where(s => s.IsDeleted == 0 && s.OfferGuid == OfferGuid)
                 .ProjectTo<OfferDto>(_mapper.ConfigurationProvider)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
             return Ok(offer); 
         }
 
@@ -138,7 +142,7 @@ namespace UpDiddyApi.Controllers
             else
                 new SubscriberActionFactory(_db, _configuration, _syslog, _cache).TrackSubscriberAction(loggedInUserGuid, "Partner offer", "Offer", offer.OfferGuid);
 
-            BackgroundJob.Enqueue(() =>
+            _hangfireService.Enqueue(() =>
                 _sysEmail.SendTemplatedEmailAsync(subscriber.Email, _configuration["SysEmail:Transactional:TemplateIds:SubscriberOffer-Redemption"], offer, Constants.SendGridAccount.Transactional, null, null, null, null));
             
             return Ok(offer);

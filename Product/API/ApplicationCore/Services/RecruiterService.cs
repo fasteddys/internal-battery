@@ -46,8 +46,8 @@ namespace UpDiddyApi.ApplicationCore.Services
                 var subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByGuidAsync(recruiterDto.SubscriberGuid);
 
                 //check if recruiter exist
-                var queryableRecruiter = await _repositoryWrapper.RecruiterRepository.GetAllRecruiters();
-                var existingRecruiter = await queryableRecruiter.Where(r => r.SubscriberId == subscriber.SubscriberId).FirstOrDefaultAsync(); ;
+                var queryableRecruiter =  _repositoryWrapper.RecruiterRepository.GetAllRecruiters();
+                var existingRecruiter = await queryableRecruiter.Where(r => r.SubscriberId == subscriber.SubscriberId).FirstOrDefaultAsync(); 
 
                 if (existingRecruiter != null)
                 {
@@ -73,7 +73,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     var host = mailAddress.Host.Split('.')[0];
                     //get CompanyId from email domain
                     var company = await _repositoryWrapper.Company.GetAllCompanies()
-                                                    .Result.Where(c => c.IsDeleted == 0 && c.CompanyName.ToLower().Replace(" ", String.Empty) == host).FirstOrDefaultAsync();
+                                        .Where(c => c.IsDeleted == 0 && c.CompanyName.ToLower().Replace(" ", String.Empty) == host).FirstOrDefaultAsync();
                     if (company != null)
                     {
                         var newRecruiter = _mapper.Map<Recruiter>(recruiterDto);
@@ -112,7 +112,7 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<List<RecruiterDto>> GetRecruitersAsync()
         {
-            var queryableRecruiters = await _repositoryWrapper.RecruiterRepository.GetAllRecruiters();
+            var queryableRecruiters = _repositoryWrapper.RecruiterRepository.GetAllRecruiters();
 
             var includeDependentsToRecruiters = queryableRecruiters.Include<Recruiter>("Subscriber").Include<Recruiter>("Company");
             //get only non deleted records

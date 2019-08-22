@@ -69,6 +69,8 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
             html.LoadHtml(response);
 
             var id = html.DocumentNode.SelectSingleNode("//dl//dt[contains(@class, 'iCIMS_JobHeaderField') and text()='Job ID']/following-sibling::dd//span")?.InnerText?.Trim();
+            var script = html.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']");
+            var data = JsonConvert.DeserializeObject<dynamic>(script.InnerText);
 
             return new JobPage()
             {
@@ -77,7 +79,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
                 IsDeleted = 0,
                 JobPageGuid = Guid.NewGuid(),
                 JobPageStatusId = 1, // pending
-                RawData = html.Text,
+                RawData = data.ToString(),
                 UniqueIdentifier = id,
                 Uri = uri,
                 JobSiteId = _jobSiteId
@@ -95,11 +97,7 @@ namespace UpDiddyApi.ApplicationCore.Services.JobDataMining.ICIMS
             if (string.IsNullOrWhiteSpace(rawData))
                 return jobPostingDto;
 
-            var html = new HtmlDocument();
-            html.LoadHtml(rawData);
-
-            var script = html.DocumentNode.SelectSingleNode("//script[@type='application/ld+json']");
-            var data = JsonConvert.DeserializeObject<dynamic>(script.InnerText);
+            var data = JsonConvert.DeserializeObject<dynamic>(rawData.ToString());
 
             jobPostingDto.Title = data.title;
             jobPostingDto.Description = data.description;

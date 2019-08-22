@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+﻿using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Repository
@@ -43,6 +39,9 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IActionRepository _actionRepository;
         private IContactRepository _contactRepository;
         private IOfferRepository _offerRepository;
+        private ISubscriberFileRepository _subscriberFileRepository;
+        private ISkillRepository _skillRepository;
+        private IStoredProcedureRepository _storedProcedureRepository;
         private ICourseSiteRepository _courseSiteRepository;
         private ICoursePageRepository _coursePageRepository;
 
@@ -180,7 +179,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 if (_subscriberRepository == null)
                 {
-                    _subscriberRepository = new SubscriberRepository(_dbContext);
+                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository,PartnerRepository);
                 }
                 return _subscriberRepository;
             }
@@ -229,7 +228,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
             {
                 if (_subscriberRepository == null)
                 {
-                    _subscriberRepository = new SubscriberRepository(_dbContext);
+                    _subscriberRepository = new SubscriberRepository(_dbContext, SubscriberGroupRepository, GroupPartnerRepository,PartnerRepository);
                 }
                 return _subscriberRepository;
             }
@@ -463,6 +462,45 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _offerRepository;
             }
         }
+
+        public ISubscriberFileRepository SubscriberFileRepository
+        {
+            get
+            {
+                if (_subscriberFileRepository == null)
+                {
+                    _subscriberFileRepository = new SubscriberFileRepository(_dbContext);
+                }
+                return _subscriberFileRepository;
+            }
+        }
+
+
+        public ISkillRepository SkillRepository
+        {
+            get
+            {
+                if (_skillRepository == null)
+                {
+                    _skillRepository = new SkillRepository(_dbContext);
+                }
+                return _skillRepository;
+            }
+        }
+
+        public IStoredProcedureRepository StoredProcedureRepository
+        {
+            get
+            {
+                if (_storedProcedureRepository == null)
+                {
+                    _storedProcedureRepository = new StoredProcedureRepository(_dbContext);
+                }
+                return _storedProcedureRepository;
+            }
+        }
+    }
+}
 
         public ICourseSiteRepository CourseSite
         {

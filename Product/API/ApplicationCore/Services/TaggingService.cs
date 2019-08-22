@@ -47,7 +47,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 ModifyDate = currentDateTime,
                 SubscriberGroupGuid = Guid.NewGuid()
             };
-            _repositoryWrapper.SubscriberGroupRepository.Create(subscriberGroup);
+            await _repositoryWrapper.SubscriberGroupRepository.Create(subscriberGroup);
             await _repositoryWrapper.SubscriberGroupRepository.SaveAsync();
 
             return true;
@@ -76,30 +76,37 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task<bool> CreateGroup(string ReferrerUrl, Guid PartnerGuid, int SubscriberId)
         {
-            Group Group = await GetGroupBasedOnReferrerUrl(ReferrerUrl);
-            await AddSubscriberToGroupAsync(Group.GroupId, SubscriberId);
-
-            if(PartnerGuid != null && PartnerGuid != Guid.Empty)
+            try
             {
-                IEnumerable<Partner> iePartner = await _repositoryWrapper.PartnerRepository.GetByConditionAsync(p => p.PartnerGuid == PartnerGuid);
-                Partner Partner = iePartner.FirstOrDefault();
-
-                DateTime CurrentDateTime = DateTime.UtcNow;
-
-                GroupPartner GroupPartner = new GroupPartner
+                Group Group = await GetGroupBasedOnReferrerUrl(ReferrerUrl);
+                await AddSubscriberToGroupAsync(Group.GroupId, SubscriberId);
+                if (PartnerGuid != null && PartnerGuid != Guid.Empty)
                 {
-                    CreateDate = CurrentDateTime,
-                    CreateGuid = Guid.Empty,
-                    GroupId = Group.GroupId,
-                    GroupPartnerGuid = Guid.NewGuid(),
-                    ModifyDate = CurrentDateTime,
-                    PartnerId = Partner.PartnerId
-                };
+                    IEnumerable<Partner> iePartner = await _repositoryWrapper.PartnerRepository.GetByConditionAsync(p => p.PartnerGuid == PartnerGuid);
+                    Partner Partner = iePartner.FirstOrDefault();
 
-                _repositoryWrapper.GroupPartnerRepository.Create(GroupPartner);
-                await _repositoryWrapper.GroupPartnerRepository.SaveAsync();
+                    DateTime CurrentDateTime = DateTime.UtcNow;
+
+                    GroupPartner GroupPartner = new GroupPartner
+                    {
+                        CreateDate = CurrentDateTime,
+                        CreateGuid = Guid.Empty,
+                        GroupId = Group.GroupId,
+                        GroupPartnerGuid = Guid.NewGuid(),
+                        ModifyDate = CurrentDateTime,
+                        PartnerId = Partner.PartnerId
+                    };
+
+                    await _repositoryWrapper.GroupPartnerRepository.Create(GroupPartner);
+                    await _repositoryWrapper.GroupPartnerRepository.SaveAsync();
+                }
+                return true;
             }
-            return true;
+            catch (Exception e)
+            {
+                _logger.Log(LogLevel.Error, $"TaggingService:_CreateGroup threw an exception -> {e.Message} for subscriber {SubscriberId} PartnerGuid {PartnerGuid} ReferralUrl {ReferrerUrl}");
+                return false;
+            }
         }
 
 
