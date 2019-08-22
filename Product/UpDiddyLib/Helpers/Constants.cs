@@ -113,7 +113,7 @@ namespace UpDiddyLib.Helpers
 
         public static class Seo
         {
-            public static readonly string META_TITLE = "meta_title";
+            public static readonly string TITLE = "title";
             public static readonly string META_DESCRIPTION = "meta_description";
             public static readonly string META_KEYWORDS = "meta_keywords";
 

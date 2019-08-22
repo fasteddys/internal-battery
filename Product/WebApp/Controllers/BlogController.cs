@@ -61,7 +61,7 @@ namespace UpDiddy.Controllers
                     Keywords += ", " + c.Name;
             }
 
-            ViewData[Constants.Seo.META_TITLE] = response.Data.SeoTitle + Constants.CMS.BLOG_TITLE_TAG_SUFFIX;
+            ViewData[Constants.Seo.TITLE] = response.Data.SeoTitle + Constants.CMS.BLOG_TITLE_TAG_SUFFIX;
             ViewData[Constants.Seo.META_DESCRIPTION] = response.Data.MetaDescription;
             ViewData[Constants.Seo.META_KEYWORDS] = Keywords;
             ViewData[Constants.Seo.OG_TITLE] = response.Data.SeoTitle + Constants.CMS.BLOG_TITLE_TAG_SUFFIX;
