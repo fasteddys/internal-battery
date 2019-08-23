@@ -41,7 +41,7 @@
     </environment>
 </head>
 <body>
-    <div class="modal fade show" id="cookiePolicyModal" role="dialog">
+    <div class="modal fade" id="cookiePolicyModal" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-body">
@@ -97,8 +97,11 @@
 
     <script type="text/javascript">
         $(window).on('load', function () {
-            if ($.cookie('AspNet.Consent') == undefined) {
+            if ($.cookie('.AspNet.Consent') == undefined) {
                 $('#cookiePolicyModal').modal('show');
+            }
+            else{
+                $('#cookiePolicyModal').modal('hide');
             }          
         });
     </script>
