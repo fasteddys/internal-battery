@@ -981,7 +981,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetSubscriberSources()
         {
          
-            return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceDto>(_mapper.ConfigurationProvider).ToList());
+            return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceStatisticDto>(_mapper.ConfigurationProvider).ToList());
         }
 
         // todo: add security to check token to this route

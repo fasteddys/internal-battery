@@ -63,6 +63,16 @@ namespace UpDiddyApi.ApplicationCore.Services
         }
 
 
+
+        public async Task<IList<SubscriberSourceDto>> GetSubscriberSources(int subscriberId)
+        {
+            return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
+
+
+        }
+
+
+
         public async Task<List<Subscriber>> GetSubscribersToIndexIntoGoogle(int numSubscribers, int indexVersion)
         {
             var querableSubscribers = _repository.SubscriberRepository.GetAllSubscribersAsync();
@@ -480,6 +490,9 @@ namespace UpDiddyApi.ApplicationCore.Services
 
             return subscriberNotesDtoList.OrderByDescending(sn => sn.CreateDate).ToList();
         }
+
+
+
 
         public async Task<bool> DeleteSubscriberNote(Guid subscriberNotesGuid)
         {

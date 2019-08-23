@@ -1313,9 +1313,9 @@ namespace UpDiddy.Api
             return await GetAsync<ProfileSearchResultDto>(endpoint);
         }
 
-        public async Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync()
+        public async Task<IList<SubscriberSourceStatisticDto>> SubscriberSourcesAsync()
         {
-            return await GetAsync<IList<SubscriberSourceDto>>("subscriber/sources");
+            return await GetAsync<IList<SubscriberSourceStatisticDto>>("subscriber/sources");
         }
 
         private async Task<SubscriberDto> _SubscriberAsync(Guid subscriberGuid)

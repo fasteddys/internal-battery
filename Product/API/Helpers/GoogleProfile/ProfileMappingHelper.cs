@@ -52,6 +52,8 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                 phoneNumbers = MapPhoneNumber(subscriber)
             };
 
+
+            // TODO JAB added view and stored procedure to migration 
             IList<Partner> partners = repositoryWrapper.SubscriberRepository.GetPartnersAssociatedWithSubscriber(subscriber.SubscriberId).Result;
          
             List<string> partnerList = new List<string>();
@@ -60,6 +62,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
             else
                 foreach (Partner p in partners)
                     partnerList.Add(p.Name);
+
         
             gcp.customAttributes = new Dictionary<string, CustomAttribute>();
             // index source partner as custom attribute 

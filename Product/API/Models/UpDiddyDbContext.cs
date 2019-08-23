@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models.Views;
+using UpDiddyLib.Dto;
 
 namespace UpDiddyApi.Models
 {
@@ -183,6 +184,10 @@ namespace UpDiddyApi.Models
         public DbQuery<v_NotificationReadCounts> NotificationReadCounts { get; set; }
         public DbQuery<JobAbandonmentStatistics> JobAbandonmentStatistics { get; set; }
         public DbQuery<JobCountPerProvince> JobCountPerProvince { get; set; }
+        public DbQuery<SubscriberSourceDto> SubscriberSourcesDetails { get; set; }
+
+
+
 
         #endregion
 
