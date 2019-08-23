@@ -171,9 +171,6 @@ namespace UpDiddyApi.Controllers
                 if (subscriber == null)
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "The subscriber specified is invalid." });
 
-                // add check for has max number of redemptions by subscriber been exceeded
-                // Message is in the story
-
                 if(promoCode.MaxNumberOfRedemptionsPerSubscriber != null){
                     var completedSubscriberRedemptionsForThisCode = _db.PromoCodeRedemption
                     .Include(pcr => pcr.RedemptionStatus)
