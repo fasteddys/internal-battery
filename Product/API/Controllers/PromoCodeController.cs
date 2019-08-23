@@ -162,6 +162,31 @@ namespace UpDiddyApi.Controllers
                 if (courseRestrictionsForThisPromoCode.Any() && !courseRestrictionsForThisPromoCode.Any(r => r.CourseVariantId == courseVariant.CourseVariantId))
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this course." });
 
+                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+                Subscriber subscriber = _db.Subscriber
+                    .Where(s => s.SubscriberGuid == subscriberGuid && s.IsDeleted == 0)
+                    .FirstOrDefault();
+
+                if (subscriber == null)
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "The subscriber specified is invalid." });
+
+                // add check for has max number of redemptions by subscriber been exceeded
+                // Message is in the story
+
+                if(promoCode.MaxNumberOfRedemptionsPerSubscriber != null){
+                    var completedSubscriberRedemptionsForThisCode = _db.PromoCodeRedemption
+                    .Include(pcr => pcr.RedemptionStatus)
+                    .Where(pcr => pcr.PromoCodeId == promoCode.PromoCodeId && pcr.IsDeleted == 0 && pcr.RedemptionStatus.Name == "Completed" && pcr.SubscriberId == subscriber.SubscriberId)
+                    .Count();
+
+                    if(completedSubscriberRedemptionsForThisCode >= promoCode.MaxNumberOfRedemptionsPerSubscriber)
+                        return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Your account has already redeemed this promo code the maximum number (" 
+                            + promoCode.MaxNumberOfRedemptionsPerSubscriber 
+                            + ") of times permitted. " });
+                }
+                
+
                 List<VendorPromoCode> vendorRestrictionsForThisPromoCode = _db.VendorPromoCode
                     .Where(vpc => vpc.PromoCodeId == promoCode.PromoCodeId)
                     .ToList();
@@ -176,13 +201,7 @@ namespace UpDiddyApi.Controllers
                 if (vendorRestrictionsForThisPromoCode.Any() && !vendorRestrictionsForThisPromoCode.Any(vpc => vpc.VendorId == course.VendorId))
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code is not valid for this vendor." });
 
-                Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                Subscriber subscriber = _db.Subscriber
-                    .Where(s => s.SubscriberGuid == subscriberGuid && s.IsDeleted == 0)
-                    .FirstOrDefault();
-
-                if (subscriber == null)
-                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "The subscriber specified is invalid." });
+                
 
                 List<SubscriberPromoCode> subscriberRestrictionsForThisPromoCode = _db.SubscriberPromoCode
                     .Where(spc => spc.PromoCodeId == promoCode.PromoCodeId)
