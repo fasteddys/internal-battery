@@ -47,6 +47,8 @@ namespace UpDiddyApi.Workflow
         private readonly CloudTalent _cloudTalent;
         private readonly IMimeMappingService _mimeMappingService;
         private readonly IHangfireService _hangfireService;
+        private readonly ICourseService _courseService;
+
         public ScheduledJobs(
             UpDiddyDbContext context,
             IMapper mapper,
@@ -63,7 +65,8 @@ namespace UpDiddyApi.Workflow
             IJobPostingService jobPostingService,
             ITrackingService trackingService,
             IMimeMappingService mimeMappingService,
-            IHangfireService hangfireService
+            IHangfireService hangfireService,
+            ICourseService courseService
            )
         {
             _db = context;
@@ -643,7 +646,7 @@ namespace UpDiddyApi.Workflow
                 }
                 await _repositoryWrapper.CoursePage.SaveAsync();
 
-                // update the course site to indicate that the operation is complete
+                // update the course site to indicate that the crawl operation is complete
                 courseSite.LastCrawl = DateTime.UtcNow;
                 courseSite.IsCrawling = false;
                 courseSite.ModifyDate = DateTime.UtcNow;
@@ -678,7 +681,7 @@ namespace UpDiddyApi.Workflow
 
                 // load all existing course pages
                 var coursePages = (await _repositoryWrapper.CoursePage.GetAllCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid)).ToList();
-                
+
 
                 // transform course pages into courses which can be updated in the career circle schema
                 ConcurrentBag<CourseDto> transformedCourses = new ConcurrentBag<CourseDto>();
@@ -688,19 +691,37 @@ namespace UpDiddyApi.Workflow
                 Parallel.For(0, coursePages.Count(), maxdop, async (index) =>
                 {
                     var courseDto = await courseProcess.ProcessCoursePageAsync(coursePages[index]);
-                    transformedCourses.Add(courseDto);
+                    if (courseDto != null)
+                        transformedCourses.Add(courseDto);
                 });
-
-
-                // act on the adds and updates differently
 
                 // only transform the courses where course page status is 2 or 3 (update or create, respectively)
                 // ignore everything with synced or error
                 // call the delete operation for those with course page status of 4... logical delete, break link or no?
-
-                // update the course site to indicate that the operation is complete
-                courseSite.LastCrawl = DateTime.UtcNow;
-                courseSite.IsCrawling = false;
+                foreach (var courseDto in transformedCourses)
+                {
+                    if (courseDto.IsDeleted == 1)
+                    {
+                        // delete course
+                        await _courseService.DeleteCourseAsync(courseDto.CourseGuid.Value);
+                    }
+                    else if (courseDto.CourseId != null)
+                    {
+                        // update course
+                        await _courseService.EditCourseAsync(courseDto);
+                    }
+                    else
+                    {
+                        // create course
+                        await _courseService.AddCourseAsync(courseDto);
+                    }
+                }
+                // todo: update all course pages for the site to indicate that they are synced or error
+                // it might be better to do this one at a time for each courseDto but that complicates the code quite a bit and don't have time for that now
+                
+                // update the course site to indicate that the sync operation is complete
+                courseSite.LastSync = DateTime.UtcNow;
+                courseSite.IsSyncing = false;
                 courseSite.ModifyDate = DateTime.UtcNow;
                 courseSite.ModifyGuid = Guid.Empty;
                 _repositoryWrapper.CourseSite.Update(courseSite);

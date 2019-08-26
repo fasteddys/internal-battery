@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,9 +12,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
     {
         public CoursePageRepository(UpDiddyDbContext dbContext) : base(dbContext) { }
 
-        public async Task<IEnumerable<CoursePage>> GetAllCoursePagesForCourseSiteAsync(Guid courseSiteGuid)
+        public async Task<IQueryable<CoursePage>> GetAllCoursePagesForCourseSiteAsync(Guid courseSiteGuid)
         {
-            return await GetByConditionAsync(cp => cp.CourseSite.CourseSiteGuid == courseSiteGuid);
+            var coursePages = GetAll();
+            return coursePages
+                .Include(cp => cp.CoursePageStatus)
+                .Include(cp => cp.CourseSite)
+                .Include(cp => cp.Course)
+                .Where(cp => cp.IsDeleted == 0
+                    && cp.CourseSite.CourseSiteGuid == courseSiteGuid);
         }
     }
 }

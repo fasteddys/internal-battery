@@ -238,50 +238,63 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
 
         public async Task<CourseDto> ProcessCoursePageAsync(CoursePage coursePage)
         {
-            JObject rawData = JsonConvert.DeserializeObject<JObject>(coursePage.RawData);
-
-            CourseDto courseDto = new CourseDto()
+            if (coursePage.CoursePageStatus.Name == "Delete")
             {
-                Code = coursePage.UniqueIdentifier,
-                CreateDate = coursePage.CreateDate,
-                CreateGuid = Guid.Empty,
-                ModifyDate = coursePage.ModifyDate,
-                ModifyGuid = Guid.Empty,
-                Description = rawData["Description"].Value<string>(),
-                IsDeleted = coursePage.CoursePageStatusId == 4 ? 1 : 0,
-                Name = rawData["Title"].Value<string>(),
-                CourseVariants = new List<CourseVariantDto>(),
-                Skills = new List<SkillDto>(),
-                TagTopics = new List<TagTopicDto>()
-            };
+                if (!coursePage.CourseId.HasValue)
+                    return null;
 
-            CourseVariantTypeDto courseVariantTypeDto = new CourseVariantTypeDto() { Name = "Self-Paced" };
-            CourseVariantDto courseVariantDto = new CourseVariantDto() { Price = 0, CourseVariantType = courseVariantTypeDto };
-            courseDto.CourseVariants.Add(courseVariantDto);
-
-            VendorDto vendorDto = new VendorDto() { Name = "ITPro.TV" };
-            courseDto.Vendor = vendorDto;
-
-            JArray skills = (JArray)rawData["Skills"];
-            foreach (var skill in skills)
-            {
-                courseDto.Skills.Add(new SkillDto() { SkillName = skill.Value<string>() });
+                return new CourseDto() { IsDeleted = 1, CourseGuid = coursePage.Course.CourseGuid };
             }
-
-            JArray categories = (JArray)rawData["Categories"];
-            foreach (var category in categories)
+            else
             {
-                string abbreviation = category["Abbreviation"].Value<string>();
-                string description = category["Description"].Value<string>();
-                TagDto tagDto = new TagDto() { Name = abbreviation, Description = description };
+                JObject rawData = JsonConvert.DeserializeObject<JObject>(coursePage.RawData);
 
-                string topic = category["Topic"].Value<string>();
-                TopicDto topicDto = new TopicDto() { Name = topic };
-                TagTopicDto tagTopicDto = new TagTopicDto() { Tag = tagDto, Topic = topicDto };
-                courseDto.TagTopics.Add(tagTopicDto);
+                CourseDto courseDto = new CourseDto()
+                {
+                    Code = coursePage.UniqueIdentifier,
+                    CreateDate = coursePage.CreateDate,
+                    CreateGuid = Guid.Empty,
+                    ModifyDate = coursePage.ModifyDate,
+                    ModifyGuid = Guid.Empty,
+                    Description = rawData["Description"].Value<string>(),
+                    IsDeleted = 0,
+                    Name = rawData["Title"].Value<string>(),
+                    CourseVariants = new List<CourseVariantDto>(),
+                    Skills = new List<SkillDto>(),
+                    TagTopics = new List<TagTopicDto>()
+                };
+
+                if (coursePage.CourseId.HasValue)
+                    courseDto.CourseId = coursePage.CourseId.Value;
+
+                CourseVariantTypeDto courseVariantTypeDto = new CourseVariantTypeDto() { Name = "Self-Paced" };
+                CourseVariantDto courseVariantDto = new CourseVariantDto() { Price = 0, CourseVariantType = courseVariantTypeDto };
+                courseDto.CourseVariants.Add(courseVariantDto);
+
+                VendorDto vendorDto = new VendorDto() { Name = "ITPro.TV" };
+                courseDto.Vendor = vendorDto;
+
+                JArray skills = (JArray)rawData["Skills"];
+                foreach (var skill in skills)
+                {
+                    courseDto.Skills.Add(new SkillDto() { SkillName = skill.Value<string>() });
+                }
+
+                JArray categories = (JArray)rawData["Categories"];
+                foreach (var category in categories)
+                {
+                    string abbreviation = category["Abbreviation"].Value<string>();
+                    string description = category["Description"].Value<string>();
+                    TagDto tagDto = new TagDto() { Name = abbreviation, Description = description };
+
+                    string topic = category["Topic"].Value<string>();
+                    TopicDto topicDto = new TopicDto() { Name = topic };
+                    TagTopicDto tagTopicDto = new TagTopicDto() { Tag = tagDto, Topic = topicDto };
+                    courseDto.TagTopics.Add(tagTopicDto);
+                }
+
+                return courseDto;
             }
-
-            return courseDto;
         }
     }
 }

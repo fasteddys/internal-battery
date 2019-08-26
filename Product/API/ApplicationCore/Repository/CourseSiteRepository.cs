@@ -14,7 +14,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<IQueryable<CourseSite>> GetAllCourseSitesAsync()
         {
-            var courseSites = await GetAllAsync();
+            var courseSites = GetAll();
             return courseSites
                 .Include(cs => cs.CoursePages).ThenInclude(cp => cp.CoursePageStatus)
                 .Where(cs => cs.IsDeleted == 0).OrderBy(cs => cs.Name);

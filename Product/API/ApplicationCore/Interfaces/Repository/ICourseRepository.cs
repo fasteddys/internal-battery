@@ -6,8 +6,8 @@ using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface ICoursePageRepository : IUpDiddyRepositoryBase<CoursePage>
+    public interface ICourseRepository : IUpDiddyRepositoryBase<Course>
     {
-        Task<IQueryable<CoursePage>> GetAllCoursePagesForCourseSiteAsync(Guid courseSiteGuid);
+
     }
 }

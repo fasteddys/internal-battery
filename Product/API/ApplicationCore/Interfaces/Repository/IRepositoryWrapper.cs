@@ -41,5 +41,6 @@
         IStoredProcedureRepository StoredProcedureRepository { get;  }
         ICourseSiteRepository CourseSite { get; }
         ICoursePageRepository CoursePage { get; }
+        ICourseRepository Course { get; }
     }
 }
