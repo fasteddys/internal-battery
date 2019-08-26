@@ -684,7 +684,7 @@ namespace UpDiddyApi.Workflow
 
 
                 // transform course pages into courses which can be updated in the career circle schema
-                ConcurrentBag<CourseDto> transformedCourses = new ConcurrentBag<CourseDto>();
+                ConcurrentBag<Tuple<CoursePage, CourseDto>> coursePageAndTransformedCourses = new ConcurrentBag<Tuple<CoursePage, CourseDto>>();
                 // todo: change maxdop after dev complete
                 var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 1 };
                 int counter = 0;
@@ -692,33 +692,46 @@ namespace UpDiddyApi.Workflow
                 {
                     var courseDto = await courseProcess.ProcessCoursePageAsync(coursePages[index]);
                     if (courseDto != null)
-                        transformedCourses.Add(courseDto);
+                        coursePageAndTransformedCourses.Add(new Tuple<CoursePage, CourseDto>(coursePages[index],courseDto));
                 });
 
-                // only transform the courses where course page status is 2 or 3 (update or create, respectively)
-                // ignore everything with synced or error
-                // call the delete operation for those with course page status of 4... logical delete, break link or no?
-                foreach (var courseDto in transformedCourses)
+                // make db changes to courses and course pages
+                foreach (var coursePageAndTransformedCourse in coursePageAndTransformedCourses)
                 {
-                    if (courseDto.IsDeleted == 1)
+                    var coursePage = coursePageAndTransformedCourse.Item1;
+                    var courseDto = coursePageAndTransformedCourse.Item2;
+
+                    try
                     {
-                        // delete course
-                        await _courseService.DeleteCourseAsync(courseDto.CourseGuid.Value);
+                        coursePage.CoursePageStatusId = 1; // synced
+
+                        switch (coursePage.CoursePageStatus.Name)
+                        {
+                            case "Create":
+                                await _courseService.AddCourseAsync(courseDto);
+                                break;
+                            case "Update":
+                                await _courseService.EditCourseAsync(courseDto);
+                                break;
+                            case "Delete":
+                                await _courseService.DeleteCourseAsync(courseDto.CourseGuid.Value);
+                                break;
+                        }
                     }
-                    else if (courseDto.CourseId != null)
+                    catch(Exception e)
                     {
-                        // update course
-                        await _courseService.EditCourseAsync(courseDto);
+                        coursePage.CoursePageStatusId = 5; // error
                     }
-                    else
+                    finally
                     {
-                        // create course
-                        await _courseService.AddCourseAsync(courseDto);
+                        // save the course page
+                        coursePage.ModifyDate = DateTime.UtcNow;
+                        coursePage.ModifyGuid = Guid.Empty;
+                        _repositoryWrapper.CoursePage.Update(coursePage);
+                        await _repositoryWrapper.CoursePage.SaveAsync();
                     }
                 }
-                // todo: update all course pages for the site to indicate that they are synced or error
-                // it might be better to do this one at a time for each courseDto but that complicates the code quite a bit and don't have time for that now
-                
+
                 // update the course site to indicate that the sync operation is complete
                 courseSite.LastSync = DateTime.UtcNow;
                 courseSite.IsSyncing = false;
