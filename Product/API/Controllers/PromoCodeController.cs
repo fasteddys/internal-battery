@@ -156,7 +156,7 @@ namespace UpDiddyApi.Controllers
                     return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "The course specified is invalid." });
 
                 List<CourseVariantPromoCode> courseRestrictionsForThisPromoCode = _db.CourseVariantPromoCode
-                    .Where(cpc => cpc.PromoCodeId == promoCode.PromoCodeId)
+                    .Where(cpc => cpc.PromoCodeId == promoCode.PromoCodeId && cpc.IsDeleted == 0)
                     .ToList();
 
                 if (courseRestrictionsForThisPromoCode.Any() && !courseRestrictionsForThisPromoCode.Any(r => r.CourseVariantId == courseVariant.CourseVariantId))
