@@ -1,8 +1,6 @@
 using System;
 using UpDiddyLib.Dto;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
-using System.IO;
 using System.Threading.Tasks;
 using System.Net.Http;
 using UpDiddyLib.Dto.Marketing;
@@ -127,7 +125,6 @@ namespace UpDiddy.Api
         Task<List<FailedSubscriberDto>> GetFailedSubscribersSummaryAsync();
         Task<List<GroupDto>> GetGroupsAsync();
 
-
         #endregion
 
         #region Marketing
@@ -166,15 +163,12 @@ namespace UpDiddy.Api
 
         #endregion
 
-        #region SalesForce
-        Task<BasicResponseDto> AddSalesForceSignUpList(SalesForceSignUpListDto dto);
-        #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
         Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid);
         Task RecordSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);
 
-        Task<IList<string>> GetKeywordSearchList(string keyword);
-        Task<IList<string>> GetLocationSearchList(string location);
+        IList<string> GetKeywordSearchList(string keyword);
+        IList<string> GetLocationSearchList(string location);
     }
 }

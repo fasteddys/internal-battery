@@ -80,7 +80,7 @@
                             }
 
                             <div class="full-width text-center">
-                                @Html.PagedListPager((IPagedList) ViewBag.jobs, page => Url.Action("my-jobs", new { page }),
+                                @Html.PagedListPager((IPagedList) ViewBag.jobs, page => Url.Action("jobs", new { page }),
                                     new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
                                         LiElementClasses = new string[] { "page-item" },
                                         PageClasses = new string[] { "page-link" },

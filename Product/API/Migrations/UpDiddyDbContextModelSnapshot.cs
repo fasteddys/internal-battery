@@ -1711,6 +1711,8 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("CrawlDelayInMilliseconds");
+
                     b.Property<DateTime>("CreateDate");
 
                     b.Property<Guid>("CreateGuid");

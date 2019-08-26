@@ -11,11 +11,44 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Interfaces;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace UpDiddyApi.ApplicationCore.Factory
 {
     public class JobPostingFactory
     {
+        /// <summary>
+        /// This method replaces the Update, Copy, and Save methods which are now marked as obsolete in JobPostingFactory
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="jobPostingId"></param>
+        /// <param name="jobPostingDto"></param>
+        public static void UpdateJobPostingSkills(UpDiddyDbContext db, int jobPostingId, List<SkillDto> jobPostingSkills)
+        {
+            var jobPostingIdParam = new SqlParameter("@JobPostingId", jobPostingId);
+
+            DataTable table = new DataTable();
+            table.Columns.Add("Guid", typeof(Guid));
+            if (jobPostingSkills != null)
+            {
+                foreach (var skill in jobPostingSkills)
+                {
+                    table.Rows.Add(skill.SkillGuid);
+                }
+            }
+
+            var skillGuids = new SqlParameter("@SkillGuids", table);
+            skillGuids.SqlDbType = SqlDbType.Structured;
+            skillGuids.TypeName = "dbo.GuidList";
+
+            var spParams = new object[] { jobPostingIdParam, skillGuids };
+
+            var rowsAffected = db.Database.ExecuteSqlCommand(@"
+                EXEC [dbo].[System_Update_JobPostingSkills] 
+                    @JobPostingId,
+	                @SkillGuids", spParams);
+        }
 
         public static void SetMetaData(JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
@@ -115,14 +148,15 @@ namespace UpDiddyApi.ApplicationCore.Factory
             if (isAcceptsNewSkills && jobPostingDto?.JobPostingSkills != null)
             {
                 var updatedSkills = new List<SkillDto>();
-                foreach (var skillDto in  jobPostingDto.JobPostingSkills)
+                foreach (var skillDto in jobPostingDto.JobPostingSkills)
                 {
                     var skill = SkillFactory.GetOrAdd(db, skillDto.SkillName);
-                    updatedSkills.Add(new SkillDto()
-                    {
-                        SkillGuid = skill.SkillGuid,
-                        SkillName = skill.SkillName
-                    });
+                    if (!updatedSkills.Exists(s => s.SkillGuid == skill.SkillGuid))
+                        updatedSkills.Add(new SkillDto()
+                        {
+                            SkillGuid = skill.SkillGuid,
+                            SkillName = skill.SkillName
+                        });
                 }
                 jobPostingDto.JobPostingSkills = updatedSkills;
             }
@@ -180,8 +214,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
             // todo make saving the job posting and skills more efficient with a stored procedure 
             db.JobPosting.Add(jobPosting);
             db.SaveChanges();
-            // save associated job posting skills 
-            JobPostingFactory.SavePostingSkills(db, jobPosting, jobPostingDto);
+            // update associated job posting skills
+            JobPostingFactory.UpdateJobPostingSkills(db, jobPosting.JobPostingId, jobPostingDto?.JobPostingSkills);
             //index active jobs into google 
             if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
                 _hangfireService.Enqueue<ScheduledJobs>(j => j.CloudTalentAddJob(jobPosting.JobPostingGuid));
@@ -342,7 +376,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
                 .ToList();
         }
 
-
+        [Obsolete("This method of modifying job skills is slow and should not be used.", true)]
         public static void UpdatePostingSkills(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
             JobPostingSkillFactory.DeleteSkillsForPosting(db, jobPosting.JobPostingId);
@@ -437,7 +471,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             return true;
         }
-
+        
+        [Obsolete("This method of modifying job skills is slow and should not be used.", true)]
         public static void CopyPostingSkills(UpDiddyDbContext db, int sourcePostingId, int destinationPostingId)
         {
             List<JobPostingSkill> skills = JobPostingSkillFactory.GetSkillsForPosting(db, sourcePostingId);
@@ -457,6 +492,7 @@ namespace UpDiddyApi.ApplicationCore.Factory
         /// <param name="db"></param>
         /// <param name="jobPosting"></param>
         /// <param name="jobPostingDto"></param>
+        [Obsolete("This method of modifying job skills is slow and should not be used.", true)]
         public static void SavePostingSkills(UpDiddyDbContext db, JobPosting jobPosting, JobPostingDto jobPostingDto)
         {
 
@@ -551,11 +587,8 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
         }
 
-
-
         public static JobPosting CopyJobPosting(UpDiddyDbContext db, JobPosting jobPosting, int postingTTL)
         {
-
             db.Entry(jobPosting).State = EntityState.Detached;
             // use factory method to make sure all the base data values are set just 
             // in case the caller didn't set them
@@ -588,27 +621,27 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
             db.JobPosting.Add(jobPosting);
             db.SaveChanges();
-            // copy skill to new posting 
-            JobPostingFactory.CopyPostingSkills(db, SourcePostingId, jobPosting.JobPostingId);
+            // get existing skills from job posting and add them to the new job posting
+            var jobPostingSkills = jobPosting.JobPostingSkills.Select(s => new SkillDto() { SkillGuid = s.Skill.SkillGuid }).ToList();
+            JobPostingFactory.UpdateJobPostingSkills(db, jobPosting.JobPostingId, jobPostingSkills);
 
             return jobPosting;
-
-
         }
 
         public static bool UpdateJobPosting(UpDiddyDbContext db, Guid jobPostingGuid, JobPostingDto jobPostingDto, ref string ErrorMsg, bool isAcceptsNewSkills, IHangfireService _hangfireService)
         {
-            if (isAcceptsNewSkills)
+            if (isAcceptsNewSkills && jobPostingDto?.JobPostingSkills != null)
             {
                 var updatedSkills = new List<SkillDto>();
                 foreach (var skillDto in jobPostingDto.JobPostingSkills)
                 {
                     var skill = SkillFactory.GetOrAdd(db, skillDto.SkillName);
-                    updatedSkills.Add(new SkillDto()
-                    {
-                        SkillGuid = skill.SkillGuid,
-                        SkillName = skill.SkillName
-                    });
+                    if (!updatedSkills.Exists(s => s.SkillGuid == skill.SkillGuid))
+                        updatedSkills.Add(new SkillDto()
+                        {
+                            SkillGuid = skill.SkillGuid,
+                            SkillName = skill.SkillName
+                        });
                 }
                 jobPostingDto.JobPostingSkills = updatedSkills;
             }
@@ -748,7 +781,10 @@ namespace UpDiddyApi.ApplicationCore.Factory
 
 
                 db.SaveChanges();
-                JobPostingFactory.UpdatePostingSkills(db, jobPosting, jobPostingDto);
+
+                // update associated job posting skills
+                JobPostingFactory.UpdateJobPostingSkills(db, jobPosting.JobPostingId, jobPostingDto.JobPostingSkills);
+
                 // index active jobs in cloud talent 
                 if (jobPosting.JobStatus == (int)JobPostingStatus.Active)
                 {

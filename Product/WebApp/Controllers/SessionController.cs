@@ -12,15 +12,24 @@ using System.Linq;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using System;
+using System; 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace UpDiddy.Controllers
 {
     public class SessionController : Controller
-    {
-        public SessionController(IOptions<AzureAdB2COptions> b2cOptions)
+    { 
+        private ILogger _syslog = null;
+        IDistributedCache _cache = null;
+        IMemoryCache _memoryCache = null;
+        public SessionController(IOptions<AzureAdB2COptions> b2cOptions, ILogger<SessionController> sysLog, IDistributedCache distributedCache, IMemoryCache memoryCache)
         {
             AzureAdB2COptions = b2cOptions.Value;
+            _syslog = sysLog;
+            _cache = distributedCache;
+            _memoryCache = memoryCache;
         }
 
         public AzureAdB2COptions AzureAdB2COptions { get; set; }
@@ -83,6 +92,8 @@ namespace UpDiddy.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
         }
 
+
+
         [HttpGet]
         public IActionResult SignedOut()
         {
@@ -90,6 +101,32 @@ namespace UpDiddy.Controllers
             {
                 // Redirect to home page if the user is authenticated.
                 return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+
+            return View();
+        }
+
+
+
+        [HttpGet]
+        public IActionResult AuthRequired()
+        {
+            HttpContext.Session.Clear();
+            SetAzureAdB2CCulture();
+            var callbackUrl = Url.Action(nameof(AuthenticationRequired), "Session", values: null, protocol: Request.Scheme);
+            return SignOut(new AuthenticationProperties { RedirectUri = callbackUrl },
+                CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+        }
+
+
+
+        [HttpGet]
+        public IActionResult AuthenticationRequired()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                // Redirect to home page if the user is authenticated.
+               // return RedirectToAction(nameof(HomeController.Index), "Home");
             }
 
             return View();
@@ -118,10 +155,33 @@ namespace UpDiddy.Controllers
                 .WithRedirectUri(AzureAdB2COptions.RedirectUri)
                 .WithClientSecret(AzureAdB2COptions.ClientSecret)
                 .Build();
-            new MSALSessionCache(signedInUserID, HttpContext).EnablePersistence(app.UserTokenCache);
+     
+            new MSALSessionCache(signedInUserID,_cache,_memoryCache).EnablePersistence(app.UserTokenCache);
+    
             var accounts = await app.GetAccountsAsync();
+            if (accounts.Count() == 0)
+            {
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_SessionController.TokenAsync unable to locate account");
+            }
 
             AuthenticationResult result = await app.AcquireTokenSilent(scope, accounts.FirstOrDefault()).ExecuteAsync();
+
+            // temp code to log jwt info, specifically expiration dates 
+            try
+            {
+                string scopes = string.Empty;
+                foreach (string s in result.Scopes)
+                    scopes += s + ";";
+                string LogInfo = $"MSAL_SessionController.TokenAsync Token ExpiresOn: {result.ExpiresOn} Token ExtendedExpiresOn: {result.ExtendedExpiresOn} Access Token Length: {result.AccessToken.Length}  Scopes: {scopes}  User: {result.UniqueId} )";
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, LogInfo);
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_SessionController.TokenAsync Error logging info {ex.Message}");
+            }
+
+
+
             return Ok(new { accessToken = result.AccessToken, expiresOn = result.ExpiresOn, uniqueId = result.UniqueId });
         }
     }

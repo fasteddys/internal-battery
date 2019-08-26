@@ -20,6 +20,7 @@ using UpDiddyLib.Shared;
 using UpDiddyLib.Dto.Reporting;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace UpDiddy.Api
 {
@@ -31,11 +32,13 @@ namespace UpDiddy.Api
         public AzureAdB2COptions AzureOptions { get; set; }
         private IHttpContextAccessor _contextAccessor { get; set; }
         public IDistributedCache _cache { get; set; }
+        public IMemoryCache _memoryCache { get; set; }
         public HttpContext _currentContext { get; set; }
         private readonly ILogger _syslog;
 
+
         #region Constructor
-        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog )
+        public ApiUpdiddy(IOptions<AzureAdB2COptions> azureAdB2COptions, IHttpContextAccessor contextAccessor, IConfiguration conifguration, IHttpClientFactory httpClientFactory, IDistributedCache cache, ILogger<ApiUpdiddy> sysLog, IMemoryCache memoryCache )
         {
             _syslog = sysLog;
             AzureOptions = azureAdB2COptions.Value;
@@ -46,6 +49,7 @@ namespace UpDiddy.Api
             _HttpClientFactory = httpClientFactory;
             _cache = cache;
             _currentContext = contextAccessor.HttpContext;
+             _memoryCache = memoryCache;
         }
         #endregion
 
@@ -100,7 +104,7 @@ namespace UpDiddy.Api
         }
 
         private async Task<AuthenticationResult> GetBearerTokenAsync()
-        {
+        {     
             AuthenticationResult result = null;
             // Retrieve the token with the specified scopes
             var scope = AzureOptions.ApiScopes.Split(' ');
@@ -110,10 +114,32 @@ namespace UpDiddy.Api
                 .WithB2CAuthority(AzureOptions.Authority)
                 .WithClientSecret(AzureOptions.ClientSecret)
                 .Build();
-            new MSALSessionCache(signedInUserID, _contextAccessor.HttpContext).EnablePersistence(app.UserTokenCache);
+            
+            new MSALSessionCache(signedInUserID,_cache,_memoryCache).EnablePersistence(app.UserTokenCache);
+
             var accounts = await app.GetAccountsAsync();
-            IAccount account = accounts.FirstOrDefault();
+            if ( accounts.Count() == 0 )
+            {
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, "MSAL_ApiUpdiddy.GetBearerTokenAsync unable to locate account" );
+            }
+ 
+            IAccount account = accounts.FirstOrDefault();     
             result = await app.AcquireTokenSilent(scope, account).ExecuteAsync();
+                
+            // temp code to log jwt info, specifically expiration dates 
+            try
+            {
+                string scopes = string.Empty;
+                foreach (string s in result.Scopes)
+                    scopes += s + ";";
+                string LogInfo = $"MSAL_ApiUpdiddy.GetBearerTokenAsync Token ExpiresOn: {result.ExpiresOn} Token ExtendedExpiresOn: {result.ExtendedExpiresOn} Access Token Length: {result.AccessToken.Length}  Scopes: {scopes}  User: {result.UniqueId} )";
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, LogInfo);
+            }
+            catch (Exception ex)
+            {
+                _syslog.Log(Microsoft.Extensions.Logging.LogLevel.Information, $"MSAL_ApiUpdiddy.GetBearerTokenAsync Error logging info {ex.Message}");
+            }
+
             return result;
         }
 
@@ -132,14 +158,14 @@ namespace UpDiddy.Api
         public async Task<IList<TopicDto>> TopicsAsync()
         {
             string cacheKey = "Topics";
-            IList<TopicDto> rval = await GetCachedValueAsync<IList<TopicDto>>(cacheKey);
+            IList<TopicDto> rval = GetCachedValueAsync<IList<TopicDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _TopicsAsync();
-                await SetCachedValueAsync<IList<TopicDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<TopicDto>>(cacheKey, rval);
             }
             return rval;
 
@@ -148,14 +174,14 @@ namespace UpDiddy.Api
         public async Task<TopicDto> TopicByIdAsync(int TopicId)
         {
             string cacheKey = $"TopicById{TopicId}";
-            TopicDto rval = await GetCachedValueAsync<TopicDto>(cacheKey);
+            TopicDto rval =  GetCachedValueAsync<TopicDto>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _TopicByIdAsync(TopicId);
-                await SetCachedValueAsync<TopicDto>(cacheKey, rval);
+                SetCachedValueAsync<TopicDto>(cacheKey, rval);
             }
             return rval;
         }
@@ -163,14 +189,14 @@ namespace UpDiddy.Api
         public async Task<TopicDto> TopicBySlugAsync(string TopicSlug)
         {
             string cacheKey = $"TopicBySlug{TopicSlug}";
-            TopicDto rval = await GetCachedValueAsync<TopicDto>(cacheKey);
+            TopicDto rval = GetCachedValueAsync<TopicDto>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _TopicBySlugAsync(TopicSlug);
-                await SetCachedValueAsync<TopicDto>(cacheKey, rval);
+                SetCachedValueAsync<TopicDto>(cacheKey, rval);
             }
             return rval;
         }
@@ -178,14 +204,14 @@ namespace UpDiddy.Api
         public async Task<IList<CourseDto>> getCoursesByTopicSlugAsync(string TopicSlug)
         {
             string cacheKey = $"getCousesByTopicSlug{TopicSlug}";
-            IList<CourseDto> rval = await GetCachedValueAsync<IList<CourseDto>>(cacheKey);
+            IList<CourseDto> rval = GetCachedValueAsync<IList<CourseDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _getCoursesByTopicSlugAsync(TopicSlug);
-                await SetCachedValueAsync<IList<CourseDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<CourseDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -193,14 +219,14 @@ namespace UpDiddy.Api
         public async Task<IList<CourseDto>> CoursesAsync()
         {
             string cacheKey = $"getCourses";
-            IList<CourseDto> rval = await GetCachedValueAsync<IList<CourseDto>>(cacheKey);
+            IList<CourseDto> rval = GetCachedValueAsync<IList<CourseDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _CoursesAsync();
-                await SetCachedValueAsync<IList<CourseDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<CourseDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -208,14 +234,14 @@ namespace UpDiddy.Api
         public async Task<CourseDto> CourseAsync(string CourseSlug)
         {
             string cacheKey = $"Course{CourseSlug}";
-            CourseDto rval = await GetCachedValueAsync<CourseDto>(cacheKey);
+            CourseDto rval = GetCachedValueAsync<CourseDto>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _CourseAsync(CourseSlug);
-                await SetCachedValueAsync<CourseDto>(cacheKey, rval);
+                SetCachedValueAsync<CourseDto>(cacheKey, rval);
             }
             return rval;
 
@@ -229,28 +255,28 @@ namespace UpDiddy.Api
         public async Task<IList<CountryDto>> GetCountriesAsync()
         {
             string cacheKey = $"GetCountries";
-            IList<CountryDto> rval = await GetCachedValueAsync<IList<CountryDto>>(cacheKey);
+            IList<CountryDto> rval = GetCachedValueAsync<IList<CountryDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetCountriesAsync();
-                await SetCachedValueAsync<IList<CountryDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<CountryDto>>(cacheKey, rval);
             }
             return rval;
         }
         public async Task<IList<StateDto>> GetStatesByCountryAsync(Guid? countryGuid)
         {
             string cacheKey = $"GetStatesByCountry{countryGuid}";
-            IList<StateDto> rval = await GetCachedValueAsync<IList<StateDto>>(cacheKey);
+            IList<StateDto> rval = GetCachedValueAsync<IList<StateDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetStatesByCountryAsync(countryGuid);
-                await SetCachedValueAsync<IList<StateDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<StateDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -260,14 +286,14 @@ namespace UpDiddy.Api
         public async Task<IList<ExperienceLevelDto>> GetExperienceLevelAsync()
         {
             string cacheKey = "GetExperienceLevelAsync";
-            IList<ExperienceLevelDto> rval = await GetCachedValueAsync<IList<ExperienceLevelDto>>(cacheKey);
+            IList<ExperienceLevelDto> rval = GetCachedValueAsync<IList<ExperienceLevelDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetExperienceLevelAsync();
-                await SetCachedValueAsync<IList<ExperienceLevelDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<ExperienceLevelDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -275,14 +301,14 @@ namespace UpDiddy.Api
         public async Task<IList<SecurityClearanceDto>> GetSecurityClearanceAsync()
         {
             string cacheKey = "GetSecurityClearanceAsync";
-            IList<SecurityClearanceDto> rval = await GetCachedValueAsync<IList<SecurityClearanceDto>>(cacheKey);
+            IList<SecurityClearanceDto> rval = GetCachedValueAsync<IList<SecurityClearanceDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetSecurityClearanceAsync();
-                await SetCachedValueAsync<IList<SecurityClearanceDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<SecurityClearanceDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -291,14 +317,14 @@ namespace UpDiddy.Api
         public async Task<IList<RecruiterCompanyDto>> GetRecruiterCompaniesAsync(Guid subscriberGuid)
         {
             string cacheKey = $"GetRecruiterCompaniesAsync{subscriberGuid}";
-            IList<RecruiterCompanyDto> rval = await GetCachedValueAsync<IList<RecruiterCompanyDto>>(cacheKey);
+            IList<RecruiterCompanyDto> rval = GetCachedValueAsync<IList<RecruiterCompanyDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetRecruiterCompanyAsync(subscriberGuid);
-                await SetCachedValueAsync<IList<RecruiterCompanyDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<RecruiterCompanyDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -307,14 +333,14 @@ namespace UpDiddy.Api
         public async Task<IList<EmploymentTypeDto>> GetEmploymentTypeAsync()
         {
             string cacheKey = "GetEmploymentTypeAsync";
-            IList<EmploymentTypeDto> rval = await GetCachedValueAsync<IList<EmploymentTypeDto>>(cacheKey);
+            IList<EmploymentTypeDto> rval = GetCachedValueAsync<IList<EmploymentTypeDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetEmploymentTypeAsync();
-                await SetCachedValueAsync<IList<EmploymentTypeDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<EmploymentTypeDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -324,14 +350,14 @@ namespace UpDiddy.Api
         public async Task<IList<CompensationTypeDto>> GetCompensationTypeAsync()
         {
             string cacheKey = "GetCompensationTypeAsync";
-            IList<CompensationTypeDto> rval = await GetCachedValueAsync<IList<CompensationTypeDto>>(cacheKey);
+            IList<CompensationTypeDto> rval = GetCachedValueAsync<IList<CompensationTypeDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetCompensationTypeAsync();
-                await SetCachedValueAsync<IList<CompensationTypeDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<CompensationTypeDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -342,14 +368,14 @@ namespace UpDiddy.Api
         public async Task<IList<EducationLevelDto>> GetEducationLevelAsync()
         {
             string cacheKey = "GetEducationLevelAsync";
-            IList<EducationLevelDto> rval = await GetCachedValueAsync<IList<EducationLevelDto>>(cacheKey);
+            IList<EducationLevelDto> rval = GetCachedValueAsync<IList<EducationLevelDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetEducationLevelAsync();
-                await SetCachedValueAsync<IList<EducationLevelDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<EducationLevelDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -357,14 +383,14 @@ namespace UpDiddy.Api
         public async Task<List<JobPostingDto>> GetAllJobsAsync()
         {
             string cacheKey = "GetAllJobsAsync";
-            List<JobPostingDto> rval = await GetCachedValueAsync<List<JobPostingDto>>(cacheKey);
+            List<JobPostingDto> rval = GetCachedValueAsync<List<JobPostingDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetAllJobsAsync();
-                await SetCachedValueAsync<List<JobPostingDto>>(cacheKey, rval);
+                SetCachedValueAsync<List<JobPostingDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -372,14 +398,14 @@ namespace UpDiddy.Api
         public async Task<IList<JobCategoryDto>> GetJobCategoryAsync()
         {
             string cacheKey = "GetJobCategoryAsync";
-            IList<JobCategoryDto> rval = await GetCachedValueAsync<IList<JobCategoryDto>>(cacheKey);
+            IList<JobCategoryDto> rval = GetCachedValueAsync<IList<JobCategoryDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetJobCategoryAsync();
-                await SetCachedValueAsync<IList<JobCategoryDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<JobCategoryDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -389,14 +415,14 @@ namespace UpDiddy.Api
         public async Task<IList<IndustryDto>> GetIndustryAsync()
         {
             string cacheKey = "GetIndustryAsync";
-            IList<IndustryDto> rval = await GetCachedValueAsync<IList<IndustryDto>>(cacheKey);
+            IList<IndustryDto> rval = GetCachedValueAsync<IList<IndustryDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetIndustryAsync();
-                await SetCachedValueAsync<IList<IndustryDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<IndustryDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -405,14 +431,14 @@ namespace UpDiddy.Api
         public async Task<CourseVariantDto> GetCourseVariantAsync(Guid courseVariantGuid)
         {
             string cacheKey = $"GetCourseVariant{courseVariantGuid}";
-            CourseVariantDto rval = await GetCachedValueAsync<CourseVariantDto>(cacheKey);
+            CourseVariantDto rval = GetCachedValueAsync<CourseVariantDto>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetCourseVariantAsync(courseVariantGuid);
-                await SetCachedValueAsync<CourseVariantDto>(cacheKey, rval);
+                SetCachedValueAsync<CourseVariantDto>(cacheKey, rval);
             }
             return rval;
         }
@@ -420,14 +446,14 @@ namespace UpDiddy.Api
         public async Task<IList<SkillDto>> GetSkillsAsync(string userQuery)
         {
             string cacheKey = $"GetSkills{userQuery}";
-            IList<SkillDto> rval = await GetCachedValueAsync<IList<SkillDto>>(cacheKey);
+            IList<SkillDto> rval = GetCachedValueAsync<IList<SkillDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetSkillsAsync(userQuery);
-                await SetCachedValueAsync<IList<SkillDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<SkillDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -435,14 +461,14 @@ namespace UpDiddy.Api
         public async Task<IList<CompanyDto>> GetAllCompaniesAsync()
         {
             string cacheKey = $"GetAllCompanies";
-            IList<CompanyDto> rval = await GetCachedValueAsync<IList<CompanyDto>>(cacheKey);
+            IList<CompanyDto> rval = GetCachedValueAsync<IList<CompanyDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetAllCompaniesAsync();
-                await SetCachedValueAsync<IList<CompanyDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<CompanyDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -450,14 +476,14 @@ namespace UpDiddy.Api
         public async Task<IList<CompanyDto>> GetCompaniesAsync(string userQuery)
         {
             string cacheKey = $"GetCompanies{userQuery}";
-            IList<CompanyDto> rval = await GetCachedValueAsync<IList<CompanyDto>>(cacheKey);
+            IList<CompanyDto> rval = GetCachedValueAsync<IList<CompanyDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetCompaniesAsync(userQuery);
-                await SetCachedValueAsync<IList<CompanyDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<CompanyDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -465,14 +491,14 @@ namespace UpDiddy.Api
         public async Task<IList<EducationalInstitutionDto>> GetEducationalInstitutionsAsync(string userQuery)
         {
             string cacheKey = $"GetEducationalInstitutions{userQuery}";
-            IList<EducationalInstitutionDto> rval = await GetCachedValueAsync<IList<EducationalInstitutionDto>>(cacheKey);
+            IList<EducationalInstitutionDto> rval = GetCachedValueAsync<IList<EducationalInstitutionDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetEducationalInstitutionsAsync(userQuery);
-                await SetCachedValueAsync<IList<EducationalInstitutionDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<EducationalInstitutionDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -480,14 +506,14 @@ namespace UpDiddy.Api
         public async Task<IList<EducationalDegreeDto>> GetEducationalDegreesAsync(string userQuery)
         {
             string cacheKey = $"GetEducationalDegrees{userQuery}";
-            IList<EducationalDegreeDto> rval = await GetCachedValueAsync<IList<EducationalDegreeDto>>(cacheKey);
+            IList<EducationalDegreeDto> rval = GetCachedValueAsync<IList<EducationalDegreeDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetEducationalDegreesAsync(userQuery);
-                await SetCachedValueAsync<IList<EducationalDegreeDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<EducationalDegreeDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -495,14 +521,14 @@ namespace UpDiddy.Api
         public async Task<IList<CompensationTypeDto>> GetCompensationTypesAsync()
         {
             string cacheKey = $"GetCompensationTypes";
-            IList<CompensationTypeDto> rval = await GetCachedValueAsync<IList<CompensationTypeDto>>(cacheKey);
+            IList<CompensationTypeDto> rval = GetCachedValueAsync<IList<CompensationTypeDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetCompensationTypesAsync();
-                await SetCachedValueAsync<IList<CompensationTypeDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<CompensationTypeDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -511,14 +537,14 @@ namespace UpDiddy.Api
         public async Task<IList<EducationalDegreeTypeDto>> GetEducationalDegreeTypesAsync()
         {
             string cacheKey = $"GetEducationDegreeTypes";
-            IList<EducationalDegreeTypeDto> rval = await GetCachedValueAsync<IList<EducationalDegreeTypeDto>>(cacheKey);
+            IList<EducationalDegreeTypeDto> rval = GetCachedValueAsync<IList<EducationalDegreeTypeDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetEducationalDegreeTypesAsync();
-                await SetCachedValueAsync<IList<EducationalDegreeTypeDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<EducationalDegreeTypeDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -526,14 +552,14 @@ namespace UpDiddy.Api
         public async Task<CourseDto> GetCourseByCampaignGuidAsync(Guid CampaignGuid)
         {
             string cacheKey = $"GetCourseByCampaignGuid{CampaignGuid}";
-            CourseDto rval = await GetCachedValueAsync<CourseDto>(cacheKey);
+            CourseDto rval = GetCachedValueAsync<CourseDto>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetCourseByCampaignGuid(CampaignGuid);
-                await SetCachedValueAsync<CourseDto>(cacheKey, rval);
+                SetCachedValueAsync<CourseDto>(cacheKey, rval);
             }
             return rval;
 
@@ -542,14 +568,14 @@ namespace UpDiddy.Api
         public async Task<ContactDto> ContactAsync(Guid partnerContactGuid)
         {
             string cacheKey = $"Contact{partnerContactGuid}";
-            ContactDto rval = await GetCachedValueAsync<ContactDto>(cacheKey);
+            ContactDto rval = GetCachedValueAsync<ContactDto>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _Contact(partnerContactGuid);
-                await SetCachedValueAsync<ContactDto>(cacheKey, rval);
+                SetCachedValueAsync<ContactDto>(cacheKey, rval);
             }
             return rval;
         }
@@ -557,14 +583,14 @@ namespace UpDiddy.Api
         public async Task<IList<OfferDto>> GetOffersAsync()
         {
             string cacheKey = $"Offers";
-            IList<OfferDto> rval = await GetCachedValueAsync<IList<OfferDto>>(cacheKey);
+            IList<OfferDto> rval = GetCachedValueAsync<IList<OfferDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetOffersAsync();
-                await SetCachedValueAsync<IList<OfferDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<OfferDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -590,11 +616,11 @@ namespace UpDiddy.Api
         public async Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null)
         {
             string cacheKey = $"job-{JobPostingGuid}";
-            JobPostingDto rval = await GetCachedValueAsync<JobPostingDto>(cacheKey);
+            JobPostingDto rval = GetCachedValueAsync<JobPostingDto>(cacheKey);
             if (rval == null)
             {
                 rval = await _GetJobAsync(JobPostingGuid);
-                await SetCachedValueAsync<JobPostingDto>(cacheKey, rval);
+                SetCachedValueAsync<JobPostingDto>(cacheKey, rval);
             }
 
             #region analytics
@@ -612,11 +638,11 @@ namespace UpDiddy.Api
         public async Task<BasicResponseDto> GetActiveJobCountAsync()
         {
             string cacheKey = "job-activeJobCount";
-            BasicResponseDto rval = await GetCachedValueAsync<BasicResponseDto>(cacheKey);
+            BasicResponseDto rval = GetCachedValueAsync<BasicResponseDto>(cacheKey);
             if(rval == null)
             {
                 rval = await _GetActiveJobCountAsync();
-                await SetCachedValueAsync<BasicResponseDto>(cacheKey, rval);
+                SetCachedValueAsync<BasicResponseDto>(cacheKey, rval);
             }
             return rval;
         }
@@ -626,7 +652,7 @@ namespace UpDiddy.Api
 
             var searchFilter = $"all/all/all/all/all/all/0{searchQueryParameterString}page-size=100";
             string cacheKey = $"job-{searchFilter}";
-            JobSearchResultDto rval = await GetCachedValueAsync<JobSearchResultDto>(cacheKey);
+            JobSearchResultDto rval = GetCachedValueAsync<JobSearchResultDto>(cacheKey);
 
             if (rval != null)
                 return rval;
@@ -634,7 +660,7 @@ namespace UpDiddy.Api
             {
 
                 rval = await _GetJobsByLocation(searchFilter);
-                await SetCachedValueAsync<JobSearchResultDto>(cacheKey, rval);
+                SetCachedValueAsync<JobSearchResultDto>(cacheKey, rval);
             }
 
             return rval;
@@ -656,7 +682,7 @@ namespace UpDiddy.Api
 
             var searchFilter = $"{Country}/{State}/{City}/{Industry}/{Category}/all/{page}";
             string cacheKey = string.Format("job-{0}/{1}/{2}/{3}/{4}/{5}", Country, State, City, Industry, Category, page);
-            JobSearchResultDto rval = await GetCachedValueAsync<JobSearchResultDto>(cacheKey);
+            JobSearchResultDto rval = GetCachedValueAsync<JobSearchResultDto>(cacheKey);
 
             if (rval != null)
                 return rval;
@@ -664,7 +690,7 @@ namespace UpDiddy.Api
             {
 
                 rval = await _GetJobsByLocation(searchFilter);
-                await SetCachedValueAsync<JobSearchResultDto>(cacheKey, rval);
+                SetCachedValueAsync<JobSearchResultDto>(cacheKey, rval);
             }
 
             return rval;
@@ -943,14 +969,14 @@ namespace UpDiddy.Api
         public async Task<IList<CampaignDto>> GetCampaignsAsync()
         {
             string cacheKey = $"Campaigns";
-            IList<CampaignDto> rval = await GetCachedValueAsync<IList<CampaignDto>>(cacheKey);
+            IList<CampaignDto> rval = GetCachedValueAsync<IList<CampaignDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _CampaignsAsync();
-                await SetCachedValueAsync<IList<CampaignDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<CampaignDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -1009,6 +1035,7 @@ namespace UpDiddy.Api
             return await GetAsync<RedirectDto>("subscriber/me/partner-web-redirect");
         }
 
+
         #endregion
 
         #region Cache Helper Functions
@@ -1044,14 +1071,14 @@ namespace UpDiddy.Api
         public async Task<IList<StateDto>> GetAllStatesAsync()
         {
             string cacheKey = $"States";
-            IList<StateDto> rval = await GetCachedValueAsync<IList<StateDto>>(cacheKey);
+            IList<StateDto> rval = GetCachedValueAsync<IList<StateDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await GetStatesAsync();
-                await SetCachedValueAsync<IList<StateDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<StateDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -1196,13 +1223,14 @@ namespace UpDiddy.Api
 
         #region Private Cache Functions
 
-        private async Task<bool> SetCachedValueAsync<T>(string CacheKey, T Value)
+        private bool SetCachedValueAsync<T>(string CacheKey, T Value, int? cacheTTL = null)
         {
             try
             {
-                int CacheTTL = int.Parse(_configuration["redis:cacheTTLInMinutes"]);
+
+                int CacheTTLMinutes = cacheTTL == null ? int.Parse(_configuration["redis:cacheTTLInMinutes"]) : cacheTTL.Value;
                 string newValue = Newtonsoft.Json.JsonConvert.SerializeObject(Value);
-                await _cache.SetStringAsync(CacheKey, newValue, new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(CacheTTL) });
+                _memoryCache.Set(CacheKey, newValue, DateTimeOffset.Now.AddMinutes(CacheTTLMinutes));
                 return true;
             }
             catch (Exception)
@@ -1215,7 +1243,8 @@ namespace UpDiddy.Api
         {
             try
             {
-                _cache.Remove(CacheKey);
+                // _cache.Remove(CacheKey);
+                _memoryCache.Remove(CacheKey);
                 return true;
             }
             catch (Exception)
@@ -1224,11 +1253,13 @@ namespace UpDiddy.Api
             }
         }
 
-         private async Task<T> GetCachedValueAsync<T>(string CacheKey)
+        private  T GetCachedValueAsync<T>(string CacheKey)
         {
             try
             {
-                string existingValue = await _cache.GetStringAsync(CacheKey);
+           
+                //string existingValue = await _cache.GetStringAsync(CacheKey);
+                string existingValue = _memoryCache.Get<string>(CacheKey);
                 if (string.IsNullOrEmpty(existingValue))
                     return (T)Convert.ChangeType(null, typeof(T));
                 else
@@ -1252,7 +1283,7 @@ namespace UpDiddy.Api
             string cacheKey = $"Subscriber{subscriberGuid}";
             SubscriberDto rval = null;
             if (!hardRefresh)
-                rval = await GetCachedValueAsync<SubscriberDto>(cacheKey);
+                rval = GetCachedValueAsync<SubscriberDto>(cacheKey);
 
             if (rval != null)
                 return rval;
@@ -1266,7 +1297,7 @@ namespace UpDiddy.Api
                     rval = await CreateSubscriberAsync(referralCode);
                 }
 
-                await SetCachedValueAsync<SubscriberDto>(cacheKey, rval);
+                SetCachedValueAsync<SubscriberDto>(cacheKey, rval);
             }
             return rval;
         }
@@ -1370,14 +1401,14 @@ namespace UpDiddy.Api
         public async Task<IList<PartnerDto>> GetPartnersAsync()
         {
             string cacheKey = $"Partners";
-            IList<PartnerDto> rval = await GetCachedValueAsync<IList<PartnerDto>>(cacheKey);
+            IList<PartnerDto> rval = GetCachedValueAsync<IList<PartnerDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _PartnersAsync();
-                await SetCachedValueAsync<IList<PartnerDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<PartnerDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -1460,11 +1491,12 @@ namespace UpDiddy.Api
         public async Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync()
         {
             string cacheKey = $"job-PostCount";
-            List<JobPostingCountDto> rval = await GetCachedValueAsync<List<JobPostingCountDto>>(cacheKey);
+            List<JobPostingCountDto> rval = GetCachedValueAsync<List<JobPostingCountDto>>(cacheKey);
             if (rval == null)
             {
+                int cacheTTL = int.Parse(_configuration["USMaps:cacheTTLInMinutes"]);
                 rval = await GetAsync<List<JobPostingCountDto>>($"job/post-count");
-                await SetCachedValueAsync<List<JobPostingCountDto>>(cacheKey, rval);
+                SetCachedValueAsync<List<JobPostingCountDto>>(cacheKey, rval, cacheTTL);
             }
             return rval;
         }
@@ -1472,14 +1504,14 @@ namespace UpDiddy.Api
         public async Task<IList<NotificationDto>> GetNotificationsAsync()
         {
             string cacheKey = $"Notifications";
-            IList<NotificationDto> rval = await GetCachedValueAsync<IList<NotificationDto>>(cacheKey);
+            IList<NotificationDto> rval = GetCachedValueAsync<IList<NotificationDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _NotificationsAsync();
-                await SetCachedValueAsync<IList<NotificationDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<NotificationDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -1637,14 +1669,14 @@ namespace UpDiddy.Api
         public async Task<IList<JobCategoryDto>> GetJobCategories()
         {
             string cacheKey = $"JobCategories";
-            IList<JobCategoryDto> rval = await GetCachedValueAsync<IList<JobCategoryDto>>(cacheKey);
+            IList<JobCategoryDto> rval = GetCachedValueAsync<IList<JobCategoryDto>>(cacheKey);
 
             if (rval != null)
                 return rval;
             else
             {
                 rval = await _GetJobCategories();
-                await SetCachedValueAsync<IList<JobCategoryDto>>(cacheKey, rval);
+                SetCachedValueAsync<IList<JobCategoryDto>>(cacheKey, rval);
             }
             return rval;
         }
@@ -1701,31 +1733,23 @@ namespace UpDiddy.Api
         #endregion
 
         #region <<Keyword and Location Search List>>
-        public async Task<IList<string>> GetKeywordSearchList(string keyword)
+        public IList<string> GetKeywordSearchList(string keyword)
         {
             string cacheKey = "keywordSearchList";
-            IList<string> rval = await GetCachedValueAsync<IList<string>>(cacheKey);
+            IList<string> rval = GetCachedValueAsync<IList<string>>(cacheKey);
             List<string> keywordListresult=rval?.Where(k=>k.Contains(keyword))?.ToList();
 
             return keywordListresult;
         }
 
-        public async Task<IList<string>> GetLocationSearchList(string location)
+        public IList<string> GetLocationSearchList(string location)
         {
             string cacheKey = "locationSearchList";
-            IList<string> rval = await GetCachedValueAsync<IList<string>>(cacheKey);
+            IList<string> rval = GetCachedValueAsync<IList<string>>(cacheKey);
 
             List<string> locationListresult=rval?.Where(k=>k.Contains(location))?.ToList();
 
             return locationListresult;
-        }
-        #endregion
-        
-        #region Sales Force
-        public async Task<BasicResponseDto> AddSalesForceSignUpList(SalesForceSignUpListDto dto)
-        {
-            BasicResponseDto rval = await PutAsync<BasicResponseDto>("salesforce/sign-up", dto);
-            return rval;
         }
         #endregion
     }

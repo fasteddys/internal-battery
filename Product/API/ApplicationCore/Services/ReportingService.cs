@@ -8,7 +8,6 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Reporting;
-using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
 using static UpDiddyLib.Helpers.Constants;
 
@@ -136,6 +135,12 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
             return jobviewCountDtoList;
+        }
+
+        public async Task<List<JobAbandonmentStatistics>> GetJobAbandonmentCountByDateAsync(DateTime startDate, DateTime endDate)
+        {
+            var result = await _repositoryWrapper.StoredProcedureRepository.GetJobAbandonmentStatisticsAsync(startDate, endDate);
+            return result;        
         }
     }
 }

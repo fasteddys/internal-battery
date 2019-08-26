@@ -14,6 +14,8 @@ using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
 using UpDiddy.Helpers;
 using UpDiddy.Api;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace UpDiddy
 {
@@ -26,8 +28,7 @@ namespace UpDiddy
 
         public static AuthenticationBuilder AddAzureAdB2C(this AuthenticationBuilder builder, Action<AzureAdB2COptions> configureOptions)
         {
-             
-            builder.Services.Configure(configureOptions);
+            builder.Services.Configure(configureOptions);    
             builder.Services.AddSingleton<IConfigureOptions<OpenIdConnectOptions>, AzureAdB2CAuthenticationBuilderExtensions.OpenIdConnectOptionsSetup>();
             builder.AddOpenIdConnect();
             return builder;
@@ -35,10 +36,13 @@ namespace UpDiddy
 
         public class OpenIdConnectOptionsSetup : IConfigureNamedOptions<OpenIdConnectOptions>
         {
-
-            public OpenIdConnectOptionsSetup(IOptions<AzureAdB2COptions> b2cOptions)
+            IDistributedCache _cache = null;
+            IMemoryCache _memoryCache = null;
+            public OpenIdConnectOptionsSetup(IOptions<AzureAdB2COptions> b2cOptions, IDistributedCache distributedCache, IMemoryCache memoryCache)
             {
                 AzureAdB2COptions = b2cOptions.Value;
+                _cache = distributedCache;
+                _memoryCache = memoryCache;
             }
 
             public AzureAdB2COptions AzureAdB2COptions { get; set; }
@@ -79,10 +83,6 @@ namespace UpDiddy
                     context.ProtocolMessage.Scope += $" offline_access {AzureAdB2COptions.ApiScopes}";
                     context.ProtocolMessage.ResponseType = OpenIdConnectResponseType.CodeIdToken;
                 }
-                // Set Language for identity provider screens 
-                if ( ! string.IsNullOrEmpty(AzureAdB2COptions.UiLocales) )
-                    context.ProtocolMessage.SetParameter("ui_locales", AzureAdB2COptions.UiLocales);
-
                 return Task.FromResult(0);
             }
 
@@ -102,7 +102,7 @@ namespace UpDiddy
                 }
                 else
                 {
-                    context.Response.Redirect("/Home/Error?message=" + context.Failure.Message);
+                    context.Response.Redirect("/Home/Error?message=" + Uri.EscapeDataString(context.Failure.Message));
                 }
                 return Task.FromResult(0);
             }
@@ -114,18 +114,20 @@ namespace UpDiddy
                 var code = context.ProtocolMessage.Code;
 
                 string signedInUserID = context.Principal.FindFirst(ClaimTypes.NameIdentifier).Value;
-                IConfidentialClientApplication app;
-                app = ConfidentialClientApplicationBuilder.Create(AzureAdB2COptions.ClientId)
-                        .WithB2CAuthority(AzureAdB2COptions.Authority)
-                        .WithRedirectUri(AzureAdB2COptions.RedirectUri)
-                        .WithClientSecret(AzureAdB2COptions.ClientSecret)
-                        .Build();
-                new MSALSessionCache(signedInUserID, context.HttpContext).EnablePersistence(app.UserTokenCache);
+                IConfidentialClientApplication cca = ConfidentialClientApplicationBuilder.Create(AzureAdB2COptions.ClientId)
+                    .WithB2CAuthority(AzureAdB2COptions.Authority)
+                    .WithRedirectUri(AzureAdB2COptions.RedirectUri)
+                    .WithClientSecret(AzureAdB2COptions.ClientSecret)
+                    .Build();
+                
+                new MSALSessionCache(signedInUserID,_cache, _memoryCache).EnablePersistence(cca.UserTokenCache);
                 try
                 {
-                    AcquireTokenByAuthorizationCodeParameterBuilder authCodeBuilder = app.AcquireTokenByAuthorizationCode(AzureAdB2COptions.ApiScopes.Split(' '), code);
-                    AuthenticationResult result = await authCodeBuilder.ExecuteAsync();
-                    context.HandleCodeRedemption(result.AccessToken, result.IdToken);    
+                    AuthenticationResult result = await cca.AcquireTokenByAuthorizationCode(AzureAdB2COptions.ApiScopes.Split(' '), code)
+                        .ExecuteAsync();
+
+
+                    context.HandleCodeRedemption(result.AccessToken, result.IdToken);
                 }
                 catch (Exception)
                 {

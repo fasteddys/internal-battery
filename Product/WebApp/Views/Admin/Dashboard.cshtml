@@ -92,12 +92,22 @@
                         @Html.React("FailedSubscribers", new { })
                     </div>
                 </div>
+            </div>
+             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                <div class="card shadow my-3">
+                    <div class="card-header">
+                        Job Abandonment Email Metric
+                    </div>
+                    <div class="card-body p-0">
+                        @Html.React("JobAbandonmentCount", new { ViewBag.abandonmentCount })
+                    </div>
+                </div>
             </div>    
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                <div class="card shadow mb-3">
+                <div class="card shadow my-3">
                     <div class="card-header">Offer Action Summary</div>
                     <div class="card-body p-0">
-                        <table class="table table-striped mb-0">
+                        <table class="table table-striped">
                             <thead>
                                 <tr>
                                     <th scope="col">Offer</th>

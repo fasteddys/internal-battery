@@ -139,7 +139,15 @@
                     document.getElementById('GridSearch').value = '';
                     $('#SelectedSubscriberSource option:eq(0)').prop('selected', true);
                 }
-                var grid = new MvcGrid(document.querySelector('.mvc-grid'));
+                
+                var grid = new MvcGrid(document.querySelector('.mvc-grid')
+                );
+                
+                document.querySelector('.mvc-grid').addEventListener('reloadfail', function (e) {
+                    ToastService.error("Please confirm your are logged in by reloading this page" , "Search Error");
+                });
+                
+
                 var search = document.getElementById('GridSearch').value;
                 var searchLocation = document.getElementById('GridSearchLocation').value;
                 var searchAndFilter = {

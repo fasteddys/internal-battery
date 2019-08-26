@@ -20,7 +20,8 @@ namespace UpDiddyApi.Helpers.GoogleProfile
 
         public EmploymentRecord(SubscriberWorkHistory subscriberWorkHistory)
         {
-            if (subscriberWorkHistory.StartDate != null && subscriberWorkHistory.StartDate.Value != DateTime.MinValue)
+
+            if (Utils.validStartDate(subscriberWorkHistory.StartDate, subscriberWorkHistory.EndDate)) 
                 this.startDate = new Date()
                 {
                     day = subscriberWorkHistory.StartDate.Value.Day,
@@ -28,7 +29,8 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                     year = subscriberWorkHistory.StartDate.Value.Year
                      
                 };
-            if (subscriberWorkHistory.EndDate != null && subscriberWorkHistory.EndDate.Value != DateTime.MinValue)
+
+            if(Utils.validEndDate(subscriberWorkHistory.StartDate, subscriberWorkHistory.EndDate))            
                 this.endDate = new Date()
                 {
                     day = subscriberWorkHistory.EndDate.Value.Day,
@@ -40,5 +42,10 @@ namespace UpDiddyApi.Helpers.GoogleProfile
             this.jobDescription = subscriberWorkHistory.JobDescription;
         }
 
+     
+
     }
+
+    
+
 }

@@ -23,6 +23,8 @@ using UpDiddy.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Caching.Memory;
+
 namespace UpDiddy.Controllers
 {
     public class HomeController : BaseController
@@ -31,6 +33,7 @@ namespace UpDiddy.Controllers
         private readonly IHostingEnvironment _env;
         private readonly ISysEmail _sysEmail;
         private readonly IApi _api;
+        private readonly IMemoryCache _memoryCache;
 
         [HttpGet]
         public async Task<IActionResult> GetCountries()
@@ -41,13 +44,16 @@ namespace UpDiddy.Controllers
         public HomeController(IApi api,
             IConfiguration configuration,
             IHostingEnvironment env,
-            ISysEmail sysEmail)
+            ISysEmail sysEmail,
+            IMemoryCache memoryCache)
+            
             : base(api)
         {
             _env = env;
             _sysEmail = sysEmail;
             _configuration = configuration;
             _api = api;
+            _memoryCache = memoryCache;
         }
         [HttpGet]
         public async Task<IActionResult> GetStatesByCountry(Guid countryGuid)
@@ -59,7 +65,7 @@ namespace UpDiddy.Controllers
         {
             try
             {
-                HomeViewModel HomeViewModel = new HomeViewModel(_configuration, await _Api.TopicsAsync());
+                HomeViewModel HomeViewModel = new HomeViewModel(_configuration);
                 var jobCount = await _Api.GetJobCountPerProvinceAsync();
                 HomeViewModel.JobCount = jobCount;
                 return View(HomeViewModel);
@@ -190,8 +196,17 @@ namespace UpDiddy.Controllers
             // logic being determined in web app for managing API data
 
             await _Api.UpdateStudentCourseProgressAsync(true);
-
-            if (this.subscriber.HasOnboarded > 0)
+ 
+            // Handle the case of MsalUiRequireRedirect 
+            var userId =  User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            string CacheKey = $"{userId}MsalUiRequiredRedirect";
+            string MsalUiRequiredRedirect =  _memoryCache.Get<String>(CacheKey); 
+            if ( string.IsNullOrEmpty(MsalUiRequiredRedirect) == false )
+            {
+                _memoryCache.Remove(CacheKey);
+                return Redirect(MsalUiRequiredRedirect);
+            }
+            else if (this.subscriber.HasOnboarded > 0)
                 return RedirectToAction("Profile", "Home");
             else
                 return RedirectToAction("Signup", "Home");

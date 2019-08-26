@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using System.IO;
-using UpDiddyLib.Shared;
 using UpDiddyApi.Models.Views;
 
 namespace UpDiddyApi.Models
@@ -173,10 +167,8 @@ namespace UpDiddyApi.Models
         public DbSet<Group> Group { get; set; }
         public DbSet<SubscriberGroup> SubscriberGroup { get; set; }
         public DbSet<GroupPartner> GroupPartner { get; set; }
+        public DbSet<SalesForceSignUpList> SalesForceSignUpList { get; set; }
 
-        public DbSet<SalesForceSignUpList> SalesForceSignUpList {get;set;}
-
-        
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
@@ -189,8 +181,11 @@ namespace UpDiddyApi.Models
         public DbQuery<v_ThrottledLeadEmailDelivery> ThrottledLeadEmailDelivery { get; set; }
         public DbQuery<v_UnreadNotifications> UnreadNotifications { get; set; }
         public DbQuery<v_NotificationReadCounts> NotificationReadCounts { get; set; }
+        public DbQuery<JobAbandonmentStatistics> JobAbandonmentStatistics { get; set; }
+        public DbQuery<JobCountPerProvince> JobCountPerProvince { get; set; }
 
         #endregion
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
