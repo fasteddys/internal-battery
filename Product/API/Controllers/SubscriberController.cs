@@ -821,7 +821,6 @@ namespace UpDiddyApi.Controllers
         [HttpPost("/api/[controller]/existing-user-signup")]
         public async Task<IActionResult> ExistingUserSignup([FromBody] SignUpDto signUpDto)
         {
-            var referer = _configuration["Environment:BaseUrl"] + "campaign/" + signUpDto.campaignSlug;
             Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
             Subscriber subscriber = await _subscriberService.GetSubscriberByGuid(loggedInUserGuid);
 
@@ -837,7 +836,7 @@ namespace UpDiddyApi.Controllers
                 try
                 {
                     await _subscriberService.UpdateSubscriber(subscriber);
-                    await _taggingService.CreateGroup(referer, signUpDto.partnerGuid, subscriber.SubscriberId);
+                    await _taggingService.CreateGroup(signUpDto.referer, signUpDto.partnerGuid, subscriber.SubscriberId);
                     await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
                     await _db.SaveChangesAsync();
                     transaction.Commit();

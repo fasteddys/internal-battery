@@ -2,7 +2,7 @@
 @using System.Net
 @model SignUpViewModel
 
-@{ 
+@{
     string _form = Model.IsExpressSignUp ? "ExpressSignUpForm" : "SignUpForm";
     string _aspAction = Model.IsExpressSignUp ? "express-sign-up" : "sign-up";
 }
@@ -23,16 +23,16 @@
         }
         <div class="row">
             <div class="d-flex justify-content-center pb-4" style="width:100%">
-                @if(Model.IsWaitList)
+                @if (Model.IsWaitList)
                 {
-                    <a asp-action="signin" 
-                    asp-controller="session" 
-                    style="width:100%"
-                    class="btn btn-sm btn-light-blue mb-0 mr-2" 
-                    asp-route-redirectUri="campaign/@Model.CampaignSlug">@Model.ExistingUserButtonText</a>
+                    <a asp-action="signin"
+                       asp-controller="session"
+                       style="width:100%"
+                       class="btn btn-sm btn-light-blue mb-0 mr-2"
+                       asp-route-redirectUri="campaign/@Model.CampaignSlug">@Model.ExistingUserButtonText</a>
                 }
             </div>
-            @if(Model.IsWaitList)
+            @if (Model.IsWaitList)
             {
                 <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
                     <input class="wide-input" placeholder="Your first name" form="@_form" name="FirstName" asp-for="FirstName" required />
@@ -41,9 +41,9 @@
                     <input class="wide-input" placeholder="Your last name" form="@_form" name="LastName" asp-for="LastName" required />
                 </div>
                 <div id="SignUpPhone" class="col-12 sign-up-input no-padding">
-                    <input class="wide-input" placeholder="Your phone number (optional)" type="text"  maxlength = "16"  form="@_form" name="PhoneNumber" asp-for="PhoneNumber" />
+                    <input class="wide-input" placeholder="Your phone number (optional)" type="text" maxlength="16" form="@_form" name="PhoneNumber" asp-for="PhoneNumber" />
                 </div>
-            }   
+            }
             <div id="SignUpEmail" class="col-12 sign-up-input no-padding">
                 <input class="wide-input" placeholder="Your email" form="@_form" data-val="true" name="Email" asp-for="Email" required />
             </div>
@@ -67,7 +67,7 @@
                     Form = _form,
                     ButtonAction = ActionButtonViewModel.Action.SUBMIT
                 })
-            </div>  
+            </div>
             @if (!string.IsNullOrWhiteSpace(Model.ObfuscatedEmail))
             {
                 <div class="col-12 no-padding notification">
@@ -76,8 +76,8 @@
             }
         </div>
         @Html.HiddenFor(x => Model.IsWaitList)
+        @Html.HiddenFor(x => Model.IsLoggedIn)
         @Html.HiddenFor(x => Model.CampaignSlug)
-
     </form>
     <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -86,7 +86,7 @@
                     <h5 class="modal-title">@Model.SuccessHeader</h5>
                 </div>
                 <div class="modal-body">
-                    @Model.SuccessText
+                    @Html.raw(Model.SuccessText)
                 </div>
                 <div class="modal-footer">
                     <a href="/Session/SignIn" class="btn btn-primary">Continue</a>

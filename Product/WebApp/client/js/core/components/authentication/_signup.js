@@ -79,8 +79,8 @@
         $("#SignUpOverlay").remove();
         ToastService.error("Please enter information for all sign-up fields and try again.");
     }
-    
-}); 
+});
+
 $("#ExistingUserComponent form").submit(function (e) {
     e.preventDefault();
     $.ajax({
@@ -94,6 +94,10 @@ $("#ExistingUserComponent form").submit(function (e) {
             window.location.href = res.description;
         }, 3000);
     }).fail(res => {
+        if (res.responseJSON.statusCode == "401") {
+            var campaignSlug = $("#CampaignSlug").val();
+            window.location.href = "/session/signin?redirectUri=campaign/" + campaignSlug;
+        }
         var errorText = "Unfortunately, there was an error with your submission. Please try again later.";
         if (res.responseJSON.description != null)
             errorText = res.responseJSON.description;

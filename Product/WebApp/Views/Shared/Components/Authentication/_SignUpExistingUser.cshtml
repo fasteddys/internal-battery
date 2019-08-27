@@ -3,28 +3,28 @@
 @model SignUpViewModel
 <div id="ExistingUserComponent">
     <form id="ExistingUserForm" asp-controller="Campaign" asp-action="existing-user-sign-up" data-action="existing-user-sign-up">
-                           <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
-                                <input class="wide-input" placeholder="Your first name"  name="FirstName" asp-for="FirstName" required />
-                            </div>
-                            <div id="SignUpLastName" class="col-12 sign-up-input no-padding">
-                                <input class="wide-input" placeholder="Your last name"  name="LastName" asp-for="LastName" required />
-                            </div>
-                            <div id="SignUpPhone" class="col-12 sign-up-input no-padding">
-                                <input class="wide-input" placeholder="Your phone number (optional)" type="text"  maxlength = "16" name="PhoneNumber" asp-for="PhoneNumber" />
-                            </div>
-                             <div id="SignUpAction" class="col-12 no-padding">
-                            @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                                Text = Model.ExistingUserSubmitButtonText,
-                                SkewDirection = "skew-left-to-right",
-                                Form = "ExistingUserForm",
-                                ChosenColorScheme = "cc-cscheme-darkred",
-                                ButtonAction = ActionButtonViewModel.Action.SUBMIT
-                            })
-                            </div>                           
-                            @Html.HiddenFor(x => Model.CampaignSlug)
-                            @Html.HiddenFor(x => Model.FirstName)
-                            @Html.HiddenFor(x => Model.LastName)
-                            @Html.HiddenFor(x => Model.PhoneNumber)
+        <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
+            <input class="wide-input" placeholder="Your first name" name="FirstName" asp-for="FirstName" required />
+        </div>
+        <div id="SignUpLastName" class="col-12 sign-up-input no-padding">
+            <input class="wide-input" placeholder="Your last name" name="LastName" asp-for="LastName" required />
+        </div>
+        <div id="SignUpPhone" class="col-12 sign-up-input no-padding">
+            <input class="wide-input" placeholder="Your phone number (optional)" type="text" maxlength="16" name="PhoneNumber" asp-for="PhoneNumber" />
+        </div>
+        <div id="SignUpAction" class="col-12 no-padding">
+            @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                Text = Model.ExistingUserSubmitButtonText,
+                SkewDirection = "skew-left-to-right",
+                Form = "ExistingUserForm",
+                ChosenColorScheme = "cc-cscheme-darkred",
+                ButtonAction = ActionButtonViewModel.Action.SUBMIT
+            })
+        </div>
+        @Html.HiddenFor(x => Model.CampaignSlug)
+        @Html.HiddenFor(x => Model.FirstName)
+        @Html.HiddenFor(x => Model.LastName)
+        @Html.HiddenFor(x => Model.PhoneNumber)
     </form>
     <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -33,7 +33,7 @@
                     <h5 class="modal-title">@Model.ExistingUserSuccessHeader</h5>
                 </div>
                 <div class="modal-body">
-                    @Model.ExistingUserSuccessText
+                    @Html.raw(Model.SuccessText)
                 </div>
                 <div class="modal-footer">
                     <a href="/Session/SignIn" class="btn btn-primary">Continue</a>

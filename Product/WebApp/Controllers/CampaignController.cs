@@ -280,7 +280,7 @@ namespace UpDiddy.Controllers
                 {
                     return BadRequest(new BasicResponseDto
                     {
-                        StatusCode = 400,
+                        StatusCode = 401,
                         Description = "Please sign in to continue."
                     });
                 }
@@ -300,7 +300,8 @@ namespace UpDiddy.Controllers
                     lastName = signUpViewModel.LastName,
                     phoneNumber = signUpViewModel.PhoneNumber,
                     partnerGuid = signUpViewModel.PartnerGuid,
-                    campaignSlug = signUpViewModel.CampaignSlug
+                    campaignSlug = signUpViewModel.CampaignSlug,
+                    referer = Request.Headers["Referer"].ToString()
                 };
                 BasicResponseDto subscriberResponse = await _Api.ExistingUserGroupSignup(sudto);
                 switch (subscriberResponse.StatusCode)
