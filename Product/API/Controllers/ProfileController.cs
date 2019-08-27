@@ -39,10 +39,10 @@ namespace UpDiddyApi.Controllers
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
-            _syslog = sysLog;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory, repositoryWrapper);
+            _syslog = sysLog;     
             _subscriberService = subscriberService;
             _hangfireService = hangfireService;
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory, repositoryWrapper,_subscriberService);
         }
 
         #region profile tenants

@@ -217,7 +217,7 @@ namespace UpDiddy.Controllers
         [HttpGet]
         public async Task<ViewResult> Subscribers()
         {
-            IList<SubscriberSourceDto> subscriberSourcesDto = await _api.SubscriberSourcesAsync();
+            IList<SubscriberSourceStatisticDto> subscriberSourcesDto = await _api.SubscriberSourcesAsync();
 
 
             //  var subscriberSourcesDto = _api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);

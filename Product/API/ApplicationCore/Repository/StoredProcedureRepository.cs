@@ -9,6 +9,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 namespace UpDiddyApi.ApplicationCore.Repository
 {
     using UpDiddyApi.Models;
+    using UpDiddyLib.Dto;
+
     using UpDiddyLib.Dto.User;
 
     public class StoredProcedureRepository : IStoredProcedureRepository
@@ -32,6 +34,19 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
             return await _dbContext.JobCountPerProvince.FromSql<JobCountPerProvince>("System_JobCountPerProvince").ToListAsync();
         }
+
+
+        public async Task<List<SubscriberSourceDto>> GetSubscriberSources(int SubscriberId)
+        {
+            var spParams = new object[] {
+                   new SqlParameter("@Subscriberid", SubscriberId) 
+                };
+            return await _dbContext.SubscriberSourcesDetails.FromSql<SubscriberSourceDto>("System_Get_SubscriberSources @SubscriberId", spParams).ToListAsync();
+        }
+
+
+ 
+
 
         public async Task<List<JobDto>> GetSubscriberJobFavorites(int SubscriberId)
         {

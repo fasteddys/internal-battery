@@ -93,7 +93,7 @@ namespace UpDiddyApi.Controllers
             _subscriberNotificationService = subscriberNotificationService;
             _jobService = jobService;
             _taggingService = taggingService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory,repositoryWrapper);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, httpClientFactory,repositoryWrapper, _subscriberService);
             _hangfireService = hangfireService;
             _jobPostingService = jobPostingService;
         }
@@ -984,7 +984,7 @@ namespace UpDiddyApi.Controllers
         public IActionResult GetSubscriberSources()
         {
          
-            return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceDto>(_mapper.ConfigurationProvider).ToList());
+            return Ok(_db.SubscriberSources.ProjectTo<SubscriberSourceStatisticDto>(_mapper.ConfigurationProvider).ToList());
         }
 
         // todo: add security to check token to this route

@@ -18,7 +18,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
         Task<IList<Partner>>  GetPartnersAssociatedWithSubscriber(int subscriberId);
 
 
-
+ 
 
 
     }
