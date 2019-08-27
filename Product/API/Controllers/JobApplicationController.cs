@@ -49,7 +49,7 @@ namespace UpDiddyApi.Controllers
             ISysEmail sysEmail,
             ISubscriberService subscriberService,
             IHangfireService hangfireService,
-            IRepositoryWrapper repositoryWrapper)
+            IRepositoryWrapper repositoryWrapper )
 
         {
             _db = db;
@@ -58,10 +58,11 @@ namespace UpDiddyApi.Controllers
             _syslog = sysLog;
             _httpClientFactory = httpClientFactory;
             _postingTTL = int.Parse(configuration["JobPosting:PostingTTLInDays"]);
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, repositoryWrapper);
+
             _sysEmail = sysEmail;
             _subscriberService = subscriberService;
             _hangfireService = hangfireService;
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, repositoryWrapper,_subscriberService);
         }
         #endregion
 

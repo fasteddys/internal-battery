@@ -18,6 +18,7 @@ using System.Globalization;
 using System.Threading;
 using UpDiddyApi.ApplicationCore.Repository;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.Helpers.GoogleProfile
 {
@@ -25,7 +26,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
     {
 
         #region CC subscriber -> cloud talent profile  mapping helpers
-        static public GoogleCloudProfile CreateGoogleProfile(IRepositoryWrapper repositoryWrapper, int maxSkillLen, Subscriber subscriber, IList<SubscriberSkill> skills)
+        static public GoogleCloudProfile CreateGoogleProfile(IRepositoryWrapper repositoryWrapper, int maxSkillLen, Subscriber subscriber, IList<SubscriberSkill> skills, ISubscriberService subscriberService)
         {
  
             GoogleCloudProfile gcp = new GoogleCloudProfile()
@@ -52,18 +53,22 @@ namespace UpDiddyApi.Helpers.GoogleProfile
                 phoneNumbers = MapPhoneNumber(subscriber)
             };
 
-
-            // TODO JAB added view and stored procedure to migration 
-            IList<Partner> partners = repositoryWrapper.SubscriberRepository.GetPartnersAssociatedWithSubscriber(subscriber.SubscriberId).Result;
+ 
+            string partnerSource = Constants.NotSpecifedOption;
+            //  search for the first partner attributed source 
+            IList<SubscriberSourceDto> subscriberSourceDtos = subscriberService.GetSubscriberSources(subscriber.SubscriberId).Result;
+            foreach ( SubscriberSourceDto s in subscriberSourceDtos)
+            {
+                if ( s.Rank == 1 )
+                {
+                    partnerSource = s.PartnerName;
+                    break;
+                }
+            }
          
             List<string> partnerList = new List<string>();
-            if (partners == null || partners.Count <= 0)
-                partnerList.Add(Constants.NotSpecifedOption);
-            else
-                foreach (Partner p in partners)
-                    partnerList.Add(p.Name);
-
-        
+            partnerList.Add(partnerSource);
+           
             gcp.customAttributes = new Dictionary<string, CustomAttribute>();
             // index source partner as custom attribute 
             gcp.customAttributes["SourcePartner"] = new CustomAttribute

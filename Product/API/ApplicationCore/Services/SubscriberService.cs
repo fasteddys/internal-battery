@@ -68,7 +68,6 @@ namespace UpDiddyApi.ApplicationCore.Services
         {
             return await _repository.StoredProcedureRepository.GetSubscriberSources(subscriberId);
 
-
         }
 
 
@@ -80,7 +79,6 @@ namespace UpDiddyApi.ApplicationCore.Services
             List<Subscriber> rVal = await querableSubscribers.Where(s => s.IsDeleted == 0 && (s.CloudTalentIndexVersion < indexVersion || s.CloudTalentIndexVersion == 0) )
                                                             .Take(numSubscribers)
                                                             .ToListAsync();
-
 
             if (rVal.Count > 0)
             {
