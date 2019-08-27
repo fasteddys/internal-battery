@@ -281,7 +281,7 @@ namespace UpDiddy.Controllers
                     return BadRequest(new BasicResponseDto
                     {
                         StatusCode = 401,
-                        Description = "Please sign in to continue."
+                        Description = "User is not signed in. Redirecting you to login page..."
                     });
                 }
                 bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.FirstName) && !string.IsNullOrEmpty(signUpViewModel.LastName);
