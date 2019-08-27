@@ -88,7 +88,7 @@
                                                 {
                                                     counter++;
                                                     <div>
-                                                        <a rel="nofollow" href="@string.Format("{0}datepublished={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("/Jobs{0}datepublished={1}", (@ViewBag.QueryUrl.Equals("")? "?" :@ViewBag.QueryUrl+"&"), @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                 }
                                                 @if (facets.Facets.Count > 5)
@@ -114,7 +114,7 @@
                                                 {
                                                     counter++;
                                                     <div>
-                                                        <a rel="nofollow" href="@string.Format("{0}employmenttype={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("/Jobs{0}employmenttype={1}", (@ViewBag.QueryUrl.Equals("")? "?" :@ViewBag.QueryUrl+"&"), @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                 }
                                                 @if (facets.Facets.Count > 5)
@@ -139,7 +139,7 @@
                                                 {
                                                     counter++;
                                                     <div>
-                                                        <a rel="nofollow" href="@string.Format("{0}city={1}", @ViewBag.QueryUrl.ToString().Replace("location","province"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")"> @string.Join(", ",facet.Label.Split(",")[0], facet.Label.Split(",")[1].ToUpper()) &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("/Jobs{0}city={1}", (@ViewBag.QueryUrl.Equals("")? "?" : @ViewBag.QueryUrl.ToString().Replace("location","province")+"&"), @facet.UrlParam.Split(',')[0])" class="facet-link @((counter > 5) ? "moreLink" : "")"> @string.Join(", ",facet.Label.Split(",")[0], facet.Label.Split(",")[1].ToUpper()) &nbsp(@facet.Count)</a>
                                                     </div>
                                                     @if (counter >= 15)
                                                     {
@@ -171,7 +171,7 @@
                                                 {
                                                     counter++;
                                                     <div>
-                                                        <a rel="nofollow" href="@string.Format("{0}jobcategory={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("/Jobs{0}jobcategory={1}", (@ViewBag.QueryUrl.Equals("")? "?" :@ViewBag.QueryUrl+"&"), @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                 }
                                                 @if (facets.Facets.Count > 5)
@@ -196,7 +196,7 @@
                                                 {
                                                     counter++;
                                                     <div>
-                                                        <a rel="nofollow" href="@string.Format("{0}industry={1}", @ViewBag.QueryUrl, @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
+                                                        <a rel="nofollow" href="@string.Format("/Jobs{0}industry={1}", (@ViewBag.QueryUrl.Equals("")? "?" :@ViewBag.QueryUrl+"&"), @facet.UrlParam)" class="facet-link @((counter > 5) ? "moreLink" : "")">@facet.Label &nbsp(@facet.Count)</a>
                                                     </div>
                                                 }
                                                 @if (facets.Facets.Count > 5)
@@ -267,29 +267,36 @@
             var parentElementUndoElement = document.getElementById('active-filters');
             var innerHtml = "<div class='facet-header'>Selected Filters</div>";
 
-            @{
-                var queryParameterList = @ViewContext.HttpContext.Request.Query.ToArray();
-
+            @{              
+                var queryParameterList=System.Web.HttpUtility.ParseQueryString(url);
                 CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
                 TextInfo textInfo = cultureInfo.TextInfo;
             }
 
             @if (!string.IsNullOrEmpty(url))
             {
-                foreach (var queryParameter in queryParameterList)
+                @foreach(string qp in queryParameterList)
                 {
-                    if (queryParameter.Key != "page" && !string.IsNullOrEmpty(queryParameter.Value))
-                    {
-                        Regex queryParameterToRemove = new Regex(queryParameter.Key + @"=.+?(?=\&)");
-                        var undoUrl = queryParameterToRemove.Replace(url, string.Empty).Trim('&');
-                        <text>
-                            innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameter.Value.ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl' data-toggle='tooltip' data-placement='bottom' title='Remove'><b>(X)</b></a><span></div>";
-                            parentElementUndoElement.innerHTML = innerHtml;
-                        </text>
-                    }
+                        if ((qp == "datepublished" || qp== "employmenttype" 
+                            || qp == "city" || qp == "jobcategory" 
+                            || qp== "industry" || qp == "keywords"
+                            || qp=="location" || qp=="province") 
+                            && !string.IsNullOrEmpty(queryParameterList[qp]))
+                            {
+                                var queryStrings=System.Web.HttpUtility.ParseQueryString(url);
+                                    queryStrings.Remove(qp);
+                                    var undoUrl=queryStrings.Count>0
+                                                ? String.Format("?{0}", queryStrings)
+                                                :"?";
+
+                                    <text>
+                                        innerHtml = innerHtml + "<div class='facet-link'><span>@textInfo.ToTitleCase(queryParameterList[qp].ToString().ToLower().Replace('_', ' '))<span>&nbsp<a href='@undoUrl' data-toggle='tooltip' data-placement='bottom' title='Remove'><b>(X)</b></a><span></div>";
+                                        parentElementUndoElement.innerHTML = innerHtml;
+                                        parentElementUndoElement.style="overflow-wrap:break-word;"
+                                    </text> 
+                            } 
                 }
             }
-
           
 
             $( "#keywords" ).autocomplete({
@@ -358,8 +365,7 @@
                                     });
 
                         }
-                    },
-                    autoFocus:true
+                    }
                 }); 
 
         });
