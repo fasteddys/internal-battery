@@ -967,9 +967,6 @@ namespace UpDiddyApi.Controllers
                 Keywords = searchQuery,
                 SourcePartner = searchFilter == null || searchFilter.ToLower() == "any" ? string.Empty : searchFilter,
                 Location = searchLocationQuery,
-                // Works OrderBy = "relevance desc",
-                // no work  OrderBy = "update_time desc",
-                OrderBy = "updateTime desc",
                 // must be < 100
                 PageSize = MaxProfilePageSize
 
