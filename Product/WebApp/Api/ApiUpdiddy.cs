@@ -650,7 +650,7 @@ namespace UpDiddy.Api
         public async Task<JobSearchResultDto> GetJobsByLocation(string searchQueryParameterString)
         {
 
-            var searchFilter = $"all/all/all/all/all/all/0{searchQueryParameterString}page-size=100";
+            var searchFilter = $"all/all/all/all/all/all/0{(searchQueryParameterString.Equals("")? "?" :searchQueryParameterString+"&")}page-size=100";
             string cacheKey = $"job-{searchFilter}";
             JobSearchResultDto rval = GetCachedValueAsync<JobSearchResultDto>(cacheKey);
 
