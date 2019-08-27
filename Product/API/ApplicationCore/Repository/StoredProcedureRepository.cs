@@ -11,6 +11,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
     using UpDiddyApi.Models;
     using UpDiddyLib.Dto;
 
+    using UpDiddyLib.Dto.User;
+
     public class StoredProcedureRepository : IStoredProcedureRepository
     {
         private readonly UpDiddyDbContext _dbContext;
@@ -44,6 +46,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
 
  
+
+
+        public async Task<List<JobDto>> GetSubscriberJobFavorites(int SubscriberId)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@SubscriberId", SubscriberId)
+                };
+            return await _dbContext.SubscriberJobFavorites.FromSql<JobDto>("System_Get_SubscriberJobFavorites @SubscriberId", spParams).ToListAsync();
+        }
 
     }
 }

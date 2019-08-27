@@ -195,7 +195,7 @@ namespace UpDiddyApi
                     // run the job crawl in production Monday through Friday once per day at 15:00 UTC
                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 15 * * Mon,Tue,Wed,Thu,Fri");
                      //Keyword and Location Search Intellisense Job
-                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),"0 11,13,15,17,19,21,23 * * Mon,Tue,Wed,Thu,Fri");
+                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),"0 0 0/3 ? * MON,TUE,WED,THU,FRI *");
                 }
 
                 // run the process in staging once a week on the weekend (Sunday 4 UTC)
@@ -257,6 +257,7 @@ namespace UpDiddyApi
             services.AddScoped<ITaggingService, TaggingService>();
             services.AddScoped<ISubscriberNotificationService, SubscriberNotificationService>();
             services.AddScoped<IHangfireService, HangfireService>();
+            services.AddScoped<IMemoryCacheService,MemoryCacheService>();
             #endregion
 
             // Configure SnapshotCollector from application settings

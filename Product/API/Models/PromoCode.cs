@@ -24,5 +24,6 @@ namespace UpDiddyApi.Models
         public int NumberOfRedemptions { get; set; }
         public int MaxAllowedNumberOfRedemptions { get; set; }
         public virtual PromoType PromoType { get; set; }
+        public int? MaxNumberOfRedemptionsPerSubscriber { get; set; }
     }
 }

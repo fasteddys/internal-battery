@@ -31,6 +31,7 @@ using System.Data.SqlClient;
 using JobPosting = UpDiddyApi.Models.JobPosting;
 using UpDiddyApi.Helpers;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace UpDiddyApi.Workflow
 {
@@ -45,6 +46,7 @@ namespace UpDiddyApi.Workflow
         private readonly CloudTalent _cloudTalent;
         private readonly IMimeMappingService _mimeMappingService;
         private readonly IHangfireService _hangfireService;
+        private readonly IMemoryCache _memoryCache;
         public ScheduledJobs(
             UpDiddyDbContext context,
             IMapper mapper,
@@ -61,7 +63,8 @@ namespace UpDiddyApi.Workflow
             IJobPostingService jobPostingService,
             ITrackingService trackingService,
             IMimeMappingService mimeMappingService,
-            IHangfireService hangfireService
+            IHangfireService hangfireService,
+            IMemoryCache memoryCache 
            )
         {
             _db = context;
@@ -83,6 +86,7 @@ namespace UpDiddyApi.Workflow
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             _mimeMappingService = mimeMappingService;
             _hangfireService = hangfireService;
+            _memoryCache=memoryCache;
 
         }
 
@@ -1655,16 +1659,9 @@ namespace UpDiddyApi.Workflow
             string serializedKeyworkSearchList = JsonConvert.SerializeObject(keywordSearch.ConvertAll(k => k.ToLower()).Distinct());
             string serializedLocationSearchList = JsonConvert.SerializeObject(locationSearch.ConvertAll(l => l.ToLower()).Distinct());
 
-            //cache for 2 days unless the scheduled job runs.
-            //caching of keyword and location happens when the job data mining job runs
-            DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"]))
-            };
-
-            //cache the list to use for intelligence search
-            await _cache.SetStringAsync("keywordSearchList", serializedKeyworkSearchList, options);
-            await _cache.SetStringAsync("locationSearchList", serializedLocationSearchList, options);
+            //store in memory cache
+            _memoryCache.Set("keywordSearchList",serializedKeyworkSearchList,DateTimeOffset.Now.AddDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"])));
+            _memoryCache.Set("locationSearchList",serializedLocationSearchList,DateTimeOffset.Now.AddDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"])));
         }
         #endregion
 

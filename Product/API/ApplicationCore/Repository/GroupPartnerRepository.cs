@@ -14,6 +14,15 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
     public class GroupPartnerRepository : UpDiddyRepositoryBase<GroupPartner>, IGroupPartnerRepository
     {
-        public GroupPartnerRepository(UpDiddyDbContext dbContext) : base(dbContext) { }
+        public GroupPartnerRepository(UpDiddyDbContext dbContext) : base(dbContext) 
+        {
+
+        }
+
+        public async Task<GroupPartner> GetGroupPartnerByGroupIdPartnerIdAsync(int Groupid, int PartnerId)
+        {
+            var queryableGroupPartner=GetAll();
+            return await queryableGroupPartner.Where(gp=>gp.GroupId==Groupid && gp.PartnerId==PartnerId && gp.IsDeleted==0).FirstOrDefaultAsync();;
+        }
     }
 }

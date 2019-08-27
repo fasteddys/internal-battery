@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using UpDiddyApi.Models.Views;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Dto.User;
 
 namespace UpDiddyApi.Models
 {
@@ -188,6 +189,7 @@ namespace UpDiddyApi.Models
 
 
 
+        public DbQuery<JobDto> SubscriberJobFavorites { get; set; }
 
         #endregion
 
