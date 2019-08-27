@@ -42,23 +42,37 @@
                                     <img src="@Model.hero_sub_image" />
                                 </div>
                                 <div class="col-12 no-padding sub-header font-bold">
-                                    @if (Model.isLoggedIn)
+                                    @if(Model.iswaitlist)
                                     {
-                                        @Html.Raw(Model.existing_user_form_header);
+                                        @if (Model.isLoggedIn)
+                                        {
+                                            @Html.Raw(Model.existing_user_form_header);
+                                        }
+                                        else
+                                        {
+                                            @Html.Raw(Model.signup_form_header);
+                                        }
                                     }
                                     else
                                     {
-                                        @Html.Raw(Model.signup_form_header);
+                                         @Html.Raw("Sign Up Today!");
                                     }
                                 </div>
                                 <div class="col-12 no-padding mini-header">
-                                    @if (Model.isLoggedIn)
-                                    {
-                                        @Html.Raw(Model.existing_user_form_text);
+                                    @if(Model.iswaitlist)
+                                    {                      
+                                        if (Model.isLoggedIn)
+                                        {
+                                            @Html.Raw(Model.existing_user_form_text);
+                                        }
+                                        else
+                                        {
+                                            @Html.Raw(Model.signup_form_text);
+                                        }
                                     }
                                     else
                                     {
-                                        @Html.Raw(Model.signup_form_text);
+                                        @Html.Raw("Create an account to get started");
                                     }
                                 </div>
                                 <div class="col-12 no-padding">
