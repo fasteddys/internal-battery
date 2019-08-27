@@ -10,7 +10,7 @@ namespace UpDiddy.Services
         Task<bool> SetCachedValueAsync<T>(string CacheKey, T Value);
         Task<bool> SetCachedValueAsync<T>(string CacheKey, T Value, DateTimeOffset expiryTime);
         Task<T> GetCachedValueAsync<T>(string CacheKey);
-        Task<bool> RemoveCachedValueAsync<T>(string CacheKey);
+        Task<bool> RemoveCachedValueAsync(string CacheKey);
         Task<T> GetSetCachedValueAsync<T>(string CacheKey, Func<Task<T>> func, DateTimeOffset expiryTime);
     }
 }

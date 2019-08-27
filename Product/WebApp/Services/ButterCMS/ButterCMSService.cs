@@ -20,6 +20,7 @@ namespace UpDiddy.Services.ButterCMS
         private IConfiguration _configuration = null;
         private ISysEmail _sysEmail = null;
         private ButterCMSClient _butterClient;
+        private string CmsCacheKeyPrefix;
 
         public ButterCMSService(ICacheService cacheService, IConfiguration configuration, ISysEmail sysEmail)
         {
@@ -27,6 +28,7 @@ namespace UpDiddy.Services.ButterCMS
             _configuration = configuration;
             _sysEmail = sysEmail;
             _butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
+            CmsCacheKeyPrefix = Constants.CMS.CACHE_KEY_PREFIX;
         }
 
         /// <summary>
@@ -45,7 +47,7 @@ namespace UpDiddy.Services.ButterCMS
         /// <returns>An object in the form of T representing the BCMS response</returns>
         public async Task<T> RetrieveContentFieldsAsync<T>(string CacheKey, string[] Keys, Dictionary<string, string> QueryParameters) where T : class
         {
-            T CachedButterResponse = await _cacheService.GetCachedValueAsync<T>(CacheKey);
+            T CachedButterResponse = await _cacheService.GetCachedValueAsync<T>(CmsCacheKeyPrefix + CacheKey);
             try
             {
                 if (CachedButterResponse == null)
@@ -57,7 +59,7 @@ namespace UpDiddy.Services.ButterCMS
                         await SendEmailNotificationAsync(CacheKey);
                         return null;
                     }
-                    await _cacheService.SetCachedValueAsync(CacheKey, CachedButterResponse);
+                    await _cacheService.SetCachedValueAsync(CmsCacheKeyPrefix + CacheKey, CachedButterResponse);
                 }
             }
             catch(ContentFieldObjectMismatchException)
@@ -68,8 +70,9 @@ namespace UpDiddy.Services.ButterCMS
             return CachedButterResponse;
         }
 
-        public async Task<PageResponse<T>> RetrievePageAsync<T>(string CacheKey, string Slug, Dictionary<string, string> QueryParameters = null) where T : ButterCMSBaseViewModel
+        public async Task<PageResponse<T>> RetrievePageAsync<T>(string Url, Dictionary<string, string> QueryParameters = null) where T : ButterCMSBaseViewModel
         {
+            string CacheKey = AssemblePageCacheKey(Constants.CMS.PAGE_CACHE_KEY_PREFIX + Url, QueryParameters);
             CMSResponseHelper<PageResponse<T>> ResponseHelper = await _cacheService.GetCachedValueAsync<CMSResponseHelper<PageResponse<T>>>(CacheKey);
 
             try
@@ -77,7 +80,7 @@ namespace UpDiddy.Services.ButterCMS
                 if (ResponseHelper == null)
                 {
                     ResponseHelper = new CMSResponseHelper<PageResponse<T>>();
-                    PageResponse<T> CachedButterResponse = await _butterClient.RetrievePageAsync<T>("*", Slug, QueryParameters);
+                    PageResponse<T> CachedButterResponse = await _butterClient.RetrievePageAsync<T>("*", DecipherCmsPageFromUrl(Url), QueryParameters);
                     ResponseHelper.Data = CachedButterResponse;
 
                     if (CachedButterResponse == null)
@@ -98,22 +101,93 @@ namespace UpDiddy.Services.ButterCMS
             
         }
 
-        public async Task<bool> ClearCachedValueAsync<T>(string CacheKey)
+        public async Task<bool> ClearCachedPageAsync(string Slug)
         {
-            return await _cacheService.RemoveCachedValueAsync<T>(CacheKey);
+            string CacheKey = AssemblePageCacheKey(Constants.CMS.PAGE_CACHE_KEY_PREFIX + Slug);
+            return await _cacheService.RemoveCachedValueAsync(CacheKey);
         }
 
-        public string AssembleCacheKey(string KeyPrefix, string PageSlug, IQueryCollection Query = null){
+        public async Task<bool> ClearCachedKeyAsync(string Key)
+        {
+            return await _cacheService.RemoveCachedValueAsync(Key);
+        }
+
+        private string AssemblePageCacheKey(string PageSlug, Dictionary<string, string> QueryParameters = null){
+            Dictionary<string, string> QueryParamsFromUrl = ExtractQueryParamsFromUrlString(PageSlug);
+
+            //Urls may come in the query params attached
+            if(QueryParamsFromUrl != null){
+                if(QueryParameters == null){
+                    QueryParameters = new Dictionary<string, string>();
+                }
+                foreach(string key in QueryParamsFromUrl.Keys){
+                    if(!QueryParameters.Keys.Contains(key))
+                        QueryParameters.Add(key, QueryParamsFromUrl[key]);
+                }
+            }
+            
+
+            PageSlug = DecipherKeyRouteFromUrl(PageSlug);
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append(KeyPrefix)
-                .Append("_")
+            stringBuilder.Append(CmsCacheKeyPrefix)
                 .Append(PageSlug);
 
             // Check to see if this is a preview request.
-            if(Query != null && Query.Keys.Contains("preview") && Query["preview"].Equals("1"))
-                stringBuilder.Append("_preview");
+            if(QueryParameters != null){
+                foreach(string Key in QueryParameters.Keys){
+                    if(Key.Equals("preview") && QueryParameters[Key].Equals("1"))
+                        stringBuilder.Append("_preview");
+                }
+            }
 
             return stringBuilder.ToString();
+        }
+
+        private Dictionary<string, string> ExtractQueryParamsFromUrlString(string Url){
+            int index = Url.IndexOf("?");
+            string QueryParamString = string.Empty;
+            if (index <= 0)
+                return null;
+
+            if(index + 1 >= Url.Length)
+                return null;
+            
+            QueryParamString = Url.Substring(index + 1, Url.Length - index - 1);
+            Dictionary<string, string> QueryParams = new Dictionary<string, string>();
+            if(QueryParamString.Equals(string.Empty))
+                return QueryParams;
+
+            string[] split = QueryParamString.Split("&");
+            
+            foreach(string s in split){
+                string[] param = s.Split("=");
+                QueryParams.Add(param[0], param[1]);
+            }
+            return QueryParams;
+        }
+
+        private string DecipherCmsPageFromUrl(string Url){
+            Url = DecipherKeyRouteFromUrl(Url);
+            Url = Url.Split("_").Last().ToLower();
+            return Url;
+        }
+
+        private string DecipherKeyRouteFromUrl(string Url){
+            //Take out protocol annd domain from url
+            Url =  Url.Replace(_configuration["Environment:BaseUrl"], "/").ToLower();
+
+            //Edge case if home page is supplied without closing slash
+            Url =  Url.Replace(_configuration["Environment:BaseUrl"].Substring(0, _configuration["Environment:BaseUrl"].Length - 1), "/").ToLower();
+
+            //Strip any query params
+            int index = Url.IndexOf("?");
+            if (index > 0)
+                Url = Url.Substring(0, index);
+
+            //Turn slashes to underscores for cache formatting
+            Url = Url.Replace("/", "_");
+
+            return Url;
         }
 
         private async Task SendEmailNotificationAsync(string CacheKey)
@@ -123,7 +197,7 @@ namespace UpDiddy.Services.ButterCMS
              * we don't spam the CareerCircle errors inbox upon navigation fetch failure.
              */
             string CacheKeyForNavigationLoadFailure = "HasSentNavigationLoadFailureEmail";
-            string HasSentNotificationEmail = await _cacheService.GetCachedValueAsync<string>(CacheKeyForNavigationLoadFailure);
+            string HasSentNotificationEmail = await _cacheService.GetCachedValueAsync<string>(CmsCacheKeyPrefix + CacheKeyForNavigationLoadFailure);
             if (string.IsNullOrEmpty(HasSentNotificationEmail))
             {
                 StringBuilder HtmlMessage = new StringBuilder();
@@ -132,7 +206,7 @@ namespace UpDiddy.Services.ButterCMS
                     "ALERT! Navigation failed to load.",
                     HtmlMessage.ToString(),
                     Constants.SendGridAccount.Transactional);
-                await _cacheService.SetCachedValueAsync<string>(CacheKeyForNavigationLoadFailure, "true");
+                await _cacheService.SetCachedValueAsync<string>(CmsCacheKeyPrefix + CacheKeyForNavigationLoadFailure, "true");
             }            
         }
 

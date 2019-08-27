@@ -1,0 +1,35 @@
+@Html.Partial("Admin/_AdminNavigation")
+
+<div id="ClearCmsCacheContainer" class="row mt-4">
+    <div class="col-12">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h2>Clear cached CMS page</h2>
+                </div>
+                <div class="col-12 mt-2">
+                    <div class="alert alert-primary" role="alert">
+                        <i class="fas fa-exclamation-circle"></i> This will only clear pages (as opposed to blog posts and collections) fetched from ButterCMS.
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2 mb-4">
+                <div class="col-6">
+                    <h5>Enter the url of the page you would like to clear:</h5>
+                    
+                </div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col-8">
+                            <input type="text" class="form-control" id="CachedPage" name="CachedPage" placeholder="Page url">
+                            <small class="ml-2">(e.g. https://www.careercircle.com/Topics)</small>
+                        </div>
+                        <div class="col-4">
+                            <button type="button" onClick="clearCmsCache()" class="btn btn-primary mb-2">Clear</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
