@@ -25,11 +25,8 @@
         (function () {
             var button = document.querySelector("#cookieConsent button[data-cookie-string]");
             button.addEventListener("click", function (event) {
-                //Get User Consent for storing cookies.
-                var cookieInfo = button.dataset.cookieString.split(';')[0].split('=');
-                var value = cookieInfo[1];
-                //expires after 7 days. As per Allegis group site they store consent cookie for 7 days
-                $.cookie('AspNet.Consent', value, { expires: 7 });
+                document.cookie = button.dataset.cookieString;
+                document.querySelector("#cookieConsent").classList.add("hidden");
                 $('#cookiePolicyModal').modal('hide');
             }, false);
         })();
