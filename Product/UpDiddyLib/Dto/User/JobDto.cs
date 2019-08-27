@@ -7,8 +7,12 @@ namespace UpDiddyLib.Dto.User
     public class JobDto
     {
         public Guid? JobPostingFavoriteGuid { get; set; }
-        public JobPostingDto JobPosting { get; set; }
-        public JobApplicationDto JobApplication { get; set; }
-        public CompanyDto Company { get; set; }
+        public Guid? JobPostingGuid { get; set; }
+        public string Title { get; set; }
+        public string CityProvince { get; set; }
+        public string CompanyName { get; set; }
+        public DateTime PostingExpirationDateUTC { get; set;  }
+        public int? JobApplicationId { get; set; }
+        public int? SubscriberId { get; set; }
     }
 }
