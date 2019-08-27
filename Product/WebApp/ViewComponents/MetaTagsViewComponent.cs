@@ -38,7 +38,7 @@ namespace UpDiddy.ViewComponents
         {
             return new ButterCMSBaseViewModel
             {
-                MetaTitle = _configuration["SEO:Meta:Title"],
+                Title = _configuration["SEO:Meta:Title"],
                 MetaDescription = _configuration["SEO:Meta:Description"],
                 MetaKeywords = _configuration["SEO:Meta:Keywords"],
                 OpenGraphTitle = _configuration["SEO:OpenGraph:Title"],
@@ -50,14 +50,14 @@ namespace UpDiddy.ViewComponents
         public async Task<IViewComponentResult> InvokeAsync(string PagePath)
         {
             
-            var response = await _butterService.RetrievePageAsync<ButterCMSBaseViewModel>($"bcms_page_{PagePath}", PagePath.Split("/").Last().ToLower());
+            var response = await _butterService.RetrievePageAsync<ButterCMSBaseViewModel>(PagePath);
 
             ButterCMSBaseViewModel ButterViewModel = GetButterCMSBaseViewModel();
 
             // overwrite defaults if butter provides them
             if (response != null)
             {
-                ButterViewModel.MetaTitle = ButterViewModel.MetaTitle.GetNonEmptyStringOrDefault(response.Data.Fields.MetaTitle);
+                ButterViewModel.Title = ButterViewModel.Title.GetNonEmptyStringOrDefault(response.Data.Fields.Title);
                 ButterViewModel.MetaDescription = ButterViewModel.MetaDescription.GetNonEmptyStringOrDefault(response.Data.Fields.MetaDescription);
                 ButterViewModel.MetaKeywords = ButterViewModel.MetaKeywords.GetNonEmptyStringOrDefault(response.Data.Fields.MetaKeywords);
 
@@ -68,7 +68,7 @@ namespace UpDiddy.ViewComponents
             }
 
             // allow application to ovewrite meta tags
-            ButterViewModel.MetaTitle = ButterViewModel.MetaTitle.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.META_TITLE]);
+            ButterViewModel.Title = ButterViewModel.Title.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.TITLE]);
             ButterViewModel.MetaDescription = ButterViewModel.MetaDescription.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.META_DESCRIPTION]);
             ButterViewModel.MetaKeywords = ButterViewModel.MetaKeywords.GetNonEmptyStringOrDefault((string)ViewData[Constants.Seo.META_KEYWORDS]);
 

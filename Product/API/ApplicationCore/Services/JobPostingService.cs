@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Dto.User;
 using UpDiddyLib.Helpers;
 
 namespace UpDiddyApi.ApplicationCore.Services
@@ -65,6 +66,11 @@ namespace UpDiddyApi.ApplicationCore.Services
                 }
             }
             return jobCountDto;
+        }
+
+        public async Task<List<JobDto>> GetSubscriberJobFavorites(int SubscriberId)
+        {
+            return await _repositoryWrapper.StoredProcedureRepository.GetSubscriberJobFavorites(SubscriberId);
         }
     }
 }

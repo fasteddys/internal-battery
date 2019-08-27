@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Models;
 using Microsoft.EntityFrameworkCore.Extensions;
+ 
 
 namespace UpDiddyApi.ApplicationCore.Repository
 {
@@ -57,7 +58,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-        public async Task<IList<Partner>> GetPartnersAssociatedWithSubscriber(int subscriberId)
+
+
+
+            public async Task<IList<Partner>> GetPartnersAssociatedWithSubscriber(int subscriberId)
         {
 
 

@@ -217,14 +217,15 @@ namespace UpDiddy.Controllers
         [HttpGet]
         public async Task<ViewResult> Subscribers()
         {
-            IList<SubscriberSourceDto> subscriberSourcesDto = await _api.SubscriberSourcesAsync();
-                
- 
-          //  var subscriberSourcesDto = _api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);
+            IList<SubscriberSourceStatisticDto> subscriberSourcesDto = await _api.SubscriberSourcesAsync();
+
+
+            //  var subscriberSourcesDto = _api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);
             var selectListItems = subscriberSourcesDto.OrderBy(ss => ss.Count).Select(ss => new SelectListItem()
             {
                 Text = $"{ss.Name} ({ss.Count})",
-                Value = ss.Name
+                Value = ss.Name,
+                Selected = ss.Name.ToLower().StartsWith("any")
             })
             .AsEnumerable();
 

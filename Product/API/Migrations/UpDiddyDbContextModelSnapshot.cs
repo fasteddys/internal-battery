@@ -2351,6 +2351,8 @@ namespace UpDiddyApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasDefaultValue(1);
 
+                    b.Property<int?>("MaxNumberOfRedemptionsPerSubscriber");
+
                     b.Property<DateTime?>("ModifyDate");
 
                     b.Property<Guid?>("ModifyGuid");
