@@ -1732,19 +1732,34 @@ namespace UpDiddy.Api
         #endregion
 
         #region <<Keyword and Location Search List>>
-        public IList<string> GetKeywordSearchList(string keyword)
+        public async Task<IList<string>> GetKeywordSearchList(string keyword)
         {
             string cacheKey = "keywordSearchList";
             IList<string> rval = GetCachedValueAsync<IList<string>>(cacheKey);
+
+             //if rval is null get the value from Api Memory Cache
+            if(rval==null)
+            {
+                rval=await GetAsync<IList<string>>($"cache?cacheKey={cacheKey}");
+                SetCachedValueAsync<IList<string>>(cacheKey,rval);
+            }
+
             List<string> keywordListresult=rval?.Where(k=>k.Contains(keyword))?.ToList();
 
             return keywordListresult;
         }
 
-        public IList<string> GetLocationSearchList(string location)
+        public async Task<IList<string>> GetLocationSearchList(string location)
         {
             string cacheKey = "locationSearchList";
             IList<string> rval = GetCachedValueAsync<IList<string>>(cacheKey);
+
+            //if rval is null get the value from Api Memory Cache
+            if(rval==null)
+            {
+               rval=await GetAsync<IList<string>>($"cache?cacheKey={cacheKey}");
+               SetCachedValueAsync<IList<string>>(cacheKey,rval);
+            }
 
             List<string> locationListresult=rval?.Where(k=>k.Contains(location))?.ToList();
 
