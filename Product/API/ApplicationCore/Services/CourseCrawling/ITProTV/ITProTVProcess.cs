@@ -261,7 +261,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
                     Name = rawData["Title"].Value<string>(),
                     CourseVariants = new List<CourseVariantDto>(),
                     Skills = new List<SkillDto>(),
-                    TagTopics = new List<TagTopicDto>()
+                    TagTopics = new List<TagTopicDto>(),
+                    IsExternal = true
                 };
 
                 if (coursePage.CourseId.HasValue)

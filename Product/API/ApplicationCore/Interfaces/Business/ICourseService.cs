@@ -9,8 +9,8 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
     public interface ICourseService
     {
         Task<List<CourseDto>> GetCoursesAsync();
-        Task AddCourseAsync(CourseDto courseDto);
-        Task EditCourseAsync(CourseDto courseDto);
+        Task<int> AddCourseAsync(CourseDto courseDto);
+        Task<int> EditCourseAsync(CourseDto courseDto);
         Task DeleteCourseAsync(Guid courseGuid);
     }
 }

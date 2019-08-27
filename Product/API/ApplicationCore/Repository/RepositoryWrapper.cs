@@ -59,8 +59,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             _dbContext = dbContext;
         }
 
-
-
         public ICountryRepository Country
         {
             get

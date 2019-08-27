@@ -88,7 +88,7 @@ namespace UpDiddyApi.Workflow
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
             _mimeMappingService = mimeMappingService;
             _hangfireService = hangfireService;
-
+            _courseService = courseService;
         }
 
         #region Marketing
@@ -679,8 +679,8 @@ namespace UpDiddyApi.Workflow
                 // load the course process for the course site
                 ICourseProcess courseProcess = CourseCrawlingFactory.GetCourseProcess(courseSite, _configuration, _syslog, _sovrenApi);
 
-                // load all existing course pages
-                var coursePages = (await _repositoryWrapper.CoursePage.GetAllCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid)).ToList();
+                // load all pending course pages
+                var coursePages = (await _repositoryWrapper.CoursePage.GetPendingCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid)).ToList();
 
 
                 // transform course pages into courses which can be updated in the career circle schema
@@ -692,7 +692,7 @@ namespace UpDiddyApi.Workflow
                 {
                     var courseDto = await courseProcess.ProcessCoursePageAsync(coursePages[index]);
                     if (courseDto != null)
-                        coursePageAndTransformedCourses.Add(new Tuple<CoursePage, CourseDto>(coursePages[index],courseDto));
+                        coursePageAndTransformedCourses.Add(new Tuple<CoursePage, CourseDto>(coursePages[index], courseDto));
                 });
 
                 // make db changes to courses and course pages
@@ -704,27 +704,29 @@ namespace UpDiddyApi.Workflow
                     try
                     {
                         coursePage.CoursePageStatusId = 1; // synced
-
+                        coursePage.CoursePageStatus = null; // must do this if there is an existing status which conflicts with the value we are setting
                         switch (coursePage.CoursePageStatus.Name)
                         {
                             case "Create":
-                                await _courseService.AddCourseAsync(courseDto);
+                                coursePage.CourseId = await _courseService.AddCourseAsync(courseDto);
                                 break;
                             case "Update":
-                                await _courseService.EditCourseAsync(courseDto);
+                                coursePage.CourseId = await _courseService.EditCourseAsync(courseDto);
                                 break;
                             case "Delete":
                                 await _courseService.DeleteCourseAsync(courseDto.CourseGuid.Value);
+                                coursePage.CourseId = null;
                                 break;
                         }
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
+                        _syslog.Log(LogLevel.Error, $"***** ScheduledJobs.SyncCourseSiteAsync encountered an exception while performing a CRUD operation on a course; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
                         coursePage.CoursePageStatusId = 5; // error
                     }
                     finally
                     {
-                        // save the course page
+                        // save the related course page to reflect what occurred with the course operation
                         coursePage.ModifyDate = DateTime.UtcNow;
                         coursePage.ModifyGuid = Guid.Empty;
                         _repositoryWrapper.CoursePage.Update(coursePage);
@@ -733,11 +735,13 @@ namespace UpDiddyApi.Workflow
                 }
 
                 // update the course site to indicate that the sync operation is complete
-                courseSite.LastSync = DateTime.UtcNow;
-                courseSite.IsSyncing = false;
-                courseSite.ModifyDate = DateTime.UtcNow;
-                courseSite.ModifyGuid = Guid.Empty;
-                _repositoryWrapper.CourseSite.Update(courseSite);
+                var courseSiteLookup = await _repositoryWrapper.CourseSite.GetByConditionWithTrackingAsync(x => x.CourseSiteId == courseSite.CourseSiteId);
+                var refreshedCourseSite = courseSiteLookup.FirstOrDefault();
+                refreshedCourseSite.LastSync = DateTime.UtcNow;
+                refreshedCourseSite.IsSyncing = false;
+                refreshedCourseSite.ModifyDate = DateTime.UtcNow;
+                refreshedCourseSite.ModifyGuid = Guid.Empty;
+                _repositoryWrapper.CourseSite.Update(refreshedCourseSite);
                 await _repositoryWrapper.CourseSite.SaveAsync();
             }
             catch (Exception e)
@@ -749,10 +753,6 @@ namespace UpDiddyApi.Workflow
             _syslog.Log(LogLevel.Information, $"***** Syncing course site '{courseSite.Name}'. Completed at: {DateTime.UtcNow.ToLongDateString()}");
             return result;
         }
-
-
-
-
 
         #endregion
 

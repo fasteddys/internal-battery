@@ -9,5 +9,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
     public interface ICoursePageRepository : IUpDiddyRepositoryBase<CoursePage>
     {
         Task<IQueryable<CoursePage>> GetAllCoursePagesForCourseSiteAsync(Guid courseSiteGuid);
+        Task<IQueryable<CoursePage>> GetPendingCoursePagesForCourseSiteAsync(Guid courseSiteGuid);
     }
 }
