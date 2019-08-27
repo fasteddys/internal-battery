@@ -22,6 +22,16 @@
             }
         }
         <div class="row">
+            <div class="d-flex justify-content-center pb-4" style="width:100%">
+                @if(Model.IsWaitList)
+                {
+                    <a asp-action="signin" 
+                    asp-controller="session" 
+                    style="width:100%"
+                    class="btn btn-sm btn-light-blue mb-0 mr-2" 
+                    asp-route-redirectUri="campaign/@Model.CampaignSlug">@Model.ExistingUserButtonText</a>
+                }
+            </div>
             @if(Model.IsWaitList)
             {
                 <div id="SignUpFirstName" class="col-12 sign-up-input no-padding">
@@ -51,7 +61,7 @@
             </div>
             <div id="SignUpAction" class="col-12 no-padding">
                 @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                    Text = Model.SignUpButtonText==null? "Sign Up Now" : Model.SignUpButtonText,
+                    Text = @Model.FormSubmitButtonText,
                     SkewDirection = "skew-left-to-right",
                     ChosenColorScheme = "cc-cscheme-darkred",
                     Form = _form,
@@ -66,15 +76,17 @@
             }
         </div>
         @Html.HiddenFor(x => Model.IsWaitList)
+        @Html.HiddenFor(x => Model.CampaignSlug)
+
     </form>
     <div class="modal signup-modal text-cc-secondary" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Thank You!</h5>
+                    <h5 class="modal-title">@Model.SuccessHeader</h5>
                 </div>
                 <div class="modal-body">
-                    <p>You have signed up successfully. You will now be redirected to the login page.</p>
+                    @Model.SuccessText
                 </div>
                 <div class="modal-footer">
                     <a href="/Session/SignIn" class="btn btn-primary">Continue</a>

@@ -14,6 +14,9 @@ using UpDiddyLib.Dto;
 using UpDiddyLib.Dto.Marketing;
 using UpDiddyLib.Helpers;
 using UpDiddy.ViewModels.ButterCMS;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace UpDiddy.Controllers
 {
@@ -268,6 +271,63 @@ namespace UpDiddy.Controllers
         }
 
         [HttpPost]
+        [Route("/[controller]/existing-user-sign-up")]
+        public async Task<IActionResult> SignupExistingUser(SignUpViewModel signUpViewModel)
+        {
+            try
+            {
+                if (!HttpContext.User.Identity.IsAuthenticated)
+                {
+                    return BadRequest(new BasicResponseDto
+                    {
+                        StatusCode = 400,
+                        Description = "Please sign in to continue."
+                    });
+                }
+                bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.FirstName) && !string.IsNullOrEmpty(signUpViewModel.LastName);
+                if (!modelHasAllFields)
+                {
+                    return BadRequest(new BasicResponseDto
+                    {
+                        StatusCode = 400,
+                        Description = "Please enter all sign-up fields and try again."
+                    });
+                }
+                SignUpDto sudto = new SignUpDto
+                {
+                    campaignGuid = signUpViewModel.CampaignGuid,
+                    firstName = signUpViewModel.FirstName,
+                    lastName = signUpViewModel.LastName,
+                    phoneNumber = signUpViewModel.PhoneNumber,
+                    partnerGuid = signUpViewModel.PartnerGuid,
+                    campaignSlug = signUpViewModel.CampaignSlug
+                };
+                BasicResponseDto subscriberResponse = await _Api.ExistingUserGroupSignup(sudto);
+                switch (subscriberResponse.StatusCode)
+                {
+
+                    case 200:
+                        return Ok(new BasicResponseDto
+                        {
+                            StatusCode = 200,
+                            Description = "/"
+                        });
+                    default:
+                        return StatusCode(500, subscriberResponse);
+                }
+            }
+            catch (ApiException e)
+            {
+                // Generic server error to display gracefully to the user.
+                return StatusCode(500, new BasicResponseDto
+                {
+                    StatusCode = 500,
+                    Description = e.ResponseDto.Description
+                });
+            }
+        }
+
+        [HttpPost]
         [Route("/[controller]/express-sign-up")]
         public async Task<IActionResult> ExpressSignUpAsync(SignUpViewModel signUpViewModel)
         {    
@@ -295,10 +355,13 @@ namespace UpDiddy.Controllers
             // This is basically the same check as above, but to be safe...
             if (!ModelState.IsValid)
             {
+                  string desc = string.Join("; ", ModelState.Values
+                                        .SelectMany(x => x.Errors)
+                                        .Select(x => x.ErrorMessage));
                 return BadRequest(new BasicResponseDto
                 {
                     StatusCode = 400,
-                    Description = "Unfortunately, an error has occured with your submission. Please try again."
+                    Description = desc
                 });
             }
 
@@ -311,6 +374,7 @@ namespace UpDiddy.Controllers
                     Description = "User's passwords do not match."
                 });
             }
+
 
             // If all checks pass, assemble SignUpDto from information user entered.
             SignUpDto sudto = new SignUpDto
@@ -366,7 +430,7 @@ namespace UpDiddy.Controllers
         }
 
         [Route("/campaign/{LandingPageSlug}")]
-        public IActionResult ShowCampaignLandingPage(string LandingPageSlug)
+        public async Task<IActionResult> ShowCampaignLandingPage(string LandingPageSlug)
         {
             // Grab all query params from the request and put them into dictionary that's passed
             // to ButterCMS call.
@@ -382,11 +446,35 @@ namespace UpDiddy.Controllers
             var butterClient = new ButterCMSClient(_configuration["ButterCMS:ReadApiToken"]);
             PageResponse<CampaignLandingPageViewModel> LandingPage = butterClient.RetrievePage<CampaignLandingPageViewModel>("*", LandingPageSlug, QueryParams);
 
+            SubscriberDto subscriber = null;
+            if(HttpContext.User.Identity.IsAuthenticated)
+            {
+                   Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                   subscriber = await _Api.GetSubscriberByGuid(loggedInUserGuid);
+            }
+
             // Return 404 if no page data is returned from Butter.
             if (LandingPage == null)
                 return NotFound();
 
             // Assemble ViewModel from results returned in Butter GET call.
+            SignUpViewModel signUpViewModel= new SignUpViewModel(){
+                CampaignSlug = LandingPageSlug,
+                IsExpressSignUp = true,
+                FirstName = subscriber != null ? subscriber.FirstName : null,
+                LastName = subscriber != null ? subscriber.LastName : null,
+                PhoneNumber = subscriber != null ? subscriber.PhoneNumber : null,
+                PartnerGuid = LandingPage.Data.Fields.partner.PartnerGuid != null ? LandingPage.Data.Fields.partner.PartnerGuid : Guid.Empty,
+                FormSubmitButtonText = LandingPage.Data.Fields.signup_form_submit_button_text,
+                SuccessHeader = LandingPage.Data.Fields.success_header,
+                SuccessText = LandingPage.Data.Fields.success_text,
+                ExistingUserButtonText = LandingPage.Data.Fields.existing_user_button_text,
+                ExistingUserSubmitButtonText = LandingPage.Data.Fields.existing_user_form_submit_button_text,
+                ExistingUserSuccessHeader = LandingPage.Data.Fields.existing_user_success_header,
+                ExistingUserSuccessText = LandingPage.Data.Fields.existing_user_success_text,
+                IsWaitList = LandingPage.Data.Fields.iswaitlist
+            };
+
             var CampaignLandingPageViewModel = new CampaignLandingPageViewModel
             {
                 hero_title = LandingPage.Data.Fields.hero_title,
@@ -396,10 +484,14 @@ namespace UpDiddy.Controllers
                 content_band_header = LandingPage.Data.Fields.content_band_header,
                 content_band_text = LandingPage.Data.Fields.content_band_text,
                 partner = LandingPage.Data.Fields.partner,
-                IsWaitList = LandingPage.Data.Fields.IsWaitList,
-                IsExpressSignUp = true
+                signup_form_header = LandingPage.Data.Fields.signup_form_header,
+                signup_form_text = LandingPage.Data.Fields.signup_form_text,
+                existing_user_form_header = LandingPage.Data.Fields.existing_user_form_header,
+                existing_user_form_text = LandingPage.Data.Fields.existing_user_form_text,
+                isLoggedIn = HttpContext.User.Identity.IsAuthenticated,
+                iswaitlist = LandingPage.Data.Fields.iswaitlist,
+                signUpViewModel = signUpViewModel
             };
-
             return View("CampaignLandingPage", CampaignLandingPageViewModel);
         }
 

@@ -818,6 +818,42 @@ namespace UpDiddyApi.Controllers
             return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Contact has been converted to subscriber." });
         }
 
+        [HttpPost("/api/[controller]/existing-user-signup")]
+        public async Task<IActionResult> ExistingUserSignup([FromBody] SignUpDto signUpDto)
+        {
+            var referer = _configuration["Environment:BaseUrl"] + "campaign/" + signUpDto.campaignSlug;
+            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Subscriber subscriber = await _subscriberService.GetSubscriberByGuid(loggedInUserGuid);
+
+            if (subscriber == null)
+                return BadRequest();
+
+            subscriber.FirstName = signUpDto.firstName;
+            subscriber.LastName = signUpDto.lastName;
+            subscriber.PhoneNumber = signUpDto.phoneNumber;
+
+            using (var transaction = _db.Database.BeginTransaction())
+            {
+                try
+                {
+                    await _subscriberService.UpdateSubscriber(subscriber);
+                    await _taggingService.CreateGroup(referer, signUpDto.partnerGuid, subscriber.SubscriberId);
+                    await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriber.SubscriberId);
+                    await _db.SaveChangesAsync();
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    _syslog.Log(LogLevel.Error, "SubscriberController.ExistingUserSignup:: Error occured while attempting save existing Subscriber. Exception: {@Exception}", ex);
+                    return StatusCode(500);
+                }
+            }
+            return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Subscriber has been added to the group" });
+        }
+
+
+
         [AllowAnonymous]
         [HttpPost("/api/[controller]/express-sign-up")]
         public async Task<IActionResult> ExpressSignUp([FromBody] SignUpDto signUpDto)

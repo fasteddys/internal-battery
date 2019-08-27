@@ -16,7 +16,8 @@ namespace UpDiddyLib.Dto.Marketing
         public string verifyUrl { get; set; }
         public string referralCode { get; set; }
         public Guid partnerGuid { get; set; }
-        public bool IsWaitList { get; set; }
+        public bool isWaitlist { get; set; }
+        public string campaignSlug { get; set; }
     }
 }
  

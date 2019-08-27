@@ -42,13 +42,32 @@
                                     <img src="@Model.hero_sub_image" />
                                 </div>
                                 <div class="col-12 no-padding sub-header font-bold">
-                                    Sign Up Today!
+                                    @if(Model.isLoggedIn)
+                                    {
+                                        @Model.existing_user_form_header
+                                    } else
+                                    {
+                                        @Model.signup_form_header
+                                    }
                                 </div>
                                 <div class="col-12 no-padding mini-header">
-                                    Create an account to get started
+                                    @if(Model.isLoggedIn)
+                                    {
+                                        @Model.existing_user_form_text
+                                    } else
+                                    {
+                                        @Model.signup_form_text
+                                    }
                                 </div>
                                 <div class="col-12 no-padding">
-                                    @Html.Partial("Components/Authentication/_SignUp", new SignUpViewModel { IsExpressSignUp = Model.IsExpressSignUp, IsWaitList = Model.IsWaitList, PartnerGuid = Model.partner.PartnerGuid != null ? Model.partner.PartnerGuid : Guid.Empty})
+                                    @if(Model.isLoggedIn && Model.iswaitlist)
+                                    {                                    
+                                      @Html.Partial("Components/Authentication/_SignUpExistingUser", Model.signUpViewModel)
+                                    }
+                                    else
+                                    {
+                                      @Html.Partial("Components/Authentication/_SignUp", Model.signUpViewModel)
+                                    }
                                 </div>
                             </div>
                         </div>
