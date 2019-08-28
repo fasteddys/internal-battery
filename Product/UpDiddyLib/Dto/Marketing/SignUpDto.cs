@@ -18,6 +18,7 @@ namespace UpDiddyLib.Dto.Marketing
         public Guid partnerGuid { get; set; }
         public bool isWaitlist { get; set; }
         public string campaignSlug { get; set; }
+        public Guid? subscriberGuid {get;set;}
     }
 }
  

@@ -821,9 +821,23 @@ namespace UpDiddyApi.Controllers
         [HttpPost("/api/[controller]/existing-user-signup")]
         public async Task<IActionResult> ExistingUserSignup([FromBody] SignUpDto signUpDto)
         {
-            Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            Subscriber subscriber = await _subscriberService.GetSubscriberByGuid(loggedInUserGuid);
+            //Guid loggedInUserGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if(!HttpContext.User.Identity.IsAuthenticated)
+            {
+                if(signUpDto.subscriberGuid != null)
+                {
+                    // 1 - Check to see if it is valid Guid
+                    // if valid, Get ID
+                    //Add that guid to the waitlist
+                    int subscriberId = 0;
+                    await _taggingService.CreateGroup(signUpDto.referer, signUpDto.partnerGuid, subscriberId);
+                    await _taggingService.AddConvertedContactToGroupBasedOnPartnerAsync(subscriberId);
+                    return Ok(new BasicResponseDto() { StatusCode = 200, Description = "Subscriber has been added to the group" });
+                }
+            }
 
+            Subscriber subscriber = await _subscriberService.GetSubscriberByGuid(signUpDto.subscriberGuid.Value);
+            
             if (subscriber == null)
                 return BadRequest();
 

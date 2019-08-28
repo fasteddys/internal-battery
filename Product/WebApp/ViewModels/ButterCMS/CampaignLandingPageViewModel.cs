@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace UpDiddy.ViewModels.ButterCMS
 {
-    public class CampaignLandingPageViewModel
+    public class CampaignLandingPageViewModel : BaseViewModel
     {
         public string hero_title { get; set; }
         public string hero_image { get; set; }

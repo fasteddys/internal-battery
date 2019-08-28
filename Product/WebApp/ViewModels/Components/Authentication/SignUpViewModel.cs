@@ -38,6 +38,8 @@ namespace UpDiddy.ViewModels
         public string ExistingUserSubmitButtonText {get;set;}
         public string ExistingUserSuccessHeader {get;set;}
         public string ExistingUserSuccessText{get;set;}
+                public Guid? subscriberGuid {get;set;}
+
     }
 }
 

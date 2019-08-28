@@ -276,14 +276,7 @@ namespace UpDiddy.Controllers
         {
             try
             {
-                if (!HttpContext.User.Identity.IsAuthenticated)
-                {
-                    return BadRequest(new BasicResponseDto
-                    {
-                        StatusCode = 401,
-                        Description = "User is not signed in. Redirecting you to login page..."
-                    });
-                }
+             
                 bool modelHasAllFields = !string.IsNullOrEmpty(signUpViewModel.FirstName) && !string.IsNullOrEmpty(signUpViewModel.LastName);
                 if (!modelHasAllFields)
                 {
@@ -301,8 +294,20 @@ namespace UpDiddy.Controllers
                     phoneNumber = signUpViewModel.PhoneNumber,
                     partnerGuid = signUpViewModel.PartnerGuid,
                     campaignSlug = signUpViewModel.CampaignSlug,
-                    referer = Request.Headers["Referer"].ToString()
+                    referer = Request.Headers["Referer"].ToString(),
+                    subscriberGuid = signUpViewModel.subscriberGuid
                 };
+
+                if (!HttpContext.User.Identity.IsAuthenticated)
+                {
+                     BasicResponseDto subscriberResponse = await _Api.ExistingUserGroupSignup(sudto);
+                    return BadRequest(new BasicResponseDto
+                    {
+                        StatusCode = 401,
+                        Description = "User is not signed in. Redirecting you to login page..."
+                    });
+                }
+
                 BasicResponseDto subscriberResponse = await _Api.ExistingUserGroupSignup(sudto);
                 switch (subscriberResponse.StatusCode)
                 {
@@ -465,6 +470,7 @@ namespace UpDiddy.Controllers
                 FirstName = subscriber != null ? subscriber.FirstName : null,
                 LastName = subscriber != null ? subscriber.LastName : null,
                 PhoneNumber = subscriber != null ? subscriber.PhoneNumber : null,
+                subscriberGuid = subscriber != null ? subscriber.SubscriberGuid : null,
                 PartnerGuid = LandingPage.Data.Fields.partner.PartnerGuid != null ? LandingPage.Data.Fields.partner.PartnerGuid : Guid.Empty,
                 FormSubmitButtonText = LandingPage.Data.Fields.signup_form_submit_button_text,
                 SuccessHeader = LandingPage.Data.Fields.success_header,

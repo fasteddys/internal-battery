@@ -103,7 +103,7 @@ $("#ExistingUserComponent form").submit(function (e) {
             var campaignSlug = $("#CampaignSlug").val();
             setTimeout(function () {
                 window.location.href = "/session/signin?redirectUri=campaign/" + campaignSlug;
-            }, 3000);
+            }, 5000);
         }
     }).always(() => {
         $("#SignUpOverlay").remove();
