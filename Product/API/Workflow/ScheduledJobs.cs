@@ -639,12 +639,19 @@ namespace UpDiddyApi.Workflow
                 // insert or update the course pages (each inserted or updated course page can have a status of: Create, Update, Delete) 
                 foreach (var coursePage in coursePagesToProcess)
                 {
-                    if (coursePage.CoursePageId == 0)
-                        _repositoryWrapper.CoursePage.Create(coursePage);
-                    else
-                        _repositoryWrapper.CoursePage.Update(coursePage);
-                }
-                await _repositoryWrapper.CoursePage.SaveAsync();
+                    try
+                    {
+                        if (coursePage.CoursePageId == 0)
+                            _repositoryWrapper.CoursePage.Create(coursePage);
+                        else
+                            _repositoryWrapper.CoursePage.Update(coursePage);
+
+                        await _repositoryWrapper.CoursePage.SaveAsync();
+                    }catch(Exception e)
+                    {
+                        _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.CrawlCourseSiteAsync encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                    }
+                }                
 
                 // update the course site to indicate that the crawl operation is complete
                 courseSite.LastCrawl = DateTime.UtcNow;
@@ -682,11 +689,9 @@ namespace UpDiddyApi.Workflow
                 // load all pending course pages
                 var coursePages = (await _repositoryWrapper.CoursePage.GetPendingCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid)).ToList();
 
-
                 // transform course pages into courses which can be updated in the career circle schema
-                ConcurrentBag<Tuple<CoursePage, CourseDto>> coursePageAndTransformedCourses = new ConcurrentBag<Tuple<CoursePage, CourseDto>>();
-                // todo: change maxdop after dev complete
-                var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 1 };
+                ConcurrentBag<Tuple<CoursePage, CourseDto>> coursePageAndTransformedCourses = new ConcurrentBag<Tuple<CoursePage, CourseDto>>();                
+                var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 10 };
                 int counter = 0;
                 Parallel.For(0, coursePages.Count(), maxdop, async (index) =>
                 {
@@ -703,8 +708,7 @@ namespace UpDiddyApi.Workflow
 
                     try
                     {
-                        coursePage.CoursePageStatusId = 1; // synced
-                        coursePage.CoursePageStatus = null; // must do this if there is an existing status which conflicts with the value we are setting
+                        coursePage.CoursePageStatusId = 1; // synced                        
                         switch (coursePage.CoursePageStatus.Name)
                         {
                             case "Create":
@@ -726,6 +730,8 @@ namespace UpDiddyApi.Workflow
                     }
                     finally
                     {
+                        coursePage.CoursePageStatus = null; // must do this if there is an existing status which conflicts with the value we are setting
+                        
                         // save the related course page to reflect what occurred with the course operation
                         coursePage.ModifyDate = DateTime.UtcNow;
                         coursePage.ModifyGuid = Guid.Empty;
@@ -735,13 +741,11 @@ namespace UpDiddyApi.Workflow
                 }
 
                 // update the course site to indicate that the sync operation is complete
-                var courseSiteLookup = await _repositoryWrapper.CourseSite.GetByConditionWithTrackingAsync(x => x.CourseSiteId == courseSite.CourseSiteId);
-                var refreshedCourseSite = courseSiteLookup.FirstOrDefault();
-                refreshedCourseSite.LastSync = DateTime.UtcNow;
-                refreshedCourseSite.IsSyncing = false;
-                refreshedCourseSite.ModifyDate = DateTime.UtcNow;
-                refreshedCourseSite.ModifyGuid = Guid.Empty;
-                _repositoryWrapper.CourseSite.Update(refreshedCourseSite);
+                courseSite.LastSync = DateTime.UtcNow;
+                courseSite.IsSyncing = false;
+                courseSite.ModifyDate = DateTime.UtcNow;
+                courseSite.ModifyGuid = Guid.Empty;
+                _repositoryWrapper.CourseSite.Update(courseSite);
                 await _repositoryWrapper.CourseSite.SaveAsync();
             }
             catch (Exception e)

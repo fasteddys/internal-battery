@@ -126,7 +126,7 @@ namespace UpDiddyApi
 
             // Get the connection string from the Azure secret vault
             var SqlConnection = Configuration["CareerCircleSqlConnection"];
-            services.AddDbContextPool<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection).EnableSensitiveDataLogging());
+            services.AddDbContextPool<UpDiddyDbContext>(options => options.UseSqlServer(SqlConnection));
 
             // Add Dependency Injection for the configuration object
             services.AddSingleton<IConfiguration>(Configuration);

@@ -82,11 +82,33 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public async Task<int> EditCourseAsync(CourseDto courseDto)
         {
-            // process tag topics - note that we do not await here; it is acceptable to continue processing course while tag topics are being processed
-            ProcessTagTopicsAsync(courseDto.TagTopics);
+            // lookup vendor, create it if it dooes not exist, and retrieve the identifier to use for the course
+            var vendorGuid = await GetVendorGuidAsync(courseDto.Vendor);
 
+            // process tag topics and retrieve list of tags to associate with the course
+            var tagGuids = await ProcessTagTopicsAsync(courseDto.TagTopics);
 
-            throw new NotImplementedException();
+            // lookup skills, create those that do not exist, and retrieve list of skills to associate with the course
+            var skillGuids = await GetSkillGuidsAsync(courseDto.Skills);
+
+            // lookup course variant type - we only need to support one course variant for now
+            var courseVariant = courseDto.CourseVariants.FirstOrDefault();
+            var courseVariantTypeGuid = await GetCourseVariantTypeGuidAsync(courseVariant.CourseVariantType);
+
+            // create the course and return the id
+            return await _repositoryWrapper.StoredProcedureRepository.AddOrUpdateCourseAsync(new CourseParams()
+            {
+                CourseId = courseDto.CourseId == 0 ? null : (int?)courseDto.CourseId,
+                VendorGuid = vendorGuid,
+                CourseVariantTypeGuid = courseVariantTypeGuid,
+                Code = courseDto.Code,
+                Description = courseDto.Description,
+                IsExternal = courseDto.IsExternal,
+                Name = courseDto.Name,
+                Price = courseVariant.Price,
+                SkillGuids = skillGuids,
+                TagGuids = tagGuids
+            });
         }
 
         public async Task<List<CourseDto>> GetCoursesAsync()
@@ -144,7 +166,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     CreateGuid = Guid.Empty,
                     IsDeleted = 0,
                     LoginUrl = null,
-                    Name = vendor.Name,
+                    Name = vendorDto.Name,
                     VendorGuid = Guid.NewGuid()
                 });
                 await _repositoryWrapper.Vendor.SaveAsync();

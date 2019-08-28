@@ -17,10 +17,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var coursePages = GetAll();
             return coursePages
                 .Include(cp => cp.CoursePageStatus)
-                .Include(cp => cp.CourseSite)
                 .Include(cp => cp.Course)
-                .Where(cp => cp.IsDeleted == 0
-                    && cp.CourseSite.CourseSiteGuid == courseSiteGuid);
+                .Where(cp => cp.CourseSite.CourseSiteGuid == courseSiteGuid);
         }
 
         public async Task<IQueryable<CoursePage>> GetPendingCoursePagesForCourseSiteAsync(Guid courseSiteGuid)
@@ -28,7 +26,6 @@ namespace UpDiddyApi.ApplicationCore.Repository
             var coursePages = GetAll();
             return coursePages
                 .Include(cp => cp.CoursePageStatus)
-                .Include(cp => cp.CourseSite)
                 .Include(cp => cp.Course)
                 .Where(cp => cp.IsDeleted == 0
                     && (cp.CoursePageStatus.Name == "Create"

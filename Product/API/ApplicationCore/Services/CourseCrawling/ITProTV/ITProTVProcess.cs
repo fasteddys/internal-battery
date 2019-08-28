@@ -61,7 +61,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
                 .Select(x => x.Element(ns + "loc").Value)
                 .ToList();
 
-            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 1 };
+            var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 20 };
             // discover categories
             int counter = 0;
             Parallel.For(counter, courseUrls.Count(), maxdop, i =>
@@ -81,6 +81,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
 
             });
 
+            List<CoursePage> iLoveEntityFramework = new List<CoursePage>();
+
             // ignore duplicates during discovery as courses can be listed multiple times under different categories
             var uniqueDiscoveredCourses = (from cp in discoveredCoursePages
                                            group cp by cp.UniqueIdentifier into g
@@ -92,24 +94,31 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
                 var existingCoursePage = existingCoursePages.Where(ecp => ecp.UniqueIdentifier == discoveredCoursePage.UniqueIdentifier).FirstOrDefault();
                 if (existingCoursePage != null)
                 {
-                    discoveredCoursePage.CoursePageId = existingCoursePage.CoursePageId;
-                    discoveredCoursePage.CourseId = existingCoursePage.CourseId;
-                    discoveredCoursePage.CreateDate = existingCoursePage.CreateDate;
-                    discoveredCoursePage.ModifyDate = DateTime.UtcNow;
-                    discoveredCoursePage.ModifyGuid = Guid.Empty;
-
-                    if (existingCoursePage.RawData == discoveredCoursePage.RawData)
-                        discoveredCoursePage.CoursePageStatusId = existingCoursePage.CoursePageStatusId; // preserve the existing status
-                    else
+                    // existing course pages with modified content should be processed
+                    if (existingCoursePage.RawData != discoveredCoursePage.RawData)
                     {
-                        if (discoveredCoursePage.CourseId.HasValue)
-                            discoveredCoursePage.CoursePageStatusId = 2; // update
+                        existingCoursePage.RawData = discoveredCoursePage.RawData;
+                        if (existingCoursePage.CourseId.HasValue)
+                        {
+                            existingCoursePage.CoursePageStatusId = 2; // update
+                            existingCoursePage.CoursePageStatus = null;
+                        }
                         else
-                            discoveredCoursePage.CoursePageStatusId = 3; // create
+                        {
+                            existingCoursePage.CoursePageStatusId = 3; //create
+                            existingCoursePage.CoursePageStatus = null;
+                        }
+
+                        existingCoursePage.ModifyDate = DateTime.UtcNow;
+                        existingCoursePage.ModifyGuid = Guid.Empty;
+                        iLoveEntityFramework.Add(existingCoursePage);
                     }
                 }
                 else
+                {
                     discoveredCoursePage.CoursePageStatusId = 3; // create
+                    iLoveEntityFramework.Add(discoveredCoursePage);
+                }
             }
 
             // set the course page status to delete for those course pages that were not discovered
@@ -117,13 +126,14 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
             foreach (var coursePageToDelete in coursePagesToDelete)
             {
                 coursePageToDelete.CoursePageStatusId = 4; // delete
+                coursePageToDelete.CoursePageStatus = null;
                 coursePageToDelete.ModifyDate = DateTime.UtcNow;
+                coursePageToDelete.ModifyGuid = Guid.Empty;
                 coursePageToDelete.IsDeleted = 1;
+                iLoveEntityFramework.Add(coursePageToDelete);
             }
-            var coursePages = uniqueDiscoveredCourses.ToList<CoursePage>();
-            coursePages.AddRange(coursePagesToDelete);
 
-            return coursePages;
+            return iLoveEntityFramework;
         }
 
         public class CompareByUniqueIdentifier : IComparer<CoursePage>
