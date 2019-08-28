@@ -12,7 +12,7 @@ namespace UpDiddy.Controllers
         private IApi _api;
         private readonly IConfiguration _config;
 
-        private readonly Traitify _traitify;
+        private readonly ITraitify _traitify;
         public TraitifyController(IApi api,
          IConfiguration config) : base(api)
         {
@@ -53,6 +53,18 @@ namespace UpDiddy.Controllers
                 AssessmentPersonalityTypes = _traitify.GetPersonalityTypes(model.AssesmentId)
             };
             return View("result", model);
+        }
+
+        [HttpGet]
+        [Route("[controller]/iantest")]
+        public IActionResult IanTest()
+        {
+            var result = new TraitifyResultViewModel()
+            {
+                AssessmentPersonalityTraits = _traitify.GetPersonalityTraits("36215e43-236f-4ba1-9cbc-d1b8566b3024"),
+                AssessmentPersonalityTypes = _traitify.GetPersonalityTypes("36215e43-236f-4ba1-9cbc-d1b8566b3024")
+            };
+            return View();
         }
     }
 }
