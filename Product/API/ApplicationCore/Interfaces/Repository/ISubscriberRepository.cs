@@ -17,9 +17,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 
         Task<IList<Partner>>  GetPartnersAssociatedWithSubscriber(int subscriberId);
 
-
- 
-
-
+        Task<int> GetSubscribersCountByStartEndDates(DateTime? startDate = null, DateTime? endDate = null);
     }
 }

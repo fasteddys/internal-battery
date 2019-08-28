@@ -56,5 +56,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
             return await _dbContext.SubscriberJobFavorites.FromSql<JobDto>("System_Get_SubscriberJobFavorites @SubscriberId", spParams).ToListAsync();
         }
 
+
+        public async Task<List<SubscriberSignUpCourseEnrollmentStatistics>> GetSubscriberSignUpCourseEnrollmentStatisticsAsync(DateTime startDate, DateTime endDate)
+        {
+            var spParams = new object[] {
+                new SqlParameter("@StartDate", startDate),
+                new SqlParameter("@EndDate", endDate)
+                };
+            return await _dbContext.SubscriberSignUpCourseEnrollmentStatistics.FromSql<SubscriberSignUpCourseEnrollmentStatistics>("EXECUTE dbo.System_SubscriberSignUpAndCourseEnrollmentStatisticsByPartner @StartDate, @EndDate", spParams).ToListAsync();
+        }
     }
 }

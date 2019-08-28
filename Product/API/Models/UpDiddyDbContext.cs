@@ -190,6 +190,7 @@ namespace UpDiddyApi.Models
 
 
         public DbQuery<JobDto> SubscriberJobFavorites { get; set; }
+        public DbQuery<SubscriberSignUpCourseEnrollmentStatistics> SubscriberSignUpCourseEnrollmentStatistics { get; set; }
 
         #endregion
 
