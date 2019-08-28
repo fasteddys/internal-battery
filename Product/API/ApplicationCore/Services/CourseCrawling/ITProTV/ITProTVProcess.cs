@@ -81,12 +81,13 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
 
             });
 
-            List<CoursePage> iLoveEntityFramework = new List<CoursePage>();
-
             // ignore duplicates during discovery as courses can be listed multiple times under different categories
             var uniqueDiscoveredCourses = (from cp in discoveredCoursePages
                                            group cp by cp.UniqueIdentifier into g
                                            select g.OrderBy(a => a, new CompareByUniqueIdentifier()).First()).ToList();
+
+            // this will be the list of course pages we return from the method
+            List<CoursePage> coursePagesToProcess = new List<CoursePage>();
 
             // set the course page status that should occur for each discovered page
             foreach (var discoveredCoursePage in uniqueDiscoveredCourses)
@@ -111,13 +112,13 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
 
                         existingCoursePage.ModifyDate = DateTime.UtcNow;
                         existingCoursePage.ModifyGuid = Guid.Empty;
-                        iLoveEntityFramework.Add(existingCoursePage);
+                        coursePagesToProcess.Add(existingCoursePage);
                     }
                 }
                 else
                 {
                     discoveredCoursePage.CoursePageStatusId = 3; // create
-                    iLoveEntityFramework.Add(discoveredCoursePage);
+                    coursePagesToProcess.Add(discoveredCoursePage);
                 }
             }
 
@@ -130,10 +131,10 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
                 coursePageToDelete.ModifyDate = DateTime.UtcNow;
                 coursePageToDelete.ModifyGuid = Guid.Empty;
                 coursePageToDelete.IsDeleted = 1;
-                iLoveEntityFramework.Add(coursePageToDelete);
+                coursePagesToProcess.Add(coursePageToDelete);
             }
 
-            return iLoveEntityFramework;
+            return coursePagesToProcess;
         }
 
         public class CompareByUniqueIdentifier : IComparer<CoursePage>
@@ -261,7 +262,7 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
 
                 CourseDto courseDto = new CourseDto()
                 {
-                    Code = coursePage.UniqueIdentifier,
+                    Code = coursePage.UniqueIdentifier.TrimEnd('/'),
                     CreateDate = coursePage.CreateDate,
                     CreateGuid = Guid.Empty,
                     ModifyDate = coursePage.ModifyDate,
@@ -288,7 +289,8 @@ namespace UpDiddyApi.ApplicationCore.Services.CourseCrawling.ITProTV
                 JArray skills = (JArray)rawData["Skills"];
                 foreach (var skill in skills)
                 {
-                    courseDto.Skills.Add(new SkillDto() { SkillName = skill.Value<string>() });
+                    if (skill.Value<string>().ToLower() != "no skills found")
+                        courseDto.Skills.Add(new SkillDto() { SkillName = skill.Value<string>() });
                 }
 
                 JArray categories = (JArray)rawData["Categories"];

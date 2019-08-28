@@ -33,6 +33,7 @@ using UpDiddyApi.Helpers;
 using UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common;
 using System.Collections.Concurrent;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace UpDiddyApi.Workflow
 {
@@ -47,6 +48,7 @@ namespace UpDiddyApi.Workflow
         private readonly CloudTalent _cloudTalent;
         private readonly IMimeMappingService _mimeMappingService;
         private readonly IHangfireService _hangfireService;
+        private readonly IMemoryCache _memoryCache;
         private readonly ICourseService _courseService;
 
         public ScheduledJobs(
@@ -66,7 +68,8 @@ namespace UpDiddyApi.Workflow
             ITrackingService trackingService,
             IMimeMappingService mimeMappingService,
             IHangfireService hangfireService,
-            ICourseService courseService
+            ICourseService courseService,
+            IMemoryCache memoryCache 
            )
         {
             _db = context;
@@ -85,9 +88,10 @@ namespace UpDiddyApi.Workflow
             _repositoryWrapper = repositoryWrapper;
             _subscriberService = subscriberService;
             _jobPostingService = jobPostingService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             _mimeMappingService = mimeMappingService;
             _hangfireService = hangfireService;
+            _memoryCache=memoryCache;
             _courseService = courseService;
         }
 
@@ -1112,7 +1116,7 @@ namespace UpDiddyApi.Workflow
             try
             {
                 JobPostingAlert jobPostingAlert = _repositoryWrapper.JobPostingAlertRepository.GetJobPostingAlert(jobPostingAlertGuid).Result;
-                CloudTalent cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+                CloudTalent cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
                 JobQueryDto jobQueryDto = JsonConvert.DeserializeObject<JobQueryDto>(jobPostingAlert.JobQueryDto.ToString());
                 switch (jobPostingAlert.Frequency)
                 {
@@ -1516,20 +1520,20 @@ namespace UpDiddyApi.Workflow
 
         public bool CloudTalentAddOrUpdateProfile(Guid subscriberGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             return ct.AddOrUpdateProfileToCloudTalent(_db, subscriberGuid);
         }
 
         public bool CloudTalentDeleteProfile(Guid subscriberGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             ct.DeleteProfileFromCloudTalent(_db, subscriberGuid);
             return true;
         }
 
         public async Task<bool> CloudTalentIndexNewProfiles(int numProfilesToProcess)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             int indexVersion = int.Parse(_configuration["CloudTalent:ProfileIndexVersion"]);
             List<Subscriber> subscribers = await _subscriberService.GetSubscribersToIndexIntoGoogle(numProfilesToProcess, indexVersion);
             foreach (Subscriber s in subscribers)
@@ -1551,21 +1555,21 @@ namespace UpDiddyApi.Workflow
 
         public bool CloudTalentAddJob(Guid jobPostingGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             ct.AddJobToCloudTalent(_db, jobPostingGuid);
             return true;
         }
 
         public bool CloudTalentUpdateJob(Guid jobPostingGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             ct.UpdateJobToCloudTalent(_db, jobPostingGuid);
             return true;
         }
 
         public bool CloudTalentDeleteJob(Guid jobPostingGuid)
         {
-            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            CloudTalent ct = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
             ct.DeleteJobFromCloudTalent(_db, jobPostingGuid);
             return true;
         }
@@ -1807,16 +1811,9 @@ namespace UpDiddyApi.Workflow
             string serializedKeyworkSearchList = JsonConvert.SerializeObject(keywordSearch.ConvertAll(k => k.ToLower()).Distinct());
             string serializedLocationSearchList = JsonConvert.SerializeObject(locationSearch.ConvertAll(l => l.ToLower()).Distinct());
 
-            //cache for 2 days unless the scheduled job runs.
-            //caching of keyword and location happens when the job data mining job runs
-            DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"]))
-            };
-
-            //cache the list to use for intelligence search
-            await _cache.SetStringAsync("keywordSearchList", serializedKeyworkSearchList, options);
-            await _cache.SetStringAsync("locationSearchList", serializedLocationSearchList, options);
+            //store in memory cache
+            _memoryCache.Set("keywordSearchList",serializedKeyworkSearchList,DateTimeOffset.Now.AddDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"])));
+            _memoryCache.Set("locationSearchList",serializedLocationSearchList,DateTimeOffset.Now.AddDays(Convert.ToDouble(_configuration["KeywordLocationSearchIntellisenseJob:TimeSpanToRun"])));
         }
         #endregion
 

@@ -6,5 +6,8 @@ using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface IGroupPartnerRepository : IUpDiddyRepositoryBase<GroupPartner> { }
+    public interface IGroupPartnerRepository : IUpDiddyRepositoryBase<GroupPartner> 
+    {
+        Task<GroupPartner> GetGroupPartnerByGroupIdPartnerIdAsync(int Groupid, int PartnerId);
+    }
 }

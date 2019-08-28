@@ -171,6 +171,10 @@
         return _http.get('/report/job-abandonment-count/?startDate=' + startDate + '&endDate=' + endDate);
     }
 
+    var getTotalUserBreakdownByPartner = function (startDate, endDate) {
+        return _http.get('/report/partners/?startDate=' + startDate + '&endDate=' + endDate);
+    }
+
     var requestVerification = function (verifyUrl) {
         return _http.post('/subscriber/request-verification', JSON.stringify({
             verifyUrl: verifyUrl
@@ -291,8 +295,9 @@
         editRecruiter: editRecruiter,
         deleteRecruiter: deleteRecruiter,
         getNotificationCountReport: getNotificationCountReport,
-        getCourseSites: getCourseSites
+        getCourseSites: getCourseSites,
         getJobAbandonmentCount: getJobAbandonmentCount,
+        getTotalUserBreakdownByPartner: getTotalUserBreakdownByPartner,
     };
 
 })(API_URL);

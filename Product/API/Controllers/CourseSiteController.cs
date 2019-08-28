@@ -21,7 +21,7 @@ namespace UpDiddyApi.Controllers
             _courseCrawlingService = courseCrawlingService;
         }
 
-        // [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpGet]
         [Route("api/course-sites")]
         public async Task<IActionResult> CourseSitesAsync()
@@ -38,7 +38,7 @@ namespace UpDiddyApi.Controllers
             }
         }
 
-        // [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpPatch]
         [Route("api/course-sites/{courseSiteGuid}/crawl")]
         public async Task<IActionResult> CrawlCourseSitesAsync(Guid courseSiteGuid)
@@ -55,7 +55,7 @@ namespace UpDiddyApi.Controllers
             }
         }
 
-        // [Authorize(Policy = "IsCareerCircleAdmin")]
+        [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpPatch]
         [Route("api/course-sites/{courseSiteGuid}/sync")]
         public async Task<IActionResult> SyncCourseSitesAsync(Guid courseSiteGuid)

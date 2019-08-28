@@ -50,5 +50,6 @@
         ITopicRepository Topic { get; }
         ITagCourseRepository TagCourse { get; }
         IVendorRepository Vendor { get; }
+        IEnrollmentRepository EnrollmentRepository { get; }
     }
 }

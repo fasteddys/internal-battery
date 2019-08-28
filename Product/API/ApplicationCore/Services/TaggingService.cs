@@ -85,20 +85,25 @@ namespace UpDiddyApi.ApplicationCore.Services
                     IEnumerable<Partner> iePartner = await _repositoryWrapper.PartnerRepository.GetByConditionAsync(p => p.PartnerGuid == PartnerGuid);
                     Partner Partner = iePartner.FirstOrDefault();
 
-                    DateTime CurrentDateTime = DateTime.UtcNow;
+                    GroupPartner existingGroupPartner=await _repositoryWrapper.GroupPartnerRepository.GetGroupPartnerByGroupIdPartnerIdAsync(Group.GroupId, Partner.PartnerId);
 
-                    GroupPartner GroupPartner = new GroupPartner
+                    if(existingGroupPartner==null)
                     {
-                        CreateDate = CurrentDateTime,
-                        CreateGuid = Guid.Empty,
-                        GroupId = Group.GroupId,
-                        GroupPartnerGuid = Guid.NewGuid(),
-                        ModifyDate = CurrentDateTime,
-                        PartnerId = Partner.PartnerId
-                    };
+                        DateTime CurrentDateTime = DateTime.UtcNow;
 
-                    await _repositoryWrapper.GroupPartnerRepository.Create(GroupPartner);
-                    await _repositoryWrapper.GroupPartnerRepository.SaveAsync();
+                        GroupPartner GroupPartner = new GroupPartner
+                        {
+                            CreateDate = CurrentDateTime,
+                            CreateGuid = Guid.Empty,
+                            GroupId = Group.GroupId,
+                            GroupPartnerGuid = Guid.NewGuid(),
+                            ModifyDate = CurrentDateTime,
+                            PartnerId = Partner.PartnerId
+                        };
+
+                        await _repositoryWrapper.GroupPartnerRepository.Create(GroupPartner);
+                        await _repositoryWrapper.GroupPartnerRepository.SaveAsync();
+                    }
                 }
                 return true;
             }

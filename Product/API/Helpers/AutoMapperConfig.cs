@@ -50,7 +50,7 @@ namespace UpDiddyApi.Helpers
 
             CreateMap<CampaignStatistic, CampaignStatisticDto>().ReverseMap();
             CreateMap<CampaignDetail, CampaignDetailDto>().ReverseMap();
-            CreateMap<v_SubscriberSources, SubscriberSourceDto>().ReverseMap();
+            CreateMap<v_SubscriberSources, SubscriberSourceStatisticDto>().ReverseMap();
             CreateMap<SecurityClearance, SecurityClearanceDto>().ReverseMap();
             CreateMap<EmploymentType, EmploymentTypeDto>().ReverseMap();
             CreateMap<Industry, IndustryDto>().ReverseMap();

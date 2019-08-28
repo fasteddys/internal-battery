@@ -96,7 +96,7 @@ namespace UpDiddy.Api
 
         #region TalentPortal
         Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery);
-        Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync();
+        Task<IList<SubscriberSourceStatisticDto>> SubscriberSourcesAsync();
         Task<BasicResponseDto> SaveNotes(SubscriberNotesDto subscriberNotesDto);
         Task<IList<SubscriberNotesDto>> SubscriberNotesSearch(string subscriberGuid, string searchQuery);
 
@@ -133,7 +133,7 @@ namespace UpDiddy.Api
 
         #region Reporting
         Task<SubscriberReportDto> GetSubscriberReportAsync(List<DateTime> dates = null);
-        Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync();
+        Task<List<SubscriberSignUpCourseEnrollmentStatisticsDto>> GetSubscriberReportByPartnerAsync();
         Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync();
         Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync();
         Task<List<OfferActionSummaryDto>> GetOfferActionSummaryAsync();
@@ -167,7 +167,7 @@ namespace UpDiddy.Api
         Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid);
         Task RecordSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);
 
-        IList<string> GetKeywordSearchList(string keyword);
-        IList<string> GetLocationSearchList(string location);
+        Task<IList<string>> GetKeywordSearchList(string keyword);
+        Task<IList<string>> GetLocationSearchList(string location);
     }
 }

@@ -53,6 +53,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ITagTopicRepository _tagTopicRepository;
         private ITagCourseRepository _tagCourseRepository;
         private IVendorRepository _vendorRepository;
+        private IEnrollmentRepository _enrollmentRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -542,7 +543,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _courseRepository;
             }
         }
-        
+
         public ICourseVariantRepository CourseVariant
         {
             get
@@ -636,6 +637,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _vendorRepository = new VendorRepository(_dbContext);
                 }
                 return _vendorRepository;
+            }
+        }
+
+        public IEnrollmentRepository EnrollmentRepository
+        {
+            get
+            {
+                if (_enrollmentRepository == null)
+                {
+                    _enrollmentRepository = new EnrollmentRepository(_dbContext);
+                }
+                return _enrollmentRepository;
             }
         }
     }
