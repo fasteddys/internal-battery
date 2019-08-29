@@ -788,7 +788,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             else // not commute search 
             {
                 // us a country code to help google dis-ambiguate state abbreviatons, etc.   
-                string regionCode = string.IsNullOrEmpty(jobQuery.Country) ? "us" : jobQuery.Country;
+                string regionCode = string.IsNullOrEmpty(jobQuery.Country) ? "US" : jobQuery.Country.ToUpper();
                 // add locations filters.  give preference to the free format location field if it's 
                 // defined, if not use city state parameters if they have been defined 
                 string addressInfo = string.Empty;
