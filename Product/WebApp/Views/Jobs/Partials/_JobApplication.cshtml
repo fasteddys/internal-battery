@@ -1,12 +1,13 @@
 ﻿@using UpDiddy.ViewModels
 @using UpDiddyLib.Dto
 @using UpDiddy.Helpers
+@using System.Web
 @model JobApplicationViewModel
 
 <div class="job-application-container">
     <div class="row">
         <div class="col-12">
-            <h2 class="pb-4">Apply to position: @Model.Job.Title.Replace("/", "&nbsp;/&nbsp;")</h2>
+            <h2 class="pb-4">Apply to position: @Model.Job.Title.Replace("/", " / ")</h2>
             @if (Model.HasResumeOnFile)
             {
                 <form id="JobApplication" asp-controller="Jobs" asp-action="SubmitApplicationAsync">
