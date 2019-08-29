@@ -86,7 +86,7 @@ namespace UpDiddy.Controllers
         public async Task<JsonResult> SubscriberLookup()
         {
   
-           ProfileSearchResultDto subs = await _api.SubscriberSearchAsync(string.Empty, string.Empty, string.Empty);
+           ProfileSearchResultDto subs = await _api.SubscriberSearchAsync(string.Empty, string.Empty, string.Empty, string.Empty);
 
             var list = subs.Profiles
                 .Select(subscriber => new

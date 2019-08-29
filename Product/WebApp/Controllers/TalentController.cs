@@ -218,7 +218,14 @@ namespace UpDiddy.Controllers
         public async Task<ViewResult> Subscribers()
         {
             IList<SubscriberSourceStatisticDto> subscriberSourcesDto = await _api.SubscriberSourcesAsync();
-
+            IList<SelectListItem> orderByListItems = new List<SelectListItem>();
+            orderByListItems.Add(new SelectListItem() {Value = "relevance desc", Text = "Relevancy", Selected = true });
+            orderByListItems.Add(new SelectListItem() { Value = "update_date desc", Text = "Date Modified" });
+            orderByListItems.Add(new SelectListItem() { Value = "create_date desc", Text = "Join Date" });
+            orderByListItems.Add(new SelectListItem() { Value = "first_name desc", Text = "First Name Desc" });
+            orderByListItems.Add(new SelectListItem() { Value = "first_name", Text = "First Name" });
+            orderByListItems.Add(new SelectListItem() { Value = "last_name desc", Text = "Last Name Desc" });
+            orderByListItems.Add(new SelectListItem() { Value = "last_name", Text = "Last Name" });
 
             //  var subscriberSourcesDto = _api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);
             var selectListItems = subscriberSourcesDto.OrderBy(ss => ss.Count).Select(ss => new SelectListItem()
@@ -229,7 +236,10 @@ namespace UpDiddy.Controllers
             })
             .AsEnumerable();
 
-            return View(new TalentSubscriberViewModel() { SubscriberSources = selectListItems });
+
+
+
+            return View(new TalentSubscriberViewModel() { SubscriberSources = selectListItems, SortOptions = orderByListItems });
         }
 
 
@@ -237,11 +247,11 @@ namespace UpDiddy.Controllers
         [Authorize(Policy = "IsCareerCircleAdmin")]
         [HttpGet]
         [Route("[controller]/subscriberData")]
-        public async Task<ProfileSearchResultDto> SubscriberData(string searchFilter, string searchQuery = "", string searchLocationQuery = "")
+        public async Task<ProfileSearchResultDto> SubscriberData(string searchFilter, string searchQuery = "", string searchLocationQuery = "", string sortOrder = "")
         {
        
  
-            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery);
+            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery, sortOrder);
             return subscribers;
         }
 
@@ -252,6 +262,7 @@ namespace UpDiddy.Controllers
         {
             string searchFilter;
             string searchQuery;
+            string sortOrder;
             string searchLocationQuery = string.Empty;
 
             if (searchAndFilter != null)
@@ -259,14 +270,16 @@ namespace UpDiddy.Controllers
                 var jObject = JObject.Parse(searchAndFilter);
                 searchFilter = jObject["searchFilter"].Value<string>();
                 searchQuery = jObject["searchQuery"].Value<string>();
+                sortOrder = jObject["sortOrder"].Value<string>();
                 searchLocationQuery = jObject["searchLocationQuery"].Value<string>();
             }
             else
             {
                 searchFilter = "any";
                 searchQuery = string.Empty;
+                sortOrder = string.Empty;
             }
-            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery);
+            ProfileSearchResultDto subscribers = await _api.SubscriberSearchAsync(searchFilter, searchQuery, searchLocationQuery, sortOrder);
             return PartialView("_SubscriberGrid", subscribers);
         }
 
