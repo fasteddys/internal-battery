@@ -6,8 +6,8 @@ using UpDiddyApi.Models;
 
 namespace UpDiddyApi.ApplicationCore.Interfaces.Repository
 {
-    public interface IGroupPartnerRepository : IUpDiddyRepositoryBase<GroupPartner> 
+    public interface IEnrollmentRepository : IUpDiddyRepositoryBase<Enrollment>
     {
-        Task<GroupPartner> GetGroupPartnerByGroupIdPartnerIdAsync(int Groupid, int PartnerId);
+        Task<int> GetEnrollmentsCountByStartEndDates(DateTime? startDate = null, DateTime? endDate = null);
     }
 }

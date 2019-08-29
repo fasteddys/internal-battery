@@ -32,6 +32,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ICompanyService _companyService;
+        private readonly ISubscriberService _subscriberService;
         public JobService(IServiceProvider services, IHangfireService hangfireService)
         {
             _services = services;
@@ -44,8 +45,9 @@ namespace UpDiddyApi.ApplicationCore.Services
             _sysEmail = _services.GetService<ISysEmail>();
             _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
             _companyService=services.GetService<ICompanyService>();
+            _subscriberService = services.GetService<ISubscriberService>();
             _hangfireService = hangfireService;
-            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper);
+            _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper,_subscriberService);
         }
         public async Task ReferJobToFriend(JobReferralDto jobReferralDto)
         {
