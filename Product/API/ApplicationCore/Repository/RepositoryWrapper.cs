@@ -43,6 +43,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ISkillRepository _skillRepository;
         private IStoredProcedureRepository _storedProcedureRepository;
         private IEnrollmentRepository _enrollmentRepository;
+        private ITraitifyRepository _traitifyRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -509,6 +510,18 @@ namespace UpDiddyApi.ApplicationCore.Repository
                     _enrollmentRepository = new EnrollmentRepository(_dbContext);
                 }
                 return _enrollmentRepository;
+            }
+        }
+
+        public ITraitifyRepository TraitifyRepository
+        {
+            get
+            {
+                if (_traitifyRepository == null)
+                {
+                    _traitifyRepository = new TraitifyRepository(_dbContext);
+                }
+                return _traitifyRepository;
             }
         }
     }

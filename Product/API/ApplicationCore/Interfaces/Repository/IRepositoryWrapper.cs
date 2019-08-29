@@ -40,5 +40,6 @@
         ISkillRepository SkillRepository { get; }
         IStoredProcedureRepository StoredProcedureRepository { get;  }
         IEnrollmentRepository EnrollmentRepository { get; }
+        ITraitifyRepository TraitifyRepository {get;}
     }
 }

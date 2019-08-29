@@ -34,6 +34,7 @@ namespace UpDiddyApi.Controllers
 
             _mapper = mapper;
         }
+        
 
         [HttpGet]
         [Route("api/[controller]/traitify/new")]
@@ -45,7 +46,6 @@ namespace UpDiddyApi.Controllers
             TraitifyAssesmentDto dto = new TraitifyAssesmentDto()
             {
                 AssesmentId = assesment.id,
-                Slides = _mapper.Map<List<TraitifySlideDto>>(slides)
             };
             return dto;
         }
