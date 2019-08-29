@@ -220,12 +220,12 @@ namespace UpDiddy.Controllers
             IList<SubscriberSourceStatisticDto> subscriberSourcesDto = await _api.SubscriberSourcesAsync();
             IList<SelectListItem> orderByListItems = new List<SelectListItem>();
             orderByListItems.Add(new SelectListItem() {Value = "relevance desc", Text = "Relevancy", Selected = true });
-            orderByListItems.Add(new SelectListItem() { Value = "update_date desc", Text = "Date Modified" });
-            orderByListItems.Add(new SelectListItem() { Value = "create_date desc", Text = "Join Date" });
-            orderByListItems.Add(new SelectListItem() { Value = "first_name desc", Text = "First Name Desc" });
-            orderByListItems.Add(new SelectListItem() { Value = "first_name", Text = "First Name" });
-            orderByListItems.Add(new SelectListItem() { Value = "last_name desc", Text = "Last Name Desc" });
-            orderByListItems.Add(new SelectListItem() { Value = "last_name", Text = "Last Name" });
+            orderByListItems.Add(new SelectListItem() { Value = "update_date desc", Text = "Date Modified \u2193" });
+            orderByListItems.Add(new SelectListItem() { Value = "create_date desc", Text = "Join Date \u2193" });
+            orderByListItems.Add(new SelectListItem() { Value = "first_name desc", Text = "First Name \u2193" });
+            orderByListItems.Add(new SelectListItem() { Value = "first_name", Text = "First Name \u2191" });
+            orderByListItems.Add(new SelectListItem() { Value = "last_name desc", Text = "Last Name \u2193" });
+            orderByListItems.Add(new SelectListItem() { Value = "last_name", Text = "Last Name \u2191" });
 
             //  var subscriberSourcesDto = _api.SubscriberSourcesAsync().Result.OrderByDescending(ss => ss.Count);
             var selectListItems = subscriberSourcesDto.OrderBy(ss => ss.Count).Select(ss => new SelectListItem()
