@@ -5,6 +5,7 @@ using AutoMapper;
 using UpDiddyLib.Dto;
 using com.traitify.net.TraitifyLibrary;
 using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 
 namespace UpDiddyApi.Controllers
 {
@@ -15,14 +16,22 @@ namespace UpDiddyApi.Controllers
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly Traitify _traitify;
         private IMapper _mapper;
+        private readonly IConfiguration _config;
 
 
-
-        public TraitifyController( ILogger<TrackingController> sysLog,  IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        public TraitifyController( ILogger<TrackingController> sysLog,  IRepositoryWrapper repositoryWrapper, IMapper mapper, IConfiguration config)
         {
             _syslog = sysLog;
+            _config = config;
             _repositoryWrapper = repositoryWrapper;
-            _traitify = new Traitify("https://api.traitify.com", "3d731f347b674c7da1c55b25aa172314", "cb156aed701d491f9a8114896b5d9a1f", "v1");
+            string publicKey = _config["Traitify:PublicKey"];
+            string secretKey = _config["Traitify:SecretKey"];
+            string hostUrl = _config["Traitify:HostUrl"];
+            string version = _config["Traitify:Version"];
+
+            //TODO put get this from config 
+            _traitify = new Traitify(hostUrl, publicKey, secretKey, version);
+
             _mapper = mapper;
         }
 

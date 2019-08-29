@@ -12,7 +12,7 @@ namespace UpDiddy.Controllers
         private IApi _api;
         private readonly IConfiguration _config;
 
-        private readonly ITraitify _traitify;
+        private readonly Traitify _traitify;
         public TraitifyController(IApi api,
          IConfiguration config) : base(api)
         {
