@@ -1,167 +1,36 @@
-@model UpDiddy.ViewModels.TraitifyViewModel
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-<script src="https://cdn.traitify.com/js/v2/traitify.js"></script>
-
-<script>
-
-
-    class Traitify {
-        constructor(model)
-        {
-            this.model = model;
-            this.slideCount = model.slides.length;
-            this.currentPosition = 0;
-            this.startTime = new Date();
-            this.endTime = new Date();
-            this.initialize();         
-        }
-
-        initialize()
-        {
-            $(".traitify-button-container").show();
-            this.startTimer();
-            this.setImage(0);
-            this.setCaption(0);
-        }
-
-        startTimer()
-        {
-            this.startTime = new Date().getTime();
-        }
-
-        getDuration()
-        {
-            var endTime = new Date().getTime();
-            var diff = endTime - this.startTime;
-            return diff;
-        }
-
-        printTime()
-        {
-            alert(this.startTime);
-        }
-
-        setResponse(resp)
-        {
-            this.model.slides[this.currentPosition].response = resp;
-            this.model.slides[this.currentPosition].time_taken = this.getDuration();
-            this.model.slides[this.currentPosition].completed_at = new Date().getTime();
-            console.log(this.model.slides[this.currentPosition].time_taken);
-            this.moveNext();
-        }
-
-        moveNext()
-        {
-            this.currentPosition++;
-            if(this.currentPosition == this.slideCount)
-            {
-                this.submitResult();
-            }else
-            {
-            this.setImage(this.currentPosition);
-            this.setCaption(this.currentPosition);
-            this.startTimer();
-            } 
-        }
-
-        setImage(position)
-        {
-             var imgUrl = this.model.slides[position].image_desktop;
-             $(".traitify-image").css("background-image", "url(" + imgUrl + ")");  
-        }
-
-        setCaption(position)
-        {
-            var caption = this.model.slides[position].caption;
-            $(".traitify-caption").html(caption);
-        }
-
-        submitResult()
-        {
-            var jsonObj = JSON.stringify(this.model);
-             $.ajax({
-                type: "POST",
-                url: "/traitify/submit",
-                contentType: "application/json",
-                data: jsonObj,
-                
-            }).done(res => {
-                console.log("Success");
-            }).fail(res => {
-                console.log("fail");
-            }).always(() => {
-                console.log("finally")
-            });
-        }
-
-
-    }
-
-    window.onload = function () {
-          /*  var payload = @Html.Raw(Json.Serialize(@Model));
-            traitify = new Traitify(payload);
-             $("#btnMe").click(function() {
-                  traitify.setResponse(true);
-            });
-
-             $("#btnNotme").click(function() {
-                 traitify.setResponse(false);
-            });  */
-
-             this.Traitify.setHost("https://api.traitify.com");
-  this.Traitify.setPublicKey("3d731f347b674c7da1c55b25aa172314");
-
-  assessment = this.Traitify.ui.component();
-  assessment.assessmentID("@Model.AssesmentId");
-  assessment.target("#traitify");
-  assessment.render();
-
-          }
-</script>
-
-<style>
-
-.traitify-button-container {
-    position: absolute;
-    top:72%;
-    right:45%;
-    display:none;
-   
-}
-
-.traitify-image {
-    width: 100%;
-    background-image: url(/images/my-image.jpg);
-    background-size: 100%;
-    background-repeat: no-repeat;
-    height:600px;
-}
-
-.traitify-caption {
-    background: rgba(0,0,0,0.5);
-    color:white;
-    font-size: 1.5rem;
-    text-align:center;
-    width:100%;
-}
-
-</style>
-<div id="traitify">
-
-</div>
-<div class="traitify-container p-1">
-   <div class="d-flex justify-content-center">
-      <div class="col-10">
-         <div class="traitify-image"> 
-              <div class="traitify-caption">
-
-              </div>
-         </div>
-               
-                <div class="traitify-button-container">
-                    <button class="btn btn-success" id="btnMe"type="button">Me</button>
-                    <button class="btn btn-danger" id="btnNotme"type="button">Not Me</button>
-                </div>
-      </div>
-   </div>
-</div>
+@using System.Net
+@using UpDiddy.ViewModels
+@model TraitifyViewModel
+  <div>
+       <form id="AssessmentForm" asp-controller="Traitify" asp-action="Index">
+                        <div class="form-group row">
+                            <label for="FirstName" class="col-sm-2 col-form-label">First Name</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" asp-for="FirstName">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="FirstName" class="col-sm-2 col-form-label">Last Name</label>
+                            <div class="col-sm-10">
+                                <textarea class="form-control"  asp-for="LastName"></textarea>
+                            </div>
+                        </div>
+                         <div class="form-group row">
+                            <label for="Email" class="col-sm-2 col-form-label">Email</label>
+                            <div class="col-sm-10">
+                                <textarea class="form-control" asp-for="Email"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-12 text-right">
+                                @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                                    Text = "Create",
+                                    ChosenColorScheme = "cc-cscheme-secondary",
+                                    Form = "AssessmentForm",
+                                    FitToText = true,
+                                    ButtonAction = ActionButtonViewModel.Action.SUBMIT
+                                })
+                            </div>
+                        </div>
+                    </form>
+    </div>

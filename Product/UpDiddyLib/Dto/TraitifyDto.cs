@@ -16,5 +16,7 @@ namespace UpDiddyLib.Dto
         public DateTime? CompletedAt { get; set; }
         public string DeckId { get; set; }
         public string ResultData { get; set; }
+        public string PublicKey {get;set;}
+        public string Host {get;set;}
     }
 }

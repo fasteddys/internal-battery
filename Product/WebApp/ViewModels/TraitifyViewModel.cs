@@ -6,7 +6,10 @@ namespace UpDiddy.ViewModels
 {
     public class TraitifyViewModel 
     {
-        public string AssesmentId {get;set;}
-        public List<Slide> Slides {get;set;}
+        public string FirstName {get;set;}
+        public string LastName {get;set;}
+        public string Email {get;set;}
+        public string AssessmentId {get;set;}
+    
     }
 }

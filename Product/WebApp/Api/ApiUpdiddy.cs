@@ -1731,6 +1731,16 @@ namespace UpDiddy.Api
 
         #endregion
 
+
+        #region Traitify
+        
+        public async Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto)
+        {
+            return await PostAsync<TraitifyDto>("traitify/new", dto);
+        }
+
+        #endregion
+
         #region <<Keyword and Location Search List>>
         public async Task<IList<string>> GetKeywordSearchList(string keyword)
         {

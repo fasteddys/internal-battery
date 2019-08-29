@@ -1,0 +1,67 @@
+@model UpDiddy.ViewModels.TraitifyViewModel
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdn.traitify.com/js/v2/traitify.js"></script>
+
+<script>
+
+
+
+    window.onload = function () {
+
+             this.Traitify.setHost("@ViewBag.host");
+  this.Traitify.setPublicKey("@ViewBag.publicKey");
+
+  assessment = this.Traitify.ui.component();
+  assessment.assessmentID("@ViewBag.assesmentId");
+  assessment.target("#traitify");
+  assessment.render();
+
+          }
+</script>
+
+<style>
+
+.traitify-button-container {
+    position: absolute;
+    top:72%;
+    right:45%;
+    display:none;
+   
+}
+
+.traitify-image {
+    width: 100%;
+    background-image: url(/images/my-image.jpg);
+    background-size: 100%;
+    background-repeat: no-repeat;
+    height:600px;
+}
+
+.traitify-caption {
+    background: rgba(0,0,0,0.5);
+    color:white;
+    font-size: 1.5rem;
+    text-align:center;
+    width:100%;
+}
+
+</style>
+<div id="traitify">
+
+</div>
+<div class="traitify-container p-1">
+   <div class="d-flex justify-content-center">
+      <div class="col-10">
+         <div class="traitify-image"> 
+              <div class="traitify-caption">
+
+              </div>
+         </div>
+               
+                <div class="traitify-button-container">
+                    <button class="btn btn-success" id="btnMe"type="button">Me</button>
+                    <button class="btn btn-danger" id="btnNotme"type="button">Not Me</button>
+                </div>
+      </div>
+   </div>
+</div>

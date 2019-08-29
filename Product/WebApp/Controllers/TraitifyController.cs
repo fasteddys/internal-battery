@@ -4,7 +4,8 @@ using com.traitify.net.TraitifyLibrary;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using UpDiddy.ViewModels;
-
+using UpDiddyLib.Dto;
+using System.Threading.Tasks;
 namespace UpDiddy.Controllers
 {
     public class TraitifyController : BaseController
@@ -12,7 +13,6 @@ namespace UpDiddy.Controllers
         private IApi _api;
         private readonly IConfiguration _config;
 
-        private readonly Traitify _traitify;
         public TraitifyController(IApi api,
          IConfiguration config) : base(api)
         {
@@ -23,7 +23,7 @@ namespace UpDiddy.Controllers
 
             _api = api;
             _config = config;
-            _traitify = new Traitify("https://api.traitify.com", "3d731f347b674c7da1c55b25aa172314", "cb156aed701d491f9a8114896b5d9a1f", "v1");
+
         }
 
         [HttpGet]
@@ -31,40 +31,27 @@ namespace UpDiddy.Controllers
         public IActionResult Index()
         {
             
-            var assesment = _traitify.CreateAssesment("career-deck");
-            var slides = _traitify.GetSlides(assesment.id);
-            TraitifyViewModel model = new TraitifyViewModel()
-            {
-                AssesmentId = assesment.id,
-                Slides = slides
-            };
-
+            TraitifyViewModel model = new TraitifyViewModel();
             return View(model);
         }
 
+
         [HttpPost]
-        [Route("[controller]/submit")]
-        public IActionResult Submit([FromBody] TraitifyViewModel model)
+        [Route("[controller]")]
+        public async Task<IActionResult> Index(TraitifyViewModel model)
         {
-            _traitify.SetSlideBulkUpdate(model.AssesmentId, model.Slides);
-            var result = new TraitifyResultViewModel()
-            {
-                AssessmentPersonalityTraits = _traitify.GetPersonalityTraits(model.AssesmentId),
-                AssessmentPersonalityTypes = _traitify.GetPersonalityTypes(model.AssesmentId)
+            TraitifyDto dto = new TraitifyDto() {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Email
             };
-            return View("result", model);
+            var result = await _api.StartNewTraitifyAssessment(dto);
+            ViewBag.assessmentId = result.AssessmentId;
+            ViewBag.publicKey = result.PublicKey;
+            ViewBag.host = result.Host;
+            return View("Assessment");
         }
 
-        [HttpGet]
-        [Route("[controller]/iantest")]
-        public IActionResult IanTest()
-        {
-            var result = new TraitifyResultViewModel()
-            {
-                AssessmentPersonalityTraits = _traitify.GetPersonalityTraits("36215e43-236f-4ba1-9cbc-d1b8566b3024"),
-                AssessmentPersonalityTypes = _traitify.GetPersonalityTypes("36215e43-236f-4ba1-9cbc-d1b8566b3024")
-            };
-            return View();
-        }
+        
     }
 }
