@@ -650,7 +650,7 @@ namespace UpDiddy.Api
         public async Task<JobSearchResultDto> GetJobsByLocation(string searchQueryParameterString)
         {
 
-            var searchFilter = $"all/all/all/all/all/all/0{searchQueryParameterString}page-size=100";
+            var searchFilter = $"all/all/all/all/all/all/0{(searchQueryParameterString.Equals("")? "?" :searchQueryParameterString+"&")}page-size=100";
             string cacheKey = $"job-{searchFilter}";
             JobSearchResultDto rval = GetCachedValueAsync<JobSearchResultDto>(cacheKey);
 
@@ -1313,9 +1313,9 @@ namespace UpDiddy.Api
             return await GetAsync<ProfileSearchResultDto>(endpoint);
         }
 
-        public async Task<IList<SubscriberSourceDto>> SubscriberSourcesAsync()
+        public async Task<IList<SubscriberSourceStatisticDto>> SubscriberSourcesAsync()
         {
-            return await GetAsync<IList<SubscriberSourceDto>>("subscriber/sources");
+            return await GetAsync<IList<SubscriberSourceStatisticDto>>("subscriber/sources");
         }
 
         private async Task<SubscriberDto> _SubscriberAsync(Guid subscriberGuid)
@@ -1361,9 +1361,9 @@ namespace UpDiddy.Api
             return await GetAsync<SubscriberReportDto>($"report/subscribers{query}");
         }
 
-        public async Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync()
+        public async Task<List<SubscriberSignUpCourseEnrollmentStatisticsDto>> GetSubscriberReportByPartnerAsync()
         {
-            return await GetAsync<SubscriberReportDto>($"report/partners");
+            return await GetAsync<List<SubscriberSignUpCourseEnrollmentStatisticsDto>>($"report/partners?startDate={HttpUtility.UrlEncode(DateTime.UtcNow.AddDays(-30).ToShortDateString())}&endDate={HttpUtility.UrlEncode(DateTime.UtcNow.ToShortDateString())}");
         }
 
         public async Task<List<JobApplicationCountDto>> GetJobApplicationCount(Guid? companyGuid = null)
@@ -1732,19 +1732,34 @@ namespace UpDiddy.Api
         #endregion
 
         #region <<Keyword and Location Search List>>
-        public IList<string> GetKeywordSearchList(string keyword)
+        public async Task<IList<string>> GetKeywordSearchList(string keyword)
         {
             string cacheKey = "keywordSearchList";
             IList<string> rval = GetCachedValueAsync<IList<string>>(cacheKey);
+
+             //if rval is null get the value from Api Memory Cache
+            if(rval==null)
+            {
+                rval=await GetAsync<IList<string>>($"cache?cacheKey={cacheKey}");
+                SetCachedValueAsync<IList<string>>(cacheKey,rval);
+            }
+
             List<string> keywordListresult=rval?.Where(k=>k.Contains(keyword))?.ToList();
 
             return keywordListresult;
         }
 
-        public IList<string> GetLocationSearchList(string location)
+        public async Task<IList<string>> GetLocationSearchList(string location)
         {
             string cacheKey = "locationSearchList";
             IList<string> rval = GetCachedValueAsync<IList<string>>(cacheKey);
+
+            //if rval is null get the value from Api Memory Cache
+            if(rval==null)
+            {
+               rval=await GetAsync<IList<string>>($"cache?cacheKey={cacheKey}");
+               SetCachedValueAsync<IList<string>>(cacheKey,rval);
+            }
 
             List<string> locationListresult=rval?.Where(k=>k.Contains(location))?.ToList();
 

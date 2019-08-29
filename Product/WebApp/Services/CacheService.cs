@@ -58,7 +58,7 @@ namespace UpDiddy.Services
             }
         }
 
-        public async Task<bool> RemoveCachedValueAsync<T>(string CacheKey)
+        public async Task<bool> RemoveCachedValueAsync(string CacheKey)
         {
             try
             {

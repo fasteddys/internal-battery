@@ -30,6 +30,7 @@ using UpDiddyApi.Helpers.GoogleProfile;
 using UpDiddyApi.ApplicationCore.Services.GoogleProfile;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -41,10 +42,11 @@ namespace UpDiddyApi.ApplicationCore.Services
         private GoogleCredential _credential = null;
         private GoogleProfileService _profileApi = null;
         private GoogleProfileService _googleProfile = null;
+        private ISubscriberService _subscriberService;
       //  private RepositoryWrapper repositoryWrapper;
 
         #region Constructor
-        public CloudTalent(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory, IRepositoryWrapper repositoryWrapper)
+        public CloudTalent(UpDiddyDbContext context, IMapper mapper, Microsoft.Extensions.Configuration.IConfiguration configuration, ILogger sysLog, IHttpClientFactory httpClientFactory, IRepositoryWrapper repositoryWrapper, ISubscriberService ISubscriberService)
         {
             _db = context;
             _mapper = mapper;
@@ -54,6 +56,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
             _repositoryWrapper = repositoryWrapper;
+            _subscriberService = ISubscriberService;
 
 
             // cloud talent configuration
@@ -170,7 +173,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 
                 int maxProfileSkillLen =  int.Parse(_configuration["CloudTalent:MaxProfileSkillLen"]);
                 // create googleCloud Profile 
-                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_repositoryWrapper, maxProfileSkillLen, subscriber, skills);
+                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_repositoryWrapper, maxProfileSkillLen, subscriber, skills,_subscriberService);
                 step = 1;
                 string errorMsg = string.Empty;
                 BasicResponseDto basicResponseDto =  _profileApi.AddProfile(googleCloudProfile, ref errorMsg);
@@ -207,7 +210,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             try
             {
                 int maxProfileSkillLen = int.Parse(_configuration["CloudTalent:MaxProfileSkillLen"]);
-                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_repositoryWrapper, maxProfileSkillLen, subscriber, skills);
+                GoogleCloudProfile googleCloudProfile = ProfileMappingHelper.CreateGoogleProfile(_repositoryWrapper, maxProfileSkillLen, subscriber, skills,_subscriberService);
                 string errorMsg = string.Empty;
 
                 if (_profileApi.UpdateProfile(googleCloudProfile, ref errorMsg))
@@ -785,7 +788,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             else // not commute search 
             {
                 // us a country code to help google dis-ambiguate state abbreviatons, etc.   
-                string regionCode = string.IsNullOrEmpty(jobQuery.Country) ? "us" : jobQuery.Country;
+                string regionCode = string.IsNullOrEmpty(jobQuery.Country) ? "US" : jobQuery.Country.ToUpper();
                 // add locations filters.  give preference to the free format location field if it's 
                 // defined, if not use city state parameters if they have been defined 
                 string addressInfo = string.Empty;
