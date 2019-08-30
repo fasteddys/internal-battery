@@ -1739,6 +1739,15 @@ namespace UpDiddy.Api
             return await PostAsync<TraitifyDto>("traitify/new", dto);
         }
 
+        public async Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId) {
+            return await GetAsync<TraitifyDto>($"traitify/{assessmentId}");
+        }
+
+          public async Task<bool> CompleteAssessment(string assessmentId) {
+            return await GetAsync<bool>($"traitify/complete/{assessmentId}");
+        }
+
+
         #endregion
 
         #region <<Keyword and Location Search List>>

@@ -1,0 +1,57 @@
+@using UpDiddy.ViewModels
+@model TraitifyViewModel
+<div class="traitify-form-container">
+   <div class=" d-flex justify-content-center">
+      <form class="traitify-signup-form p-4"id="AssessmentForm" asp-controller="Traitify" asp-action="Index">
+         <div class="form-group row">
+            <label for="FirstName" class="col-sm-4 col-form-label">First Name</label>
+            <div class="col-sm-8">
+               <input type="text" class="form-control"
+                asp-for="FirstName"  
+                placeholder="First Name"
+                required>
+           <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+         </div>
+         <div class="form-group row">
+            <label for="LastName" class="col-sm-4 col-form-label">Last Name</label>
+            <div class="col-sm-8">
+               <input type="text" class="form-control" 
+                    asp-for="LastName"   
+                    data-val-required="Last Name field is required."
+                    placeholder="Last Name"
+                     required>
+            <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+         </div>
+         <div class="form-group row">
+            <label for="Email" class="col-sm-4 col-form-label">Email</label>
+            <div class="col-sm-8">
+               <input type="email" class="form-control" 
+                asp-for="Email" 
+                data-valmsg-for="Email"  
+                data-valmsg-replace="true" 
+                placeholder="Email" 
+                required>
+                 <span asp-validation-for="Email" class="text-danger"></span>
+
+            </div>
+
+         </div>
+         <div class="d-flex justify-content-center">
+            @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+            Text = "Take the assessment",
+            ChosenColorScheme = "cc-cscheme-primary",
+            Form = "AssessmentForm",
+            FitToText = true,
+            ButtonAction = ActionButtonViewModel.Action.SUBMIT
+            })
+         </div>
+         @Html.HiddenFor(x => x.HeroHeader)
+         @Html.HiddenFor(x => x.HeroImage)
+         @Html.HiddenFor(x => x.HeroDescription)
+
+      </form>
+   </div>
+</div>
+

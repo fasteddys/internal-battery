@@ -1,36 +1,38 @@
 @using System.Net
 @using UpDiddy.ViewModels
+@using UpDiddy.ViewModels.ButterCMS
+@using Microsoft.AspNetCore.Mvc.Localization
 @model TraitifyViewModel
-  <div>
-       <form id="AssessmentForm" asp-controller="Traitify" asp-action="Index">
-                        <div class="form-group row">
-                            <label for="FirstName" class="col-sm-2 col-form-label">First Name</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" asp-for="FirstName">
-                            </div>
+<div class="traitify-container">
+   <div class="cc-traitify row" style="background-image: url(@Model.HeroImage)">
+      <div class="col-12">
+         <div class="container no-padding">
+            <div class="row">
+               <div class="col-12 no-padding">
+                  <div class="row">
+                     <div class="col-12 d-flex justify-content-center no-padding">
+                        <div class="cc-traitify-header font-bold">                            
                         </div>
-                        <div class="form-group row">
-                            <label for="FirstName" class="col-sm-2 col-form-label">Last Name</label>
-                            <div class="col-sm-10">
-                                <textarea class="form-control"  asp-for="LastName"></textarea>
-                            </div>
+                     </div>
+                     <div class="col-12 no-padding">
+                        <div class="cc-traitify-content">
+                           <div class="row">
+                              <div class="col-12 col-lg-6">
+                                 @Html.Partial("Partials/_SignUpForm",Model)
+                              </div>
+                              <div class="traitify-hero-container col-12 col-lg-6">
+                                 <h1><strong>@Model.HeroHeader</strong></h1>
+                                 <br>
+                                 <p>@Model.HeroDescription</p>
+                              </div>
+                           </div>
                         </div>
-                         <div class="form-group row">
-                            <label for="Email" class="col-sm-2 col-form-label">Email</label>
-                            <div class="col-sm-10">
-                                <textarea class="form-control" asp-for="Email"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <div class="col-12 text-right">
-                                @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
-                                    Text = "Create",
-                                    ChosenColorScheme = "cc-cscheme-secondary",
-                                    Form = "AssessmentForm",
-                                    FitToText = true,
-                                    ButtonAction = ActionButtonViewModel.Action.SUBMIT
-                                })
-                            </div>
-                        </div>
-                    </form>
-    </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+

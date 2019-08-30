@@ -1,0 +1,70 @@
+@import '_variables';
+
+// Base Styles
+@media (min-width: 0px) {
+    .cc-traitify {
+        position: relative;
+        padding: 10rem;
+        background-size: cover;
+        background-position: top;
+
+        .cc-traitify-header {
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        .cc-traitify-content {
+            padding-top: 2rem;
+
+            img {
+                width: 100%;
+            }
+            > .row {
+                > div {
+                    margin-bottom: 2rem;
+                }
+            }
+
+            .traitify-signup-form {
+                background-color: white;
+            }
+        }
+
+        .traitify-hero-container {
+            p {
+                font-size: 1.5rem;
+            }
+        }
+
+       
+
+    }
+}
+
+// Extra Small Styles
+@media (min-width: 320px) {
+    
+}
+
+// Small Styles
+@media (min-width: 576px) {
+}
+
+// Medium Styles
+@media (min-width: 768px) {
+    
+}
+
+// Large Styles
+@media (min-width: 992px) {
+    .cc-traitify-band {
+        padding: 6rem 2rem;
+        .cc-traitify-band-header {
+            font-size: 2.5rem;
+        }
+    }
+}
+
+// Extra Large Styles
+@media (min-width: 1200px) {
+}

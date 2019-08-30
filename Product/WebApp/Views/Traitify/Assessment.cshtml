@@ -1,67 +1,61 @@
-@model UpDiddy.ViewModels.TraitifyViewModel
+@using UpDiddy.ViewModels
+@model TraitifyViewModel
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src="https://cdn.traitify.com/js/v2/traitify.js"></script>
-
 <script>
-
-
-
-    window.onload = function () {
-
-             this.Traitify.setHost("@ViewBag.host");
-  this.Traitify.setPublicKey("@ViewBag.publicKey");
-
-  assessment = this.Traitify.ui.component();
-  assessment.assessmentID("@ViewBag.assesmentId");
-  assessment.target("#traitify");
-  assessment.render();
-
-          }
-</script>
-
-<style>
-
-.traitify-button-container {
-    position: absolute;
-    top:72%;
-    right:45%;
-    display:none;
+   class Traitify {
+       constructor(model, traitify)
+       {
+           this.model = model;
+           this.traitify = traitify;
+           this.initialize();
+       }
    
-}
-
-.traitify-image {
-    width: 100%;
-    background-image: url(/images/my-image.jpg);
-    background-size: 100%;
-    background-repeat: no-repeat;
-    height:600px;
-}
-
-.traitify-caption {
-    background: rgba(0,0,0,0.5);
-    color:white;
-    font-size: 1.5rem;
-    text-align:center;
-    width:100%;
-}
-
-</style>
-<div id="traitify">
-
+       initialize()
+       {
+           var assessmentId = this.model.assessmentId;
+           this.traitify.setHost(this.model.host);
+           this.traitify.setPublicKey(this.model.publicKey);
+           var assessment = this.traitify.ui.component(); 
+           assessment.on("SlideDeck.Finished", function(){
+                 $.ajax({
+                             url: '/Traitify/complete',
+                             type: 'GET',
+                             dataType: 'json',
+                             data: {
+                                 assessmentId: assessmentId
+                             },
+                             error: function () {
+                                 console.log("failed");
+                             },
+                             success: function (results) {
+                                   $("assessmentContainer").hide();
+                                   $("#successContainer").show();
+                             }
+                           });    
+                         });
+           assessment.assessmentID("@Model.AssessmentId");
+           assessment.allowFullscreen();
+           assessment.target("#traitify");
+           assessment.render("SlideDeck");
+       }
+   
+       setUrl()
+       {
+           var newurl = window.location.protocol + "//" + window.location.host + "/traitify/" + assessmentId;
+           window.history.pushState({ path: newurl }, '', newurl);
+       }
+   }
+   
+   window.onload = function () {
+   var model = @Html.Raw(Json.Serialize(@Model));
+   var traitify = new Traitify(model, this.Traitify);
+   traitify.initialize();
+   }
+</script>
+<div class="traitify-assessment-container p-5" id="assessmentContainer">
+   <div id="traitify"></div>
 </div>
-<div class="traitify-container p-1">
-   <div class="d-flex justify-content-center">
-      <div class="col-10">
-         <div class="traitify-image"> 
-              <div class="traitify-caption">
-
-              </div>
-         </div>
-               
-                <div class="traitify-button-container">
-                    <button class="btn btn-success" id="btnMe"type="button">Me</button>
-                    <button class="btn btn-danger" id="btnNotme"type="button">Not Me</button>
-                </div>
-      </div>
-   </div>
+<div class="traitify-success-container p-5" id="successContainer" hidden>
+   <h1>Thank you for completing the assessment. Your results will be emailed to you. </h1>
 </div>

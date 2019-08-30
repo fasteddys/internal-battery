@@ -164,6 +164,8 @@ namespace UpDiddy.Api
 
         #region Traitify
         Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto);
+        Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId);
+         Task<bool> CompleteAssessment(string assessmentId);
         #endregion
 
 

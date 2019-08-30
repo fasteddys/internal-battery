@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System;
+using AutoMapper;
 using System.Threading.Tasks;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
@@ -28,6 +29,8 @@ namespace UpDiddyApi.ApplicationCore.Services
             Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByEmailAsync(dto.Email);
             Traitify traitify = new Traitify() {
                 Subscriber = subscriber == null ? null : subscriber,
+                TraitifyGuid = Guid.NewGuid(),
+                CreateDate = DateTime.UtcNow,
                 AssessmentId = dto.AssessmentId,
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
@@ -36,6 +39,13 @@ namespace UpDiddyApi.ApplicationCore.Services
             };
             await _repositoryWrapper.TraitifyRepository.Create(traitify);
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
+        }
+
+        public async Task CompleteAssessment(TraitifyDto dto)
+        {
+            Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(dto.AssessmentId);
+            traitify.CompletedAt = dto.CompletedAt;
+            traitify.ResultData = dto.ResultData;
         }
     }
 }
