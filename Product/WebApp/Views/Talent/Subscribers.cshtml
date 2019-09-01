@@ -159,7 +159,9 @@
             function doSearch(isReset) {
                 if (isReset) {
                     document.getElementById('GridSearch').value = '';
-                    $('#SelectedSubscriberSource option:eq(0)').prop('selected', true);
+                    document.getElementById('GridSearchLocation').value = '';
+                    $('#SelectedSubscriberSource option[value^="Any"]').prop('selected', true);         
+                    $('#SelectedSortOption option:eq(0)').prop('selected', true);
                 }
 
                 var grid = new MvcGrid(document.querySelector('.mvc-grid')

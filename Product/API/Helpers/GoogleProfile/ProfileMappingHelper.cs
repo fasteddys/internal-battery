@@ -59,7 +59,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
             IList<SubscriberSourceDto> subscriberSourceDtos = subscriberService.GetSubscriberSources(subscriber.SubscriberId).Result;
             foreach ( SubscriberSourceDto s in subscriberSourceDtos)
             {
-                if ( s.Rank == 1 )
+                if ( s.GroupRank == 1 && s.PartnerRank == 1 )
                 {
                     partnerSource = s.PartnerName;
                     break;
