@@ -39,5 +39,6 @@
         ISubscriberFileRepository SubscriberFileRepository { get; }
         ISkillRepository SkillRepository { get; }
         IStoredProcedureRepository StoredProcedureRepository { get;  }
+        IEnrollmentRepository EnrollmentRepository { get; }
     }
 }

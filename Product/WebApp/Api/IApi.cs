@@ -133,7 +133,7 @@ namespace UpDiddy.Api
 
         #region Reporting
         Task<SubscriberReportDto> GetSubscriberReportAsync(List<DateTime> dates = null);
-        Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync();
+        Task<List<SubscriberSignUpCourseEnrollmentStatisticsDto>> GetSubscriberReportByPartnerAsync();
         Task<List<RecruiterActionSummaryDto>> GetRecruiterActionSummaryAsync();
         Task<List<SubscriberActionSummaryDto>> GetSubscriberActionSummaryAsync();
         Task<List<OfferActionSummaryDto>> GetOfferActionSummaryAsync();

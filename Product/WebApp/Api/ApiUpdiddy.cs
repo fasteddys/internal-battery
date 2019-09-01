@@ -1366,9 +1366,9 @@ namespace UpDiddy.Api
             return await GetAsync<SubscriberReportDto>($"report/subscribers{query}");
         }
 
-        public async Task<SubscriberReportDto> GetSubscriberReportByPartnerAsync()
+        public async Task<List<SubscriberSignUpCourseEnrollmentStatisticsDto>> GetSubscriberReportByPartnerAsync()
         {
-            return await GetAsync<SubscriberReportDto>($"report/partners");
+            return await GetAsync<List<SubscriberSignUpCourseEnrollmentStatisticsDto>>($"report/partners?startDate={HttpUtility.UrlEncode(DateTime.UtcNow.AddDays(-30).ToShortDateString())}&endDate={HttpUtility.UrlEncode(DateTime.UtcNow.ToShortDateString())}");
         }
 
         public async Task<List<JobApplicationCountDto>> GetJobApplicationCount(Guid? companyGuid = null)

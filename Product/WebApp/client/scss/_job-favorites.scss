@@ -1,0 +1,37 @@
+﻿@import '_variables';
+@media (min-width: 0px) {
+    .my-jobs-section {
+        .job-title {
+            a {
+                color: $color-secondary-light;
+                font-size: 20px;
+            }
+
+            a:hover {
+                color: $color-anchor-hover;
+            }
+        }
+        
+        .job-pagination {
+            display: block;
+
+            .pagination-container {
+                display: inline-block;
+
+                .page-link {
+                    color: $color-secondary;
+                }
+
+                .page-item {
+                    &.active {
+                        .page-link {
+                            border-color: $color-secondary;
+                            background-color: $color-secondary;
+                            color: $color-white;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
