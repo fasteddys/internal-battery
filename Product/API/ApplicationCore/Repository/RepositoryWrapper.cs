@@ -43,6 +43,10 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private ISkillRepository _skillRepository;
         private IStoredProcedureRepository _storedProcedureRepository;
         private IEnrollmentRepository _enrollmentRepository;
+        private IServiceOfferingRepository _serviceOfferingRepository;
+        private IServiceOfferingItemRepository _serviceOfferingItemRepository;
+        private IServiceOfferingOrderRepository _serviceOfferingOrderRepository;
+        private IServiceOfferingPromoCodeRedemptionRepository _serviceOfferingPromoCodeRedemptionRepository;
 
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
@@ -511,5 +515,58 @@ namespace UpDiddyApi.ApplicationCore.Repository
                 return _enrollmentRepository;
             }
         }
+
+
+        public IServiceOfferingRepository ServiceOfferingRepository
+        {
+            get
+            {
+                if (_serviceOfferingRepository == null)
+                {
+                    _serviceOfferingRepository = new ServiceOfferingRepository(_dbContext);
+                }
+                return _serviceOfferingRepository;
+            }
+        }
+
+        public IServiceOfferingItemRepository ServiceOfferingItemRepository
+        {
+            get
+            {
+                if (_serviceOfferingItemRepository == null)
+                {
+                    _serviceOfferingItemRepository = new ServiceOfferingItemRepository(_dbContext);
+                }
+                return _serviceOfferingItemRepository;
+            }
+        }
+
+        public IServiceOfferingOrderRepository ServiceOfferingOrderRepository
+        {
+            get
+            {
+                if (_serviceOfferingOrderRepository == null)
+                {
+                    _serviceOfferingOrderRepository = new ServiceOfferingOrderRepository(_dbContext);
+                }
+                return _serviceOfferingOrderRepository;
+            }
+        }
+
+
+        public IServiceOfferingPromoCodeRedemptionRepository ServiceOfferingPromoCodeRedemption
+        {
+            get
+            {
+                if (_serviceOfferingPromoCodeRedemptionRepository == null)
+                {
+                    _serviceOfferingPromoCodeRedemptionRepository = new ServiceOfferingPromoCodeRedemptionRepository(_dbContext);
+                }
+                return _serviceOfferingPromoCodeRedemptionRepository;
+            }
+        }
+
+
+
     }
 }

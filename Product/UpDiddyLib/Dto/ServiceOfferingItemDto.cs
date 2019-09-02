@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
-namespace UpDiddyApi.Models
+namespace UpDiddyLib.Dto
 {
-    public class ServiceOfferingItem : BaseModel
+    public class ServiceOfferingItemDto : BaseDto
     {
-        public int ServiceOfferingItemId { get; set; }
         public Guid ServiceOfferingItemGuid { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public int ServiceOfferingId { get; set; }
-        public virtual ServiceOffering ServiceOffering { get; set; }
+        public  ServiceOfferingDto ServiceOffering { get; set; }
     }
 }

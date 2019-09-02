@@ -173,8 +173,11 @@ namespace UpDiddyApi.Models
 
         public DbSet<ServiceOffering> ServiceOffering { get; set; }
         public DbSet<ServiceOfferingItem> ServiceOfferingItem { get; set; }
-        public DbSet<ServiceOfferingOrder> ServiceOfferingOrder { get; set; }
+    
+        public DbSet<ServiceOfferingOrder> ServiceOfferingOrder { get; set; }      
         public DbSet<ServiceOfferingPromoCodeRedemption> ServiceOfferingPromoCodeRedemption { get; set; }
+
+      
 
         #region DBQueries
 

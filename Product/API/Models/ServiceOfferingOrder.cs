@@ -17,7 +17,5 @@ namespace UpDiddyApi.Models
         [Column(TypeName = "decimal(18,2)")]
         public Decimal PricePaid { get; set; }
         public int PercentCommplete { get; set; }
-        public int ServiceOfferingPromoCodeRedemptionId { get; set; }
-        public virtual ServiceOfferingPromoCodeRedemption PromoCode {get; set; }
     }
 }

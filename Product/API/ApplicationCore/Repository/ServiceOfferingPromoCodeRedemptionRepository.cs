@@ -22,9 +22,13 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<ServiceOfferingPromoCodeRedemption> GetByGuidAsync(Guid guid)
         {
+            /*
+             * todo jab fix 
             return await (from a in _dbContext.ServiceOfferingPromoCodeRedemption
                           where a.ServiceOfferingPromoCodeRedemptionGuid == guid && a.IsDeleted == 0
                           select a).FirstOrDefaultAsync();
+                        */
+            return null;
         }
 
 

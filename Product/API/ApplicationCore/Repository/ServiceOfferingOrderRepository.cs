@@ -22,9 +22,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
 
         public async Task<ServiceOfferingOrder> GetByGuidAsync(Guid guid)
         {
+            /*
+             * // todo jab fix 
             return await (from a in _dbContext.ServiceOfferingOrder
                           where a.ServiceOfferingOrderGuid == guid && a.IsDeleted == 0 
                           select a).FirstOrDefaultAsync();
+            */
+
+            return null;
         }
 
 
