@@ -171,6 +171,11 @@ namespace UpDiddyApi.Models
         public DbSet<GroupPartner> GroupPartner { get; set; }
         public DbSet<SalesForceSignUpList> SalesForceSignUpList { get; set; }
 
+        public DbSet<ServiceOffering> ServiceOffering { get; set; }
+        public DbSet<ServiceOfferingItem> ServiceOfferingItem { get; set; }
+        public DbSet<ServiceOfferingOrder> ServiceOfferingOrder { get; set; }
+        public DbSet<ServiceOfferingPromoCodeRedemption> ServiceOfferingPromoCodeRedemption { get; set; }
+
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
@@ -193,8 +198,7 @@ namespace UpDiddyApi.Models
         public DbQuery<SubscriberSignUpCourseEnrollmentStatistics> SubscriberSignUpCourseEnrollmentStatistics { get; set; }
 
         #endregion
-
-
+ 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
