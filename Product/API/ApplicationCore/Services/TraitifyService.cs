@@ -41,11 +41,14 @@ namespace UpDiddyApi.ApplicationCore.Services
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
         }
 
-        public async Task CompleteAssessment(TraitifyDto dto)
+        public async Task<TraitifyDto> CompleteAssessment(TraitifyDto dto)
         {
             Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(dto.AssessmentId);
             traitify.CompletedAt = dto.CompletedAt;
             traitify.ResultData = dto.ResultData;
+            dto.Email = traitify.Email;
+            await _repositoryWrapper.TraitifyRepository.SaveAsync();
+            return dto;
         }
     }
 }

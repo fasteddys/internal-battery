@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace UpDiddy.ViewModels.ButterCMS
 {
-    
+
     public class TraitifyLandingPageViewModel : ButterCMSBaseViewModel
     {
         [JsonProperty("hero_header")]
@@ -18,5 +18,16 @@ namespace UpDiddy.ViewModels.ButterCMS
         public string HeroImage { get; set; }
         [JsonProperty("hero_description")]
         public string HeroDescription { get; set; }
+        [JsonProperty("modal_header")]
+        public string ModalHeader { get; set; }
+        [JsonProperty("modal_text")]
+        public string ModalText { get; set; }
+
+        [JsonProperty("form_header")]
+        public string FormHeader { get; set; }
+        [JsonProperty("form_text")]
+        public string FormText { get; set; }
+        [JsonProperty("form_submit_button_text")]
+        public string FormSubmitButtonText { get; set; }
     }
 }

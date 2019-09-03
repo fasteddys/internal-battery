@@ -19,8 +19,9 @@
             img {
                 width: 100%;
             }
-            > .row {
-                > div {
+
+            >.row {
+                >div {
                     margin-bottom: 2rem;
                 }
             }
@@ -36,29 +37,50 @@
             }
         }
 
-       
+        .traitify-form-container {
+            .sub-header {
+                font-size: 1.5rem;
+                line-height: 2rem;
+                margin-bottom: .25rem;
+            }
 
+            .mini-header {
+                margin-bottom: 1.25rem;
+                font-size: .9rem;
+            }
+
+        }
+
+    }
+
+    .traitify-assessment-container {
+        padding: 0 20px;
+        width: 83.3333333333%;
+        position: relative;
+        left: 8.3333333333%;
+
+        .traitify-header {
+            padding: 25px;
+            font-size: 1.5rem;
+
+        }
     }
 }
 
 // Extra Small Styles
-@media (min-width: 320px) {
-    
-}
+@media (min-width: 320px) {}
 
 // Small Styles
-@media (min-width: 576px) {
-}
+@media (min-width: 576px) {}
 
 // Medium Styles
-@media (min-width: 768px) {
-    
-}
+@media (min-width: 768px) {}
 
 // Large Styles
 @media (min-width: 992px) {
     .cc-traitify-band {
         padding: 6rem 2rem;
+
         .cc-traitify-band-header {
             font-size: 2.5rem;
         }
@@ -66,5 +88,4 @@
 }
 
 // Extra Large Styles
-@media (min-width: 1200px) {
-}
+@media (min-width: 1200px) {}

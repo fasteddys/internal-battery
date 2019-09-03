@@ -8,6 +8,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
+using com.traitify.net.TraitifyLibrary;
 
 namespace UpDiddyApi.Helpers
 {
@@ -77,6 +78,13 @@ namespace UpDiddyApi.Helpers
         {
             summary = Utils.RemoveHTML(summary);
             return summary.Length <= 250 ? summary : summary.Substring(0, 250) + "...";
+        }
+
+        public static dynamic GenerateTraitifyTemplate(AssessmentPersonalityTypes types)
+        {
+            dynamic templateData = new JObject();
+            templateData.personalityBlend = types.personality_blend;
+            return templateData;
         }
     }
 }
