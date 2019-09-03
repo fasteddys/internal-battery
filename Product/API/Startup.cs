@@ -195,7 +195,6 @@ namespace UpDiddyApi
                     // run the job crawl in production Monday through Friday once per day at 15:00 UTC
                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), "0 15 * * Mon,Tue,Wed,Thu,Fri");
                      //Keyword and Location Search Intellisense Job
-                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),"0 0 0/3 ? * MON,TUE,WED,THU,FRI *");
                 }
 
                 // run the process in staging once a week on the weekend (Sunday 4 UTC)
@@ -203,8 +202,9 @@ namespace UpDiddyApi
                 {
                     RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.JobDataMining(), Cron.Weekly(DayOfWeek.Sunday, 4));
                     //Keyword and Location Search Intellisense Job
-                    RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(),Cron.Weekly(DayOfWeek.Sunday, 4));
                 }
+
+                RecurringJob.AddOrUpdate<ScheduledJobs>(x => x.CacheKeywordLocationSearchIntelligenceInfo(), Cron.Hourly(55));
 
                 // run job to look for un-indexed profiles and index them 
                 int profileIndexerBatchSize = int.Parse(Configuration["CloudTalent:ProfileIndexerBatchSize"]);
