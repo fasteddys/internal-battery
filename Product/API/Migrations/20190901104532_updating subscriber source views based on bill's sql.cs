@@ -40,23 +40,8 @@ AS
 
             migrationBuilder.Sql(@"EXEC('
 
-/*
-<remarks>
-2019-08-23 - Jim Brazil - Created
-2019-09-01 - Jim Brazil - Updated with Bill's sql
- 
-</remarks>
-<description>
-Returns subscriber source details sorted by their group creation date
-</description>
-<example>
-SELECT * FROM [dbo].[v_SubscriberInitialSource]
-</example>
-*/
-
 ALTER VIEW [dbo].[v_SubscriberSourceDetails]
 AS
-
 	WITH rankedGroup AS (
 		SELECT sg.SubscriberId, sg.GroupId, ROW_NUMBER() OVER (PARTITION BY sg.SubscriberId ORDER BY sg.CreateDate ASC) as [GroupRank]
 		FROM SubscriberGroup sg
@@ -94,22 +79,8 @@ AS
 
             migrationBuilder.Sql(@"EXEC('
 
-/*
-<remarks>
-2019-08-23 - Jim Brazil - Created
- 
-</remarks>
-<description>
-Returns subscriber source details sorted by their group creation date
-</description>
-<example>
-SELECT * FROM [dbo].[v_SubscriberInitialSource]
-</example>
-*/
-
 ALTER VIEW [dbo].[v_SubscriberSourceDetails]
 AS
-
 SELECT ROW_NUMBER()   OVER (Partition by s.subscriberId order by sg.CreateDate asc) as [Rank],  
 	  s.SubscriberId,
 	  s.SubscriberGuid, 
@@ -121,8 +92,6 @@ SELECT ROW_NUMBER()   OVER (Partition by s.subscriberId order by sg.CreateDate a
 	  p.PartnerGuid,
 	  g.Name as GroupName,
 	  g.GroupGuid
-
-
 FROM
 subscriber s
 left join SubscriberGroup sg on  s.SubscriberId = sg.SubscriberId
