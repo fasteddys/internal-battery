@@ -38,9 +38,7 @@ AS
 
 
 
-            migrationBuilder.Sql(@"
-
- 
+            migrationBuilder.Sql(@"EXEC('
 
 /*
 <remarks>
@@ -87,9 +85,7 @@ AS
 	WHERE s.IsDeleted = 0
             
  
-            ");
-
-
+            ')");
 
         }
 
@@ -97,7 +93,6 @@ AS
         {
 
             migrationBuilder.Sql(@"EXEC('
-
 
 /*
 <remarks>
@@ -139,9 +134,7 @@ join Partner p on p.PartnerId = gp.PartnerId
 
 
 
-            migrationBuilder.Sql(@"
-
-EXEC('
+            migrationBuilder.Sql(@"EXEC('
 /*
 <remarks>
 2019-03-14 - Bill Koenig - Created
@@ -164,8 +157,7 @@ FROM            dbo.GroupPartner AS gp INNER JOIN
 WHERE        (p.IsDeleted = 0) AND (sg.IsDeleted = 0) AND (gp.IsDeleted = 0)
 GROUP BY p.Name, p.PartnerId')
  
-            ");
-
+            ')");
 
         }
     }
