@@ -40,5 +40,14 @@
         ISkillRepository SkillRepository { get; }
         IStoredProcedureRepository StoredProcedureRepository { get;  }
         IEnrollmentRepository EnrollmentRepository { get; }
+        IServiceOfferingRepository ServiceOfferingRepository { get; }
+        IServiceOfferingItemRepository ServiceOfferingItemRepository { get; }
+        IServiceOfferingOrderRepository ServiceOfferingOrderRepository { get; }
+        IServiceOfferingPromoCodeRedemptionRepository ServiceOfferingPromoCodeRedemptionRepository { get; }
+
+        IServiceOfferingPromoCodeRepository ServiceOfferingPromoCodeRepository { get;  }
+        IPromoCodeRepository PromoCodeRepository { get; }
+
+        
     }
 }

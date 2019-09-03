@@ -29,6 +29,51 @@ namespace UpDiddyApi.ApplicationCore.Repository
                           select a).FirstOrDefaultAsync();
         }
 
- 
+        public async Task<ServiceOffering> GetByGuidAsync(Guid guid)
+        {
+            return await (from a in _dbContext.ServiceOffering
+                          where a.ServiceOfferingGuid == guid
+                          select a).FirstOrDefaultAsync();
+        }
+
+
+        public  ServiceOffering GetByGuid(Guid guid)
+        {
+            return  (from a in _dbContext.ServiceOffering
+                          where a.ServiceOfferingGuid == guid
+                          select a).FirstOrDefault();
+        }
+
+
+
+        public IList<ServiceOffering> GetAllServiceOfferings()
+        {  
+            //todo jab remove try 
+            try
+            {
+                var rVal = _dbContext.ServiceOffering
+                    .Where(s => s.IsDeleted == 0)
+                    .Include(s => s.ServiceOfferingItems)
+                    .ToList();
+
+
+                foreach ( ServiceOffering so in rVal)
+                {
+                    so.ServiceOfferingItems = so.ServiceOfferingItems.OrderBy(o => o.SortOrder).ToList();
+
+                }
+
+
+                return rVal;
+            }
+            catch ( Exception ex )
+            {
+                return null;
+            }
+            
+        }
+
+
+
     }
 }

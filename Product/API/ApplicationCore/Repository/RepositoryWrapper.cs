@@ -47,7 +47,8 @@ namespace UpDiddyApi.ApplicationCore.Repository
         private IServiceOfferingItemRepository _serviceOfferingItemRepository;
         private IServiceOfferingOrderRepository _serviceOfferingOrderRepository;
         private IServiceOfferingPromoCodeRedemptionRepository _serviceOfferingPromoCodeRedemptionRepository;
-
+        private IServiceOfferingPromoCodeRepository _serviceOfferingPromoCodeRepository;
+        private IPromoCodeRepository _promoCodeRepository;
 
         public RepositoryWrapper(UpDiddyDbContext dbContext)
         {
@@ -554,7 +555,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-        public IServiceOfferingPromoCodeRedemptionRepository ServiceOfferingPromoCodeRedemption
+        public IServiceOfferingPromoCodeRedemptionRepository ServiceOfferingPromoCodeRedemptionRepository
         {
             get
             {
@@ -566,6 +567,33 @@ namespace UpDiddyApi.ApplicationCore.Repository
             }
         }
 
+        public IServiceOfferingPromoCodeRepository ServiceOfferingPromoCodeRepository
+        {
+            get
+            {
+                if (_serviceOfferingPromoCodeRepository == null)
+                {
+                    _serviceOfferingPromoCodeRepository = new ServiceOfferingPromoCodeRepository(_dbContext);
+                }
+                return _serviceOfferingPromoCodeRepository;
+            }
+        }
+
+        public IPromoCodeRepository PromoCodeRepository
+        {
+            get
+            {
+                if (_promoCodeRepository == null)
+                {
+                    _promoCodeRepository = new PromoCodeRepository(_dbContext);
+                }
+                return _promoCodeRepository;
+            }
+        }
+
+
+
+        
 
 
     }

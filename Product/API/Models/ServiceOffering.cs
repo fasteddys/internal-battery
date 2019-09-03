@@ -15,7 +15,7 @@ namespace UpDiddyApi.Models
         public string Description { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public Decimal Price { get; set; }
-        public List<ServiceOfferingItem> ServiceOfferingItems { get; set; }
-
+        public IList<ServiceOfferingItem> ServiceOfferingItems { get; set; }
+        public int SortOrder { get; set; }
     }
 }

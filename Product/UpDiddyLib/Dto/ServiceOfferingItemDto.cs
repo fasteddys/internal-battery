@@ -11,5 +11,7 @@ namespace UpDiddyLib.Dto
         public string Description { get; set; }
         public int ServiceOfferingId { get; set; }
         public  ServiceOfferingDto ServiceOffering { get; set; }
+        public int SortOrder { get; set; }
+
     }
 }

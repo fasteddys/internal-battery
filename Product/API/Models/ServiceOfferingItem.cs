@@ -13,5 +13,6 @@ namespace UpDiddyApi.Models
         public string Description { get; set; }
         public int ServiceOfferingId { get; set; }
         public virtual ServiceOffering ServiceOffering { get; set; }
+        public int SortOrder { get; set; }
     }
 }

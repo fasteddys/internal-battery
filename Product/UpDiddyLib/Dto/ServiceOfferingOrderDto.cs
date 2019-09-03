@@ -14,6 +14,6 @@ namespace UpDiddyLib.Dto
         public Decimal PricePaid { get; set; }
         public int PercentCommplete { get; set; }
 
-        public  ServiceOfferingPromoCodeRedemptionDto PromoCode { get; set; }
+        public PromoCodeDto PromoCode { get; set; }
     }
 }

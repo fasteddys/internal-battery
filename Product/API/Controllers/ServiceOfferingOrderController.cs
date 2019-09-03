@@ -25,7 +25,7 @@ namespace UpDiddyApi.Controllers
 {
  
     [ApiController]
-    public class ServiceOfferingController : ControllerBase
+    public class ServiceOfferingOrderController : ControllerBase
     {
 
         private readonly UpDiddyDbContext _db = null;
@@ -36,10 +36,10 @@ namespace UpDiddyApi.Controllers
         private readonly int _postingTTL = 30;
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IServiceProvider _services;
-        private readonly IServiceOfferingService _serviceOfferingService;
+        private readonly IServiceOfferingOrderService _serviceOfferingOrderService;
  
 
-        public ServiceOfferingController(IServiceProvider services, IHangfireService hangfireService)
+        public ServiceOfferingOrderController(IServiceProvider services, IHangfireService hangfireService)
 
         {
             _services = services;
@@ -50,16 +50,25 @@ namespace UpDiddyApi.Controllers
             _syslog = _services.GetService<ILogger<JobController>>();
             _httpClientFactory = _services.GetService<IHttpClientFactory>();
             _repositoryWrapper = _services.GetService<IRepositoryWrapper>();
-            _serviceOfferingService = _services.GetService<IServiceOfferingService>();
+            _serviceOfferingOrderService = _services.GetService<IServiceOfferingOrderService>();
             _postingTTL = int.Parse(_configuration["JobPosting:PostingTTLInDays"]);
      
         }
 
-        [HttpGet] 
+		//TODO JAB Authorize 
+        [HttpPost]
+        [Authorize]
         [Route("api/[controller]")]
-        public IActionResult GetAllServiceOfferings()
+        public IActionResult CreateOrder( [FromBody] ServiceOfferingOrderDto serviceOfferingOrderDto)
         {
-            return Ok(_serviceOfferingService.GetAllServiceOfferings() );
+            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            string Msg = "Order processed";
+            int statusCode = 200;
+            if (!_serviceOfferingOrderService.ProcessOrder(serviceOfferingOrderDto, subscriberGuid, ref statusCode, ref Msg))
+                return BadRequest(new BasicResponseDto() { StatusCode = statusCode, Description = Msg });
+			else
+                return Ok(new BasicResponseDto() { StatusCode = statusCode, Description = Msg });
         }
 
     }

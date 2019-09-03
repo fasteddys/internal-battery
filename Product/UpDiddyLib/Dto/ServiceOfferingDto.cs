@@ -10,6 +10,7 @@ namespace UpDiddyLib.Dto
         public string Name { get; set; }
         public string Description { get; set; } 
         public Decimal Price { get; set; }
-        public List<ServiceOfferingItemDto> ServiceOfferingItems { get; set; }
+        public IList<ServiceOfferingItemDto> ServiceOfferingItems { get; set; }
+        public int SortOrder { get; set; }
     }
 }
