@@ -94,7 +94,6 @@ AS
 
             migrationBuilder.Sql(@"EXEC('
 
-
 /*
 <remarks>
 2019-08-23 - Jim Brazil - Created
@@ -135,9 +134,7 @@ join Partner p on p.PartnerId = gp.PartnerId
 
 
 
-            migrationBuilder.Sql(@"
-
-EXEC('
+            migrationBuilder.Sql(@"EXEC('
 /*
 <remarks>
 2019-03-14 - Bill Koenig - Created
@@ -160,8 +157,7 @@ FROM            dbo.GroupPartner AS gp INNER JOIN
 WHERE        (p.IsDeleted = 0) AND (sg.IsDeleted = 0) AND (gp.IsDeleted = 0)
 GROUP BY p.Name, p.PartnerId')
  
-            ");
-
+            ')");
 
         }
     }
