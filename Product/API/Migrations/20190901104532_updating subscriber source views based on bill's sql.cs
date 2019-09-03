@@ -38,9 +38,7 @@ AS
 
 
 
-            migrationBuilder.Sql(@"
-
- 
+            migrationBuilder.Sql(@"EXEC('
 
 /*
 <remarks>
@@ -87,9 +85,7 @@ AS
 	WHERE s.IsDeleted = 0
             
  
-            ");
-
-
+            ')");
 
         }
 
