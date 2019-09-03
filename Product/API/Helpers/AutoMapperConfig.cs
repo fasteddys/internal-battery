@@ -20,7 +20,7 @@ namespace UpDiddyApi.Helpers
         public static void Configure()
         {
             Mapper.Initialize(cfg =>
-            {               
+            {
                 cfg.AddProfile<ApiProfile>();
             });
         }
@@ -72,12 +72,12 @@ namespace UpDiddyApi.Helpers
             .ForMember(c => c.SkillGuid, opt => opt.MapFrom(src => src.Skill.SkillGuid))
             .ForMember(c => c.SkillName, opt => opt.MapFrom(src => src.Skill.SkillName))
             .ForAllOtherMembers(opts => opts.Ignore());
- 
+
             CreateMap<SkillDto, JobPostingSkill>()
                .ForPath(c => c.Skill.SkillGuid, opt => opt.MapFrom(src => src.SkillGuid))
                .ForPath(c => c.Skill.SkillName, opt => opt.MapFrom(src => src.SkillName))
                .ForAllOtherMembers(opts => opts.Ignore());
-            
+
 
             CreateMap<JobPosting, JobPostingDto>()
                 .ForMember(x => x.MetaDescription, opt => opt.Ignore())
@@ -103,7 +103,7 @@ namespace UpDiddyApi.Helpers
             CreateMap<JobViewDto, CloudTalentSolution.MatchingJob>()
               .ForMember(c => c.JobSummary, opt => opt.MapFrom(src => src.JobSummary))
               .ForMember(c => c.JobTitleSnippet, opt => opt.MapFrom(src => src.JobTitleSnippet))
-              .ForMember(c => c.SearchTextSnippet, opt => opt.MapFrom(src => src.SearchTextSnippet))          
+              .ForMember(c => c.SearchTextSnippet, opt => opt.MapFrom(src => src.SearchTextSnippet))
               .ForPath(c => c.Job.RequisitionId, opt => opt.MapFrom(src => src.JobPostingGuid))
               .ForMember(c => c.SearchTextSnippet, opt => opt.MapFrom(src => src.SearchTextSnippet))
               .ForPath(c => c.Job.PostingExpireTime, opt => opt.MapFrom(src => src.PostingExpirationDateUTC))
@@ -113,7 +113,7 @@ namespace UpDiddyApi.Helpers
               .ForPath(c => c.Job.Description, opt => opt.MapFrom(src => src.Description))
               .ForPath(c => c.Job.PostingPublishTime, opt => opt.MapFrom(src => src.PostingDateUTC))
               .ReverseMap();
-   
+
 
             // todo: had difficulty mapping JObject to Dictionary<string,string> via automapper for PartnerContact -> ContactDto, revisit later if time allows
             //CreateMap<Contact, ContactDto>().ReverseMap();
@@ -154,7 +154,8 @@ namespace UpDiddyApi.Helpers
                 .ForMember(s => s.WorkHistory, opt => opt.MapFrom(src => src.SubscriberWorkHistory))
                 .ForMember(s => s.EducationHistory, opt => opt.MapFrom(src => src.SubscriberEducationHistory))
                 .ForMember(s => s.Files, opt => opt.MapFrom(src => src.SubscriberFile))
-                .ForMember(s => s.Notifications, opt => opt.MapFrom(src => src.SubscriberNotifications.Select(sn => new {
+                .ForMember(s => s.Notifications, opt => opt.MapFrom(src => src.SubscriberNotifications.Select(sn => new
+                {
                     sn.Notification.CreateDate,
                     sn.Notification.CreateGuid,
                     sn.Notification.ModifyDate,
@@ -191,6 +192,14 @@ namespace UpDiddyApi.Helpers
             CreateMap<SubscriberNotification, SubscriberNotificationDto>().ReverseMap();
             CreateMap<Notification, NotificationDto>()
                 .ForMember(n => n.HasRead, opt => opt.Ignore());
+
+            CreateMap<CourseSite, CourseSiteDto>()
+                .ForMember(x => x.SyncCount, opt => opt.MapFrom(src => src.CoursePages.Count(cp => cp.CoursePageStatus.Name == "Synced")))
+                .ForMember(x => x.CreateCount, opt => opt.MapFrom(src => src.CoursePages.Count(cp => cp.CoursePageStatus.Name == "Create")))
+                .ForMember(x => x.UpdateCount, opt => opt.MapFrom(src => src.CoursePages.Count(cp => cp.CoursePageStatus.Name == "Update")))
+                .ForMember(x => x.DeleteCount, opt => opt.MapFrom(src => src.CoursePages.Count(cp => cp.CoursePageStatus.Name == "Delete")))
+                .ForMember(x => x.ErrorCount, opt => opt.MapFrom(src => src.CoursePages.Count(cp => cp.CoursePageStatus.Name == "Error")))
+                .ReverseMap();
         }
     }
 }

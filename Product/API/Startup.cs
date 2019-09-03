@@ -37,6 +37,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.ApplicationCore.Repository;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
+using UpDiddyApi.ApplicationCore.Services.CourseCrawling;
 
 namespace UpDiddyApi
 {
@@ -249,13 +250,13 @@ namespace UpDiddyApi
             services.AddScoped<ITrackingService, TrackingService>();
             services.AddScoped<IJobPostingService, JobPostingService>();
             services.AddScoped<IJobApplicationService, JobApplicationService>();
-
-
+            services.AddScoped<ICourseService, CourseService>();
             
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IRecruiterService, RecruiterService>();
             services.AddScoped<ITaggingService, TaggingService>();
             services.AddScoped<ISubscriberNotificationService, SubscriberNotificationService>();
+            services.AddScoped<ICourseCrawlingService, CourseCrawlingService>();
             services.AddScoped<IHangfireService, HangfireService>();
             services.AddScoped<IMemoryCacheService,MemoryCacheService>();
             #endregion

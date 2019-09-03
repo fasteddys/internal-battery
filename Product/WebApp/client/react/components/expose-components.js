@@ -56,15 +56,19 @@ global.NotificationCountsTable = NotificationCountsTable;
 import buildQuery from 'odata-query';
 global.buildQuery = buildQuery;
 
-//Companies
+// Companies
 import CompaniesGrid from './company/CompaniesGrid';
 global.CompaniesGrid = CompaniesGrid;
 
-//Recruiters
+// Recruiters
 import RecruitersGrid from './recruiters/RecruitersGrid';
 global.RecruitersGrid = RecruitersGrid;
 
+// CourseSites
+import CourseSitesGrid from './coursesites/CourseSitesGrid';
+global.CourseSitesGrid = CourseSitesGrid;
 
+// Job Abandonment
 import JobAbandonmentCount from './reports/JobAbandonmentCountTable';
 global.JobAbandonmentCount = JobAbandonmentCount;
 

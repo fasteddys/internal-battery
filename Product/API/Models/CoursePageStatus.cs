@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace UpDiddyApi.Models
 {
-    public class Tag : BaseModel
+    public class CoursePageStatus : BaseModel
     {
-        public int TagId { get; set; }
-        public Guid? TagGuid { get; set; }
-        [Required]
+        public int CoursePageStatusId { get; set; }
+        public Guid CoursePageStatusGuid { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
     }

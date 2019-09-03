@@ -171,6 +171,10 @@ namespace UpDiddyApi.Models
         public DbSet<GroupPartner> GroupPartner { get; set; }
         public DbSet<SalesForceSignUpList> SalesForceSignUpList { get; set; }
 
+        public DbSet<CourseSite> CourseSite { get; set; }
+        public DbSet<CoursePage> CoursePage { get; set; }
+        public DbSet<CoursePageStatus> CoursePageStatus { get; set; }
+
         #region DBQueries
 
         public DbQuery<CampaignStatistic> CampaignStatistic { get; set; }
@@ -197,9 +201,27 @@ namespace UpDiddyApi.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder
-                .Query<v_NotificationReadCounts>()
-                .ToView("v_NotificationReadCounts");
+            modelBuilder.Entity<CourseSite>()
+                .HasIndex(c => c.Name)
+                .HasName("UIX_CourseSite_Name")
+                .IsUnique(true);
+
+            modelBuilder.Entity<CoursePage>()
+                .HasIndex(cp => new { cp.UniqueIdentifier, cp.CourseSiteId })
+                .HasName("UIX_CoursePage_CourseSite_UniqueIdentifier")
+                .IsUnique(true);
+
+            modelBuilder.Entity<CourseSite>()
+                .Property(cs => cs.Uri)
+                .HasConversion(
+                cs => cs.ToString(),
+                cs => new Uri(cs));
+
+            modelBuilder.Entity<CoursePage>()
+                .Property(cp => cp.Uri)
+                .HasConversion(
+                cp => cp.ToString(),
+                cp => new Uri(cp));
 
             modelBuilder.Entity<SubscriberNotification>()
                 .HasQueryFilter(sn => sn.IsDeleted == 0);
