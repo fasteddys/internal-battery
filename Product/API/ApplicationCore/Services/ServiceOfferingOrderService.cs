@@ -36,6 +36,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly IPromoCodeService _promoCodeService;
         private readonly ISubscriberService _subscriberService;
         private IB2CGraph _graphClient;
+        private IBraintreeService _braintreeService;
 
         public ServiceOfferingOrderService(IServiceProvider services, IHangfireService hangfireService)
         {
@@ -53,6 +54,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             _subscriberService = services.GetService<ISubscriberService>();
             _hangfireService = hangfireService;
             _graphClient = services.GetService<IB2CGraph>();
+            _braintreeService = services.GetService<IBraintreeService>();
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
         }
 
@@ -61,29 +63,58 @@ namespace UpDiddyApi.ApplicationCore.Services
         public bool ProcessOrder(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref int statusCode, ref string msg)
         {
 
-
+            ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
             Subscriber subscriber = null;
+            PromoCode promoCode = null;
+            ServiceOffering serviceOffering = null;
             // Validate basic aspects of the transaction such a valid service offering, valid promo etc. 
-            if (ValidateTransaction(serviceOfferingTransactionDto, ref statusCode, ref msg) == false)
+            if (ValidateTransaction(serviceOfferingOrderDto, ref serviceOffering, ref promoCode, ref statusCode, ref msg) == false)
                 return false;
 
             if (ValidateSubscriber(serviceOfferingTransactionDto, subscriberGuid, ref subscriber, ref statusCode, ref msg) == false)
                 return false;
+
+            //
             // At this point, subscriber should by hydrated with an existing or newly created subscriber.
+            //
+
+            // validate the payment with braintree
+            if (ValidatePayment(serviceOfferingTransactionDto, subscriberGuid, ref subscriber, ref statusCode, ref msg) == false)
+                return false;
+
+
+            // create service offering order record 
+            ServiceOfferingOrder order = new ServiceOfferingOrder()
+            {
+                CreateDate = DateTime.Now,
+                CreateGuid = subscriber.SubscriberGuid.Value,
+                IsDeleted = 0,
+                ModifyDate = DateTime.Now,
+                ModifyGuid = subscriber.SubscriberGuid.Value,
+                PercentCommplete = 0,
+                PricePaid = serviceOfferingOrderDto.PricePaid,
+                SubscriberId = subscriber.SubscriberId
+            };
+
+            if (serviceOffering != null)
+                order.ServiceOffering.ServiceOfferingId = serviceOffering.ServiceOfferingId;
+            if (promoCode != null)
+                order.PromoCodeId = promoCode.PromoCodeId;
+            _db.ServiceOfferingOrder.Add(order);
 
 
 
 
-            // todo JAB run order through braintree
-
-            // todo JAB create ServiceOffering record
-
-            // todo JAB create serviceoffering promo code redepmtion recor 
-
-            // todo jab update serviceOfferingPromoCode number of redemptions 
 
 
-            // return OK 
+            // todo JAB create ServiceOfferingOrder record
+
+                // todo JAB create serviceoffering promo code redepmtion recor 
+
+                // todo jab update serviceOfferingPromoCode number of redemptions 
+
+
+                // return OK 
 
 
 
@@ -93,7 +124,37 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         }
 
+        public bool ValidatePayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref Subscriber subscriber, ref int statusCode, ref string msg)
+        {
+            ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
+            if ( serviceOfferingOrderDto.PricePaid > 0 )
+            {
+                if (serviceOfferingTransactionDto.BraintreePaymentDto == null )
+                {
+                    msg = "Braintree payment information is missing";
+                    statusCode = 400;
+                    return false;
+                }
+                // call braintree to capture payment 
+                if (_braintreeService.CapturePayment(serviceOfferingTransactionDto.BraintreePaymentDto, ref statusCode, ref msg) == false)
+                    return false;
+                
+            }
 
+            return true;
+        }
+
+
+
+        /// <summary>
+        /// Validate the subscriber.  This method MUST return either a valid subscriber or return false since other code assumes it does.
+        /// </summary>
+        /// <param name="serviceOfferingTransactionDto"></param>
+        /// <param name="subscriberGuid"></param>
+        /// <param name="subscriber"></param>
+        /// <param name="statusCode"></param>
+        /// <param name="msg"></param>
+        /// <returns></returns>
         public bool ValidateSubscriber(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref Subscriber subscriber, ref int statusCode, ref string msg)
         {
             ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
@@ -220,12 +281,21 @@ namespace UpDiddyApi.ApplicationCore.Services
 
 
     
+        /// <summary>
+        /// This function must either return a serviceOffering object or an error.  Other code assumes this
+        /// to be the case.
+        /// </summary>
+        /// <param name="serviceOfferingOrderDto"></param>
+        /// <param name="serviceOffering"></param>
+        /// <param name="promoCode"></param>
+        /// <param name="statusCode"></param>
+        /// <param name="msg"></param>
+        /// <returns></returns>
 
-        public bool ValidateTransaction(ServiceOfferingTransactionDto serviceOfferingTransactionDto, ref int statusCode, ref string msg)
+        public bool ValidateTransaction(ServiceOfferingOrderDto serviceOfferingOrderDto, ref ServiceOffering serviceOffering, ref PromoCode promoCode, ref int statusCode, ref string msg)
         {
             // TODO JAB Add logging 
-
-            ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
+ 
             // validate that a subscriber has been specified 
             if (serviceOfferingOrderDto == null )
             {
@@ -242,7 +312,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 return false;
             }
 
-            ServiceOffering serviceOffering = _repositoryWrapper.ServiceOfferingRepository.GetByGuid(serviceOfferingOrderDto.ServiceOffering.ServiceOfferingGuid);
+            serviceOffering = _repositoryWrapper.ServiceOfferingRepository.GetByGuid(serviceOfferingOrderDto.ServiceOffering.ServiceOfferingGuid);
             if (serviceOffering == null)
             {
                 statusCode = 404;
@@ -263,7 +333,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             else
             {
                 // Find promo code 
-                PromoCode promoCode = _repositoryWrapper.PromoCodeRepository.GetByName(serviceOfferingOrderDto.PromoCode.PromoName);
+                promoCode = _repositoryWrapper.PromoCodeRepository.GetByName(serviceOfferingOrderDto.PromoCode.PromoName);
                 if (promoCode == null)
                 {
                     statusCode = 400;
