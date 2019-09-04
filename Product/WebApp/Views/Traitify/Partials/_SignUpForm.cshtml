@@ -1,12 +1,12 @@
 @using UpDiddy.ViewModels
 @model TraitifyViewModel
-<div class="traitify-form-container">
+<div class="traitify-form-container ">
    <div class="d-flex justify-content-center">
       <form class="traitify-signup-form p-4"id="AssessmentForm" asp-controller="Traitify" asp-action="Index">
-         <div class="col-12 no-padding sub-header font-bold d-flex justify-content-center">
+         <div class="col-12  sub-header font-bold d-flex justify-content-center">
             @Html.Raw(Model.FormHeader)
          </div>
-         <div class="col-12 no-padding mini-header d-flex justify-content-center">
+         <div class="col-12 mini-header d-flex justify-content-center">
             @Html.Raw(Model.FormText)
          </div>
          <div class="form-group row">
@@ -22,7 +22,7 @@
             <div class="col-12">
                <input type="text" class="form-control" 
                   asp-for="LastName"   
-                  data-val-required="Last Name field is required."
+          
                   placeholder="Your last name"
                   required>
                <span asp-validation-for="LastName" class="text-danger"></span>
@@ -32,19 +32,17 @@
             <div class="col-12">
                <input type="email" class="form-control" 
                   asp-for="Email" 
-                  data-valmsg-for="Email"  
-                  data-valmsg-replace="true" 
                   placeholder="Email" 
                   required>
                <span asp-validation-for="Email" class="text-danger"></span>
             </div>
          </div>
-         <div class="d-flex justify-content-center">
+         <div class="col-12 " style="width:100%">
             @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
             Text = @Model.FormButtonText,
             ChosenColorScheme = "cc-cscheme-primary",
             Form = "AssessmentForm",
-            FitToText = true,
+            
             ButtonAction = ActionButtonViewModel.Action.SUBMIT
             })
          </div>

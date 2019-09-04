@@ -3455,7 +3455,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("AssessmentId");
 
-                    b.Property<DateTime?>("CompletedAt");
+                    b.Property<DateTime?>("CompleteDate");
 
                     b.Property<DateTime>("CreateDate");
 
@@ -3476,8 +3476,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid?>("ModifyGuid");
 
                     b.Property<string>("ResultData");
-
-                    b.Property<Guid?>("SubscriberGuid");
 
                     b.Property<int?>("SubscriberId");
 

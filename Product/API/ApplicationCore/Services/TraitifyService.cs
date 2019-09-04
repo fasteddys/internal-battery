@@ -12,8 +12,10 @@ namespace UpDiddyApi.ApplicationCore.Services
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
-        public TraitifyService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        private readonly ISubscriberService _subscriberService;
+        public TraitifyService(IRepositoryWrapper repositoryWrapper, IMapper mapper, ISubscriberService subscriberService)
         {
+            _subscriberService = subscriberService;
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
         }
@@ -26,9 +28,14 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public async Task CreateNewAssessment(TraitifyDto dto)
         {
-            Subscriber subscriber = await _repositoryWrapper.Subscriber.GetSubscriberByEmailAsync(dto.Email);
-            Traitify traitify = new Traitify() {
-                Subscriber = subscriber == null ? null : subscriber,
+            Subscriber subscriber = null;
+            if (dto.SubscriberGuid != null)
+            {
+                subscriber = await _subscriberService.GetBySubscriberGuid(dto.SubscriberGuid.Value);
+            }
+            Traitify traitify = new Traitify()
+            {
+                Subscriber = subscriber,
                 TraitifyGuid = Guid.NewGuid(),
                 CreateDate = DateTime.UtcNow,
                 AssessmentId = dto.AssessmentId,
@@ -44,7 +51,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<TraitifyDto> CompleteAssessment(TraitifyDto dto)
         {
             Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(dto.AssessmentId);
-            traitify.CompletedAt = dto.CompletedAt;
+            traitify.CompleteDate = dto.CompletedAt;
             traitify.ResultData = dto.ResultData;
             dto.Email = traitify.Email;
             await _repositoryWrapper.TraitifyRepository.SaveAsync();

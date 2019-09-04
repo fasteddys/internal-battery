@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddy.Api;
 using com.traitify.net.TraitifyLibrary;
@@ -29,38 +30,19 @@ namespace UpDiddy.Controllers
         [Route("[controller]")]
         public async Task<IActionResult> Index()
         {
-
             TraitifyViewModel model = new TraitifyViewModel();
             model = await MapButterData(model);
+            model.SubscriberGuid = HttpContext.User.Identity.IsAuthenticated ? GetSubscriberGuid() : (Guid?)null;
             return View(model);
         }
 
-        private async Task<TraitifyViewModel> MapButterData(TraitifyViewModel model)
-        {
-            Dictionary<string, string> QueryParams = new Dictionary<string, string>();
-            foreach (string s in HttpContext.Request.Query.Keys)
-            {
-                QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
-            }
-            PageResponse<TraitifyLandingPageViewModel> landingPage = await  _butterService.RetrievePageAsync<TraitifyLandingPageViewModel>("/traitify", QueryParams);
-            model.HeroImage = landingPage.Data.Fields.HeroImage;
-            model.HeroHeader = landingPage.Data.Fields.HeroHeader;
-            model.HeroDescription = landingPage.Data.Fields.HeroDescription;
-            model.ModalHeader = landingPage.Data.Fields.ModalHeader;
-            model.ModalText = landingPage.Data.Fields.ModalText;
-            model.FormHeader = landingPage.Data.Fields.FormHeader;
-            model.FormText = landingPage.Data.Fields.FormText;
-            model.FormButtonText = landingPage.Data.Fields.FormSubmitButtonText;
-            return model;
-        }
-
         [HttpPost]
-        [Route("[controller]/{assessmentId?}")]
+        [Route("[controller]")]
         public async Task<IActionResult> Index(TraitifyViewModel model)
         {
-            if(!ModelState.IsValid)
+            if(!ModelState.IsValid && model.SubscriberGuid == null)
             {
-                model = await  MapButterData(model);
+                 model = await  MapButterData(model);
                  return View(model); 
             }
             
@@ -68,8 +50,10 @@ namespace UpDiddy.Controllers
             {
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                Email = model.Email
+                Email = model.Email,
+                SubscriberGuid = model.SubscriberGuid
             };
+
             var result = await _api.StartNewTraitifyAssessment(dto);
             model.AssessmentId = result.AssessmentId;
             model.PublicKey = result.PublicKey;
@@ -102,6 +86,25 @@ namespace UpDiddy.Controllers
         {
             var result = await _api.CompleteAssessment(assessmentId);
             return Json(result);
+        }
+
+        private async Task<TraitifyViewModel> MapButterData(TraitifyViewModel model)
+        {
+            Dictionary<string, string> QueryParams = new Dictionary<string, string>();
+            foreach (string s in HttpContext.Request.Query.Keys)
+            {
+                QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
+            }
+            PageResponse<TraitifyLandingPageViewModel> landingPage = await  _butterService.RetrievePageAsync<TraitifyLandingPageViewModel>("/traitify", QueryParams);
+            model.HeroImage = landingPage.Data.Fields.HeroImage;
+            model.HeroHeader = landingPage.Data.Fields.HeroHeader;
+            model.HeroDescription = landingPage.Data.Fields.HeroDescription;
+            model.ModalHeader = landingPage.Data.Fields.ModalHeader;
+            model.ModalText = landingPage.Data.Fields.ModalText;
+            model.FormHeader = landingPage.Data.Fields.FormHeader;
+            model.FormText = landingPage.Data.Fields.FormText;
+            model.FormButtonText = landingPage.Data.Fields.FormSubmitButtonText;
+            return model;
         }
     }
 }

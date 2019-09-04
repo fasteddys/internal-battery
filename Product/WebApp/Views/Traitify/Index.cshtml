@@ -18,7 +18,26 @@
                         <div class="cc-traitify-content">
                            <div class="row">
                               <div class="col-12 col-lg-6">
-                                 @Html.Partial("Partials/_SignUpForm",Model)
+                                 @if(Model.SubscriberGuid != null)
+                                 {
+                                    <div class="d-flex justify-content-center pt-5">
+                                       <form method="post" id="AssessmentForm" asp-controller="Traitify" asp-action="Index">
+                                        @Html.Partial("Components/Buttons/_Action", new ActionButtonViewModel {
+                                       Text = @Model.FormButtonText,
+                                       ChosenColorScheme = "cc-cscheme-primary",
+                                       Form = "AssessmentForm",
+                                       FitToText = true,
+                                       ButtonAction = ActionButtonViewModel.Action.SUBMIT
+                                       })
+                                       @Html.HiddenFor(x => x.SubscriberGuid)
+                                       @Html.HiddenFor(x => x.IsAuthenticated)
+                                       </form>
+                                    </div>           
+                                 }
+                                 else
+                                 {
+                                    @Html.Partial("Partials/_SignUpForm",Model)
+                                 }
                               </div>
                               <div class="col-12 col-lg-6">
                                  <h1><strong>@Model.HeroHeader</strong></h1>

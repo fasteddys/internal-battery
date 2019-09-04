@@ -18,5 +18,6 @@ namespace UpDiddyLib.Dto
         public string ResultData { get; set; }
         public string PublicKey {get;set;}
         public string Host {get;set;}
+
     }
 }

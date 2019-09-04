@@ -10,7 +10,7 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    [Migration("20190829182348_Traitify")]
+    [Migration("20190904020333_Traitify")]
     partial class Traitify
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3457,7 +3457,7 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("AssessmentId");
 
-                    b.Property<DateTime?>("CompletedAt");
+                    b.Property<DateTime?>("CompleteDate");
 
                     b.Property<DateTime>("CreateDate");
 
@@ -3478,8 +3478,6 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid?>("ModifyGuid");
 
                     b.Property<string>("ResultData");
-
-                    b.Property<Guid?>("SubscriberGuid");
 
                     b.Property<int?>("SubscriberId");
 

@@ -111,7 +111,7 @@ namespace UpDiddyApi.Controllers
                     {
                         AssessmentId = assessmentId,
                         CompletedAt = DateTime.UtcNow,
-                        ResultData = results,
+                        ResultData = JsonConvert.SerializeObject(results),
                         PublicKey = _publicKey,
                         Host = _host
                     };
