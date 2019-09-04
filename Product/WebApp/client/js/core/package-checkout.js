@@ -44,3 +44,25 @@ var submitPackagePayment = function(){
         }
     });
 }
+
+var validatePackageCheckout = function(){
+    var returnValue = true;
+    if($("#NewSubscriberPassword").val() !== $("#NewSubscriberReenterPassword").val()){
+        ToastService.error("The passwords you've entered do not match.");
+        returnValue = false;
+    }
+
+    $("#PackageCheckoutForm input").each(function(){
+        var pattern = new RegExp($(this).data("val-regex-pattern"));
+        if(pattern !== undefined && pattern !== ""){
+            var result = pattern.test($(this).val())
+            if(result === false){
+                ToastService.error($(this).data("val-regex"));
+                returnValue = false;
+            }
+        }
+        
+    });
+
+    return returnValue;
+}
