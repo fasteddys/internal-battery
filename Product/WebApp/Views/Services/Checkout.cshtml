@@ -17,7 +17,7 @@
         </div>
     </div>
     
-    <form id="PackageCheckoutForm">
+    <form id="PackageCheckoutForm" asp-controller="Services" asp-action="SubmitPayment" method="post">
         @if(!User.Identity.IsAuthenticated){
             <div class="package-unauthenticated-alert-box cc-cscheme-primary pt-4 pb-4 mb-3">
                 <div class="container">
@@ -46,18 +46,19 @@
                             </div>
                             <div class="form-row">
                                 <div class="col-12 col-sm-4">
-                                    <input type="text" class="form-control" placeholder="Email">
+                                    <input type="text" class="form-control" placeholder="Email" asp-for="NewSubscriberEmail" required>
                                 </div>
                                 <div class="col-12 col-sm-4">
-                                    <input type="password" class="form-control" placeholder="Password">
+                                    <input type="password" class="form-control" placeholder="Password" asp-for="NewSubscriberPassword" required>
                                 </div>
                                 <div class="col-12 col-sm-4">
-                                    <input type="password" class="form-control" placeholder="Re-enter Password">
+                                    <input type="password" class="form-control" placeholder="Re-enter Password" asp-for="NewSubscriberReenterPassword" required>
                                 </div>
                                 <div class="col-12 container-align-center mt-3">
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="PackageCheckoutAgreeTerms">
-                                        <label class="form-check-label" for="PackageCheckoutAgreeTerms">Agree to CareerCircle Terms and Condtitions</label>
+                                        <input class="form-check-input" type="checkbox" id="PackageAgreeToTermsAndConditionsCheckbox"/>
+                                        @Html.HiddenFor(x => x.PackageAgreeToTermsAndConditions)
+                                        <label class="form-check-label" for="PackageAgreeToTermsAndConditionsCheckbox">Agree to CareerCircle Terms and Condtitions</label>
                                     </div>
                                 </div>
                                 
@@ -140,10 +141,10 @@
                             <input type="text" class="form-control" name="BillingCity" id="BillingCity" asp-for="BillingCity" placeholder="City" required>
                         </div>
                         <div class="form-group col-md-3">
-                            @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select" })
+                            @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select", @required = "true" })
                         </div>
                         <div class="form-group col-md-3">
-                            @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select" })
+                            @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select", @required = "true"})
                         </div>
                         <div class="form-group col-md-3">
                             <input type="text" class="form-control" name="BillingZipCode" id="BillingZipCode" asp-for="BillingZipCode" placeholder="Zip Code" required>
@@ -176,7 +177,7 @@
                                     Promotional Code
                                 </div>
                                 <div class="form-group col-6 container-align-right">
-                                    -$<span id="PromoCodeTotal">0.00</span>
+                                    -$<span id="PromoCodeTotal">5.00</span>
                                 </div>
                                 <div class="form-group col-6 total-row-item">
                                     Total
@@ -189,7 +190,12 @@
                         </div>
                     </div>
                     <div class="container-align-center">
-                        <button type="submit" id="PackageCheckout" class="brand-button contrast-primary enrollment-submit" disabled>Finish</button>
+                        @if(!User.Identity.IsAuthenticated){
+                            <button type="submit" id="PackageCheckout" class="brand-button contrast-primary enrollment-submit" disabled>Finish</button>
+                        }
+                        else{
+                            <button type="submit" id="PackageCheckout" class="brand-button contrast-primary enrollment-submit">Finish</button>
+                        }
                     </div>
                 </div>
             </div>
@@ -200,6 +206,7 @@
 
 @section Scripts {
     <script>
+        var pageSlug = "@Model.Slug";
         $("#PackageTotal").html(calculatePackagePrice());
         var client_token = "@ViewBag.ClientToken";
         var form = document.querySelector('#PackageCheckoutForm');
@@ -209,10 +216,9 @@
         }, function (createErr, instance) {
             form.addEventListener('submit', function (event) {
                 // bypass payment if course cost is zero
-                /*if ($('#CourseTotal').html() === "$0.00") {
-                    HTMLFormElement.prototype.submit.call(form);
-                    return;
-                }*/
+                if ($('#PackageTotal').html() === "0.00" || $('#PackageTotal').html() === "0") {
+                    submitPackagePayment();
+                }
 
                 event.preventDefault();
 
@@ -224,7 +230,7 @@
 
                     // Add the nonce to the form and submit
                     $('#BraintreeNonce').val(payload.nonce);
-                    form.submit();
+                    submitPackagePayment();
                 });
             });
         });
@@ -232,7 +238,6 @@
             <text>
                 $(".authenticated-section input").prop( "disabled", true );
                 $(".authenticated-section select").prop( "disabled", true );
-                $("#PackageCheckout").prop( "disabled", true );
             </text>
         }
     </script>

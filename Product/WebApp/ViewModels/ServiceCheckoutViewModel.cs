@@ -14,7 +14,13 @@ namespace UpDiddy.ViewModels
         // these are used to populate dropdownlists for billing state and country
         public IEnumerable<SelectListItem> States { get; set; }
         public IEnumerable<SelectListItem> Countries { get; set; }
-
+        [RegularExpression(@"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$", ErrorMessage = "Invalid email address. Please update your supplied email and try again.")]
+        public string NewSubscriberEmail { get; set; }
+        [RegularExpression(@"^((?=.*[a-z])(?=.*[A-Z])(?=.*\d)|(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9])|(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9])|(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]))([A-Za-z\d@#$%^&*\-_+=[\]{}|\\:',?/`~""();!]|\.(?!@)){8,16}$", ErrorMessage = "Password must be 8-16 characters, containing 3 out of 4 of the following: Lowercase characters, uppercase characters, digits (0-9), and one or more of the following symbols: @ # $ % ^ & * - _ + = | ' , ? / ` ~ () ; .")]
+        public string NewSubscriberPassword { get; set; }
+        [RegularExpression(@"^((?=.*[a-z])(?=.*[A-Z])(?=.*\d)|(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9])|(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9])|(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]))([A-Za-z\d@#$%^&*\-_+=[\]{}|\\:',?/`~""();!]|\.(?!@)){8,16}$", ErrorMessage = "Re-entered password must be 8-16 characters, containing 3 out of 4 of the following: Lowercase characters, uppercase characters, digits (0-9), and one or more of the following symbols: @ # $ % ^ & * - _ + = | ' , ? / ` ~ () ; .")]
+        public string NewSubscriberReenterPassword { get; set; }
+        public bool PackageAgreeToTermsAndConditions { get; set; }
         // billing information
         public string PaymentMethodNonce { get; set; }
 
@@ -71,12 +77,7 @@ namespace UpDiddy.ViewModels
                     return _FormattedPhone;
             }
         }
-        [Required(ErrorMessage = "A course section must be selected.")]
-        public Guid? SelectedCourseVariant { get; set; }
-        public DateTime? SelectedStartDate { get; set; }
 
-        public IEnumerable<CourseVariantViewModel> CourseVariants { get; set; }
-        public Guid CourseGuid { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Code { get; set; }
@@ -84,12 +85,8 @@ namespace UpDiddy.ViewModels
         public int TermsOfServiceDocumentId { get; set; }
         public string TermsOfServiceContent { get; set; }
 
-        // this is populated based on SelectedCourseVariant after the form submission - may not need this...
-        public CourseVariantViewModel CourseVariant { get; set; }
-
         // todo: implement IValidatableObject for model validation, should incorporate promo code redemption logic
         public Guid? PromoCodeRedemptionGuid { get; set; }
-        public List<SkillDto> Skills { get; set; }
     }
 }
 

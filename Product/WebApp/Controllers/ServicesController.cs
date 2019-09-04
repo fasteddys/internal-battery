@@ -13,6 +13,7 @@ using UpDiddyLib.Helpers;
 using UpDiddyLib.Helpers.Braintree;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using UpDiddyLib.Dto;
 
 namespace WebApp.Controllers
 {
@@ -46,7 +47,7 @@ namespace WebApp.Controllers
             {
                 QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
             }
-            PageResponse<ServicesPageViewModel> servicesPage = await _butterService.RetrievePageAsync<ServicesPageViewModel>("/services", QueryParams);
+            PageResponse<ServicesPageViewModel> servicesPage = await _butterService.RetrievePageAsync<ServicesPageViewModel>("/career-services", QueryParams);
 
             ServicesPageViewModel servicesPageViewModel = new ServicesPageViewModel{
                 HeroContent = servicesPage.Data.Fields.HeroContent,
@@ -133,7 +134,8 @@ namespace WebApp.Controllers
                 {
                     Text = s.Name,
                     Value = s.StateGuid.ToString()
-                })
+                }),
+                Slug = slug
             };
             
             var gateway = braintreeConfiguration.GetGateway();
@@ -163,6 +165,16 @@ namespace WebApp.Controllers
 
             return View(packageConfirmationViewModel);
             
+        }
+
+        [HttpPost]
+        public async Task<BasicResponseDto> SubmitPayment(ServiceCheckoutViewModel serviceCheckoutViewModel){
+
+            if(!ModelState.IsValid)
+                return new BasicResponseDto{ StatusCode = 400, Description = "Please correct your information and submit again."};
+           
+
+            return new BasicResponseDto{ StatusCode = 200, Description = "Success!"};
         }
     }
 }
