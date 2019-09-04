@@ -1,0 +1,239 @@
+@using UpDiddy.ViewModels
+@using UpDiddy.Helpers
+@model ServiceCheckoutViewModel
+<script type="text/javascript">
+    // this must be present for the API call used in site.js
+    var url = '@Url.Action("GetStatesByCountry", "Home")';
+</script>
+<div class="package-checkout-container">
+    <div class="package-checkout-hero pt-4 pb-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h1>Package: @Model.PackageServiceViewModel.PackageName</h1>
+                    @Html.Raw(Model.PackageServiceViewModel.QuickDescription)
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <form id="PackageCheckoutForm">
+        @if(!User.Identity.IsAuthenticated){
+            <div class="package-unauthenticated-alert-box cc-cscheme-primary pt-4 pb-4 mb-3">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="alert alert-primary" role="alert">
+                                    Thanks so much for your interest in this package! It looks like you're not currently logged in to an account.
+                                    In order to purchase one of our packages, you need to have a CareerCircle account, and be logged in. If you already have an account,
+                                    feel free to log into it using the button below. If not, please enter your information below in order to create 
+                                    an account at checkout.
+                                </div>
+                            </div>
+                            <div class="col-12 container-align-center">
+                                @Html.Raw(Html.PartialToHtmlMarkup("Components/Buttons/_Action", new ActionButtonViewModel {
+                                    Text = "Login",
+                                    Hyperlink = "/session/signin?redirectUri=" + Context.Request.Path,
+                                    FitToText = true,
+                                    ChosenColorScheme = "cc-cscheme-white",
+                                    ButtonAction = ActionButtonViewModel.Action.CTA,
+                                    ButtonClass = "signup-cta",
+                                    OpenNewWindow = true
+                                }))
+                                <h4 class="container-align-center mt-4 mb-4">Or</h4>
+
+                            </div>
+                            <div class="form-row">
+                                <div class="col-12 col-sm-4">
+                                    <input type="text" class="form-control" placeholder="Email">
+                                </div>
+                                <div class="col-12 col-sm-4">
+                                    <input type="password" class="form-control" placeholder="Password">
+                                </div>
+                                <div class="col-12 col-sm-4">
+                                    <input type="password" class="form-control" placeholder="Re-enter Password">
+                                </div>
+                                <div class="col-12 container-align-center mt-3">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" id="PackageCheckoutAgreeTerms">
+                                        <label class="form-check-label" for="PackageCheckoutAgreeTerms">Agree to CareerCircle Terms and Condtitions</label>
+                                    </div>
+                                </div>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+            </div>
+                
+            
+        }
+        <div class="container mt-4 mb-4 authenticated-section">
+            <div class="row">
+                <div class="col-12">
+                    <input type="hidden" id="BraintreeNonce" />
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <div class="promotional-code-header"><h3>Promotional Code</h3></div>
+                        </div>
+
+                        <div class="form-group col-md-6">
+                            <div class="input-group">
+                                <input type="text" id="PromoCodeInput" class="form-control" placeholder="Enter a promo code" aria-label="Promo code:" aria-describedby="PromoCodeApplyButton">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" id="PromoCodeApplyButton">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="ValidationMessageError" class="form-group col-md-12">
+                            <div class="promotional-code-validation">
+                                <span>
+                                    <!-- validation message error messages are added here-->
+                                </span>
+                            </div>
+                        </div>
+                        <div id="ValidationMessageSuccess" class="form-group col-md-12">
+                            <div class="promotional-code-validation">
+                                <span>
+                                    <!-- validation message success messages are added here-->
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row billing-info-container mb-4">
+                        <div class="form-group col-md-12 billing-info-header-container">
+                            <div class="billing-info-header"><h3>Your Information</h3></div>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <input type="text" class="form-control" name="SubscriberFirstName" id="SubscriberFirstName" placeholder="First Name" required>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <input type="text" class="form-control" name="SubscriberLastName" id="SubscriberLastName" placeholder="Last Name" required>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <input type="text" class="form-control phone-number-input" name="FormattedPhone" id="FormattedPhone" placeholder="(###) ###-####" maxlength="14" required>
+                        </div>
+                    </div>
+                    <div class="form-row billing-info-container">
+                        <div class="form-group col-md-12 billing-info-header-container">
+                            <div class="billing-info-header"><h3>Billing Information</h3></div>
+                            <!--
+                                                                <div class="form-check same-as-above">
+                                <input type = "checkbox" class="form-check-input" id="SameAsAboveCheckbox" asp-for="SameAsAboveCheckbox">
+                                <label class="form-check-label" for="sameAsAboveCheckbox">Same as above</label>
+                            </div>-->
+                        </div>
+                        <div class="form-group col-md-3">
+                            <input type="text" class="form-control" name="BillingFirstName" id="BillingFirstName" asp-for="BillingFirstName" placeholder="First Name" required>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <input type="text" class="form-control" name="BillingLastName" id="BillingLastName" asp-for="BillingLastName" placeholder="Last Name" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <input type="text" class="form-control" name="BillingAddress" id="BillingAddress" asp-for="BillingAddress" placeholder="Address" required>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <input type="text" class="form-control" name="BillingCity" id="BillingCity" asp-for="BillingCity" placeholder="City" required>
+                        </div>
+                        <div class="form-group col-md-3">
+                            @Html.DropDownListFor(m => m.SelectedState, Model.States, "Select State", new { @class = "form-control state-select" })
+                        </div>
+                        <div class="form-group col-md-3">
+                            @Html.DropDownListFor(m => m.SelectedCountry, Model.Countries, "Select Country", new { @class = "form-control country-select" })
+                        </div>
+                        <div class="form-group col-md-3">
+                            <input type="text" class="form-control" name="BillingZipCode" id="BillingZipCode" asp-for="BillingZipCode" placeholder="Zip Code" required>
+                        </div>
+                    </div>
+                    <div class="form-row" id="BraintreePaymentContainer">
+                        <div class="form-group col-md-12">
+                            <div class="payment-info-header">
+                                <h3>Secure Payment Information</h3>
+                            </div>
+                        </div>
+                        <div class="bt-drop-in-wrapper">
+                            <div id="bt-dropin">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group offset-md-6">
+                            <div class="promotional-code-header"><h3>Total:</h3></div>
+                        </div>
+                        <div class="form-group offset-md-6 col-12 col-md-6">
+                            <div class="row total-container">
+                                <div class="form-group col-6">
+                                    @Model.PackageServiceViewModel.PackageName
+                                </div>
+                                <div class="form-group col-6 container-align-right">
+                                    $<span id="InitialPackagePrice">@Model.PackageServiceViewModel.Price</span>
+                                </div>
+                                <div class="form-group col-6">
+                                    Promotional Code
+                                </div>
+                                <div class="form-group col-6 container-align-right">
+                                    -$<span id="PromoCodeTotal">0.00</span>
+                                </div>
+                                <div class="form-group col-6 total-row-item">
+                                    Total
+                                </div>
+                                <div class="form-group col-6 container-align-right total-row-item">
+                                    $<span id="PackageTotal"></span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="container-align-center">
+                        <button type="submit" id="PackageCheckout" class="brand-button contrast-primary enrollment-submit" disabled>Finish</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+@section Scripts {
+    <script>
+        $("#PackageTotal").html(calculatePackagePrice());
+        var client_token = "@ViewBag.ClientToken";
+        var form = document.querySelector('#PackageCheckoutForm');
+        braintree.dropin.create({
+            authorization: client_token,
+            container: '#bt-dropin'
+        }, function (createErr, instance) {
+            form.addEventListener('submit', function (event) {
+                // bypass payment if course cost is zero
+                /*if ($('#CourseTotal').html() === "$0.00") {
+                    HTMLFormElement.prototype.submit.call(form);
+                    return;
+                }*/
+
+                event.preventDefault();
+
+                instance.requestPaymentMethod(function (err, payload) {
+                    if (err) {
+                        console.log('Error', err);
+                        return;
+                    }
+
+                    // Add the nonce to the form and submit
+                    $('#BraintreeNonce').val(payload.nonce);
+                    form.submit();
+                });
+            });
+        });
+        @if(!User.Identity.IsAuthenticated){
+            <text>
+                $(".authenticated-section input").prop( "disabled", true );
+                $(".authenticated-section select").prop( "disabled", true );
+                $("#PackageCheckout").prop( "disabled", true );
+            </text>
+        }
+    </script>
+}

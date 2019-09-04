@@ -372,6 +372,10 @@ a{
         &:hover {
             background-color: $color-secondary;
         }
+
+        &:disabled{
+            background-color: $color-tertiary-mid-gray;
+        }
     }
 
     &.contrast-secondary {

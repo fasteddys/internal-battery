@@ -1,3 +1,4 @@
+@using UpDiddy.ViewModels.ButterCMS
 @model UpDiddy.ViewModels.ButterCMS.ServicesPageViewModel
 
 <div class="services-container">
@@ -24,7 +25,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-12 col-sm-6 container-align-center fw-100">
-                    <i class="fas fa-box-open pr-2"></i> 3 Outstanding Packages
+                    <i class="fas fa-box-open pr-2"></i> @Model.Packages.Count Outstanding Packages
                 </div>
                 <div class="col-12 col-sm-6 container-align-center fw-100">
                     <i class="fas fa-hands-helping pr-2"></i> Specialists On Hand
@@ -35,49 +36,19 @@
     </div>
     <div class="container services-listing-container">
         <div class="row row-eq-height">
-            <div class="col-12 col-sm-6 col-md-4">
-                <div class="shadow-2-hover">
-                    <img src="https://cdn.buttercms.com/lj7OjhADR1kBuC8GjLQA" /> 
-                    <div class="p-3">
-                        <h4>Bronze</h4>
-                        <p>
-                            Career Path Review<br />
-                            1 Video Review Session (30 minutes)<br />
-                            Connect candidate with local recruiter who specializes within that skillset
-                        </p>
+            @{
+                foreach(PackageServiceViewModel packageService in Model.Packages){
+                    <div class="col-12 col-sm-6 col-md-4">
+                        <a href="/career-services/@packageService.Slug" class="shadow-2-hover">
+                            <img src="@packageService.TileImage" /> 
+                            <div class="p-3">
+                                <h4>@packageService.PackageName</h4>
+                                @Html.Raw(packageService.QuickDescription)
+                            </div>
+                        </a>
                     </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4">
-                <div class="shadow-2-hover">
-                    <img src="https://cdn.buttercms.com/lj7OjhADR1kBuC8GjLQA" /> 
-                    <div class="p-3">
-                        <h4>Silver</h4>
-                        <p>
-                            Career Path Review<br />
-                            1 Video Review Session (60 minutes)<br />
-                            Connect candidate with local recruiter who specializes within that skillset
-                            
-                        </p>
-                    </div>
-
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-md-4">
-                <div class="shadow-2-hover">
-                    <img src="https://cdn.buttercms.com/lj7OjhADR1kBuC8GjLQA" /> 
-                    <div class="p-3">
-                        <h4>Gold</h4>
-                        <p>
-                            2 hours  of Custom Career Coaching <br />
-                            Connect candidate with local recruiter who specializes within that skillset<br />
-                            Career Development worksheets<br />
-                            Support throughout your job search
-                        </p>
-                    </div>
-
-                </div>
-            </div>
+                }
+            }
         </div>
     </div>
 </div>
