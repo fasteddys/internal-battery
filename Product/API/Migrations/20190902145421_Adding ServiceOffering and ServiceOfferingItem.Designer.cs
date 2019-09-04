@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UpDiddyApi.Models;
 
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    partial class UpDiddyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190902145421_Adding ServiceOffering and ServiceOfferingItem")]
+    partial class AddingServiceOfferingandServiceOfferingItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2850,8 +2852,6 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("ServiceOfferingGuid");
 
-                    b.Property<int>("SortOrder");
-
                     b.HasKey("ServiceOfferingId");
 
                     b.ToTable("ServiceOffering");
@@ -2881,130 +2881,11 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<Guid>("ServiceOfferingItemGuid");
 
-                    b.Property<int>("SortOrder");
-
                     b.HasKey("ServiceOfferingItemId");
 
                     b.HasIndex("ServiceOfferingId");
 
                     b.ToTable("ServiceOfferingItem");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.ServiceOfferingOrder", b =>
-                {
-                    b.Property<int>("ServiceOfferingOrderId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("PercentCommplete");
-
-                    b.Property<decimal>("PricePaid")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("PromoCodeId");
-
-                    b.Property<int>("ServiceOfferingId");
-
-                    b.Property<Guid>("ServiceOfferingOrderGuid");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.HasKey("ServiceOfferingOrderId");
-
-                    b.HasIndex("PromoCodeId");
-
-                    b.HasIndex("ServiceOfferingId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.ToTable("ServiceOfferingOrder");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.ServiceOfferingPromoCode", b =>
-                {
-                    b.Property<int>("ServiceOfferingPromoCodeId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<int?>("MaxAllowedNumberOfRedemptions");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("NumberOfRedemptions");
-
-                    b.Property<int>("PromoCodeId");
-
-                    b.Property<int>("ServiceOfferingId");
-
-                    b.Property<Guid?>("ServiceOfferingPromoCodeGuid");
-
-                    b.HasKey("ServiceOfferingPromoCodeId");
-
-                    b.ToTable("ServiceOfferingPromoCode");
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.ServiceOfferingPromoCodeRedemption", b =>
-                {
-                    b.Property<int>("ServiceOfferingPromoCodeRedemptionId")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<int>("PromoCodeId");
-
-                    b.Property<DateTime?>("RedemptionDate");
-
-                    b.Property<string>("RedemptionNotes");
-
-                    b.Property<int>("RedemptionStatusId");
-
-                    b.Property<int>("ServiceOfferingId");
-
-                    b.Property<Guid>("ServiceOfferingPromoCodeRedemptionGuid");
-
-                    b.Property<int>("SubscriberId");
-
-                    b.Property<decimal>("ValueRedeemed")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("ServiceOfferingPromoCodeRedemptionId");
-
-                    b.HasIndex("PromoCodeId");
-
-                    b.HasIndex("RedemptionStatusId");
-
-                    b.HasIndex("ServiceOfferingId");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.ToTable("ServiceOfferingPromoCodeRedemption");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.Skill", b =>
@@ -4377,47 +4258,6 @@ namespace UpDiddyApi.Migrations
                     b.HasOne("UpDiddyApi.Models.ServiceOffering", "ServiceOffering")
                         .WithMany("ServiceOfferingItems")
                         .HasForeignKey("ServiceOfferingId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.ServiceOfferingOrder", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.PromoCode", "PromoCode")
-                        .WithMany()
-                        .HasForeignKey("PromoCodeId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.ServiceOffering", "ServiceOffering")
-                        .WithMany()
-                        .HasForeignKey("ServiceOfferingId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
-                        .HasForeignKey("SubscriberId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.ServiceOfferingPromoCodeRedemption", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.PromoCode", "PromoCode")
-                        .WithMany()
-                        .HasForeignKey("PromoCodeId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.RedemptionStatus", "RedemptionStatus")
-                        .WithMany()
-                        .HasForeignKey("RedemptionStatusId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.ServiceOffering", "ServiceOffering")
-                        .WithMany()
-                        .HasForeignKey("ServiceOfferingId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
-                        .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

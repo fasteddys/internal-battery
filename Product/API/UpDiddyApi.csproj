@@ -73,6 +73,8 @@
     <Compile Remove="Migrations\20190702191447_Adding subscriber groups.Designer.cs" />
     <Compile Remove="Migrations\20190729201951_altered subscriber source view.cs" />
     <Compile Remove="Migrations\20190729201951_altered subscriber source view.Designer.cs" />
+    <Compile Remove="Migrations\20190902144051_Service Offering Data Model.cs" />
+    <Compile Remove="Migrations\20190902144051_Service Offering Data Model.Designer.cs" />
     <Compile Remove="Models\_Company.cs" />
     <Compile Remove="Models\_Country.cs" />
     <Compile Remove="Models\_EducationalDegree.cs" />

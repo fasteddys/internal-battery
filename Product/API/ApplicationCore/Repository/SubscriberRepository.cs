@@ -36,7 +36,17 @@ namespace UpDiddyApi.ApplicationCore.Repository
                               .FirstOrDefaultAsync();
 
             return subscriberResult;
-        }  
+        }
+
+
+        public Subscriber GetSubscriberByEmail(string email)
+        {
+            var subscriberResult =  _dbContext.Subscriber
+                              .Where(s => s.IsDeleted == 0 && s.Email == email)
+                              .FirstOrDefault();
+
+            return subscriberResult;
+        }
 
         public async Task<Subscriber> GetSubscriberByGuidAsync(Guid subscriberGuid)
         {
@@ -58,10 +68,22 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
+        public Subscriber GetSubscriberByGuid(Guid subscriberGuid)
+        {
+
+
+            var subscriberResult =  _dbContext.Subscriber
+                              .Where(s => s.IsDeleted == 0 && s.SubscriberGuid == subscriberGuid)
+                              .FirstOrDefault();
+
+            return subscriberResult;
+        }
 
 
 
-            public async Task<IList<Partner>> GetPartnersAssociatedWithSubscriber(int subscriberId)
+
+
+        public async Task<IList<Partner>> GetPartnersAssociatedWithSubscriber(int subscriberId)
         {
 
 

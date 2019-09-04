@@ -249,9 +249,11 @@ namespace UpDiddyApi
             services.AddScoped<ITrackingService, TrackingService>();
             services.AddScoped<IJobPostingService, JobPostingService>();
             services.AddScoped<IJobApplicationService, JobApplicationService>();
+            services.AddScoped<IServiceOfferingService, ServiceOfferingService>();
+            services.AddScoped<IServiceOfferingOrderService, ServiceOfferingOrderService>();
+            services.AddScoped<IPromoCodeService, PromoCodeService>();
+            services.AddScoped<IBraintreeService, BraintreeService>();
 
-
-            
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IRecruiterService, RecruiterService>();
             services.AddScoped<ITaggingService, TaggingService>();
