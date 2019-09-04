@@ -18,7 +18,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public PromoCode GetByName(string name)
         {
             return  (from a in _dbContext.PromoCode
-                         where a.PromoName == name
+                         where a.PromoName == name && a.IsDeleted == 0 
                          select a).FirstOrDefault();
         }
 

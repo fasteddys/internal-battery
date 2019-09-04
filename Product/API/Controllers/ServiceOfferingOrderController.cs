@@ -57,15 +57,19 @@ namespace UpDiddyApi.Controllers
 
 		//TODO JAB Authorize 
         [HttpPost]
-        [Authorize]
+        [AllowAnonymous]
         [Route("api/[controller]")]
-        public IActionResult CreateOrder( [FromBody] ServiceOfferingOrderDto serviceOfferingOrderDto)
+        public IActionResult CreateOrder( [FromBody] ServiceOfferingTransactionDto serviceOfferingTransactionDto)
         {
-            Guid subscriberGuid = Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            Guid subscriberGuid = Guid.Empty;
+                       
+            // check to see if the request is authenticated if so get the guid of the subscriber that is logged in
+            if (HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) != null )
+                subscriberGuid =  Guid.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             string Msg = "Order processed";
             int statusCode = 200;
-            if (!_serviceOfferingOrderService.ProcessOrder(serviceOfferingOrderDto, subscriberGuid, ref statusCode, ref Msg))
+            if (!_serviceOfferingOrderService.ProcessOrder(serviceOfferingTransactionDto, subscriberGuid, ref statusCode, ref Msg))
                 return BadRequest(new BasicResponseDto() { StatusCode = statusCode, Description = Msg });
 			else
                 return Ok(new BasicResponseDto() { StatusCode = statusCode, Description = Msg });

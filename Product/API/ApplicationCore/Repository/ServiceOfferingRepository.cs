@@ -25,14 +25,14 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public async Task<ServiceOffering> GetByNameAsync(string name)
         {
             return await (from a in _dbContext.ServiceOffering
-                          where a.Name == name
+                          where a.Name == name && a.IsDeleted == 0
                           select a).FirstOrDefaultAsync();
         }
 
         public async Task<ServiceOffering> GetByGuidAsync(Guid guid)
         {
             return await (from a in _dbContext.ServiceOffering
-                          where a.ServiceOfferingGuid == guid
+                          where a.ServiceOfferingGuid == guid && a.IsDeleted == 0
                           select a).FirstOrDefaultAsync();
         }
 
@@ -40,7 +40,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         public  ServiceOffering GetByGuid(Guid guid)
         {
             return  (from a in _dbContext.ServiceOffering
-                          where a.ServiceOfferingGuid == guid
+                          where a.ServiceOfferingGuid == guid && a.IsDeleted == 0
                           select a).FirstOrDefault();
         }
 

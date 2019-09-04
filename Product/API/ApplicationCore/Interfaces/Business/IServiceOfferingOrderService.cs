@@ -8,6 +8,6 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 {
     public interface IServiceOfferingOrderService
     {
-        bool ProcessOrder(ServiceOfferingOrderDto serviceOfferingOrderDto, Guid subscriberGuid,  ref int statusCode, ref string msg);
+        bool ProcessOrder(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid,  ref int statusCode, ref string msg);
     }
 }

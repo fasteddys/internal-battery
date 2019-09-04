@@ -16,6 +16,7 @@ using System.Net.Http;
 using Google.Apis.CloudTalentSolution.v3.Data;
 using UpDiddyLib.Shared.GoogleJobs;
 using Microsoft.AspNetCore.Http;
+using UpDiddyLib.Shared;
 
 namespace UpDiddyApi.ApplicationCore.Services
 {
@@ -32,7 +33,9 @@ namespace UpDiddyApi.ApplicationCore.Services
         private readonly ILogger _syslog;
         private readonly IHttpClientFactory _httpClientFactory = null;
         private readonly ICompanyService _companyService;
+        private readonly IPromoCodeService _promoCodeService;
         private readonly ISubscriberService _subscriberService;
+        private IB2CGraph _graphClient;
 
         public ServiceOfferingOrderService(IServiceProvider services, IHangfireService hangfireService)
         {
@@ -46,32 +49,191 @@ namespace UpDiddyApi.ApplicationCore.Services
             _sysEmail = _services.GetService<ISysEmail>();
             _configuration = _services.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
             _companyService = services.GetService<ICompanyService>();
+            _promoCodeService = services.GetService<IPromoCodeService>();
             _subscriberService = services.GetService<ISubscriberService>();
             _hangfireService = hangfireService;
+            _graphClient = services.GetService<IB2CGraph>();
             _cloudTalent = new CloudTalent(_db, _mapper, _configuration, _syslog, _httpClientFactory, _repositoryWrapper, _subscriberService);
         }
 
 
-        public bool ProcessOrder(ServiceOfferingOrderDto serviceOfferingOrderDto, Guid subscriberGuid, ref int statusCode, ref string msg)
+
+        public bool ProcessOrder(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref int statusCode, ref string msg)
         {
 
-            // TODO JAB Add logging 
-            // validate that a subscriber has been specified 
-            if (serviceOfferingOrderDto.Subscriber == null || serviceOfferingOrderDto.Subscriber?.SubscriberGuid == null)
-            {
-                statusCode = 404;
-                msg = "Invalid subscriber from web form";
+
+            Subscriber subscriber = null;
+            // Validate basic aspects of the transaction such a valid service offering, valid promo etc. 
+            if (ValidateTransaction(serviceOfferingTransactionDto, ref statusCode, ref msg) == false)
                 return false;
 
-            }
-            // validate that the subscriber passed from the front end is the same as that from the JTW - Not sure if this is 
-            // necessary but better safe that sorry 
-            if (serviceOfferingOrderDto.Subscriber?.SubscriberGuid.Value != subscriberGuid)
+            if (ValidateSubscriber(serviceOfferingTransactionDto, subscriberGuid, ref subscriber, ref statusCode, ref msg) == false)
+                return false;
+            // At this point, subscriber should by hydrated with an existing or newly created subscriber.
+
+
+
+
+            // todo JAB run order through braintree
+
+            // todo JAB create ServiceOffering record
+
+            // todo JAB create serviceoffering promo code redepmtion recor 
+
+            // todo jab update serviceOfferingPromoCode number of redemptions 
+
+
+            // return OK 
+
+
+
+
+
+            return true;
+
+        }
+
+
+        public bool ValidateSubscriber(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref Subscriber subscriber, ref int statusCode, ref string msg)
+        {
+            ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
+
+            // validate that the subscriber is logged in 
+            if ( subscriberGuid != Guid.Empty)
             {
-                statusCode = 403;
-                msg = "Subscriber does not coorelate";
+
+                // validate that a subscriber has been specified by the front end 
+                if (serviceOfferingOrderDto.Subscriber == null || serviceOfferingOrderDto.Subscriber?.SubscriberGuid == null)
+                {
+                    statusCode = 404;
+                    msg = "For authenticated requests, subscriber must be supplied by front-en";
+                    return false;
+
+                }
+
+                // validate that the subscriber passed from the front end is the same as that from the JTW - Not sure if this is 
+                // necessary but better safe that sorry 
+                if (serviceOfferingOrderDto.Subscriber?.SubscriberGuid.Value != subscriberGuid)
+                {
+                    statusCode = 403;
+                    msg = "Requesting subscriber does not match logged in subscriber";
+                    return false;
+                }
+
+                subscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByGuid(subscriberGuid);
+
+                if (subscriber == null)
+                {
+                    statusCode = 404;
+                    msg = "Unable to locate subscriber specified by JWT";
+                    return false;
+                }
+
+
+            }
+            else
+            {             
+                //todo move to subscriber service 
+                // todo jab validate we have a signup dto 
+                if (serviceOfferingTransactionDto.SignUpDto == null )
+                {
+                    statusCode = 403;
+                    msg = "Signup information required for non-authenticated requests.";
+                    return false;
+                }
+
+                
+                // validate email
+                if ( string.IsNullOrEmpty(serviceOfferingTransactionDto.SignUpDto.email) || Utils.ValidateEmail(serviceOfferingTransactionDto.SignUpDto.email) == false  )
+                {
+                    statusCode = 400;
+                    msg = $"'{serviceOfferingTransactionDto.SignUpDto.email}' is an invalid signup email";
+                    return false;
+                }
+
+                // validate password 
+                // todo enforce better password complexity - it appears that /api/[controller]/express-sign-up relies on the front-end validation 
+                if (string.IsNullOrEmpty(serviceOfferingTransactionDto.SignUpDto.password) )
+                {
+                    statusCode = 400;
+                    msg = $"Signup password is required";
+                    return false;
+                }
+
+
+                // validate the email is not an existing subscriber 
+                Subscriber existingSubscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.SignUpDto.email);
+
+                if ( existingSubscriber != null)
+                {
+                    statusCode = 400;
+                    msg = $"'{serviceOfferingTransactionDto.SignUpDto.email}' is an existing subscriber";
+                    return false;
+                }
+
+
+                // check if user exits in AD if the user does then we skip this step
+                Microsoft.Graph.User user = _graphClient.GetUserBySignInEmail(serviceOfferingTransactionDto.SignUpDto.email).Result;
+ 
+                if (user == null)
+                {
+                    try
+                    {
+                        user =  _graphClient.CreateUser(serviceOfferingTransactionDto.SignUpDto.email, serviceOfferingTransactionDto.SignUpDto.email, serviceOfferingTransactionDto.SignUpDto.password).Result;
+           
+                    }
+                    catch (Exception ex)
+                    {
+                        statusCode = 400;
+                        msg = $"Error creating account: {ex.Message}";
+                        return false;
+                    }
+                }
+
+                // create subscriber for user
+                subscriber = new Subscriber();
+                subscriber.SubscriberGuid = Guid.NewGuid();
+                subscriber.Email = serviceOfferingTransactionDto.SignUpDto.email;
+                subscriber.CreateDate = DateTime.UtcNow;
+                subscriber.ModifyDate = DateTime.UtcNow;
+                subscriber.IsDeleted = 0;
+                subscriber.ModifyGuid = Guid.Empty;
+                subscriber.CreateGuid = Guid.Empty;
+                subscriber.IsVerified = false;
+                _db.Add(subscriber);
+                _db.SaveChanges();
+
+                // load the newly created subscriber 
+                 existingSubscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.SignUpDto.email);
+                if (existingSubscriber != null)
+                {
+                    statusCode = 400;
+                    msg = $"Unable to locate newly created subscriber with email '{serviceOfferingTransactionDto.SignUpDto.email}'";
+                    return false;
+                }
+            }
+
+
+                return true;
+
+        }
+
+
+    
+
+        public bool ValidateTransaction(ServiceOfferingTransactionDto serviceOfferingTransactionDto, ref int statusCode, ref string msg)
+        {
+            // TODO JAB Add logging 
+
+            ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
+            // validate that a subscriber has been specified 
+            if (serviceOfferingOrderDto == null )
+            {
+                statusCode = 400;
+                msg = "Service offering order not found";
                 return false;
             }
+
             // todo JAB validate service offering
             if (serviceOfferingOrderDto.ServiceOffering == null || serviceOfferingOrderDto.ServiceOffering.ServiceOfferingGuid == null)
             {
@@ -105,15 +267,43 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (promoCode == null)
                 {
                     statusCode = 400;
-                    msg = $"{serviceOfferingOrderDto.PromoCode.PromoName} is not a valid promo code";
+                    msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} is not a valid promo code";
                     return false;
                 }
+
+                // Validate the the promo start date
+                if (_promoCodeService.ValidateStartDate(promoCode) == false)
+                {
+                    statusCode = 400;
+                    msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} does not start until {promoCode.PromoStartDate.ToShortDateString()}";
+                    return false;
+                }
+
+                // Validate the the promo end date
+                if ( _promoCodeService.ValidateEndDate(promoCode) == false )
+                {
+                    statusCode = 400;
+                    msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} ended on {promoCode.PromoEndDate.ToShortDateString()}";
+                    return false;
+                }
+
+
+                // TODO move to PromoCodeService 
+                // check max number of redemptions 
+                if ( _promoCodeService.ValidateRedemptions(promoCode) == false )
+                {
+                    statusCode = 400;
+                    msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} has exceeded it's redemption limit";
+                    return false;
+                }
+
+
                 // Find service offering promo code object 
                 List<ServiceOfferingPromoCode> serviceOfferingPromoCodes = _repositoryWrapper.ServiceOfferingPromoCodeRepository.GetByPromoCodesId(promoCode.PromoCodeId);
                 if (serviceOfferingPromoCodes.Count <= 0 )                    
                 {
                     statusCode = 400;
-                    msg = $"{serviceOfferingOrderDto.PromoCode.PromoName} is not a valid for service offerings";
+                    msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} is not a valid for service offerings";
                     return false;
                 }
 
@@ -132,35 +322,25 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (isPromoValid == false)
                 {
                     statusCode = 400;
-                    msg = $"{serviceOfferingOrderDto.PromoCode.PromoName} is not a valid for service {serviceOffering.Name}";
+                    msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} is not a valid for service {serviceOffering.Name}";
                     return false;
                 }
 
-                // TODO move to PromoCodeService 
-
-
-
-                // Todo check promo expiration dates 
-                // check max number of redemptions 
                 // Make sure the numbers add up 
+                decimal adjustedPrice = _promoCodeService.CalculatePrice(promoCode, serviceOffering.Price);
+                if ( adjustedPrice != serviceOfferingOrderDto.PricePaid)
+                {
+                    statusCode = 400;
+                    msg = $"The price paid {serviceOfferingOrderDto.PricePaid} does not match the calulated promo price of {adjustedPrice}";
+                    return false;
 
 
+                }
+          
+ 
 
             }
 
-      
-        
-
-            // todo JAB run order through braintree
-
-            // todo JAB create ServiceOffering record
-
-            // todo JAB create serviceoffering promo code redepmtion recor 
-
-            // todo jab update serviceOfferingPromoCode number of redemptions 
-
-
-            // return OK 
 
 
 
