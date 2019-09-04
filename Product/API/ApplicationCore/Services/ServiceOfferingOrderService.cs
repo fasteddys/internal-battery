@@ -63,6 +63,7 @@ namespace UpDiddyApi.ApplicationCore.Services
         public bool ProcessOrder(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref int statusCode, ref string msg)
         {
 
+            _syslog.LogInformation("ServiceOfferingService.ProcessOrder starting", serviceOfferingTransactionDto);
             ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
             Subscriber subscriber = null;
             PromoCode promoCode = null;
@@ -93,39 +94,50 @@ namespace UpDiddyApi.ApplicationCore.Services
                 ModifyGuid = subscriber.SubscriberGuid.Value,
                 PercentCommplete = 0,
                 PricePaid = serviceOfferingOrderDto.PricePaid,
-                SubscriberId = subscriber.SubscriberId
+                SubscriberId = subscriber.SubscriberId,
+                ServiceOfferingId = serviceOffering.ServiceOfferingId
             };
 
-            if (serviceOffering != null)
-                order.ServiceOffering.ServiceOfferingId = serviceOffering.ServiceOfferingId;
             if (promoCode != null)
+            {
                 order.PromoCodeId = promoCode.PromoCodeId;
+
+                ServiceOfferingPromoCodeRedemption redemption = new ServiceOfferingPromoCodeRedemption()
+                {
+                    CreateDate = DateTime.Now,
+                    CreateGuid = subscriber.SubscriberGuid.Value,
+                    IsDeleted = 0,
+                    ModifyDate = DateTime.Now,
+                    ModifyGuid = subscriber.SubscriberGuid.Value,
+                    SubscriberId = subscriber.SubscriberId,
+                    PromoCodeId = promoCode.PromoCodeId,
+                    ServiceOfferingId = serviceOffering.ServiceOfferingId,
+                    RedemptionDate = DateTime.Now,
+                    ValueRedeemed = order.PricePaid,
+                    // todo make this an enum since having a foreign key to a table that only contains status information
+                    // is overly complicated
+                    RedemptionStatusId = 2
+                };
+                _db.ServiceOfferingPromoCodeRedemption.Add(redemption);
+
+                // increment the number of redemptions of the coupon.
+                // todo jab makse sure ef catches this update
+                promoCode.NumberOfRedemptions += 1;
+            }
+            
             _db.ServiceOfferingOrder.Add(order);
 
 
+            _db.SaveChanges();
 
-
-
-
-            // todo JAB create ServiceOfferingOrder record
-
-                // todo JAB create serviceoffering promo code redepmtion recor 
-
-                // todo jab update serviceOfferingPromoCode number of redemptions 
-
-
-                // return OK 
-
-
-
-
-
+            _syslog.LogInformation("ServiceOfferingService.ProcessOrder finished returning true", serviceOfferingTransactionDto);
             return true;
 
         }
 
         public bool ValidatePayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref Subscriber subscriber, ref int statusCode, ref string msg)
         {
+            _syslog.LogInformation("ServiceOfferingService.ValidatePayment starting", serviceOfferingTransactionDto);
             ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
             if ( serviceOfferingOrderDto.PricePaid > 0 )
             {
@@ -133,14 +145,20 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     msg = "Braintree payment information is missing";
                     statusCode = 400;
+                    _syslog.LogInformation($"ServiceOfferingService.ValidatePayment returning false: {msg} ");
                     return false;
                 }
                 // call braintree to capture payment 
                 if (_braintreeService.CapturePayment(serviceOfferingTransactionDto.BraintreePaymentDto, ref statusCode, ref msg) == false)
+                {
+                    _syslog.LogInformation($"ServiceOfferingService.ValidatePayment returning false: {msg} ");
                     return false;
+                }
+                    
                 
             }
 
+            _syslog.LogInformation("ServiceOfferingService.ValidatePayment finished returning trie");
             return true;
         }
 
@@ -157,6 +175,8 @@ namespace UpDiddyApi.ApplicationCore.Services
         /// <returns></returns>
         public bool ValidateSubscriber(ServiceOfferingTransactionDto serviceOfferingTransactionDto, Guid subscriberGuid, ref Subscriber subscriber, ref int statusCode, ref string msg)
         {
+            _syslog.LogInformation("ServiceOfferingService.ValidateSubscriber starting", serviceOfferingTransactionDto);
+
             ServiceOfferingOrderDto serviceOfferingOrderDto = serviceOfferingTransactionDto.ServiceOfferingOrderDto;
 
             // validate that the subscriber is logged in 
@@ -168,6 +188,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 404;
                     msg = "For authenticated requests, subscriber must be supplied by front-en";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
 
                 }
@@ -178,6 +199,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 403;
                     msg = "Requesting subscriber does not match logged in subscriber";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
 
@@ -186,6 +208,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (subscriber == null)
                 {
                     statusCode = 404;
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     msg = "Unable to locate subscriber specified by JWT";
                     return false;
                 }
@@ -195,11 +218,11 @@ namespace UpDiddyApi.ApplicationCore.Services
             else
             {             
                 //todo move to subscriber service 
-                // todo jab validate we have a signup dto 
                 if (serviceOfferingTransactionDto.SignUpDto == null )
                 {
                     statusCode = 403;
                     msg = "Signup information required for non-authenticated requests.";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
 
@@ -209,6 +232,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 400;
                     msg = $"'{serviceOfferingTransactionDto.SignUpDto.email}' is an invalid signup email";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
 
@@ -218,6 +242,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 400;
                     msg = $"Signup password is required";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
 
@@ -229,6 +254,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 400;
                     msg = $"'{serviceOfferingTransactionDto.SignUpDto.email}' is an existing subscriber";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
 
@@ -247,6 +273,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                     {
                         statusCode = 400;
                         msg = $"Error creating account: {ex.Message}";
+                        _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                         return false;
                     }
                 }
@@ -270,12 +297,13 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 400;
                     msg = $"Unable to locate newly created subscriber with email '{serviceOfferingTransactionDto.SignUpDto.email}'";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
             }
 
-
-                return true;
+            _syslog.LogInformation("ServiceOfferingService.ValidateSubscriber finished returning true");
+            return true;
 
         }
 
@@ -294,20 +322,22 @@ namespace UpDiddyApi.ApplicationCore.Services
 
         public bool ValidateTransaction(ServiceOfferingOrderDto serviceOfferingOrderDto, ref ServiceOffering serviceOffering, ref PromoCode promoCode, ref int statusCode, ref string msg)
         {
-            // TODO JAB Add logging 
- 
+            _syslog.LogInformation("ServiceOfferingService.ValidateTransaction starting", serviceOfferingOrderDto);
+
             // validate that a subscriber has been specified 
             if (serviceOfferingOrderDto == null )
             {
                 statusCode = 400;
+                _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
                 msg = "Service offering order not found";
                 return false;
             }
 
-            // todo JAB validate service offering
+            // validate service offering
             if (serviceOfferingOrderDto.ServiceOffering == null || serviceOfferingOrderDto.ServiceOffering.ServiceOfferingGuid == null)
             {
                 statusCode = 400;
+                _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
                 msg = "Service offering not specified";
                 return false;
             }
@@ -316,6 +346,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             if (serviceOffering == null)
             {
                 statusCode = 404;
+                _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
                 msg = "Service offering not found";
                 return false;
             }
@@ -327,6 +358,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 400;
                     msg = $"Passed price of {serviceOfferingOrderDto.PricePaid} does not match system price of {serviceOffering.Price}";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
                     return false;
                 }
             }
@@ -338,6 +370,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 400;
                     msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} is not a valid promo code";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
                     return false;
                 }
 
@@ -346,6 +379,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 400;
                     msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} does not start until {promoCode.PromoStartDate.ToShortDateString()}";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
                     return false;
                 }
 
@@ -354,6 +388,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 400;
                     msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} ended on {promoCode.PromoEndDate.ToShortDateString()}";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
                     return false;
                 }
 
@@ -364,6 +399,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 400;
                     msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} has exceeded it's redemption limit";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
                     return false;
                 }
 
@@ -374,6 +410,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 400;
                     msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} is not a valid for service offerings";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
                     return false;
                 }
 
@@ -393,6 +430,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 400;
                     msg = $"Promo code {serviceOfferingOrderDto.PromoCode.PromoName} is not a valid for service {serviceOffering.Name}";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
                     return false;
                 }
 
@@ -402,18 +440,15 @@ namespace UpDiddyApi.ApplicationCore.Services
                 {
                     statusCode = 400;
                     msg = $"The price paid {serviceOfferingOrderDto.PricePaid} does not match the calulated promo price of {adjustedPrice}";
+                    _syslog.LogInformation($"ServiceOfferingService.ValidateTransaction returning false: {msg} ");
                     return false;
 
 
                 }
-          
- 
-
+           
             }
 
-
-
-
+            _syslog.LogInformation("ServiceOfferingService.ValidateTransaction finished returning true");
             return true;
         }
 

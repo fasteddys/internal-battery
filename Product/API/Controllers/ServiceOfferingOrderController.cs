@@ -55,7 +55,6 @@ namespace UpDiddyApi.Controllers
      
         }
 
-		//TODO JAB Authorize 
         [HttpPost]
         [AllowAnonymous]
         [Route("api/[controller]")]

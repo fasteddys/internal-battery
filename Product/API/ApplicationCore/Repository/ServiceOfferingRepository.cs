@@ -45,35 +45,22 @@ namespace UpDiddyApi.ApplicationCore.Repository
         }
 
 
-
         public IList<ServiceOffering> GetAllServiceOfferings()
         {  
-            //todo jab remove try 
-            try
-            {
+     
                 var rVal = _dbContext.ServiceOffering
                     .Where(s => s.IsDeleted == 0)
                     .Include(s => s.ServiceOfferingItems)
                     .ToList();
 
-
+                // order service offering items by their sort order 
                 foreach ( ServiceOffering so in rVal)
                 {
                     so.ServiceOfferingItems = so.ServiceOfferingItems.OrderBy(o => o.SortOrder).ToList();
 
                 }
-
-
-                return rVal;
-            }
-            catch ( Exception ex )
-            {
-                return null;
-            }
-            
+                return rVal;            
         }
-
-
 
     }
 }

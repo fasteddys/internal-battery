@@ -252,6 +252,7 @@ namespace UpDiddyApi
             services.AddScoped<IServiceOfferingService, ServiceOfferingService>();
             services.AddScoped<IServiceOfferingOrderService, ServiceOfferingOrderService>();
             services.AddScoped<IPromoCodeService, PromoCodeService>();
+            services.AddScoped<IBraintreeService, BraintreeService>();
 
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IRecruiterService, RecruiterService>();
