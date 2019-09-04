@@ -7,9 +7,6 @@ namespace UpDiddyApi.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"EXEC('
-
-
-
 /*
 <remarks>
 2019-03-14 - Bill Koenig - Created
@@ -39,11 +36,6 @@ AS
 
 
             migrationBuilder.Sql(@"EXEC('
-
-
-
- 
-
 /*
 <remarks>
 2019-08-23 - Jim Brazil - Created
@@ -57,8 +49,6 @@ Returns subscriber source details sorted by their group creation date
 SELECT * FROM [dbo].[v_SubscriberInitialSource]
 </example>
 */
-
-
 ALTER VIEW [dbo].[v_SubscriberSourceDetails]
 AS
 	WITH rankedGroup AS (
