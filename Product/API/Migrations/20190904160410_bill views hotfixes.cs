@@ -2,19 +2,52 @@
 
 namespace UpDiddyApi.Migrations
 {
-    public partial class v_subscribersourceDetailsupdatetobillsql : Migration
+    public partial class billviewshotfixes : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"
-EXEC('
+            migrationBuilder.Sql(@"EXEC('
+
+
+
+/*
+<remarks>
+2019-03-14 - Bill Koenig - Created
+2019-04-19 - Jim Brazil - Updated to include partner name and Id
+2019-07-29 - Jim Brazil - Do-over to support new partner source data model
+2019-09-01 - Jim Brazil - Updated with Bill''s sql
+</remarks>
+<description>
+Returns subscriber sources aggregated with counts for number of subscribers
+</description>
+<example>
+SELECT * FROM [dbo].[v_SubscriberSources]
+</example>
+*/
+ALTER VIEW [dbo].[v_SubscriberSources]
+AS
+ 	SELECT PartnerName [Name], COUNT(1) [Count], '' '' [Referrer], PartnerName [Source], PartnerId, PartnerGuid
+	FROM [dbo].[v_SubscriberSourceDetails]
+	WHERE GroupRank = 1 AND PartnerRank = 1
+	GROUP BY PartnerName, PartnerGuid, PartnerId
+	UNION
+	SELECT ''Any'', (SELECT COUNT(DISTINCT SubscriberId) FROM [v_SubscriberSourceDetails]), ''Any'', ''Any'', -1, NULL
  
-     
+ 
+            ')");
+
+
+
+            migrationBuilder.Sql(@"EXEC('
+
+
+
+ 
 
 /*
 <remarks>
 2019-08-23 - Jim Brazil - Created
-2019-09-01 - Jim Brazil - Updated with Bill's sql
+2019-09-01 - Jim Brazil - Updated with Bill''s sql
  
 </remarks>
 <description>
@@ -25,9 +58,9 @@ SELECT * FROM [dbo].[v_SubscriberInitialSource]
 </example>
 */
 
+
 ALTER VIEW [dbo].[v_SubscriberSourceDetails]
 AS
-
 	WITH rankedGroup AS (
 		SELECT sg.SubscriberId, sg.GroupId, ROW_NUMBER() OVER (PARTITION BY sg.SubscriberId ORDER BY sg.CreateDate ASC) as [GroupRank]
 		FROM SubscriberGroup sg
@@ -55,11 +88,8 @@ AS
 	LEFT JOIN [Partner] p ON a.PartnerId = p.PartnerId
 	WHERE s.IsDeleted = 0
             
-
-
-
-')");
-
+ 
+            ')");
 
         }
 

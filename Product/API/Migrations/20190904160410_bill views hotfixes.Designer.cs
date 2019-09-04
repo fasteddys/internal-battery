@@ -10,8 +10,8 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    [Migration("20190904150051_v_subscribersourceDetails update to bill sql")]
-    partial class v_subscribersourceDetailsupdatetobillsql
+    [Migration("20190904160410_bill views hotfixes")]
+    partial class billviewshotfixes
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
