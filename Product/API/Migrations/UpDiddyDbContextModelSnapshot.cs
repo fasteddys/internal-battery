@@ -15,7 +15,7 @@ namespace UpDiddyApi.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
+                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -2350,7 +2350,7 @@ namespace UpDiddyApi.Migrations
                     b.Property<int>("MaxAllowedNumberOfRedemptions")
                         .ValueGeneratedOnAdd()
                         .HasDefaultValue(1);
-
+                   
                     b.Property<int?>("MaxNumberOfRedemptionsPerSubscriber");
 
                     b.Property<DateTime?>("ModifyDate");
@@ -3447,49 +3447,6 @@ namespace UpDiddyApi.Migrations
                     b.ToTable("Topic");
                 });
 
-            modelBuilder.Entity("UpDiddyApi.Models.Traitify", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("AssessmentId");
-
-                    b.Property<DateTime?>("CompleteDate");
-
-                    b.Property<DateTime>("CreateDate");
-
-                    b.Property<Guid>("CreateGuid");
-
-                    b.Property<string>("DeckId");
-
-                    b.Property<string>("Email");
-
-                    b.Property<string>("FirstName");
-
-                    b.Property<int>("IsDeleted");
-
-                    b.Property<string>("LastName");
-
-                    b.Property<DateTime?>("ModifyDate");
-
-                    b.Property<Guid?>("ModifyGuid");
-
-                    b.Property<string>("ResultData");
-
-                    b.Property<int>("ResultLength");
-
-                    b.Property<int?>("SubscriberId");
-
-                    b.Property<Guid>("TraitifyGuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SubscriberId");
-
-                    b.ToTable("Traitify");
-                });
-
             modelBuilder.Entity("UpDiddyApi.Models.Vendor", b =>
                 {
                     b.Property<int>("VendorId")
@@ -4368,13 +4325,6 @@ namespace UpDiddyApi.Migrations
                         .WithMany("SubscriberWorkHistory")
                         .HasForeignKey("SubscriberId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("UpDiddyApi.Models.Traitify", b =>
-                {
-                    b.HasOne("UpDiddyApi.Models.Subscriber", "Subscriber")
-                        .WithMany()
-                        .HasForeignKey("SubscriberId");
                 });
 
             modelBuilder.Entity("UpDiddyApi.Models.ZeroBounce", b =>
