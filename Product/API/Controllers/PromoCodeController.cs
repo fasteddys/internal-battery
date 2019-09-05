@@ -12,6 +12,9 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using UpDiddyApi.ApplicationCore.Interfaces.Repository;
+using UpDiddyApi.ApplicationCore.Interfaces.Business;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace UpDiddyApi.Controllers
 {
@@ -23,13 +26,18 @@ namespace UpDiddyApi.Controllers
         private readonly IMapper _mapper;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         protected internal ILogger _syslog = null;
+        private readonly IRepositoryWrapper _repositoryWrapper;
+        private readonly IPromoCodeService _promoCodeService;
 
-        public PromoCodeController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<PromoCodeController> sysLog, IHttpClientFactory httpClientFactory)
+        public PromoCodeController(UpDiddyDbContext db, IMapper mapper, IConfiguration configuration, ILogger<PromoCodeController> sysLog, IHttpClientFactory httpClientFactory, IServiceProvider services)
         {
             _db = db;
             _mapper = mapper;
             _configuration = configuration;
             _syslog = sysLog;
+            _repositoryWrapper = services.GetService<IRepositoryWrapper>();
+            _promoCodeService = services.GetService<IPromoCodeService>();
+
         }
 
 
@@ -273,5 +281,130 @@ namespace UpDiddyApi.Controllers
                 return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "An unexpected error occurred." });
             }
         }
+
+
+
+    
+ 
+        [HttpGet]
+        [Route("api/[controller]/validate/{code}/service-offering/{serviceOfferingGuid}")]
+        public IActionResult PromoCodeServiceOfferingValidation(string code, Guid serviceOfferingGuid)
+        {
+            try
+            {
+                PromoCodeDto validPromoCodeDto = null;
+
+                #region business logic to refactor
+
+                /*  todo: refactor this code. move business rules to IValidatableObject in Dto? to do this, i think we would need to
+                *   use a custom value resolver in automapper to transform 5 model objects (PromoCode, Course, CoursePromoCode, 
+                *   VendorPromoCode, SubscriberPromoCode) into a PromoCodeDto. once all of the necessary properties exist within that 
+                *   Dto, then we could move all of the validation to:
+                *       IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+                */
+
+
+                ServiceOffering serviceOffering = _repositoryWrapper.ServiceOfferingRepository.GetByGuid(serviceOfferingGuid);
+                if (serviceOffering == null)
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Service offering does not exist." });
+
+                PromoCode promoCode = _db.PromoCode
+                    .Include(p => p.PromoType)
+                    .Where(p => p.Code == code)
+                    .FirstOrDefault();
+
+                if (promoCode == null)
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code does not exist." });
+
+                if (promoCode.IsDeleted == 1)
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code is no longer valid." });
+
+                DateTime currentDateTime = DateTime.UtcNow;
+                if (promoCode.PromoStartDate > currentDateTime.AddHours(-4)) // todo: improve ghetto grace period date logic
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code is not yet active." });
+
+                if (promoCode.PromoEndDate < currentDateTime.AddHours(4)) // todo: improve ghetto grace period date logic
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has expired." });
+
+
+
+
+                var inProgressRedemptionsForThisCode = _db.PromoCodeRedemption
+                    .Include(pcr => pcr.RedemptionStatus)
+                    .Where(pcr => pcr.PromoCodeId == promoCode.PromoCodeId && pcr.IsDeleted == 0 && pcr.RedemptionStatus.Name == "In Process")
+                    .Count();
+
+                if (promoCode.NumberOfRedemptions >= promoCode.MaxAllowedNumberOfRedemptions || promoCode.NumberOfRedemptions + inProgressRedemptionsForThisCode > promoCode.MaxAllowedNumberOfRedemptions)
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "This promo code has exceeded its allowed number of redemptions." });
+
+
+
+                // Validate that the promo code is valid for the given service offering 
+
+                // Find service offering promo code object 
+                List<ServiceOfferingPromoCode> serviceOfferingPromoCodes = _repositoryWrapper.ServiceOfferingPromoCodeRepository.GetByPromoCodesId(promoCode.PromoCodeId);
+                if (serviceOfferingPromoCodes.Count <= 0)
+                {
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code not valid for the specifed service offering." });
+                }
+
+                // Validate that the promo code is valid for the purchased service offering
+                bool isPromoValid = false;
+                foreach (ServiceOfferingPromoCode s in serviceOfferingPromoCodes)
+                {
+                    if (s.ServiceOfferingId == -1 || s.ServiceOfferingId == serviceOffering.ServiceOfferingId)
+                    {
+                        isPromoValid = true;
+                        break;
+                    }
+
+                }
+                if ( isPromoValid == false )
+                {
+                    return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "Promo code not valid for the specifed service offering." });
+                }
+
+                #endregion
+
+
+                var discount = _promoCodeService.CalculatePrice(promoCode, serviceOffering.Price);
+ 
+                validPromoCodeDto = new PromoCodeDto()
+                {
+                    Discount = discount,
+                    FinalCost = serviceOffering.Price - discount,
+                    IsValid = true,
+                    ValidationMessage = $"The promo code '{promoCode.PromoName}' has been applied successfully! See below for the updated price.",
+                    // return guid empty since the promo code will not be validated until the checkout process 
+                    PromoCodeRedemptionGuid = Guid.Empty,
+                    PromoDescription = promoCode.PromoDescription,
+                    PromoName = promoCode.PromoName
+                };
+
+                return Ok(validPromoCodeDto);
+                
+                    
+                    
+                   
+            }
+            catch (Exception e)
+            {
+                // todo: logging?
+                return Ok(new PromoCodeDto() { IsValid = false, ValidationMessage = "An unexpected error occurred." });
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }
