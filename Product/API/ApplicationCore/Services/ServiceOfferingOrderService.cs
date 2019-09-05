@@ -95,8 +95,37 @@ namespace UpDiddyApi.ApplicationCore.Services
                 PercentCommplete = 0,
                 PricePaid = serviceOfferingOrderDto.PricePaid,
                 SubscriberId = subscriber.SubscriberId,
-                ServiceOfferingId = serviceOffering.ServiceOfferingId
+                ServiceOfferingId = serviceOffering.ServiceOfferingId,
+                ServiceOfferingOrderGuid = Guid.NewGuid()
             };
+
+
+
+            string SubscriberEmail = subscriber.Email;
+            decimal PromoDiscount = serviceOfferingTransactionDto.ServiceOfferingOrderDto.PromoCode?.Discount != null ? 
+                serviceOfferingTransactionDto.ServiceOfferingOrderDto.PromoCode.Discount : 0;
+            decimal FinalCost = serviceOfferingTransactionDto.ServiceOfferingOrderDto.PromoCode?.FinalCost != null ? 
+                serviceOfferingTransactionDto.ServiceOfferingOrderDto.PromoCode.FinalCost : 
+                serviceOfferingTransactionDto.ServiceOfferingOrderDto.ServiceOffering.Price;
+
+
+            _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
+                SubscriberEmail,
+                _configuration["SysEmail:Transactional:TemplateIds:PurchaseReceipt-CareerServices"],
+                new
+                {
+                    packageName = serviceOfferingTransactionDto.ServiceOfferingOrderDto.ServiceOffering.Name,
+                    packagePrice = "$" + serviceOfferingTransactionDto.ServiceOfferingOrderDto.ServiceOffering.Price.ToString(),
+                    promoDiscount = "$" + PromoDiscount.ToString(),
+                    pricePaid = "$" + FinalCost,
+                    purchaseGuid = order.ServiceOfferingOrderGuid
+                },
+               Constants.SendGridAccount.Transactional,
+               null,
+               null,
+               null,
+               null
+                ));
 
             if (promoCode != null)
             {

@@ -233,7 +233,7 @@ namespace WebApp.Controllers
                 promoCodeDto = await _api.ServiceOfferingPromoCodeValidationAsync(serviceCheckoutViewModel.PromoCodeEntered, serviceCheckoutViewModel.PackageServiceViewModel.PackageId);
             };
 
-            decimal PricePaid = promoCodeDto != null ? promoCodeDto.FinalCost : Decimal.Parse(serviceCheckoutViewModel.PackageServiceViewModel.Price);  
+            decimal PricePaid = promoCodeDto != null ? promoCodeDto.FinalCost : Decimal.Parse(packagePage.Data.Fields.Price);  
 
             BraintreePaymentDto braintreePaymentDto = AssembleBraintreePaymentDto(serviceCheckoutViewModel, packagePage, Subscriber, IsNewSubscriberCheckout, PricePaid);
             serviceOfferingTransactionDto.BraintreePaymentDto = braintreePaymentDto;
@@ -247,7 +247,9 @@ namespace WebApp.Controllers
             ServiceOfferingOrderDto serviceOfferingOrderDto = new ServiceOfferingOrderDto{
                 PromoCode = promoCodeDto,
                 ServiceOffering = new ServiceOfferingDto{
-                    ServiceOfferingGuid = Guid.Parse(serviceCheckoutViewModel.PackageServiceViewModel.PackageId)
+                    ServiceOfferingGuid = Guid.Parse(serviceCheckoutViewModel.PackageServiceViewModel.PackageId),
+                    Name = packagePage.Data.Fields.PackageName,
+                    Price = Decimal.Parse(packagePage.Data.Fields.Price)
                 },
                 Subscriber = ServiceOfferingSubscriber,
                 PricePaid = PricePaid

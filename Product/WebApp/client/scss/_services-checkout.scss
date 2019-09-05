@@ -2,6 +2,15 @@
 
 
 .package-checkout-container{
+    .form-check-inline{
+        a{
+            color: $color-secondary;
+
+            &:hover{
+                color: $color-tertiary;
+            }
+        }
+    }
     .package-checkout-hero{
         background-color: $color-secondary;
         color: $color-white;

@@ -42,7 +42,7 @@ var submitPackagePayment = function(){
                     document.location.href = "/career-services/" + pageSlug + "/confirmation";
                     break;
                 case 400:
-                    ToastService.error("The information you've supplied is incorrect. Please fix and submit again");
+                    ToastService.error(data.description);
                     break;
             }
         },
@@ -68,7 +68,7 @@ var validatePromoCode = function(){
             else{
                 $("#ValidationMessageError span").html(data.validationMessage);
             }
-            if(data.finalCost === "0"){
+            if(data.finalCost === 0){
                 $("#BraintreePaymentContainer").hide();
             }
         },

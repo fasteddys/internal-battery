@@ -18,7 +18,7 @@ namespace UpDiddyApi.Models
         public Decimal PricePaid { get; set; }
         public int PercentCommplete { get; set; }
 
-        public int PromoCodeId { get; set; }
+        public int? PromoCodeId { get; set; }
         public virtual PromoCode PromoCode { get; set; }
     }
 }
