@@ -87,6 +87,7 @@ namespace UpDiddy.ViewModels
 
         // todo: implement IValidatableObject for model validation, should incorporate promo code redemption logic
         public Guid? PromoCodeRedemptionGuid { get; set; }
+        public string PromoCodeEntered { get; set; }
     }
 }
 

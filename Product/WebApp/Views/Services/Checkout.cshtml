@@ -18,6 +18,7 @@
     </div>
     
     <form id="PackageCheckoutForm" asp-controller="Services" asp-action="SubmitPayment" method="post">
+        <input type="hidden" asp-for="Slug" value="@Model.Slug" />
         @if(!User.Identity.IsAuthenticated){
             <div class="package-unauthenticated-alert-box cc-cscheme-primary pt-4 pb-4 mb-3">
                 <div class="container">
@@ -39,7 +40,7 @@
                                     ChosenColorScheme = "cc-cscheme-white",
                                     ButtonAction = ActionButtonViewModel.Action.CTA,
                                     ButtonClass = "signup-cta",
-                                    OpenNewWindow = true
+                                    OpenNewWindow = false
                                 }))
                                 <h4 class="container-align-center mt-4 mb-4">Or</h4>
 
@@ -76,7 +77,7 @@
         <div class="container mt-4 mb-4 authenticated-section">
             <div class="row">
                 <div class="col-12">
-                    <input type="hidden" id="BraintreeNonce" />
+                    <input type="hidden" asp-for="PaymentMethodNonce" />
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <div class="promotional-code-header"><h3>Promotional Code</h3></div>
@@ -84,7 +85,7 @@
 
                         <div class="form-group col-md-6">
                             <div class="input-group">
-                                <input type="text" id="PromoCodeInput" class="form-control" placeholder="Enter a promo code" aria-label="Promo code:" aria-describedby="PromoCodeApplyButton">
+                                <input type="text" asp-for="PromoCodeEntered" class="form-control" placeholder="Enter a promo code" aria-label="Promo code:" aria-describedby="PromoCodeApplyButton">
                                 <div class="input-group-append">
                                     <button class="btn btn-outline-secondary" type="button" id="PromoCodeApplyButton">Apply</button>
                                 </div>
@@ -177,7 +178,7 @@
                                     Promotional Code
                                 </div>
                                 <div class="form-group col-6 container-align-right">
-                                    -$<span id="PromoCodeTotal">5.00</span>
+                                    -$<span id="PromoCodeTotal">0.00</span>
                                 </div>
                                 <div class="form-group col-6 total-row-item">
                                     Total
@@ -221,19 +222,21 @@
                     if ($('#PackageTotal').html() === "0.00" || $('#PackageTotal').html() === "0") {
                         submitPackagePayment();
                     }
+                    else{
+                        instance.requestPaymentMethod(function (err, payload) {
+                            if (err) {
+                                console.log('Error', err);
+                                return;
+                            }
 
+                            // Add the nonce to the form and submit
+                            $('#PaymentMethodNonce').val(payload.nonce);
+                            submitPackagePayment();
+                        });
+                    }
                     
 
-                    instance.requestPaymentMethod(function (err, payload) {
-                        if (err) {
-                            console.log('Error', err);
-                            return;
-                        }
-
-                        // Add the nonce to the form and submit
-                        $('#BraintreeNonce').val(payload.nonce);
-                        submitPackagePayment();
-                    });
+                    
                 }
                 
                 

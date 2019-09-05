@@ -14,6 +14,9 @@ using UpDiddyLib.Helpers.Braintree;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using UpDiddyLib.Dto;
+using UpDiddyLib.Dto.Marketing;
+using System.Security.Claims;
+using System;
 
 namespace WebApp.Controllers
 {
@@ -48,6 +51,9 @@ namespace WebApp.Controllers
                 QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
             }
             PageResponse<ServicesPageViewModel> servicesPage = await _butterService.RetrievePageAsync<ServicesPageViewModel>("/career-services", QueryParams);
+
+            if(servicesPage == null)
+                return NotFound();
 
             ServicesPageViewModel servicesPageViewModel = new ServicesPageViewModel{
                 HeroContent = servicesPage.Data.Fields.HeroContent,
@@ -169,12 +175,120 @@ namespace WebApp.Controllers
 
         [HttpPost]
         public async Task<BasicResponseDto> SubmitPayment(ServiceCheckoutViewModel serviceCheckoutViewModel){
-
+            
+            // This should only be triggered if someone alters the client side js validation
             if(!ModelState.IsValid)
                 return new BasicResponseDto{ StatusCode = 400, Description = "Please correct your information and submit again."};
-           
+
+            bool IsNewSubscriberCheckout = IsCheckoutSignUp(serviceCheckoutViewModel);
+
+            // Validate passwords match if a new subscriber checkout
+            if(IsNewSubscriberCheckout && !PasswordsMatch(serviceCheckoutViewModel)){
+                return new BasicResponseDto{ StatusCode = 400, Description = "The passwords you've entered do not match. Please correct them and try again."};
+            }
+
+            string Slug = serviceCheckoutViewModel.Slug;
+
+            PageResponse<PackageServiceViewModel> packagePage = await _butterService.RetrievePageAsync<PackageServiceViewModel>("/career-services/" + Slug);
+
+            if(packagePage == null)
+                return new BasicResponseDto{ StatusCode = 400, Description = "Page unable to be found. Please refresh the page and try again."};
+
+            SubscriberDto Subscriber = null;
+
+            if (this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value != null)
+                Subscriber = await _api.SubscriberAsync(Guid.Parse(this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value), false);
+
+            if(!IsNewSubscriberCheckout && Subscriber == null)
+                return new BasicResponseDto{ StatusCode = 400, Description = "No subscriber found. Please either login, or create an account above."};
+
+            // Begin assembling transaction dto to pass to API
+            
+
+            ServiceOfferingTransactionDto serviceOfferingTransactionDto = new ServiceOfferingTransactionDto();
+
+            SignUpDto signUpDto = null;
+
+            if(IsNewSubscriberCheckout){
+                signUpDto = new SignUpDto{
+                    email = serviceCheckoutViewModel.NewSubscriberEmail,
+                    password = serviceCheckoutViewModel.NewSubscriberPassword
+                };
+            }
+
+            serviceOfferingTransactionDto.SignUpDto = signUpDto;
+            
+
+            BraintreePaymentDto braintreePaymentDto = AssembleBraintreePaymentDto(serviceCheckoutViewModel, packagePage, Subscriber, IsNewSubscriberCheckout);
+
+            PromoCodeDto promoCodeDto = null;
+            
+            if(serviceCheckoutViewModel.PromoCodeEntered != null && !serviceCheckoutViewModel.PromoCodeEntered.Equals(string.Empty)){
+                promoCodeDto = new PromoCodeDto();
+                promoCodeDto.PromoName = serviceCheckoutViewModel.PromoCodeEntered;
+            };
+
+            
+
+            SubscriberDto ServiceOfferingSubscriber = new SubscriberDto();
+
+            if(!IsNewSubscriberCheckout){
+                ServiceOfferingSubscriber.SubscriberGuid = Subscriber.SubscriberGuid;
+            }
+
+            ServiceOfferingOrderDto serviceOfferingOrderDto = new ServiceOfferingOrderDto{
+                PromoCode = promoCodeDto,
+
+            };
 
             return new BasicResponseDto{ StatusCode = 200, Description = "Success!"};
+        }
+
+        // This method assumes the two passwords match, and the email is valid, or
+        // all fields are blank.
+        private bool IsCheckoutSignUp(ServiceCheckoutViewModel serviceCheckoutViewModel){
+            string NewSubEmail = serviceCheckoutViewModel.NewSubscriberEmail;
+            string NewSubPassword = serviceCheckoutViewModel.NewSubscriberPassword;
+            string NewSubPasswordReenter = serviceCheckoutViewModel.NewSubscriberReenterPassword;
+            bool AgreeToTerms = serviceCheckoutViewModel.PackageAgreeToTermsAndConditions;
+
+            // Validate all fields have been filled out
+            if(NewSubEmail == null || NewSubEmail.Equals(string.Empty) || 
+                NewSubPassword == null || NewSubPassword.Equals(string.Empty) ||
+                NewSubPasswordReenter == null || NewSubPasswordReenter.Equals(string.Empty) ||
+                AgreeToTerms == false)
+                return false;
+
+            return true;
+        }
+
+        private bool PasswordsMatch(ServiceCheckoutViewModel serviceCheckoutViewModel){
+            if(serviceCheckoutViewModel.NewSubscriberPassword != null &&
+                serviceCheckoutViewModel.NewSubscriberReenterPassword != null &&
+                !serviceCheckoutViewModel.NewSubscriberPassword.Equals(string.Empty) && 
+                !serviceCheckoutViewModel.NewSubscriberReenterPassword.Equals(string.Empty) && 
+                serviceCheckoutViewModel.NewSubscriberPassword.Equals(serviceCheckoutViewModel.NewSubscriberReenterPassword)){
+                return true;
+            }
+            return false;
+        }
+
+        private BraintreePaymentDto AssembleBraintreePaymentDto(ServiceCheckoutViewModel serviceCheckoutViewModel, PageResponse<PackageServiceViewModel> packagePage, SubscriberDto Subscriber, bool IsNewSubscriberCheckout){
+            BraintreePaymentDto braintreePaymentDto = new BraintreePaymentDto(){
+                Nonce = serviceCheckoutViewModel.PaymentMethodNonce,
+                FirstName = serviceCheckoutViewModel.SubscriberFirstName,
+                LastName = serviceCheckoutViewModel.SubscriberLastName,
+                PhoneNumber = serviceCheckoutViewModel.SubscriberPhoneNumber,
+                Email = IsNewSubscriberCheckout ? serviceCheckoutViewModel.NewSubscriberEmail : Subscriber.Email,
+                Address = serviceCheckoutViewModel.BillingAddress,
+                Locality = serviceCheckoutViewModel.BillingCity,
+                ZipCode = serviceCheckoutViewModel.BillingZipCode,
+                StateGuid = serviceCheckoutViewModel.SelectedState,
+                CountryGuid = serviceCheckoutViewModel.SelectedCountry,
+                MerchantAccountId = braintreeConfiguration.GetConfigurationSetting("Braintree:MerchantAccountID")
+            };
+
+            return braintreePaymentDto;
         }
     }
 }

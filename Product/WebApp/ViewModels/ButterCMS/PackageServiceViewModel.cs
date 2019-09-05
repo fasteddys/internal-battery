@@ -4,6 +4,8 @@ namespace UpDiddy.ViewModels.ButterCMS
 {
     public class PackageServiceViewModel : ButterCMSBaseViewModel
     {
+        [JsonProperty("package_id")]
+        public string PackageId { get; set; }
         [JsonProperty("package_name")]
         public string PackageName { get; set; }
         [JsonProperty("tile_image")]

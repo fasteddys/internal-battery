@@ -21,7 +21,7 @@ $( document ).ready(function() {
 var calculatePackagePrice = function(){
     var InitialPackagePrice = $("#InitialPackagePrice").html();
     var PromoCodeTotal = $("#PromoCodeTotal").html();
-    return InitialPackagePrice - PromoCodeTotal;
+    return (InitialPackagePrice - PromoCodeTotal).toFixed(2);
 }
 
 var submitPackagePayment = function(){
