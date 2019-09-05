@@ -15,6 +15,13 @@ $( document ).ready(function() {
             $("#PackageCheckout").prop( "disabled", true );
         }     
     });
+
+    $("#PromoCodeEntered").on('keyup', function (e) {
+        e.preventDefault();
+        if (e.keyCode === 13) {
+            validatePromoCode();
+        }
+    });
     
 });
 
@@ -41,6 +48,21 @@ var submitPackagePayment = function(){
         },
         error: function (jqXHR, textStatus, errorThrown) {
             ToastService.error("Something went wrong with your checkout.");
+        }
+    });
+}
+
+var validatePromoCode = function(){
+    $.ajax({
+        type: 'POST',
+        url: '/services/promo-code/validate',
+        data: $("#PackageCheckoutForm").serialize(),
+        success: function (data) {
+            $("#PromoCodeTotal").html(data.discount.toFixed(2));
+            $("#PackageTotal").html(data.finalCost.toFixed(2));
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            ToastService.error("An error occurred while trying to validate your promo code. Please try again.");
         }
     });
 }

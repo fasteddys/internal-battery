@@ -124,7 +124,8 @@ namespace WebApp.Controllers
                 QuickDescription = packagePage.Data.Fields.QuickDescription,
                 FullDescription = packagePage.Data.Fields.FullDescription,
                 FullDescriptionHeader = packagePage.Data.Fields.FullDescriptionHeader,
-                Price = packagePage.Data.Fields.Price
+                Price = packagePage.Data.Fields.Price,
+                PackageId = packagePage.Data.Fields.PackageId
             };
 
             var countries = await _Api.GetCountriesAsync();
@@ -173,6 +174,12 @@ namespace WebApp.Controllers
             
         }
 
+        [HttpPost("/services/promo-code/validate")]
+        public async Task<PromoCodeDto> ValidatePromoCodeAsync(ServiceCheckoutViewModel serviceCheckoutViewModel){
+            PromoCodeDto promoCodeDto = await _api.ServiceOfferingPromoCodeValidationAsync(serviceCheckoutViewModel.PromoCodeEntered, serviceCheckoutViewModel.PackageServiceViewModel.PackageId);
+            return promoCodeDto;
+        }
+
         [HttpPost]
         public async Task<BasicResponseDto> SubmitPayment(ServiceCheckoutViewModel serviceCheckoutViewModel){
             
@@ -219,16 +226,17 @@ namespace WebApp.Controllers
             serviceOfferingTransactionDto.SignUpDto = signUpDto;
             
 
-            BraintreePaymentDto braintreePaymentDto = AssembleBraintreePaymentDto(serviceCheckoutViewModel, packagePage, Subscriber, IsNewSubscriberCheckout);
 
             PromoCodeDto promoCodeDto = null;
             
             if(serviceCheckoutViewModel.PromoCodeEntered != null && !serviceCheckoutViewModel.PromoCodeEntered.Equals(string.Empty)){
-                promoCodeDto = new PromoCodeDto();
-                promoCodeDto.PromoName = serviceCheckoutViewModel.PromoCodeEntered;
+                promoCodeDto = await _api.ServiceOfferingPromoCodeValidationAsync(serviceCheckoutViewModel.PromoCodeEntered, serviceCheckoutViewModel.PackageServiceViewModel.PackageId);
             };
 
-            
+            decimal PricePaid = promoCodeDto != null ? promoCodeDto.FinalCost : Decimal.Parse(serviceCheckoutViewModel.PackageServiceViewModel.Price);  
+
+            BraintreePaymentDto braintreePaymentDto = AssembleBraintreePaymentDto(serviceCheckoutViewModel, packagePage, Subscriber, IsNewSubscriberCheckout, PricePaid);
+            serviceOfferingTransactionDto.BraintreePaymentDto = braintreePaymentDto;
 
             SubscriberDto ServiceOfferingSubscriber = new SubscriberDto();
 
@@ -238,10 +246,17 @@ namespace WebApp.Controllers
 
             ServiceOfferingOrderDto serviceOfferingOrderDto = new ServiceOfferingOrderDto{
                 PromoCode = promoCodeDto,
-
+                ServiceOffering = new ServiceOfferingDto{
+                    ServiceOfferingGuid = Guid.Parse(serviceCheckoutViewModel.PackageServiceViewModel.PackageId)
+                },
+                Subscriber = ServiceOfferingSubscriber,
+                PricePaid = PricePaid
             };
+            serviceOfferingTransactionDto.ServiceOfferingOrderDto = serviceOfferingOrderDto;
 
-            return new BasicResponseDto{ StatusCode = 200, Description = "Success!"};
+            BasicResponseDto Response = await _api.SubmitServiceOfferingPayment(serviceOfferingTransactionDto);
+
+            return Response;
         }
 
         // This method assumes the two passwords match, and the email is valid, or
@@ -273,8 +288,9 @@ namespace WebApp.Controllers
             return false;
         }
 
-        private BraintreePaymentDto AssembleBraintreePaymentDto(ServiceCheckoutViewModel serviceCheckoutViewModel, PageResponse<PackageServiceViewModel> packagePage, SubscriberDto Subscriber, bool IsNewSubscriberCheckout){
+        private BraintreePaymentDto AssembleBraintreePaymentDto(ServiceCheckoutViewModel serviceCheckoutViewModel, PageResponse<PackageServiceViewModel> packagePage, SubscriberDto Subscriber, bool IsNewSubscriberCheckout, decimal PricePaid){
             BraintreePaymentDto braintreePaymentDto = new BraintreePaymentDto(){
+                PaymentAmount = PricePaid,
                 Nonce = serviceCheckoutViewModel.PaymentMethodNonce,
                 FirstName = serviceCheckoutViewModel.SubscriberFirstName,
                 LastName = serviceCheckoutViewModel.SubscriberLastName,

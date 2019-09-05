@@ -19,6 +19,7 @@
     
     <form id="PackageCheckoutForm" asp-controller="Services" asp-action="SubmitPayment" method="post">
         <input type="hidden" asp-for="Slug" value="@Model.Slug" />
+        <input type="hidden" asp-for="PackageServiceViewModel.PackageId" value="@Model.PackageServiceViewModel.PackageId" />
         @if(!User.Identity.IsAuthenticated){
             <div class="package-unauthenticated-alert-box cc-cscheme-primary pt-4 pb-4 mb-3">
                 <div class="container">
@@ -87,7 +88,7 @@
                             <div class="input-group">
                                 <input type="text" asp-for="PromoCodeEntered" class="form-control" placeholder="Enter a promo code" aria-label="Promo code:" aria-describedby="PromoCodeApplyButton">
                                 <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary" type="button" id="PromoCodeApplyButton">Apply</button>
+                                    <button class="btn btn-outline-secondary" type="button" id="PackagePromoCodeApplyButton" onclick="validatePromoCode()">Apply</button>
                                 </div>
                             </div>
                         </div>

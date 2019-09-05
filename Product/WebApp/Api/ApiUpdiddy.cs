@@ -580,6 +580,11 @@ namespace UpDiddy.Api
             return rval;
         }
 
+        
+        public async Task<BasicResponseDto> SubmitServiceOfferingPayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto){
+            return await PostAsync<BasicResponseDto>("subscriber", serviceOfferingTransactionDto);
+        }
+
         public async Task<IList<OfferDto>> GetOffersAsync()
         {
             string cacheKey = $"Offers";
@@ -771,6 +776,11 @@ namespace UpDiddy.Api
         public async Task<PromoCodeDto> PromoCodeValidationAsync(string code, string courseVariantGuid)
         {
             return await GetAsync<PromoCodeDto>("promocode/validate/" + code + "/course-variant/" + courseVariantGuid);
+        }
+
+        public async Task<PromoCodeDto> ServiceOfferingPromoCodeValidationAsync(string code, string serviceOfferingGuid)
+        {
+            return await GetAsync<PromoCodeDto>("promocode/validate/" + code + "/service-offering/" + serviceOfferingGuid);
         }
         #endregion
 
@@ -1218,6 +1228,7 @@ namespace UpDiddy.Api
         {
             return await GetAsync<IList<OfferDto>>("offers");
         }
+
 
         #endregion
 
