@@ -57,7 +57,7 @@ var validatePromoCode = function(){
         ToastService.warning("Please enter a promo code and try again.");
         return;
     }
-    
+
     $.ajax({
         type: 'POST',
         url: '/services/promo-code/validate',
@@ -73,7 +73,7 @@ var validatePromoCode = function(){
             else{
                 $("#ValidationMessageError span").html(data.validationMessage);
             }
-            if(data.finalCost === 0){
+            if(data.finalCost === 0 && data.isValid){
                 $("#BraintreePaymentContainer").hide();
             }
         },
