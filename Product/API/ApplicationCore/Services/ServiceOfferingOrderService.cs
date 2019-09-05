@@ -322,13 +322,31 @@ namespace UpDiddyApi.ApplicationCore.Services
 
                 // load the newly created subscriber 
                  existingSubscriber = _repositoryWrapper.SubscriberRepository.GetSubscriberByEmail(serviceOfferingTransactionDto.SignUpDto.email);
-                if (existingSubscriber != null)
+                if (existingSubscriber == null)
                 {
                     statusCode = 400;
                     msg = $"Unable to locate newly created subscriber with email '{serviceOfferingTransactionDto.SignUpDto.email}'";
                     _syslog.LogInformation($"ServiceOfferingService.ValidateSubscriber returning false: {msg} ");
                     return false;
                 }
+
+                int tokenTtlMinutes = int.Parse(_configuration["EmailVerification:TokenExpirationInMinutes"]);
+                EmailVerification.SetSubscriberEmailVerification(existingSubscriber, tokenTtlMinutes);
+
+                _hangfireService.Enqueue(() =>
+                _sysEmail.SendTemplatedEmailAsync(
+                    serviceOfferingTransactionDto.SignUpDto.email,
+                    _configuration["SysEmail:Transactional:TemplateIds:EmailVerification-LinkEmail"],
+                    new
+                    {
+                        verificationLink = serviceOfferingTransactionDto.SignUpDto.verifyUrl + existingSubscriber.EmailVerification.Token
+                    },
+                    Constants.SendGridAccount.Transactional,
+                    null,
+                    null,
+                    null,
+                    null
+                ));
             }
 
             _syslog.LogInformation("ServiceOfferingService.ValidateSubscriber finished returning true");

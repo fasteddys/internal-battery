@@ -5,12 +5,12 @@ $( document ).ready(function() {
     $('#PackageAgreeToTermsAndConditionsCheckbox').change(function() {
         $("#PackageAgreeToTermsAndConditions").val(this.checked);
         if(this.checked) {
-            $(".authenticated-section input").prop( "disabled", false );
+            $(".authenticated-section input").not(".promo-code-entered").prop( "disabled", false );
             $(".authenticated-section select").prop( "disabled", false );
             $("#PackageCheckout").prop( "disabled", false );
         }
         else{
-            $(".authenticated-section input").prop( "disabled", true );
+            $(".authenticated-section input").not(".promo-code-entered").prop( "disabled", true );
             $(".authenticated-section select").prop( "disabled", true );
             $("#PackageCheckout").prop( "disabled", true );
         }     
@@ -53,6 +53,11 @@ var submitPackagePayment = function(){
 }
 
 var validatePromoCode = function(){
+    if($("#PromoCodeEntered").val() === undefined || $("#PromoCodeEntered").val() === ""){
+        ToastService.warning("Please enter a promo code and try again.");
+        return;
+    }
+    
     $.ajax({
         type: 'POST',
         url: '/services/promo-code/validate',
