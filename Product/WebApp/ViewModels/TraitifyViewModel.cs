@@ -20,12 +20,13 @@ namespace UpDiddy.ViewModels
         public string HeroHeader { get; set; }
         public string HeroImage { get; set; }
         public string HeroDescription { get; set; }
-        public string ModalHeader {get;set;}
-        public string ModalText {get;set;}
-        public string FormHeader {get;set;}
-        public string FormText {get;set;}
-        public string FormButtonText {get;set;}
-        public Guid? SubscriberGuid {get;set;}
-        public bool IsAuthenticated {get;set;}
+        public string ModalHeader { get; set; }
+        public string ModalText { get; set; }
+        public string FormHeader { get; set; }
+        public string FormText { get; set; }
+        public string FormButtonText { get; set; }
+        public string ExistingUserButtonText { get; set; }
+        public Guid? SubscriberGuid { get; set; }
+        public bool IsAuthenticated { get; set; }
     }
 }

@@ -16,5 +16,7 @@ namespace UpDiddyApi.Models
         public DateTime? CompleteDate { get; set; }
         public string DeckId { get; set; }
         public string ResultData { get; set; }
+
+        public int ResultLength {get;set;}
     }
 }

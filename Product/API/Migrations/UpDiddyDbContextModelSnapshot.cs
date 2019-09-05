@@ -3477,6 +3477,8 @@ namespace UpDiddyApi.Migrations
 
                     b.Property<string>("ResultData");
 
+                    b.Property<int>("ResultLength");
+
                     b.Property<int?>("SubscriberId");
 
                     b.Property<Guid>("TraitifyGuid");

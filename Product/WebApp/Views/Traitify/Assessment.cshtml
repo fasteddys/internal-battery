@@ -1,6 +1,5 @@
 @using UpDiddy.ViewModels
 @model TraitifyViewModel
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src="https://cdn.traitify.com/js/v2/traitify.js"></script>
 <script>
    class Traitify {
@@ -19,6 +18,7 @@
            this.traitify.setPublicKey(this.model.publicKey);
            var assessment = this.traitify.ui.component(); 
            assessment.on("SlideDeck.Finished", function(){
+               
                  $.ajax({
                              url: '/Traitify/complete',
                              type: 'GET',
@@ -27,11 +27,10 @@
                                  assessmentId: assessmentId
                              },
                              error: function () {
-                                 console.log("failed");
+                                   ToastService.error('Oops! Something unexpected happened, and we are looking into it.')
                              },
                              success: function (results) {
-                                    $('.traitify-modal').modal();
-
+                                 $('.traitify-modal').modal();
                              }
                            });    
                          });

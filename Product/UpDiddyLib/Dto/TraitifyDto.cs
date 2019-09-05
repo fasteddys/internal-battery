@@ -13,9 +13,10 @@ namespace UpDiddyLib.Dto
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
-        public DateTime? CompletedAt { get; set; }
+        public DateTime? CompleteDate { get; set; }
         public string DeckId { get; set; }
         public string ResultData { get; set; }
+        public int ResultLength {get;set;}
         public string PublicKey {get;set;}
         public string Host {get;set;}
 

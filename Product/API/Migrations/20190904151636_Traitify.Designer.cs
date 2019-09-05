@@ -10,7 +10,7 @@ using UpDiddyApi.Models;
 namespace UpDiddyApi.Migrations
 {
     [DbContext(typeof(UpDiddyDbContext))]
-    [Migration("20190904020333_Traitify")]
+    [Migration("20190904151636_Traitify")]
     partial class Traitify
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -3478,6 +3478,8 @@ namespace UpDiddyApi.Migrations
                     b.Property<Guid?>("ModifyGuid");
 
                     b.Property<string>("ResultData");
+
+                    b.Property<int>("ResultLength");
 
                     b.Property<int?>("SubscriberId");
 

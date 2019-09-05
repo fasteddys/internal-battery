@@ -1,7 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
 using UpDiddy.Api;
-using com.traitify.net.TraitifyLibrary;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using UpDiddy.ViewModels;
@@ -10,6 +9,7 @@ using System.Threading.Tasks;
 using UpDiddy.Services.ButterCMS;
 using UpDiddy.ViewModels.ButterCMS;
 using ButterCMS.Models;
+using UpDiddyLib.Helpers;
 namespace UpDiddy.Controllers
 {
     public class TraitifyController : BaseController
@@ -31,8 +31,12 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> Index()
         {
             TraitifyViewModel model = new TraitifyViewModel();
-            model = await MapButterData(model);
+
+
+            var butterPage = await GetButterLandingPage();
+            model = PopulateModel(model,butterPage);
             model.SubscriberGuid = HttpContext.User.Identity.IsAuthenticated ? GetSubscriberGuid() : (Guid?)null;
+            SetSEOTags(butterPage);
             return View(model);
         }
 
@@ -40,12 +44,13 @@ namespace UpDiddy.Controllers
         [Route("[controller]")]
         public async Task<IActionResult> Index(TraitifyViewModel model)
         {
-            if(!ModelState.IsValid && model.SubscriberGuid == null)
+            var butterPage = await GetButterLandingPage();
+            if (!ModelState.IsValid && model.SubscriberGuid == null)
             {
-                 model = await  MapButterData(model);
-                 return View(model); 
+                model = PopulateModel(model, butterPage);
+                return View(model);
             }
-            
+
             TraitifyDto dto = new TraitifyDto()
             {
                 FirstName = model.FirstName,
@@ -55,6 +60,7 @@ namespace UpDiddy.Controllers
             };
 
             var result = await _api.StartNewTraitifyAssessment(dto);
+            model = PopulateModel(model, butterPage);
             model.AssessmentId = result.AssessmentId;
             model.PublicKey = result.PublicKey;
             model.Host = result.Host;
@@ -75,7 +81,7 @@ namespace UpDiddy.Controllers
             }
             else
             {
-               return Redirect("/traitify");
+                return Redirect("/traitify");
             }
             return View("Assessment", model);
         }
@@ -88,14 +94,19 @@ namespace UpDiddy.Controllers
             return Json(result);
         }
 
-        private async Task<TraitifyViewModel> MapButterData(TraitifyViewModel model)
+        private async Task<PageResponse<TraitifyLandingPageViewModel>> GetButterLandingPage()
         {
             Dictionary<string, string> QueryParams = new Dictionary<string, string>();
             foreach (string s in HttpContext.Request.Query.Keys)
             {
                 QueryParams.Add(s, HttpContext.Request.Query[s].ToString());
             }
-            PageResponse<TraitifyLandingPageViewModel> landingPage = await  _butterService.RetrievePageAsync<TraitifyLandingPageViewModel>("/traitify", QueryParams);
+            PageResponse<TraitifyLandingPageViewModel> landingPage = await _butterService.RetrievePageAsync<TraitifyLandingPageViewModel>("/traitify", QueryParams);
+            return landingPage;
+        }
+
+        private TraitifyViewModel PopulateModel(TraitifyViewModel model, PageResponse<TraitifyLandingPageViewModel> landingPage)
+        {
             model.HeroImage = landingPage.Data.Fields.HeroImage;
             model.HeroHeader = landingPage.Data.Fields.HeroHeader;
             model.HeroDescription = landingPage.Data.Fields.HeroDescription;
@@ -104,7 +115,18 @@ namespace UpDiddy.Controllers
             model.FormHeader = landingPage.Data.Fields.FormHeader;
             model.FormText = landingPage.Data.Fields.FormText;
             model.FormButtonText = landingPage.Data.Fields.FormSubmitButtonText;
-            return model;
+            model.ExistingUserButtonText = landingPage.Data.Fields.ExistingUserSubmitButtonText; 
+            return model;        
+        }
+        
+        private void SetSEOTags(PageResponse<TraitifyLandingPageViewModel> landingPage)
+        {
+            ViewData[Constants.Seo.TITLE] = landingPage.Data.Fields.Title;
+            ViewData[Constants.Seo.META_DESCRIPTION] = landingPage.Data.Fields.MetaDescription;
+            ViewData[Constants.Seo.META_KEYWORDS] = landingPage.Data.Fields.MetaKeywords;
+            ViewData[Constants.Seo.OG_TITLE] = landingPage.Data.Fields.OpenGraphTitle;
+            ViewData[Constants.Seo.OG_DESCRIPTION] = landingPage.Data.Fields.OpenGraphDescription;
+            ViewData[Constants.Seo.OG_IMAGE] = landingPage.Data.Fields.OpenGraphImage;
         }
     }
 }

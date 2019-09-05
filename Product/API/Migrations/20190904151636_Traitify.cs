@@ -8,6 +8,7 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+
             migrationBuilder.CreateTable(
                 name: "Traitify",
                 columns: table => new
@@ -27,7 +28,8 @@ namespace UpDiddyApi.Migrations
                     Email = table.Column<string>(nullable: true),
                     CompleteDate = table.Column<DateTime>(nullable: true),
                     DeckId = table.Column<string>(nullable: true),
-                    ResultData = table.Column<string>(nullable: true)
+                    ResultData = table.Column<string>(nullable: true),
+                    ResultLength = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {

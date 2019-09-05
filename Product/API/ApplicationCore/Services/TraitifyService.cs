@@ -51,8 +51,9 @@ namespace UpDiddyApi.ApplicationCore.Services
         public async Task<TraitifyDto> CompleteAssessment(TraitifyDto dto)
         {
             Traitify traitify = await _repositoryWrapper.TraitifyRepository.GetByAssessmentId(dto.AssessmentId);
-            traitify.CompleteDate = dto.CompletedAt;
+            traitify.CompleteDate = dto.CompleteDate;
             traitify.ResultData = dto.ResultData;
+            traitify.ResultLength = dto.ResultLength;
             dto.Email = traitify.Email;
             await _repositoryWrapper.TraitifyRepository.SaveAsync();
             return dto;

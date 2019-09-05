@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using UpDiddyApi.ApplicationCore.Interfaces.Repository;
@@ -9,12 +10,15 @@ using Microsoft.Extensions.Configuration;
 using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Threading.Tasks;
 using System;
-using UpDiddyApi.Helpers;
 using UpDiddyLib.Helpers;
 using static UpDiddyLib.Helpers.Constants;
 using Newtonsoft.Json.Linq;
-
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net;
 using Newtonsoft.Json;
+using System.Text;
+
 namespace UpDiddyApi.Controllers
 {
     [ApiController]
@@ -26,6 +30,7 @@ namespace UpDiddyApi.Controllers
         private readonly ITraitifyService _traitifyService;
         private readonly string _publicKey;
         private readonly string _host;
+        private readonly string _resultUrl;
         private ILogger<TraitifyController> _logger;
         private readonly ISysEmail _sysEmail;
 
@@ -42,6 +47,7 @@ namespace UpDiddyApi.Controllers
             string version = config["Traitify:Version"];
             _publicKey = config["Traitify:PublicKey"];
             _host = config["Traitify:HostUrl"];
+            _resultUrl = config["Traitify:ResultUrl"];
             _traitify = new Traitify(_host, _publicKey, secretKey, version);
             _config = config;
             _traitifyService = traitifyService;
@@ -77,7 +83,7 @@ namespace UpDiddyApi.Controllers
                     TraitifyDto dto = new TraitifyDto()
                     {
                         AssessmentId = assessmentId,
-                        CompletedAt = null,
+                        CompleteDate = null,
                         PublicKey = _publicKey,
                         Host = _host
                     };
@@ -101,22 +107,19 @@ namespace UpDiddyApi.Controllers
                 var assessment = _traitify.GetAssessment(assessmentId);
                 if (assessment.completed_at != null)
                 {
-                    dynamic results = new JObject();
-                    var types = _traitify.GetPersonalityTypes(assessmentId);
-                    var traits = _traitify.GetPersonalityTraits(assessmentId);
-                    results.traits = JArray.FromObject(traits);
-                    results.types = JArray.FromObject(types.personality_types);
-                    results.blend = JObject.FromObject(types.personality_blend);
+                    string results = await GetJsonResults(assessmentId);
                     TraitifyDto dto = new TraitifyDto()
                     {
                         AssessmentId = assessmentId,
-                        CompletedAt = DateTime.UtcNow,
-                        ResultData = JsonConvert.SerializeObject(results),
+                        CompleteDate = DateTime.UtcNow,
+                        ResultData = results,
+                        ResultLength = results.Length,
                         PublicKey = _publicKey,
                         Host = _host
                     };
                     dto = await _traitifyService.CompleteAssessment(dto);
-                    await SendCompletionEmail(dto.Email, results);
+                    dynamic payload = ProcessResult(results);
+                    await SendCompletionEmail(dto.Email, payload);
                     return true;
                 }
             }
@@ -130,14 +133,57 @@ namespace UpDiddyApi.Controllers
 
         private async Task SendCompletionEmail(string sendTo, dynamic result)
         {
-                    await _sysEmail.SendTemplatedEmailAsync(
-                              sendTo,
-                              _config["SysEmail:Transactional:TemplateIds:PersonalityAssessment-ResultsSummary"],
-                              result,
-                              SendGridAccount.Transactional,
-                              null,
-                              null);
+            await _sysEmail.SendTemplatedEmailAsync(
+                      sendTo,
+                      _config["SysEmail:Transactional:TemplateIds:PersonalityAssessment-ResultsSummary"],
+                      result,
+                      SendGridAccount.Transactional,
+                      null,
+                      null);
+        }
+
+        private async Task<string> GetJsonResults(string assessmentId)
+        {
+            string apiResponse = string.Empty;
+            var url = _resultUrl.Replace("{assessmentId}", assessmentId);
+            using (var httpClient = new HttpClient())
+            {
+                var byteArray = Encoding.ASCII.GetBytes($"{_publicKey}:x");
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                using (var response = await httpClient.GetAsync(url))
+                {
+                    apiResponse = await response.Content.ReadAsStringAsync();
+                }
+            }
+            return apiResponse;
+        }
+
+        private dynamic ProcessResult(string rawData)
+        {
+            var result = JObject.Parse(rawData);
+            dynamic jObj = new JObject();
+            jObj.blend = (JObject)result["personality_blend"];
+            jObj.types = (JArray)result["personality_types"];
+            foreach (var type in jObj.types)
+            {
+                decimal score = (decimal)type["score"];
+                type["score"] = Math.Round(score, 0);
+            }
+            var traitRef = (JArray)result["personality_traits"];
+            var traits = new JArray();
+            foreach (var trait in traitRef)
+            {
+                var d = (decimal)trait["score"];
+                decimal roundScore = Math.Round(d, 0);
+                if (roundScore > 0)
+                {
+                    trait["score"] = roundScore;
+                    traits.Add(trait);
+                }
+            }
+            jObj.traits = traits;
+            return jObj;
         }
     }
-
 }
+
