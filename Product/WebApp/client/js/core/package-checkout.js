@@ -32,11 +32,13 @@ var calculatePackagePrice = function(){
 }
 
 var submitPackagePayment = function(){
+    $(".overlay").show();
     $.ajax({
         type: 'POST',
         url: $("#PackageCheckoutForm").attr('action'),
         data: $("#PackageCheckoutForm").serialize(),
         success: function (data) {
+            $(".overlay").hide();
             switch(data.statusCode){
                 case 200:
                     document.location.href = "/career-services/" + pageSlug + "/confirmation";
@@ -47,6 +49,7 @@ var submitPackagePayment = function(){
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
+            $(".overlay").hide();
             ToastService.error("Something went wrong with your checkout.");
         }
     });
@@ -58,11 +61,13 @@ var validatePromoCode = function(){
         return;
     }
 
+    $(".overlay").show();
     $.ajax({
         type: 'POST',
         url: '/services/promo-code/validate',
         data: $("#PackageCheckoutForm").serialize(),
         success: function (data) {
+            $(".overlay").hide();
             $("#ValidationMessageSuccess span").html("");
             $("#ValidationMessageError span").html("");
             if(data.isValid){
@@ -78,6 +83,7 @@ var validatePromoCode = function(){
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
+            $(".overlay").hide();
             ToastService.error("An error occurred while trying to validate your promo code. Please try again.");
         }
     });
