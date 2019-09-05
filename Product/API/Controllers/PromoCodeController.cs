@@ -367,12 +367,13 @@ namespace UpDiddyApi.Controllers
                 #endregion
 
 
-                var discount = _promoCodeService.CalculatePrice(promoCode, serviceOffering.Price);
+                var adjustedPrice = _promoCodeService.CalculatePrice(promoCode, serviceOffering.Price);
+                var discount = serviceOffering.Price - adjustedPrice;
  
                 validPromoCodeDto = new PromoCodeDto()
                 {
                     Discount = discount,
-                    FinalCost = serviceOffering.Price - discount,
+                    FinalCost = adjustedPrice,
                     IsValid = true,
                     ValidationMessage = $"The promo code '{promoCode.PromoName}' has been applied successfully! See below for the updated price.",
                     // return guid empty since the promo code will not be validated until the checkout process 
