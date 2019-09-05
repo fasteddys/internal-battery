@@ -31,4 +31,10 @@
         }
     }
 
+    #ValidationMessageError{
+        span{
+            color: $color-red;
+        }
+    }
+
 }
