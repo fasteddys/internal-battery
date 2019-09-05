@@ -39,6 +39,17 @@
         ISubscriberFileRepository SubscriberFileRepository { get; }
         ISkillRepository SkillRepository { get; }
         IStoredProcedureRepository StoredProcedureRepository { get;  }
+        ICourseSiteRepository CourseSite { get; }
+        ICoursePageRepository CoursePage { get; }
+        ICourseRepository Course { get; }
+        ICourseSkillRepository CourseSkill { get; }
+        ICourseVariantRepository CourseVariant { get; }
+        ICourseVariantTypeRepository CourseVariantType { get; }
+        ITagRepository Tag { get; }
+        ITagTopicRepository TagTopic { get; }
+        ITopicRepository Topic { get; }
+        ITagCourseRepository TagCourse { get; }
+        IVendorRepository Vendor { get; }
         IEnrollmentRepository EnrollmentRepository { get; }
         ITraitifyRepository TraitifyRepository {get;}
     }

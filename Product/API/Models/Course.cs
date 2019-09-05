@@ -7,11 +7,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UpDiddyApi.Models
 {
-    public enum CourseSchedules { OnDemand = 0 , InstrunctorLed};
+    public enum CourseSchedules { OnDemand = 0, InstrunctorLed };
 
     public class Course : BaseModel
-    { 
-        public int CourseId { get; set; } 
+    {
+        public int CourseId { get; set; }
         public Guid? CourseGuid { get; set; }
         [Required]
         public string Name { get; set; }
@@ -30,6 +30,22 @@ namespace UpDiddyApi.Models
         public int? Hidden { get; set; }
         public string VideoUrl { get; set; }
         public List<CourseVariant> CourseVariants { get; set; }
-        public List<CourseSkill> CourseSkills { get; set; } 
+        public List<CourseSkill> CourseSkills { get; set; }
+        public bool IsExternal { get; set; }
+    }
+
+    [NotMapped]
+    public class CourseParams
+    {
+        public int? CourseId { get; set; }
+        public Guid CourseVariantTypeGuid { get; set; }
+        public string Code { get; set; }
+        public string Description { get; set; }
+        public bool IsExternal { get; set; }
+        public string Name { get; set; }
+        public decimal Price { get; set; }
+        public List<Guid> SkillGuids { get; set; } = new List<Guid>();
+        public List<Guid> TagGuids { get; set; } = new List<Guid>();
+        public Guid VendorGuid { get; set; }
     }
 }

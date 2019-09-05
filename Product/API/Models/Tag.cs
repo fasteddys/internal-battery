@@ -12,5 +12,6 @@ namespace UpDiddyApi.Models
         public Guid? TagGuid { get; set; }
         [Required]
         public string Name { get; set; }
+        public string Description { get; set; }
     }
 }

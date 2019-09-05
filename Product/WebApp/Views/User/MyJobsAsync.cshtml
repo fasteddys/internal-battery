@@ -34,8 +34,8 @@
                             <div class="col-md-5 col-lg-4 col-sm-12 mb-3">
                                 <div class="job card">
                                     <div class="card-body">
-                                        <div class="card-title">
-                                            <h5><a href="/job/@job.JobPostingGuid">@job.Title</a></h5>
+                                        <div class="job-title card-title">
+                                            <a href="/job/@job.JobPostingGuid">@job.Title</a>
                                         </div>
                                         <div class="card-text">
                                             <h6>@job.CompanyName</h6>
@@ -80,7 +80,7 @@
                         }
                     }
                 </div>
-                            <div class="full-width text-center">
+                            <div class="job-pagination full-width text-center">
                                 @Html.PagedListPager((IPagedList) ViewBag.jobs, page => Url.Action("jobs", new { page }),
                                     new X.PagedList.Mvc.Common.PagedListRenderOptionsBase() { Display=X.PagedList.Mvc.Common.PagedListDisplayMode.IfNeeded,
                                         LiElementClasses = new string[] { "page-item" },
@@ -99,9 +99,6 @@
                                         UlElementClasses = new[] { "pagination" }
                                     })
                             </div>
-     
-
-
             </div>
         </div>
     </div>

@@ -380,7 +380,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (attributeFilters.Length > 0)
                     attributeFilters += " AND ";
 
-                attributeFilters += "LOWER(EmailAddress) = \"" + profileQuery.EmailAddress.Trim().ToLower() + "\"";
+                attributeFilters += "LOWER(emailAddress) = \"" + profileQuery.EmailAddress.Trim().ToLower() + "\"";
             }
             // search for a specific subscriber source 
             if (string.IsNullOrEmpty(profileQuery.SourcePartner) == false)
@@ -388,7 +388,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (attributeFilters.Length > 0)
                     attributeFilters += " AND ";
 
-                attributeFilters += "LOWER(SourcePartner) = \"" + profileQuery.SourcePartner.Trim().ToLower() + "\"";
+                attributeFilters += "LOWER(sourcePartner) = \"" + profileQuery.SourcePartner.Trim().ToLower() + "\"";
             }
 
             // search for a specific first name  
@@ -397,7 +397,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (attributeFilters.Length > 0)
                     attributeFilters += " AND ";
 
-                attributeFilters += "LOWER(FirstName) = \"" + profileQuery.FirstName.Trim().ToLower() + "\"";
+                attributeFilters += "LOWER(firstName) = \"" + profileQuery.FirstName.Trim().ToLower() + "\"";
             }
 
             // search for a specific first name  
@@ -406,7 +406,7 @@ namespace UpDiddyApi.ApplicationCore.Services
                 if (attributeFilters.Length > 0)
                     attributeFilters += " AND ";
 
-                attributeFilters += "LOWER(LastName) = \"" + profileQuery.LastName.Trim().ToLower() + "\"";
+                attributeFilters += "LOWER(lastName) = \"" + profileQuery.LastName.Trim().ToLower() + "\"";
             }
  
             // Add Custom Attribute Filter 

@@ -30,6 +30,8 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using System.Data.SqlClient;
 using JobPosting = UpDiddyApi.Models.JobPosting;
 using UpDiddyApi.Helpers;
+using UpDiddyApi.ApplicationCore.Services.CourseCrawling.Common;
+using System.Collections.Concurrent;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -47,6 +49,8 @@ namespace UpDiddyApi.Workflow
         private readonly IMimeMappingService _mimeMappingService;
         private readonly IHangfireService _hangfireService;
         private readonly IMemoryCache _memoryCache;
+        private readonly ICourseService _courseService;
+
         public ScheduledJobs(
             UpDiddyDbContext context,
             IMapper mapper,
@@ -64,6 +68,7 @@ namespace UpDiddyApi.Workflow
             ITrackingService trackingService,
             IMimeMappingService mimeMappingService,
             IHangfireService hangfireService,
+            ICourseService courseService,
             IMemoryCache memoryCache 
            )
         {
@@ -87,7 +92,7 @@ namespace UpDiddyApi.Workflow
             _mimeMappingService = mimeMappingService;
             _hangfireService = hangfireService;
             _memoryCache=memoryCache;
-
+            _courseService = courseService;
         }
 
         #region Marketing
@@ -609,6 +614,153 @@ namespace UpDiddyApi.Workflow
         }
 
 
+
+        #endregion
+
+        #region External Courses
+
+        /// <summary>
+        /// This method is responsible for the out-of-band processing for the course site crawling operation.
+        /// </summary>
+        /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task<bool> CrawlCourseSiteAsync(CourseSite courseSite)
+        {
+            _syslog.Log(LogLevel.Information, $"***** Crawling course site '{courseSite.Name}'. Started at: {DateTime.UtcNow.ToLongDateString()}");
+
+            var result = true;
+            try
+            {
+                // load the course process for the course site
+                ICourseProcess courseProcess = CourseCrawlingFactory.GetCourseProcess(courseSite, _configuration, _syslog, _sovrenApi);
+
+                // load all existing course pages - it is important to retrieve all of them regardless of their CoursePageStatus to avoid FK conflicts on insert and update operations
+                var coursePages = await _repositoryWrapper.CoursePage.GetAllCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid);
+
+                // retrieve all current course pages that are visible on the course site
+                List<CoursePage> coursePagesToProcess = await courseProcess.DiscoverCoursePagesAsync(coursePages.ToList());
+
+                // insert or update the course pages (each inserted or updated course page can have a status of: Create, Update, Delete) 
+                foreach (var coursePage in coursePagesToProcess)
+                {
+                    try
+                    {
+                        if (coursePage.CoursePageId == 0)
+                            _repositoryWrapper.CoursePage.Create(coursePage);
+                        else
+                            _repositoryWrapper.CoursePage.Update(coursePage);
+
+                        await _repositoryWrapper.CoursePage.SaveAsync();
+                    }catch(Exception e)
+                    {
+                        _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.CrawlCourseSiteAsync encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                    }
+                }                
+
+                // update the course site to indicate that the crawl operation is complete
+                courseSite.LastCrawl = DateTime.UtcNow;
+                courseSite.IsCrawling = false;
+                courseSite.ModifyDate = DateTime.UtcNow;
+                courseSite.ModifyGuid = Guid.Empty;
+                _repositoryWrapper.CourseSite.Update(courseSite);
+                await _repositoryWrapper.CourseSite.SaveAsync();
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.CrawlCourseSiteAsync encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                result = false;
+            }
+
+            _syslog.Log(LogLevel.Information, $"***** Crawling course site '{courseSite.Name}'. Completed at: {DateTime.UtcNow.ToLongDateString()}");
+            return result;
+        }
+
+        /// <summary>
+        /// This method is responsible for the out-of-band processing for the course site syncing operation.
+        /// </summary>
+        /// <returns></returns>
+        [DisableConcurrentExecution(timeoutInSeconds: 60)]
+        public async Task<bool> SyncCourseSiteAsync(CourseSite courseSite)
+        {
+            _syslog.Log(LogLevel.Information, $"***** Syncing course site '{courseSite.Name}'. Started at: {DateTime.UtcNow.ToLongDateString()}");
+
+            var result = true;
+            try
+            {
+                // load the course process for the course site
+                ICourseProcess courseProcess = CourseCrawlingFactory.GetCourseProcess(courseSite, _configuration, _syslog, _sovrenApi);
+
+                // load all pending course pages
+                var coursePages = (await _repositoryWrapper.CoursePage.GetPendingCoursePagesForCourseSiteAsync(courseSite.CourseSiteGuid)).ToList();
+
+                // transform course pages into courses which can be updated in the career circle schema
+                ConcurrentBag<Tuple<CoursePage, CourseDto>> coursePageAndTransformedCourses = new ConcurrentBag<Tuple<CoursePage, CourseDto>>();                
+                var maxdop = new ParallelOptions { MaxDegreeOfParallelism = 10 };
+                int counter = 0;
+                Parallel.For(0, coursePages.Count(), maxdop, async (index) =>
+                {
+                    var courseDto = await courseProcess.ProcessCoursePageAsync(coursePages[index]);
+                    if (courseDto != null)
+                        coursePageAndTransformedCourses.Add(new Tuple<CoursePage, CourseDto>(coursePages[index], courseDto));
+                });
+
+                // make db changes to courses and course pages
+                foreach (var coursePageAndTransformedCourse in coursePageAndTransformedCourses)
+                {
+                    var coursePage = coursePageAndTransformedCourse.Item1;
+                    var courseDto = coursePageAndTransformedCourse.Item2;
+
+                    try
+                    {
+                        coursePage.CoursePageStatusId = 1; // synced                        
+                        switch (coursePage.CoursePageStatus.Name)
+                        {
+                            case "Create":
+                                coursePage.CourseId = await _courseService.AddCourseAsync(courseDto);
+                                break;
+                            case "Update":
+                                coursePage.CourseId = await _courseService.EditCourseAsync(courseDto);
+                                break;
+                            case "Delete":
+                                await _courseService.DeleteCourseAsync(courseDto.CourseGuid.Value);
+                                coursePage.CourseId = null;
+                                break;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _syslog.Log(LogLevel.Error, $"***** ScheduledJobs.SyncCourseSiteAsync encountered an exception while performing a CRUD operation on a course; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                        coursePage.CoursePageStatusId = 5; // error
+                    }
+                    finally
+                    {
+                        coursePage.CoursePageStatus = null; // must do this if there is an existing status which conflicts with the value we are setting
+                        
+                        // save the related course page to reflect what occurred with the course operation
+                        coursePage.ModifyDate = DateTime.UtcNow;
+                        coursePage.ModifyGuid = Guid.Empty;
+                        _repositoryWrapper.CoursePage.Update(coursePage);
+                        await _repositoryWrapper.CoursePage.SaveAsync();
+                    }
+                }
+
+                // update the course site to indicate that the sync operation is complete
+                courseSite.LastSync = DateTime.UtcNow;
+                courseSite.IsSyncing = false;
+                courseSite.ModifyDate = DateTime.UtcNow;
+                courseSite.ModifyGuid = Guid.Empty;
+                _repositoryWrapper.CourseSite.Update(courseSite);
+                await _repositoryWrapper.CourseSite.SaveAsync();
+            }
+            catch (Exception e)
+            {
+                _syslog.Log(LogLevel.Critical, $"***** ScheduledJobs.SyncCourseSiteAsync encountered an exception; message: {e.Message}, stack trace: {e.StackTrace}, source: {e.Source}");
+                result = false;
+            }
+
+            _syslog.Log(LogLevel.Information, $"***** Syncing course site '{courseSite.Name}'. Completed at: {DateTime.UtcNow.ToLongDateString()}");
+            return result;
+        }
 
         #endregion
 
