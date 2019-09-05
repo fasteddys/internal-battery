@@ -17,7 +17,12 @@
                      <div class="col-12 no-padding">
                         <div class="cc-traitify-content">
                            <div class="row">
-                              <div class="col-12 col-lg-6">
+                              <div class="col-12 col-lg-6 order-lg-2">
+                                 <h1><strong>@Model.HeroHeader</strong></h1>
+                                 <br>
+                                 <p>@Model.HeroDescription</p>
+                              </div>
+                              <div class="col-12 col-lg-6 order-lg-1">
                                  @if(Model.SubscriberGuid != null)
                                  {
                                     <div class="d-flex justify-content-center pt-5">
@@ -39,11 +44,7 @@
                                     @Html.Partial("Partials/_SignUpForm",Model)
                                  }
                               </div>
-                              <div class="col-12 col-lg-6">
-                                 <h1><strong>@Model.HeroHeader</strong></h1>
-                                 <br>
-                                 <p>@Model.HeroDescription</p>
-                              </div>
+                              
                            </div>
                         </div>
                      </div>

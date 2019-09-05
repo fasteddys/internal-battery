@@ -31,10 +31,8 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> Index()
         {
             TraitifyViewModel model = new TraitifyViewModel();
-
-
             var butterPage = await GetButterLandingPage();
-            model = PopulateModel(model,butterPage);
+            model = PopulateButterFields(model,butterPage);
             model.SubscriberGuid = HttpContext.User.Identity.IsAuthenticated ? GetSubscriberGuid() : (Guid?)null;
             SetSEOTags(butterPage);
             return View(model);
@@ -47,7 +45,7 @@ namespace UpDiddy.Controllers
             var butterPage = await GetButterLandingPage();
             if (!ModelState.IsValid && model.SubscriberGuid == null)
             {
-                model = PopulateModel(model, butterPage);
+                model = PopulateButterFields(model, butterPage);
                 return View(model);
             }
 
@@ -60,7 +58,8 @@ namespace UpDiddy.Controllers
             };
 
             var result = await _api.StartNewTraitifyAssessment(dto);
-            model = PopulateModel(model, butterPage);
+            model.ModalHeader = butterPage.Data.Fields.ModalHeader;
+            model.ModalText = butterPage.Data.Fields.ModalText;
             model.AssessmentId = result.AssessmentId;
             model.PublicKey = result.PublicKey;
             model.Host = result.Host;
@@ -72,6 +71,9 @@ namespace UpDiddy.Controllers
         public async Task<IActionResult> GetByAssessmentId(string assessmentId)
         {
             TraitifyViewModel model = new TraitifyViewModel();
+            var butterPage = await GetButterLandingPage();
+            model.ModalHeader = butterPage.Data.Fields.ModalHeader;
+            model.ModalText = butterPage.Data.Fields.ModalText;
             TraitifyDto dto = await _api.GetTraitifyByAssessmentId(assessmentId);
             if (dto != null)
             {
@@ -105,7 +107,7 @@ namespace UpDiddy.Controllers
             return landingPage;
         }
 
-        private TraitifyViewModel PopulateModel(TraitifyViewModel model, PageResponse<TraitifyLandingPageViewModel> landingPage)
+        private TraitifyViewModel PopulateButterFields(TraitifyViewModel model, PageResponse<TraitifyLandingPageViewModel> landingPage)
         {
             model.HeroImage = landingPage.Data.Fields.HeroImage;
             model.HeroHeader = landingPage.Data.Fields.HeroHeader;

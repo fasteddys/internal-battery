@@ -1,94 +1,45 @@
-@using UpDiddy.ViewModels
+@using UpDiddy.ViewModels 
 @model TraitifyViewModel
 <script src="https://cdn.traitify.com/js/v2/traitify.js"></script>
+<script src="~/js/modules/traitify.js"></script>
 <script>
-   class Traitify {
-       constructor(model, traitify)
-       {
-           this.model = model;
-           this.traitify = traitify;
-           this.initialize();
-       }
-   
-       initialize()
-       {
-           this.setUrl(this.model.assessmentId);
-           var assessmentId = this.model.assessmentId;
-           this.traitify.setHost(this.model.host);
-           this.traitify.setPublicKey(this.model.publicKey);
-           var assessment = this.traitify.ui.component(); 
-           assessment.on("SlideDeck.Finished", function(){
-               
-                 $.ajax({
-                             url: '/Traitify/complete',
-                             type: 'GET',
-                             dataType: 'json',
-                             data: {
-                                 assessmentId: assessmentId
-                             },
-                             error: function () {
-                                   ToastService.error('Oops! Something unexpected happened, and we are looking into it.')
-                             },
-                             success: function (results) {
-                                 $('.traitify-modal').modal();
-                             }
-                           });    
-                         });
-           assessment.assessmentID("@Model.AssessmentId");
-           assessment.allowFullscreen();
-           assessment.target("#traitify");
-           assessment.render("SlideDeck");
-           $('#infoIcon').on('click', function (e) {
-            $('.traitify-info-modal').modal();
-          })
-       }
-   
-       setUrl(assessmentId)
-       {
-           var newurl = window.location.protocol + "//" + window.location.host + "/traitify/" + assessmentId;
-           window.history.pushState({ path: newurl }, '', newurl);
-       }
-   }
-   
-   window.onload = function () {
-   var model = @Html.Raw(Json.Serialize(@Model));
-   var traitify = new Traitify(model, this.Traitify);
-   traitify.initialize();
-   }
+	window.onload = function () {
+	   var model = @Html.Raw(Json.Serialize(@Model));
+	   var traitify  = new TraitifyCC(model, this.Traitify);
+	   }
 </script>
 <div class="traitify-assessment-container pb-5" id="assessmentContainer">
-   <div class="traitify-header">
-     Personality Assessment <i id="infoIcon" class="fas fa-info-circle"></i>
-   </div>
-   <div id="traitify"></div>
+	<div class="traitify-header">Personality Assessment 
+        <i id="infoIcon" class="fas fa-info-circle"></i>
+	</div>
+	<div id="traitify"></div>
 </div>
- <div class="modal traitify-modal text-cc-secondary" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">@Html.Raw(Model.ModalHeader)</h5>
-                </div>
-                <div class="modal-body">
-                    <p>@Html.Raw(Model.ModalText)</p>
-                </div>
-                <div class="modal-footer">
-                    <a href="/" class="btn btn-primary">Continue</a>
-                </div>
-            </div>
-        </div>
+<div class="modal traitify-modal text-cc-secondary" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">@Html.Raw(Model.ModalHeader)</h5>
+			</div>
+			<div class="modal-body">
+				<p>@Html.Raw(Model.ModalText)</p>
+			</div>
+			<div class="modal-footer"> <a href="/" class="btn btn-primary">Continue</a>
+			</div>
+		</div>
+	</div>
 </div>
- <div class="modal traitify-info-modal text-cc-secondary" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Instructions</h5>
-                </div>
-                <div class="modal-body">
-                    <p>Simply click "Me" or "Not Me" as each image relates to you. Remember that this assessment is designed for your work life, so respond to each image based on your work preferences.</p>
-                </div>
-                <div class="modal-footer">
-                 <button type="button" class="btn btn-primary" data-dismiss="modal">OK! Let's go!</button>
-                </div>
-            </div>
-        </div>
+<div class="modal traitify-info-modal text-cc-secondary" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Instructions</h5>
+			</div>
+			<div class="modal-body">
+				<p>Simply click "Me" or "Not Me" as each image relates to you. Remember that this assessment is designed for your work life, so respond to each image based on your work preferences.</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-dismiss="modal">OK! Let's go!</button>
+			</div>
+		</div>
+	</div>
 </div>
