@@ -68,10 +68,9 @@ namespace UpDiddyApi.Controllers
 
             string Msg = "Order processed";
             int statusCode = 200;
-            if (!_serviceOfferingOrderService.ProcessOrder(serviceOfferingTransactionDto, subscriberGuid, ref statusCode, ref Msg))
-                return BadRequest(new BasicResponseDto() { StatusCode = statusCode, Description = Msg });
-			else
-                return Ok(new BasicResponseDto() { StatusCode = statusCode, Description = Msg });
+            _serviceOfferingOrderService.ProcessOrder(serviceOfferingTransactionDto, subscriberGuid, ref statusCode, ref Msg);
+            return Ok(new BasicResponseDto() { StatusCode = statusCode, Description = Msg });
+		
         }
 
     }
