@@ -6,7 +6,11 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"EXEC('/*
+            migrationBuilder.Sql(@"EXEC('
+
+
+
+/*
 <remarks>
 2019-03-14 - Bill Koenig - Created
 2019-04-19 - Jim Brazil - Updated to include partner name and Id
@@ -27,11 +31,16 @@ AS
 	WHERE GroupRank = 1 AND PartnerRank = 1
 	GROUP BY PartnerName, PartnerGuid, PartnerId
 	UNION
-	SELECT ''Any'', (SELECT COUNT(DISTINCT SubscriberId) FROM [v_SubscriberSourceDetails]), ''Any'', ''Any'', -1, NULL')");
+	SELECT ''Any'', (SELECT COUNT(DISTINCT SubscriberId) FROM [v_SubscriberSourceDetails]), ''Any'', ''Any'', -1, NULL
+ 
+ 
+            ')");
 
 
 
-            migrationBuilder.Sql(@"EXEC('ALTER VIEW [dbo].[v_SubscriberSourceDetails]
+            migrationBuilder.Sql(@"EXEC('
+
+ALTER VIEW [dbo].[v_SubscriberSourceDetails]
 AS
 	WITH rankedGroup AS (
 		SELECT sg.SubscriberId, sg.GroupId, ROW_NUMBER() OVER (PARTITION BY sg.SubscriberId ORDER BY sg.CreateDate ASC) as [GroupRank]
@@ -58,7 +67,10 @@ AS
 	LEFT JOIN attribution a ON s.SubscriberId = a.SubscriberId
 	LEFT JOIN [Group] g ON a.GroupId = g.GroupId
 	LEFT JOIN [Partner] p ON a.PartnerId = p.PartnerId
-	WHERE s.IsDeleted = 0')");
+	WHERE s.IsDeleted = 0
+            
+ 
+            ')");
 
         }
 
@@ -91,7 +103,8 @@ join Partner p on p.PartnerId = gp.PartnerId
 
 
 
-            migrationBuilder.Sql(@"EXEC('/*
+            migrationBuilder.Sql(@"EXEC('
+/*
 <remarks>
 2019-03-14 - Bill Koenig - Created
 2019-04-19 - Jim Brazil - Updated to include partner name and Id
@@ -111,7 +124,9 @@ FROM            dbo.GroupPartner AS gp INNER JOIN
                          dbo.SubscriberGroup AS sg ON gp.GroupId = sg.GroupId INNER JOIN
                          dbo.Partner AS p ON gp.PartnerId = p.PartnerId
 WHERE        (p.IsDeleted = 0) AND (sg.IsDeleted = 0) AND (gp.IsDeleted = 0)
-GROUP BY p.Name, p.PartnerId')')");
+GROUP BY p.Name, p.PartnerId')
+ 
+            ')");
 
         }
     }

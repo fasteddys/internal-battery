@@ -6,7 +6,8 @@ namespace UpDiddyApi.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"EXEC('/*
+            migrationBuilder.Sql(@"EXEC('
+/*
 <remarks>
 2019-03-14 - Bill Koenig - Created
 2019-04-19 - Jim Brazil - Updated to include partner name and Id
@@ -27,11 +28,19 @@ AS
 	WHERE GroupRank = 1 AND PartnerRank = 1
 	GROUP BY PartnerName, PartnerGuid, PartnerId
 	UNION
-	SELECT ''Any'', (SELECT COUNT(DISTINCT SubscriberId) FROM [v_SubscriberSourceDetails]), ''Any'', ''Any'', -1, NULL')");
-            migrationBuilder.Sql(@"EXEC('/*
+	SELECT ''Any'', (SELECT COUNT(DISTINCT SubscriberId) FROM [v_SubscriberSourceDetails]), ''Any'', ''Any'', -1, NULL
+ 
+ 
+            ')");
+
+
+
+            migrationBuilder.Sql(@"EXEC('
+/*
 <remarks>
 2019-08-23 - Jim Brazil - Created
 2019-09-01 - Jim Brazil - Updated with Bill''s sql
+ 
 </remarks>
 <description>
 Returns subscriber source details sorted by their group creation date
@@ -67,7 +76,10 @@ AS
 	LEFT JOIN attribution a ON s.SubscriberId = a.SubscriberId
 	LEFT JOIN [Group] g ON a.GroupId = g.GroupId
 	LEFT JOIN [Partner] p ON a.PartnerId = p.PartnerId
-	WHERE s.IsDeleted = 0')");
+	WHERE s.IsDeleted = 0
+            
+ 
+            ')");
 
         }
 
