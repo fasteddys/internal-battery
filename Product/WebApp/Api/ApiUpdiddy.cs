@@ -582,7 +582,7 @@ namespace UpDiddy.Api
 
         
         public async Task<BasicResponseDto> SubmitServiceOfferingPayment(ServiceOfferingTransactionDto serviceOfferingTransactionDto){
-            return await PostAsync<BasicResponseDto>("subscriber", serviceOfferingTransactionDto);
+            return await PostAsync<BasicResponseDto>("serviceOfferingOrder", serviceOfferingTransactionDto);
         }
 
         public async Task<IList<OfferDto>> GetOffersAsync()
