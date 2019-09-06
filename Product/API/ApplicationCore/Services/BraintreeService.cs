@@ -87,7 +87,7 @@ namespace UpDiddyApi.ApplicationCore.Services
             {
                 msg = "BraintreePaymentFlow:PaymentWorkItem -> An error occurred when attempting to create the TransactionRequest.";
                 statusCode = 400;
-                _syslog.LogInformation($"BraintreeService.CapturePayment returning false: {msg} ");
+                _syslog.LogInformation($"BraintreeService.CapturePayment returning false: {msg} Exception = {e.Message} ");
                 return false;                
             }
 
