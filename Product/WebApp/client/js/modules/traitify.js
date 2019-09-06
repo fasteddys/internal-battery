@@ -31,9 +31,6 @@ class TraitifyCC {
             assessment.allowFullscreen();
             assessment.target("#traitify");
             assessment.render("SlideDeck");
-            $('#infoIcon').on('click', function (e) {
-                $('.traitify-info-modal').modal();
-            })
         }
 
         setUrl(assessmentId) {

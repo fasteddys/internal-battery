@@ -1,6 +1,5 @@
 @using Microsoft.AspNetCore.Mvc.Localization 
-@using UpDiddy.ViewModels
-@using UpDiddyLib.Dto 
+@using UpDiddy.ViewModels @using UpDiddyLib.Dto
 @using System.Collections.Generic; 
 @using System; 
 @model HomeViewModel
@@ -17,20 +16,22 @@
 		<div class="col">
 			<div class="container">
 				<div class="row">
-					<div class="col-12 col-md-8 col-md-8 col-xl-6 offset-md-2 offset-xl-0">
-						<div class="traitify-header pb-2">World's Fastest Assessment</div>
-						<div class="traitify-details pb-3">What seems like magic is just good science. Your brain processes images 60,000 times faster than words! So we're introducing an 
-							image-based test powered by Traitify that collects hundreds of personality data points 30x faster than comparable assessments, and via mobile phone–in 90 seconds. 
-							All without compromising reliability and validity.
-						</div>
-						<div class="pb-5"> <a href="/traitify" class="btn btn-lg btn-success">Try It Now</a>
+					<div class="col-sn-12 col-md-8 col-xl-5 offset-xl-3 offset-md-2 order-xl-2">
+						<div class="traitify-container mb-5"> <span>Learn about yourself with this free assessment? It all starts with YOU!</span>
+							<div class="traitify-btn mt-5"> <a class="btn btn-success btn-lg" href="/traitify">Try It Now</a>
+							</div>
 						</div>
 					</div>
-					<div class="col-12 signup-top-container-header">At CareerCircle Our Focus is you!</div>
-					<div class="col-12 col-md-8 col-md-8 col-xl-4 offset-md-2 offset-xl-0">
+					<div class="col-sm-12 col-md-8 col-md-6 col-xl-4 offset-md-2 offset-xl-0 order-xl-1">
+						<div class="signup-top-container-header  mb-4 pl-2">At CareerCircle Our Focus is you!</div>
 						<div id="SignUpContainer">
 							<div id="SignUpContainerHeader">Create a free account to get started!</div>
-							<div id="SignUpComponentContainer">@{ SignUpViewModel suvm = new SignUpViewModel(); suvm.IsExpressSignUp = true; suvm.SignUpButtonText = "Join Our Network"; } @Html.Partial("Components/Authentication/_SignUp", suvm)</div>
+							<div id="SignUpComponentContainer">
+                        @{ 
+                           SignUpViewModel suvm = new SignUpViewModel(); 
+                           suvm.IsExpressSignUp = true; 
+                           suvm.SignUpButtonText = "Join Our Network";
+                         } @Html.Partial("Components/Authentication/_SignUp", suvm)</div>
 						</div>
 					</div>
 				</div>
@@ -48,10 +49,9 @@
 								<div class="cc-text-video-band-description">
 									<div class="sub-description-1">Looking for your next opportunity? Select your location on the map to find out what jobs are available near you!</div>
 									<div>By joining our community, we will help guide you to the next step that’s the right fit in your career journey. Our goal is to help our members 
-										navigate the digital career experience, by aligning their career goals with upskilling, mentoring, and coaching opportunities. Through CareerCircle, 
-										you will gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance,
-										 versus limited work history or listed resume experience.
-									</div>
+                              navigate the digital career experience, by aligning their career goals with upskilling, mentoring, and coaching opportunities. Through CareerCircle,
+                              you will gain the ability to be marketed to recruiters and potential employers with an emphasis on acquired skills and performance, 
+                              versus limited work history or listed resume experience.</div>
 								</div>
 							</div>
 						</div>
@@ -73,7 +73,7 @@
 				<div class="row d-flex align-items-center">
 					<div class="col-12 col-md-6 signup-left-col offset-md-3">
 						<div class="f-color-white signup-bottom-container-header">Your Advocates for Career Success</div> 
-						<span class="f-color-white">CareerCircle's mission is to provide you with the right tools that will allow you to market your
+                  <span class="f-color-white">CareerCircle's mission is to provide you with the right tools that will allow you to market your
                   capabilities in a powerful way. In the end, your journey of advanced education and
                   guidance leads to higher pay, flexibility, and a better life.</span>
 					</div>

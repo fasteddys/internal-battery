@@ -176,21 +176,15 @@ body {
                 }
 
                 .signup-top-container-header {
-                    padding: 1.5rem;
                     color: white;
                     border-radius: 1rem;
                     font-weight: bold;
                     font-size: 1.3rem;
                 }
 
-                .traitify-header {
+                .traitify-container {
+                    font-size:1.6rem;
                     color: white;
-                    border-radius: 1rem;
-                    font-size: 2rem;
-                }
-
-                .traitify-details {
-                    color:white;
                 }
             }
 
@@ -450,7 +444,7 @@ body {
 
         #HomeContainer {
             #HomeContainerHero {
-                padding: 11rem 0;
+                padding: 17rem 0;
                 background-image: url('/images/hero_bannerbg_top.jpg');
                 background-size: cover;
                 background-position: bottom;
@@ -468,6 +462,13 @@ body {
 
                 .signup-top-container-header {
                     font-size: 1.3rem !important;
+                }
+
+                .traitify-container {
+                    margin-left:3rem;
+                    .traitify-btn {
+                        margin-left:8rem;
+                     }
                 }
             }
 
