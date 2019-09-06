@@ -1,20 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
-
   <PropertyGroup>
     <UserSecretsId>B2C-WebApi-800a1d60-4ce1-4723-afff-fdceba95c2ee</UserSecretsId>
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <WarningLevel>0</WarningLevel>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsAsErrors />
+    <WarningsAsErrors/>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="Controllers\WozController.cs" />
     <Compile Remove="Migrations\20181129130503_test of partial.cs" />
@@ -88,73 +84,75 @@
     <Compile Remove="Models\_SubscriberSkill.cs" />
     <Compile Remove="Models\_SubscriberWorkHistory.cs" />
   </ItemGroup>
-
   <ItemGroup>
-    <Folder Include="Connected Services\" />
-    <Folder Include="Messaging\" />
-    <Folder Include="wwwroot\" />
+    <Folder Include="Connected Services\"/>
+    <Folder Include="Messaging\"/>
+    <Folder Include="wwwroot\"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="7.0.1" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="5.0.1" />
-    <PackageReference Include="Braintree" Version="4.7.0" />
-    <PackageReference Include="Google.Apis.CloudTalentSolution.v3" Version="1.38.0.1525" />
-    <PackageReference Include="Google.Protobuf" Version="3.7.0" />
-    <PackageReference Include="Hangfire" Version="1.6.21" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.4" />
-    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.8.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.5.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.3.2-pre-20181108.1" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.6" />
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.6" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.1.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.1.2" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureKeyVault.HostingStartup" Version="2.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.3" />
-    <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.2" />
-    <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.2.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.3" />
+    <PackageReference Include="AutoMapper" Version="7.0.1"/>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="5.0.1"/>
+    <PackageReference Include="Braintree" Version="4.7.0"/>
+    <PackageReference Include="Google.Apis.CloudTalentSolution.v3" Version="1.38.0.1525"/>
+    <PackageReference Include="Google.Protobuf" Version="3.7.0"/>
+    <PackageReference Include="Hangfire" Version="1.6.21"/>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.4"/>
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.8.1"/>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.5.1"/>
+    <PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.3.2-pre-20181108.1"/>
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.6"/>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.6"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.1.2"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.1.2"/>
+    <PackageReference Include="Microsoft.AspNetCore.AzureKeyVault.HostingStartup" Version="2.0.4"/>
+    <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.1.1"/>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.3"/>
+    <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.1.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.1"/>
+    <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.2"/>
+    <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.3"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.3"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.3"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.2.3"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.3"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.3"/>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-	<PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.2.0-preview1-35029" />
-
-    <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Localization" Version="2.1.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Graph" Version="1.12.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.1.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.9" />
-    <PackageReference Include="MiniGuid" Version="1.1.2" />
-    <PackageReference Include="Polly" Version="6.1.1" />
-    <PackageReference Include="Sendgrid" Version="9.10.0" />
-    <PackageReference Include="Serilog" Version="2.7.1" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
-    <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="2.6.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
-    <PackageReference Include="WindowsAzure.Storage" Version="9.3.2" />
-    <PackageReference Include="X.PagedList.Mvc.Core" Version="7.6.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.2.0-preview1-35029"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="2.1.1"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.1.1"/>
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="2.1.1"/>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Localization" Version="2.1.3"/>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0"/>
+    <PackageReference Include="Microsoft.Graph" Version="1.12.0"/>
+    <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.1.1"/>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.9"/>
+    <PackageReference Include="MiniGuid" Version="1.1.2"/>
+    <PackageReference Include="Polly" Version="6.1.1"/>
+    <PackageReference Include="Sendgrid" Version="9.10.0"/>
+    <PackageReference Include="Serilog" Version="2.7.1"/>
+    <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2"/>
+    <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="2.6.0"/>
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1"/>
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.2"/>
+    <PackageReference Include="X.PagedList.Mvc.Core" Version="7.6.0"/>
+    <PackageReference Include="TraitifyLibrary" Version="1.0.0"/>
   </ItemGroup>
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.1" />
-    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.1"/>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\UpDiddyLib\UpDiddyLib.csproj" />
+    <ProjectReference Include="..\UpDiddyLib\UpDiddyLib.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadata Include="Connected Services" />
+    <WCFMetadata Include="Connected Services"/>
   </ItemGroup>
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>
-
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties appsettings_1json__JSONSchema=""/>
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

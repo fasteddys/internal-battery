@@ -51,5 +51,6 @@
         ITagCourseRepository TagCourse { get; }
         IVendorRepository Vendor { get; }
         IEnrollmentRepository EnrollmentRepository { get; }
+        ITraitifyRepository TraitifyRepository {get;}
     }
 }

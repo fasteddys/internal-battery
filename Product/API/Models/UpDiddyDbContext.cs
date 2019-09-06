@@ -170,6 +170,7 @@ namespace UpDiddyApi.Models
         public DbSet<SubscriberGroup> SubscriberGroup { get; set; }
         public DbSet<GroupPartner> GroupPartner { get; set; }
         public DbSet<SalesForceSignUpList> SalesForceSignUpList { get; set; }
+        public DbSet<Traitify> Traitify { get; set; }
 
         public DbSet<CourseSite> CourseSite { get; set; }
         public DbSet<CoursePage> CoursePage { get; set; }

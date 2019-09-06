@@ -18,11 +18,9 @@ namespace UpDiddy.Api
         Task<IList<CourseDto>> CoursesAsync();
         Task<IList<CountryDto>> GetCountriesAsync();
         Task<IList<StateDto>> GetStatesByCountryAsync(Guid? countryGuid);
-
         Task<ResumeParseDto> GetResumeParseForSubscriber(Guid subscriberGuid);
         Task<ResumeParseQuestionnaireDto> GetResumeParseQuestionnaireForSubscriber(Guid subscriberGuid);
         Task<BasicResponseDto> ResolveResumeParse(Guid resumeParseGuid, string mergeInfo);
-
         Task<IList<StateDto>> GetAllStatesAsync();
         Task<IList<IndustryDto>> GetIndustryAsync();
         Task<IList<JobCategoryDto>> GetJobCategoryAsync();
@@ -72,16 +70,11 @@ namespace UpDiddy.Api
         Task<SubscriberEducationHistoryDto> AddEducationalHistoryAsync(Guid subscriberGuid, SubscriberEducationHistoryDto workHistory);
         Task<BasicResponseDto> AddJobPostingAsync(JobPostingDto jobPosting);
         Task<BasicResponseDto> UpdateJobPostingAsync(JobPostingDto jobPosting);
-
         Task<List<JobPostingDto>> GetJobPostingsForSubscriber(Guid subscriberGuid);
         Task<JobPostingDto> GetJobPostingByGuid(Guid jobPostingGuid);
-
         Task<List<JobPostingCountDto>> GetJobCountPerProvinceAsync();
-
         Task<JobPostingDto> CopyJobPosting(Guid jobPostingGuid);
-
         Task<BasicResponseDto> DeleteJobPosting(Guid jobPostingGuid);
-
         Task<ContactDto> ContactAsync(Guid partnerContactGuid);
         Task<LinkedInProfileDto> GetLinkedInProfileAsync();
         Task<SubscriberADGroupsDto> MyGroupsAsync();
@@ -99,7 +92,6 @@ namespace UpDiddy.Api
         Task<IList<SubscriberSourceStatisticDto>> SubscriberSourcesAsync();
         Task<BasicResponseDto> SaveNotes(SubscriberNotesDto subscriberNotesDto);
         Task<IList<SubscriberNotesDto>> SubscriberNotesSearch(string subscriberGuid, string searchQuery);
-
         Task<bool> DeleteNoteAsync(Guid subscriberNotesGuid);
         #endregion
 
@@ -123,7 +115,6 @@ namespace UpDiddy.Api
         Task<IList<JobSiteScrapeStatisticDto>> JobScrapeStatisticsSearchAsync(int numRecords);
         Task<List<JobPostingCountReportDto>> GetActiveJobPostCountPerCompanyByDatesAsynch(DateTime? startPostDate, DateTime? endPostDate);
         Task<List<FailedSubscriberDto>> GetFailedSubscribersSummaryAsync();
-
         #endregion
 
         #region Marketing
@@ -143,30 +134,28 @@ namespace UpDiddy.Api
         #endregion
 
         #region JobBoard
-
         Task<JobPostingDto> GetJobAsync(Guid JobPostingGuid, GoogleCloudEventsTrackingDto dto = null);
         Task<JobPostingDto> GetExpiredJobAsync(Guid JobPostingGuid);
         Task<BasicResponseDto> ApplyToJobAsync(JobApplicationDto JobApplication);
         Task<Dictionary<Guid, Guid>> JobFavoritesByJobGuidAsync(List<Guid> jobGuids);
-
         Task<JobSearchResultDto> GetJobsUsingRoute(string country = null, string state = null, string city = null, string industry = null, string category = null, int page = 0);
         Task<IList<JobCategoryDto>> GetJobCategories();
         Task<JobSearchResultDto> GetJobsByLocation(string searchQueryParameterString);
-
         Task<GoogleCloudEventsTrackingDto> RecordClientEventAsync(Guid jobGuid, GoogleCloudEventsTrackingDto dto);
         Task ReferJobPosting(string jobPostingId, string referrerGuid, string refereeName, string refereeEmailId, string descriptionEmailBody);
-
         Task UpdateJobReferral(string referrerCode, Guid subscriberGuid);
-
         Task UpdateJobViewed(string referrerCode);
-
         #endregion
 
+        #region Traitify
+        Task<TraitifyDto> StartNewTraitifyAssessment(TraitifyDto dto);
+        Task<TraitifyDto> GetTraitifyByAssessmentId(string assessmentId);
+        Task<bool> CompleteAssessment(string assessmentId);
+        #endregion
 
         Task<HttpResponseMessage> DownloadFileAsync(Guid subscriberGuid, Guid fileGuid);
         Task RecordSubscriberApplyAction(Guid jobGuid, Guid subscriberGuid);
         Task RecordSubscriberJobViewAction(Guid jobGuid, Guid subscriberGuid);
-
         Task<IList<string>> GetKeywordSearchList(string keyword);
         Task<IList<string>> GetLocationSearchList(string location);
     }

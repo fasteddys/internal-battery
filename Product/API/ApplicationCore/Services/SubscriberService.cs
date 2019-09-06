@@ -378,6 +378,10 @@ namespace UpDiddyApi.ApplicationCore.Services
             return await query.Where(x => x.CloudTalentIndexStatus == 3 && x.IsDeleted == 0).ToListAsync();
         }
         
+        public async Task<Subscriber> GetBySubscriberGuid(Guid subscriberGuid)
+        {
+            return await _repository.Subscriber.GetSubscriberByGuidAsync(subscriberGuid);
+        }
         #region subscriber notes
         public async Task SaveSubscriberNotesAsync(SubscriberNotesDto subscriberNotesDto)
         {

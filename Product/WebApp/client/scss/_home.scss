@@ -176,11 +176,15 @@ body {
                 }
 
                 .signup-top-container-header {
-                    padding: 1.5rem;
                     color: white;
                     border-radius: 1rem;
                     font-weight: bold;
                     font-size: 1.3rem;
+                }
+
+                .traitify-container {
+                    font-size:1.6rem;
+                    color: white;
                 }
             }
 
@@ -458,6 +462,13 @@ body {
 
                 .signup-top-container-header {
                     font-size: 1.3rem !important;
+                }
+
+                .traitify-container {
+                    margin-left:3rem;
+                    .traitify-btn {
+                        margin-left:8rem;
+                     }
                 }
             }
 

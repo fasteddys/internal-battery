@@ -99,5 +99,7 @@ namespace UpDiddyApi.ApplicationCore.Interfaces.Business
 
         Task<IList<SubscriberSourceDto>> GetSubscriberSources(int subscriberId);
 
+        Task<Subscriber> GetBySubscriberGuid(Guid subscriberGuid);
+
     }
 }
