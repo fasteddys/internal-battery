@@ -41,7 +41,7 @@ var submitPackagePayment = function(){
             $(".overlay").hide();
             switch(data.statusCode){
                 case 200:
-                    document.location.href = "/career-services/" + pageSlug + "/confirmation";
+                    document.location.href = "/career-services/" + pageSlug + "/confirmation/" + data.description;
                     break;
                 case 400:
                     ToastService.error(data.description);

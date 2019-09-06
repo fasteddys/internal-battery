@@ -73,5 +73,12 @@ namespace UpDiddyApi.Controllers
 		
         }
 
+        [HttpGet("api/[controller]/subscriber-order/{orderGuid}")]
+        public async Task<IActionResult> GetSubscriberOrder(Guid orderGuid){
+            ServiceOfferingOrderDto serviceOfferingOrderDto = await _serviceOfferingOrderService.GetSubscriberOrder(orderGuid);
+            if(serviceOfferingOrderDto == null)
+                return NotFound();
+            return Ok(serviceOfferingOrderDto);
+        }
     }
 }
