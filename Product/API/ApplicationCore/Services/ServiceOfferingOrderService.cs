@@ -125,9 +125,9 @@ namespace UpDiddyApi.ApplicationCore.Services
                 new
                 {
                     packageName = serviceOfferingTransactionDto.ServiceOfferingOrderDto.ServiceOffering.Name,
-                    packagePrice = "$" + serviceOfferingTransactionDto.ServiceOfferingOrderDto.ServiceOffering.Price.ToString(),
-                    promoDiscount = "$" + PromoDiscount.ToString(),
-                    pricePaid = "$" + FinalCost,
+                    packagePrice = "$" + serviceOfferingTransactionDto.ServiceOfferingOrderDto.ServiceOffering.Price.ToString("0.00"),
+                    promoDiscount = "$" + PromoDiscount.ToString("0.00"),
+                    pricePaid = "$" + FinalCost.ToString("0.00"),
                     purchaseGuid = order.ServiceOfferingOrderGuid
                 },
                Constants.SendGridAccount.Transactional,
