@@ -58,6 +58,7 @@ namespace WebApp.Controllers
             ServicesPageViewModel servicesPageViewModel = new ServicesPageViewModel{
                 HeroContent = servicesPage.Data.Fields.HeroContent,
                 HeroTitle = servicesPage.Data.Fields.HeroTitle,
+                HeroImage = servicesPage.Data.Fields.HeroImage,
                 PackagesFromCms = servicesPage.Data.Fields.PackagesFromCms
             };
 
