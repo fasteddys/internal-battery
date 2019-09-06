@@ -261,9 +261,10 @@
         return await _http.post('/recruiter/delete/', JSON.stringify(recruiterObj));
     }
 
-
-
-
+    var getCourseSites = async function () {
+        return await _http.get('/course-sites');
+    }
+     
     return {
         getProfile: getProfile,
         uploadResume: uploadResume,
@@ -294,6 +295,7 @@
         editRecruiter: editRecruiter,
         deleteRecruiter: deleteRecruiter,
         getNotificationCountReport: getNotificationCountReport,
+        getCourseSites: getCourseSites,
         getJobAbandonmentCount: getJobAbandonmentCount,
         getTotalUserBreakdownByPartner: getTotalUserBreakdownByPartner,
     };

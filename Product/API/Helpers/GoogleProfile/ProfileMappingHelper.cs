@@ -59,7 +59,7 @@ namespace UpDiddyApi.Helpers.GoogleProfile
             IList<SubscriberSourceDto> subscriberSourceDtos = subscriberService.GetSubscriberSources(subscriber.SubscriberId).Result;
             foreach ( SubscriberSourceDto s in subscriberSourceDtos)
             {
-                if ( s.Rank == 1 )
+                if ( s.GroupRank == 1 && s.PartnerRank == 1 )
                 {
                     partnerSource = s.PartnerName;
                     break;
@@ -266,22 +266,22 @@ namespace UpDiddyApi.Helpers.GoogleProfile
             // map source partner 
             rVal.SourcePartner = new List<string>();
      
-            if (summarizedProfile.summary.customAttributes != null && summarizedProfile.summary.customAttributes.ContainsKey("SourcePartner"))
-                foreach ( string s in summarizedProfile.summary.customAttributes["SourcePartner"].stringValues)
+            if (summarizedProfile.summary.customAttributes != null && summarizedProfile.summary.customAttributes.ContainsKey("sourcePartner"))
+                foreach ( string s in summarizedProfile.summary.customAttributes["sourcePartner"].stringValues)
                     rVal.SourcePartner.Add(s);
             else
                 rVal.SourcePartner.Add(Constants.NotSpecifedOption);
 
             // map create date
             DateTime createDate  = DateTime.MinValue;
-            if (summarizedProfile.summary.customAttributes != null && summarizedProfile.summary.customAttributes.ContainsKey("CreateDate"))
-                 DateTime.TryParse(summarizedProfile.summary.customAttributes["CreateDate"].stringValues[0], out createDate);
+            if (summarizedProfile.summary.customAttributes != null && summarizedProfile.summary.customAttributes.ContainsKey("createDate"))
+                 DateTime.TryParse(summarizedProfile.summary.customAttributes["createDate"].stringValues[0], out createDate);
              rVal.CreateDate = createDate;
 
             // map modify date
             DateTime modifyDate = DateTime.MinValue;
-            if (summarizedProfile.summary.customAttributes != null && summarizedProfile.summary.customAttributes.ContainsKey("ModifyDate"))
-                DateTime.TryParse(summarizedProfile.summary.customAttributes["ModifyDate"].stringValues[0], out modifyDate);
+            if (summarizedProfile.summary.customAttributes != null && summarizedProfile.summary.customAttributes.ContainsKey("modifyDate"))
+                DateTime.TryParse(summarizedProfile.summary.customAttributes["modifyDate"].stringValues[0], out modifyDate);
             rVal.ModifyDate = modifyDate;
 
 

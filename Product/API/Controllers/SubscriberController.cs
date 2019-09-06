@@ -35,6 +35,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Repository;
 using UpDiddyApi.Workflow;
 using UpDiddyApi.ApplicationCore.Services;
 using System.Net.Http;
+using System.Net;
 
 namespace UpDiddyApi.Controllers
 {
@@ -961,7 +962,7 @@ namespace UpDiddyApi.Controllers
 
         [HttpGet("/api/[controller]/search")]
         [Authorize(Policy = "IsRecruiterOrAdmin")]
-        public IActionResult Search(string searchFilter = "any", string searchQuery = null, string searchLocationQuery = null)
+        public IActionResult Search(string searchFilter = "any", string searchQuery = null, string searchLocationQuery = null, string sortOrder = null)
         {
 
             int MaxProfilePageSize = int.Parse(_configuration["CloudTalent:MaxProfilePageSize"]);
@@ -974,6 +975,8 @@ namespace UpDiddyApi.Controllers
                 PageSize = MaxProfilePageSize
 
             };
+            if (sortOrder != null)
+                profileQueryDto.OrderBy = WebUtility.UrlDecode(sortOrder);
             ProfileSearchResultDto result = _cloudTalent.ProfileSearch(profileQueryDto);   
 
             return Json(result);

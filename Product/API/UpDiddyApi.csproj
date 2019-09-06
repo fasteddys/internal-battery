@@ -75,6 +75,8 @@
     <Compile Remove="Migrations\20190729201951_altered subscriber source view.Designer.cs" />
     <Compile Remove="Migrations\20190902144051_Service Offering Data Model.cs" />
     <Compile Remove="Migrations\20190902144051_Service Offering Data Model.Designer.cs" />
+    <Compile Remove="Migrations\20190904150051_v_subscribersourceDetails update to bill sql.cs" />
+    <Compile Remove="Migrations\20190904150051_v_subscribersourceDetails update to bill sql.Designer.cs" />
     <Compile Remove="Models\_Company.cs" />
     <Compile Remove="Models\_Country.cs" />
     <Compile Remove="Models\_EducationalDegree.cs" />

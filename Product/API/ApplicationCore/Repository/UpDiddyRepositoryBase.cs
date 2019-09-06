@@ -22,8 +22,7 @@ namespace UpDiddyApi.ApplicationCore.Repository
         {
                 return this._dbContext
                             .Set<TEntity>()
-                            .AsNoTracking();
-                                
+                            .AsNoTracking();                         
         }
 
         public async Task<IEnumerable<TEntity>> GetByConditionWithTrackingAsync(Expression<Func<TEntity, bool>> expression)

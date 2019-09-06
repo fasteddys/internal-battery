@@ -98,7 +98,7 @@ namespace UpDiddy.Api
         Task<RedirectDto> GetSubscriberPartnerWebRedirect();
 
         #region TalentPortal
-        Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery);
+        Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery, string sortOrder);
         Task<IList<SubscriberSourceStatisticDto>> SubscriberSourcesAsync();
         Task<BasicResponseDto> SaveNotes(SubscriberNotesDto subscriberNotesDto);
         Task<IList<SubscriberNotesDto>> SubscriberNotesSearch(string subscriberGuid, string searchQuery);

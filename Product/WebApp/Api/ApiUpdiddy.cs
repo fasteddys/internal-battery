@@ -21,6 +21,7 @@ using UpDiddyLib.Dto.Reporting;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Caching.Memory;
+using System.Net;
 
 namespace UpDiddy.Api
 {
@@ -1317,13 +1318,17 @@ namespace UpDiddy.Api
             return rval;
         }
 
-        public async Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery)
+        public async Task<ProfileSearchResultDto> SubscriberSearchAsync(string searchFilter, string searchQuery, string searchLocationQuery, string sortOrder)
         {
             string endpoint = $"subscriber/search?searchFilter={searchFilter}";
             if (searchQuery != string.Empty)
                 endpoint += $"&searchQuery={searchQuery}";
             if (searchLocationQuery != string.Empty)
                 endpoint += $"&searchLocationQuery={searchLocationQuery}";
+            if (sortOrder != string.Empty)                
+                endpoint += $"&sortOrder={WebUtility.UrlEncode(sortOrder)}";
+           
+                
 
             return await GetAsync<ProfileSearchResultDto>(endpoint);
         }

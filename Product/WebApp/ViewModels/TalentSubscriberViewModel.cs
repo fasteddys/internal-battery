@@ -9,6 +9,8 @@ namespace UpDiddy.ViewModels
     public class TalentSubscriberViewModel
     {
         public IEnumerable<SelectListItem> SubscriberSources { get; set; }
+        public IEnumerable<SelectListItem> SortOptions { get; set; }
         public string SelectedSubscriberSource { get; set; }
+        public string SelectedSortOption { get; set; }
     }
 }
