@@ -83,6 +83,9 @@ var validatePromoCode = function(){
             if(data.finalCost === 0 && data.isValid){
                 $("#BraintreePaymentContainer").hide();
             }
+            else{
+                $("#BraintreePaymentContainer").show();
+            }
         },
         error: function (jqXHR, textStatus, errorThrown) {
             $(".overlay").hide();

@@ -137,6 +137,24 @@ namespace UpDiddyApi.ApplicationCore.Services
                null
                 ));
 
+            _hangfireService.Enqueue(() => _sysEmail.SendTemplatedEmailAsync(
+                _configuration["SysEmail:SystemSalesEmailAddress"],
+                _configuration["SysEmail:Transactional:TemplateIds:PurchaseReceipt-CareerServices"],
+                new
+                {
+                    packageName = serviceOfferingTransactionDto.ServiceOfferingOrderDto.ServiceOffering.Name,
+                    packagePrice = "$" + serviceOfferingTransactionDto.ServiceOfferingOrderDto.ServiceOffering.Price.ToString("0.00"),
+                    promoDiscount = "$" + PromoDiscount.ToString("0.00"),
+                    pricePaid = "$" + FinalCost.ToString("0.00"),
+                    purchaseGuid = order.ServiceOfferingOrderGuid
+                },
+               Constants.SendGridAccount.Transactional,
+               null,
+               null,
+               null,
+               null
+                ));
+
             if (promoCode != null)
             {
                 order.PromoCodeId = promoCode.PromoCodeId;
