@@ -10,14 +10,18 @@
 <div class="services-details-container">
     @Html.Partial(ContentBandViewModel.VIEW_FILE, new ContentBandViewModel()
     {
-        Header = Model.PackageName,
+        Header = Model.PackageName + " - $" + Model.Price,
         Elements = new List<string>()
         {
-            @"<div class='row'>
-                <div class='col-lg-8 offset-lg-2'>" + 
-                    Model.QuickDescription
-                + @"</div>
-            </div>"
+            "<div class=\"container-align-center col-lg-8 offset-lg-2\">" + Model.QuickDescription + "</div><br /><br /><div class=\"container-align-center\">" + @Html.PartialToHtmlMarkup("Components/Buttons/_Action", new ActionButtonViewModel {
+                Text = "Buy now!",
+                Hyperlink = Context.Request.Path + "/checkout",
+                FitToText = true,
+                ChosenColorScheme = "cc-cscheme-white",
+                ButtonAction = ActionButtonViewModel.Action.CTA,
+                ButtonClass = "signup-cta",
+                OpenNewWindow = false
+            }) + "</div>"
         },
         Class = "cc-cscheme-secondary"
     })

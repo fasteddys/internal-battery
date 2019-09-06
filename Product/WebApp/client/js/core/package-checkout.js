@@ -5,12 +5,12 @@ $( document ).ready(function() {
     $('#PackageAgreeToTermsAndConditionsCheckbox').change(function() {
         $("#PackageAgreeToTermsAndConditions").val(this.checked);
         if(this.checked) {
-            $(".authenticated-section input").prop( "disabled", false );
+            $(".authenticated-section input").not(".promo-code-entered").prop( "disabled", false );
             $(".authenticated-section select").prop( "disabled", false );
             $("#PackageCheckout").prop( "disabled", false );
         }
         else{
-            $(".authenticated-section input").prop( "disabled", true );
+            $(".authenticated-section input").not(".promo-code-entered").prop( "disabled", true );
             $(".authenticated-section select").prop( "disabled", true );
             $("#PackageCheckout").prop( "disabled", true );
         }     
@@ -32,32 +32,42 @@ var calculatePackagePrice = function(){
 }
 
 var submitPackagePayment = function(){
+    $(".overlay").show();
     $.ajax({
         type: 'POST',
         url: $("#PackageCheckoutForm").attr('action'),
         data: $("#PackageCheckoutForm").serialize(),
         success: function (data) {
+            $(".overlay").hide();
             switch(data.statusCode){
                 case 200:
                     document.location.href = "/career-services/" + pageSlug + "/confirmation";
                     break;
                 case 400:
-                    ToastService.error("The information you've supplied is incorrect. Please fix and submit again");
+                    ToastService.error(data.description);
                     break;
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
+            $(".overlay").hide();
             ToastService.error("Something went wrong with your checkout.");
         }
     });
 }
 
 var validatePromoCode = function(){
+    if($("#PromoCodeEntered").val() === undefined || $("#PromoCodeEntered").val() === ""){
+        ToastService.warning("Please enter a promo code and try again.");
+        return;
+    }
+
+    $(".overlay").show();
     $.ajax({
         type: 'POST',
         url: '/services/promo-code/validate',
         data: $("#PackageCheckoutForm").serialize(),
         success: function (data) {
+            $(".overlay").hide();
             $("#ValidationMessageSuccess span").html("");
             $("#ValidationMessageError span").html("");
             if(data.isValid){
@@ -68,11 +78,12 @@ var validatePromoCode = function(){
             else{
                 $("#ValidationMessageError span").html(data.validationMessage);
             }
-            if(data.finalCost === "0"){
+            if(data.finalCost === 0 && data.isValid){
                 $("#BraintreePaymentContainer").hide();
             }
         },
         error: function (jqXHR, textStatus, errorThrown) {
+            $(".overlay").hide();
             ToastService.error("An error occurred while trying to validate your promo code. Please try again.");
         }
     });

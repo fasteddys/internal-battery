@@ -74,7 +74,8 @@ namespace WebApp.Controllers
                     PackageName = page.Fields.PackageName,
                     TileImage = page.Fields.TileImage,
                     QuickDescription = page.Fields.QuickDescription,
-                    Slug = page.Slug
+                    Slug = page.Slug,
+                    Price = page.Fields.Price
                 });
             }
 
@@ -105,7 +106,8 @@ namespace WebApp.Controllers
                 TileImage = packagePage.Data.Fields.TileImage,
                 QuickDescription = packagePage.Data.Fields.QuickDescription,
                 FullDescription = packagePage.Data.Fields.FullDescription,
-                FullDescriptionHeader = packagePage.Data.Fields.FullDescriptionHeader
+                FullDescriptionHeader = packagePage.Data.Fields.FullDescriptionHeader,
+                Price = packagePage.Data.Fields.Price
             };
 
             return View(packageServiceViewModel);
@@ -219,7 +221,8 @@ namespace WebApp.Controllers
             if(IsNewSubscriberCheckout){
                 signUpDto = new SignUpDto{
                     email = serviceCheckoutViewModel.NewSubscriberEmail,
-                    password = serviceCheckoutViewModel.NewSubscriberPassword
+                    password = serviceCheckoutViewModel.NewSubscriberPassword,
+                    verifyUrl = _configuration["Environment:BaseUrl"].TrimEnd('/') + "/email/confirm-verification/",
                 };
             }
 
@@ -233,7 +236,7 @@ namespace WebApp.Controllers
                 promoCodeDto = await _api.ServiceOfferingPromoCodeValidationAsync(serviceCheckoutViewModel.PromoCodeEntered, serviceCheckoutViewModel.PackageServiceViewModel.PackageId);
             };
 
-            decimal PricePaid = promoCodeDto != null ? promoCodeDto.FinalCost : Decimal.Parse(serviceCheckoutViewModel.PackageServiceViewModel.Price);  
+            decimal PricePaid = promoCodeDto != null ? promoCodeDto.FinalCost : Decimal.Parse(packagePage.Data.Fields.Price);  
 
             BraintreePaymentDto braintreePaymentDto = AssembleBraintreePaymentDto(serviceCheckoutViewModel, packagePage, Subscriber, IsNewSubscriberCheckout, PricePaid);
             serviceOfferingTransactionDto.BraintreePaymentDto = braintreePaymentDto;
@@ -247,7 +250,9 @@ namespace WebApp.Controllers
             ServiceOfferingOrderDto serviceOfferingOrderDto = new ServiceOfferingOrderDto{
                 PromoCode = promoCodeDto,
                 ServiceOffering = new ServiceOfferingDto{
-                    ServiceOfferingGuid = Guid.Parse(serviceCheckoutViewModel.PackageServiceViewModel.PackageId)
+                    ServiceOfferingGuid = Guid.Parse(serviceCheckoutViewModel.PackageServiceViewModel.PackageId),
+                    Name = packagePage.Data.Fields.PackageName,
+                    Price = Decimal.Parse(packagePage.Data.Fields.Price)
                 },
                 Subscriber = ServiceOfferingSubscriber,
                 PricePaid = PricePaid
@@ -292,8 +297,8 @@ namespace WebApp.Controllers
             BraintreePaymentDto braintreePaymentDto = new BraintreePaymentDto(){
                 PaymentAmount = PricePaid,
                 Nonce = serviceCheckoutViewModel.PaymentMethodNonce,
-                FirstName = serviceCheckoutViewModel.SubscriberFirstName,
-                LastName = serviceCheckoutViewModel.SubscriberLastName,
+                FirstName = serviceCheckoutViewModel.BillingFirstName,
+                LastName = serviceCheckoutViewModel.BillingLastName,
                 PhoneNumber = serviceCheckoutViewModel.SubscriberPhoneNumber,
                 Email = IsNewSubscriberCheckout ? serviceCheckoutViewModel.NewSubscriberEmail : Subscriber.Email,
                 Address = serviceCheckoutViewModel.BillingAddress,

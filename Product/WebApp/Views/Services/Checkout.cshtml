@@ -5,6 +5,9 @@
     // this must be present for the API call used in site.js
     var url = '@Url.Action("GetStatesByCountry", "Home")';
 </script>
+<div class="overlay">
+    <div id="loading-img"></div>
+</div>
 <div class="package-checkout-container">
     <div class="package-checkout-hero pt-4 pb-4">
         <div class="container">
@@ -47,20 +50,20 @@
 
                             </div>
                             <div class="form-row">
-                                <div class="col-12 col-sm-4">
+                                <div class="col-12 col-sm-4 pb-3">
                                     <input type="text" class="form-control" placeholder="Email" asp-for="NewSubscriberEmail" required>
                                 </div>
-                                <div class="col-12 col-sm-4">
+                                <div class="col-12 col-sm-4 pb-3">
                                     <input type="password" class="form-control" placeholder="Password" asp-for="NewSubscriberPassword" required>
                                 </div>
-                                <div class="col-12 col-sm-4">
+                                <div class="col-12 col-sm-4 pb-3">
                                     <input type="password" class="form-control" placeholder="Re-enter Password" asp-for="NewSubscriberReenterPassword" required>
                                 </div>
                                 <div class="col-12 container-align-center mt-3">
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="checkbox" id="PackageAgreeToTermsAndConditionsCheckbox"/>
                                         @Html.HiddenFor(x => x.PackageAgreeToTermsAndConditions)
-                                        <label class="form-check-label" for="PackageAgreeToTermsAndConditionsCheckbox">Agree to CareerCircle Terms and Condtitions</label>
+                                        <label class="form-check-label" for="PackageAgreeToTermsAndConditionsCheckbox">Agree to CareerCircle <a href="/Home/TermsOfService">Terms and Condtitions</a></label>
                                     </div>
                                 </div>
                                 
@@ -86,7 +89,7 @@
 
                         <div class="form-group col-md-6">
                             <div class="input-group">
-                                <input type="text" asp-for="PromoCodeEntered" class="form-control" placeholder="Enter a promo code" aria-label="Promo code:" aria-describedby="PromoCodeApplyButton">
+                                <input type="text" asp-for="PromoCodeEntered" class="form-control promo-code-entered" placeholder="Enter a promo code" aria-label="Promo code:" aria-describedby="PromoCodeApplyButton">
                                 <div class="input-group-append">
                                     <button class="btn btn-outline-secondary" type="button" id="PackagePromoCodeApplyButton" onclick="validatePromoCode()">Apply</button>
                                 </div>
@@ -245,7 +248,7 @@
         });
         @if(!User.Identity.IsAuthenticated){
             <text>
-                $(".authenticated-section input").prop( "disabled", true );
+                $(".authenticated-section input").not(".promo-code-entered").prop( "disabled", true );
                 $(".authenticated-section select").prop( "disabled", true );
             </text>
         }
