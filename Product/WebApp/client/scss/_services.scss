@@ -119,7 +119,19 @@
                 > a{
                     img{
                         width: 100%;
-                        height: 10rem;
+                        height: 12rem;
+                        @media (min-width: 576px){
+                            height: 10rem;
+                        }
+                        @media (min-width: 768px){
+                            height: 8rem;
+                        }
+                        @media (min-width: 992px){
+                            height: 12rem;
+                        }
+                        @media (min-width: 1200px){
+                            height: 14rem;
+                        }
 
                     }
                     
