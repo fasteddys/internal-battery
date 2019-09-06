@@ -8,6 +8,7 @@ using UpDiddyApi.ApplicationCore.Interfaces.Business;
 using UpDiddyApi.Models;
 using UpDiddyLib.Dto;
 using UpDiddyLib.Helpers;
+using com.traitify.net.TraitifyLibrary;
 
 namespace UpDiddyApi.Helpers
 {

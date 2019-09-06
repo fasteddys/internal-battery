@@ -1,0 +1,30 @@
+@using UpDiddy.ViewModels 
+@model TraitifyViewModel
+<script src="https://cdn.traitify.com/js/v2/traitify.js"></script>
+<script src="~/js/modules/traitify.js"></script>
+<script>
+	window.onload = function () {
+	   var model = @Html.Raw(Json.Serialize(@Model));
+	   var traitify  = new TraitifyCC(model, this.Traitify);
+	   }
+</script>
+<div class="traitify-assessment-container pb-5" id="assessmentContainer">
+	<div class="traitify-header">
+		Simply click "Me" or "Not Me" as each image relates to you.
+	</div>
+	<div id="traitify"></div>
+</div>
+<div class="modal traitify-modal text-cc-secondary" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">@Html.Raw(Model.ModalHeader)</h5>
+			</div>
+			<div class="modal-body">
+				<p>@Html.Raw(Model.ModalText)</p>
+			</div>
+			<div class="modal-footer"> <a href="/" class="btn btn-primary">Continue</a>
+			</div>
+		</div>
+	</div>
+</div>
